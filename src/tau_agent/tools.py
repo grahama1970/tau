@@ -30,6 +30,7 @@ class AgentToolResult(BaseModel):
     ok: bool
     content: str
     data: dict[str, JSONValue] | None = None
+    details: dict[str, JSONValue] | None = None
     error: str | None = None
 
 
@@ -41,6 +42,8 @@ class AgentTool:
     description: str
     input_schema: Mapping[str, JSONValue]
     executor: ToolExecutor
+    prompt_snippet: str | None = None
+    prompt_guidelines: tuple[str, ...] = ()
 
     async def execute(self, arguments: Mapping[str, JSONValue]) -> AgentToolResult:
         """Execute the tool with provider-neutral JSON-like arguments."""
