@@ -222,7 +222,7 @@ def render_compact_session_info(
         ("location", _short_path(session.cwd)),
         ("branch", _git_branch(session.cwd)),
     )
-    text = Text(style=theme.muted_text)
+    text = Text(style=theme.muted_text, overflow="fold", no_wrap=False)
     for index, (label, value) in enumerate(facts):
         if index:
             text.append("  ")

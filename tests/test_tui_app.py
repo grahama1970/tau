@@ -136,6 +136,16 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     assert "branch --" in output
 
 
+def test_compact_session_info_wraps_to_available_width() -> None:
+    console = Console(record=True, width=36)
+
+    console.print(render_compact_session_info(FakeSession()))
+
+    lines = console.export_text().splitlines()
+    assert len(lines) > 1
+    assert max(len(line) for line in lines) <= 36
+
+
 def test_chat_items_render_as_unlabeled_blocks() -> None:
     console = Console(record=True, width=40)
 
