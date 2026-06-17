@@ -95,3 +95,4 @@ def test_tui_keybindings_serialize_to_json() -> None:
 
 def test_get_tui_theme_returns_builtin_theme() -> None:
     assert get_tui_theme("high-contrast").prompt_border == "#00ff66"
+    assert get_tui_theme("tau-dark").screen_background == "#05070a"

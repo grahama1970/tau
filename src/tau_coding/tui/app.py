@@ -200,7 +200,7 @@ class TauTuiApp(App[None]):
 
     Header {
         background: $tau-chrome-background;
-        color: $tau-chrome-text;
+        color: $tau-muted-text;
         dock: top;
     }
 
@@ -223,9 +223,9 @@ class TauTuiApp(App[None]):
     #sidebar {
         width: 32;
         min-width: 28;
-        padding: 1;
+        padding: 1 1 0 0;
         background: $tau-sidebar-background;
-        border-right: solid $tau-border;
+        border-right: tall $tau-border;
     }
 
     #main-pane {
@@ -235,16 +235,21 @@ class TauTuiApp(App[None]):
 
     #transcript {
         height: 1fr;
-        border: solid $tau-border;
+        border: none;
         background: $tau-transcript-background;
-        padding: 0 1;
+        padding: 0 1 0 0;
     }
 
     #prompt {
         background: $tau-prompt-background;
         color: $tau-prompt-text;
-        border: solid $tau-prompt-border;
-        margin: 0 1 0 1;
+        border: tall transparent;
+        margin: 0 1 1 1;
+        padding: 0 1;
+    }
+
+    #prompt:focus {
+        border: tall $tau-prompt-border;
     }
 
     #autocomplete {
@@ -254,7 +259,7 @@ class TauTuiApp(App[None]):
         padding: 0 1;
         background: $tau-autocomplete-background;
         color: $tau-screen-text;
-        border: solid $tau-border;
+        border: tall $tau-border;
     }
 
     SessionPickerScreen {
@@ -268,7 +273,7 @@ class TauTuiApp(App[None]):
         max-height: 70%;
         padding: 1 2;
         background: $tau-chrome-background;
-        border: solid $tau-border;
+        border: tall $tau-border;
     }
 
     #session-picker-title {
@@ -282,7 +287,7 @@ class TauTuiApp(App[None]):
         height: auto;
         max-height: 16;
         background: $tau-transcript-background;
-        border: solid $tau-border;
+        border: tall $tau-border;
     }
 
     #session-picker-help {
@@ -298,7 +303,7 @@ class TauTuiApp(App[None]):
         max-height: 80%;
         padding: 1 2;
         background: $tau-chrome-background;
-        border: solid $tau-border;
+        border: tall $tau-border;
     }
 
     #command-output-title {
@@ -311,7 +316,7 @@ class TauTuiApp(App[None]):
     #command-output-scroll {
         height: 1fr;
         background: $tau-transcript-background;
-        border: solid $tau-border;
+        border: tall $tau-border;
     }
 
     #command-output-body {

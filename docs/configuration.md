@@ -108,7 +108,8 @@ Example:
 
 The built-in themes are:
 
-- `tau-dark`, the default muted dark theme.
+- `tau-dark`, the default Toad-inspired dark theme with subtle left-accent
+  conversation rows.
 - `high-contrast`, a sharper dark theme for brighter terminal contrast.
 
 Any omitted keybinding uses the built-in default. Key names use Textual's key

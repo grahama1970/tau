@@ -75,10 +75,11 @@ configuration in `tau_coding.tui` instead of the reusable agent harness.
 
 The same TUI settings file now supports named built-in themes. `tau-dark`
 remains the default, and `high-contrast` provides a brighter dark palette. The
-default theme now uses flatter square message blocks with muted borders and
-subtle role-specific backgrounds. Theme selection feeds Textual CSS variables
-plus Rich transcript/sidebar renderers, so the app chrome and message blocks
-stay visually consistent without adding UI policy to `tau_agent`.
+default theme is inspired by Toad's Textual UI: a darker surface, transparent
+chrome, muted separators, a focused bottom prompt, and stacked conversation rows
+with slim left accents instead of boxed cards. Theme selection feeds Textual CSS
+variables plus Rich transcript/sidebar renderers, so the app chrome and message
+blocks stay visually consistent without adding UI policy to `tau_agent`.
 
 The frontend boundary is now documented in [Building a Custom TUI](../custom-tui.md).
 That guide describes how another terminal UI can consume `CodingSession`,

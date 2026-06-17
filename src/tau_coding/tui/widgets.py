@@ -6,8 +6,10 @@ from re import search
 from typing import Any, Protocol
 
 from rich import box
+from rich.align import Align
 from rich.console import Group, RenderableType
 from rich.markdown import Markdown
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.table import Table
@@ -179,8 +181,8 @@ def render_chat_item(
     item: ChatItem,
     *,
     theme: TuiTheme = TAU_DARK_THEME,
-) -> Panel:
-    """Render a chat item as a standalone colored transcript block."""
+) -> RenderableType:
+    """Render a chat item as a standalone Toad-inspired transcript block."""
     role_style = theme.role_styles[item.role]
     body = _render_chat_body(
         item.text,
@@ -188,14 +190,14 @@ def render_chat_item(
         body_style=role_style.body,
         syntax_theme=theme.syntax_theme,
     )
-    return Panel(
-        body,
-        box=box.SQUARE,
-        border_style=role_style.border,
-        style=role_style.body,
-        padding=(0, 1),
-        expand=True,
+    table = Table.grid(expand=True)
+    table.add_column(width=1, style=role_style.border)
+    table.add_column(ratio=1, style=role_style.body)
+    table.add_row(
+        Align.left(Text("▌", style=role_style.border)),
+        Padding(body, (0, 1, 0, 1), style=role_style.body),
     )
+    return Padding(table, (1, 1, 0, 0), style=role_style.body)
 
 
 def _render_chat_body(

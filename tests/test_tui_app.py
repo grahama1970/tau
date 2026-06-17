@@ -101,7 +101,7 @@ def test_session_sidebar_uses_square_muted_panels() -> None:
 
     assert all(isinstance(renderable, Panel) for renderable in sidebar.renderables)
     assert all(renderable.box == box.SQUARE for renderable in sidebar.renderables)
-    assert {str(renderable.border_style) for renderable in sidebar.renderables} == {"#252b33"}
+    assert {str(renderable.border_style) for renderable in sidebar.renderables} == {"#141922"}
 
 
 def test_chat_items_render_as_unlabeled_blocks() -> None:
@@ -114,7 +114,18 @@ def test_chat_items_render_as_unlabeled_blocks() -> None:
     assert "you:" not in output
     assert "assistant:" not in output
     assert "tool:" not in output
-    assert output.startswith("┌")
+    assert "▌ Read the file" in output
+
+
+def test_chat_items_use_left_accent_instead_of_box_border() -> None:
+    console = Console(record=True, width=40)
+
+    console.print(render_chat_item(ChatItem(role="assistant", text="Done.")))
+    output = console.export_text()
+
+    assert "▌ Done." in output
+    assert "┌" not in output
+    assert "└" not in output
 
 
 def test_chat_items_fold_long_unbroken_text_to_console_width() -> None:
@@ -127,14 +138,19 @@ def test_chat_items_fold_long_unbroken_text_to_console_width() -> None:
     assert max(len(line) for line in output.splitlines()) <= 36
 
 
-def test_chat_items_use_configured_theme_colors() -> None:
-    panel = render_chat_item(
-        ChatItem(role="assistant", text="Done."),
-        theme=HIGH_CONTRAST_THEME,
-    )
+def test_chat_items_use_configured_theme_accent() -> None:
+    console = Console(record=True, width=40)
 
-    assert panel.border_style == HIGH_CONTRAST_THEME.role_styles["assistant"].border
-    assert str(panel.style) == HIGH_CONTRAST_THEME.role_styles["assistant"].body
+    console.print(
+        render_chat_item(
+            ChatItem(role="assistant", text="Done."),
+            theme=HIGH_CONTRAST_THEME,
+        )
+    )
+    output = console.export_text(styles=True)
+
+    assert "Done." in output
+    assert "38;2;0;255;102" in output
 
 
 def test_chat_items_render_fenced_code_without_markers() -> None:
