@@ -1,0 +1,74 @@
+from pathlib import Path
+
+import pytest
+
+from tau_coding.paths import TauPaths
+from tau_coding.tui.config import (
+    TuiConfigError,
+    TuiKeybindings,
+    TuiSettings,
+    load_tui_settings,
+    tui_settings_from_json,
+    tui_settings_path,
+)
+
+
+def test_tui_settings_path_uses_tau_home(tmp_path: Path) -> None:
+    paths = TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents")
+
+    assert tui_settings_path(paths) == tmp_path / ".tau" / "tui.json"
+
+
+def test_load_tui_settings_returns_defaults_when_file_is_missing(tmp_path: Path) -> None:
+    paths = TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents")
+
+    assert load_tui_settings(paths) == TuiSettings()
+
+
+def test_load_tui_settings_reads_keybindings(tmp_path: Path) -> None:
+    paths = TauPaths(home=tmp_path / ".tau", agents_home=tmp_path / ".agents")
+    path = tui_settings_path(paths)
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        """
+        {
+          "keybindings": {
+            "command_palette": "ctrl+j",
+            "accept_completion": "f2"
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    settings = load_tui_settings(paths)
+
+    assert settings.keybindings.command_palette == "ctrl+j"
+    assert settings.keybindings.accept_completion == "f2"
+    assert settings.keybindings.cancel == "escape"
+
+
+def test_tui_settings_reject_unknown_fields() -> None:
+    with pytest.raises(TuiConfigError, match="Unknown TUI settings field"):
+        tui_settings_from_json({"palette": {}})
+
+
+def test_tui_keybindings_reject_duplicate_keys() -> None:
+    with pytest.raises(TuiConfigError, match="assigned to both"):
+        tui_settings_from_json(
+            {
+                "keybindings": {
+                    "cancel": "escape",
+                    "command_palette": "escape",
+                }
+            }
+        )
+
+
+def test_tui_keybindings_serialize_to_json() -> None:
+    settings = TuiSettings(
+        keybindings=TuiKeybindings(command_palette="ctrl+j", accept_completion="f2")
+    )
+
+    assert settings.to_json()["keybindings"]["command_palette"] == "ctrl+j"
+    assert settings.to_json()["keybindings"]["accept_completion"] == "f2"

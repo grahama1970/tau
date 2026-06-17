@@ -39,6 +39,11 @@ the TUI a lightweight session picker path through the same completion UI.
 Submitting the command reloads the selected session through `CodingSession` and
 rebuilds the visible transcript in place.
 
+The built-in Textual frontend now reads optional keybinding settings from
+`~/.tau/tui.json`. This lets users remap the command palette, completion
+navigation, cancellation, and quit keys while keeping the configuration in
+`tau_coding.tui` instead of the reusable agent harness.
+
 The frontend boundary is now documented in [Building a Custom TUI](../custom-tui.md).
 That guide describes how another terminal UI can consume `CodingSession`,
 `AgentEvent`, `TuiState`, and `TuiEventAdapter` without coupling to Textual
@@ -53,8 +58,8 @@ commands, and rendering.
 ## Still deferred
 
 The larger Phase 23 roadmap still includes a richer modal session picker,
-configurable keybindings, and deeper theme polish. Those should remain separate
-atomic slices.
+deeper transcript rendering, and deeper theme polish. Those should remain
+separate atomic slices.
 
 ## Tests
 
@@ -63,4 +68,5 @@ Coverage lives in:
 ```text
 tests/test_tui_adapter.py
 tests/test_tui_app.py
+tests/test_tui_config.py
 ```

@@ -1,10 +1,10 @@
 """Minimal Textual app for Tau coding sessions."""
 
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Any, ClassVar, Protocol, cast
 
 from textual.app import App, ComposeResult
-from textual.binding import Binding
+from textual.binding import Binding, BindingsMap
 from textual.containers import Horizontal, Vertical
 from textual.events import Key
 from textual.widgets import Footer, Header, Input, Static
@@ -21,8 +21,11 @@ from tau_coding.session import CodingSession, CodingSessionConfig, jsonl_session
 from tau_coding.session_manager import SessionManager
 from tau_coding.tui.adapter import TuiEventAdapter
 from tau_coding.tui.autocomplete import CompletionState, build_completion_state
+from tau_coding.tui.config import TuiKeybindings, TuiSettings, load_tui_settings
 from tau_coding.tui.state import TuiState
 from tau_coding.tui.widgets import SessionSidebar, TranscriptView, render_completion_suggestions
+
+type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
 
 
 class CompletionActionTarget(Protocol):
@@ -40,12 +43,19 @@ class CompletionActionTarget(Protocol):
 class PromptInput(Input):
     """Prompt input with completion key bindings."""
 
-    BINDINGS = [
-        Binding("ctrl+k", "open_command_palette", show=False, priority=True),
-        Binding("tab", "accept_completion", show=False, priority=True),
-        Binding("down", "completion_next", show=False, priority=True),
-        Binding("up", "completion_previous", show=False, priority=True),
-    ]
+    BINDINGS: ClassVar[list[BindingEntry]] = []
+
+    def __init__(
+        self,
+        *,
+        tui_keybindings: TuiKeybindings | None = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.tui_keybindings = tui_keybindings or TuiKeybindings()
+        self._bindings = BindingsMap.merge(
+            [self._bindings, BindingsMap(_prompt_bindings(self.tui_keybindings))]
+        )
 
     def action_accept_completion(self) -> None:
         """Accept the selected app-level completion."""
@@ -73,16 +83,17 @@ class PromptInput(Input):
 
     def on_key(self, event: Key) -> None:
         """Route completion keys before default input handling."""
-        if event.key == "tab":
+        keybindings = self.tui_keybindings
+        if event.key == keybindings.accept_completion:
             event.stop()
             self._completion_target().action_accept_completion()
-        elif event.key == "ctrl+k":
+        elif event.key == keybindings.command_palette:
             event.stop()
             self._completion_target().action_open_command_palette()
-        elif event.key == "down":
+        elif event.key == keybindings.completion_next:
             event.stop()
             self._completion_target().action_completion_next()
-        elif event.key == "up":
+        elif event.key == keybindings.completion_previous:
             event.stop()
             self._completion_target().action_completion_previous()
 
@@ -160,17 +171,17 @@ class TauTuiApp(App[None]):
         border: tall #30363d;
     }
     """
-    BINDINGS = [
-        ("escape", "cancel", "Cancel"),
-        Binding("ctrl+k", "open_command_palette", "Commands"),
-        Binding("tab", "accept_completion", "Complete", priority=True),
-        Binding("down", "completion_next", "Next completion", priority=True),
-        Binding("up", "completion_previous", "Previous completion", priority=True),
-        ("ctrl+q", "quit", "Quit"),
-    ]
+    BINDINGS: ClassVar[list[BindingEntry]] = []
 
-    def __init__(self, session: CodingSession) -> None:
+    def __init__(
+        self,
+        session: CodingSession,
+        *,
+        tui_settings: TuiSettings | None = None,
+    ) -> None:
         super().__init__()
+        self.tui_settings = tui_settings or TuiSettings()
+        self._bindings = BindingsMap(_app_bindings(self.tui_settings.keybindings))
         self.session = session
         self.state = TuiState()
         self.state.load_messages(session.messages)
@@ -192,7 +203,11 @@ class TauTuiApp(App[None]):
                     highlight=True,
                     markup=False,
                 )
-                yield PromptInput(placeholder="Ask Tau…", id="prompt")
+                yield PromptInput(
+                    placeholder="Ask Tau…",
+                    id="prompt",
+                    tui_keybindings=self.tui_settings.keybindings,
+                )
                 yield Static("", id="autocomplete")
         yield Footer()
 
@@ -347,6 +362,41 @@ def _session_ids(session: CodingSession) -> tuple[str, ...]:
     return tuple(record.id for record in manager.list_sessions())
 
 
+def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
+    return [
+        Binding(keybindings.cancel, "cancel", "Cancel"),
+        Binding(keybindings.command_palette, "open_command_palette", "Commands"),
+        Binding(
+            keybindings.accept_completion,
+            "accept_completion",
+            "Complete",
+            priority=True,
+        ),
+        Binding(
+            keybindings.completion_next,
+            "completion_next",
+            "Next completion",
+            priority=True,
+        ),
+        Binding(
+            keybindings.completion_previous,
+            "completion_previous",
+            "Previous completion",
+            priority=True,
+        ),
+        Binding(keybindings.quit, "quit", "Quit"),
+    ]
+
+
+def _prompt_bindings(keybindings: TuiKeybindings) -> list[Binding]:
+    return [
+        Binding(keybindings.command_palette, "open_command_palette", show=False, priority=True),
+        Binding(keybindings.accept_completion, "accept_completion", show=False, priority=True),
+        Binding(keybindings.completion_next, "completion_next", show=False, priority=True),
+        Binding(keybindings.completion_previous, "completion_previous", show=False, priority=True),
+    ]
+
+
 async def run_tui_app(
     *,
     model: str | None,
@@ -392,7 +442,7 @@ async def run_tui_app(
                 auto_compact_token_threshold=auto_compact_token_threshold,
             )
         )
-        app = TauTuiApp(session)
+        app = TauTuiApp(session, tui_settings=load_tui_settings())
         await app.run_async()
     finally:
         if session is not None:

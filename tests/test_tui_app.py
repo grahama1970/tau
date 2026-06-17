@@ -21,6 +21,7 @@ from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tools import create_coding_tools
 from tau_coding.tui import app as tui_app
 from tau_coding.tui.app import TauTuiApp
+from tau_coding.tui.config import TuiKeybindings, TuiSettings
 from tau_coding.tui.state import ChatItem
 from tau_coding.tui.widgets import render_chat_item, render_session_sidebar
 
@@ -317,6 +318,47 @@ async def test_tui_app_opens_command_palette_from_keybinding() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_uses_configured_command_palette_keybinding() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(command_palette="ctrl+j")),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        await pilot.press("ctrl+k")
+
+        assert prompt.value == ""
+        assert app._completion_state.items == ()
+
+        await pilot.press("ctrl+j")
+
+        assert prompt.value == "/"
+        assert app._completion_state.items
+        assert any(item.display == "/help" for item in app._completion_state.items)
+
+
+@pytest.mark.anyio
+async def test_tui_app_uses_configured_completion_keybinding() -> None:
+    app = TauTuiApp(
+        FakeSession(),
+        tui_settings=TuiSettings(keybindings=TuiKeybindings(accept_completion="f2")),
+    )
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/st"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+
+        await pilot.press("tab")
+        assert prompt.value == "/st"
+
+        await pilot.press("f2")
+        assert prompt.value == "/status"
+
+
+@pytest.mark.anyio
 async def test_tui_prompt_worker_refreshes_directly() -> None:
     app = TauTuiApp(FakeSession(events=[AgentStartEvent(), AgentEndEvent()]))
     refreshes = 0
@@ -373,8 +415,9 @@ async def test_run_tui_app_creates_new_session_by_default(
             return "session"
 
     class FakeApp:
-        def __init__(self, session: str) -> None:
+        def __init__(self, session: str, **kwargs: object) -> None:
             assert session == "session"
+            assert isinstance(kwargs["tui_settings"], TuiSettings)
 
         async def run_async(self) -> None:
             calls.append("run")
@@ -446,8 +489,9 @@ async def test_run_tui_app_resumes_explicit_session(
             return "session"
 
     class FakeApp:
-        def __init__(self, session: str) -> None:
+        def __init__(self, session: str, **kwargs: object) -> None:
             assert session == "session"
+            assert isinstance(kwargs["tui_settings"], TuiSettings)
 
         async def run_async(self) -> None:
             calls.append("run")

@@ -15,6 +15,7 @@ Important files and directories:
 
 ```text
 ~/.tau/providers.json
+~/.tau/tui.json
 ~/.tau/sessions/
 ~/.tau/skills/
 ~/.tau/prompts/
@@ -79,6 +80,34 @@ Inside the TUI:
 /model
 /model qwen
 ```
+
+## TUI Settings
+
+The built-in Textual frontend reads optional settings from:
+
+```text
+~/.tau/tui.json
+```
+
+Example:
+
+```json
+{
+  "keybindings": {
+    "cancel": "escape",
+    "command_palette": "ctrl+j",
+    "accept_completion": "f2",
+    "completion_next": "down",
+    "completion_previous": "up",
+    "quit": "ctrl+q"
+  }
+}
+```
+
+Any omitted keybinding uses the built-in default. Key names use Textual's key
+syntax, such as `ctrl+k`, `tab`, `down`, `up`, and `f2`. Tau rejects unknown
+keybinding names, empty keys, and duplicate assignments so mistakes fail early
+instead of silently changing terminal behavior.
 
 ## Sessions
 
