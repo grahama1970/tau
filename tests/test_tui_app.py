@@ -2,7 +2,10 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 
 import pytest
+from rich import box
 from rich.console import Console
+from rich.panel import Panel
+from textual.containers import VerticalScroll
 
 from tau_agent import (
     AgentEndEvent,
@@ -91,6 +94,14 @@ def test_session_sidebar_renders_session_metadata() -> None:
     assert "read" in output
     assert "skills" in output
     assert "review" in output
+
+
+def test_session_sidebar_uses_square_muted_panels() -> None:
+    sidebar = render_session_sidebar(FakeSession())
+
+    assert all(isinstance(renderable, Panel) for renderable in sidebar.renderables)
+    assert all(renderable.box == box.SQUARE for renderable in sidebar.renderables)
+    assert {str(renderable.border_style) for renderable in sidebar.renderables} == {"#252b33"}
 
 
 def test_chat_items_render_as_unlabeled_blocks() -> None:
@@ -450,6 +461,20 @@ async def test_tui_app_help_uses_modal_instead_of_transcript() -> None:
         assert isinstance(app.screen, CommandOutputScreen)
         assert app.state.items == []
         assert "Available commands:" in app.screen.message
+        assert app.screen.query_one("#command-output-scroll", VerticalScroll) is not None
+
+
+@pytest.mark.anyio
+async def test_tui_app_command_modal_renders_literal_markup_text() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        app._show_command_message("/help", "Available [commands]\n/help")
+        await pilot.pause()
+
+        assert isinstance(app.screen, CommandOutputScreen)
+        body = app.screen.query_one("#command-output-body")
+        assert str(body.render()) == "Available [commands]\n/help"
 
 
 @pytest.mark.anyio

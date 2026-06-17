@@ -6,7 +6,7 @@ from typing import Any, ClassVar, Literal, Protocol, cast
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingsMap
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import Key
 from textual.screen import ModalScreen
 from textual.widgets import Footer, Header, Input, Label, ListItem, ListView, Static
@@ -178,7 +178,8 @@ class CommandOutputScreen(ModalScreen[None]):
         """Compose command output."""
         with Vertical(id="command-output"):
             yield Static(self.title_text, id="command-output-title")
-            yield Static(self.message, id="command-output-body")
+            with VerticalScroll(id="command-output-scroll"):
+                yield Static(self.message, id="command-output-body", markup=False)
             yield Static("Enter or Escape closes", id="command-output-help")
 
     def action_close(self) -> None:
@@ -293,7 +294,7 @@ class TauTuiApp(App[None]):
     #command-output {
         width: 82;
         max-width: 92%;
-        height: auto;
+        height: 70%;
         max-height: 80%;
         padding: 1 2;
         background: $tau-chrome-background;
@@ -307,8 +308,13 @@ class TauTuiApp(App[None]):
         margin-bottom: 1;
     }
 
-    #command-output-body {
+    #command-output-scroll {
+        height: 1fr;
         background: $tau-transcript-background;
+        border: solid $tau-border;
+    }
+
+    #command-output-body {
         color: $tau-screen-text;
         padding: 1;
     }

@@ -115,23 +115,32 @@ def render_session_sidebar(
     )
 
     return Group(
-        Panel(metadata, title="session", border_style=theme.border, padding=(0, 1)),
+        Panel(
+            metadata,
+            title="session",
+            box=box.SQUARE,
+            border_style=theme.border,
+            padding=(0, 1),
+        ),
         Panel(
             tools,
             title="tools",
-            border_style=theme.role_styles["tool"].border,
+            box=box.SQUARE,
+            border_style=theme.border,
             padding=(0, 1),
         ),
         Panel(
             skills,
             title="skills",
-            border_style=theme.role_styles["assistant"].border,
+            box=box.SQUARE,
+            border_style=theme.border,
             padding=(0, 1),
         ),
         Panel(
             prompts,
             title="prompts",
-            border_style=theme.role_styles["user"].border,
+            box=box.SQUARE,
+            border_style=theme.border,
             padding=(0, 1),
         ),
     )
