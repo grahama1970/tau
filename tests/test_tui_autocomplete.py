@@ -86,3 +86,17 @@ def test_provider_argument_completion_uses_available_providers() -> None:
     )
 
     assert [item.display for item in state.items] == ["local"]
+
+
+def test_resume_argument_completion_uses_session_ids() -> None:
+    state = build_completion_state(
+        "/resume sess",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        session_ids=("session-1", "other"),
+    )
+
+    assert [item.display for item in state.items] == ["session-1"]
+    assert state.selected is not None
+    assert state.selected.apply("/resume sess") == "/resume session-1"

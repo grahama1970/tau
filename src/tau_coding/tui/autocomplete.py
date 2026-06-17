@@ -64,6 +64,7 @@ def build_completion_state(
     prompt_templates: Sequence[PromptTemplate],
     model_names: Sequence[str] = (),
     provider_names: Sequence[str] = (),
+    session_ids: Sequence[str] = (),
 ) -> CompletionState:
     """Build autocomplete suggestions for the current prompt text."""
     del prompt_templates
@@ -83,6 +84,7 @@ def build_completion_state(
         token_end=token_end,
         model_names=model_names,
         provider_names=provider_names,
+        session_ids=session_ids,
     )
     if argument_completions is not None:
         return CompletionState(argument_completions)
@@ -151,6 +153,7 @@ def _command_argument_completions(
     token_end: int,
     model_names: Sequence[str],
     provider_names: Sequence[str],
+    session_ids: Sequence[str],
 ) -> tuple[CompletionItem, ...] | None:
     if token_end >= len(text):
         return None
@@ -169,6 +172,13 @@ def _command_argument_completions(
             start=token_end + 1,
             values=provider_names,
             description="Switch provider",
+        )
+    if command_name == "resume":
+        return _value_completions(
+            text=text,
+            start=token_end + 1,
+            values=session_ids,
+            description="Resume session",
         )
     return None
 

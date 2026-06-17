@@ -128,11 +128,14 @@ build_completion_state(
     prompt_templates=session.prompt_templates,
     model_names=session.available_models,
     provider_names=session.available_providers,
+    session_ids=[record.id for record in session.session_manager.list_sessions()]
+    if session.session_manager
+    else (),
 )
 ```
 
 Custom TUIs can reuse this helper for Pi-style slash-command completion,
-`/skill:` completion, and lightweight model/provider argument pickers.
+`/skill:` completion, and lightweight model/provider/session argument pickers.
 
 A custom picker UI can also read the same data directly:
 

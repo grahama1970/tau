@@ -43,6 +43,7 @@ class FakeSession:
         self.context_token_estimate = 123
         self.auto_compact_token_threshold = None
         self.resource_diagnostics = ()
+        self.session_manager = None
         self.compact_summaries: list[str] = []
 
     def handle_command(self, text: str) -> CommandResult:
@@ -215,6 +216,35 @@ async def test_tui_app_completes_model_argument() -> None:
         await pilot.press("tab")
 
         assert prompt.value == "/model fake-model"
+
+
+@pytest.mark.anyio
+async def test_tui_app_completes_resume_session_argument() -> None:
+    session = FakeSession()
+    session.session_manager = _FakeSessionManager(
+        [
+            CodingSessionRecord(
+                id="session-1",
+                path=Path("/tmp/session-1.jsonl"),
+                cwd=Path("/workspace/project"),
+                model="fake-model",
+                title="Session",
+                created_at=1.0,
+                updated_at=2.0,
+            )
+        ]
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/resume sess"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+
+        await pilot.press("tab")
+
+        assert prompt.value == "/resume session-1"
 
 
 @pytest.mark.anyio
@@ -404,3 +434,11 @@ async def test_run_tui_app_resumes_explicit_session(
     )
 
     assert calls == ["get:session-1", "load", "run", "provider_closed"]
+
+
+class _FakeSessionManager:
+    def __init__(self, records: list[CodingSessionRecord]) -> None:
+        self._records = records
+
+    def list_sessions(self) -> list[CodingSessionRecord]:
+        return self._records

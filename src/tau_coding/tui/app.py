@@ -321,6 +321,7 @@ class TauTuiApp(App[None]):
             prompt_templates=self.session.prompt_templates,
             model_names=self.session.available_models,
             provider_names=self.session.available_providers,
+            session_ids=_session_ids(self.session),
         )
 
 
@@ -329,6 +330,13 @@ def _session_command_registry(session: CodingSession) -> CommandRegistry:
     if isinstance(registry, CommandRegistry):
         return registry
     return create_default_command_registry()
+
+
+def _session_ids(session: CodingSession) -> tuple[str, ...]:
+    manager = getattr(session, "session_manager", None)
+    if manager is None:
+        return ()
+    return tuple(record.id for record in manager.list_sessions())
 
 
 async def run_tui_app(
