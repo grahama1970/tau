@@ -531,6 +531,7 @@ def test_tui_app_uses_configured_theme_css_variables() -> None:
     variables = app.get_theme_variable_defaults()
 
     assert variables["tau-screen-background"] == "#000000"
+    assert variables["tau-prompt-background"] == "#1a1a1a"
     assert variables["tau-prompt-border"] == "#00ff66"
 
 
@@ -539,6 +540,7 @@ def test_tau_dark_theme_uses_black_chat_backgrounds() -> None:
 
     assert theme.screen_background == "#000000"
     assert theme.transcript_background == "#000000"
+    assert theme.prompt_background == "#101419"
     assert theme.role_styles["user"].body.endswith("on #000000")
     assert theme.role_styles["assistant"].body.endswith("on #000000")
 
