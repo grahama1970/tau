@@ -15,6 +15,7 @@ from tau_ai.events import (
     ProviderEvent,
     ProviderResponseEndEvent,
     ProviderResponseStartEvent,
+    ProviderRetryEvent,
     ProviderTextDeltaEvent,
     ProviderToolCallEvent,
 )
@@ -48,6 +49,7 @@ __all__ = [
     "ProviderEvent",
     "ProviderResponseEndEvent",
     "ProviderResponseStartEvent",
+    "ProviderRetryEvent",
     "ProviderTextDeltaEvent",
     "ProviderToolCallEvent",
     "openai_compatible_config_from_env",

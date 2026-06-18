@@ -11,6 +11,7 @@ from tau_agent import (
     MessageDeltaEvent,
     MessageEndEvent,
     MessageStartEvent,
+    RetryEvent,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
     ToolExecutionUpdateEvent,
@@ -45,6 +46,11 @@ class TranscriptRenderer:
             return
 
         if isinstance(event, ToolExecutionUpdateEvent):
+            self._ensure_assistant_newline()
+            self._console.print(Text(f"… {event.message}", style="bright_black"))
+            return
+
+        if isinstance(event, RetryEvent):
             self._ensure_assistant_newline()
             self._console.print(Text(f"… {event.message}", style="bright_black"))
             return

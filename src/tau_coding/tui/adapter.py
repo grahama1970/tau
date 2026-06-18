@@ -8,6 +8,7 @@ from tau_agent import (
     MessageDeltaEvent,
     MessageEndEvent,
     MessageStartEvent,
+    RetryEvent,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
     ToolExecutionUpdateEvent,
@@ -61,6 +62,10 @@ class TuiEventAdapter:
 
         if isinstance(event, ToolExecutionUpdateEvent):
             self.state.add_item("tool", f"… {event.message}")
+            return
+
+        if isinstance(event, RetryEvent):
+            self.state.add_item("status", f"… {event.message}")
             return
 
         if isinstance(event, ToolExecutionEndEvent):

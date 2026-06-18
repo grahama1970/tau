@@ -1,6 +1,5 @@
 """Anthropic Messages API provider."""
 
-from asyncio import sleep
 from collections.abc import AsyncIterator, Mapping
 from json import loads
 from typing import Any
@@ -20,6 +19,7 @@ from tau_ai.events import (
     ProviderToolCallEvent,
 )
 from tau_ai.provider import CancellationToken
+from tau_ai.retry import provider_retry_event, retry_delay_seconds, wait_for_retry
 
 ANTHROPIC_VERSION = "2023-06-01"
 DEFAULT_MAX_TOKENS = 4096
@@ -71,8 +71,6 @@ class AnthropicProvider:
             }
             url = f"{self._config.base_url.rstrip('/')}/messages"
 
-            yield ProviderResponseStartEvent(model=model)
-
             attempt = 0
             while True:
                 emitted_content = False
@@ -82,8 +80,24 @@ class AnthropicProvider:
                     ) as response:
                         if response.status_code >= 400:
                             body = await response.aread()
-                            if await self._should_retry(attempt, status_code=response.status_code):
+                            if self._should_retry(attempt, status_code=response.status_code):
+                                delay = retry_delay_seconds(
+                                    attempt,
+                                    max_delay_seconds=self._config.max_retry_delay_seconds,
+                                )
+                                yield provider_retry_event(
+                                    attempt=attempt,
+                                    max_retries=self._config.max_retries,
+                                    delay_seconds=delay,
+                                    reason=f"HTTP {response.status_code}",
+                                    data={
+                                        "status_code": response.status_code,
+                                        "body": body.decode(errors="replace"),
+                                    },
+                                )
                                 attempt += 1
+                                if not await wait_for_retry(delay, signal=signal):
+                                    return
                                 continue
                             yield ProviderErrorEvent(
                                 message=(
@@ -97,6 +111,7 @@ class AnthropicProvider:
                             )
                             return
 
+                        yield ProviderResponseStartEvent(model=model)
                         content_parts: list[str] = []
                         tool_builders: dict[int, _AnthropicToolBuilder] = {}
                         finish_reason: str | None = None
@@ -177,8 +192,24 @@ class AnthropicProvider:
                         )
                         return
                 except httpx.HTTPError as exc:
-                    if not emitted_content and await self._should_retry(attempt):
+                    if not emitted_content and self._should_retry(attempt):
+                        delay = retry_delay_seconds(
+                            attempt,
+                            max_delay_seconds=self._config.max_retry_delay_seconds,
+                        )
+                        yield provider_retry_event(
+                            attempt=attempt,
+                            max_retries=self._config.max_retries,
+                            delay_seconds=delay,
+                            reason="network error",
+                            data={
+                                "error": str(exc),
+                                "error_type": type(exc).__name__,
+                            },
+                        )
                         attempt += 1
+                        if not await wait_for_retry(delay, signal=signal):
+                            return
                         continue
                     yield ProviderErrorEvent(
                         message=str(exc),
@@ -193,14 +224,10 @@ class AnthropicProvider:
             self._client = httpx.AsyncClient(timeout=self._config.timeout_seconds)
         return self._client
 
-    async def _should_retry(self, attempt: int, *, status_code: int | None = None) -> bool:
+    def _should_retry(self, attempt: int, *, status_code: int | None = None) -> bool:
         if attempt >= self._config.max_retries:
             return False
-        if status_code is not None and status_code not in {408, 409, 429, 500, 502, 503, 504}:
-            return False
-        if self._config.max_retry_delay_seconds:
-            await sleep(self._config.max_retry_delay_seconds)
-        return True
+        return status_code is None or status_code in {408, 409, 429, 500, 502, 503, 504}
 
 
 class _AnthropicToolBuilder:

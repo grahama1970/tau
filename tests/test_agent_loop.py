@@ -8,6 +8,7 @@ from tau_agent import (
     AgentToolResult,
     AssistantMessage,
     ErrorEvent,
+    RetryEvent,
     ToolCall,
     ToolExecutionEndEvent,
     ToolResultMessage,
@@ -20,6 +21,7 @@ from tau_ai import (
     ProviderErrorEvent,
     ProviderResponseEndEvent,
     ProviderResponseStartEvent,
+    ProviderRetryEvent,
     ProviderTextDeltaEvent,
 )
 
@@ -208,6 +210,50 @@ async def test_agent_loop_converts_provider_error_to_agent_error() -> None:
         "agent_end",
     ]
     assert messages == [UserMessage(content="hello")]
+
+
+@pytest.mark.anyio
+async def test_agent_loop_forwards_provider_retry_events() -> None:
+    messages = [UserMessage(content="hello")]
+    assistant = AssistantMessage(content="ok")
+    provider = FakeProvider(
+        [
+            [
+                ProviderRetryEvent(
+                    attempt=2,
+                    max_attempts=3,
+                    delay_seconds=0,
+                    message="Retrying provider request 2/3 after HTTP 503.",
+                    data={"status_code": 503},
+                ),
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=assistant),
+            ]
+        ]
+    )
+
+    events = await _collect(
+        run_agent_loop(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            messages=messages,
+            tools=[],
+        )
+    )
+
+    retries = [event for event in events if isinstance(event, RetryEvent)]
+
+    assert retries == [
+        RetryEvent(
+            attempt=2,
+            max_attempts=3,
+            delay_seconds=0,
+            message="Retrying provider request 2/3 after HTTP 503.",
+            data={"status_code": 503},
+        )
+    ]
+    assert messages == [UserMessage(content="hello"), assistant]
 
 
 @pytest.mark.anyio

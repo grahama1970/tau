@@ -4,7 +4,7 @@ from json import loads
 import httpx
 import pytest
 
-from tau_agent import AgentTool, AgentToolResult, ToolCall, UserMessage
+from tau_agent import AgentTool, AgentToolResult, SimpleCancellationToken, ToolCall, UserMessage
 from tau_agent.types import JSONValue
 from tau_ai import (
     AnthropicConfig,
@@ -18,6 +18,7 @@ from tau_ai import (
     ProviderErrorEvent,
     ProviderResponseEndEvent,
     ProviderResponseStartEvent,
+    ProviderRetryEvent,
     ProviderTextDeltaEvent,
     ProviderToolCallEvent,
     openai_compatible_config_from_env,
@@ -308,11 +309,53 @@ async def test_openai_compatible_provider_retries_transient_status() -> None:
         )
 
     assert len(requests) == 2
+    assert isinstance(events[0], ProviderRetryEvent)
+    assert events[0].attempt == 2
+    assert events[0].max_attempts == 2
+    assert events[0].delay_seconds == 0
+    assert events[0].data == {"status_code": 500, "body": "try again"}
     assert [event.type for event in events] == [
+        "retry",
         "response_start",
         "text_delta",
         "response_end",
     ]
+
+
+@pytest.mark.anyio
+async def test_openai_compatible_provider_cancellation_stops_retry_backoff() -> None:
+    requests: list[httpx.Request] = []
+    signal = SimpleCancellationToken()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(503, text="try later")
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = OpenAICompatibleProvider(
+            OpenAICompatibleConfig(
+                api_key="test-key",
+                base_url="https://example.test/v1",
+                max_retries=2,
+                max_retry_delay_seconds=1,
+            ),
+            client=client,
+        )
+
+        events: list[object] = []
+        async for event in provider.stream_response(
+            model="test-model",
+            system="You are Tau.",
+            messages=[UserMessage(content="Say ok")],
+            tools=[],
+            signal=signal,
+        ):
+            events.append(event)
+            if isinstance(event, ProviderRetryEvent):
+                signal.cancel()
+
+    assert len(requests) == 1
+    assert [event.type for event in events] == ["retry"]
 
 
 @pytest.mark.anyio
@@ -619,3 +662,53 @@ async def test_anthropic_provider_formats_request_and_streams_text() -> None:
     assert payload["stream"] is True
     assert payload["system"] == "You are Tau."
     assert payload["messages"] == [{"role": "user", "content": "Say hello"}]
+
+
+@pytest.mark.anyio
+async def test_anthropic_provider_retries_transient_status_with_event() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if len(requests) == 1:
+            return httpx.Response(503, text="overloaded")
+        return httpx.Response(
+            200,
+            text=(
+                'data: {"type":"content_block_delta","index":0,'
+                '"delta":{"type":"text_delta","text":"ok"}}\n\n'
+                'data: {"type":"message_delta","delta":{"stop_reason":"end_turn"}}\n\n'
+                'data: {"type":"message_stop"}\n\n'
+            ),
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = AnthropicProvider(
+            AnthropicConfig(
+                api_key="test-key",
+                base_url="https://api.anthropic.test/v1",
+                max_retries=1,
+                max_retry_delay_seconds=0,
+            ),
+            client=client,
+        )
+
+        events = await _collect(
+            provider.stream_response(
+                model="claude-test",
+                system="You are Tau.",
+                messages=[UserMessage(content="Say ok")],
+                tools=[],
+            )
+        )
+
+    assert len(requests) == 2
+    assert isinstance(events[0], ProviderRetryEvent)
+    assert events[0].data == {"status_code": 503, "body": "overloaded"}
+    assert [event.type for event in events] == [
+        "retry",
+        "response_start",
+        "text_delta",
+        "response_end",
+    ]

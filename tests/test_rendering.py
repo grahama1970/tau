@@ -9,6 +9,7 @@ from tau_agent import (
     MessageDeltaEvent,
     MessageEndEvent,
     MessageStartEvent,
+    RetryEvent,
     ToolCall,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
@@ -26,6 +27,14 @@ def test_transcript_renderer_streams_text_and_tool_events(
     renderer.render(MessageDeltaEvent(delta="Hel"))
     renderer.render(MessageDeltaEvent(delta="lo"))
     renderer.render(
+        RetryEvent(
+            attempt=2,
+            max_attempts=3,
+            delay_seconds=0,
+            message="Retrying provider request 2/3 after HTTP 503.",
+        )
+    )
+    renderer.render(
         ToolExecutionStartEvent(
             tool_call=ToolCall(id="call-1", name="read", arguments={"path": "a.py"})
         )
@@ -40,6 +49,7 @@ def test_transcript_renderer_streams_text_and_tool_events(
     captured = capsys.readouterr()
     assert renderer.finish() is True
     assert captured.out == "Hello\n"
+    assert "… Retrying provider request 2/3 after HTTP 503." in captured.err
     assert "→ read a.py" in captured.err
     assert "… reading" in captured.err
     assert "✓ read" in captured.err

@@ -35,6 +35,17 @@ class TurnEndEvent(BaseModel):
     turn: int
 
 
+class RetryEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["retry"] = "retry"
+    attempt: int
+    max_attempts: int
+    delay_seconds: float
+    message: str
+    data: dict[str, JSONValue] | None = None
+
+
 class MessageStartEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -93,6 +104,7 @@ type AgentEvent = (
     | AgentEndEvent
     | TurnStartEvent
     | TurnEndEvent
+    | RetryEvent
     | MessageStartEvent
     | MessageDeltaEvent
     | MessageEndEvent

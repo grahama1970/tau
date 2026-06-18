@@ -69,8 +69,9 @@ by `api_key_env`. Built-in providers added through `/login` read their saved
 credential using `credential_name`. Providers without a `credential_name`, such
 as custom local providers, read the environment variable named by `api_key_env`.
 `timeout_seconds` is optional and defaults to `60`; when present, it must be
-greater than zero. `max_retries` defaults to `0`, and `max_retry_delay_seconds`
-defaults to `1`; both must be zero or greater.
+greater than zero. `max_retries` defaults to `2`, and `max_retry_delay_seconds`
+defaults to `1`; both must be zero or greater. Streaming renderers show retry
+progress when Tau retries a transient provider failure.
 `headers` is optional and must be an object with string keys and string values.
 Tau sends these headers with provider requests, while keeping its own
 authentication headers under runtime control.

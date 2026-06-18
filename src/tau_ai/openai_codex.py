@@ -1,6 +1,5 @@
 """OpenAI Codex subscription Responses provider."""
 
-from asyncio import sleep
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from json import JSONDecodeError, dumps, loads
@@ -26,6 +25,7 @@ from tau_ai.events import (
     ProviderToolCallEvent,
 )
 from tau_ai.provider import CancellationToken
+from tau_ai.retry import provider_retry_event, retry_delay_seconds, wait_for_retry
 
 DEFAULT_OPENAI_CODEX_BASE_URL = "https://chatgpt.com/backend-api"
 
@@ -94,8 +94,6 @@ class OpenAICodexProvider:
             )
             url = _resolve_codex_url(self._config.base_url)
 
-            yield ProviderResponseStartEvent(model=model)
-
             attempt = 0
             while True:
                 emitted_content = False
@@ -116,12 +114,28 @@ class OpenAICodexProvider:
                         if response.status_code >= 400:
                             body = await response.aread()
                             body_text = body.decode(errors="replace")
-                            if await self._should_retry(
+                            if self._should_retry(
                                 attempt,
                                 status_code=response.status_code,
                                 body=body_text,
                             ):
+                                delay = retry_delay_seconds(
+                                    attempt,
+                                    max_delay_seconds=self._config.max_retry_delay_seconds,
+                                )
+                                yield provider_retry_event(
+                                    attempt=attempt,
+                                    max_retries=self._config.max_retries,
+                                    delay_seconds=delay,
+                                    reason=f"HTTP {response.status_code}",
+                                    data={
+                                        "status_code": response.status_code,
+                                        "body": body_text,
+                                    },
+                                )
                                 attempt += 1
+                                if not await wait_for_retry(delay, signal=signal):
+                                    return
                                 continue
                             yield ProviderErrorEvent(
                                 message=(
@@ -135,6 +149,7 @@ class OpenAICodexProvider:
                             )
                             return
 
+                        yield ProviderResponseStartEvent(model=model)
                         async for event in _codex_provider_events(response, signal=signal):
                             if isinstance(
                                 event,
@@ -144,8 +159,24 @@ class OpenAICodexProvider:
                             yield event
                         return
                 except httpx.HTTPError as exc:
-                    if not emitted_content and await self._should_retry(attempt):
+                    if not emitted_content and self._should_retry(attempt):
+                        delay = retry_delay_seconds(
+                            attempt,
+                            max_delay_seconds=self._config.max_retry_delay_seconds,
+                        )
+                        yield provider_retry_event(
+                            attempt=attempt,
+                            max_retries=self._config.max_retries,
+                            delay_seconds=delay,
+                            reason="network error",
+                            data={
+                                "error": str(exc),
+                                "error_type": type(exc).__name__,
+                            },
+                        )
                         attempt += 1
+                        if not await wait_for_retry(delay, signal=signal):
+                            return
                         continue
                     yield ProviderErrorEvent(
                         message=str(exc),
@@ -163,7 +194,7 @@ class OpenAICodexProvider:
             self._client = httpx.AsyncClient(timeout=self._config.timeout_seconds)
         return self._client
 
-    async def _should_retry(
+    def _should_retry(
         self,
         attempt: int,
         *,
@@ -172,11 +203,7 @@ class OpenAICodexProvider:
     ) -> bool:
         if attempt >= self._config.max_retries:
             return False
-        if status_code is not None and not _is_retryable_status(status_code, body):
-            return False
-        if self._config.max_retry_delay_seconds:
-            await sleep(self._config.max_retry_delay_seconds)
-        return True
+        return status_code is None or _is_retryable_status(status_code, body)
 
 
 class _ToolCallBuilder:

@@ -10,6 +10,7 @@ from tau_agent.events import (
     MessageDeltaEvent,
     MessageEndEvent,
     MessageStartEvent,
+    RetryEvent,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
     TurnEndEvent,
@@ -22,6 +23,7 @@ from tau_ai.events import (
     ProviderErrorEvent,
     ProviderResponseEndEvent,
     ProviderResponseStartEvent,
+    ProviderRetryEvent,
     ProviderTextDeltaEvent,
 )
 from tau_ai.provider import CancellationToken, ModelProvider
@@ -74,6 +76,14 @@ async def run_agent_loop(
                 yield MessageStartEvent()
             elif isinstance(provider_event, ProviderTextDeltaEvent):
                 yield MessageDeltaEvent(delta=provider_event.delta)
+            elif isinstance(provider_event, ProviderRetryEvent):
+                yield RetryEvent(
+                    attempt=provider_event.attempt,
+                    max_attempts=provider_event.max_attempts,
+                    delay_seconds=provider_event.delay_seconds,
+                    message=provider_event.message,
+                    data=provider_event.data,
+                )
             elif isinstance(provider_event, ProviderResponseEndEvent):
                 assistant_message = provider_event.message
                 messages.append(assistant_message)

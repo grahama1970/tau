@@ -7,6 +7,7 @@ from tau_agent import (
     MessageDeltaEvent,
     MessageEndEvent,
     MessageStartEvent,
+    RetryEvent,
     ToolCall,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
@@ -130,6 +131,24 @@ def test_tui_adapter_records_tool_updates_and_results() -> None:
         ("tool", "… reading", None),
         ("tool", "✓ read", "✓ read\ndone"),
         ("tool", "✗ bash", "✗ bash\nfailed"),
+    ]
+
+
+def test_tui_adapter_records_retry_status() -> None:
+    state = TuiState()
+    adapter = TuiEventAdapter(state)
+
+    adapter.apply(
+        RetryEvent(
+            attempt=2,
+            max_attempts=3,
+            delay_seconds=0,
+            message="Retrying provider request 2/3 after HTTP 503.",
+        )
+    )
+
+    assert [(item.role, item.text) for item in state.items] == [
+        ("status", "… Retrying provider request 2/3 after HTTP 503.")
     ]
 
 

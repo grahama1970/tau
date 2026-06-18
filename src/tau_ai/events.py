@@ -18,6 +18,19 @@ class ProviderResponseStartEvent(BaseModel):
     model: str
 
 
+class ProviderRetryEvent(BaseModel):
+    """The provider adapter is retrying a transient request failure."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["retry"] = "retry"
+    attempt: int
+    max_attempts: int
+    delay_seconds: float
+    message: str
+    data: dict[str, JSONValue] | None = None
+
+
 class ProviderTextDeltaEvent(BaseModel):
     """A streamed text fragment from the provider."""
 
@@ -58,6 +71,7 @@ class ProviderErrorEvent(BaseModel):
 
 type ProviderEvent = (
     ProviderResponseStartEvent
+    | ProviderRetryEvent
     | ProviderTextDeltaEvent
     | ProviderToolCallEvent
     | ProviderResponseEndEvent
