@@ -373,6 +373,24 @@ async def test_tui_app_mounts_sidebar_and_transcript() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_prompt_grows_to_six_lines_then_scrolls() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        assert prompt.size.height == 1
+
+        prompt.text = "x" * 500
+        await pilot.pause()
+        assert prompt.size.height == 6
+
+        prompt.text = "x" * 1000
+        await pilot.pause()
+        assert prompt.size.height == 6
+        assert prompt.max_scroll_y > 0
+
+
+@pytest.mark.anyio
 async def test_tui_sidebar_is_visible_on_medium_windows() -> None:
     app = TauTuiApp(FakeSession())
 

@@ -732,12 +732,12 @@ class TauTuiApp(App[None]):
     }
 
     #prompt {
+        height: auto;
         background: $tau-prompt-background;
         color: $tau-prompt-text;
         border: tall transparent;
         margin: 0 1 1 1;
         padding: 0 1;
-        min-height: 3;
         max-height: 8;
     }
 
