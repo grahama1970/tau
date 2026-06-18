@@ -654,6 +654,22 @@ async def test_tui_app_resume_command_opens_session_picker() -> None:
 
 
 @pytest.mark.anyio
+async def test_prompt_arrow_keys_move_between_lines_without_completions() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt", TextArea)
+        prompt.text = "first\nsecond"
+        prompt.move_cursor((1, 3))
+
+        await pilot.press("up")
+        assert prompt.cursor_location == (0, 3)
+
+        await pilot.press("down")
+        assert prompt.cursor_location == (1, 3)
+
+
+@pytest.mark.anyio
 async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
     session = FakeSession(
         events=[

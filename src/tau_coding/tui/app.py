@@ -158,12 +158,18 @@ class PromptInput(TextArea):
         self._completion_target().action_accept_completion()
 
     def action_completion_next(self) -> None:
-        """Select the next app-level completion."""
-        self._completion_target().action_completion_next()
+        """Select the next app-level completion or move down in the prompt."""
+        if self._has_completion_options():
+            self._completion_target().action_completion_next()
+        else:
+            self.action_cursor_down()
 
     def action_completion_previous(self) -> None:
-        """Select the previous app-level completion."""
-        self._completion_target().action_completion_previous()
+        """Select the previous app-level completion or move up in the prompt."""
+        if self._has_completion_options():
+            self._completion_target().action_completion_previous()
+        else:
+            self.action_cursor_up()
 
     def action_open_command_palette(self) -> None:
         """Open the app-level command palette."""
@@ -187,11 +193,11 @@ class PromptInput(TextArea):
 
     def action_scroll_down(self) -> None:
         """Use down arrow for completion selection while focused."""
-        self._completion_target().action_completion_next()
+        self.action_completion_next()
 
     def action_scroll_up(self) -> None:
         """Use up arrow for completion selection while focused."""
-        self._completion_target().action_completion_previous()
+        self.action_completion_previous()
 
     async def on_key(self, event: Key) -> None:
         """Route completion and submission keys before default input handling."""
@@ -221,13 +227,23 @@ class PromptInput(TextArea):
             self._completion_target().action_toggle_tool_results()
         elif event.key == keybindings.completion_next:
             event.stop()
-            self._completion_target().action_completion_next()
+            if self._has_completion_options():
+                self._completion_target().action_completion_next()
+            else:
+                self.action_cursor_down()
         elif event.key == keybindings.completion_previous:
             event.stop()
-            self._completion_target().action_completion_previous()
+            if self._has_completion_options():
+                self._completion_target().action_completion_previous()
+            else:
+                self.action_cursor_up()
         elif event.key == keybindings.quit:
             event.stop()
             await self.action_quit()
+
+    def _has_completion_options(self) -> bool:
+        completion_state = getattr(self.app, "_completion_state", None)
+        return bool(getattr(completion_state, "items", ()))
 
     def _completion_target(self) -> CompletionActionTarget:
         return cast(CompletionActionTarget, self.app)
@@ -1111,21 +1127,23 @@ class TauTuiApp(App[None]):
         self._refresh_completions()
 
     def action_completion_next(self) -> None:
-        """Select the next prompt completion."""
+        """Select the next prompt completion or move down in the prompt."""
         if isinstance(self.screen, LoginProviderPickerScreen | ModelPickerScreen):
             self.screen.action_cursor_down()
             return
         if not self._completion_state.items:
+            self.query_one("#prompt", PromptInput).action_cursor_down()
             return
         self._completion_state = self._completion_state.select_next()
         self._refresh_completions()
 
     def action_completion_previous(self) -> None:
-        """Select the previous prompt completion."""
+        """Select the previous prompt completion or move up in the prompt."""
         if isinstance(self.screen, LoginProviderPickerScreen | ModelPickerScreen):
             self.screen.action_cursor_up()
             return
         if not self._completion_state.items:
+            self.query_one("#prompt", PromptInput).action_cursor_up()
             return
         self._completion_state = self._completion_state.select_previous()
         self._refresh_completions()
