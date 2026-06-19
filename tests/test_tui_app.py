@@ -82,6 +82,7 @@ class FakeSession:
             ModelChoice(provider_name="openai", model="other-model"),
             ModelChoice(provider_name="local", model="local-model"),
         )
+        self.scoped_model_choices: tuple[ModelChoice, ...] = ()
         self.available_providers = ("openai",)
         self.tools = tuple(create_coding_tools(cwd=self.cwd))
         self.skills = (Skill(name="review", path=self.cwd / "review.md", content="Review code"),)
@@ -137,6 +138,31 @@ class FakeSession:
 
     def set_model(self, model: str) -> None:
         self.model = model
+
+    def set_model_choice(self, choice: ModelChoice) -> None:
+        self.set_provider(choice.provider_name)
+        self.set_model(choice.model)
+
+    def toggle_scoped_model(self, choice: ModelChoice) -> tuple[ModelChoice, ...]:
+        scoped = list(self.scoped_model_choices)
+        if choice in scoped:
+            scoped.remove(choice)
+        else:
+            scoped.append(choice)
+        self.scoped_model_choices = tuple(scoped)
+        return self.scoped_model_choices
+
+    def cycle_scoped_model(self) -> ModelChoice:
+        if not self.scoped_model_choices:
+            raise ValueError("No scoped models configured.")
+        current = ModelChoice(provider_name=self.provider_name, model=self.model)
+        try:
+            index = self.scoped_model_choices.index(current)
+        except ValueError:
+            index = -1
+        choice = self.scoped_model_choices[(index + 1) % len(self.scoped_model_choices)]
+        self.set_model_choice(choice)
+        return choice
 
     def set_provider(self, provider_name: str) -> None:
         self.provider_name = provider_name
@@ -710,6 +736,7 @@ async def test_tui_app_uses_textual_footer_for_shortcut_hints() -> None:
             "Newline": "shift+enter",
             "Sessions": "ctrl+r",
             "Thinking": "shift+tab",
+            "Model": "ctrl+p",
             "Cancel": "escape",
         }
 
@@ -1913,6 +1940,35 @@ async def test_tui_model_opens_interactive_picker() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_model_picker_toggles_scoped_models() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/model"
+        await pilot.press("enter")
+        await pilot.pause()
+
+        assert isinstance(app.screen, ModelPickerScreen)
+        app.screen.action_toggle_scoped()
+        await pilot.pause()
+
+        assert session.scoped_model_choices == (
+            ModelChoice(provider_name="openai", model="fake-model"),
+        )
+        model_list = app.screen.query_one("#model-picker-list", ListView)
+        labels = [str(item.query_one(Label).render()) for item in model_list.children]
+        assert labels[0] == "* openai:fake-model [scoped]"
+
+        app.screen.action_toggle_mode()
+        await pilot.pause()
+
+        labels = [str(item.query_one(Label).render()) for item in model_list.children]
+        assert labels == ["* openai:fake-model [scoped]"]
+
+
+@pytest.mark.anyio
 async def test_tui_app_thinking_command_updates_session() -> None:
     session = FakeSession()
     app = TauTuiApp(session)
@@ -2214,6 +2270,23 @@ async def test_tui_app_cycles_thinking_from_keybinding() -> None:
 
     assert session.thinking_level == "high"
     assert notifications == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_cycles_scoped_model_from_keybinding() -> None:
+    session = FakeSession()
+    session.scoped_model_choices = (
+        ModelChoice(provider_name="openai", model="fake-model"),
+        ModelChoice(provider_name="openai", model="other-model"),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        await pilot.press("ctrl+p")
+        await pilot.pause()
+
+    assert session.provider_name == "openai"
+    assert session.model == "other-model"
 
 
 @pytest.mark.anyio

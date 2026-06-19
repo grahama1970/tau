@@ -58,6 +58,10 @@ Example:
       "max_retries": 2,
       "max_retry_delay_seconds": 0.5
     }
+  ],
+  "scoped_models": [
+    {"provider": "local", "model": "qwen"},
+    {"provider": "local", "model": "llama"}
   ]
 }
 ```
@@ -106,6 +110,12 @@ Inside the TUI:
 /login
 ```
 
+The optional `scoped_models` list stores favorite provider/model pairs for fast
+TUI cycling. Open `/model`, highlight a model, and press `Space` to add or
+remove it from the scoped list. Press `Tab` in the picker to show only scoped
+models. Press `Ctrl+P` in the prompt to cycle through scoped models without
+opening the picker.
+
 ## TUI Settings
 
 The built-in Textual frontend reads optional settings from:
@@ -128,6 +138,7 @@ Example:
     "completion_next": "down",
     "completion_previous": "up",
     "thinking_cycle": "shift+tab",
+    "model_cycle": "ctrl+p",
     "toggle_thinking": "ctrl+t",
     "toggle_tool_results": "ctrl+o",
     "copy_message": "ctrl+c",

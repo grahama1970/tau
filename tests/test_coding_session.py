@@ -35,8 +35,10 @@ from tau_coding import (
     CodingSession,
     CodingSessionConfig,
     FileCredentialStore,
+    ModelChoice,
     OpenAICompatibleProviderConfig,
     ProviderSettings,
+    ScopedModelConfig,
     SessionManager,
     TauPaths,
     TauResourcePaths,
@@ -1083,6 +1085,56 @@ async def test_available_model_choices_include_stored_credentials(
     assert session.available_providers == ("openai",)
     assert ("openai", "gpt-5.5") in [
         (choice.provider_name, choice.model) for choice in session.available_model_choices
+    ]
+
+
+@pytest.mark.anyio
+async def test_session_toggles_and_cycles_scoped_models(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LOCAL_API_KEY", "local-key")
+    tau_paths = TauPaths(home=tmp_path / "tau-home", agents_home=tmp_path / "agents-home")
+    settings = ProviderSettings(
+        default_provider="local",
+        providers=(
+            OpenAICompatibleProviderConfig(
+                name="local",
+                api_key_env="LOCAL_API_KEY",
+                credential_name=None,
+                models=("qwen", "llama"),
+                default_model="qwen",
+            ),
+        ),
+        scoped_models=(ScopedModelConfig(provider="local", model="qwen"),),
+    )
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=FakeProvider([]),
+            model="qwen",
+            system="You are Tau.",
+            storage=JsonlSessionStorage(tmp_path / "scoped-session.jsonl"),
+            cwd=tmp_path,
+            provider_name="local",
+            provider_settings=settings,
+            resource_paths=TauResourcePaths(root=tau_paths.home, paths=tau_paths),
+        )
+    )
+
+    llama = ModelChoice(provider_name="local", model="llama")
+    scoped = session.toggle_scoped_model(llama)
+    choice = session.cycle_scoped_model()
+    saved = json.loads((tau_paths.home / "providers.json").read_text(encoding="utf-8"))
+
+    assert [(item.provider_name, item.model) for item in scoped] == [
+        ("local", "qwen"),
+        ("local", "llama"),
+    ]
+    assert choice == llama
+    assert session.model == "llama"
+    assert saved["scoped_models"] == [
+        {"provider": "local", "model": "qwen"},
+        {"provider": "local", "model": "llama"},
     ]
 
 

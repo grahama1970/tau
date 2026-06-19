@@ -49,10 +49,12 @@ from tau_coding.provider_config import (
     ProviderConfig,
     ProviderConfigError,
     ProviderSettings,
+    ScopedModelConfig,
     load_provider_settings,
     provider_default_thinking_level,
     provider_has_usable_credentials,
     provider_thinking_levels,
+    save_provider_settings,
 )
 from tau_coding.provider_runtime import ClosableModelProvider, create_model_provider
 from tau_coding.resources import (
@@ -294,6 +296,21 @@ class CodingSession:
         )
 
     @property
+    def scoped_model_choices(self) -> tuple[ModelChoice, ...]:
+        """Return configured quick-switch model choices that are currently usable."""
+        if self._provider_settings is None:
+            return ()
+        available = set(self.available_model_choices)
+        return tuple(
+            choice
+            for choice in (
+                ModelChoice(provider_name=item.provider, model=item.model)
+                for item in self._provider_settings.scoped_models
+            )
+            if choice in available
+        )
+
+    @property
     def tools(self) -> tuple[AgentTool, ...]:
         """Return the tools available to the agent."""
         return tuple(self._harness.config.tools)
@@ -431,6 +448,51 @@ class CodingSession:
         self._refresh_runtime_provider()
         if self._config.session_id is not None and self._config.session_manager is not None:
             self._config.session_manager.touch_session(self._config.session_id, model=model)
+
+    def set_model_choice(self, choice: ModelChoice) -> None:
+        """Switch provider/model as one operation."""
+        if choice.provider_name != self.provider_name:
+            self.set_provider(choice.provider_name)
+        self.set_model(choice.model)
+
+    def is_scoped_model(self, choice: ModelChoice) -> bool:
+        """Return whether a provider/model pair is in the scoped model list."""
+        return choice in self.scoped_model_choices
+
+    def toggle_scoped_model(self, choice: ModelChoice) -> tuple[ModelChoice, ...]:
+        """Add or remove a model from the persisted scoped model list."""
+        if self._provider_settings is None:
+            raise ProviderConfigError("Provider settings are not available for this session")
+        available = set(self.available_model_choices)
+        if choice not in available:
+            raise ProviderConfigError(
+                f"Model is not available: {choice.provider_name}:{choice.model}"
+            )
+
+        existing = list(self._provider_settings.scoped_models)
+        target = ScopedModelConfig(provider=choice.provider_name, model=choice.model)
+        if target in existing:
+            existing = [item for item in existing if item != target]
+        else:
+            existing.append(target)
+        self._provider_settings = replace(self._provider_settings, scoped_models=tuple(existing))
+        save_provider_settings(self._provider_settings, self._resource_paths.paths)
+        return self.scoped_model_choices
+
+    def cycle_scoped_model(self, *, reverse: bool = False) -> ModelChoice:
+        """Switch to the next configured scoped model."""
+        scoped = self.scoped_model_choices
+        if not scoped:
+            raise ProviderConfigError("No scoped models configured.")
+        current = ModelChoice(provider_name=self.provider_name, model=self.model)
+        try:
+            current_index = scoped.index(current)
+        except ValueError:
+            current_index = -1 if not reverse else 0
+        delta = -1 if reverse else 1
+        choice = scoped[(current_index + delta) % len(scoped)]
+        self.set_model_choice(choice)
+        return choice
 
     def set_provider(self, provider_name: str) -> None:
         """Switch the active provider and reset to that provider's default model."""

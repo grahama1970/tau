@@ -1,7 +1,7 @@
 """Minimal Textual app for Tau coding sessions."""
 
 import asyncio
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from datetime import datetime
 from inspect import isawaitable
 from pathlib import Path
@@ -129,6 +129,8 @@ class CompletionActionTarget(Protocol):
 
     def action_cycle_thinking(self) -> None: ...
 
+    def action_cycle_model(self) -> None: ...
+
     def action_toggle_tool_results(self) -> None: ...
 
     def action_toggle_thinking(self) -> None: ...
@@ -243,6 +245,10 @@ class PromptInput(TextArea):
         """Cycle the app-level thinking mode."""
         self._completion_target().action_cycle_thinking()
 
+    def action_cycle_model(self) -> None:
+        """Cycle the app-level scoped model."""
+        self._completion_target().action_cycle_model()
+
     def action_toggle_tool_results(self) -> None:
         """Toggle app-level tool result display."""
         self._completion_target().action_toggle_tool_results()
@@ -325,6 +331,9 @@ class PromptInput(TextArea):
         elif _is_thinking_cycle_key(event.key, keybindings.thinking_cycle):
             event.stop()
             self._completion_target().action_cycle_thinking()
+        elif event.key == keybindings.model_cycle:
+            event.stop()
+            self._completion_target().action_cycle_model()
         elif event.key == keybindings.toggle_tool_results:
             event.stop()
             self._completion_target().action_toggle_tool_results()
@@ -761,6 +770,8 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
 
     BINDINGS: ClassVar[list[BindingEntry]] = [
         Binding("escape", "cancel", "Cancel"),
+        Binding("tab", "toggle_mode", "Mode", show=False),
+        Binding("space", "toggle_scoped", "Scope", show=False),
         Binding("up", "cursor_up", "Up", show=False),
         Binding("down", "cursor_down", "Down", show=False),
         Binding("enter", "select_cursor", "Select", show=False),
@@ -770,16 +781,22 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         self,
         choices: Sequence[ModelChoice],
         *,
+        scoped_choices: Sequence[ModelChoice],
         current_model: str,
         provider_name: str,
         theme: TuiTheme,
+        on_toggle_scoped: Callable[[ModelChoice], Sequence[ModelChoice]],
     ) -> None:
         super().__init__()
         self.choices = tuple(dict.fromkeys(choices))
+        self.scoped_choices = tuple(dict.fromkeys(scoped_choices))
         self.visible_choices = self.choices
         self.current_model = current_model
         self.provider_name = provider_name
         self.theme = theme
+        self.on_toggle_scoped = on_toggle_scoped
+        self.mode: Literal["all", "scoped"] = "all"
+        self.search_value = ""
 
     def compose(self) -> ComposeResult:
         """Compose the model picker."""
@@ -794,6 +811,7 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                                 choice,
                                 current_model=self.current_model,
                                 current_provider=self.provider_name,
+                                scoped=choice in self.scoped_choices,
                             ),
                             markup=False,
                         )
@@ -802,42 +820,21 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
                 ],
                 id="model-picker-list",
             )
-            yield Static("Enter selects - Escape closes", id="model-picker-help")
+            yield Static("", id="model-picker-help")
 
     def on_mount(self) -> None:
         """Focus the search field."""
         search = self.query_one("#model-picker-search", Input)
         search.focus()
-        self._reset_model_list_index()
+        self._refresh_model_list()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         """Filter model choices as the search value changes."""
         if event.input.id != "model-picker-search":
             return
         event.stop()
-        self.visible_choices = _filter_model_choices(self.choices, event.value)
-        model_list = self.query_one("#model-picker-list", ListView)
-        model_list.clear()
-        model_list.extend(
-            [
-                ListItem(
-                    Label(
-                        _model_picker_label(
-                            choice,
-                            current_model=self.current_model,
-                            current_provider=self.provider_name,
-                        ),
-                        markup=False,
-                    )
-                )
-                for choice in self.visible_choices
-            ]
-        )
-        self._reset_model_list_index()
-        help_text = (
-            "No matching models" if not self.visible_choices else "Enter selects - Escape closes"
-        )
-        self.query_one("#model-picker-help", Static).update(help_text)
+        self.search_value = event.value
+        self._refresh_model_list()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Select the highlighted model from the search field."""
@@ -870,6 +867,12 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
         elif event.key == "enter":
             event.stop()
             self.action_select_cursor()
+        elif event.key == "tab":
+            event.stop()
+            self.action_toggle_mode()
+        elif event.key == "space":
+            event.stop()
+            self.action_toggle_scoped()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Dismiss with the selected model name."""
@@ -889,9 +892,58 @@ class ModelPickerScreen(ModalScreen[ModelChoice | None]):
             return
         self.query_one("#model-picker-list", ListView).action_select_cursor()
 
+    def action_toggle_mode(self) -> None:
+        """Toggle between all models and scoped models."""
+        self.mode = "scoped" if self.mode == "all" else "all"
+        self._refresh_model_list()
+
+    def action_toggle_scoped(self) -> None:
+        """Add or remove the highlighted model from scoped models."""
+        if not self.visible_choices:
+            return
+        model_list = self.query_one("#model-picker-list", ListView)
+        index = model_list.index
+        if index is None:
+            return
+        choice = self.visible_choices[index]
+        self.scoped_choices = tuple(dict.fromkeys(self.on_toggle_scoped(choice)))
+        self._refresh_model_list()
+
     def action_cancel(self) -> None:
         """Close without selecting a model."""
         self.dismiss(None)
+
+    def _refresh_model_list(self) -> None:
+        base_choices = self.scoped_choices if self.mode == "scoped" else self.choices
+        self.visible_choices = _filter_model_choices(base_choices, self.search_value)
+        model_list = self.query_one("#model-picker-list", ListView)
+        model_list.clear()
+        model_list.extend(
+            [
+                ListItem(
+                    Label(
+                        _model_picker_label(
+                            choice,
+                            current_model=self.current_model,
+                            current_provider=self.provider_name,
+                            scoped=choice in self.scoped_choices,
+                        ),
+                        markup=False,
+                    )
+                )
+                for choice in self.visible_choices
+            ]
+        )
+        self._reset_model_list_index()
+        scope_count = len(self.scoped_choices)
+        if not self.visible_choices:
+            help_text = f"{self.mode}: no matching models - Tab switches mode"
+        else:
+            help_text = (
+                f"{self.mode} models - Enter selects - Space scopes - "
+                f"Tab switches mode - {scope_count} scoped"
+            )
+        self.query_one("#model-picker-help", Static).update(help_text)
 
 
 class LoginScreen(ModalScreen[str | None]):
@@ -1721,6 +1773,13 @@ class TauTuiApp(App[None]):
             return
         self.run_worker(self._cycle_thinking_level(), exclusive=False)
 
+    def action_cycle_model(self) -> None:
+        """Cycle through scoped models."""
+        if self.state.running:
+            self._notify("Tau is already working. Press Escape to cancel.")
+            return
+        self.run_worker(self._cycle_scoped_model(), exclusive=False)
+
     def action_toggle_tool_results(self) -> None:
         """Toggle inline tool result details in the transcript."""
         expanded = self.state.toggle_tool_results()
@@ -1883,20 +1942,37 @@ class TauTuiApp(App[None]):
         self.push_screen(
             ModelPickerScreen(
                 choices,
+                scoped_choices=tuple(getattr(self.session, "scoped_model_choices", ())),
                 current_model=self.session.model,
                 provider_name=self.session.provider_name,
                 theme=self.tui_settings.resolved_theme,
+                on_toggle_scoped=self._toggle_scoped_model,
             ),
             callback=self._handle_model_picker_result,
         )
+
+    def _toggle_scoped_model(self, choice: ModelChoice) -> Sequence[ModelChoice]:
+        toggle_scoped_model = getattr(self.session, "toggle_scoped_model", None)
+        if toggle_scoped_model is None:
+            self._notify("Scoped model controls are not available.", severity="warning")
+            return tuple(getattr(self.session, "scoped_model_choices", ()))
+        try:
+            return tuple(toggle_scoped_model(choice))
+        except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
+            self._notify(f"Could not update scoped models: {exc}", severity="error")
+            return tuple(getattr(self.session, "scoped_model_choices", ()))
 
     def _handle_model_picker_result(self, choice: ModelChoice | None) -> None:
         if choice is None:
             return
         try:
-            if choice.provider_name != self.session.provider_name:
-                self.session.set_provider(choice.provider_name)
-            self.session.set_model(choice.model)
+            set_model_choice = getattr(self.session, "set_model_choice", None)
+            if set_model_choice is None:
+                if choice.provider_name != self.session.provider_name:
+                    self.session.set_provider(choice.provider_name)
+                self.session.set_model(choice.model)
+            else:
+                set_model_choice(choice)
         except Exception as exc:  # noqa: BLE001 - surface model switch failures in the TUI
             self._notify(f"Could not switch model: {exc}", severity="error")
             return
@@ -1943,6 +2019,22 @@ class TauTuiApp(App[None]):
         except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
             self._notify(f"Could not change thinking mode: {exc}", severity="error")
             return
+        self._refresh()
+
+    async def _cycle_scoped_model(self) -> None:
+        cycler = getattr(self.session, "cycle_scoped_model", None)
+        if cycler is None:
+            self._notify("Scoped model controls are not available.", severity="warning")
+            return
+        try:
+            result = cycler()
+            if isawaitable(result):
+                result = await result
+        except Exception as exc:  # noqa: BLE001 - surface session state failures in the TUI
+            self._notify(f"Could not switch scoped model: {exc}", severity="error")
+            return
+        if isinstance(result, ModelChoice):
+            self._notify(f"Current model: {result.provider_name}:{result.model}")
         self._refresh()
 
     def _notify(
@@ -2206,13 +2298,20 @@ def _theme_picker_label(theme_name: TuiThemeName, *, current_theme: TuiThemeName
     return f"{marker} {theme_name}"
 
 
-def _model_picker_label(choice: ModelChoice, *, current_model: str, current_provider: str) -> str:
+def _model_picker_label(
+    choice: ModelChoice,
+    *,
+    current_model: str,
+    current_provider: str,
+    scoped: bool = False,
+) -> str:
     marker = (
         "* "
         if (choice.provider_name == current_provider and choice.model == current_model)
         else "  "
     )
-    return f"{marker}{choice.provider_name}:{choice.model}"
+    suffix = " [scoped]" if scoped else ""
+    return f"{marker}{choice.provider_name}:{choice.model}{suffix}"
 
 
 def _filter_model_choices(choices: Sequence[ModelChoice], query: str) -> tuple[ModelChoice, ...]:
@@ -2299,6 +2398,7 @@ def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:
         Binding(keybindings.command_palette, "open_command_palette", "Commands"),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions"),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking"),
+        Binding(keybindings.model_cycle, "cycle_model", "Model"),
         Binding(
             keybindings.accept_completion,
             "accept_completion",
@@ -2382,6 +2482,7 @@ def _prompt_bindings(
         Binding(keybindings.command_palette, "open_command_palette", "Commands", priority=True),
         Binding(keybindings.session_picker, "open_session_picker", "Sessions", priority=True),
         Binding(keybindings.thinking_cycle, "cycle_thinking", "Thinking", priority=True),
+        Binding(keybindings.model_cycle, "cycle_model", "Model", priority=True),
         Binding(
             keybindings.copy_message,
             "clear_prompt",
@@ -2404,6 +2505,7 @@ def _hidden_prompt_bindings(
         (keybindings.session_picker, "open_session_picker"),
         (keybindings.queue_follow_up, "submit_follow_up"),
         (keybindings.thinking_cycle, "cycle_thinking"),
+        (keybindings.model_cycle, "cycle_model"),
         (keybindings.toggle_tool_results, "toggle_tool_results"),
         (keybindings.toggle_thinking, "toggle_thinking"),
         (keybindings.copy_message, "clear_prompt"),
