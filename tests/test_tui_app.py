@@ -27,7 +27,7 @@ from tau_agent import (
 from tau_coding.commands import CommandResult
 from tau_coding.credentials import OAuthCredential
 from tau_coding.provider_config import OpenAICompatibleProviderConfig, ProviderSettings
-from tau_coding.session import ModelChoice
+from tau_coding.session import ModelChoice, TerminalCommandResult
 from tau_coding.session_manager import CodingSessionRecord
 from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
@@ -40,9 +40,12 @@ from tau_coding.tui.app import (
     LoginScreen,
     ModelPickerScreen,
     OAuthLoginScreen,
+    PromptInput,
     SessionPickerScreen,
     TauTuiApp,
     ThemePickerScreen,
+    _activity_prompt_border_color,
+    _terminal_command_prefix_span,
 )
 from tau_coding.tui.config import (
     HIGH_CONTRAST_THEME,
@@ -101,6 +104,7 @@ class FakeSession:
         self.queued_steering_messages: tuple[str, ...] = ()
         self.queued_follow_up_messages: tuple[str, ...] = ()
         self.streaming_behaviors: list[str | None] = []
+        self.terminal_commands: list[tuple[str, bool]] = []
         self.cancel_count = 0
 
     def handle_command(self, text: str) -> CommandResult:
@@ -178,6 +182,21 @@ class FakeSession:
         return QueueUpdateEvent(
             steering=self.queued_steering_messages,
             follow_up=self.queued_follow_up_messages,
+        )
+
+    async def run_terminal_command(
+        self,
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        self.terminal_commands.append((command, add_to_context))
+        return TerminalCommandResult(
+            command=command,
+            output="command output",
+            exit_code=0,
+            ok=True,
+            added_to_context=add_to_context,
         )
 
     async def prompt(
@@ -589,6 +608,48 @@ async def test_tui_app_mounts_sidebar_and_transcript() -> None:
         prompt = app.query_one("#prompt")
         assert isinstance(prompt, TextArea)
         assert prompt.soft_wrap is True
+
+
+def test_terminal_command_prefix_span_detects_shell_mode_prefix() -> None:
+    assert _terminal_command_prefix_span("! pwd") == (0, 1)
+    assert _terminal_command_prefix_span("!! pwd") == (0, 2)
+    assert _terminal_command_prefix_span("  !! pwd") == (2, 4)
+    assert _terminal_command_prefix_span("hello ! pwd") is None
+
+
+def test_activity_prompt_border_uses_theme_accent_color_in_shell_mode() -> None:
+    theme = TAU_LIGHT_THEME
+
+    assert (
+        _activity_prompt_border_color(theme, frame=0, running=False, shell_mode=True)
+        == theme.accent
+    )
+
+
+@pytest.mark.anyio
+async def test_tui_app_highlights_prompt_shell_mode() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 30)) as pilot:
+        prompt = app.query_one("#prompt", PromptInput)
+        prompt.value = "!! pwd"
+        await pilot.pause()
+
+        assert prompt.has_class("-shell-mode")
+        assert _activity_prompt_border_color(
+            app.tui_settings.resolved_theme,
+            frame=0,
+            running=False,
+            shell_mode=prompt.has_class("-shell-mode"),
+        ) == app.tui_settings.resolved_theme.accent
+        assert prompt.get_line(0).spans[-1].start == 0
+        assert prompt.get_line(0).spans[-1].end == 2
+        assert str(prompt.get_line(0).spans[-1].style) == app.tui_settings.resolved_theme.accent
+
+        prompt.value = "ask tau"
+        await pilot.pause()
+
+        assert not prompt.has_class("-shell-mode")
 
 
 @pytest.mark.anyio
@@ -1829,6 +1890,90 @@ async def test_tui_app_thinking_command_updates_session() -> None:
     assert session.thinking_level == "high"
     assert notifications == []
     assert session.prompt_texts == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_runs_terminal_command_and_adds_context() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "! pwd"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.terminal_commands == [("pwd", True)]
+    assert session.prompt_texts == []
+    assert [(item.role, item.text, item.tool_result_text) for item in app.state.items] == [
+        ("tool", "$ pwd", "✓ bash · added to context\ncommand output")
+    ]
+
+
+@pytest.mark.anyio
+async def test_tui_app_runs_terminal_command_without_context() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "!! pwd"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    assert session.terminal_commands == [("pwd", False)]
+    assert session.prompt_texts == []
+    assert app.state.items[-1].tool_result_text == "✓ bash · not added to context\ncommand output"
+    assert app.state.items[-1].always_show_tool_result is True
+
+
+@pytest.mark.anyio
+async def test_tui_app_renders_terminal_command_output_when_tool_results_are_collapsed() -> None:
+    item = ChatItem(
+        role="tool",
+        text="$ pwd",
+        tool_result_text="✓ bash · not added to context\ncommand output",
+        always_show_tool_result=True,
+    )
+
+    console = Console(record=True, width=80)
+    console.print(render_chat_item(item, show_tool_results=item.always_show_tool_result))
+
+    assert "command output" in console.export_text()
+
+
+@pytest.mark.anyio
+async def test_tui_app_limits_terminal_command_output_preview() -> None:
+    session = FakeSession()
+    app = TauTuiApp(session)
+    output = "\n".join(f"line {index}" for index in range(130))
+
+    async def fake_run_terminal_command(
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        return TerminalCommandResult(
+            command=command,
+            output=output,
+            exit_code=0,
+            ok=True,
+            added_to_context=add_to_context,
+        )
+
+    session.run_terminal_command = fake_run_terminal_command  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "!! seq 130"
+        await pilot.press("enter")
+        await pilot.pause()
+
+    result_text = app.state.items[-1].tool_result_text
+    assert result_text is not None
+    assert "line 119" in result_text
+    assert "line 120" not in result_text
+    assert "10 more lines" in result_text
 
 
 @pytest.mark.anyio

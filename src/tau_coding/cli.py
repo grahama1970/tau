@@ -33,7 +33,13 @@ from tau_coding.provider_config import (
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.resources import TauResourcePaths
-from tau_coding.session import CodingSession, CodingSessionConfig, jsonl_session_storage
+from tau_coding.session import (
+    CodingSession,
+    CodingSessionConfig,
+    TerminalCommandResult,
+    jsonl_session_storage,
+    parse_terminal_command,
+)
 from tau_coding.session_export import default_session_export_path, export_session_html
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
@@ -407,6 +413,14 @@ async def run_print_mode(
     )
     renderer = create_event_renderer(output)
     try:
+        terminal_command = parse_terminal_command(prompt)
+        if terminal_command is not None:
+            result = await session.run_terminal_command(
+                terminal_command.command,
+                add_to_context=terminal_command.add_to_context,
+            )
+            typer.echo(_format_terminal_command_result(result))
+            return result.ok
         async for event in session.prompt(prompt):
             renderer.render(event)
         return renderer.finish()
@@ -425,3 +439,8 @@ class _MemorySessionStorage:
 
     async def read_all(self) -> list[SessionEntry]:
         return list(self.entries)
+
+
+def _format_terminal_command_result(result: TerminalCommandResult) -> str:
+    context_status = "added to context" if result.added_to_context else "not added to context"
+    return f"$ {result.command}\n[{context_status}]\n{result.output}"

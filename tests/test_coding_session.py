@@ -42,6 +42,7 @@ from tau_coding import (
     TauResourcePaths,
 )
 from tau_coding import session as coding_session_module
+from tau_coding.session import parse_terminal_command
 
 
 async def _collect_session_events(session_stream: object) -> list[object]:
@@ -208,6 +209,52 @@ async def test_prompt_persists_user_assistant_and_leaf_entries(tmp_path: Path) -
     assert entries[-1].type == "leaf"
     assert entries[-1].entry_id == message_entries[-1].id
     assert session.messages == (UserMessage(content="Hello"), AssistantMessage(content="Hi"))
+
+
+@pytest.mark.anyio
+async def test_terminal_command_can_persist_output_to_context(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+
+    result = await session.run_terminal_command("printf hello", add_to_context=True)
+
+    assert result.ok is True
+    assert result.output == "hello"
+    assert result.added_to_context is True
+    entries = await storage.read_all()
+    messages = [entry.message for entry in entries if isinstance(entry, MessageEntry)]
+    assert len(messages) == 1
+    assert isinstance(messages[0], UserMessage)
+    assert "Terminal command executed by the user." in messages[0].content
+    assert "printf hello" in messages[0].content
+    assert "hello" in messages[0].content
+
+
+@pytest.mark.anyio
+async def test_terminal_command_can_run_without_context(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+
+    result = await session.run_terminal_command("printf hidden", add_to_context=False)
+
+    assert result.ok is True
+    assert result.output == "hidden"
+    assert result.added_to_context is False
+    entries = await storage.read_all()
+    assert not any(isinstance(entry, MessageEntry) for entry in entries)
+
+
+def test_parse_terminal_command_prefixes() -> None:
+    assert parse_terminal_command("! pwd") is not None
+    add_request = parse_terminal_command("! pwd")
+    assert add_request is not None
+    assert add_request.command == "pwd"
+    assert add_request.add_to_context is True
+    hidden_request = parse_terminal_command("!! pwd")
+    assert hidden_request is not None
+    assert hidden_request.command == "pwd"
+    assert hidden_request.add_to_context is False
+    assert parse_terminal_command("hello") is None
 
 
 @pytest.mark.anyio
@@ -767,7 +814,7 @@ async def test_session_compact_persists_summary_and_rebuilds_context(tmp_path: P
             [
                 ProviderResponseStartEvent(model="fake"),
                 ProviderResponseEndEvent(message=AssistantMessage(content="Next answer")),
-            ]
+            ],
         ]
     )
     session = await CodingSession.load(_config(tmp_path, provider, storage))

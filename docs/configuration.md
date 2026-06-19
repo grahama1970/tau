@@ -294,6 +294,13 @@ the active run. `Alt-Enter` queues the prompt as a follow-up that waits until th
 active run would otherwise stop. Remap the follow-up shortcut with
 `queue_follow_up`.
 
+Input beginning with `!` runs a terminal command in the session working
+directory and records the command plus output in the agent context. Input
+beginning with `!!` runs the command and displays the output without adding it
+to context/history. Terminal input commands use the same shell execution,
+output truncation, failure reporting, and timeout assumptions as Tau's built-in
+`bash` tool.
+
 Thinking controls are model-aware. Tau enables them only when the active
 provider configuration declares supported levels for the active model. Custom
 OpenAI-compatible providers can opt in by adding `thinking_levels`,

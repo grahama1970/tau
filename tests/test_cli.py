@@ -220,6 +220,60 @@ async def test_run_print_mode_persists_session_entries(
 
 
 @pytest.mark.anyio
+async def test_run_print_mode_terminal_command_adds_context(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    storage = JsonlSessionStorage(tmp_path / "print-session.jsonl")
+    provider = FakeProvider([])
+
+    ok = await run_print_mode(
+        prompt="! printf hello",
+        model="fake",
+        cwd=tmp_path,
+        provider=provider,
+        storage=storage,
+    )
+
+    captured = capsys.readouterr()
+    entries = await storage.read_all()
+    messages = [entry.message for entry in entries if isinstance(entry, MessageEntry)]
+
+    assert ok is True
+    assert "$ printf hello" in captured.out
+    assert "[added to context]" in captured.out
+    assert "hello" in captured.out
+    assert len(messages) == 1
+    assert "Terminal command executed by the user." in messages[0].content
+    assert provider.calls == []
+
+
+@pytest.mark.anyio
+async def test_run_print_mode_terminal_command_can_skip_context(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    storage = JsonlSessionStorage(tmp_path / "print-session.jsonl")
+    provider = FakeProvider([])
+
+    ok = await run_print_mode(
+        prompt="!! printf hidden",
+        model="fake",
+        cwd=tmp_path,
+        provider=provider,
+        storage=storage,
+    )
+
+    captured = capsys.readouterr()
+    entries = await storage.read_all()
+
+    assert ok is True
+    assert "$ printf hidden" in captured.out
+    assert "[not added to context]" in captured.out
+    assert "hidden" in captured.out
+    assert not any(isinstance(entry, MessageEntry) for entry in entries)
+    assert provider.calls == []
+
+
+@pytest.mark.anyio
 async def test_run_print_mode_expands_skill_commands(
     capsys: pytest.CaptureFixture[str], tmp_path: Path
 ) -> None:

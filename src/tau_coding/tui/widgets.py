@@ -137,7 +137,7 @@ class TranscriptView(RichLog):
                 render_chat_item(
                     item,
                     theme=theme,
-                    show_tool_results=state.show_tool_results,
+                    show_tool_results=state.show_tool_results or item.always_show_tool_result,
                 ),
                 expand=True,
                 shrink=True,

@@ -55,6 +55,7 @@ from tau_coding.session import (
     CodingSessionConfig,
     ModelChoice,
     jsonl_session_storage,
+    parse_terminal_command,
 )
 from tau_coding.session_manager import SessionManager
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
@@ -69,7 +70,7 @@ from tau_coding.tui.config import (
     load_tui_settings,
     save_tui_settings,
 )
-from tau_coding.tui.state import TuiState
+from tau_coding.tui.state import TuiState, format_terminal_command_result_block
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
     SessionSidebar,
@@ -151,6 +152,7 @@ class PromptInput(TextArea):
     """Multiline prompt input with completion key bindings."""
 
     BINDINGS: ClassVar[list[BindingEntry]] = []
+    shell_mode_style: str = ""
 
     def __init__(
         self,
@@ -252,6 +254,18 @@ class PromptInput(TextArea):
         if self.text:
             self.text = ""
             self.move_cursor((0, 0))
+
+    def get_line(self, line_index: int) -> Text:
+        """Retrieve one prompt line with shell prefixes highlighted."""
+        line = super().get_line(line_index)
+        if line_index != 0 or not self.shell_mode_style:
+            return line
+        span = _terminal_command_prefix_span(self.text)
+        if span is None:
+            return line
+        start, end = span
+        line.stylize(self.shell_mode_style, start, end)
+        return line
 
     async def action_submit_follow_up(self) -> None:
         """Submit the prompt as an app-level follow-up."""
@@ -1099,6 +1113,10 @@ class TauTuiApp(App[None]):
         border: tall $tau-prompt-border;
     }
 
+    #prompt.-shell-mode {
+        border: tall $tau-accent;
+    }
+
     #compact-session-info {
         height: auto;
         max-height: 3;
@@ -1377,7 +1395,10 @@ class TauTuiApp(App[None]):
 
     async def on_mount(self) -> None:
         """Focus the prompt when the app starts."""
-        self.query_one(PromptInput).focus()
+        prompt = self.query_one(PromptInput)
+        prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+        self._sync_prompt_shell_mode(prompt.text)
+        prompt.focus()
         self._update_responsive_layout(self.size.width, self.size.height)
         self._refresh()
         self._refresh_completions()
@@ -1400,6 +1421,7 @@ class TauTuiApp(App[None]):
         """Update prompt autocomplete when the prompt text changes."""
         if event.text_area.id != "prompt":
             return
+        self._sync_prompt_shell_mode(event.text_area.text)
         self._completion_state = self._build_completion_state(event.text_area.text)
         self._refresh_completions()
 
@@ -1431,6 +1453,14 @@ class TauTuiApp(App[None]):
         self._completion_state = CompletionState()
         self._refresh_completions()
         if not text:
+            return
+
+        terminal_command = parse_terminal_command(text)
+        if terminal_command is not None:
+            await self._run_terminal_command(
+                terminal_command.command,
+                add_to_context=terminal_command.add_to_context,
+            )
             return
 
         command = self.session.handle_command(text)
@@ -1480,6 +1510,28 @@ class TauTuiApp(App[None]):
         run_id = self._prompt_run_id
         self._refresh()
         self._prompt_worker = self.run_worker(self._run_prompt(text, run_id), exclusive=True)
+
+    async def _run_terminal_command(self, command: str, *, add_to_context: bool) -> None:
+        run_terminal_command = getattr(self.session, "run_terminal_command", None)
+        if not callable(run_terminal_command):
+            self._notify("Terminal commands are not available.", severity="error")
+            return
+        try:
+            result = await run_terminal_command(command, add_to_context=add_to_context)
+        except Exception as exc:  # noqa: BLE001 - surface command execution failures in the TUI
+            self._notify(f"Could not run command: {exc}", severity="error")
+            return
+        self.state.add_item(
+            "tool",
+            f"$ {result.command}",
+            tool_result_text=format_terminal_command_result_block(
+                ok=result.ok,
+                added_to_context=result.added_to_context,
+                output=result.output,
+            ),
+            always_show_tool_result=True,
+        )
+        self._refresh()
 
     def _set_tui_theme(self, theme: TuiThemeName) -> None:
         self.tui_settings = TuiSettings(
@@ -1939,6 +1991,7 @@ class TauTuiApp(App[None]):
                 self.tui_settings.resolved_theme,
                 frame=self._activity_frame,
                 running=self.state.running,
+                shell_mode=_is_terminal_command_prompt(prompt.text),
             ),
         )
 
@@ -1976,9 +2029,24 @@ class TauTuiApp(App[None]):
         prompt = self.query_one("#prompt", PromptInput)
         prompt.set_footer_mode(_prompt_footer_mode(self.state, self._completion_state))
 
+    def _sync_prompt_shell_mode(self, text: str) -> None:
+        prompt = self.query_one("#prompt", PromptInput)
+        prompt.shell_mode_style = self.tui_settings.resolved_theme.accent
+        prompt.set_class(_is_terminal_command_prompt(text), "-shell-mode")
+        prompt.refresh()
+        self._apply_activity_indicator()
 
-def _activity_prompt_border_color(theme: TuiTheme, *, frame: int, running: bool) -> str:
+
+def _activity_prompt_border_color(
+    theme: TuiTheme,
+    *,
+    frame: int,
+    running: bool,
+    shell_mode: bool,
+) -> str:
     """Return the prompt border color for the current activity animation frame."""
+    if shell_mode:
+        return theme.accent
     if not running:
         return theme.prompt_border
     palette = (
@@ -1997,6 +2065,22 @@ def _activity_prompt_border_color(theme: TuiTheme, *, frame: int, running: bool)
         palette[segment_index + 1],
         fraction=fraction,
     )
+
+
+def _is_terminal_command_prompt(text: str) -> bool:
+    """Return whether the prompt is currently in terminal-command mode."""
+    return _terminal_command_prefix_span(text) is not None
+
+
+def _terminal_command_prefix_span(text: str) -> tuple[int, int] | None:
+    """Return the input span for a leading ! or !! terminal-command prefix."""
+    leading_whitespace = len(text) - len(text.lstrip())
+    stripped = text[leading_whitespace:]
+    if stripped.startswith("!!"):
+        return (leading_whitespace, leading_whitespace + 2)
+    if stripped.startswith("!"):
+        return (leading_whitespace, leading_whitespace + 1)
+    return None
 
 
 def _blend_hex_colors(start: str, end: str, *, fraction: float) -> str:

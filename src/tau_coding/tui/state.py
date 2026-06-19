@@ -12,6 +12,7 @@ ChatItemRole = Literal["user", "assistant", "tool", "error", "status", "thinking
 TOOL_RESULT_PREVIEW_LINES = 8
 TOOL_PATCH_PREVIEW_LINES = 32
 TOOL_RESULT_PREVIEW_CHARS = 2_000
+TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 120
 
 
 @dataclass(slots=True)
@@ -22,6 +23,7 @@ class ChatItem:
     text: str
     tool_call_id: str | None = None
     tool_result_text: str | None = None
+    always_show_tool_result: bool = False
 
 
 @dataclass(slots=True)
@@ -44,6 +46,7 @@ class TuiState:
         *,
         tool_call_id: str | None = None,
         tool_result_text: str | None = None,
+        always_show_tool_result: bool = False,
     ) -> None:
         """Append a transcript item."""
         self.items.append(
@@ -52,6 +55,7 @@ class TuiState:
                 text=text,
                 tool_call_id=tool_call_id,
                 tool_result_text=tool_result_text,
+                always_show_tool_result=always_show_tool_result,
             )
         )
 
@@ -232,6 +236,21 @@ def format_tool_result_block(
     patch = _result_patch(name=name, ok=ok, data=data)
     if patch:
         lines.extend(["", "Patch:", _preview_text(patch, max_lines=TOOL_PATCH_PREVIEW_LINES)])
+    return "\n".join(lines)
+
+
+def format_terminal_command_result_block(
+    *,
+    ok: bool,
+    added_to_context: bool,
+    output: str,
+) -> str:
+    """Format an input-bar terminal command result for visible TUI display."""
+    status = "✓" if ok else "✗"
+    suffix = " · added to context" if added_to_context else " · not added to context"
+    lines = [f"{status} bash{suffix}"]
+    if output:
+        lines.append(_preview_text(output, max_lines=TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES))
     return "\n".join(lines)
 
 

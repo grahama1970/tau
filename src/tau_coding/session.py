@@ -13,7 +13,7 @@ from tau_agent import (
     QueuedMessages,
     QueueUpdateEvent,
 )
-from tau_agent.messages import AgentMessage
+from tau_agent.messages import AgentMessage, UserMessage
 from tau_agent.session import (
     CompactionEntry,
     JsonlSessionStorage,
@@ -75,7 +75,7 @@ from tau_coding.thinking import (
     next_thinking_level,
     normalize_thinking_level,
 )
-from tau_coding.tools import create_coding_tools
+from tau_coding.tools import create_bash_tool, create_coding_tools
 
 StreamingBehavior = Literal["steer", "follow_up"]
 
@@ -86,6 +86,25 @@ class ModelChoice:
 
     provider_name: str
     model: str
+
+
+@dataclass(frozen=True, slots=True)
+class TerminalCommandResult:
+    """Result of an input-bar terminal command."""
+
+    command: str
+    output: str
+    exit_code: int | None
+    ok: bool
+    added_to_context: bool
+
+
+@dataclass(frozen=True, slots=True)
+class TerminalCommandRequest:
+    """Parsed input-bar terminal command request."""
+
+    command: str
+    add_to_context: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -657,6 +676,44 @@ class CodingSession:
         expanded_skill = expand_skill_command(text, self._skills)
         return expanded_skill if expanded_skill is not None else text
 
+    async def run_terminal_command(
+        self,
+        command: str,
+        *,
+        add_to_context: bool,
+    ) -> TerminalCommandResult:
+        """Run a shell command in the session cwd, optionally adding output to context."""
+        normalized_command = command.strip()
+        if not normalized_command:
+            raise ValueError("Terminal command cannot be empty")
+
+        bash_tool = create_bash_tool(cwd=self.cwd)
+        result = await bash_tool.execute({"command": normalized_command})
+        exit_code = None
+        if result.data is not None:
+            raw_exit_code = result.data.get("exit_code")
+            exit_code = raw_exit_code if isinstance(raw_exit_code, int) else None
+
+        if add_to_context:
+            before_count = len(self._harness.messages)
+            self._harness.append_message(
+                UserMessage(
+                    content=_terminal_command_context_message(
+                        normalized_command,
+                        result.content,
+                    )
+                )
+            )
+            await self._persist_new_messages(before_count)
+
+        return TerminalCommandResult(
+            command=normalized_command,
+            output=result.content,
+            exit_code=exit_code,
+            ok=result.ok,
+            added_to_context=add_to_context,
+        )
+
     async def prompt(
         self,
         content: str,
@@ -842,6 +899,30 @@ def _coerced_thinking_level(
         return current
     default = provider_default_thinking_level(provider, model=model)
     return default or levels[0]
+
+
+def _terminal_command_context_message(command: str, output: str) -> str:
+    return (
+        "Terminal command executed by the user.\n\n"
+        f"Command:\n```bash\n{command}\n```\n\n"
+        f"Output:\n```text\n{output}\n```"
+    )
+
+
+def parse_terminal_command(text: str) -> TerminalCommandRequest | None:
+    """Parse input-bar terminal command syntax."""
+    stripped = text.strip()
+    if stripped.startswith("!!"):
+        command = stripped[2:].strip()
+        if not command:
+            return None
+        return TerminalCommandRequest(command=command, add_to_context=False)
+    if stripped.startswith("!"):
+        command = stripped[1:].strip()
+        if not command:
+            return None
+        return TerminalCommandRequest(command=command, add_to_context=True)
+    return None
 
 
 def _load_session_resources(
