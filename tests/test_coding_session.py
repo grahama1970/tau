@@ -500,6 +500,45 @@ async def test_load_restores_active_leaf_branch(tmp_path: Path) -> None:
 
 
 @pytest.mark.anyio
+async def test_session_tree_choices_indent_only_diverged_branches(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    root = MessageEntry(id="root", message=UserMessage(content="Root"))
+    main = MessageEntry(id="main", parent_id="root", message=AssistantMessage(content="Main"))
+    first_branch = MessageEntry(
+        id="first-branch",
+        parent_id="root",
+        message=AssistantMessage(content="First branch"),
+    )
+    first_branch_child = MessageEntry(
+        id="first-branch-child",
+        parent_id="first-branch",
+        message=UserMessage(content="Follow-up"),
+    )
+    second_branch = MessageEntry(
+        id="second-branch",
+        parent_id="root",
+        message=AssistantMessage(content="Second branch"),
+    )
+    await storage.append(root)
+    await storage.append(main)
+    await storage.append(first_branch)
+    await storage.append(first_branch_child)
+    await storage.append(second_branch)
+    await storage.append(LeafEntry(entry_id="second-branch"))
+    session = await CodingSession.load(_config(tmp_path, FakeProvider([]), storage))
+
+    choices = await session.tree_choices()
+
+    assert [choice.label for choice in choices] == [
+        "user: Root",
+        "assistant: Main",
+        "  assistant: First branch",
+        "  user: Follow-up",
+        "  assistant: Second branch",
+    ]
+
+
+@pytest.mark.anyio
 async def test_session_branches_to_previous_entry_without_destroying_history(
     tmp_path: Path,
 ) -> None:

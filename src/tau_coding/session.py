@@ -324,10 +324,11 @@ class CodingSession:
     async def tree_choices(self) -> tuple[SessionTreeChoice, ...]:
         """Return branchable session entries for a tree picker."""
         entries = await self._config.storage.read_all()
+        branch_indents = _tree_branch_indents(entries)
         return tuple(
             SessionTreeChoice(
                 entry_id=entry.id,
-                label=_tree_choice_label(entry),
+                label=_tree_choice_label(entry, branch_indent=branch_indents.get(entry.id, 0)),
                 active=entry.id == self._state.active_leaf_id,
                 is_tool_call=_is_tool_call_tree_entry(entry),
             )
@@ -960,8 +961,30 @@ def _is_branchable_tree_entry(entry: SessionEntry) -> bool:
     return isinstance(entry.message, UserMessage | AssistantMessage)
 
 
-def _tree_choice_label(entry: SessionEntry) -> str:
-    return _tree_entry_title(entry)
+def _tree_choice_label(entry: SessionEntry, *, branch_indent: int = 0) -> str:
+    prefix = "  " * branch_indent
+    return f"{prefix}{_tree_entry_title(entry)}"
+
+
+def _tree_branch_indents(entries: list[SessionEntry]) -> dict[str, int]:
+    children_by_parent: dict[str | None, list[str]] = {}
+    for entry in entries:
+        if entry.type != "leaf":
+            children_by_parent.setdefault(entry.parent_id, []).append(entry.id)
+
+    sibling_indexes = {
+        child_id: index
+        for children in children_by_parent.values()
+        for index, child_id in enumerate(children)
+    }
+    indents: dict[str, int] = {}
+    for entry in entries:
+        if entry.type == "leaf":
+            continue
+        parent_indent = indents.get(entry.parent_id, 0) if entry.parent_id is not None else 0
+        sibling_index = sibling_indexes.get(entry.id, 0)
+        indents[entry.id] = parent_indent + (1 if sibling_index > 0 else 0)
+    return indents
 
 
 def _is_tool_call_tree_entry(entry: SessionEntry) -> bool:
