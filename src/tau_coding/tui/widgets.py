@@ -28,13 +28,7 @@ from tau_coding.tui.autocomplete import CompletionState
 from tau_coding.tui.config import TAU_DARK_THEME, TuiRoleStyle, TuiTheme
 from tau_coding.tui.state import ChatItem, TuiState
 
-TAU_SIDEBAR_LOGO = """████████  █████  ██   ██
-   ██    ██   ██ ██   ██
-   ██    ███████ ██   ██
-   ██    ██   ██ ██   ██
-   ██    ██   ██  █████
-
-       τ = 2π"""
+TAU_SIDEBAR_LOGO = "τ = 2π"
 
 
 class SessionSummarySource(Protocol):
@@ -201,10 +195,10 @@ def render_session_sidebar(
         empty="No context files",
         theme=theme,
     )
-    logo = Text(TAU_SIDEBAR_LOGO, style=f"bold {theme.prompt_text}")
+    equation = Text(TAU_SIDEBAR_LOGO, style=f"bold {theme.prompt_text}")
 
     return Group(
-        Padding(logo, (0, 0, 1, 1)),
+        Padding(Align.center(equation), (0, 0, 1, 0)),
         Panel(
             metadata,
             title="session",

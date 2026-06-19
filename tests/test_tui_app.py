@@ -191,7 +191,7 @@ def test_session_sidebar_renders_session_metadata() -> None:
     console.print(render_session_sidebar(FakeSession()))
 
     output = console.export_text()
-    assert "████████" in output
+    assert "████████" not in output
     assert "τ = 2π" in output
     assert "session" in output
     assert "context" in output
