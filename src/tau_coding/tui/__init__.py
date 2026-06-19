@@ -6,6 +6,7 @@ from tau_coding.tui.autocomplete import CompletionOption
 from tau_coding.tui.config import (
     HIGH_CONTRAST_THEME,
     TAU_DARK_THEME,
+    TAU_LIGHT_THEME,
     TuiConfigError,
     TuiKeybindings,
     TuiRoleStyle,
@@ -33,6 +34,7 @@ __all__ = [
     "TauTuiApp",
     "SessionSidebar",
     "TAU_DARK_THEME",
+    "TAU_LIGHT_THEME",
     "TranscriptView",
     "TuiEventAdapter",
     "TuiConfigError",

@@ -263,6 +263,15 @@ def create_default_command_registry() -> CommandRegistry:
     )
     registry.register(
         SlashCommand(
+            name="name",
+            usage="/name <new name>",
+            description="Rename the current session.",
+            handler=_name_command,
+            search_terms=("rename", "title"),
+        )
+    )
+    registry.register(
+        SlashCommand(
             name="model",
             usage="/model",
             description="Choose the active model.",
@@ -438,6 +447,34 @@ def _resume_command(context: CommandContext) -> CommandResult:
     )
 
 
+def _name_command(context: CommandContext) -> CommandResult:
+    manager = context.session.session_manager
+    session_id = context.session.session_id
+    if manager is None or session_id is None:
+        return CommandResult(handled=True, message="Session manager is not available.")
+
+    record = manager.get_session(session_id)
+    if record is None:
+        return CommandResult(handled=True, message=f"Unknown current session: {session_id}")
+
+    if not context.args:
+        title = record.title or "Untitled session"
+        return CommandResult(
+            handled=True,
+            message=f"Current session name: {title}\nUsage: /name <new name>",
+        )
+
+    try:
+        name = _validated_session_name(context.args)
+    except ValueError as exc:
+        return CommandResult(handled=True, message=str(exc))
+
+    updated = manager.touch_session(session_id, model=context.session.model, title=name)
+    if updated is None:
+        return CommandResult(handled=True, message=f"Unknown current session: {session_id}")
+    return CommandResult(handled=True, message=f"Session renamed: {updated.title}")
+
+
 def _format_sessions(context: CommandContext) -> str:
     manager = context.session.session_manager
     if manager is None:
@@ -492,8 +529,7 @@ def _thinking_command(context: CommandContext) -> CommandResult:
         return CommandResult(
             handled=True,
             message=(
-                "Thinking controls are unavailable for "
-                f"{session.provider_name}:{session.model}"
+                f"Thinking controls are unavailable for {session.provider_name}:{session.model}"
             ),
         )
     try:
@@ -522,8 +558,7 @@ def _login_command(context: CommandContext) -> CommandResult:
             return CommandResult(
                 handled=True,
                 message=(
-                    f"Unknown login provider: {provider_name}\n"
-                    f"Available providers: {providers}"
+                    f"Unknown login provider: {provider_name}\nAvailable providers: {providers}"
                 ),
             )
         return CommandResult(handled=True, login_provider=entry.name)
@@ -550,6 +585,15 @@ def _format_diagnostics(
 def _parse_command(text: str) -> tuple[str, str]:
     command, separator, args = text[1:].partition(" ")
     return _normalize_name(command), args.strip() if separator else ""
+
+
+def _validated_session_name(value: str) -> str:
+    name = value.strip()
+    if not name:
+        raise ValueError("Usage: /name <new name>")
+    if any(char in name for char in "\r\n\t"):
+        raise ValueError("Session name must be a single line.")
+    return name
 
 
 def _normalize_name(name: str) -> str:

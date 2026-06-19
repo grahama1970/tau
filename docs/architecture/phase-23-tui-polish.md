@@ -104,10 +104,86 @@ active thinking mode when the current provider/model supports it, while `Ctrl-T`
 toggles display of streamed thinking tokens. Thinking-token transcript blocks
 are hidden by default and rendered with their own role style when shown.
 
+The activity indicator now lives in a stable row directly above the prompt
+instead of in the top status line. This keeps the bottom input area visually
+active while an agent turn is running, and leaves the top status area focused on
+provider, model, queue, and session state.
+
+The footer now includes a compact shortcut hint row. It describes the active
+submission, newline, picker, thinking, follow-up, and copy shortcuts, switches
+to autocomplete-focused hints while completions are open, and switches again
+while an agent turn is running. The row is hidden on short terminals so it does
+not steal space from the transcript.
+
+Transcript copying now prefers visible terminal selection. If the user selects
+visible transcript text and presses the copy shortcut, Tau copies that selected
+text through Textual's terminal clipboard integration. When there is no visible
+selection, the same shortcut falls back to the selected-message workflow driven
+by the message navigation bindings.
+
+Assistant code block rendering is now more defensive. Known fence languages use
+Rich/Pygments syntax highlighting, while unknown or custom fence labels fall
+back to plain code rendering instead of producing a broken transcript block.
+
+The built-in theme set now includes `tau-light` alongside `tau-dark` and
+`high-contrast`. Theme choice stays in `tau_coding.tui` configuration and feeds
+Textual CSS variables plus Rich renderers without leaking UI policy into the
+portable harness.
+
+Sessions can now be renamed from the TUI with `/name <new name>`. The command
+updates the indexed session metadata used by `/resume`, resume completions, and
+the session picker; the underlying append-only transcript remains the durable
+source of conversation events.
+
 The frontend boundary is now documented in [Building a Custom TUI](../custom-tui.md).
 That guide describes how another terminal UI can consume `CodingSession`,
 `AgentEvent`, `TuiState`, and `TuiEventAdapter` without coupling to Textual
 internals.
+
+## Manual validation checklist
+
+These checks exercise the Phase 23 polish in the Textual TUI. Use a clean
+worktree at `origin/main` so local experimental branches do not affect the
+result:
+
+```bash
+git fetch origin
+git worktree add /tmp/tau-tui-validate origin/main
+cd /tmp/tau-tui-validate
+uv run tau
+```
+
+1. Check `/name` by starting a session, running `/name Manual validation`, then
+   opening `/resume`. The renamed session should appear in the resume picker and
+   in `/resume <session-id>` completions.
+2. Check the working indicator by submitting a prompt that takes a few seconds.
+   The spinner or activity text should appear in the row directly above the
+   prompt while the turn runs, not in the top status line.
+3. Check shortcut hints in a normal-size terminal. The hint row should appear
+   above the footer, change when slash-command autocomplete is open, and change
+   again while an agent turn is running. Shrink the terminal height and confirm
+   the row hides to preserve transcript space.
+4. Check visible selection copy by selecting part of a transcript message with
+   the terminal mouse selection and pressing `Ctrl+C`. Paste into another buffer
+   and confirm only the selected visible text was copied. Then clear the
+   selection, use `Alt+Up` or `Alt+Down` to select a message, press `Ctrl+C`,
+   and confirm the whole selected message copies.
+5. Check code block rendering by asking the model for one fenced `python` block
+   and one fenced block with an unknown language such as
+   `not-a-real-language`. The Python block should be highlighted, and the
+   unknown-language block should render as plain code without breaking the
+   transcript.
+6. Check the light theme by writing this file:
+
+   ```json
+   {
+     "theme": "tau-light"
+   }
+   ```
+
+   to `~/.tau/tui.json`, restarting `uv run tau`, and confirming the app uses a
+   light palette with readable transcript, sidebar, footer, and prompt colors.
+   Restore your preferred theme after the check.
 
 ## Boundaries
 

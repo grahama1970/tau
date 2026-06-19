@@ -142,6 +142,8 @@ The built-in themes are:
 
 - `tau-dark`, the default Toad-inspired dark theme with subtle left-accent
   conversation rows.
+- `tau-light`, a light theme using the same TUI components with light
+  backgrounds and darker foreground colors.
 - `high-contrast`, a sharper dark theme for brighter terminal contrast.
 
 The built-in sidebar is responsive: Tau shows it on medium or larger terminal
@@ -149,11 +151,23 @@ windows and hides it automatically when the terminal is narrow or short.
 When visible, it includes the active provider/model, thinking mode, loaded tools,
 skills, prompt templates, and context files such as `AGENTS.md`.
 
+The TUI footer includes a compact shortcut hint row for prompt submission,
+newlines, command/session pickers, thinking controls, queued follow-ups, and
+copy actions. The hints switch when autocomplete is open or an agent turn is
+running, and the row is hidden on short terminals to preserve conversation
+space.
+
 Transcript text supports Textual selection for visible user, assistant, tool, and
 error output. Copy shortcuts are terminal-emulator dependent, and selecting the
 full visible row can include Tau's left accent marker.
-Use `Alt+Up` / `Alt+Down` to select transcript messages and `Ctrl+C` to copy the
-selected message text through Textual's terminal clipboard integration.
+When visible transcript text is selected, `Ctrl+C` copies that selection through
+Textual's terminal clipboard integration. Without a visible selection, use
+`Alt+Up` / `Alt+Down` to select transcript messages and `Ctrl+C` to copy the
+selected message text.
+
+Assistant Markdown renders fenced code blocks with syntax highlighting when the
+fence language is known. Unknown fence languages fall back to plain code
+formatting so assistant output remains readable.
 
 Any omitted keybinding uses the built-in default. Key names use Textual's key
 syntax, such as `ctrl+k`, `tab`, `shift+tab`, `down`, `up`, and `f2`. Tau rejects unknown
@@ -201,8 +215,12 @@ Inside the TUI:
 
 ```text
 /resume
+/name <new name>
 /status
 ```
+
+`/name <new name>` renames the current indexed session. The new name is shown
+in the `/resume` picker and in session-id completions.
 
 ## Skills and Prompt Templates
 

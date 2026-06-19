@@ -48,6 +48,7 @@ from tau_coding.tui.state import ChatItem
 from tau_coding.tui.widgets import (
     TranscriptView,
     _compact_token_count,
+    _syntax_language,
     render_chat_item,
     render_compact_session_info,
     render_session_sidebar,
@@ -364,6 +365,33 @@ def test_chat_items_render_fenced_code_without_markers() -> None:
     assert "python" not in output
 
 
+def test_assistant_chat_items_apply_syntax_highlighting_to_code_fences() -> None:
+    console = Console(record=True, width=80, color_system="truecolor")
+    item = ChatItem(role="assistant", text="```python\ndef hi():\n    return 1\n```")
+
+    console.print(render_chat_item(item))
+    output = console.export_text(styles=True)
+
+    assert "def" in output
+    assert "return" in output
+    assert "\x1b[94;48;2;0;0;0mdef" in output
+    assert "\x1b[94;48;2;0;0;0mreturn" in output
+
+
+def test_chat_items_fallback_unknown_fenced_language_to_plain_code() -> None:
+    assert _syntax_language("definitely-not-a-lexer") == "text"
+
+    console = Console(record=True, width=60)
+    item = ChatItem(role="assistant", text="```definitely-not-a-lexer\nvalue\n```")
+
+    console.print(render_chat_item(item))
+    output = console.export_text()
+
+    assert "value" in output
+    assert "```" not in output
+    assert "definitely-not-a-lexer" not in output
+
+
 def test_tool_chat_items_hide_and_show_result_text() -> None:
     item = ChatItem(
         role="tool",
@@ -538,6 +566,59 @@ async def test_tui_app_mounts_sidebar_and_transcript() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_shows_footer_shortcut_hints() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 30)):
+        hints = app.query_one("#shortcut-hints")
+
+        assert str(hints.render()) == (
+            "Enter submit | Shift+Enter newline | Ctrl+K commands | Ctrl+R sessions | "
+            "Shift+Tab thinking | Ctrl+C copy | Ctrl+D quit"
+        )
+
+
+@pytest.mark.anyio
+async def test_tui_app_footer_hints_update_for_completions() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 30)):
+        prompt = app.query_one("#prompt")
+        prompt.value = "/st"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+
+        hints = app.query_one("#shortcut-hints")
+        assert str(hints.render()) == "Tab/Enter complete | Up/Down choose | Escape close"
+
+
+@pytest.mark.anyio
+async def test_tui_app_footer_hints_update_while_running() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 30)):
+        app.adapter.apply(AgentStartEvent())
+        app._refresh()
+
+        hints = app.query_one("#shortcut-hints")
+        assert str(hints.render()) == (
+            "Enter steer | Alt+Enter follow-up | Escape cancel | Ctrl+T thinking | "
+            "Ctrl+O tools | Ctrl+C copy"
+        )
+
+
+@pytest.mark.anyio
+async def test_tui_app_hides_footer_hints_on_short_windows() -> None:
+    app = TauTuiApp(FakeSession())
+
+    async with app.run_test(size=(120, 18)):
+        hints = app.query_one("#shortcut-hints")
+
+        assert hints.display is False
+        assert app.has_class("-compact-footer")
+
+
+@pytest.mark.anyio
 async def test_tui_prompt_grows_to_six_lines_then_scrolls() -> None:
     app = TauTuiApp(FakeSession())
 
@@ -665,6 +746,17 @@ def test_tui_app_uses_configured_theme_css_variables() -> None:
     assert variables["tau-prompt-border"] == "#00ff66"
 
 
+def test_tui_app_uses_light_theme_css_variables() -> None:
+    app = TauTuiApp(FakeSession(), tui_settings=TuiSettings(theme="tau-light"))
+
+    variables = app.get_theme_variable_defaults()
+
+    assert variables["tau-screen-background"] == "#ffffff"
+    assert variables["tau-chrome-background"] == "#f3f4f6"
+    assert variables["tau-prompt-background"] == "#f8fafc"
+    assert variables["tau-prompt-border"] == "#2563eb"
+
+
 def test_tau_dark_theme_uses_black_chat_backgrounds() -> None:
     theme = TuiSettings().resolved_theme
 
@@ -673,6 +765,18 @@ def test_tau_dark_theme_uses_black_chat_backgrounds() -> None:
     assert theme.prompt_background == "#101419"
     assert theme.role_styles["user"].body.endswith("on #000000")
     assert theme.role_styles["assistant"].body.endswith("on #000000")
+
+
+def test_tau_light_theme_uses_light_chat_backgrounds() -> None:
+    theme = TuiSettings(theme="tau-light").resolved_theme
+
+    assert theme.screen_background == "#ffffff"
+    assert theme.transcript_background == "#ffffff"
+    assert theme.prompt_text == "#111827"
+    assert theme.syntax_theme == "ansi_light"
+    assert theme.role_styles["user"].body.endswith("on #ffffff")
+    assert theme.role_styles["assistant"].body.endswith("on #ffffff")
+    assert theme.role_styles["error"].border == "#b91c1c"
 
 
 def test_tui_app_loads_restored_messages_into_display_state() -> None:
@@ -717,15 +821,19 @@ def test_tui_app_loads_restored_messages_into_display_state() -> None:
 
 
 @pytest.mark.anyio
-async def test_tui_app_shows_activity_trail_under_prompt_while_running() -> None:
+async def test_tui_app_shows_activity_indicators_while_running() -> None:
     app = TauTuiApp(FakeSession())
 
     async with app.run_test():
         trail = app.query_one("#activity-trail")
         status = app.query_one("#status")
+        activity = app.query_one("#activity-status")
+        prompt = app.query_one("#prompt")
 
         assert str(status.render()) == "Ready"
         assert trail.display is False
+        assert str(activity.render()) == ""
+        assert activity.region.y < prompt.region.y
 
         app.adapter.apply(AgentStartEvent())
         app._refresh()
@@ -733,6 +841,11 @@ async def test_tui_app_shows_activity_trail_under_prompt_while_running() -> None
         assert str(status.render()) == ""
         assert trail.display is True
         assert "•" in str(trail.render())
+        assert str(activity.render()) == "working |"
+
+        app._tick_activity()
+
+        assert str(activity.render()) == "working /"
         assert str(tui_app._render_activity_trail(10, 0)) != str(
             tui_app._render_activity_trail(10, 1)
         )
@@ -743,6 +856,7 @@ async def test_tui_app_shows_activity_trail_under_prompt_while_running() -> None
         assert str(status.render()) == "Ready"
         assert trail.display is False
         assert str(trail.render()) == ""
+        assert str(activity.render()) == ""
 
 
 @pytest.mark.anyio
@@ -751,6 +865,7 @@ async def test_tui_app_clears_activity_status_on_error() -> None:
 
     async with app.run_test():
         status = app.query_one("#status")
+        activity = app.query_one("#activity-status")
 
         app.adapter.apply(AgentStartEvent())
         app._refresh()
@@ -758,6 +873,7 @@ async def test_tui_app_clears_activity_status_on_error() -> None:
         app._refresh()
 
         assert str(status.render()) == "Ready"
+        assert str(activity.render()) == ""
 
 
 @pytest.mark.anyio
@@ -1705,6 +1821,42 @@ async def test_tui_app_copies_selected_transcript_messages() -> None:
 
 
 @pytest.mark.anyio
+async def test_tui_app_copies_visible_transcript_selection_first() -> None:
+    app = TauTuiApp(
+        FakeSession(
+            messages=(
+                UserMessage(content="User prompt"),
+                AssistantMessage(content="Assistant response\n\n```python\nprint('hi')\n```"),
+            )
+        )
+    )
+    copied: list[str] = []
+    notifications: list[str] = []
+
+    def fake_copy(text: str) -> None:
+        copied.append(text)
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app.copy_to_clipboard = fake_copy  # type: ignore[method-assign]
+    app._notify = fake_notify  # type: ignore[method-assign]
+
+    async with app.run_test() as pilot:
+        transcript = app.query_one("#transcript", TranscriptView)
+        transcript.text_select_all()
+        await pilot.press("ctrl+c")
+        await pilot.pause()
+
+    assert len(copied) == 1
+    assert "User prompt" in copied[0]
+    assert "Assistant response" in copied[0]
+    assert "print('hi')" in copied[0]
+    assert notifications == ["Copied selected text."]
+
+
+@pytest.mark.anyio
 async def test_tui_app_copy_selected_message_reports_failures() -> None:
     app = TauTuiApp(FakeSession(messages=(UserMessage(content="User prompt"),)))
     notifications: list[tuple[str, str | None]] = []
@@ -2051,9 +2203,7 @@ async def test_run_tui_app_opens_when_provider_login_is_missing(
     monkeypatch.setattr(
         tui_app,
         "create_model_provider",
-        lambda provider, **kwargs: (_ for _ in ()).throw(
-            RuntimeError("Missing provider API key.")
-        ),
+        lambda provider, **kwargs: (_ for _ in ()).throw(RuntimeError("Missing provider API key.")),
     )
     monkeypatch.setattr(tui_app, "CodingSession", FakeCodingSession)
     monkeypatch.setattr(tui_app, "TauTuiApp", FakeApp)

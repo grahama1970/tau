@@ -89,6 +89,14 @@ def test_tui_settings_reject_unknown_theme() -> None:
         tui_settings_from_json({"theme": "solarized"})
 
 
+def test_tui_settings_accept_light_theme() -> None:
+    settings = tui_settings_from_json({"theme": "tau-light"})
+
+    assert settings.theme == "tau-light"
+    assert settings.resolved_theme.screen_background == "#ffffff"
+    assert settings.resolved_theme.syntax_theme == "ansi_light"
+
+
 def test_tui_keybindings_serialize_to_json() -> None:
     settings = TuiSettings(
         keybindings=TuiKeybindings(
@@ -118,4 +126,5 @@ def test_tui_keybindings_serialize_to_json() -> None:
 
 def test_get_tui_theme_returns_builtin_theme() -> None:
     assert get_tui_theme("high-contrast").prompt_border == "#00ff66"
+    assert get_tui_theme("tau-light").prompt_border == "#2563eb"
     assert get_tui_theme("tau-dark").screen_background == "#000000"

@@ -73,6 +73,7 @@ type BindingEntry = Binding | tuple[str, str] | tuple[str, str, str]
 SIDEBAR_MIN_WIDTH = 96
 SIDEBAR_MIN_HEIGHT = 24
 ACTIVITY_TRAIL_PERIOD = 80
+ACTIVITY_FRAMES = ("|", "/", "-", "\\")
 
 
 class LoginRequiredProvider:
@@ -107,11 +108,11 @@ class CompletionActionTarget(Protocol):
 
     def action_accept_completion(self) -> None: ...
 
+    def action_cancel(self) -> None: ...
+
     def action_completion_next(self) -> None: ...
 
     def action_completion_previous(self) -> None: ...
-
-    def action_cancel(self) -> None: ...
 
     def action_open_command_palette(self) -> None: ...
 
@@ -812,6 +813,17 @@ class TauTuiApp(App[None]):
         color: $tau-muted-text;
     }
 
+    #shortcut-hints {
+        height: 1;
+        padding: 0 1;
+        background: $tau-chrome-background;
+        color: $tau-muted-text;
+    }
+
+    TauTuiApp.-compact-footer #shortcut-hints {
+        display: none;
+    }
+
     #status {
         height: 1;
         padding: 0 1;
@@ -880,6 +892,14 @@ class TauTuiApp(App[None]):
         margin: 0 1 0 1;
         padding: 0 1;
         background: $tau-screen-background;
+    }
+
+    #activity-status {
+        height: 1;
+        margin: 0 1 0 1;
+        padding: 0 1;
+        background: $tau-screen-background;
+        color: $tau-muted-text;
     }
 
     #compact-session-info {
@@ -1136,6 +1156,7 @@ class TauTuiApp(App[None]):
                     markup=False,
                 )
                 yield Static("", id="queued-messages")
+                yield Static("", id="activity-status")
                 yield PromptInput(
                     placeholder="Ask Tau…  Enter submits, Shift+Enter inserts a newline",
                     id="prompt",
@@ -1144,6 +1165,7 @@ class TauTuiApp(App[None]):
                 yield Static("", id="activity-trail")
                 yield CompactSessionInfo(id="compact-session-info")
                 yield Static("", id="autocomplete")
+        yield Static("", id="shortcut-hints")
         yield Footer()
 
     async def on_mount(self) -> None:
@@ -1414,6 +1436,16 @@ class TauTuiApp(App[None]):
 
     def action_copy_selected_message(self) -> None:
         """Copy the selected transcript message to the terminal clipboard."""
+        selected_text = self._visible_selection_text()
+        if selected_text is not None:
+            try:
+                self.copy_to_clipboard(selected_text)
+            except Exception as exc:  # noqa: BLE001 - terminal clipboard support varies
+                self._notify(f"Could not copy selection: {exc}", severity="error")
+                return
+            self._notify("Copied selected text.")
+            return
+
         text = self._selected_message_text()
         if text is None:
             self._notify("Select a transcript message first.", severity="warning")
@@ -1432,6 +1464,12 @@ class TauTuiApp(App[None]):
         if item.role == "tool" and self.state.show_tool_results and item.tool_result_text:
             return f"{item.text}\n\n{item.tool_result_text}"
         return item.text
+
+    def _visible_selection_text(self) -> str | None:
+        selected_text = self.screen.get_selected_text()
+        if selected_text is None or not selected_text.strip():
+            return None
+        return selected_text
 
     def _handle_session_picker_result(self, session_id: str | None) -> None:
         if session_id is None:
@@ -1657,6 +1695,7 @@ class TauTuiApp(App[None]):
         self._sync_activity_indicator()
         status = self.query_one("#status", Static)
         status.update(self._status_text())
+        self._refresh_shortcut_hints()
 
     def _sync_queue_state(self) -> None:
         queue_event = getattr(self.session, "queue_update_event", None)
@@ -1690,6 +1729,8 @@ class TauTuiApp(App[None]):
         status.update(self._status_text())
 
     def _apply_activity_indicator(self) -> None:
+        activity = self.query_one("#activity-status", Static)
+        activity.update(self._activity_text())
         trail = self.query_one("#activity-trail", Static)
         trail.display = self.state.running
         if not self.state.running:
@@ -1697,10 +1738,16 @@ class TauTuiApp(App[None]):
             return
         trail.update(_render_activity_trail(trail.size.width, self._activity_frame))
 
-    def _status_text(self) -> str:
+    def _activity_text(self) -> str:
         if not self.state.running:
-            return "Ready"
-        return ""
+            return ""
+        return f"working {ACTIVITY_FRAMES[self._activity_frame % len(ACTIVITY_FRAMES)]}"
+
+    def _status_text(self) -> str:
+        queue_text = _queue_status_text(self.state)
+        if self.state.running:
+            return f"queued: {queue_text}" if queue_text else ""
+        return f"Ready | queued: {queue_text}" if queue_text else "Ready"
 
     def _refresh_completions(self) -> None:
         suggestions = self.query_one("#autocomplete", Static)
@@ -1711,10 +1758,12 @@ class TauTuiApp(App[None]):
                 theme=self.tui_settings.resolved_theme,
             )
         )
+        self._refresh_shortcut_hints()
 
     def _update_responsive_layout(self, width: int, height: int) -> None:
         show_sidebar = width >= SIDEBAR_MIN_WIDTH and height >= SIDEBAR_MIN_HEIGHT
         self.set_class(not show_sidebar, "-hide-sidebar")
+        self.set_class(height < 22, "-compact-footer")
 
     def _build_completion_state(self, text: str) -> CompletionState:
         registry = _session_command_registry(self.session)
@@ -1727,6 +1776,16 @@ class TauTuiApp(App[None]):
             provider_names=self.session.available_providers,
             thinking_levels=getattr(self.session, "available_thinking_levels", ()),
             session_options=_session_options(self.session),
+        )
+
+    def _refresh_shortcut_hints(self) -> None:
+        hints = self.query_one("#shortcut-hints", Static)
+        hints.update(
+            _shortcut_hint_text(
+                self.tui_settings.keybindings,
+                self.state,
+                self._completion_state,
+            )
         )
 
 
@@ -1885,6 +1944,19 @@ def _theme_css_variables(theme: TuiTheme) -> dict[str, str]:
     }
 
 
+def _queue_status_text(state: TuiState) -> str:
+    parts: list[str] = []
+    steering_count = len(state.queued_steering)
+    follow_up_count = len(state.queued_follow_up)
+    if steering_count:
+        suffix = "" if steering_count == 1 else "s"
+        parts.append(f"{steering_count} steering message{suffix}")
+    if follow_up_count:
+        suffix = "" if follow_up_count == 1 else "s"
+        parts.append(f"{follow_up_count} follow-up message{suffix}")
+    return ", ".join(parts)
+
+
 def _render_queued_messages(state: TuiState, *, theme: TuiTheme) -> Group:
     """Render queued prompts stacked above the prompt input."""
     rows: list[Text] = []
@@ -1897,6 +1969,52 @@ def _render_queued_messages(state: TuiState, *, theme: TuiTheme) -> Group:
         row.append(message, style=theme.prompt_text)
         rows.append(row)
     return Group(*rows)
+
+
+def _shortcut_hint_text(
+    keybindings: TuiKeybindings,
+    state: TuiState,
+    completion_state: CompletionState,
+) -> str:
+    if completion_state.items:
+        return _join_shortcut_hints(
+            (
+                f"{_key_hint(keybindings.accept_completion)}/Enter complete",
+                f"{_key_hint(keybindings.completion_previous)}/"
+                f"{_key_hint(keybindings.completion_next)} choose",
+                f"{_key_hint(keybindings.cancel)} close",
+            )
+        )
+    if state.running:
+        return _join_shortcut_hints(
+            (
+                "Enter steer",
+                f"{_key_hint(keybindings.queue_follow_up)} follow-up",
+                f"{_key_hint(keybindings.cancel)} cancel",
+                f"{_key_hint(keybindings.toggle_thinking)} thinking",
+                f"{_key_hint(keybindings.toggle_tool_results)} tools",
+                f"{_key_hint(keybindings.copy_message)} copy",
+            )
+        )
+    return _join_shortcut_hints(
+        (
+            "Enter submit",
+            "Shift+Enter newline",
+            f"{_key_hint(keybindings.command_palette)} commands",
+            f"{_key_hint(keybindings.session_picker)} sessions",
+            f"{_key_hint(keybindings.thinking_cycle)} thinking",
+            f"{_key_hint(keybindings.copy_message)} copy",
+            f"{_key_hint(keybindings.quit)} quit",
+        )
+    )
+
+
+def _join_shortcut_hints(parts: Sequence[str]) -> str:
+    return " | ".join(parts)
+
+
+def _key_hint(key: str) -> str:
+    return "+".join(part.capitalize() for part in key.split("+"))
 
 
 def _app_bindings(keybindings: TuiKeybindings) -> list[Binding]:

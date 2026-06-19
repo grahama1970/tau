@@ -51,7 +51,7 @@ class TuiKeybindings:
         }
 
 
-type TuiThemeName = Literal["tau-dark", "high-contrast"]
+type TuiThemeName = Literal["tau-dark", "tau-light", "high-contrast"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,8 +153,41 @@ HIGH_CONTRAST_THEME = TuiTheme(
 )
 
 
+TAU_LIGHT_THEME = TuiTheme(
+    name="tau-light",
+    screen_background="#ffffff",
+    screen_text="#111827",
+    chrome_background="#f3f4f6",
+    chrome_text="#111827",
+    muted_text="#667085",
+    sidebar_background="#f8fafc",
+    border="#cbd5e1",
+    transcript_background="#ffffff",
+    prompt_background="#f8fafc",
+    prompt_text="#111827",
+    prompt_border="#2563eb",
+    autocomplete_background="#ffffff",
+    accent="#0f766e",
+    highlight_background="#dbeafe",
+    highlight_text="#0f172a",
+    completion_selected="bold #0f172a on #dbeafe",
+    completion_selected_description="#334155 on #dbeafe",
+    completion_description="#667085",
+    syntax_theme="ansi_light",
+    role_styles={
+        "user": TuiRoleStyle(border="#2563eb", body="#111827 on #ffffff"),
+        "assistant": TuiRoleStyle(border="#0f766e", body="#111827 on #ffffff"),
+        "tool": TuiRoleStyle(border="#a16207", body="#1f2937 on #ffffff"),
+        "error": TuiRoleStyle(border="#b91c1c", body="#7f1d1d on #ffffff"),
+        "status": TuiRoleStyle(border="#64748b", body="#334155 on #ffffff"),
+        "thinking": TuiRoleStyle(border="#6b7280", body="#4b5563 on #ffffff"),
+    },
+)
+
+
 _THEMES: dict[TuiThemeName, TuiTheme] = {
     TAU_DARK_THEME.name: TAU_DARK_THEME,
+    TAU_LIGHT_THEME.name: TAU_LIGHT_THEME,
     HIGH_CONTRAST_THEME.name: HIGH_CONTRAST_THEME,
 }
 
@@ -241,7 +274,7 @@ def _theme_name(value: object) -> TuiThemeName:
     if not isinstance(value, str) or not value.strip():
         raise TuiConfigError("TUI theme must be a non-empty string")
     name = value.strip()
-    if name == "tau-dark" or name == "high-contrast":
+    if name == "tau-dark" or name == "tau-light" or name == "high-contrast":
         return cast(TuiThemeName, name)
     raise TuiConfigError(f"Unknown TUI theme: {name}")
 
@@ -252,7 +285,6 @@ def _reject_duplicate_keys(values: dict[str, str]) -> None:
         previous_action = key_to_action.get(key)
         if previous_action is not None:
             raise TuiConfigError(
-                f"TUI keybinding {key!r} is assigned to both "
-                f"{previous_action!r} and {action!r}"
+                f"TUI keybinding {key!r} is assigned to both {previous_action!r} and {action!r}"
             )
         key_to_action[key] = action
