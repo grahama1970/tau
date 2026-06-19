@@ -469,6 +469,15 @@ def test_light_theme_tool_error_uses_red_text_without_background() -> None:
     assert "38;2;185;28;28;48;2" not in output
 
 
+def test_dark_theme_markdown_code_uses_accent_highlight() -> None:
+    console = Console(record=True, width=80)
+    console.print(render_chat_item(ChatItem(role="assistant", text="Use `tau` here.")))
+
+    output = console.export_text(styles=True)
+
+    assert "38;2;244;162;97" in output
+
+
 def test_light_theme_markdown_code_uses_highlight_text_without_background() -> None:
     console = Console(record=True, width=80)
     console.print(

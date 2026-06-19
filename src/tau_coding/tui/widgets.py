@@ -389,7 +389,7 @@ def _render_chat_body(
             code_theme=syntax_theme,
             inline_code_theme=syntax_theme,
             heading_style=theme.accent,
-            highlight_style=theme.highlight_text,
+            highlight_style=_markdown_highlight_style(theme),
         )
     fenced_body = _render_fenced_body(
         text,
@@ -452,6 +452,12 @@ class ThemedMarkdown(Markdown):
     def __rich_console__(self, console: Console, options: Any) -> Any:
         with console.use_theme(_markdown_theme(self.heading_style, self.highlight_style)):
             yield from super().__rich_console__(console, options)
+
+
+def _markdown_highlight_style(theme: TuiTheme) -> str:
+    if theme.name == "tau-light":
+        return theme.highlight_text
+    return theme.accent
 
 
 def _markdown_theme(heading_style: str, highlight_style: str) -> Theme:
