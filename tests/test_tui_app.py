@@ -1336,6 +1336,26 @@ async def test_tui_app_accepts_file_reference_completion(tmp_path: Path) -> None
 
 
 @pytest.mark.anyio
+async def test_tui_app_accepts_shell_path_completion(tmp_path: Path) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+
+    session = FakeSession()
+    session.cwd = tmp_path
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "!cat READ"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+
+        assert [item.display for item in app._completion_state.items] == ["README.md"]
+        await pilot.press("tab")
+
+        assert prompt.value == "!cat README.md"
+
+
+@pytest.mark.anyio
 async def test_tui_app_completes_skill_name() -> None:
     app = TauTuiApp(FakeSession())
 

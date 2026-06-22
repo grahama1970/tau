@@ -313,6 +313,11 @@ to context/history. Terminal input commands use the same shell execution,
 output truncation, failure reporting, and timeout assumptions as Tau's built-in
 `bash` tool.
 
+In the TUI, terminal input commands complete relative files and directories from
+the session working directory. Press `Tab` while typing a path such as
+`!cat README` or `!!cat src/ma` to insert the matching filename; directory
+matches include a trailing `/` so you can keep typing the next path segment.
+
 Thinking controls are model-aware. Tau enables them only when the active
 provider configuration declares supported levels for the active model. Custom
 OpenAI-compatible providers can opt in by adding `thinking_levels`,

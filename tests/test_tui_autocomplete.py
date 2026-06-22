@@ -229,3 +229,77 @@ def test_file_reference_completion_stays_off_for_slash_commands(tmp_path: Path) 
     )
 
     assert state.items == ()
+
+
+def test_shell_path_completion_preserves_bang_prefix(tmp_path: Path) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+
+    state = build_completion_state(
+        "!cat READ",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in state.items] == ["README.md"]
+    assert state.selected is not None
+    assert state.selected.apply("!cat READ") == "!cat README.md"
+
+
+def test_shell_path_completion_preserves_double_bang_prefix(tmp_path: Path) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+
+    state = build_completion_state(
+        "!!cat READ",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in state.items] == ["README.md"]
+    assert state.selected is not None
+    assert state.selected.apply("!!cat READ") == "!!cat README.md"
+
+
+def test_shell_path_completion_matches_relative_paths(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("print('hi')\n", encoding="utf-8")
+
+    state = build_completion_state(
+        "!cat src/ma",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in state.items] == ["src/main.py"]
+    assert state.selected is not None
+    assert state.selected.apply("!cat src/ma") == "!cat src/main.py"
+
+
+def test_shell_path_completion_adds_trailing_slash_for_directories(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("print('hi')\n", encoding="utf-8")
+
+    directory_state = build_completion_state(
+        "!cat sr",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+    child_state = build_completion_state(
+        "!cat src/",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(),
+        cwd=tmp_path,
+    )
+
+    assert [item.display for item in directory_state.items] == ["src/"]
+    assert directory_state.selected is not None
+    assert directory_state.selected.apply("!cat sr") == "!cat src/"
+    assert [item.display for item in child_state.items] == ["src/main.py"]

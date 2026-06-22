@@ -101,6 +101,9 @@ def build_completion_state(
     del prompt_templates
     if not text.startswith("/") or text.startswith("//"):
         if cwd is not None:
+            shell_completions = _shell_path_completions(text=text, cwd=cwd)
+            if shell_completions is not None:
+                return CompletionState(shell_completions)
             return CompletionState(_file_reference_completions(text=text, cwd=cwd))
         return CompletionState()
 
@@ -193,6 +196,105 @@ def _is_ignored_file_completion_path(path: Path, *, cwd: Path) -> bool:
     return any(
         part.startswith(".") or part in IGNORED_FILE_COMPLETION_DIRS for part in relative_parts
     )
+
+
+def _shell_path_completions(*, text: str, cwd: Path) -> tuple[CompletionItem, ...] | None:
+    prefix_span = _shell_command_prefix_span(text)
+    if prefix_span is None:
+        return None
+
+    start, end = _active_shell_path_token(text=text, command_start=prefix_span[1])
+    token = text[start:end]
+    if not token:
+        return ()
+
+    shell_path = _parse_shell_path_token(token)
+    if shell_path is None:
+        return ()
+    parent_text, name_prefix, replacement_prefix = shell_path
+
+    parent_dir = cwd / parent_text if parent_text else cwd
+    if not parent_dir.exists() or not parent_dir.is_dir():
+        return ()
+    if parent_dir != cwd and _is_ignored_file_completion_path(parent_dir, cwd=cwd):
+        return ()
+
+    try:
+        children = sorted(parent_dir.iterdir(), key=lambda path: path.name.lower())
+    except OSError:
+        return ()
+
+    suggestions: list[CompletionItem] = []
+    for child in children:
+        if _is_ignored_file_completion_path(child, cwd=cwd):
+            continue
+        if not child.name.lower().startswith(name_prefix.lower()):
+            continue
+        relative = child.relative_to(cwd).as_posix()
+        replacement = f"{replacement_prefix}{relative}{'/' if child.is_dir() else ''}"
+        if replacement == token:
+            continue
+        suggestions.append(
+            CompletionItem(
+                display=replacement,
+                replacement=replacement,
+                start=start,
+                end=end,
+                description="Directory" if child.is_dir() else "File",
+            )
+        )
+        if len(suggestions) >= MAX_FILE_COMPLETIONS:
+            break
+    return tuple(suggestions)
+
+
+def _shell_command_prefix_span(text: str) -> tuple[int, int] | None:
+    leading_whitespace = len(text) - len(text.lstrip())
+    stripped = text[leading_whitespace:]
+    if stripped.startswith("!!"):
+        return (leading_whitespace, leading_whitespace + 2)
+    if stripped.startswith("!"):
+        return (leading_whitespace, leading_whitespace + 1)
+    return None
+
+
+def _active_shell_path_token(*, text: str, command_start: int) -> tuple[int, int]:
+    cursor = len(text)
+    token_start = command_start
+    escaped = False
+    for index in range(cursor - 1, command_start - 1, -1):
+        char = text[index]
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\":
+            escaped = True
+            continue
+        if char.isspace():
+            token_start = index + 1
+            break
+    return token_start, cursor
+
+
+def _parse_shell_path_token(token: str) -> tuple[str, str, str] | None:
+    replacement_prefix = ""
+    path_text = token
+    if path_text.startswith("./"):
+        replacement_prefix = "./"
+        path_text = path_text[2:]
+    if path_text.startswith(("/", "~")):
+        return None
+    if any(char in path_text for char in "\"'`$*?[{"):
+        return None
+
+    parent_text, separator, name_prefix = path_text.rpartition("/")
+    if separator and not parent_text:
+        return None
+
+    parent_parts = parent_text.split("/") if parent_text else []
+    if any(part in {"", ".", ".."} for part in parent_parts):
+        return None
+    return parent_text, name_prefix, replacement_prefix
 
 
 def _command_completions(
