@@ -61,6 +61,7 @@ class OpenAICompatibleProvider:
                 messages=messages,
                 tools=tools,
                 reasoning_effort=self._config.reasoning_effort,
+                reasoning_effort_parameter=self._config.reasoning_effort_parameter,
             )
             headers = {
                 **(dict(self._config.headers or {})),
@@ -255,6 +256,7 @@ def _build_chat_payload(
     messages: list[AgentMessage],
     tools: list[AgentTool],
     reasoning_effort: str | None = None,
+    reasoning_effort_parameter: str = "reasoning_effort",
 ) -> dict[str, JSONValue]:
     payload: dict[str, JSONValue] = {
         "model": model,
@@ -265,7 +267,10 @@ def _build_chat_payload(
         ],
     }
     if reasoning_effort is not None:
-        payload["reasoning_effort"] = reasoning_effort
+        if reasoning_effort_parameter == "reasoning.effort":
+            payload["reasoning"] = {"effort": reasoning_effort}
+        else:
+            payload["reasoning_effort"] = reasoning_effort
     if tools:
         payload["tools"] = [_tool_to_openai(tool) for tool in tools]
     return payload

@@ -203,6 +203,42 @@ async def test_openai_compatible_provider_includes_configured_reasoning_effort()
 
 
 @pytest.mark.anyio
+async def test_openai_compatible_provider_can_send_responses_reasoning_effort() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            text='data: {"choices":[{"delta":{"content":"ok"}}]}\n\ndata: [DONE]\n\n',
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = OpenAICompatibleProvider(
+            OpenAICompatibleConfig(
+                api_key="test-key",
+                base_url="https://example.test/v1",
+                reasoning_effort="high",
+                reasoning_effort_parameter="reasoning.effort",
+            ),
+            client=client,
+        )
+
+        await _collect(
+            provider.stream_response(
+                model="gpt-5.5",
+                system="You are Tau.",
+                messages=[UserMessage(content="Say ok")],
+                tools=[],
+            )
+        )
+
+    assert loads(requests[0].content)["reasoning"] == {"effort": "high"}
+    assert "reasoning_effort" not in loads(requests[0].content)
+
+
+@pytest.mark.anyio
 async def test_openai_compatible_provider_streams_reasoning_content() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
         return httpx.Response(
@@ -507,6 +543,43 @@ async def test_openai_codex_provider_formats_request_and_streams_text() -> None:
 
 
 @pytest.mark.anyio
+async def test_openai_codex_provider_includes_configured_reasoning_effort() -> None:
+    requests: list[httpx.Request] = []
+
+    async def credentials() -> OpenAICodexCredentials:
+        return OpenAICodexCredentials(access_token="access-token", account_id="account-1")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            text='data: {"type":"response.completed","response":{"status":"completed"}}\n\n',
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = OpenAICodexProvider(
+            OpenAICodexConfig(
+                credential_resolver=credentials,
+                base_url="https://chatgpt.test/backend-api",
+                reasoning_effort="high",
+            ),
+            client=client,
+        )
+
+        await _collect(
+            provider.stream_response(
+                model="gpt-5.5",
+                system="You are Tau.",
+                messages=[UserMessage(content="Say hello")],
+                tools=[],
+            )
+        )
+
+    assert loads(requests[0].content)["reasoning"] == {"effort": "high"}
+
+
+@pytest.mark.anyio
 async def test_openai_codex_provider_streams_reasoning_deltas() -> None:
     async def credentials() -> OpenAICodexCredentials:
         return OpenAICodexCredentials(access_token="access-token", account_id="account-1")
@@ -761,6 +834,41 @@ async def test_anthropic_provider_formats_request_and_streams_text() -> None:
     assert payload["stream"] is True
     assert payload["system"] == "You are Tau."
     assert payload["messages"] == [{"role": "user", "content": "Say hello"}]
+
+
+@pytest.mark.anyio
+async def test_anthropic_provider_includes_configured_thinking_budget() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            text='data: {"type":"message_stop"}\n\n',
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = AnthropicProvider(
+            AnthropicConfig(
+                api_key="test-key",
+                base_url="https://api.anthropic.test/v1",
+                thinking_budget_tokens=8192,
+            ),
+            client=client,
+        )
+
+        await _collect(
+            provider.stream_response(
+                model="claude-test",
+                system="You are Tau.",
+                messages=[UserMessage(content="Say hello")],
+                tools=[],
+            )
+        )
+
+    payload = loads(requests[0].content)
+    assert payload["thinking"] == {"type": "enabled", "budget_tokens": 8192}
 
 
 @pytest.mark.anyio
