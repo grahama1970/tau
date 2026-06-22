@@ -442,10 +442,15 @@ async def test_session_uses_active_model_thinking_capabilities(tmp_path: Path) -
 
 
 @pytest.mark.anyio
-async def test_session_explains_codex_subscription_thinking_unavailable(
+async def test_session_uses_codex_subscription_thinking_capabilities(
     tmp_path: Path,
 ) -> None:
-    provider_config = OpenAICodexProviderConfig()
+    provider_config = OpenAICodexProviderConfig(
+        thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
+        thinking_models=("gpt-5.5",),
+        thinking_default="medium",
+        thinking_parameter="reasoning.effort",
+    )
     session = await CodingSession.load(
         CodingSessionConfig(
             provider=FakeProvider([]),
@@ -458,13 +463,16 @@ async def test_session_explains_codex_subscription_thinking_unavailable(
         )
     )
 
-    assert session.available_thinking_levels == ()
-    assert session.thinking_unavailable_reason == (
-        "OpenAI Codex subscription can stream reasoning output, but Tau does not "
-        "have a validated Codex transport mapping for changing reasoning effort yet"
+    assert session.available_thinking_levels == (
+        "off",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
     )
-    with pytest.raises(ValueError, match="validated Codex transport mapping"):
-        await session.set_thinking_level("high")
+    assert session.thinking_unavailable_reason is None
+    assert await session.set_thinking_level("high") == "Thinking mode: high"
 
 
 @pytest.mark.anyio

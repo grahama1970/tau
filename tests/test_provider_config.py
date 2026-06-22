@@ -83,11 +83,15 @@ def test_builtin_openai_declares_model_scoped_thinking_capabilities() -> None:
         "high",
     )
     assert provider_thinking_unavailable_reason(huggingface, model="openai/gpt-oss-120b") is None
-    assert provider_thinking_levels(codex, model="gpt-5.5") == ()
-    assert provider_thinking_unavailable_reason(codex, model="gpt-5.5") == (
-        "OpenAI Codex subscription can stream reasoning output, but Tau does not "
-        "have a validated Codex transport mapping for changing reasoning effort yet"
+    assert provider_thinking_levels(codex, model="gpt-5.5") == (
+        "off",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
     )
+    assert provider_thinking_unavailable_reason(codex, model="gpt-5.5") is None
     assert provider_thinking_levels(anthropic, model="claude-sonnet-4-6") == (
         "off",
         "minimal",

@@ -82,6 +82,17 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         ),
         default_model="gpt-5.5",
         docs_url="https://chatgpt.com/codex",
+        thinking_levels=("off", "minimal", "low", "medium", "high", "xhigh"),
+        thinking_models=(
+            "gpt-5.5",
+            "gpt-5.4",
+            "gpt-5.4-mini",
+            "gpt-5.3-codex",
+            "gpt-5.3-codex-spark",
+            "gpt-5.2",
+        ),
+        thinking_default="medium",
+        thinking_parameter="reasoning.effort",
     ),
     ProviderCatalogEntry(
         name="anthropic",

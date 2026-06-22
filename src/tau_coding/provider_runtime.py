@@ -102,6 +102,10 @@ def _codex_reasoning_effort(
             f"Thinking mode {normalized} is not available for "
             f"{provider.name}:{selected_model}. Available modes: {available}"
         )
+    if normalized == "off":
+        return None
+    if normalized == "minimal":
+        return "low"
     return reasoning_effort_for_level(normalized)
 
 

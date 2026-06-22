@@ -576,7 +576,46 @@ async def test_openai_codex_provider_includes_configured_reasoning_effort() -> N
             )
         )
 
-    assert loads(requests[0].content)["reasoning"] == {"effort": "high"}
+    assert loads(requests[0].content)["reasoning"] == {
+        "effort": "high",
+        "summary": "auto",
+    }
+
+
+@pytest.mark.anyio
+async def test_openai_codex_provider_omits_reasoning_when_unset() -> None:
+    requests: list[httpx.Request] = []
+
+    async def credentials() -> OpenAICodexCredentials:
+        return OpenAICodexCredentials(access_token="access-token", account_id="account-1")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            text='data: {"type":"response.completed","response":{"status":"completed"}}\n\n',
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = OpenAICodexProvider(
+            OpenAICodexConfig(
+                credential_resolver=credentials,
+                base_url="https://chatgpt.test/backend-api",
+            ),
+            client=client,
+        )
+
+        await _collect(
+            provider.stream_response(
+                model="gpt-5.5",
+                system="You are Tau.",
+                messages=[UserMessage(content="Say hello")],
+                tools=[],
+            )
+        )
+
+    assert "reasoning" not in loads(requests[0].content)
 
 
 @pytest.mark.anyio
