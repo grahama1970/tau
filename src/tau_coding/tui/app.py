@@ -104,6 +104,7 @@ SIDEBAR_MIN_HEIGHT = 24
 ACTIVITY_TICK_SECONDS = 0.15
 ACTIVITY_COLOR_FADE_STEPS = 24
 ACTIVITY_INDICATOR_HEIGHT = 3
+COMPLETION_MAX_VISIBLE_LINES = 16
 NO_STORED_CREDENTIALS_MESSAGE = (
     "No stored credentials to remove. /logout only removes credentials saved by /login; "
     "environment variables and providers.json config are unchanged."
@@ -1526,6 +1527,7 @@ class TauTuiApp(App[None]):
         background: $tau-autocomplete-background;
         color: $tau-screen-text;
         border: tall $tau-border;
+        overflow-y: auto;
     }
 
     SessionPickerScreen,
@@ -2768,7 +2770,10 @@ class TauTuiApp(App[None]):
         suggestions.display = bool(self._completion_state.items)
         suggestions.update(
             render_completion_suggestions(
-                self._completion_state,
+                _visible_completion_state(
+                    self._completion_state,
+                    max_lines=COMPLETION_MAX_VISIBLE_LINES,
+                ),
                 theme=self.tui_settings.resolved_theme,
             )
         )
@@ -2890,6 +2895,79 @@ def _hex_to_rgb(color: str) -> tuple[int, int, int]:
     if len(value) != 6:
         raise ValueError(f"Expected #rrggbb color, got {color!r}")
     return (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16))
+
+
+def _visible_completion_state(
+    state: CompletionState,
+    *,
+    max_lines: int,
+) -> CompletionState:
+    """Return a completion-state window with the selected item visible."""
+    if not state.items or max_lines <= 0:
+        return CompletionState()
+
+    start = 0
+    while start < state.selected_index:
+        candidate = CompletionState(
+            items=state.items[start:],
+            selected_index=state.selected_index - start,
+        )
+        if _completion_selected_render_line(candidate) < max_lines:
+            break
+        start += 1
+
+    end = len(state.items)
+    while end > state.selected_index + 1:
+        candidate = CompletionState(
+            items=state.items[start:end],
+            selected_index=state.selected_index - start,
+        )
+        if _completion_render_line_count(candidate) <= max_lines:
+            break
+        end -= 1
+
+    return CompletionState(
+        items=state.items[start:end],
+        selected_index=state.selected_index - start,
+    )
+
+
+def _completion_selected_render_line(state: CompletionState) -> int:
+    """Return the rendered line number for the selected completion item."""
+    line = 0
+    has_rendered_text = False
+    previous_category: str | None = None
+    for index, item in enumerate(state.items):
+        if item.category != previous_category:
+            if has_rendered_text:
+                line += 1
+            if item.category:
+                line += 1
+                has_rendered_text = True
+            previous_category = item.category
+        elif has_rendered_text:
+            line += 1
+        if index == state.selected_index:
+            return line
+        has_rendered_text = True
+    return line
+
+
+def _completion_render_line_count(state: CompletionState) -> int:
+    """Return how many lines the completion state renders into."""
+    if not state.items:
+        return 0
+    line_count = 0
+    previous_category: str | None = None
+    for index, item in enumerate(state.items):
+        if item.category != previous_category:
+            if index:
+                line_count += 1
+            if item.category:
+                line_count += 1
+            previous_category = item.category
+        line_count += 1
+    return line_count
 
 
 def _session_command_registry(session: CodingSession) -> CommandRegistry:

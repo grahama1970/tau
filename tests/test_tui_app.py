@@ -57,8 +57,11 @@ from tau_coding.tui.app import (
     ThemePickerScreen,
     TreePickerScreen,
     _activity_prompt_border_color,
+    _completion_selected_render_line,
     _terminal_command_prefix_span,
+    _visible_completion_state,
 )
+from tau_coding.tui.autocomplete import CompletionItem, CompletionState
 from tau_coding.tui.config import (
     HIGH_CONTRAST_THEME,
     TAU_LIGHT_THEME,
@@ -2048,6 +2051,88 @@ async def test_tui_app_tree_picker_toggles_tool_calls() -> None:
             "* assistant: Right",
         ]
         assert tree_list.index == 3
+
+
+@pytest.mark.anyio
+def test_completion_selected_render_line_accounts_for_group_headers() -> None:
+    state = CompletionState(
+        items=(
+            CompletionItem(
+                display="/session",
+                replacement="/session",
+                start=0,
+                end=2,
+                category="Commands",
+            ),
+            CompletionItem(
+                display="/example",
+                replacement="/example",
+                start=0,
+                end=2,
+                category="Custom prompts",
+            ),
+        ),
+        selected_index=1,
+    )
+
+    assert _completion_selected_render_line(state) == 3
+
+
+@pytest.mark.anyio
+def test_visible_completion_state_keeps_selected_item_in_render_window() -> None:
+    items = tuple(
+        CompletionItem(
+            display=f"/prompt-{index:02d}",
+            replacement=f"/prompt-{index:02d}",
+            start=0,
+            end=1,
+            category="Custom prompts",
+        )
+        for index in range(30)
+    )
+    state = CompletionState(items=items, selected_index=24)
+
+    visible = _visible_completion_state(state, max_lines=8)
+
+    assert visible.selected is not None
+    assert visible.selected.display == "/prompt-24"
+    assert visible.selected_index < len(visible.items)
+    assert len(visible.items) < len(items)
+    assert _completion_selected_render_line(visible) < 8
+
+
+@pytest.mark.anyio
+async def test_tui_app_scrolls_completion_selection_into_view() -> None:
+    session = FakeSession()
+    session.prompt_templates = tuple(
+        PromptTemplate(
+            name=f"prompt-{index:02d}",
+            path=Path(f"prompt-{index:02d}.md"),
+            content="Run.",
+        )
+        for index in range(30)
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.focus()
+        prompt.value = "/"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+        autocomplete = app.query_one("#autocomplete", Static)
+        initial_rendered = str(autocomplete.render())
+        assert "/prompt-00" not in initial_rendered
+
+        for _ in range(35):
+            app.action_completion_next()
+            await pilot.pause()
+
+        rendered = str(autocomplete.render())
+        selected = app._completion_state.selected
+        assert selected is not None
+        assert selected.display in rendered
+        assert "/prompt-00" not in rendered
 
 
 @pytest.mark.anyio
