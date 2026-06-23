@@ -1410,6 +1410,13 @@ async def test_tui_app_theme_command_argument_updates_theme_and_persists(
 @pytest.mark.anyio
 async def test_tui_app_new_command_starts_new_visible_state() -> None:
     app = TauTuiApp(FakeSession(messages=[UserMessage(content="Earlier")]))
+    notifications: list[str] = []
+
+    def fake_notify(message: str, **kwargs: object) -> None:
+        del kwargs
+        notifications.append(message)
+
+    app._notify = fake_notify  # type: ignore[method-assign]
 
     async with app.run_test() as pilot:
         prompt = app.query_one("#prompt")
@@ -1418,6 +1425,7 @@ async def test_tui_app_new_command_starts_new_visible_state() -> None:
 
         assert app.session.new_session_count == 1
         assert app.state.items == []
+        assert notifications == []
 
 
 @pytest.mark.anyio

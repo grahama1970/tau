@@ -2346,10 +2346,9 @@ class TauTuiApp(App[None]):
             self._notify("Session manager is not available.")
             return
         try:
-            message = await new_session()
+            await new_session()
             self.state.clear()
             self.state.load_messages(self.session.messages)
-            self._notify(message)
         except Exception as exc:  # noqa: BLE001 - surface command failures in the TUI
             self._notify(f"Error: {exc}", severity="error")
         self._refresh()
