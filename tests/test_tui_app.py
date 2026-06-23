@@ -30,6 +30,7 @@ from tau_agent import (
 )
 from tau_coding.commands import CommandResult
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
+from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.provider_config import (
     OpenAICodexProviderConfig,
     OpenAICompatibleProviderConfig,
@@ -1631,6 +1632,30 @@ async def test_tui_app_submits_multiline_prompt_with_enter() -> None:
 
     assert session.prompt_texts == ["first\nsecond"]
     assert prompt.value == ""
+
+
+@pytest.mark.anyio
+async def test_tui_app_completes_custom_prompt_slash_command() -> None:
+    session = FakeSession()
+    session.prompt_templates = (
+        PromptTemplate(
+            name="example",
+            path=Path("example.md"),
+            content="Example prompt.",
+            description="Run the example prompt.",
+        ),
+    )
+    app = TauTuiApp(session)
+
+    async with app.run_test() as pilot:
+        prompt = app.query_one("#prompt")
+        prompt.value = "/ex"
+        app._completion_state = app._build_completion_state(prompt.value)
+        app._refresh_completions()
+
+        await pilot.press("tab")
+
+        assert prompt.value == "/example"
 
 
 @pytest.mark.anyio

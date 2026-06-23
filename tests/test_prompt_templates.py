@@ -4,6 +4,7 @@ import pytest
 
 from tau_coding import (
     TauResourcePaths,
+    expand_prompt_template_command,
     load_prompt_templates,
     load_prompt_templates_with_diagnostics,
     render_prompt_template,
@@ -106,3 +107,29 @@ def test_render_prompt_template_rejects_missing_variables() -> None:
 
     with pytest.raises(ResourceError, match="Missing prompt template variable"):
         render_prompt_template(template, {})
+
+
+def test_expand_prompt_template_command_replaces_slash_command() -> None:
+    template = PromptTemplate(
+        name="example",
+        path=Path("example.md"),
+        content="Use these arguments: {{ arguments }}",
+    )
+
+    assert expand_prompt_template_command("/example src/app.py", [template]) == (
+        "Use these arguments: src/app.py"
+    )
+
+
+def test_expand_prompt_template_command_appends_arguments_without_placeholder() -> None:
+    template = PromptTemplate(name="review", path=Path("review.md"), content="Review this code.")
+
+    assert expand_prompt_template_command("/review src/app.py", [template]) == (
+        "Review this code.\n\nsrc/app.py"
+    )
+
+
+def test_expand_prompt_template_command_ignores_unknown_commands() -> None:
+    template = PromptTemplate(name="review", path=Path("review.md"), content="Review this code.")
+
+    assert expand_prompt_template_command("/missing src/app.py", [template]) is None

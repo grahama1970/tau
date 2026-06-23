@@ -55,6 +55,7 @@ from tau_coding.diagnostics import (
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
     PromptTemplate,
+    expand_prompt_template_command,
     load_prompt_templates_with_diagnostics,
 )
 from tau_coding.provider_config import (
@@ -1006,15 +1007,20 @@ class CodingSession:
         self._owned_providers.clear()
 
     def handle_command(self, text: str) -> CommandResult:
-        """Handle minimal coding-session slash commands.
+        """Handle coding-session slash commands.
 
-        This is intentionally tiny. Later phases can replace it with a full Pi-like
-        command registry without changing the persistence boundary.
+        Prompt-template slash commands are expansion directives, so they remain
+        unhandled here and flow through `prompt()` for on-the-fly replacement.
         """
+        if expand_prompt_template_command(text, self._prompt_templates) is not None:
+            return CommandResult(handled=False)
         return self._command_registry.execute(self, text)
 
     def expand_prompt_text(self, text: str) -> str:
         """Expand prompt text using loaded markdown resources."""
+        expanded_prompt = expand_prompt_template_command(text, self._prompt_templates)
+        if expanded_prompt is not None:
+            return expanded_prompt
         expanded_skill = expand_skill_command(text, self._skills)
         return expanded_skill if expanded_skill is not None else text
 

@@ -349,7 +349,9 @@ async def test_prompt_queues_steering_while_session_is_running(tmp_path: Path) -
     await task
 
     assert queue_events == [QueueUpdateEvent(steering=("Queued steering",))]
-    before_release_messages = [entry.message for entry in entries_before_release if entry.type == "message"]
+    before_release_messages = [
+        entry.message for entry in entries_before_release if entry.type == "message"
+    ]
     assert before_release_messages == [UserMessage(content="Hello")]
     assert entries_before_release[-1].type == "leaf"
     assert entries_before_release[-1].entry_id == next(
@@ -1080,6 +1082,42 @@ async def test_session_loads_and_expands_skills(tmp_path: Path) -> None:
     assert "References are relative to" in provider.calls[0][2][0].content
     assert provider.calls[0][2][0].content.endswith("</skill>\n\nadd tests")
     assert session.handle_command("/skill:testing").handled is False
+
+
+@pytest.mark.anyio
+async def test_session_expands_prompt_templates_as_slash_commands(tmp_path: Path) -> None:
+    resource_root = tmp_path / "resources"
+    prompts_dir = resource_root / "prompts"
+    prompts_dir.mkdir(parents=True)
+    (prompts_dir / "example.md").write_text(
+        "Custom prompt for {{ arguments }}.",
+        encoding="utf-8",
+    )
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Done")),
+            ]
+        ]
+    )
+    config = CodingSessionConfig(
+        provider=provider,
+        model="fake",
+        system="You are Tau.",
+        storage=storage,
+        cwd=tmp_path,
+        resource_paths=TauResourcePaths(root=resource_root, agents_root=None),
+    )
+    session = await CodingSession.load(config)
+
+    assert [template.name for template in session.prompt_templates] == ["example"]
+    assert session.handle_command("/example src/app.py").handled is False
+
+    _events = await _collect_session_events(session.prompt("/example src/app.py"))
+
+    assert provider.calls[0][2][0].content == "Custom prompt for src/app.py."
 
 
 @pytest.mark.anyio

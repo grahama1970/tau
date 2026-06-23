@@ -98,7 +98,6 @@ def build_completion_state(
     cwd: Path | None = None,
 ) -> CompletionState:
     """Build autocomplete suggestions for the current prompt text."""
-    del prompt_templates
     if not text.startswith("/") or text.startswith("//"):
         if cwd is not None:
             shell_completions = _shell_path_completions(text=text, cwd=cwd)
@@ -129,7 +128,12 @@ def build_completion_state(
         return CompletionState(argument_completions)
 
     return CompletionState(
-        _command_completions(token=token, token_end=token_end, registry=command_registry)
+        _command_completions(
+            token=token,
+            token_end=token_end,
+            registry=command_registry,
+            prompt_templates=prompt_templates,
+        )
     )
 
 
@@ -298,12 +302,27 @@ def _parse_shell_path_token(token: str) -> tuple[str, str, str] | None:
 
 
 def _command_completions(
-    *, token: str, token_end: int, registry: CommandRegistry
+    *,
+    token: str,
+    token_end: int,
+    registry: CommandRegistry,
+    prompt_templates: Sequence[PromptTemplate],
 ) -> tuple[CompletionItem, ...]:
     prefix = token.removeprefix("/").lower()
     suggestions: list[CompletionItem] = []
     for command in registry.list_commands():
         suggestions.extend(_command_alias_completions(command, prefix=prefix, token_end=token_end))
+    for template in prompt_templates:
+        if template.name.lower().startswith(prefix):
+            suggestions.append(
+                CompletionItem(
+                    display=f"/{template.name}",
+                    replacement=f"/{template.name}",
+                    start=0,
+                    end=token_end,
+                    description=template.description or "Prompt template",
+                )
+            )
     return tuple(sorted(suggestions, key=lambda item: _command_completion_sort_key(item, prefix)))
 
 

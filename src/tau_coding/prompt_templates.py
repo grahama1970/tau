@@ -1,7 +1,7 @@
 """Markdown prompt template loading and rendering."""
 
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -74,6 +74,50 @@ def render_prompt_template(template: PromptTemplate, variables: Mapping[str, str
         return value
 
     return _TEMPLATE_VARIABLE_RE.sub(replace, template.content)
+
+
+def expand_prompt_template_command(
+    text: str,
+    templates: Sequence[PromptTemplate],
+) -> str | None:
+    """Expand `/name [arguments]` text with a loaded prompt template.
+
+    Template names are matched by markdown filename stem. Invocation arguments are
+    available to templates as `{{ arguments }}` or `{{ args }}`. If a template has
+    no placeholders, arguments are appended after a blank line.
+    """
+    stripped = text.strip()
+    if not stripped.startswith("/") or stripped.startswith("//") or stripped.startswith("/skill:"):
+        return None
+
+    name, args = _parse_prompt_template_command(stripped)
+    if not name:
+        return None
+
+    template = _find_prompt_template(name, templates)
+    if template is None:
+        return None
+
+    rendered = render_prompt_template(template, {"arguments": args, "args": args})
+    if args and not _TEMPLATE_VARIABLE_RE.search(template.content):
+        return f"{rendered.rstrip()}\n\n{args}"
+    return rendered
+
+
+def _find_prompt_template(
+    name: str,
+    templates: Sequence[PromptTemplate],
+) -> PromptTemplate | None:
+    normalized_name = name.strip().removeprefix("/").lower()
+    for template in templates:
+        if template.name.lower() == normalized_name:
+            return template
+    return None
+
+
+def _parse_prompt_template_command(text: str) -> tuple[str, str]:
+    command, separator, args = text[1:].partition(" ")
+    return command.strip().lower(), args.strip() if separator else ""
 
 
 def _load_prompt_templates_from_dir(prompts_dir: Path) -> list[PromptTemplate]:

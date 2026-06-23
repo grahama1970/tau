@@ -112,14 +112,18 @@ For example, `/new` returns `new_session_requested=True`. The TUI responds by
 creating and loading a fresh indexed session without deleting older durable JSONL
 session history.
 
-## Skill command behavior
+## Prompt expansion command behavior
 
 `/skill:<name> [request]` remains a prompt-expansion path, not a normal slash
 command.
 
-The registry intentionally returns `handled=False` for text beginning with
-`/skill:` so `CodingSession.prompt()` can expand the skill before sending the
-prompt to the model.
+Prompt templates also behave as dynamic prompt-expansion commands. For example,
+`.agents/prompts/example.md` is invoked as `/example [arguments]` and expanded by
+`CodingSession.prompt()` before the model sees the prompt.
+
+The registry intentionally returns `handled=False` for skill and prompt-template
+expansion directives so `CodingSession.prompt()` can replace them before sending
+the prompt to the model.
 
 There is no plain `/skill` slash command in the Pi-aligned registry.
 

@@ -33,6 +33,7 @@ from tau_coding.credentials import (
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
     PromptTemplate,
+    expand_prompt_template_command,
     load_prompt_templates,
     load_prompt_templates_with_diagnostics,
     render_prompt_template,
@@ -190,6 +191,7 @@ __all__ = [
     "builtin_provider_entry",
     "collect_prompt_guidelines",
     "CredentialStoreError",
+    "expand_prompt_template_command",
     "create_bash_tool",
     "create_bash_tool_definition",
     "create_coding_tools",

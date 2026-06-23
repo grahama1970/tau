@@ -124,7 +124,25 @@ Prompt templates live in:
 
 ```text
 ~/.tau/prompts/review.md
+.agents/prompts/review.md
 ```
+
+Tau treats loaded prompt templates as slash-command prompt expansions. A file
+named `.agents/prompts/example.md` can be invoked with:
+
+```text
+/example src/app.py
+```
+
+Tau expands the command before sending the prompt to the model. Invocation text
+after the command is available as `{{ arguments }}` or `{{ args }}`:
+
+```md
+Review {{ arguments }} for correctness.
+```
+
+If the prompt template has no placeholders, Tau appends the invocation arguments
+after a blank line.
 
 Template variables use simple `{{ variable }}` placeholders:
 
@@ -132,7 +150,7 @@ Template variables use simple `{{ variable }}` placeholders:
 Review {{ target }} for {{ focus }}.
 ```
 
-Render templates with:
+Render templates directly with:
 
 ```python
 from tau_coding import load_prompt_templates, render_prompt_template
