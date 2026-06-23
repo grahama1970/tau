@@ -1937,6 +1937,7 @@ class TauTuiApp(App[None]):
                 await self._set_thinking_level(command.thinking_level)
             if command.theme is not None:
                 self._set_tui_theme(cast(TuiThemeName, command.theme))
+            self.state.set_skills(self.session.skills)
             if command.message:
                 if _command_message_uses_notification(text, command.message):
                     self._notify(command.message)

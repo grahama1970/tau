@@ -78,7 +78,7 @@ class TuiState:
         if skill_name is not None:
             self.add_item(
                 "skill",
-                f"Reading skill: {skill_name}",
+                f"Loading skill: {skill_name}",
                 tool_call_id=tool_call.id,
             )
             return

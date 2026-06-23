@@ -143,7 +143,7 @@ def test_tui_adapter_renders_skill_file_reads_with_skill_style() -> None:
     )
 
     assert [(item.role, item.text, item.tool_result_text) for item in state.items] == [
-        ("skill", "Reading skill: review", "✓ read\n# Review\nFull instructions.")
+        ("skill", "Loading skill: review", "✓ read\n# Review\nFull instructions.")
     ]
 
 
