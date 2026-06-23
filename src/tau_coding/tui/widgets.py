@@ -1145,8 +1145,16 @@ def render_completion_suggestions(
 ) -> Text:
     """Render prompt completion suggestions."""
     text = Text()
+    previous_category: str | None = None
     for index, item in enumerate(state.items):
-        if index:
+        if item.category != previous_category:
+            if text:
+                text.append("\n")
+            if item.category:
+                text.append(item.category, style=theme.completion_description)
+                text.append("\n")
+            previous_category = item.category
+        elif text:
             text.append("\n")
         selected = index == state.selected_index
         prefix = "› " if selected else "  "

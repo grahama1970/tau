@@ -44,6 +44,7 @@ class CompletionItem:
     start: int
     end: int
     description: str | None = None
+    category: str | None = None
 
     def apply(self, text: str) -> str:
         """Apply this completion to input text."""
@@ -309,21 +310,27 @@ def _command_completions(
     prompt_templates: Sequence[PromptTemplate],
 ) -> tuple[CompletionItem, ...]:
     prefix = token.removeprefix("/").lower()
-    suggestions: list[CompletionItem] = []
+    command_suggestions: list[CompletionItem] = []
     for command in registry.list_commands():
-        suggestions.extend(_command_alias_completions(command, prefix=prefix, token_end=token_end))
-    for template in prompt_templates:
-        if template.name.lower().startswith(prefix):
-            suggestions.append(
-                CompletionItem(
-                    display=f"/{template.name}",
-                    replacement=f"/{template.name}",
-                    start=0,
-                    end=token_end,
-                    description=template.description or "Prompt template",
-                )
-            )
-    return tuple(sorted(suggestions, key=lambda item: _command_completion_sort_key(item, prefix)))
+        command_suggestions.extend(
+            _command_alias_completions(command, prefix=prefix, token_end=token_end)
+        )
+    prompt_suggestions = [
+        CompletionItem(
+            display=f"/{template.name}",
+            replacement=f"/{template.name}",
+            start=0,
+            end=token_end,
+            description=template.description or "Prompt template",
+            category="Custom prompts",
+        )
+        for template in prompt_templates
+        if template.name.lower().startswith(prefix)
+    ]
+    return (
+        *sorted(command_suggestions, key=lambda item: _command_completion_sort_key(item, prefix)),
+        *sorted(prompt_suggestions, key=lambda item: _command_completion_sort_key(item, prefix)),
+    )
 
 
 def _command_completion_sort_key(item: CompletionItem, prefix: str) -> tuple[int, str]:
@@ -361,6 +368,7 @@ def _command_alias_completions(
                 start=0,
                 end=token_end,
                 description=command.description,
+                category="Commands",
             )
         )
     return suggestions

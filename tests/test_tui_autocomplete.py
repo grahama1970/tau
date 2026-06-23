@@ -1,8 +1,10 @@
 from pathlib import Path
 
 from tau_coding.commands import create_default_command_registry
+from tau_coding.prompt_templates import PromptTemplate
 from tau_coding.skills import Skill
 from tau_coding.tui.autocomplete import CompletionOption, build_completion_state
+from tau_coding.tui.widgets import render_completion_suggestions
 
 
 def test_command_completion_for_slash_lists_every_registered_command() -> None:
@@ -18,6 +20,31 @@ def test_command_completion_for_slash_lists_every_registered_command() -> None:
         f"/{command.name}" if command.name != "skill" else "/skill:"
         for command in registry.list_commands()
     ]
+
+
+def test_slash_completion_groups_commands_and_custom_prompts() -> None:
+    state = build_completion_state(
+        "/",
+        command_registry=create_default_command_registry(),
+        skills=(),
+        prompt_templates=(
+            PromptTemplate(
+                name="example",
+                path=Path("example.md"),
+                content="Example prompt.",
+                description="Run example.",
+            ),
+        ),
+    )
+
+    assert state.items[0].category == "Commands"
+    assert state.items[-1].display == "/example"
+    assert state.items[-1].category == "Custom prompts"
+    rendered = render_completion_suggestions(state).plain
+    assert "Commands\n" in rendered
+    assert "Custom prompts\n" in rendered
+    assert rendered.index("Commands") < rendered.index("/compact")
+    assert rendered.index("Custom prompts") < rendered.index("/example")
 
 
 def test_command_completion_suggests_registered_commands() -> None:

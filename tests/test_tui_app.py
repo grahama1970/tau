@@ -1649,7 +1649,7 @@ async def test_tui_app_completes_custom_prompt_slash_command() -> None:
 
     async with app.run_test() as pilot:
         prompt = app.query_one("#prompt")
-        prompt.value = "/ex"
+        prompt.value = "/exa"
         app._completion_state = app._build_completion_state(prompt.value)
         app._refresh_completions()
 
