@@ -499,6 +499,87 @@ def test_cli_handoff_loop_dry_run_refuses_discontinuity(tmp_path: Path) -> None:
     assert (receipt_dir / "loop-receipt.json").exists()
 
 
+def test_cli_handoff_dispatch_once_consumes_selected_response(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    reviewer = _valid_cli_handoff_payload()
+    reviewer["previous_subagent"] = "reviewer"
+    reviewer["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human chooses whether to continue live mutation.",
+    }
+    start_path = tmp_path / "start.json"
+    responses_dir = tmp_path / "responses"
+    receipt_dir = tmp_path / "dispatch-receipts"
+    responses_dir.mkdir()
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (responses_dir / "reviewer.json").write_text(json.dumps(reviewer), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-once",
+            "--start",
+            str(start_path),
+            "--responses-dir",
+            str(responses_dir),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads((receipt_dir / "dispatch-receipt.json").read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_dispatch_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "COMPLETED"
+    assert payload["selected_agent"] == "reviewer"
+    assert payload["stop_reason"] == "response_consumed"
+    assert payload["mocked"] is True
+    assert payload["live"] is False
+    assert receipt == payload
+    assert (receipt_dir / "start-handoff.receipt.json").exists()
+    assert (receipt_dir / "reviewer-response.receipt.json").exists()
+
+
+def test_cli_handoff_dispatch_once_blocks_invalid_response(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    reviewer = _valid_cli_handoff_payload()
+    reviewer["previous_subagent"] = "coder"
+    start_path = tmp_path / "start.json"
+    responses_dir = tmp_path / "responses"
+    receipt_dir = tmp_path / "dispatch-receipts"
+    responses_dir.mkdir()
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (responses_dir / "reviewer.json").write_text(json.dumps(reviewer), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-once",
+            "--start",
+            str(start_path),
+            "--responses-dir",
+            str(responses_dir),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["stop_reason"] == "invalid_agent_response"
+    assert "response.previous_subagent must equal selected_agent" in "\n".join(payload["errors"])
+    assert (receipt_dir / "dispatch-receipt.json").exists()
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

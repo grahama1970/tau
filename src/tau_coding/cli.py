@@ -39,6 +39,7 @@ from tau_coding.github_handoff import (
     transport_generated_ticket_to_github,
     transport_handoff_projection_to_github,
 )
+from tau_coding.handoff_dispatch import write_agent_handoff_dispatch_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -656,6 +657,24 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-dispatch-once":
+        try:
+            start_path, responses_dir, active_goal_hash, receipt_dir, agents_root = (
+                _parse_handoff_dispatch_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_dispatch_command(
+                start_path,
+                responses_dir=responses_dir,
+                active_goal_hash=active_goal_hash,
+                receipt_dir=receipt_dir,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -1058,6 +1077,64 @@ def _parse_handoff_loop_cli_args(
     if receipt_dir is None:
         raise RuntimeError("handoff-loop-dry-run requires --receipt-dir <dir>")
     return start_path, responses_dir, active_goal_hash, receipt_dir, max_steps, agents_root
+
+
+def _parse_handoff_dispatch_cli_args(
+    args: list[str],
+) -> tuple[Path, Path, str | None, Path, Path | None]:
+    start_path: Path | None = None
+    responses_dir: Path | None = None
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--start":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--start requires a value")
+            start_path = Path(args[index])
+        elif arg.startswith("--start="):
+            start_path = Path(arg.partition("=")[2])
+        elif arg == "--responses-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--responses-dir requires a value")
+            responses_dir = Path(args[index])
+        elif arg.startswith("--responses-dir="):
+            responses_dir = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown handoff-dispatch-once option: {arg}")
+        index += 1
+    if start_path is None:
+        raise RuntimeError("handoff-dispatch-once requires --start <handoff.json>")
+    if responses_dir is None:
+        raise RuntimeError("handoff-dispatch-once requires --responses-dir <dir>")
+    if receipt_dir is None:
+        raise RuntimeError("handoff-dispatch-once requires --receipt-dir <dir>")
+    return start_path, responses_dir, active_goal_hash, receipt_dir, agents_root
 
 
 def _parse_positive_int(value: str, option: str) -> int:
@@ -2289,6 +2366,29 @@ def project_agent_handoff_loop_command(
     )
     typer.echo(json.dumps(loop.as_dict(), indent=2, sort_keys=True))
     return loop.ok
+
+
+def project_agent_handoff_dispatch_command(
+    start_path: Path,
+    *,
+    responses_dir: Path,
+    active_goal_hash: str | None,
+    receipt_dir: Path,
+    agents_root: Path | None,
+) -> bool:
+    """Write a one-step dispatch receipt by consuming the selected response file."""
+
+    start_payload = _load_json_object(start_path, label="start handoff")
+    response_payloads = _load_handoff_response_dir(responses_dir)
+    dispatch = write_agent_handoff_dispatch_receipt(
+        start_payload,
+        response_payloads,
+        receipt_dir.expanduser().resolve(),
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+    )
+    typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
+    return dispatch.ok
 
 
 def _load_handoff_response_dir(responses_dir: Path) -> dict[str, dict[str, object]]:
