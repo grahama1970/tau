@@ -163,7 +163,10 @@ def test_memory_route_runs_intent_extract_entities_then_recall(
 def test_memory_route_marks_entity_packet_fallback_when_extract_entities_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fake_memory_post_result(path: str, payload: dict[str, object]) -> tuple[dict[str, object], str]:
+    def fake_memory_post_result(
+        path: str,
+        payload: dict[str, object],
+    ) -> tuple[dict[str, object], str]:
         assert path == "/extract-entities"
         assert payload["text"] == "fallback entity query"
         assert payload["scope"] == "tau"
@@ -246,6 +249,25 @@ def test_answer_branch_calls_memory_answer(monkeypatch: pytest.MonkeyPatch) -> N
     assert result["status"] == "PASS"
 
 
+def test_answer_branch_fails_closed_when_memory_cannot_answer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_memory_post(path: str, payload: dict[str, object]) -> dict[str, object]:
+        assert path == "/answer"
+        return {
+            "schema": "memory.answer.v1",
+            "can_answer": False,
+            "answer_type": "insufficient_memory_evidence",
+        }
+
+    monkeypatch.setattr(harness, "memory_post", fake_memory_post)
+
+    result = harness.call_memory_answer("unsupported claim", scope="tau")
+
+    assert result["status"] == "NEEDS_MORE_EVIDENCE"
+    assert harness.branch_failed_closed(result) is True
+
+
 def test_clarify_branch_can_include_evidence_case(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[tuple[str, dict[str, object]]] = []
 
@@ -264,6 +286,23 @@ def test_clarify_branch_can_include_evidence_case(monkeypatch: pytest.MonkeyPatc
     assert calls[0][0] == "/clarify"
     assert calls[0][1]["evidence_case"] == {"failure_codes": ["missing_bridge"]}
     assert result["status"] == "PASS"
+
+
+def test_clarify_branch_fails_closed_on_memory_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    request = httpx.Request("POST", "http://127.0.0.1:8601/clarify")
+    response = httpx.Response(503, request=request, text="unavailable")
+
+    def fake_memory_post(path: str, payload: dict[str, object]) -> dict[str, object]:
+        assert path == "/clarify"
+        raise httpx.HTTPStatusError("unavailable", request=request, response=response)
+
+    monkeypatch.setattr(harness, "memory_post", fake_memory_post)
+
+    result = harness.call_memory_clarify("ambiguous", scope="tau")
+
+    assert result["status"] == "FAILED"
+    assert result["payload"]["status_code"] == 503
+    assert harness.branch_failed_closed(result) is True
 
 
 def test_deflect_branch_calls_memory_deflect(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -294,6 +333,62 @@ def test_deflect_branch_records_http_failure(monkeypatch: pytest.MonkeyPatch) ->
 
     assert result["status"] == "FAILED"
     assert result["payload"]["status_code"] == 502
+    assert harness.branch_failed_closed(result) is True
+
+
+def test_research_branch_fails_closed_when_brave_required_but_disabled() -> None:
+    memory = {
+        "schema": "tau.loop2_memory_route.v1",
+        "intent": {"action": "RESEARCH", "confidence": 0.92},
+        "recall": {"found": False, "should_scan": True, "items": []},
+        "entity_packet": {"entities": [], "unresolved_terms": []},
+    }
+    selection = harness.select_skill(memory)
+
+    result = harness.run_selected_branch(
+        "latest Tau docs",
+        scope="tau",
+        memory=memory,
+        selection=selection,
+        run_brave=False,
+        run_evidence_case=True,
+    )
+
+    assert result["schema"] == "tau.loop2_brave_search.v1"
+    assert result["ran"] is False
+    assert result["status"] == "FAILED"
+    assert result["reason"] == "required_but_disabled"
+    assert harness.branch_failed_closed(result) is True
+
+
+def test_build_harness_receipt_exposes_fail_closed_branch_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_memory_route(query: str, *, scope: str) -> dict[str, object]:
+        return {
+            "schema": "tau.loop2_memory_route.v1",
+            "intent": {"action": "QUERY", "confidence": 0.9},
+            "recall": {"found": True, "should_scan": False, "items": [{}]},
+            "entity_packet": {"entities": [{"id": "x"}], "unresolved_terms": []},
+        }
+
+    def fake_answer(query: str, *, scope: str) -> dict[str, object]:
+        return {
+            "schema": "tau.loop2_memory_answer_branch.v1",
+            "ran": True,
+            "endpoint": "/answer",
+            "payload": {"schema": "memory.answer.v1", "can_answer": False},
+            "status": "NEEDS_MORE_EVIDENCE",
+        }
+
+    monkeypatch.setattr(harness, "memory_route", fake_memory_route)
+    monkeypatch.setattr(harness, "call_memory_answer", fake_answer)
+
+    receipt = harness.build_harness_receipt("unsupported claim")
+
+    assert receipt["selected_skill"] == "memory.answer"
+    assert receipt["branch_status"] == "NEEDS_MORE_EVIDENCE"
+    assert receipt["fail_closed"] is True
 
 
 def test_create_evidence_case_branch_uses_test_only_command(

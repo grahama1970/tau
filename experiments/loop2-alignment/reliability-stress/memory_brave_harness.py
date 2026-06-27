@@ -381,6 +381,7 @@ def run_selected_branch(
             "schema": "tau.loop2_brave_search.v1",
             "ran": False,
             "reason": "required_but_disabled",
+            "status": "FAILED",
             "query": query,
             "result_count": 0,
             "payload": {},
@@ -409,6 +410,15 @@ def run_selected_branch(
         "status": "FAILED",
         "error": f"unknown selected skill: {selected}",
     }
+
+
+def branch_failed_closed(branch: dict[str, Any]) -> bool:
+    """Return whether the selected branch stopped instead of producing an answer artifact."""
+
+    if branch.get("ran") is False:
+        return True
+    status = str(branch.get("status") or "").upper()
+    return status not in {"PASS"}
 
 
 def _legacy_brave_reasons(
@@ -567,10 +577,12 @@ def build_harness_receipt(
         "schema": "tau.loop2_brave_search.v1",
         "ran": False,
         "reason": "not_selected",
+        "status": "NOT_SELECTED",
         "query": query,
         "result_count": 0,
         "payload": {},
     }
+    fail_closed = branch_failed_closed(branch)
 
     return {
         "schema": "tau.loop2_memory_skill_selector_harness.v1",
@@ -584,6 +596,8 @@ def build_harness_receipt(
         "selector": selection,
         "selected_skill": selection["selected_skill"],
         "branch": branch,
+        "branch_status": str(branch.get("status") or "UNKNOWN"),
+        "fail_closed": fail_closed,
         "persona_voice": persona_voice,
         "brave_required": selection["selected_skill"] == "brave-search",
         "brave_required_reasons": (
