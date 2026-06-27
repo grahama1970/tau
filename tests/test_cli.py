@@ -1044,6 +1044,61 @@ def test_cli_handoff_goal_guardian_adapter_reconciles_human_goal_change(
     assert receipt["next_agent"] == "human"
 
 
+def test_cli_handoff_goal_guardian_adapter_classifies_ticket_source(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    source = json.loads((FIXTURES / "valid-human-goal-change.json").read_text())
+    ticket_source = FIXTURES / "goal-guardian-ticket-source.json"
+    start = _valid_cli_handoff_payload()
+    start["github"] = source["github"]
+    start["goal"] = source["goal"]
+    start["previous_subagent"] = "human"
+    start["context"] = {
+        "summary": "Trusted human requested immutable goal-change reconciliation.",
+        "artifacts": [str(FIXTURES / "valid-human-goal-change.json")],
+        "human_goal_change": {
+            "schema": source["schema"],
+            "source": str(FIXTURES / "valid-human-goal-change.json"),
+            "new_goal": source["new_goal"],
+            "rationale": source["rationale"],
+        },
+    }
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal changes must be reconciled before further work.",
+    }
+    artifact_dir = tmp_path / "artifacts"
+    monkeypatch.setenv("TAU_HANDOFF_ACTIVE_GOAL_HASH", "sha256:active-goal")
+    monkeypatch.setenv("TAU_HANDOFF_COMMAND_ARTIFACT_DIR", str(artifact_dir))
+    monkeypatch.setenv("TAU_GOAL_GUARDIAN_TICKET_SOURCE", str(ticket_source))
+
+    result = CliRunner().invoke(
+        app,
+        ["handoff-goal-guardian-adapter"],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+    receipt = payload["context"]["goal_guardian_reconciliation"]
+    reconciliation = receipt["open_ticket_reconciliation"]
+
+    assert result.exit_code == 0
+    assert reconciliation["status"] == "classified"
+    assert reconciliation["source"] == str(ticket_source.resolve())
+    assert reconciliation["counts"] == {
+        "keep": 1,
+        "close": 1,
+        "migrate": 1,
+        "regenerate": 1,
+    }
+    assert reconciliation["keep"][0]["id"] == "issue#101"
+    assert reconciliation["migrate"][0]["id"] == "issue#102"
+    assert reconciliation["regenerate"][0]["id"] == "issue#103"
+    assert reconciliation["close"][0]["id"] == "issue#104"
+    assert receipt["next_agent"] == "human"
+
+
 def test_cli_handoff_goal_guardian_adapter_refuses_stale_goal_hash(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

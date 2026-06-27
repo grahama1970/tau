@@ -1,0 +1,42 @@
+{
+  "schema": "tau.goal_guardian_ticket_source.v1",
+  "tickets": [
+    {
+      "id": "issue#101",
+      "kind": "issue",
+      "number": 101,
+      "status": "open",
+      "title": "Keep current proof artifact review",
+      "goal_hash": "sha256:active-goal",
+      "labels": ["agent-work", "next:human"],
+      "reconciliation": "keep"
+    },
+    {
+      "id": "issue#102",
+      "kind": "issue",
+      "number": 102,
+      "status": "open",
+      "title": "Migrate goal capsule documentation",
+      "goal_hash": "sha256:active-goal",
+      "labels": ["agent-work", "ticket:goal"]
+    },
+    {
+      "id": "issue#103",
+      "kind": "issue",
+      "number": 103,
+      "status": "open",
+      "title": "Regenerate stale implementation ticket",
+      "goal_hash": "sha256:stale-goal",
+      "labels": ["agent-work", "next:coder"]
+    },
+    {
+      "id": "issue#104",
+      "kind": "issue",
+      "number": 104,
+      "status": "closed",
+      "title": "Close superseded branch",
+      "goal_hash": "sha256:active-goal",
+      "labels": ["agent-done"]
+    }
+  ]
+}

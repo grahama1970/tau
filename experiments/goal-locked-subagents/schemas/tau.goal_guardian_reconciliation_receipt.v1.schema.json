@@ -54,13 +54,22 @@
     },
     "open_ticket_reconciliation": {
       "type": "object",
-      "required": ["status", "reason", "keep", "close", "migrate", "regenerate"],
+      "required": ["status", "reason", "source", "counts", "keep", "close", "migrate", "regenerate"],
       "properties": {
         "status": {
           "type": "string"
         },
         "reason": {
           "type": "string"
+        },
+        "source": {
+          "type": ["string", "null"]
+        },
+        "source_schema": {
+          "type": ["string", "null"]
+        },
+        "counts": {
+          "type": "object"
         },
         "keep": {
           "type": "array"

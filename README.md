@@ -125,9 +125,13 @@ Implemented local contract slices include:
   `--trusted-human` and the active goal hash are supplied.
 - `tau.goal_guardian_reconciliation_receipt.v1`: deterministic receipt emitted
   when `goal-guardian` sees a bridged human goal-change request. The current
-  slice records the proposed new goal, records that open-ticket reconciliation
-  has not started without an authoritative ticket source, and routes to `human`
-  before any non-human agent can continue.
+  slice records the proposed new goal, classifies an optional authoritative
+  local ticket source into `keep`, `close`, `migrate`, and `regenerate`, and
+  routes to `human` before any non-human agent can continue.
+- `tau.goal_guardian_ticket_source.v1`: local structured ticket source used by
+  goal-guardian reconciliation. The source is opt-in through
+  `TAU_GOAL_GUARDIAN_TICKET_SOURCE`; without it, the receipt reports
+  `open_ticket_reconciliation.status = "not_started"`.
 - command-backed one-step handoff dispatch:
   - `tau handoff-dispatch-command` runs one bounded local command and validates
     its stdout as `tau.agent_handoff.v1`.
@@ -147,7 +151,10 @@ Implemented local contract slices include:
     `tau.agent_handoff.v1` before routing onward. When the incoming handoff
     carries `context.human_goal_change`, the adapter writes a
     `tau.goal_guardian_reconciliation_receipt.v1` artifact and routes to
-    `human` instead of continuing to another worker.
+    `human` instead of continuing to another worker. If
+    `TAU_GOAL_GUARDIAN_TICKET_SOURCE` points at a
+    `tau.goal_guardian_ticket_source.v1` file, the receipt classifies that
+    source into `keep`, `close`, `migrate`, and `regenerate` buckets.
 - human-goal-change bridge:
   - `tau human-goal-change-bridge <human-goal-change.json> --active-goal-hash
     <hash> --trusted-human --handoff-out <start-handoff.json> --receipt
@@ -182,6 +189,8 @@ src/tau_coding/handoff_dispatch.py
 experiments/goal-locked-subagents/
 experiments/goal-locked-subagents/agent-command-specs/
 experiments/goal-locked-subagents/schemas/tau.human_goal_change_bridge_receipt.v1.schema.json
+experiments/goal-locked-subagents/schemas/tau.goal_guardian_reconciliation_receipt.v1.schema.json
+experiments/goal-locked-subagents/schemas/tau.goal_guardian_ticket_source.v1.schema.json
 tests/test_subagent_receipt.py
 tests/test_generated_ticket.py
 tests/test_human_goal_change.py

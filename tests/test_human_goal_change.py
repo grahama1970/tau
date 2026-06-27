@@ -44,6 +44,15 @@ def test_goal_guardian_reconciliation_receipt_schema_artifact_has_tau_id() -> No
     )
 
 
+def test_goal_guardian_ticket_source_schema_artifact_has_tau_id() -> None:
+    schema = json.loads(
+        (SCHEMAS / "tau.goal_guardian_ticket_source.v1.schema.json").read_text()
+    )
+
+    assert schema["$id"] == "tau.goal_guardian_ticket_source.v1"
+    assert schema["properties"]["schema"]["const"] == "tau.goal_guardian_ticket_source.v1"
+
+
 def test_trusted_human_goal_change_routes_to_goal_guardian() -> None:
     result = validate_human_goal_change_file(
         FIXTURES / "valid-human-goal-change.json",

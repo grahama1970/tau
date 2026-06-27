@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.goal_guardian_ticket_source.v1",
+  "title": "Tau Goal Guardian Ticket Source",
+  "type": "object",
+  "required": ["schema", "tickets"],
+  "properties": {
+    "schema": {
+      "const": "tau.goal_guardian_ticket_source.v1"
+    },
+    "tickets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "status", "title"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "goal_hash": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reconciliation": {
+            "type": "string",
+            "enum": ["keep", "close", "migrate", "regenerate"]
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -3279,6 +3279,7 @@ def _goal_guardian_reconciliation_receipt(
     new_goal = human_goal_change.get("new_goal")
     if not isinstance(new_goal, dict):
         new_goal = {}
+    open_ticket_reconciliation = _goal_guardian_open_ticket_reconciliation(goal=goal)
     return {
         "schema": "tau.goal_guardian_reconciliation_receipt.v1",
         "ok": True,
@@ -3290,17 +3291,108 @@ def _goal_guardian_reconciliation_receipt(
         "source_schema": human_goal_change.get("schema"),
         "source": human_goal_change.get("source"),
         "source_artifacts": [item for item in source_artifacts if isinstance(item, str)],
-        "open_ticket_reconciliation": {
+        "open_ticket_reconciliation": open_ticket_reconciliation,
+        "next_agent": "human",
+        "errors": [],
+    }
+
+
+def _goal_guardian_open_ticket_reconciliation(
+    *,
+    goal: dict[str, object],
+) -> dict[str, object]:
+    source_path = environ.get("TAU_GOAL_GUARDIAN_TICKET_SOURCE")
+    if not isinstance(source_path, str) or not source_path.strip():
+        return {
             "status": "not_started",
             "reason": "No authoritative open-ticket source was provided to this bounded adapter.",
+            "source": None,
+            "counts": {"keep": 0, "close": 0, "migrate": 0, "regenerate": 0},
             "keep": [],
             "close": [],
             "migrate": [],
             "regenerate": [],
-        },
-        "next_agent": "human",
-        "errors": [],
+        }
+
+    resolved = Path(source_path).expanduser().resolve()
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"goal-guardian ticket source unreadable: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("goal-guardian ticket source root must be an object")
+    if payload.get("schema") != "tau.goal_guardian_ticket_source.v1":
+        raise RuntimeError(
+            "goal-guardian ticket source schema must be tau.goal_guardian_ticket_source.v1"
+        )
+    tickets = payload.get("tickets")
+    if not isinstance(tickets, list):
+        raise RuntimeError("goal-guardian ticket source tickets must be a list")
+
+    buckets: dict[str, list[dict[str, object]]] = {
+        "keep": [],
+        "close": [],
+        "migrate": [],
+        "regenerate": [],
     }
+    current_goal_hash = goal.get("goal_hash")
+    for index, ticket in enumerate(tickets):
+        if not isinstance(ticket, dict):
+            raise RuntimeError(f"goal-guardian ticket source tickets[{index}] must be an object")
+        bucket = _classify_goal_guardian_ticket(ticket, current_goal_hash=current_goal_hash)
+        buckets[bucket].append(_goal_guardian_ticket_ref(ticket))
+
+    return {
+        "status": "classified",
+        "reason": "Classified tickets from authoritative local ticket source.",
+        "source": str(resolved),
+        "source_schema": payload.get("schema"),
+        "counts": {name: len(items) for name, items in buckets.items()},
+        **buckets,
+    }
+
+
+def _classify_goal_guardian_ticket(
+    ticket: dict[str, object],
+    *,
+    current_goal_hash: object,
+) -> str:
+    explicit = ticket.get("reconciliation")
+    if isinstance(explicit, str) and explicit in {"keep", "close", "migrate", "regenerate"}:
+        return explicit
+    status = ticket.get("status")
+    if isinstance(status, str) and status.lower() not in {"open", "opened"}:
+        return "close"
+    ticket_goal_hash = ticket.get("goal_hash")
+    if (
+        isinstance(ticket_goal_hash, str)
+        and ticket_goal_hash
+        and ticket_goal_hash != current_goal_hash
+    ):
+        return "regenerate"
+    labels = ticket.get("labels")
+    label_set = (
+        {item for item in labels if isinstance(item, str)}
+        if isinstance(labels, list)
+        else set()
+    )
+    if "goal-change" in label_set or "ticket:goal" in label_set:
+        return "migrate"
+    if "next:human" in label_set or "agent-blocked" in label_set:
+        return "keep"
+    return "migrate"
+
+
+def _goal_guardian_ticket_ref(ticket: dict[str, object]) -> dict[str, object]:
+    ref: dict[str, object] = {}
+    for field in ("id", "kind", "number", "title", "url", "goal_hash", "reconciliation"):
+        value = ticket.get(field)
+        if isinstance(value, (str, int, bool)) or value is None:
+            ref[field] = value
+    labels = ticket.get("labels")
+    if isinstance(labels, list):
+        ref["labels"] = [item for item in labels if isinstance(item, str)]
+    return ref
 
 
 def _write_goal_guardian_reconciliation_receipt(
