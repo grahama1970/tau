@@ -158,10 +158,12 @@ Implemented local contract slices include:
     `tau.agent_handoff.v1` before routing onward. When the incoming handoff
     carries `context.human_goal_change`, the adapter writes a
     `tau.goal_guardian_reconciliation_receipt.v1` artifact and routes to
-    `human` instead of continuing to another worker. If
+    `human` instead of continuing to another worker. If `--ticket-source` or
     `TAU_GOAL_GUARDIAN_TICKET_SOURCE` points at a
     `tau.goal_guardian_ticket_source.v1` file, the receipt classifies that
-    source into `keep`, `close`, `migrate`, and `regenerate` buckets.
+    source into `keep`, `close`, `migrate`, and `regenerate` buckets. The
+    explicit `--ticket-source` option takes precedence over the environment
+    fallback.
 - human-goal-change bridge:
   - `tau human-goal-change-bridge <human-goal-change.json> --active-goal-hash
     <hash> --trusted-human --handoff-out <start-handoff.json> --receipt

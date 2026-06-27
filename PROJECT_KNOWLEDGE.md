@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 20:29Z / 16:29 EDT by agent
+**Last updated:** 2026-06-27 20:47Z / 16:47 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -29,6 +29,7 @@
 - Goal-guardian reconciliation can now consume an authoritative local `tau.goal_guardian_ticket_source.v1` file via `TAU_GOAL_GUARDIAN_TICKET_SOURCE`. When present, the receipt classifies tickets into `keep`, `close`, `migrate`, and `regenerate` buckets and still routes to `human`.
 - Tau can now render dry-run GitHub transport for a `tau.goal_guardian_reconciliation_receipt.v1`. `goal-guardian-reconciliation-github-transport` validates the receipt, embeds it in a GitHub comment body, derives `agent-work,next:human,executor:human,goal-change`, and remains apply-gated.
 - Tau can now fetch a goal-guardian ticket source from GitHub Issues with `goal-guardian-ticket-source-github-fetch`. The default path is dry-run and only renders `gh issue list`; `--execute` runs the read-only issue-list command, writes `tau.goal_guardian_ticket_source.v1`, and fails closed without writing a source when GitHub rejects the request.
+- `handoff-goal-guardian-adapter` now accepts `--ticket-source <path>` for explicit goal-change ticket reconciliation input. This keeps command specs and direct adapter runs from depending on hidden environment state; `TAU_GOAL_GUARDIAN_TICKET_SOURCE` remains a fallback.
 
 ## Recent Decisions
 
@@ -58,6 +59,7 @@
 | 2026-06-27 | Keep ticket reconciliation source explicit and local for the first classification slice | Goal-guardian can classify a structured `tau.goal_guardian_ticket_source.v1` artifact without requiring live GitHub mutation or hidden issue discovery. |
 | 2026-06-27 | Project reconciliation receipts to GitHub before live mutation | Classified goal-guardian output now has an inspectable `gh issue comment/edit` dry-run projection; live writes still require `--apply` plus existing auth/target preflight. |
 | 2026-06-27 | Fetch GitHub ticket sources through an explicit read-only command | Goal-guardian needs real GitHub-shaped tickets, but Tau should not mutate GitHub or fabricate ticket state. The fetch command is dry-run by default and `--execute` only runs `gh issue list`. |
+| 2026-06-27 | Prefer explicit goal-guardian ticket-source inputs over hidden env state | The adapter can now classify a passed `--ticket-source` even when the fallback env var is absent or wrong, making receipts easier to reproduce from command artifacts. |
 
 ## Open Questions
 
@@ -124,6 +126,7 @@
 | 2026-06-27 | `/tmp/tau-goal-guardian-ticket-source-proof/summary.json` | Non-mocked local command loop using `TAU_GOAL_GUARDIAN_TICKET_SOURCE`; `ok: true`, `status: WAITING`, terminal `human`, ticket reconciliation `status: classified`, and counts `{keep:1, close:1, migrate:1, regenerate:1}`. |
 | 2026-06-27 | `/tmp/tau-goal-guardian-github-transport-proof/summary.json` | Dry-run GitHub transport from the classified goal-guardian reconciliation receipt; `ok: true`, `dry_run: true`, `applied: false`, target `grahama1970/chatgpt-lab` / `issue#123`, and two rendered commands: `gh issue comment` plus `gh issue edit` with `agent-work,next:human,executor:human,goal-change`. |
 | 2026-06-27 | `/tmp/tau-github-ticket-source-fetch-proof/summary.json` | Read-only GitHub ticket-source fetch proof. Dry-run rendered `gh issue list` without execution; live `--execute` against `grahama1970/chatgpt-lab` wrote 4 tickets to `tau.goal_guardian_ticket_source.v1`; the same source was consumed by a non-mocked goal-guardian command loop with reconciliation counts `{keep:1, close:0, migrate:3, regenerate:0}`. A `grahama1970/tau` execute attempt failed closed because Issues are disabled. |
+| 2026-06-27 | `/tmp/tau-goal-guardian-explicit-ticket-source-proof/summary.json` | Explicit ticket-source proof. Live `gh issue list` wrote 4 `chatgpt-lab` tickets, the human goal-change bridge produced a `goal-guardian` handoff, and `handoff-goal-guardian-adapter --ticket-source ...` classified the source while `TAU_GOAL_GUARDIAN_TICKET_SOURCE` pointed at a missing path. Result routed to `human` with counts `{keep:1, close:0, migrate:3, regenerate:0}`. |
 
 ## Infrastructure State
 

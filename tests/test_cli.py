@@ -1072,11 +1072,11 @@ def test_cli_handoff_goal_guardian_adapter_classifies_ticket_source(
     artifact_dir = tmp_path / "artifacts"
     monkeypatch.setenv("TAU_HANDOFF_ACTIVE_GOAL_HASH", "sha256:active-goal")
     monkeypatch.setenv("TAU_HANDOFF_COMMAND_ARTIFACT_DIR", str(artifact_dir))
-    monkeypatch.setenv("TAU_GOAL_GUARDIAN_TICKET_SOURCE", str(ticket_source))
+    monkeypatch.setenv("TAU_GOAL_GUARDIAN_TICKET_SOURCE", str(tmp_path / "missing-source.json"))
 
     result = CliRunner().invoke(
         app,
-        ["handoff-goal-guardian-adapter"],
+        ["handoff-goal-guardian-adapter", "--ticket-source", str(ticket_source)],
         input=json.dumps(start),
     )
     payload = json.loads(result.output)

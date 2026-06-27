@@ -1723,6 +1723,7 @@ def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, 
         "next_reason": "A verifier should check the preserved-goal handoff.",
         "required_evidence": "Verifier posts a schema-valid handoff receipt.",
         "stop_condition": "Verifier handoff is posted or Tau fails closed.",
+        "ticket_source": None,
     }
     index = 0
     while index < len(args):
@@ -1733,6 +1734,7 @@ def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, 
             "--next-reason",
             "--required-evidence",
             "--stop-condition",
+            "--ticket-source",
         }:
             index += 1
             if index >= len(args):
@@ -1746,6 +1748,7 @@ def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, 
                 "--next-reason",
                 "--required-evidence",
                 "--stop-condition",
+                "--ticket-source",
             )
         ):
             key, _, value = arg.partition("=")
@@ -3312,6 +3315,7 @@ def project_agent_handoff_goal_guardian_adapter_command(
     next_reason: str | None,
     required_evidence: str | None,
     stop_condition: str | None,
+    ticket_source: str | None = None,
 ) -> dict[str, object]:
     """Emit a goal-guardian handoff only when the active goal hash is preserved."""
 
@@ -3345,6 +3349,7 @@ def project_agent_handoff_goal_guardian_adapter_command(
             goal=goal,
             context=context,
             human_goal_change=human_goal_change,
+            ticket_source=ticket_source,
         )
 
     resolved_next_agent = next_agent or "project-or-harness-verifier"
@@ -3391,6 +3396,7 @@ def _project_agent_goal_guardian_reconciliation_handoff(
     goal: dict[str, object],
     context: dict[str, object],
     human_goal_change: dict[str, object],
+    ticket_source: str | None,
 ) -> dict[str, object]:
     artifacts = context.get("artifacts") if isinstance(context.get("artifacts"), list) else []
     receipt = _goal_guardian_reconciliation_receipt(
@@ -3398,6 +3404,7 @@ def _project_agent_goal_guardian_reconciliation_handoff(
         github=github,
         human_goal_change=human_goal_change,
         source_artifacts=artifacts,
+        ticket_source=ticket_source,
     )
     artifact_path = _write_goal_guardian_reconciliation_receipt(receipt)
     output_artifacts = list(artifacts)
@@ -3445,11 +3452,15 @@ def _goal_guardian_reconciliation_receipt(
     github: dict[str, object],
     human_goal_change: dict[str, object],
     source_artifacts: list[object],
+    ticket_source: str | None,
 ) -> dict[str, object]:
     new_goal = human_goal_change.get("new_goal")
     if not isinstance(new_goal, dict):
         new_goal = {}
-    open_ticket_reconciliation = _goal_guardian_open_ticket_reconciliation(goal=goal)
+    open_ticket_reconciliation = _goal_guardian_open_ticket_reconciliation(
+        goal=goal,
+        ticket_source=ticket_source,
+    )
     return {
         "schema": "tau.goal_guardian_reconciliation_receipt.v1",
         "ok": True,
@@ -3470,8 +3481,9 @@ def _goal_guardian_reconciliation_receipt(
 def _goal_guardian_open_ticket_reconciliation(
     *,
     goal: dict[str, object],
+    ticket_source: str | None,
 ) -> dict[str, object]:
-    source_path = environ.get("TAU_GOAL_GUARDIAN_TICKET_SOURCE")
+    source_path = ticket_source or environ.get("TAU_GOAL_GUARDIAN_TICKET_SOURCE")
     if not isinstance(source_path, str) or not source_path.strip():
         return {
             "status": "not_started",
