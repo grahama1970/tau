@@ -1,491 +1,247 @@
-<p align="center">
-  <img src="docs/assets/tau-header.svg" alt="Tau — a Python coding-agent harness inspired by Pi" width="100%" />
-</p>
+# Tau - Goal-Locked Agent Harness
 
 <p align="center">
-  <strong>A minimalist coding-agent harness in Python, inspired by Pi and built as a teaching project.</strong>
+  <img
+    src="docs/assets/tau-header.webp"
+    alt="Tau agentic harness console in a science-fiction workspace"
+    style="max-width: 100%; height: auto; display: block;"
+  />
 </p>
 
-<p align="center">
-  <a href="https://alejandro-ao.github.io/tau/">Documentation</a>
-  ·
-  <a href="docs/getting-started.md">Getting started</a>
-  ·
-  <a href="docs/architecture/index.md">Architecture notes</a>
-  ·
-  <a href="https://github.com/alejandro-ao/tau/issues/1">Roadmap</a>
-</p>
+> Turn agent work into receipt-backed, goal-locked loops.
 
----
+Tau started as a small Python coding-agent harness inspired by Pi. This fork is
+being hardened into an experimental agentic harness for long-running work:
+Memory-first chat, bounded subagents, explicit handoffs, human-controlled goal
+changes, and GitHub tickets as the durable transport.
 
-## What is Tau?
-
-Tau is a Python implementation of the minimalist coding-agent harness architecture
-popularized by **Pi**. It is both:
-
-1. a usable terminal coding agent, and
-2. a readable, phase-by-phase reference implementation for learning how coding
-   agents are assembled.
-
-The project intentionally keeps the core pieces small and explicit: model
-providers stream events, an agent loop turns those events into tool execution and
-transcript updates, a reusable harness owns state, and the coding app adds local
-files, shell tools, sessions, skills, commands, and terminal frontends.
+The important idea is simple:
 
 ```text
-tau_ai       provider/model streaming layer
-tau_agent    portable agent harness, loop, tools, events, sessions
-tau_coding   CLI app, resources, skills, commands, sessions, UI integration
+agents may work and recommend the next step
+Tau validates the receipt and routes the next step
+only the human may change the immutable goal
 ```
 
-The central design boundary is:
+Tau is not trying to hide orchestration inside model reasoning. Every meaningful
+transition should leave a local receipt, a schema-valid JSON block, or a
+GitHub-shaped projection that another agent or human can inspect.
+
+## What it does
+
+Tau currently provides two layers:
+
+1. **Coding-agent runtime** - an installable `tau` command with provider
+   configuration, a Textual TUI, session history, slash commands, local tools,
+   and print-mode execution.
+2. **Agentic harness experiments** - goal-locked receipt contracts, bounded
+   subagent dispatch, Memory-first chat routing, and dry-run GitHub ticket/comment
+   projections.
+
+The coding runtime keeps the original teaching goal: make a coding agent small
+enough to understand. The harness experiments add the control plane needed for
+longer work:
+
+- minimal `tau.agent_handoff.v1` JSON for subagents and humans
+- minimal `tau.generated_ticket.v1` JSON for ChatGPT Pro/WebGPT ticket drafts
+- human-only `tau.human_goal_change.v1` packets
+- deterministic goal-guardian reconciliation receipts
+- command-backed subagent loops with finite steps
+- GitHub transport that is dry-run by default and apply-gated
+- Memory-first route handling for chat surfaces
+- proof artifacts that state what was exercised and what remains unproven
+
+## When to use it
+
+Use Tau when an agent task needs durable state and explicit routing instead of a
+single chat response.
+
+| Situation | Why Tau helps |
+| --- | --- |
+| Long-running implementation work | Each bounded step emits a receipt and names the next agent. |
+| Human course correction | Human goal changes are explicit packets routed through `goal-guardian`. |
+| ChatGPT Pro/WebGPT collaboration | WebGPT can draft tickets; Tau validates and projects them. |
+| GitHub-backed task queues | Tau derives labels such as `next:<agent>` and `executor:<executor>`. |
+| Memory-first chat | User turns enter through Memory intent before routing to answer, clarify, deflect, research, or compliance paths. |
+| Reliability hardening | Local tests, live browser runs, and proof summaries are kept separate from mocked wiring tests. |
+
+Tau is still experimental. Treat dry-run GitHub transport, local command-loop
+receipts, and UX Lab chat evidence as proof of specific rungs, not proof of a
+finished global Sparta Chat or production orchestration system.
+
+## Quickstart
+
+Install and run the original Tau CLI:
+
+```bash
+cd /home/graham/workspace/experiments/tau
+uv sync
+uv run tau --help
+uv run tau --print "Summarize this repository in three bullets."
+```
+
+Run the focused test suite:
+
+```bash
+uv run pytest tests/test_subagent_receipt.py tests/test_generated_ticket.py tests/test_human_goal_change.py -q
+uv run pytest tests/test_handoff_dispatch.py tests/test_github_handoff.py -q
+```
+
+Run a local command-loop harness receipt:
+
+```bash
+uv run tau handoff-command-loop \
+  experiments/goal-locked-subagents/fixtures/valid-human-goal-change.json \
+  --max-steps 1 \
+  --command-spec-root experiments/goal-locked-subagents/agent-command-specs
+```
+
+Render dry-run GitHub transport from a command-loop receipt:
+
+```bash
+uv run tau handoff-command-loop-github-transport \
+  /path/to/command-loop-receipt.json \
+  --receipt /tmp/tau-github-transport.json
+```
+
+By default, GitHub transport renders commands only. Live mutation requires
+`--apply` and still runs auth/target preflight checks before comment or label
+commands.
+
+## Memory-first chat direction
+
+Tau chat should begin with the `$memory` pipeline, not with ad hoc product logic.
+The intended route is:
 
 ```text
-AgentHarness = reusable agent brain
-AgentSession = coding-agent environment
-TUI          = one possible frontend
+intent -> extract entities -> access memory -> answer | clarify | deflect | research | compliance
 ```
 
-Tau should make the architecture legible. If you want to understand how a coding
-agent works without starting from a large production codebase, this repository is
-for you.
+The UX Lab Tau chat surface currently lives in the `pi-mono` workspace and is
+used as the browser proving ground for the shared global chat UX. The latest
+bounded slices prove:
 
-## Why Tau exists
+- dynamic Memory stage traces can be rendered from receipt data
+- CLARIFY, DEFLECT, RESEARCH, COMPLIANCE, and selected ANSWER behavior can fail
+  closed when a Memory route product is missing
+- successful compliance routes can render a full `tau.agent_handoff.v1` JSON
+  contract
+- accepted external handoff receipts can project dry-run GitHub comments/labels
+  without claiming live GitHub mutation
 
-Tau is being built as an effort to teach how to create coding agents.
+This is a harness rung, not a final chat product. The final shared chat still
+needs accepted UX, real content embed handling, `create-figure`,
+`create-evidence-case`, persona voice integration, and live GitHub mutation
+policy before it can be treated as production behavior.
 
-The philosophy is:
+## Goal-locked harness model
 
-- **Small layers beat magic.** Each package has a clear job and can be explained
-  independently.
-- **Events are the contract.** The agent harness emits provider-neutral events;
-  renderers and TUIs consume them.
-- **The core stays portable.** `tau_agent` does not depend on Textual, Rich,
-  shell config directories, slash commands, or application-specific resources.
-- **Tools are ordinary typed functions.** File and shell capabilities are exposed
-  through explicit schemas and deterministic result objects.
-- **Sessions are durable and inspectable.** Tau stores append-only JSONL session
-  transcripts under `~/.tau/sessions/`.
-- **Documentation follows implementation.** The project is developed in small,
-  documented phases so readers can trace how the system grows.
+Tau's agent-facing contract is deliberately small. A normal handoff contains:
 
-Pi is the design inspiration; Tau is the Python learning path.
+```json
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#123"
+  },
+  "goal": {
+    "goal_id": "goal-example",
+    "goal_version": 1,
+    "goal_hash": "sha256:..."
+  },
+  "previous_subagent": "coder",
+  "context": {
+    "summary": "What matters now.",
+    "artifacts": []
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "What changed or was observed.",
+    "evidence": []
+  },
+  "rationale": "Why this result implies the next step.",
+  "next_agent": {
+    "name": "reviewer",
+    "executor": "either",
+    "reason": "Independent validation is required."
+  },
+  "required_evidence": [],
+  "stop_condition": "Reviewer posts a schema-valid receipt."
+}
+```
 
-## Current capabilities
+Tau owns the deterministic expansion:
 
-Tau currently includes:
+```text
+next_agent.name     -> next:<agent>
+next_agent.executor -> executor:<executor>
+github.target       -> issue, PR, or new ticket projection
+goal_hash           -> active goal validation
+schema              -> parser and validator selection
+```
 
-- an installable `tau` console command
-- a Textual interactive TUI
-- non-interactive print mode for one-shot prompts
-- OpenAI-compatible, Anthropic, OpenAI Codex subscription, OpenRouter, and
-  Hugging Face provider support through provider configuration
-- provider retry/backoff events and thinking/reasoning deltas
-- built-in local coding tools: `read`, `write`, `edit`, and `bash`
-- durable per-project sessions and session resume
-- session tree branching and HTML/JSONL export
-- slash commands, model picker, theme picker, and autocomplete
-- skills, prompt templates, and `AGENTS.md` project-context discovery
-- context accounting, manual compaction, and optional automatic compaction
-- Rich/plain/json/transcript rendering paths for print-mode output
-- a deterministic fake provider used by tests
-- experimental Loop2-compatible run receipts and monitor artifacts for bounded
-  harness runs
-- experimental goal-locked subagent contracts for routed handoffs, generated
-  tickets, and human-only goal changes
-- deterministic GitHub label projection for generated ticket drafts, where Tau
-  derives `agent-work`, `next:<agent>`, and `executor:<executor>` labels instead
-  of asking model agents to emit duplicated label state
+Agents do not get to invent missing labels, mutate the immutable goal, or skip
+the next route. If the JSON does not validate, Tau should refuse to dispatch.
 
-Tau is still evolving. Expect the command surface and internals to improve as the
-roadmap progresses.
+## Repository map
 
-## Experimental agentic harness work
+```text
+src/tau_ai/                         provider/model streaming layer
+src/tau_agent/                      portable agent loop, events, tools, sessions
+src/tau_coding/                     CLI app, coding tools, TUI, harness commands
+experiments/goal-locked-subagents/  goal-locked contract schemas and fixtures
+experiments/loop2-alignment/        Loop2 and Memory/Brave alignment experiments
+docs/                               original Tau architecture and usage docs
+PROJECT_KNOWLEDGE.md                current project memory for humans and agents
+```
 
-This fork is being used to harden Tau as a goal-locked agentic harness. The
-current experiment keeps model-facing JSON small and moves strict routing rules
-into Tau validators.
-
-Implemented local contract slices include:
-
-- `tau.subagent_receipt.v1`: common receipt envelope for bounded subagents,
-  requiring goal, context, result, rationale, evidence, next route, and stop
-  condition.
-- `tau.generated_ticket.v1`: minimal ChatGPT Pro/WebGPT ticket draft contract.
-  The model supplies ticket kind/title/body, requested work, rationale, next
-  agent, required evidence, and stop condition. Tau derives GitHub labels.
-- `tau.agent_handoff.v1`: minimal handoff schema for subagents and existing
-  ticket comments.
-- `tau.human_goal_change.v1`: rare human-only goal mutation contract that must
-  route to `goal-guardian`.
-- `tau.human_goal_change_bridge_receipt.v1`: deterministic local bridge receipt
-  for turning a trusted `tau.human_goal_change.v1` packet into a normal
-  `tau.agent_handoff.v1` start handoff routed to `goal-guardian`. The bridge
-  does not write goal capsules or mutate GitHub; it fails closed unless
-  `--trusted-human` and the active goal hash are supplied.
-- `tau.goal_guardian_reconciliation_receipt.v1`: deterministic receipt emitted
-  when `goal-guardian` sees a bridged human goal-change request. The current
-  slice records the proposed new goal, classifies an optional authoritative
-  local ticket source into `keep`, `close`, `migrate`, and `regenerate`, and
-  routes to `human` before any non-human agent can continue.
-- `tau.goal_guardian_ticket_source.v1`: local structured ticket source used by
-  goal-guardian reconciliation. The source is opt-in through
-  `TAU_GOAL_GUARDIAN_TICKET_SOURCE`; without it, the receipt reports
-  `open_ticket_reconciliation.status = "not_started"`.
-- `tau.github_ticket_source_fetch_receipt.v1`: read-only GitHub issue-list
-  fetch receipt. `tau goal-guardian-ticket-source-github-fetch <repo> --out
-  <ticket-source.json>` renders the exact `gh issue list` command by default.
-  Adding `--execute` runs that read-only command and writes a
-  `tau.goal_guardian_ticket_source.v1` artifact for goal-guardian
-  reconciliation. If GitHub rejects the issue list request, Tau records the
-  command result and does not write a ticket-source artifact.
-- command-backed one-step handoff dispatch:
-  - `tau handoff-dispatch-command` runs one bounded local command and validates
-    its stdout as `tau.agent_handoff.v1`.
-  - `tau handoff-dispatch-agent-command` selects the next agent from the start
-    handoff, validates that agent against an `agent-skills/agents`-style
-    registry, loads that agent's opt-in `tau-dispatch-command.json`, runs it
-    once, and writes `tau.agent_handoff_dispatch_receipt.v1`.
-  - `--command-spec-root` can point at a Tau-owned command-spec overlay such as
-    `experiments/goal-locked-subagents/agent-command-specs/`. This keeps
-    executable dispatch specs versioned with Tau while still validating
-    identities against the real agent registry.
-  - `tau handoff-agent-adapter` is a small stdin-to-handoff adapter that lets
-    registry command specs emit the minimal handoff JSON without custom wrapper
-    code.
-  - `tau handoff-goal-guardian-adapter` is a deterministic built-in adapter
-    that refuses missing/stale active goal hashes and emits a preserved-goal
-    `tau.agent_handoff.v1` before routing onward. When the incoming handoff
-    carries `context.human_goal_change`, the adapter writes a
-    `tau.goal_guardian_reconciliation_receipt.v1` artifact and routes to
-    `human` instead of continuing to another worker. If `--ticket-source` or
-    `TAU_GOAL_GUARDIAN_TICKET_SOURCE` points at a
-    `tau.goal_guardian_ticket_source.v1` file, the receipt classifies that
-    source into `keep`, `close`, `migrate`, and `regenerate` buckets. The
-    explicit `--ticket-source` option takes precedence over the environment
-    fallback.
-- human-goal-change bridge:
-  - `tau human-goal-change-bridge <human-goal-change.json> --active-goal-hash
-    <hash> --trusted-human --handoff-out <start-handoff.json> --receipt
-    <receipt.json>` writes the generated handoff only on successful validation
-    and always writes a receipt for success or fail-closed validation errors.
-- command-backed handoff loops:
-  - `tau handoff-command-loop` follows selected `next_agent` routes through
-    opt-in command specs, records each command-backed dispatch step, and stops
-    when the route reaches `human`, fails validation, or exhausts `--max-steps`.
-    `--goal-guardian-ticket-source <ticket-source.json>` passes an explicit
-    source artifact to the goal-guardian adapter and the command-loop receipt
-    records that exact `--ticket-source` argument in the step command.
-  - `tau handoff-command-loop-github-transport` renders the exact dry-run
-    GitHub command for the terminal handoff from a command-loop receipt. Existing
-    `issue#N` and `pr#N` targets render `gh issue/pr comment` plus label edits.
-    `target: "new"` renders `gh issue create` using the handoff body and derived
-    labels. GitHub mutation is explicit-only via `--apply`; invalid command-loop
-    receipts fail closed before any `gh` commands are run. Valid command-loop
-    apply runs `gh auth status`; existing issue/PR targets also run
-    `gh issue/pr view` before posting a comment or editing labels.
-  - `tau goal-guardian-reconciliation-github-transport` renders the dry-run
-    GitHub comment and label commands for a
-    `tau.goal_guardian_reconciliation_receipt.v1`. It embeds the full receipt in
-    the comment body and applies `agent-work,next:human,executor:human,goal-change`
-    labels by projection. Live mutation remains explicit-only via `--apply` and
-    uses the same GitHub auth/target preflight gate.
-  - `tau handoff-command-loop-reconciliation-github-transport
-    <command-loop-receipt.json>` extracts the goal-guardian reconciliation
-    artifact from a command-loop receipt, renders the dry-run GitHub transport,
-    and writes a wrapper receipt naming the source loop receipt, reconciliation
-    receipt, and ticket-source artifact.
-  - `tau goal-guardian-ticket-source-github-fetch <repo> --out
-    <ticket-source.json> [--receipt <receipt.json>] [--execute] [--state
-    open|closed|all] [--limit <n>]` produces the structured ticket source used
-    by goal-guardian. Without `--execute`, it only writes the fetch receipt and
-    does not touch GitHub or create the ticket-source file.
-
-The current validators and dispatch receipts are intentionally local and
-deterministic. GitHub writes are apply-gated: the default path only renders
-commands, and the `--apply` path still requires a valid terminal command-loop
-receipt plus passing GitHub auth and target preflight checks before it can call
-mutating `gh` commands.
-
-Relevant files:
+Important harness files:
 
 ```text
 src/tau_coding/subagent_receipt.py
 src/tau_coding/generated_ticket.py
-src/tau_coding/github_handoff.py
 src/tau_coding/human_goal_change.py
 src/tau_coding/handoff_dispatch.py
-experiments/goal-locked-subagents/
+src/tau_coding/github_handoff.py
+experiments/goal-locked-subagents/schemas/
 experiments/goal-locked-subagents/agent-command-specs/
-experiments/goal-locked-subagents/schemas/tau.human_goal_change_bridge_receipt.v1.schema.json
-experiments/goal-locked-subagents/schemas/tau.goal_guardian_reconciliation_receipt.v1.schema.json
-experiments/goal-locked-subagents/schemas/tau.goal_guardian_ticket_source.v1.schema.json
-tests/test_subagent_receipt.py
-tests/test_generated_ticket.py
-tests/test_human_goal_change.py
-tests/test_handoff_dispatch.py
 ```
 
-Run the focused harness checks:
+## Evidence discipline
 
-```bash
-uv run pytest tests/test_subagent_receipt.py tests/test_generated_ticket.py tests/test_human_goal_change.py -q
-```
+Tau reports should distinguish mocked wiring from live behavior.
 
-Run the focused dispatch checks:
-
-```bash
-uv run pytest tests/test_handoff_dispatch.py tests/test_cli.py -q
-```
-
-Run the bridge and command-loop checks:
-
-```bash
-uv run pytest tests/test_human_goal_change.py tests/test_handoff_dispatch.py tests/test_cli.py tests/test_github_handoff.py -q
-```
-
-## Install
-
-Tau targets the Python version declared in `pyproject.toml` and uses
-[`uv`](https://docs.astral.sh/uv/) for the recommended workflow.
-
-Install from GitHub:
-
-```bash
-uv tool install git+https://github.com/alejandro-ao/tau.git
-tau --version
-```
-
-Install from a local checkout:
-
-```bash
-git clone https://github.com/alejandro-ao/tau.git
-cd tau
-uv tool install --editable .
-tau --version
-```
-
-For development:
-
-```bash
-uv sync --dev --group docs
-uv run tau --version
-```
-
-## First run
-
-Start the interactive terminal UI:
-
-```bash
-tau
-```
-
-Start the TUI and submit the first prompt immediately:
-
-```bash
-tau "explain this repository"
-```
-
-Run a one-shot non-interactive prompt:
-
-```bash
-tau -p "summarize the architecture"
-```
-
-Choose a configured provider/model:
-
-```bash
-tau --provider openai --model gpt-4.1 "review this codebase"
-tau --provider local --model qwen -p "list the main modules"
-```
-
-Use another working directory for coding tools:
-
-```bash
-tau --cwd /path/to/project "find the CLI entry point"
-```
-
-## Configure a model provider
-
-The easiest path is from inside the TUI:
+Use this language when reporting a rung:
 
 ```text
-/login
-/login openai
-/login openai-codex
-/logout
-/logout openai
-/model
+mocked: yes|no
+live: yes|no
+what was exercised
+what remains unverified
+artifact paths
 ```
 
-`/login` can save API-key credentials for built-in providers or authenticate an
-OpenAI Codex subscription account with OAuth. Credentials are stored in
-`~/.tau/credentials.json` with private file permissions. Provider metadata lives
-in `~/.tau/providers.json`. `/logout` removes only credentials saved in Tau's
-`credentials.json`; environment variables and provider configuration are
-unchanged.
+Examples of current proof artifacts are tracked in `PROJECT_KNOWLEDGE.md`.
+Recent evidence includes:
 
-You can also configure an OpenAI-compatible provider from the CLI:
+- `/tmp/tau-memory-chat-proof-suite-20260627T233356Z/summary.json`
+- `/tmp/tau-live-memory-chat-proof-compliance-20260627T233340Z`
+- `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png`
 
-```bash
-tau --provider local \
-  --base-url http://localhost:11434/v1 \
-  --api-key-env LOCAL_API_KEY \
-  --model qwen \
-  setup
-```
+Those artifacts prove the named rung only. They do not prove final Tau/Sparta
+Chat readiness, live GitHub ticket mutation, or unrestricted subagent execution.
 
-Then run:
+## WebGPT escalation
 
-```bash
-export LOCAL_API_KEY="..."
-tau --provider local
-```
+Tau can use WebGPT between phases, when architecture is uncertain, when the
+agent is drifting, or when a complex harness decision needs external review.
+The project-local browser binding lives under `.ask/`, but the current Tau
+convention is direct `$webgpt` for phase and architecture review. WebGPT output
+is design input; deterministic local artifacts remain the proof source.
 
-Useful provider commands:
+## Upstream
 
-```bash
-tau providers
-```
-
-See [docs/providers.md](docs/providers.md) and
-[docs/configuration.md](docs/configuration.md) for details.
-
-## Working in the TUI
-
-Common slash commands:
-
-| Command | Purpose |
-| --- | --- |
-| `/login [provider]` | Save or refresh provider credentials. |
-| `/logout [provider]` | Remove Tau-saved provider credentials. |
-| `/model` | Choose the active provider/model. |
-| `/scoped-models` | Pick models available for quick cycling. |
-| `/session` | Show session and context information. |
-| `/resume [session-id]` | Resume a previous session. |
-| `/tree` | Branch from a previous session entry. |
-| `/name <new name>` | Rename the current session. |
-| `/compact <summary>` | Replace active context with a manual summary. |
-| `/export [--format html\|jsonl] [destination]` | Export the current session. |
-| `/reload` | Reload local resources and project context. |
-| `/theme [name]` | Show or set the TUI theme. |
-| `/hotkeys` | Show common keyboard shortcuts. |
-| `/quit` | Exit the session. |
-
-Important TUI behavior:
-
-- Click anywhere in the main TUI to return keyboard focus to the prompt input.
-
-Common shortcuts:
-
-| Shortcut | Action |
-| --- | --- |
-| `Enter` | Submit prompt. |
-| `Shift+Enter` | Insert newline. |
-| `Alt+Enter` | Queue a follow-up while the agent is running. |
-| `Esc` | Cancel active run. |
-| `Ctrl+K` | Open slash-command completions. |
-| `Ctrl+R` | Open session picker. |
-| `Shift+Tab` | Cycle thinking mode. |
-| `Ctrl+T` | Toggle thinking-token display. |
-| `Ctrl+O` | Collapse or expand tool output. |
-| `Ctrl+P` | Cycle scoped models. |
-| `Ctrl+D` | Quit. |
-
-## Sessions, resources, and files
-
-Tau stores durable app state in your home directory:
-
-```text
-~/.tau/providers.json       provider metadata
-~/.tau/credentials.json     saved API keys and OAuth credentials
-~/.tau/tui.json             TUI theme/keybinding settings
-~/.tau/sessions/            append-only JSONL session transcripts
-~/.tau/skills/              user Tau skills
-~/.tau/prompts/             user prompt templates
-~/.tau/AGENTS.md            user Tau instructions
-```
-
-Tau also reads user-level `.agents` resources and project-local resources from
-the active working directory, including `AGENTS.md`, `.tau/`, and `.agents/`
-locations. This lets a project teach Tau how it should behave without changing
-Tau's core harness.
-
-## Use Tau as a library
-
-Tau's reusable brain lives in `tau_agent`:
-
-```python
-from tau_agent import AgentHarness, AgentHarnessConfig
-
-harness = AgentHarness(
-    AgentHarnessConfig(
-        provider=provider,
-        model="my-model",
-        system="You are a helpful coding agent.",
-        tools=tools,
-    )
-)
-
-async for event in harness.prompt("Explain this package"):
-    print(event)
-```
-
-That harness is deliberately independent of the CLI/TUI. You can build another
-frontend by consuming the same event stream.
-
-## Development
-
-Set up the repository:
-
-```bash
-uv sync --dev --group docs
-```
-
-Run checks:
-
-```bash
-uv run pytest
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy
-```
-
-Run Tau locally:
-
-```bash
-uv run tau
-uv run tau -p "explain this repo"
-```
-
-Run the documentation site:
-
-```bash
-uv run --group docs mkdocs serve
-```
-
-Then open `http://127.0.0.1:8000`.
-
-## Documentation map
-
-- [Getting Started](docs/getting-started.md)
-- [Installation](docs/installation.md)
-- [Configuration and Files](docs/configuration.md)
-- [Providers](docs/providers.md)
-- [Architecture](docs/01-architecture.md)
-- [Architecture phase notes](docs/architecture/index.md)
-- [Agent Loop](docs/agent-loop.md)
-- [Agent Harness](docs/harness.md)
-- [Tools](docs/03-tools.md)
-- [Sessions](docs/04-sessions.md)
-- [Building a Custom TUI](docs/custom-tui.md)
-- [Roadmap](docs/00-roadmap.md)
-
-## Project status
-
-Tau is under active development. The implementation roadmap is tracked in
-[GitHub issue #1](https://github.com/alejandro-ao/tau/issues/1), and the docs
-under `docs/architecture/` record the completed phases.
-
-The goal is not to hide complexity. The goal is to make each part of a coding
-agent visible, testable, and understandable.
+This repository is a fork of `alejandro-ao/tau`, pushed under
+`grahama1970/tau` for the harness experiments. The original Tau architecture
+docs are still useful and remain under `docs/`.

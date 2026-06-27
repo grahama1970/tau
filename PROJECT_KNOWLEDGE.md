@@ -1,12 +1,14 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 21:10Z / 17:10 EDT by agent
+**Last updated:** 2026-06-27 23:55Z / 19:55 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
 
 - Project initialized, knowledge tracking started
 - Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.
+- The human-facing README now follows the `watch` skill README pattern: compressed banner image first, short promise, practical "what it does", "when to use it", quickstart, current direction, repository map, and evidence discipline. The header image is stored as `docs/assets/tau-header.webp`, compressed with Pillow from the provided PNG.
+- Tau's current product direction is Memory-first shared chat plus a goal-locked harness. The chat enters through Memory intent/extract/recall before answer, clarify, deflect, research, or compliance behavior. Subagent routing and GitHub ticket projection must remain receipt-backed and fail-closed.
 - Tau now has one-step dispatch receipts for routed handoffs. `handoff-dispatch-agent-command` validates the start handoff, selects `next_agent.name`, loads an opt-in `tau-dispatch-command.json` from that agent registry entry, runs one bounded command, and validates stdout as the next `tau.agent_handoff.v1`.
 - Tau can now use a committed command-spec overlay with `--command-spec-root`. The selected agent is still validated against `/home/graham/workspace/experiments/agent-skills/agents`, but the executable `tau-dispatch-command.json` can live under Tau's `experiments/goal-locked-subagents/agent-command-specs/` tree for reproducible harness experiments.
 - Built-in `goal-guardian` now has a deterministic adapter. It reads the start handoff from stdin, requires `TAU_HANDOFF_ACTIVE_GOAL_HASH`, refuses stale goal hashes, and emits a normal `tau.agent_handoff.v1` only when the active goal hash is preserved.
@@ -64,6 +66,8 @@
 | 2026-06-27 | Prefer explicit goal-guardian ticket-source inputs over hidden env state | The adapter can now classify a passed `--ticket-source` even when the fallback env var is absent or wrong, making receipts easier to reproduce from command artifacts. |
 | 2026-06-27 | Record explicit ticket-source inputs in command-loop receipts | Passing `--goal-guardian-ticket-source` appends the source path to the goal-guardian adapter command, which makes the receipt replayable from command artifacts rather than out-of-band environment setup. |
 | 2026-06-27 | Project command-loop reconciliation through GitHub with source trace | The wrapper command avoids manually locating the reconciliation artifact and records loop, reconciliation, and ticket-source paths next to the dry-run GitHub commands. |
+| 2026-06-27 | Rewrite README using the Watch README shape | Tau needs a human-facing project overview, not only an inherited teaching-project README. The new README starts from the visible product promise, then explains the harness, Memory-first chat direction, and proof boundaries. |
+| 2026-06-27 | Compress the Tau header image with Pillow into WebP | The source PNG was 2,526,857 bytes at 1672x941. `docs/assets/tau-header.webp` is 170,524 bytes at 1600x900, which keeps the README visual lightweight. |
 
 ## Open Questions
 
@@ -75,7 +79,8 @@
 | File | Purpose |
 |------|---------|
 | PROJECT_KNOWLEDGE.md | Shared project knowledge |
-| README.md | Human-facing project overview and current harness notes |
+| README.md | Human-facing Watch-style overview and current harness notes |
+| docs/assets/tau-header.webp | Compressed README header image created with Pillow from the human-provided PNG |
 | src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |
 | src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |
 | src/tau_coding/github_handoff.py | Renders/apply-gates GitHub transport and read-only goal-guardian ticket-source fetch receipts |
@@ -132,6 +137,10 @@
 | 2026-06-27 | `/tmp/tau-github-ticket-source-fetch-proof/summary.json` | Read-only GitHub ticket-source fetch proof. Dry-run rendered `gh issue list` without execution; live `--execute` against `grahama1970/chatgpt-lab` wrote 4 tickets to `tau.goal_guardian_ticket_source.v1`; the same source was consumed by a non-mocked goal-guardian command loop with reconciliation counts `{keep:1, close:0, migrate:3, regenerate:0}`. A `grahama1970/tau` execute attempt failed closed because Issues are disabled. |
 | 2026-06-27 | `/tmp/tau-goal-guardian-explicit-ticket-source-proof/summary.json` | Explicit ticket-source proof. Live `gh issue list` wrote 4 `chatgpt-lab` tickets, the human goal-change bridge produced a `goal-guardian` handoff, and `handoff-goal-guardian-adapter --ticket-source ...` classified the source while `TAU_GOAL_GUARDIAN_TICKET_SOURCE` pointed at a missing path. Result routed to `human` with counts `{keep:1, close:0, migrate:3, regenerate:0}`. |
 | 2026-06-27 | `/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json` | Command-loop explicit ticket-source and GitHub projection proof. Live GitHub issue fetch wrote 4 tickets, the bridge produced a `goal-guardian` start handoff, `handoff-command-loop --goal-guardian-ticket-source ...` recorded `--ticket-source /tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json`, and `handoff-command-loop-reconciliation-github-transport` rendered two dry-run GitHub commands while naming the same loop receipt, reconciliation receipt, and ticket-source path. Counts remained `{keep:1, close:0, migrate:3, regenerate:0}`. |
+| 2026-06-27 | `/tmp/tau-live-memory-chat-proof-compliance-20260627T233340Z` | Live UX Lab Tau compliance route proof through the Memory-backed chat adapter; `mocked: false`, `live: true`, external subagent GitHub projection schema `tau.external_subagent_github_projection.v1`, `dryRun: true`, `applied: false`, command count `1`, and preserved goal hash. |
+| 2026-06-27 | `/tmp/tau-memory-chat-proof-suite-20260627T233356Z/summary.json` | Tau Memory chat proof suite in pi-mono; `ok: true`, `scenarioCount: 12`, `liveScenarioCount: 5`, `mockedScenarioCount: 7`. The suite proves route-specific harness behavior and dry-run projection extraction, not final Sparta Chat readiness. |
+| 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png` | Fresh CDP screenshot marker for the Tau UX Lab surface after the external subagent GitHub projection slice. Screenshot confirms the Tau experiment surface renders; interaction proof is in the browser proof-suite artifacts. |
+| 2026-06-27 | `docs/assets/tau-header.webp` | README header image compressed with Pillow: output 1600x900 WebP, 170,524 bytes; source PNG was 1672x941, 2,526,857 bytes. |
 
 ## Infrastructure State
 
