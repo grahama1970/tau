@@ -65,15 +65,61 @@ def test_github_handoff_transport_apply_uses_runner_with_comment_stdin() -> None
     )
 
 
-def test_github_handoff_transport_refuses_new_target() -> None:
+def test_github_handoff_transport_new_target_renders_issue_create() -> None:
     projection = _valid_projection()
     projection["target"]["target"] = "new"
+    projection["next_agent"] = "human"
 
     result = transport_handoff_projection_to_github(projection, apply=False)
 
-    assert result.ok is False
+    assert result.ok is True
+    assert result.dry_run is True
     assert result.applied is False
-    assert "target.target must be issue#<number> or pr#<number>" in result.errors
+    assert result.target == {"repo": "grahama1970/chatgpt-lab", "target": "new"}
+    assert result.commands == (
+        [
+            "gh",
+            "issue",
+            "create",
+            "--repo",
+            "grahama1970/chatgpt-lab",
+            "--title",
+            "Tau handoff: human",
+            "--body-file",
+            "-",
+            "--label",
+            "agent-work,next:reviewer,executor:either",
+        ],
+    )
+
+
+def test_github_handoff_transport_new_target_apply_uses_body_stdin_and_auth_preflight() -> None:
+    projection = _valid_projection()
+    projection["target"]["target"] = "new"
+    projection["next_agent"] = "human"
+    calls: list[tuple[list[str], str | None]] = []
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        calls.append((command, stdin))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = transport_handoff_projection_to_github(
+        projection,
+        apply=True,
+        require_preflight=True,
+        runner=runner,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is False
+    assert result.applied is True
+    assert len(calls) == 2
+    assert calls[0][0] == ["gh", "auth", "status", "--hostname", "github.com"]
+    assert calls[0][1] is None
+    assert calls[1][0][:3] == ["gh", "issue", "create"]
+    assert calls[1][1] == "## Tau Agent Handoff\n"
+    assert len(result.preflight_results) == 1
+    assert len(result.command_results) == 1
 
 
 def test_github_handoff_transport_records_runner_failure() -> None:

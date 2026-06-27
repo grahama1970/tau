@@ -259,7 +259,6 @@ def _github_transport_commands(
     target = _target_dict(projection)
     repo = _non_empty_string(target, "repo", "target", errors)
     target_ref = _non_empty_string(target, "target", "target", errors)
-    ticket_kind, ticket_number = _parse_ticket_ref(target_ref, errors)
 
     comment = projection.get("comment")
     body = comment.get("body") if isinstance(comment, Mapping) else None
@@ -275,6 +274,26 @@ def _github_transport_commands(
     else:
         errors.append("projection.labels must be an object")
 
+    if errors:
+        return []
+
+    if target_ref == "new":
+        command = [
+            "gh",
+            "issue",
+            "create",
+            "--repo",
+            repo,
+            "--title",
+            _new_handoff_issue_title(projection),
+            "--body-file",
+            "-",
+        ]
+        if add_labels:
+            command.extend(["--label", ",".join(add_labels)])
+        return [command]
+
+    ticket_kind, ticket_number = _parse_ticket_ref(target_ref, errors)
     if errors:
         return []
 
@@ -330,6 +349,8 @@ def _github_preflight_commands(
     target = _target_dict(projection)
     repo = _non_empty_string(target, "repo", "target", errors)
     target_ref = _non_empty_string(target, "target", "target", errors)
+    if target_ref == "new":
+        return [["gh", "auth", "status", "--hostname", "github.com"]] if repo else []
     ticket_kind, ticket_number = _parse_ticket_ref(target_ref, errors)
     if errors or not repo:
         return []
@@ -386,6 +407,13 @@ def _parse_ticket_ref(target_ref: str | None, errors: list[str]) -> tuple[str, s
     return prefix, number
 
 
+def _new_handoff_issue_title(projection: Mapping[str, Any]) -> str:
+    next_agent = projection.get("next_agent")
+    if isinstance(next_agent, str) and next_agent.strip():
+        return f"Tau handoff: {next_agent.strip()}"
+    return "Tau handoff"
+
+
 def _non_empty_string(
     payload: Mapping[str, Any] | None,
     field: str,
@@ -410,7 +438,11 @@ def _string_list(value: object, label: str, errors: list[str]) -> list[str]:
 
 
 def _stdin_for_command(command: list[str], projection: Mapping[str, Any]) -> str | None:
-    if command[:3] != ["gh", command[1], "comment"]:
+    if command[:3] != ["gh", command[1], "comment"] and command[:3] != [
+        "gh",
+        "issue",
+        "create",
+    ]:
         return None
     comment = projection.get("comment")
     if not isinstance(comment, Mapping):

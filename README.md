@@ -140,12 +140,13 @@ Implemented local contract slices include:
     opt-in command specs, records each command-backed dispatch step, and stops
     when the route reaches `human`, fails validation, or exhausts `--max-steps`.
   - `tau handoff-command-loop-github-transport` renders the exact dry-run
-    `gh issue/pr comment` and `gh issue/pr edit` commands for the terminal
-    handoff from a command-loop receipt. GitHub mutation is explicit-only via
-    `--apply`; invalid command-loop receipts fail closed before any `gh`
-    commands are run. Valid command-loop apply runs `gh auth status` and
-    `gh issue/pr view` preflight checks before posting a comment or editing
-    labels.
+    GitHub command for the terminal handoff from a command-loop receipt. Existing
+    `issue#N` and `pr#N` targets render `gh issue/pr comment` plus label edits.
+    `target: "new"` renders `gh issue create` using the handoff body and derived
+    labels. GitHub mutation is explicit-only via `--apply`; invalid command-loop
+    receipts fail closed before any `gh` commands are run. Valid command-loop
+    apply runs `gh auth status`; existing issue/PR targets also run
+    `gh issue/pr view` before posting a comment or editing labels.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. GitHub writes are apply-gated: the default path only renders
