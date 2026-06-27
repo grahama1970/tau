@@ -173,6 +173,9 @@ Implemented local contract slices include:
   - `tau handoff-command-loop` follows selected `next_agent` routes through
     opt-in command specs, records each command-backed dispatch step, and stops
     when the route reaches `human`, fails validation, or exhausts `--max-steps`.
+    `--goal-guardian-ticket-source <ticket-source.json>` passes an explicit
+    source artifact to the goal-guardian adapter and the command-loop receipt
+    records that exact `--ticket-source` argument in the step command.
   - `tau handoff-command-loop-github-transport` renders the exact dry-run
     GitHub command for the terminal handoff from a command-loop receipt. Existing
     `issue#N` and `pr#N` targets render `gh issue/pr comment` plus label edits.

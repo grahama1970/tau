@@ -441,6 +441,7 @@ def run_agent_handoff_command_loop(
     agent_registry_root: Path,
     command_spec_root: Path | None = None,
     active_goal_hash: str | None = None,
+    goal_guardian_ticket_source: Path | None = None,
     max_steps: int = 5,
     artifact_root: Path | None = None,
 ) -> AgentHandoffCommandLoopResult:
@@ -511,7 +512,11 @@ def run_agent_handoff_command_loop(
 
         dispatch = dispatch_agent_handoff_command_once(
             current_payload,
-            spec["command"],
+            _command_with_goal_guardian_ticket_source(
+                spec["command"],
+                selected_agent=selected_agent,
+                ticket_source=goal_guardian_ticket_source,
+            ),
             timeout_s=spec["timeout_s"],
             cwd=spec["cwd"],
             active_goal_hash=active_goal_hash,
@@ -622,6 +627,7 @@ def write_agent_handoff_command_loop_receipt(
     agent_registry_root: Path,
     command_spec_root: Path | None = None,
     active_goal_hash: str | None = None,
+    goal_guardian_ticket_source: Path | None = None,
     max_steps: int = 5,
 ) -> AgentHandoffCommandLoopResult:
     """Write one command-backed loop receipt plus per-step dispatch artifacts."""
@@ -632,6 +638,7 @@ def write_agent_handoff_command_loop_receipt(
         agent_registry_root=agent_registry_root,
         command_spec_root=command_spec_root,
         active_goal_hash=active_goal_hash,
+        goal_guardian_ticket_source=goal_guardian_ticket_source,
         max_steps=max_steps,
         artifact_root=receipt_dir / "command-artifacts",
     )
@@ -717,6 +724,29 @@ def validate_command_dispatch_spec(
     cwd_value = payload.get("cwd")
     cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
     return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
+
+
+def _command_with_goal_guardian_ticket_source(
+    command: object,
+    *,
+    selected_agent: str | None,
+    ticket_source: Path | None,
+) -> list[str]:
+    if not isinstance(command, list) or not all(isinstance(item, str) for item in command):
+        return []
+    resolved_command = list(command)
+    if (
+        selected_agent != "goal-guardian"
+        or ticket_source is None
+        or "handoff-goal-guardian-adapter" not in resolved_command
+        or "--ticket-source" in resolved_command
+    ):
+        return resolved_command
+    return [
+        *resolved_command,
+        "--ticket-source",
+        str(ticket_source.expanduser().resolve()),
+    ]
 
 
 def _artifact_paths(root: Path | None) -> list[str]:

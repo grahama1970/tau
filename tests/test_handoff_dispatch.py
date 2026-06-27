@@ -409,6 +409,60 @@ def test_run_agent_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
     assert all(dispatch["live"] is True for dispatch in result.dispatches)
 
 
+def test_run_agent_handoff_command_loop_appends_goal_guardian_ticket_source(
+    tmp_path: Path,
+) -> None:
+    start = _valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Check goal preservation first.",
+    }
+    guardian_response = _valid_handoff()
+    guardian_response["previous_subagent"] = "goal-guardian"
+    guardian_response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+    ticket_source = tmp_path / "ticket-source.json"
+    ticket_source.write_text('{"schema":"tau.goal_guardian_ticket_source.v1","tickets":[]}\n')
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    guardian_spec_dir = spec_root / "goal-guardian"
+    agents_root.mkdir()
+    guardian_spec_dir.mkdir(parents=True)
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"print({json.dumps(json.dumps(guardian_response))})",
+                    "handoff-goal-guardian-adapter",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_agent_handoff_command_loop(
+        start,
+        agent_registry_root=agents_root,
+        command_spec_root=spec_root,
+        active_goal_hash="sha256:active-goal",
+        goal_guardian_ticket_source=ticket_source,
+        max_steps=2,
+    )
+    command = result.dispatches[0]["command_results"][0]["command"]
+
+    assert result.ok is True
+    assert result.terminal_agent == "human"
+    assert command[-2:] == ["--ticket-source", str(ticket_source.resolve())]
+
+
 def _valid_handoff() -> dict:
     return {
         "schema": "tau.agent_handoff.v1",

@@ -801,15 +801,22 @@ def main(
 
     if prompt_option is None and command == "handoff-command-loop":
         try:
-            start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root, max_steps = (
-                _parse_handoff_command_loop_cli_args(positional_args[1:])
-            )
+            (
+                start_path,
+                active_goal_hash,
+                receipt_dir,
+                agents_root,
+                command_spec_root,
+                goal_guardian_ticket_source,
+                max_steps,
+            ) = _parse_handoff_command_loop_cli_args(positional_args[1:])
             ok = project_agent_handoff_command_loop_command(
                 start_path,
                 active_goal_hash=active_goal_hash,
                 receipt_dir=receipt_dir,
                 agents_root=agents_root,
                 command_spec_root=command_spec_root,
+                goal_guardian_ticket_source=goal_guardian_ticket_source,
                 max_steps=max_steps,
             )
         except RuntimeError as exc:
@@ -1606,12 +1613,13 @@ def _parse_handoff_dispatch_agent_command_cli_args(
 
 def _parse_handoff_command_loop_cli_args(
     args: list[str],
-) -> tuple[Path, str | None, Path, Path, Path | None, int]:
+) -> tuple[Path, str | None, Path, Path, Path | None, Path | None, int]:
     start_path: Path | None = None
     active_goal_hash: str | None = None
     receipt_dir: Path | None = None
     agents_root: Path | None = None
     command_spec_root: Path | None = None
+    goal_guardian_ticket_source: Path | None = None
     max_steps = 5
     index = 0
     while index < len(args):
@@ -1651,6 +1659,13 @@ def _parse_handoff_command_loop_cli_args(
             command_spec_root = Path(args[index])
         elif arg.startswith("--command-spec-root="):
             command_spec_root = Path(arg.partition("=")[2])
+        elif arg == "--goal-guardian-ticket-source":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--goal-guardian-ticket-source requires a value")
+            goal_guardian_ticket_source = Path(args[index])
+        elif arg.startswith("--goal-guardian-ticket-source="):
+            goal_guardian_ticket_source = Path(arg.partition("=")[2])
         elif arg == "--max-steps":
             index += 1
             if index >= len(args):
@@ -1667,7 +1682,15 @@ def _parse_handoff_command_loop_cli_args(
         raise RuntimeError("handoff-command-loop requires --receipt-dir <dir>")
     if agents_root is None:
         raise RuntimeError("handoff-command-loop requires --agents-root <dir>")
-    return start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root, max_steps
+    return (
+        start_path,
+        active_goal_hash,
+        receipt_dir,
+        agents_root,
+        command_spec_root,
+        goal_guardian_ticket_source,
+        max_steps,
+    )
 
 
 def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
@@ -3212,6 +3235,7 @@ def project_agent_handoff_command_loop_command(
     receipt_dir: Path,
     agents_root: Path,
     command_spec_root: Path | None,
+    goal_guardian_ticket_source: Path | None,
     max_steps: int,
 ) -> bool:
     """Write a command-backed loop receipt using selected agent registry commands."""
@@ -3223,6 +3247,7 @@ def project_agent_handoff_command_loop_command(
         agent_registry_root=agents_root,
         command_spec_root=command_spec_root,
         active_goal_hash=active_goal_hash,
+        goal_guardian_ticket_source=goal_guardian_ticket_source,
         max_steps=max_steps,
     )
     typer.echo(json.dumps(loop.as_dict(), indent=2, sort_keys=True))
