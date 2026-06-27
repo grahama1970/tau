@@ -194,12 +194,40 @@ def test_agent_handoff_projection_derives_comment_and_labels() -> None:
     }
     assert projection.labels == {
         "add": ["agent-work", "next:prompt-health-auditor", "executor:either"],
-        "remove": ["agent-active", "agent-blocked"],
+        "remove": [],
     }
     assert projection.comment is not None
     assert "<!-- tau-agent-handoff:v1 -->" in projection.comment["body"]
     assert '"schema": "tau.agent_handoff.v1"' in projection.comment["body"]
     assert "- Next agent: `prompt-health-auditor`" in projection.comment["body"]
+
+
+def test_agent_handoff_projection_removes_stale_route_labels_from_current_snapshot() -> None:
+    payload = _valid_agent_handoff_payload()
+    payload["github"]["current_labels"] = [
+        "agent-work",
+        "agent-active",
+        "next:reviewer",
+        "executor:either",
+        "unrelated",
+    ]
+    payload["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human route is required before goal changes.",
+    }
+
+    projection = project_agent_handoff(payload, active_goal_hash="sha256:active-goal")
+
+    assert projection.ok is True
+    assert projection.labels == {
+        "add": ["agent-work", "next:human", "executor:human"],
+        "remove": [
+            "agent-active",
+            "next:reviewer",
+            "executor:either",
+        ],
+    }
 
 
 def test_agent_handoff_projection_refuses_stale_goal_hash() -> None:

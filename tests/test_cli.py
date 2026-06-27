@@ -236,6 +236,7 @@ def test_cli_handoff_github_transport_refuses_invalid_projection(tmp_path: Path)
     assert payload["ok"] is False
     assert payload["applied"] is False
     assert payload["commands"] == []
+    assert payload["command_results"] == []
     assert "next_agent.name must be one of" in "\n".join(payload["errors"])
     assert receipt == payload
 

@@ -2161,6 +2161,7 @@ def transport_agent_handoff_to_github_command(
             "applied": False,
             "target": projection.target,
             "commands": [],
+            "command_results": [],
             "receipt_path": str(receipt_path.expanduser().resolve()) if receipt_path else None,
             "errors": list(projection.errors),
         }

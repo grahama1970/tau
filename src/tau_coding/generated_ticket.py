@@ -416,9 +416,10 @@ def project_agent_handoff(
     if not isinstance(executor, str) or not executor.strip():
         executor = "either"
 
+    remove_labels = _stale_state_and_route_labels(github, next_agent, executor)
     labels = {
         "add": list(derived_labels(next_agent, executor)),
-        "remove": ["agent-active", "agent-blocked"],
+        "remove": remove_labels,
     }
     return AgentHandoffProjectionResult(
         ok=True,
@@ -452,6 +453,28 @@ def render_agent_handoff_comment(payload: Mapping[str, Any]) -> str:
         f"{json_block}\n"
         "```\n"
     )
+
+
+def _stale_state_and_route_labels(
+    github: Mapping[str, Any],
+    next_agent: str,
+    executor: str | None,
+) -> list[str]:
+    """Return stale state/route labels from the caller-supplied current label snapshot."""
+
+    current_labels = github.get("current_labels")
+    if not isinstance(current_labels, list):
+        return []
+    keep = {f"next:{next_agent}", f"executor:{executor or 'either'}"}
+    stale: list[str] = []
+    for label in current_labels:
+        if not isinstance(label, str):
+            continue
+        if label in {"agent-active", "agent-blocked"} or (
+            (label.startswith("next:") or label.startswith("executor:")) and label not in keep
+        ):
+            stale.append(label)
+    return stale
 
 
 def write_agent_handoff_projection_receipt(
