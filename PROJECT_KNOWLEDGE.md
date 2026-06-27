@@ -67,7 +67,7 @@
 | 2026-06-27 | Record explicit ticket-source inputs in command-loop receipts | Passing `--goal-guardian-ticket-source` appends the source path to the goal-guardian adapter command, which makes the receipt replayable from command artifacts rather than out-of-band environment setup. |
 | 2026-06-27 | Project command-loop reconciliation through GitHub with source trace | The wrapper command avoids manually locating the reconciliation artifact and records loop, reconciliation, and ticket-source paths next to the dry-run GitHub commands. |
 | 2026-06-27 | Rewrite README using the Watch README shape | Tau needs a human-facing project overview, not only an inherited teaching-project README. The new README starts from the visible product promise, then explains the harness, Memory-first chat direction, and proof boundaries. |
-| 2026-06-27 | Compress the Tau header image with Pillow into WebP | The source PNG was 2,526,857 bytes at 1672x941. `docs/assets/tau-header.webp` is 170,524 bytes at 1600x900, which keeps the README visual lightweight. |
+| 2026-06-27 | Compress the T’au header image with Pillow into WebP | The current source PNG `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_46_10 PM.png` was 2,540,871 bytes at 1672x941. `docs/assets/tau-header.webp` is 168,904 bytes at 1600x900, which keeps the README visual lightweight. |
 
 ## Open Questions
 
@@ -140,7 +140,7 @@
 | 2026-06-27 | `/tmp/tau-live-memory-chat-proof-compliance-20260627T233340Z` | Live UX Lab Tau compliance route proof through the Memory-backed chat adapter; `mocked: false`, `live: true`, external subagent GitHub projection schema `tau.external_subagent_github_projection.v1`, `dryRun: true`, `applied: false`, command count `1`, and preserved goal hash. |
 | 2026-06-27 | `/tmp/tau-memory-chat-proof-suite-20260627T233356Z/summary.json` | Tau Memory chat proof suite in pi-mono; `ok: true`, `scenarioCount: 12`, `liveScenarioCount: 5`, `mockedScenarioCount: 7`. The suite proves route-specific harness behavior and dry-run projection extraction, not final Sparta Chat readiness. |
 | 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png` | Fresh CDP screenshot marker for the Tau UX Lab surface after the external subagent GitHub projection slice. Screenshot confirms the Tau experiment surface renders; interaction proof is in the browser proof-suite artifacts. |
-| 2026-06-27 | `docs/assets/tau-header.webp` | README header image compressed with Pillow: output 1600x900 WebP, 170,524 bytes; source PNG was 1672x941, 2,526,857 bytes. |
+| 2026-06-27 | `docs/assets/tau-header.webp` | README header image compressed with Pillow from `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_46_10 PM.png`: output 1600x900 WebP, 168,904 bytes; source PNG was 1672x941, 2,540,871 bytes. |
 
 ## Infrastructure State
 
