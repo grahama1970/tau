@@ -1,0 +1,20 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-goal-guardian-adapter",
+    "--next-agent",
+    "project-or-harness-verifier",
+    "--next-executor",
+    "local",
+    "--next-reason",
+    "The preserved-goal handoff should be checked by the project-or-harness verifier.",
+    "--required-evidence",
+    "Verifier posts a schema-valid handoff receipt.",
+    "--stop-condition",
+    "Verifier handoff is posted or Tau fails closed."
+  ],
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "timeout_s": 30
+}

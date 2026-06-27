@@ -788,6 +788,54 @@ def test_cli_handoff_agent_adapter_emits_tau_handoff(monkeypatch: pytest.MonkeyP
     assert payload["next_agent"]["name"] == "human"
 
 
+def test_cli_handoff_goal_guardian_adapter_emits_preserved_goal_handoff(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal preservation should be checked first.",
+    }
+    monkeypatch.setenv("TAU_HANDOFF_ACTIVE_GOAL_HASH", "sha256:active-goal")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-goal-guardian-adapter",
+            "--next-agent",
+            "project-or-harness-verifier",
+            "--next-executor",
+            "local",
+        ],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff.v1"
+    assert payload["previous_subagent"] == "goal-guardian"
+    assert payload["goal"] == start["goal"]
+    assert payload["result"]["status"] == "PASS"
+    assert payload["next_agent"]["name"] == "project-or-harness-verifier"
+
+
+def test_cli_handoff_goal_guardian_adapter_refuses_stale_goal_hash(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    monkeypatch.setenv("TAU_HANDOFF_ACTIVE_GOAL_HASH", "sha256:different")
+
+    result = CliRunner().invoke(
+        app,
+        ["handoff-goal-guardian-adapter"],
+        input=json.dumps(start),
+    )
+
+    assert result.exit_code != 0
+    assert "goal-guardian refused stale or changed goal hash" in result.output
+
+
 def test_cli_handoff_dispatch_agent_command_accepts_adapter_command(tmp_path: Path) -> None:
     start = _valid_cli_handoff_payload()
     agents_root = tmp_path / "agents"
@@ -915,6 +963,77 @@ def test_cli_handoff_dispatch_agent_command_uses_command_spec_overlay(tmp_path: 
     assert payload["ok"] is True
     assert payload["selected_agent"] == "project-or-harness-verifier"
     assert payload["response_projection"]["next_agent"] == "human"
+
+
+def test_cli_handoff_dispatch_agent_command_accepts_builtin_goal_guardian_overlay(
+    tmp_path: Path,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal preservation should be checked first.",
+    }
+    agents_root = tmp_path / "agents"
+    command_spec_root = tmp_path / "command-specs"
+    verifier_dir = agents_root / "project-or-harness-verifier"
+    guardian_spec_dir = command_spec_root / "goal-guardian"
+    receipt_dir = tmp_path / "goal-guardian-dispatch-receipts"
+    start_path = tmp_path / "start.json"
+    verifier_dir.mkdir(parents=True)
+    guardian_spec_dir.mkdir(parents=True)
+    (verifier_dir / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import json; "
+                        "from tau_coding.cli import "
+                        "project_agent_handoff_goal_guardian_adapter_command; "
+                        "print(json.dumps(project_agent_handoff_goal_guardian_adapter_command("
+                        "next_agent='project-or-harness-verifier', "
+                        "next_executor='local', "
+                        "next_reason='Verifier should inspect preserved-goal receipt.', "
+                        "required_evidence='Verifier posts the next schema-valid route.', "
+                        "stop_condition='Verifier route is posted.'"
+                        ")))"
+                    ),
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-agent-command",
+            "--start",
+            str(start_path),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            str(command_spec_root),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["selected_agent"] == "goal-guardian"
+    assert payload["response_projection"]["next_agent"] == "project-or-harness-verifier"
 
 
 def test_cli_loop2_serve_starts_receipt_monitor(

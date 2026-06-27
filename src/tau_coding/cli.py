@@ -727,6 +727,15 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-goal-guardian-adapter":
+        try:
+            options = _parse_handoff_goal_guardian_adapter_cli_args(positional_args[1:])
+            payload = project_agent_handoff_goal_guardian_adapter_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -1347,6 +1356,46 @@ def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | No
             options[key.removeprefix("--").replace("-", "_")] = value
         else:
             raise RuntimeError(f"Unknown handoff-agent-adapter option: {arg}")
+        index += 1
+    return options
+
+
+def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
+    options: dict[str, str | None] = {
+        "next_agent": "project-or-harness-verifier",
+        "next_executor": "local",
+        "next_reason": "A verifier should check the preserved-goal handoff.",
+        "required_evidence": "Verifier posts a schema-valid handoff receipt.",
+        "stop_condition": "Verifier handoff is posted or Tau fails closed.",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--next-agent",
+            "--next-executor",
+            "--next-reason",
+            "--required-evidence",
+            "--stop-condition",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--next-agent",
+                "--next-executor",
+                "--next-reason",
+                "--required-evidence",
+                "--stop-condition",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            options[key.removeprefix("--").replace("-", "_")] = value
+        else:
+            raise RuntimeError(f"Unknown handoff-goal-guardian-adapter option: {arg}")
         index += 1
     return options
 
@@ -2777,6 +2826,77 @@ def project_agent_handoff_adapter_command(
         "rationale": (
             f"{previous_subagent} completed one bounded adapter turn; "
             "routing follows the configured next agent."
+        ),
+        "next_agent": {
+            "name": resolved_next_agent,
+            "executor": resolved_next_executor,
+            "reason": resolved_next_reason,
+        },
+        "required_evidence": [resolved_required_evidence],
+        "stop_condition": resolved_stop_condition,
+    }
+
+
+def project_agent_handoff_goal_guardian_adapter_command(
+    *,
+    next_agent: str | None,
+    next_executor: str | None,
+    next_reason: str | None,
+    required_evidence: str | None,
+    stop_condition: str | None,
+) -> dict[str, object]:
+    """Emit a goal-guardian handoff only when the active goal hash is preserved."""
+
+    try:
+        start_payload = json.loads(sys.stdin.read())
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"stdin handoff JSON is unreadable: {exc}") from exc
+    if not isinstance(start_payload, dict):
+        raise RuntimeError("stdin handoff JSON root must be an object")
+    github = start_payload.get("github")
+    goal = start_payload.get("goal")
+    context = start_payload.get("context")
+    if not isinstance(github, dict):
+        raise RuntimeError("stdin handoff missing github object")
+    if not isinstance(goal, dict):
+        raise RuntimeError("stdin handoff missing goal object")
+    if not isinstance(context, dict):
+        raise RuntimeError("stdin handoff missing context object")
+
+    active_goal_hash = environ.get("TAU_HANDOFF_ACTIVE_GOAL_HASH")
+    goal_hash = goal.get("goal_hash")
+    if not isinstance(active_goal_hash, str) or not active_goal_hash.strip():
+        raise RuntimeError("TAU_HANDOFF_ACTIVE_GOAL_HASH is required")
+    if goal_hash != active_goal_hash:
+        raise RuntimeError("goal-guardian refused stale or changed goal hash")
+
+    resolved_next_agent = next_agent or "project-or-harness-verifier"
+    resolved_next_executor = next_executor or "local"
+    resolved_next_reason = (
+        next_reason or "The preserved-goal handoff should be checked by a verifier."
+    )
+    resolved_required_evidence = required_evidence or "Verifier posts a schema-valid receipt."
+    resolved_stop_condition = stop_condition or "Verifier handoff is posted or Tau fails closed."
+    artifacts = context.get("artifacts") if isinstance(context.get("artifacts"), list) else []
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": github,
+        "goal": goal,
+        "previous_subagent": "goal-guardian",
+        "context": {
+            "summary": "Goal guardian verified that the handoff preserved the active goal hash.",
+            "artifacts": artifacts,
+        },
+        "result": {
+            "status": "PASS",
+            "summary": "Active goal hash was preserved.",
+            "evidence": [
+                "TAU_HANDOFF_ACTIVE_GOAL_HASH matched handoff.goal.goal_hash"
+            ],
+        },
+        "rationale": (
+            "Goal preservation passed, so the next bounded agent can continue "
+            "without a human goal amendment."
         ),
         "next_agent": {
             "name": resolved_next_agent,

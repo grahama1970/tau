@@ -132,6 +132,9 @@ Implemented local contract slices include:
   - `tau handoff-agent-adapter` is a small stdin-to-handoff adapter that lets
     registry command specs emit the minimal handoff JSON without custom wrapper
     code.
+  - `tau handoff-goal-guardian-adapter` is a deterministic built-in adapter
+    that refuses missing/stale active goal hashes and emits a preserved-goal
+    `tau.agent_handoff.v1` before routing onward.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. They do not create GitHub issues yet. GitHub mutation comes after

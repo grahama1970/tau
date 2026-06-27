@@ -278,6 +278,26 @@ def test_load_agent_dispatch_command_spec_from_overlay_requires_registry_entry(
     assert spec["timeout_s"] == 3.0
 
 
+def test_load_agent_dispatch_command_spec_allows_builtin_agent_overlay(tmp_path: Path) -> None:
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    spec_dir = spec_root / "goal-guardian"
+    agents_root.mkdir()
+    spec_dir.mkdir(parents=True)
+    (spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps({"command": [sys.executable, "-c", "print('{}')"], "timeout_s": 3}),
+        encoding="utf-8",
+    )
+
+    spec = load_agent_dispatch_command_spec(
+        agents_root,
+        "goal-guardian",
+        command_spec_root=spec_root,
+    )
+
+    assert spec["command"] == [sys.executable, "-c", "print('{}')"]
+
+
 def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Path) -> None:
     agent_dir = tmp_path / "reviewer"
     agent_dir.mkdir()

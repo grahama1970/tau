@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from tau_coding.generated_ticket import project_agent_handoff
+from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
 
 TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.v1"
 TAU_AGENT_DISPATCH_COMMAND_FILENAME = "tau-dispatch-command.json"
@@ -398,10 +398,11 @@ def load_agent_dispatch_command_spec(
     if not agent_id or "/" in agent_id or agent_id in {".", ".."}:
         raise ValueError(f"invalid agent id for command dispatch: {agent_id!r}")
     agent_dir = root.expanduser().resolve() / agent_id
-    if not agent_dir.is_dir():
-        raise ValueError(f"agent registry entry does not exist: {agent_dir}")
-    if not (agent_dir / "AGENTS.md").is_file():
-        raise ValueError(f"agent registry entry lacks AGENTS.md: {agent_dir}")
+    if agent_id not in ROUTABLE_AGENTS or command_spec_root is None:
+        if not agent_dir.is_dir():
+            raise ValueError(f"agent registry entry does not exist: {agent_dir}")
+        if not (agent_dir / "AGENTS.md").is_file():
+            raise ValueError(f"agent registry entry lacks AGENTS.md: {agent_dir}")
     spec_dir = (
         command_spec_root.expanduser().resolve() / agent_id
         if command_spec_root
