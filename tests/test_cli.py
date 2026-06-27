@@ -34,6 +34,9 @@ from tau_coding.resources import TauResourcePaths
 from tau_coding.system_prompt import BuildSystemPromptOptions, build_system_prompt
 from tau_coding.tools import create_coding_tools
 
+ROOT = Path(__file__).resolve().parents[1]
+FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
+
 
 async def _passing_scillm_auth_preflight(
     contract: dict[str, object],
@@ -234,6 +237,66 @@ def test_cli_handoff_github_transport_refuses_invalid_projection(tmp_path: Path)
     assert payload["applied"] is False
     assert payload["commands"] == []
     assert "next_agent.name must be one of" in "\n".join(payload["errors"])
+    assert receipt == payload
+
+
+def test_cli_generated_ticket_github_create_defaults_to_dry_run(tmp_path: Path) -> None:
+    ticket_path = tmp_path / "generated-ticket.json"
+    receipt_path = tmp_path / "generated-ticket-transport" / "receipt.json"
+    ticket = json.loads((FIXTURES / "valid-generated-ticket.json").read_text())
+    ticket["github"]["repo"] = "grahama1970/tau"
+    ticket_path.write_text(json.dumps(ticket), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "generated-ticket-github-create",
+            str(ticket_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_generated_ticket_transport_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["target"] == {"repo": "grahama1970/tau", "target": "new"}
+    assert payload["commands"][0][:3] == ["gh", "issue", "create"]
+    assert receipt == payload
+
+
+def test_cli_generated_ticket_github_create_refuses_invalid_ticket(tmp_path: Path) -> None:
+    ticket_path = tmp_path / "generated-ticket.json"
+    receipt_path = tmp_path / "generated-ticket-transport" / "receipt.json"
+    ticket = json.loads((FIXTURES / "valid-generated-ticket.json").read_text())
+    ticket["previous_subagent"] = "coder"
+    ticket_path.write_text(json.dumps(ticket), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "generated-ticket-github-create",
+            str(ticket_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.github_generated_ticket_transport_receipt.v1"
+    assert payload["ok"] is False
+    assert payload["commands"] == []
+    assert "previous_subagent may not create tickets: coder" in payload["errors"]
     assert receipt == payload
 
 

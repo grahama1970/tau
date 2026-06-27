@@ -1,6 +1,9 @@
 import subprocess
 
-from tau_coding.github_handoff import transport_handoff_projection_to_github
+from tau_coding.github_handoff import (
+    transport_generated_ticket_to_github,
+    transport_handoff_projection_to_github,
+)
 
 
 def test_github_handoff_transport_dry_run_renders_comment_and_label_commands() -> None:
@@ -84,6 +87,71 @@ def test_github_handoff_transport_records_runner_failure() -> None:
     assert "denied" in result.errors[0]
 
 
+def test_generated_ticket_transport_dry_run_renders_issue_create_command() -> None:
+    result = transport_generated_ticket_to_github(
+        repo="grahama1970/tau",
+        github_create=_valid_github_create(),
+        apply=False,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is True
+    assert result.applied is False
+    assert result.target == {"repo": "grahama1970/tau", "target": "new"}
+    assert result.commands == (
+        [
+            "gh",
+            "issue",
+            "create",
+            "--repo",
+            "grahama1970/tau",
+            "--title",
+            "Review Tau generated-ticket contract evidence",
+            "--body-file",
+            "-",
+            "--label",
+            "agent-work,next:reviewer,executor:either",
+        ],
+    )
+
+
+def test_generated_ticket_transport_apply_uses_runner_with_body_stdin() -> None:
+    calls: list[tuple[list[str], str | None]] = []
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        calls.append((command, stdin))
+        return subprocess.CompletedProcess(command, 0, stdout="https://github.com/x/y/issues/1\n")
+
+    result = transport_generated_ticket_to_github(
+        repo="grahama1970/tau",
+        github_create=_valid_github_create(),
+        apply=True,
+        runner=runner,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is False
+    assert result.applied is True
+    assert len(calls) == 1
+    assert calls[0][0][:3] == ["gh", "issue", "create"]
+    assert calls[0][1] == "Review the generated-ticket contract evidence."
+
+
+def test_generated_ticket_transport_refuses_pull_request_create() -> None:
+    github_create = _valid_github_create()
+    github_create["kind"] = "pull_request"
+
+    result = transport_generated_ticket_to_github(
+        repo="grahama1970/tau",
+        github_create=github_create,
+        apply=False,
+    )
+
+    assert result.ok is False
+    assert result.applied is False
+    assert "supports kind='issue' only" in "\n".join(result.errors)
+
+
 def _valid_projection() -> dict:
     return {
         "schema": "tau.agent_handoff_projection_receipt.v1",
@@ -100,4 +168,13 @@ def _valid_projection() -> dict:
         },
         "comment": {"body": "## Tau Agent Handoff\n"},
         "errors": [],
+    }
+
+
+def _valid_github_create() -> dict:
+    return {
+        "kind": "issue",
+        "title": "Review Tau generated-ticket contract evidence",
+        "body": "Review the generated-ticket contract evidence.",
+        "labels": ["agent-work", "next:reviewer", "executor:either"],
     }

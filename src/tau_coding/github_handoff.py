@@ -23,12 +23,13 @@ class GitHubHandoffTransportResult:
     commands: tuple[list[str], ...] = ()
     receipt_path: str | None = None
     errors: tuple[str, ...] = ()
+    schema: str = "tau.github_handoff_transport_receipt.v1"
 
     def as_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable transport receipt."""
 
         return {
-            "schema": "tau.github_handoff_transport_receipt.v1",
+            "schema": self.schema,
             "ok": self.ok,
             "dry_run": self.dry_run,
             "applied": self.applied,
@@ -98,6 +99,71 @@ def transport_handoff_projection_to_github(
     return _write_transport_receipt(result, receipt_path)
 
 
+def transport_generated_ticket_to_github(
+    *,
+    repo: str,
+    github_create: Mapping[str, Any],
+    apply: bool = False,
+    receipt_path: Path | None = None,
+    runner: CommandRunner | None = None,
+) -> GitHubHandoffTransportResult:
+    """Render or apply a GitHub issue create command for one generated-ticket projection."""
+
+    errors: list[str] = []
+    commands = _generated_ticket_create_commands(repo, github_create, errors)
+    target = {"repo": repo, "target": "new"}
+    schema = "tau.github_generated_ticket_transport_receipt.v1"
+    if errors:
+        result = GitHubHandoffTransportResult(
+            ok=False,
+            dry_run=not apply,
+            applied=False,
+            target=target,
+            commands=tuple(commands),
+            errors=tuple(errors),
+            schema=schema,
+        )
+        return _write_transport_receipt(result, receipt_path)
+
+    if not apply:
+        result = GitHubHandoffTransportResult(
+            ok=True,
+            dry_run=True,
+            applied=False,
+            target=target,
+            commands=tuple(commands),
+            schema=schema,
+        )
+        return _write_transport_receipt(result, receipt_path)
+
+    command_runner = runner or _run_gh_command
+    completed = command_runner(commands[0], str(github_create["body"]))
+    if completed.returncode != 0:
+        stderr = (completed.stderr or "").strip()
+        stdout = (completed.stdout or "").strip()
+        detail = stderr or stdout or f"exit_code={completed.returncode}"
+        result = GitHubHandoffTransportResult(
+            ok=False,
+            dry_run=False,
+            applied=False,
+            target=target,
+            commands=tuple(commands),
+            errors=(f"GitHub command failed: {' '.join(commands[0])}: {detail}",),
+            schema=schema,
+        )
+        return _write_transport_receipt(result, receipt_path)
+
+    result = GitHubHandoffTransportResult(
+        ok=True,
+        dry_run=False,
+        applied=True,
+        target=target,
+        commands=tuple(commands),
+        schema=schema,
+    )
+    return _write_transport_receipt(result, receipt_path)
+
+
 def _github_transport_commands(
     projection: Mapping[str, Any],
     errors: list[str],
@@ -140,6 +206,37 @@ def _github_transport_commands(
     if len(edit_command) > 6:
         commands.append(edit_command)
     return commands
+
+
+def _generated_ticket_create_commands(
+    repo: str,
+    github_create: Mapping[str, Any],
+    errors: list[str],
+) -> list[list[str]]:
+    if not isinstance(repo, str) or not repo.strip():
+        errors.append("github.repo must be a non-empty string")
+    kind = _non_empty_string(github_create, "kind", "github_create", errors)
+    title = _non_empty_string(github_create, "title", "github_create", errors)
+    body = _non_empty_string(github_create, "body", "github_create", errors)
+    labels = _string_list(github_create.get("labels"), "github_create.labels", errors)
+    if kind and kind != "issue":
+        errors.append("GitHub generated-ticket create currently supports kind='issue' only")
+    if errors or not title or not body:
+        return []
+    command = [
+        "gh",
+        "issue",
+        "create",
+        "--repo",
+        repo,
+        "--title",
+        title,
+        "--body-file",
+        "-",
+    ]
+    if labels:
+        command.extend(["--label", ",".join(labels)])
+    return [command]
 
 
 def _target_dict(projection: Mapping[str, Any]) -> dict[str, Any] | None:
@@ -218,4 +315,5 @@ def _write_transport_receipt(
         commands=result.commands,
         receipt_path=str(resolved),
         errors=result.errors,
+        schema=result.schema,
     )
