@@ -141,12 +141,14 @@ Implemented local contract slices include:
     when the route reaches `human`, fails validation, or exhausts `--max-steps`.
   - `tau handoff-command-loop-github-transport` renders the exact dry-run
     `gh issue/pr comment` and `gh issue/pr edit` commands for the terminal
-    handoff from a command-loop receipt.
+    handoff from a command-loop receipt. GitHub mutation is explicit-only via
+    `--apply`; invalid command-loop receipts fail closed before any `gh`
+    commands are run.
 
 The current validators and dispatch receipts are intentionally local and
-deterministic. They do not create GitHub issues yet. GitHub mutation comes after
-the schema, projection, one-step dispatch, local command-loop, and terminal
-GitHub dry-run transport contracts are proven with focused tests.
+deterministic. GitHub writes are apply-gated: the default path only renders
+commands, and the `--apply` path still requires a valid terminal command-loop
+receipt before it can call `gh`.
 
 Relevant files:
 

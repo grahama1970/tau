@@ -176,9 +176,11 @@ def transport_generated_ticket_to_github(
 def transport_command_loop_terminal_to_github(
     loop_receipt: Mapping[str, Any],
     *,
+    apply: bool = False,
     receipt_path: Path | None = None,
+    runner: CommandRunner | None = None,
 ) -> GitHubHandoffTransportResult:
-    """Render GitHub commands for the terminal projection from one command-loop receipt."""
+    """Render or apply GitHub commands for a command-loop terminal projection."""
 
     schema = "tau.github_command_loop_terminal_transport_receipt.v1"
     errors: list[str] = []
@@ -186,7 +188,7 @@ def transport_command_loop_terminal_to_github(
     if projection is None:
         result = GitHubHandoffTransportResult(
             ok=False,
-            dry_run=True,
+            dry_run=not apply,
             applied=False,
             target=None,
             commands=(),
@@ -194,11 +196,15 @@ def transport_command_loop_terminal_to_github(
             schema=schema,
         )
         return _write_transport_receipt(result, receipt_path)
-    transport = transport_handoff_projection_to_github(projection, apply=False)
+    transport = transport_handoff_projection_to_github(
+        projection,
+        apply=apply,
+        runner=runner,
+    )
     result = GitHubHandoffTransportResult(
         ok=transport.ok,
-        dry_run=True,
-        applied=False,
+        dry_run=transport.dry_run,
+        applied=transport.applied,
         target=transport.target,
         commands=transport.commands,
         command_results=transport.command_results,

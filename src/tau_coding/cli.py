@@ -632,12 +632,13 @@ def main(
 
     if prompt_option is None and command == "handoff-command-loop-github-transport":
         try:
-            loop_receipt_path, receipt_path = _parse_handoff_command_loop_github_transport_args(
-                positional_args[1:]
+            loop_receipt_path, receipt_path, apply_github = (
+                _parse_handoff_command_loop_github_transport_args(positional_args[1:])
             )
             ok = transport_handoff_command_loop_terminal_to_github_command(
                 loop_receipt_path,
                 receipt_path=receipt_path,
+                apply_github=apply_github,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1064,14 +1065,15 @@ def _parse_generated_ticket_github_create_cli_args(
 
 def _parse_handoff_command_loop_github_transport_args(
     args: list[str],
-) -> tuple[Path, Path | None]:
+) -> tuple[Path, Path | None, bool]:
     if not args:
         raise RuntimeError(
             "Usage: tau handoff-command-loop-github-transport <command-loop-receipt.json> "
-            "[--receipt <receipt.json>]"
+            "[--receipt <receipt.json>] [--apply]"
         )
     loop_receipt_path = Path(args[0])
     receipt_path: Path | None = None
+    apply_github = False
     index = 1
     while index < len(args):
         arg = args[index]
@@ -1082,10 +1084,12 @@ def _parse_handoff_command_loop_github_transport_args(
             receipt_path = Path(args[index])
         elif arg.startswith("--receipt="):
             receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--apply":
+            apply_github = True
         else:
             raise RuntimeError(f"Unknown handoff-command-loop-github-transport option: {arg}")
         index += 1
-    return loop_receipt_path, receipt_path
+    return loop_receipt_path, receipt_path, apply_github
 
 
 def _parse_handoff_chain_cli_args(
@@ -2708,12 +2712,14 @@ def transport_handoff_command_loop_terminal_to_github_command(
     loop_receipt_path: Path,
     *,
     receipt_path: Path | None,
+    apply_github: bool,
 ) -> bool:
     """Render GitHub transport commands for a command-loop terminal handoff."""
 
     payload = _load_json_object(loop_receipt_path, label="command loop receipt")
     transport = transport_command_loop_terminal_to_github(
         payload,
+        apply=apply_github,
         receipt_path=receipt_path,
     )
     typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))

@@ -1218,6 +1218,37 @@ def test_cli_handoff_command_loop_github_transport_dry_run(tmp_path: Path) -> No
     assert receipt == payload
 
 
+def test_cli_handoff_command_loop_github_transport_apply_flag_is_parsed(tmp_path: Path) -> None:
+    loop_receipt = {
+        "schema": "tau.agent_handoff_command_loop_receipt.v1",
+        "ok": False,
+        "status": "BLOCKED",
+        "step_count": 0,
+        "terminal_agent": None,
+        "stop_reason": "test",
+        "dispatches": [],
+        "errors": ["test fixture intentionally invalid"],
+    }
+    loop_receipt_path = tmp_path / "command-loop-receipt.json"
+    loop_receipt_path.write_text(json.dumps(loop_receipt), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-command-loop-github-transport",
+            str(loop_receipt_path),
+            "--apply",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.github_command_loop_terminal_transport_receipt.v1"
+    assert payload["dry_run"] is False
+    assert payload["applied"] is False
+    assert "command loop receipt must be ok" in "\n".join(payload["errors"])
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

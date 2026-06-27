@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 14:07 by agent
+**Last updated:** 2026-06-27 17:34Z / 13:34 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -11,7 +11,8 @@
 - Tau can now use a committed command-spec overlay with `--command-spec-root`. The selected agent is still validated against `/home/graham/workspace/experiments/agent-skills/agents`, but the executable `tau-dispatch-command.json` can live under Tau's `experiments/goal-locked-subagents/agent-command-specs/` tree for reproducible harness experiments.
 - Built-in `goal-guardian` now has a deterministic adapter. It reads the start handoff from stdin, requires `TAU_HANDOFF_ACTIVE_GOAL_HASH`, refuses stale goal hashes, and emits a normal `tau.agent_handoff.v1` only when the active goal hash is preserved.
 - Tau now has a command-backed local loop receipt. `handoff-command-loop` repeatedly validates the current handoff, loads the selected agent command spec, runs one bounded command, validates the emitted handoff, and stops at `human` or fails closed.
-- Tau can render GitHub dry-run transport for a command-loop terminal handoff. `handoff-command-loop-github-transport` extracts the last response projection from a successful command-loop receipt that stopped at `human`, then renders the exact `gh issue/pr comment` and label-edit commands without applying them.
+- Tau can render or explicitly apply GitHub transport for a command-loop terminal handoff. `handoff-command-loop-github-transport` extracts the last response projection from a successful command-loop receipt that stopped at `human`, renders the exact `gh issue/pr comment` and label-edit commands by default, and only runs them when `--apply` is passed.
+- The command-loop GitHub apply path is fail-closed before mutation: invalid receipts return `ok: false`, `applied: false`, and zero command executions even when `--apply` is passed.
 
 ## Recent Decisions
 
@@ -25,6 +26,7 @@
 | 2026-06-27 | Treat `goal-guardian` as a Tau built-in dispatch role | It is a protocol guard rather than a current `agent-skills/agents` directory entry, so the overlay loader allows built-in Tau roles while still requiring external registry entries for non-built-in agents. |
 | 2026-06-27 | Prove multi-step command loops before GitHub mutation | Local command-loop receipts provide stronger evidence for route continuity than isolated one-step receipts while still avoiding durable GitHub writes. |
 | 2026-06-27 | Require dry-run terminal GitHub transport before live GitHub writes | The command-loop terminal projection must render exact comment and label commands before any future `--apply` path is considered. |
+| 2026-06-27 | Keep live GitHub writes behind an explicit `--apply` flag | Default command-loop GitHub transport remains dry-run; `--apply` is only allowed after the terminal command-loop receipt validates and stops at `human`. |
 
 ## Open Questions
 
@@ -58,6 +60,8 @@
 | 2026-06-27 | `/tmp/tau-goal-guardian-overlay-dispatch/summary.json` | Non-mocked local command dispatch through built-in `goal-guardian`; adapter verified the active goal hash, returned result `PASS`, and routed next to `project-or-harness-verifier`. |
 | 2026-06-27 | `/tmp/tau-command-loop-overlay-dispatch/summary.json` | Non-mocked local command loop through `goal-guardian` then `project-or-harness-verifier`; both command exits were `0`, the loop stopped at `human`, and route continuity preserved target and goal. |
 | 2026-06-27 | `/tmp/tau-command-loop-github-transport/summary.json` | Dry-run GitHub transport for the command-loop terminal handoff; rendered `gh issue comment 123 --repo grahama1970/chatgpt-lab --body-file -` and `gh issue edit 123 --add-label agent-work,next:human,executor:human` without applying them. |
+| 2026-06-27 | `/tmp/tau-command-loop-github-transport-apply-rerun/summary.json` | Valid command-loop terminal handoff rendered two dry-run GitHub commands with `ok: true`, `dry_run: true`, `applied: false`, and no errors. |
+| 2026-06-27 | `/tmp/tau-command-loop-github-apply-gate/summary.json` | Invalid command-loop receipt run with `--apply` failed closed with `ok: false`, `dry_run: false`, `applied: false`, and `command_count: 0`. |
 
 ## Infrastructure State
 

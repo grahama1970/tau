@@ -209,6 +209,27 @@ def test_command_loop_terminal_transport_refuses_non_human_terminal() -> None:
     assert "terminal_agent must be human" in "\n".join(result.errors)
 
 
+def test_command_loop_terminal_transport_apply_uses_runner() -> None:
+    receipt = _valid_command_loop_receipt()
+    calls: list[tuple[list[str], str | None]] = []
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        calls.append((command, stdin))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = transport_command_loop_terminal_to_github(receipt, apply=True, runner=runner)
+
+    assert result.ok is True
+    assert result.schema == "tau.github_command_loop_terminal_transport_receipt.v1"
+    assert result.dry_run is False
+    assert result.applied is True
+    assert len(calls) == 2
+    assert calls[0][0][:3] == ["gh", "issue", "comment"]
+    assert calls[0][1] == "## Tau Agent Handoff\n"
+    assert calls[1][0][:3] == ["gh", "issue", "edit"]
+    assert calls[1][1] is None
+
+
 def _valid_projection() -> dict:
     return {
         "schema": "tau.agent_handoff_projection_receipt.v1",
