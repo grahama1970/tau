@@ -40,6 +40,9 @@ from tau_coding.github_handoff import (
     transport_handoff_projection_to_github,
 )
 from tau_coding.handoff_dispatch import (
+    TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
+    load_agent_dispatch_command_spec,
+    validate_command_dispatch_spec,
     write_agent_handoff_command_dispatch_receipt,
     write_agent_handoff_dispatch_receipt,
 )
@@ -696,6 +699,23 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-dispatch-agent-command":
+        try:
+            start_path, active_goal_hash, receipt_dir, agents_root = (
+                _parse_handoff_dispatch_agent_command_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_agent_command_dispatch_command(
+                start_path,
+                active_goal_hash=active_goal_hash,
+                receipt_dir=receipt_dir,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -1214,6 +1234,56 @@ def _parse_handoff_dispatch_command_cli_args(
     if receipt_dir is None:
         raise RuntimeError("handoff-dispatch-command requires --receipt-dir <dir>")
     return start_path, command_spec, active_goal_hash, receipt_dir, agents_root
+
+
+def _parse_handoff_dispatch_agent_command_cli_args(
+    args: list[str],
+) -> tuple[Path, str | None, Path, Path]:
+    start_path: Path | None = None
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--start":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--start requires a value")
+            start_path = Path(args[index])
+        elif arg.startswith("--start="):
+            start_path = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown handoff-dispatch-agent-command option: {arg}")
+        index += 1
+    if start_path is None:
+        raise RuntimeError("handoff-dispatch-agent-command requires --start <handoff.json>")
+    if receipt_dir is None:
+        raise RuntimeError("handoff-dispatch-agent-command requires --receipt-dir <dir>")
+    if agents_root is None:
+        raise RuntimeError("handoff-dispatch-agent-command requires --agents-root <dir>")
+    return start_path, active_goal_hash, receipt_dir, agents_root
 
 
 def _parse_positive_int(value: str, option: str) -> int:
@@ -2495,24 +2565,86 @@ def project_agent_handoff_command_dispatch_command(
     return dispatch.ok
 
 
+def project_agent_handoff_agent_command_dispatch_command(
+    start_path: Path,
+    *,
+    active_goal_hash: str | None,
+    receipt_dir: Path,
+    agents_root: Path,
+) -> bool:
+    """Write a one-step dispatch receipt using the selected agent registry command."""
+
+    start_payload = _load_json_object(start_path, label="start handoff")
+    start_projection = project_agent_handoff(
+        start_payload,
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+    )
+    if not start_projection.ok:
+        dispatch = write_agent_handoff_command_dispatch_receipt(
+            start_payload,
+            [],
+            receipt_dir.expanduser().resolve(),
+            active_goal_hash=active_goal_hash,
+            agent_registry_root=agents_root,
+        )
+        typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
+        return False
+    selected_agent = start_projection.next_agent
+    if selected_agent is None:
+        raise RuntimeError("start handoff did not select a next agent")
+    try:
+        spec = load_agent_dispatch_command_spec(agents_root, selected_agent)
+    except ValueError as exc:
+        resolved_receipt_dir = receipt_dir.expanduser().resolve()
+        resolved_receipt_dir.mkdir(parents=True, exist_ok=True)
+        start_receipt_path = resolved_receipt_dir / "start-handoff.receipt.json"
+        start_projection_payload = start_projection.as_dict()
+        start_receipt_path.write_text(
+            json.dumps(start_projection_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        receipt_payload = {
+            "schema": TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
+            "ok": False,
+            "status": "BLOCKED",
+            "selected_agent": selected_agent,
+            "stop_reason": "missing_agent_command_spec",
+            "mocked": False,
+            "live": False,
+            "runner": "agent-registry-command",
+            "start_projection": start_projection_payload,
+            "response_projection": None,
+            "command_results": [],
+            "receipt_dir": str(resolved_receipt_dir),
+            "artifacts": [str(start_receipt_path)],
+            "errors": [str(exc)],
+        }
+        (resolved_receipt_dir / "dispatch-receipt.json").write_text(
+            json.dumps(receipt_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        typer.echo(json.dumps(receipt_payload, indent=2, sort_keys=True))
+        return False
+    dispatch = write_agent_handoff_command_dispatch_receipt(
+        start_payload,
+        spec["command"],
+        receipt_dir.expanduser().resolve(),
+        timeout_s=spec["timeout_s"],
+        cwd=spec["cwd"],
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+    )
+    typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
+    return dispatch.ok
+
+
 def _load_command_dispatch_spec(path: Path) -> dict[str, object]:
     payload = _load_json_object(path, label="handoff command spec")
-    command = payload.get("command")
-    if (
-        not isinstance(command, list)
-        or not command
-        or not all(isinstance(item, str) and item for item in command)
-    ):
-        raise RuntimeError("handoff command spec requires non-empty string list field: command")
-    timeout_value = payload.get("timeout_s", 30.0)
-    if isinstance(timeout_value, bool) or not isinstance(timeout_value, (int, float)):
-        raise RuntimeError("handoff command spec timeout_s must be a positive number")
-    timeout_s = float(timeout_value)
-    if timeout_s <= 0:
-        raise RuntimeError("handoff command spec timeout_s must be a positive number")
-    cwd_value = payload.get("cwd")
-    cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
-    return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
+    try:
+        return validate_command_dispatch_spec(payload)
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
 
 
 def _load_handoff_response_dir(responses_dir: Path) -> dict[str, dict[str, object]]:

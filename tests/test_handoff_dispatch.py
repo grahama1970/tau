@@ -6,6 +6,7 @@ from tau_coding.handoff_dispatch import (
     TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
     dispatch_agent_handoff_command_once,
     dispatch_agent_handoff_once,
+    load_agent_dispatch_command_spec,
     write_agent_handoff_command_dispatch_receipt,
     write_agent_handoff_dispatch_receipt,
 )
@@ -200,6 +201,35 @@ def test_command_handoff_dispatch_receipt_writes_command_results(tmp_path: Path)
     assert receipt["command_results"][0]["exit_code"] == 0
     assert (receipt_dir / "start-handoff.receipt.json").exists()
     assert (receipt_dir / "reviewer-response.receipt.json").exists()
+
+
+def test_load_agent_dispatch_command_spec_from_registry(tmp_path: Path) -> None:
+    agent_dir = tmp_path / "reviewer"
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    (agent_dir / "tau-dispatch-command.json").write_text(
+        json.dumps({"command": [sys.executable, "-c", "print('{}')"], "timeout_s": 3}),
+        encoding="utf-8",
+    )
+
+    spec = load_agent_dispatch_command_spec(tmp_path, "reviewer")
+
+    assert spec["command"] == [sys.executable, "-c", "print('{}')"]
+    assert spec["timeout_s"] == 3.0
+    assert spec["cwd"] is None
+
+
+def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Path) -> None:
+    agent_dir = tmp_path / "reviewer"
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+
+    try:
+        load_agent_dispatch_command_spec(tmp_path, "reviewer")
+    except ValueError as exc:
+        assert "agent dispatch command spec missing" in str(exc)
+    else:
+        raise AssertionError("missing command spec should fail")
 
 
 def _valid_handoff() -> dict:

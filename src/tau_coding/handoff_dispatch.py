@@ -12,6 +12,7 @@ from typing import Any
 from tau_coding.generated_ticket import project_agent_handoff
 
 TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.v1"
+TAU_AGENT_DISPATCH_COMMAND_FILENAME = "tau-dispatch-command.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -376,6 +377,53 @@ def write_agent_handoff_command_dispatch_receipt(
         artifacts=tuple(artifacts),
         errors=dispatch.errors,
     )
+
+
+def load_agent_dispatch_command_spec(root: Path, agent_id: str) -> dict[str, object]:
+    """Load an opt-in Tau command dispatch spec from one agent registry entry."""
+
+    if not agent_id or "/" in agent_id or agent_id in {".", ".."}:
+        raise ValueError(f"invalid agent id for command dispatch: {agent_id!r}")
+    agent_dir = root.expanduser().resolve() / agent_id
+    if not agent_dir.is_dir():
+        raise ValueError(f"agent registry entry does not exist: {agent_dir}")
+    if not (agent_dir / "AGENTS.md").is_file():
+        raise ValueError(f"agent registry entry lacks AGENTS.md: {agent_dir}")
+    spec_path = agent_dir / TAU_AGENT_DISPATCH_COMMAND_FILENAME
+    if not spec_path.is_file():
+        raise ValueError(f"agent dispatch command spec missing: {spec_path}")
+    try:
+        payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"agent dispatch command spec unreadable: {spec_path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"agent dispatch command spec root must be an object: {spec_path}")
+    return validate_command_dispatch_spec(payload, label=f"agent dispatch command spec {spec_path}")
+
+
+def validate_command_dispatch_spec(
+    payload: Mapping[str, Any],
+    *,
+    label: str = "handoff command spec",
+) -> dict[str, object]:
+    """Validate the minimal command spec used by command-backed dispatch."""
+
+    command = payload.get("command")
+    if (
+        not isinstance(command, list)
+        or not command
+        or not all(isinstance(item, str) and item for item in command)
+    ):
+        raise ValueError(f"{label} requires non-empty string list field: command")
+    timeout_value = payload.get("timeout_s", 30.0)
+    if isinstance(timeout_value, bool) or not isinstance(timeout_value, (int, float)):
+        raise ValueError(f"{label} timeout_s must be a positive number")
+    timeout_s = float(timeout_value)
+    if timeout_s <= 0:
+        raise ValueError(f"{label} timeout_s must be a positive number")
+    cwd_value = payload.get("cwd")
+    cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
+    return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
 
 
 def _response_continuity_errors(

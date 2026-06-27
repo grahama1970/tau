@@ -668,6 +668,97 @@ def test_cli_handoff_dispatch_command_blocks_malformed_stdout(tmp_path: Path) ->
     assert (receipt_dir / "dispatch-receipt.json").exists()
 
 
+def test_cli_handoff_dispatch_agent_command_uses_registry_spec(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    reviewer = _valid_cli_handoff_payload()
+    reviewer["previous_subagent"] = "reviewer"
+    agents_root = tmp_path / "agents"
+    reviewer_dir = agents_root / "reviewer"
+    response_path = tmp_path / "reviewer-response.json"
+    receipt_dir = tmp_path / "agent-command-dispatch-receipts"
+    start_path = tmp_path / "start.json"
+    reviewer_dir.mkdir(parents=True)
+    (reviewer_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    response_path.write_text(json.dumps(reviewer), encoding="utf-8")
+    (reviewer_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"from pathlib import Path; print(Path({str(response_path)!r}).read_text())",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-agent-command",
+            "--start",
+            str(start_path),
+            "--agents-root",
+            str(agents_root),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["status"] == "COMPLETED"
+    assert payload["selected_agent"] == "reviewer"
+    assert payload["runner"] == "command"
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["command_results"][0]["exit_code"] == 0
+
+
+def test_cli_handoff_dispatch_agent_command_writes_blocked_receipt_when_spec_missing(
+    tmp_path: Path,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    agents_root = tmp_path / "agents"
+    reviewer_dir = agents_root / "reviewer"
+    receipt_dir = tmp_path / "agent-command-dispatch-receipts"
+    start_path = tmp_path / "start.json"
+    reviewer_dir.mkdir(parents=True)
+    (reviewer_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-agent-command",
+            "--start",
+            str(start_path),
+            "--agents-root",
+            str(agents_root),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads((receipt_dir / "dispatch-receipt.json").read_text())
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["selected_agent"] == "reviewer"
+    assert payload["stop_reason"] == "missing_agent_command_spec"
+    assert "agent dispatch command spec missing" in "\n".join(payload["errors"])
+    assert receipt == payload
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
