@@ -299,6 +299,21 @@ def test_load_agent_dispatch_command_spec_allows_builtin_agent_overlay(tmp_path:
     assert spec["command"] == [sys.executable, "-c", "print('{}')"]
 
 
+def test_committed_reviewer_overlay_command_spec_loads() -> None:
+    root = Path(__file__).resolve().parents[1]
+
+    spec = load_agent_dispatch_command_spec(
+        root / "missing-agent-registry-root",
+        "reviewer",
+        command_spec_root=root / "experiments/goal-locked-subagents/agent-command-specs",
+    )
+
+    assert spec["command"][:4] == ["uv", "run", "tau", "handoff-agent-adapter"]
+    assert "--next-agent" in spec["command"]
+    assert "human" in spec["command"]
+    assert spec["timeout_s"] == 30.0
+
+
 def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Path) -> None:
     agent_dir = tmp_path / "reviewer"
     agent_dir.mkdir()
