@@ -3,6 +3,7 @@
 import asyncio
 import io
 import json
+import sys
 import tempfile
 from contextlib import redirect_stdout
 from os import environ
@@ -716,6 +717,15 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-agent-adapter":
+        try:
+            options = _parse_handoff_agent_adapter_cli_args(positional_args[1:])
+            payload = project_agent_handoff_adapter_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -1284,6 +1294,52 @@ def _parse_handoff_dispatch_agent_command_cli_args(
     if agents_root is None:
         raise RuntimeError("handoff-dispatch-agent-command requires --agents-root <dir>")
     return start_path, active_goal_hash, receipt_dir, agents_root
+
+
+def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
+    options: dict[str, str | None] = {
+        "result_status": "COMPLETED",
+        "result_summary": None,
+        "next_agent": "human",
+        "next_executor": "human",
+        "next_reason": "Human review is required after this bounded adapter response.",
+        "required_evidence": "Human accepts, redirects, or requests another bounded subagent.",
+        "stop_condition": "Human posts a schema-valid handoff or goal decision.",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--result-status",
+            "--result-summary",
+            "--next-agent",
+            "--next-executor",
+            "--next-reason",
+            "--required-evidence",
+            "--stop-condition",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--result-status",
+                "--result-summary",
+                "--next-agent",
+                "--next-executor",
+                "--next-reason",
+                "--required-evidence",
+                "--stop-condition",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            options[key.removeprefix("--").replace("-", "_")] = value
+        else:
+            raise RuntimeError(f"Unknown handoff-agent-adapter option: {arg}")
+        index += 1
+    return options
 
 
 def _parse_positive_int(value: str, option: str) -> int:
@@ -2637,6 +2693,85 @@ def project_agent_handoff_agent_command_dispatch_command(
     )
     typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
     return dispatch.ok
+
+
+def project_agent_handoff_adapter_command(
+    *,
+    result_status: str | None,
+    result_summary: str | None,
+    next_agent: str | None,
+    next_executor: str | None,
+    next_reason: str | None,
+    required_evidence: str | None,
+    stop_condition: str | None,
+) -> dict[str, object]:
+    """Emit one schema-valid Tau handoff response from stdin for registry command adapters."""
+
+    try:
+        start_payload = json.loads(sys.stdin.read())
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"stdin handoff JSON is unreadable: {exc}") from exc
+    if not isinstance(start_payload, dict):
+        raise RuntimeError("stdin handoff JSON root must be an object")
+    github = start_payload.get("github")
+    goal = start_payload.get("goal")
+    context = start_payload.get("context")
+    next_payload = start_payload.get("next_agent")
+    if not isinstance(github, dict):
+        raise RuntimeError("stdin handoff missing github object")
+    if not isinstance(goal, dict):
+        raise RuntimeError("stdin handoff missing goal object")
+    if not isinstance(context, dict):
+        raise RuntimeError("stdin handoff missing context object")
+    if not isinstance(next_payload, dict):
+        raise RuntimeError("stdin handoff missing next_agent object")
+    previous_subagent = environ.get("TAU_HANDOFF_SELECTED_AGENT")
+    if not previous_subagent:
+        previous_subagent = str(next_payload.get("name") or "")
+    if not previous_subagent:
+        raise RuntimeError("selected agent is missing")
+
+    resolved_result_status = result_status or "COMPLETED"
+    resolved_next_agent = next_agent or "human"
+    resolved_next_executor = next_executor or "human"
+    resolved_next_reason = next_reason or "Human review is required after this bounded response."
+    resolved_required_evidence = (
+        required_evidence or "Human accepts, redirects, or requests another bounded subagent."
+    )
+    resolved_stop_condition = stop_condition or "Human posts a schema-valid handoff or decision."
+    summary = (
+        result_summary
+        or f"{previous_subagent} consumed the handoff through the Tau registry command adapter."
+    )
+    artifacts = context.get("artifacts") if isinstance(context.get("artifacts"), list) else []
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": github,
+        "goal": goal,
+        "previous_subagent": previous_subagent,
+        "context": {
+            "summary": f"Registry command adapter handled route for {previous_subagent}.",
+            "artifacts": artifacts,
+        },
+        "result": {
+            "status": resolved_result_status,
+            "summary": summary,
+            "evidence": [
+                "tau handoff-agent-adapter emitted this schema-valid response from stdin"
+            ],
+        },
+        "rationale": (
+            f"{previous_subagent} completed one bounded adapter turn; "
+            "routing follows the configured next agent."
+        ),
+        "next_agent": {
+            "name": resolved_next_agent,
+            "executor": resolved_next_executor,
+            "reason": resolved_next_reason,
+        },
+        "required_evidence": [resolved_required_evidence],
+        "stop_condition": resolved_stop_condition,
+    }
 
 
 def _load_command_dispatch_spec(path: Path) -> dict[str, object]:

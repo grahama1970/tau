@@ -118,10 +118,20 @@ Implemented local contract slices include:
   ticket comments.
 - `tau.human_goal_change.v1`: rare human-only goal mutation contract that must
   route to `goal-guardian`.
+- command-backed one-step handoff dispatch:
+  - `tau handoff-dispatch-command` runs one bounded local command and validates
+    its stdout as `tau.agent_handoff.v1`.
+  - `tau handoff-dispatch-agent-command` selects the next agent from the start
+    handoff, loads that registry entry's opt-in `tau-dispatch-command.json`,
+    runs it once, and writes `tau.agent_handoff_dispatch_receipt.v1`.
+  - `tau handoff-agent-adapter` is a small stdin-to-handoff adapter that lets
+    registry command specs emit the minimal handoff JSON without custom wrapper
+    code.
 
-The current validators are intentionally local and deterministic. They do not
-create GitHub issues yet. GitHub mutation comes after the schema and projection
-contracts are proven with focused tests.
+The current validators and dispatch receipts are intentionally local and
+deterministic. They do not create GitHub issues yet. GitHub mutation comes after
+the schema, projection, and one-step dispatch contracts are proven with focused
+tests.
 
 Relevant files:
 
@@ -129,16 +139,24 @@ Relevant files:
 src/tau_coding/subagent_receipt.py
 src/tau_coding/generated_ticket.py
 src/tau_coding/human_goal_change.py
+src/tau_coding/handoff_dispatch.py
 experiments/goal-locked-subagents/
 tests/test_subagent_receipt.py
 tests/test_generated_ticket.py
 tests/test_human_goal_change.py
+tests/test_handoff_dispatch.py
 ```
 
 Run the focused harness checks:
 
 ```bash
 uv run pytest tests/test_subagent_receipt.py tests/test_generated_ticket.py tests/test_human_goal_change.py -q
+```
+
+Run the focused dispatch checks:
+
+```bash
+uv run pytest tests/test_handoff_dispatch.py tests/test_cli.py -q
 ```
 
 ## Install

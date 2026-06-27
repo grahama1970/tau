@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -229,11 +230,18 @@ def dispatch_agent_handoff_command_once(
         )
 
     stdin = json.dumps(start_payload, sort_keys=True) + "\n"
+    env = os.environ.copy()
+    env["TAU_HANDOFF_SELECTED_AGENT"] = str(selected_agent)
+    if active_goal_hash:
+        env["TAU_HANDOFF_ACTIVE_GOAL_HASH"] = active_goal_hash
+    if agent_registry_root is not None:
+        env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(agent_registry_root.expanduser().resolve())
     try:
         completed = subprocess.run(
             command,
             input=stdin,
             cwd=str(cwd) if cwd else None,
+            env=env,
             check=False,
             capture_output=True,
             text=True,

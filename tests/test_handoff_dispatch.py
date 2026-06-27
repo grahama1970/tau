@@ -203,6 +203,37 @@ def test_command_handoff_dispatch_receipt_writes_command_results(tmp_path: Path)
     assert (receipt_dir / "reviewer-response.receipt.json").exists()
 
 
+def test_command_handoff_dispatch_exposes_selected_agent_env(tmp_path: Path) -> None:
+    response = _valid_handoff()
+    response["previous_subagent"] = "reviewer"
+    response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human review is required.",
+    }
+    script = (
+        "import json, os, sys; "
+        "payload=json.load(sys.stdin); "
+        f"response={json.dumps(response)!r}; "
+        "data=json.loads(response); "
+        "data['previous_subagent']=os.environ['TAU_HANDOFF_SELECTED_AGENT']; "
+        "data['context']['artifacts']=payload['context']['artifacts']; "
+        "print(json.dumps(data))"
+    )
+
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [sys.executable, "-c", script],
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert result.ok is True
+    assert result.live is True
+    assert result.selected_agent == "reviewer"
+    assert result.response_projection is not None
+    assert result.response_projection["next_agent"] == "human"
+
+
 def test_load_agent_dispatch_command_spec_from_registry(tmp_path: Path) -> None:
     agent_dir = tmp_path / "reviewer"
     agent_dir.mkdir()
