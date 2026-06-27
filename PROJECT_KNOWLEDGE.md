@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 19:15Z / 15:15 EDT by agent
+**Last updated:** 2026-06-27 19:32Z / 15:32 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -25,6 +25,7 @@
 - Tau now has a trusted-human goal-change bridge. `human-goal-change-bridge` validates a `tau.human_goal_change.v1` packet, requires `--trusted-human` plus the current active goal hash, writes a `tau.human_goal_change_bridge_receipt.v1`, and writes a normal `tau.agent_handoff.v1` start handoff routed to `goal-guardian` only on success.
 - The command-loop stop order now recognizes a response that routes to `human` on the final allowed step. Before this fix, a valid final-step human route could be mislabeled as `max_steps_exhausted`.
 - Tau has a committed `.ask/browser-oracles.yaml` plus `.ask/README.md` for WebGPT escalation. Current Tau convention is direct `$webgpt` with project `tau`; `$ask` is reserved for later workflows that need its full review runtime.
+- Goal-guardian now has a bounded reconciliation path for bridged human goal changes. If the incoming handoff contains `context.human_goal_change`, the adapter writes `tau.goal_guardian_reconciliation_receipt.v1`, records the proposed new goal, marks open-ticket reconciliation as not started without an authoritative ticket source, and routes to `human` before any non-human continuation.
 
 ## Recent Decisions
 
@@ -50,6 +51,7 @@
 | 2026-06-27 | Treat UI-originated `target: "new"` terminal handoffs as dry-run issue creation | The live Tau chat handoff is not attached to an existing issue yet. Terminal GitHub transport should derive a ticket-create projection rather than requiring an existing issue/PR target. |
 | 2026-06-27 | Use direct `$webgpt` for Tau phase/architecture escalation | `$ask` added avoidable browser-bundle friction for Tau in this workflow; direct `$webgpt -p tau` produced the create-architecture solution bundle and kept WebGPT output as design input rather than closure proof. |
 | 2026-06-27 | Bridge human goal changes into the existing handoff loop instead of adding a parallel loop | The smallest useful feature is a deterministic conversion from human-only goal-change packets to a normal `goal-guardian` start handoff, keeping the existing validator/dispatch/receipt path in control. |
+| 2026-06-27 | Stop human goal changes at goal-guardian until a human goal decision exists | A bridged goal change must not be treated as ordinary preserved-goal PASS. Goal-guardian now emits a reconciliation receipt and routes to `human` rather than continuing to verifier/worker roles. |
 
 ## Open Questions
 
@@ -69,6 +71,7 @@
 | experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |
 | experiments/goal-locked-subagents/agent-command-specs/ | Tau-owned command-spec overlays for real agent registry identities |
 | experiments/goal-locked-subagents/schemas/tau.human_goal_change_bridge_receipt.v1.schema.json | Receipt schema for the trusted-human goal-change bridge |
+| experiments/goal-locked-subagents/schemas/tau.goal_guardian_reconciliation_receipt.v1.schema.json | Receipt schema for goal-guardian's bounded human goal-change reconciliation gate |
 | .ask/browser-oracles.yaml | Project-local browser-oracle registry for Tau WebGPT binding |
 | .ask/README.md | Tau-specific WebGPT escalation notes |
 | tests/test_subagent_receipt.py | Focused subagent receipt contract tests |
@@ -108,6 +111,7 @@
 | 2026-06-27 | `/home/graham/Downloads/tau-human-goal-change-bridge-solution.zip` and `.ask/create-architecture/tau-human-goal-change-bridge-20260627T1838Z/creation-bundle-solution.zip` | Human-provided and captured solution zips matched byte-for-byte with SHA256 `887c58fe86c73f54d05cfd597395e1925cb08530b7c680b39ded7748715fcba8`; extracted manifest checked 6 files with no checksum errors. |
 | 2026-06-27 | `/tmp/tau-human-goal-change-bridge-proof/bridge-receipt.json` | Deterministic local bridge CLI smoke; `ok: true`, `dry_run: true`, `trusted_human: true`, output schema `tau.agent_handoff.v1`, next agent `goal-guardian`, and generated handoff SHA256 recorded. |
 | 2026-06-27 | `/tmp/tau-human-goal-change-bridge-proof/command-loop-2/command-loop-receipt.json` | Non-mocked local command loop from bridge-generated handoff through `goal-guardian` and `project-or-harness-verifier`; both command exits were `0`, final status `WAITING`, terminal agent `human`, `mocked: false`, `live: true`. |
+| 2026-06-27 | `/tmp/tau-goal-guardian-reconciliation-proof/summary.json` | Non-mocked local command loop from bridge-generated handoff through goal-guardian only; `ok: true`, `status: WAITING`, `step_count: 1`, terminal `human`, and reconciliation receipt schema `tau.goal_guardian_reconciliation_receipt.v1` with decision `REQUIRES_HUMAN_GOAL_VERSION`. |
 
 ## Infrastructure State
 

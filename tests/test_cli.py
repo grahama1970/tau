@@ -990,6 +990,60 @@ def test_cli_handoff_goal_guardian_adapter_emits_preserved_goal_handoff(
     assert payload["next_agent"]["name"] == "project-or-harness-verifier"
 
 
+def test_cli_handoff_goal_guardian_adapter_reconciles_human_goal_change(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    source = json.loads((FIXTURES / "valid-human-goal-change.json").read_text())
+    start = _valid_cli_handoff_payload()
+    start["github"] = source["github"]
+    start["goal"] = source["goal"]
+    start["previous_subagent"] = "human"
+    start["context"] = {
+        "summary": "Trusted human requested immutable goal-change reconciliation.",
+        "artifacts": [str(FIXTURES / "valid-human-goal-change.json")],
+        "human_goal_change": {
+            "schema": source["schema"],
+            "source": str(FIXTURES / "valid-human-goal-change.json"),
+            "new_goal": source["new_goal"],
+            "rationale": source["rationale"],
+        },
+    }
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal changes must be reconciled before further work.",
+    }
+    artifact_dir = tmp_path / "artifacts"
+    monkeypatch.setenv("TAU_HANDOFF_ACTIVE_GOAL_HASH", "sha256:active-goal")
+    monkeypatch.setenv("TAU_HANDOFF_COMMAND_ARTIFACT_DIR", str(artifact_dir))
+
+    result = CliRunner().invoke(
+        app,
+        ["handoff-goal-guardian-adapter"],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+    receipt_path = artifact_dir / "goal-guardian-reconciliation-receipt.json"
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff.v1"
+    assert payload["previous_subagent"] == "goal-guardian"
+    assert payload["result"]["status"] == "REQUIRES_HUMAN_GOAL_VERSION"
+    assert payload["next_agent"] == {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human must create or reject the next immutable goal version.",
+    }
+    assert str(receipt_path) in payload["context"]["artifacts"]
+    assert payload["context"]["goal_guardian_reconciliation"] == receipt
+    assert receipt["schema"] == "tau.goal_guardian_reconciliation_receipt.v1"
+    assert receipt["decision"] == "REQUIRES_HUMAN_GOAL_VERSION"
+    assert receipt["new_goal"] == source["new_goal"]
+    assert receipt["next_agent"] == "human"
+
+
 def test_cli_handoff_goal_guardian_adapter_refuses_stale_goal_hash(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

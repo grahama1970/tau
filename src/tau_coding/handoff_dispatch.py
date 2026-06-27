@@ -191,6 +191,7 @@ def write_agent_handoff_dispatch_receipt(
         agent_registry_root=agent_registry_root,
     )
     artifacts: list[str] = []
+    artifacts.extend(dispatch.artifacts)
     if dispatch.start_projection is not None:
         start_path = receipt_dir / "start-handoff.receipt.json"
         _write_json(start_path, dispatch.start_projection)
@@ -228,6 +229,7 @@ def dispatch_agent_handoff_command_once(
     cwd: Path | None = None,
     active_goal_hash: str | None = None,
     agent_registry_root: Path | None = None,
+    artifact_dir: Path | None = None,
 ) -> AgentHandoffDispatchResult:
     """Run one bounded local command and validate its stdout handoff response."""
 
@@ -274,6 +276,11 @@ def dispatch_agent_handoff_command_once(
         env["TAU_HANDOFF_ACTIVE_GOAL_HASH"] = active_goal_hash
     if agent_registry_root is not None:
         env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(agent_registry_root.expanduser().resolve())
+    resolved_artifact_dir: Path | None = None
+    if artifact_dir is not None:
+        resolved_artifact_dir = artifact_dir.expanduser().resolve()
+        resolved_artifact_dir.mkdir(parents=True, exist_ok=True)
+        env["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"] = str(resolved_artifact_dir)
     try:
         completed = subprocess.run(
             command,
@@ -357,6 +364,7 @@ def dispatch_agent_handoff_command_once(
         active_goal_hash=active_goal_hash,
         agent_registry_root=agent_registry_root,
     )
+    artifacts = _artifact_paths(resolved_artifact_dir)
     return AgentHandoffDispatchResult(
         ok=dispatch.ok,
         status=dispatch.status,
@@ -368,6 +376,7 @@ def dispatch_agent_handoff_command_once(
         start_projection=dispatch.start_projection,
         response_projection=dispatch.response_projection,
         command_results=(command_result,),
+        artifacts=tuple(artifacts),
         errors=dispatch.errors,
     )
 
@@ -392,6 +401,7 @@ def write_agent_handoff_command_dispatch_receipt(
         cwd=cwd,
         active_goal_hash=active_goal_hash,
         agent_registry_root=agent_registry_root,
+        artifact_dir=receipt_dir / "command-artifacts",
     )
     artifacts: list[str] = []
     if dispatch.start_projection is not None:
@@ -432,6 +442,7 @@ def run_agent_handoff_command_loop(
     command_spec_root: Path | None = None,
     active_goal_hash: str | None = None,
     max_steps: int = 5,
+    artifact_root: Path | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Run selected agent commands until the route reaches human or fails closed."""
 
@@ -505,6 +516,11 @@ def run_agent_handoff_command_loop(
             cwd=spec["cwd"],
             active_goal_hash=active_goal_hash,
             agent_registry_root=agent_registry_root,
+            artifact_dir=(
+                artifact_root / f"command-loop-step-{step:03d}"
+                if artifact_root is not None
+                else None
+            ),
         )
         dispatch_payload = dispatch.as_dict()
         dispatch_payload["loop_step"] = step
@@ -617,6 +633,7 @@ def write_agent_handoff_command_loop_receipt(
         command_spec_root=command_spec_root,
         active_goal_hash=active_goal_hash,
         max_steps=max_steps,
+        artifact_root=receipt_dir / "command-artifacts",
     )
     artifacts: list[str] = []
     for dispatch in loop.dispatches:
@@ -624,6 +641,7 @@ def write_agent_handoff_command_loop_receipt(
         step_path = receipt_dir / f"command-loop-step-{step:03d}.receipt.json"
         _write_json(step_path, dispatch)
         artifacts.append(str(step_path))
+        artifacts.extend(str(path) for path in dispatch.get("artifacts", []))
     loop_payload = {
         **loop.as_dict(),
         "receipt_dir": str(receipt_dir),
@@ -699,6 +717,12 @@ def validate_command_dispatch_spec(
     cwd_value = payload.get("cwd")
     cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
     return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
+
+
+def _artifact_paths(root: Path | None) -> list[str]:
+    if root is None or not root.exists():
+        return []
+    return [str(path) for path in sorted(root.rglob("*")) if path.is_file()]
 
 
 def _response_continuity_errors(

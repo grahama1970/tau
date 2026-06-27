@@ -123,6 +123,11 @@ Implemented local contract slices include:
   `tau.agent_handoff.v1` start handoff routed to `goal-guardian`. The bridge
   does not write goal capsules or mutate GitHub; it fails closed unless
   `--trusted-human` and the active goal hash are supplied.
+- `tau.goal_guardian_reconciliation_receipt.v1`: deterministic receipt emitted
+  when `goal-guardian` sees a bridged human goal-change request. The current
+  slice records the proposed new goal, records that open-ticket reconciliation
+  has not started without an authoritative ticket source, and routes to `human`
+  before any non-human agent can continue.
 - command-backed one-step handoff dispatch:
   - `tau handoff-dispatch-command` runs one bounded local command and validates
     its stdout as `tau.agent_handoff.v1`.
@@ -139,7 +144,10 @@ Implemented local contract slices include:
     code.
   - `tau handoff-goal-guardian-adapter` is a deterministic built-in adapter
     that refuses missing/stale active goal hashes and emits a preserved-goal
-    `tau.agent_handoff.v1` before routing onward.
+    `tau.agent_handoff.v1` before routing onward. When the incoming handoff
+    carries `context.human_goal_change`, the adapter writes a
+    `tau.goal_guardian_reconciliation_receipt.v1` artifact and routes to
+    `human` instead of continuing to another worker.
 - human-goal-change bridge:
   - `tau human-goal-change-bridge <human-goal-change.json> --active-goal-hash
     <hash> --trusted-human --handoff-out <start-handoff.json> --receipt

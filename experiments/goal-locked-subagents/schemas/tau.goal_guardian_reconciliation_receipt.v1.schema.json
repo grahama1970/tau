@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.goal_guardian_reconciliation_receipt.v1",
+  "title": "Tau Goal Guardian Reconciliation Receipt",
+  "type": "object",
+  "required": [
+    "schema",
+    "ok",
+    "dry_run",
+    "goal",
+    "github",
+    "decision",
+    "new_goal",
+    "source_schema",
+    "source",
+    "source_artifacts",
+    "open_ticket_reconciliation",
+    "next_agent",
+    "errors"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.goal_guardian_reconciliation_receipt.v1"
+    },
+    "ok": {
+      "const": true
+    },
+    "dry_run": {
+      "const": true
+    },
+    "goal": {
+      "type": "object"
+    },
+    "github": {
+      "type": "object"
+    },
+    "decision": {
+      "const": "REQUIRES_HUMAN_GOAL_VERSION"
+    },
+    "new_goal": {
+      "type": "object"
+    },
+    "source_schema": {
+      "type": ["string", "null"]
+    },
+    "source": {
+      "type": ["string", "null"]
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "open_ticket_reconciliation": {
+      "type": "object",
+      "required": ["status", "reason", "keep", "close", "migrate", "regenerate"],
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "keep": {
+          "type": "array"
+        },
+        "close": {
+          "type": "array"
+        },
+        "migrate": {
+          "type": "array"
+        },
+        "regenerate": {
+          "type": "array"
+        }
+      },
+      "additionalProperties": true
+    },
+    "next_agent": {
+      "const": "human"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

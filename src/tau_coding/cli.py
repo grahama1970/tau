@@ -3168,6 +3168,15 @@ def project_agent_handoff_goal_guardian_adapter_command(
     if goal_hash != active_goal_hash:
         raise RuntimeError("goal-guardian refused stale or changed goal hash")
 
+    human_goal_change = context.get("human_goal_change")
+    if isinstance(human_goal_change, dict):
+        return _project_agent_goal_guardian_reconciliation_handoff(
+            github=github,
+            goal=goal,
+            context=context,
+            human_goal_change=human_goal_change,
+        )
+
     resolved_next_agent = next_agent or "project-or-harness-verifier"
     resolved_next_executor = next_executor or "local"
     resolved_next_reason = (
@@ -3204,6 +3213,106 @@ def project_agent_handoff_goal_guardian_adapter_command(
         "required_evidence": [resolved_required_evidence],
         "stop_condition": resolved_stop_condition,
     }
+
+
+def _project_agent_goal_guardian_reconciliation_handoff(
+    *,
+    github: dict[str, object],
+    goal: dict[str, object],
+    context: dict[str, object],
+    human_goal_change: dict[str, object],
+) -> dict[str, object]:
+    artifacts = context.get("artifacts") if isinstance(context.get("artifacts"), list) else []
+    receipt = _goal_guardian_reconciliation_receipt(
+        goal=goal,
+        github=github,
+        human_goal_change=human_goal_change,
+        source_artifacts=artifacts,
+    )
+    artifact_path = _write_goal_guardian_reconciliation_receipt(receipt)
+    output_artifacts = list(artifacts)
+    if artifact_path is not None:
+        output_artifacts.append(str(artifact_path))
+    receipt_ref = str(artifact_path) if artifact_path is not None else "embedded receipt"
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": github,
+        "goal": goal,
+        "previous_subagent": "goal-guardian",
+        "context": {
+            "summary": "Goal guardian reconciled a trusted human goal-change request.",
+            "artifacts": output_artifacts,
+            "goal_guardian_reconciliation": receipt,
+        },
+        "result": {
+            "status": "REQUIRES_HUMAN_GOAL_VERSION",
+            "summary": "Human goal-change request requires a human-authored goal version.",
+            "evidence": [
+                f"goal-guardian reconciliation receipt: {receipt_ref}",
+            ],
+        },
+        "rationale": (
+            "Only a human may create or accept a new immutable goal version. "
+            "Goal guardian recorded the proposed new goal and stopped before "
+            "routing to a non-human agent."
+        ),
+        "next_agent": {
+            "name": "human",
+            "executor": "human",
+            "reason": "Human must create or reject the next immutable goal version.",
+        },
+        "required_evidence": [
+            "Human posts a schema-valid goal decision or new goal capsule.",
+            "Goal guardian reconciliation receipt remains attached as evidence.",
+        ],
+        "stop_condition": "Human accepts, rejects, or rewrites the proposed goal change.",
+    }
+
+
+def _goal_guardian_reconciliation_receipt(
+    *,
+    goal: dict[str, object],
+    github: dict[str, object],
+    human_goal_change: dict[str, object],
+    source_artifacts: list[object],
+) -> dict[str, object]:
+    new_goal = human_goal_change.get("new_goal")
+    if not isinstance(new_goal, dict):
+        new_goal = {}
+    return {
+        "schema": "tau.goal_guardian_reconciliation_receipt.v1",
+        "ok": True,
+        "dry_run": True,
+        "goal": goal,
+        "github": github,
+        "decision": "REQUIRES_HUMAN_GOAL_VERSION",
+        "new_goal": new_goal,
+        "source_schema": human_goal_change.get("schema"),
+        "source": human_goal_change.get("source"),
+        "source_artifacts": [item for item in source_artifacts if isinstance(item, str)],
+        "open_ticket_reconciliation": {
+            "status": "not_started",
+            "reason": "No authoritative open-ticket source was provided to this bounded adapter.",
+            "keep": [],
+            "close": [],
+            "migrate": [],
+            "regenerate": [],
+        },
+        "next_agent": "human",
+        "errors": [],
+    }
+
+
+def _write_goal_guardian_reconciliation_receipt(
+    receipt: dict[str, object],
+) -> Path | None:
+    artifact_root = environ.get("TAU_HANDOFF_COMMAND_ARTIFACT_DIR")
+    if not isinstance(artifact_root, str) or not artifact_root.strip():
+        return None
+    path = Path(artifact_root).expanduser().resolve() / "goal-guardian-reconciliation-receipt.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
 
 
 def _load_command_dispatch_spec(path: Path) -> dict[str, object]:
