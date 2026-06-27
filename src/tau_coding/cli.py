@@ -27,6 +27,12 @@ from tau_ai import (
 from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding import __version__
 from tau_coding.credentials import FileCredentialStore
+from tau_coding.generated_ticket import (
+    project_agent_handoff,
+    write_agent_handoff_chain_receipt,
+    write_agent_handoff_loop_receipt,
+    write_agent_handoff_projection_receipt,
+)
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -555,6 +561,59 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-project":
+        try:
+            handoff_path, active_goal_hash, receipt_path, agents_root = (
+                _parse_handoff_project_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_command(
+                handoff_path,
+                active_goal_hash=active_goal_hash,
+                receipt_path=receipt_path,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "handoff-chain-dry-run":
+        try:
+            handoff_paths, active_goal_hash, receipt_dir, agents_root = (
+                _parse_handoff_chain_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_chain_command(
+                handoff_paths,
+                active_goal_hash=active_goal_hash,
+                receipt_dir=receipt_dir,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "handoff-loop-dry-run":
+        try:
+            start_path, responses_dir, active_goal_hash, receipt_dir, max_steps, agents_root = (
+                _parse_handoff_loop_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_loop_command(
+                start_path,
+                responses_dir=responses_dir,
+                active_goal_hash=active_goal_hash,
+                receipt_dir=receipt_dir,
+                max_steps=max_steps,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -709,6 +768,172 @@ def _parse_loop2_scillm_doctor_receipt_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau loop2-check-scillm-doctor <receipt.json>")
     return Path(args[0])
+
+
+def _parse_handoff_project_cli_args(
+    args: list[str],
+) -> tuple[Path, str | None, Path | None, Path | None]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau handoff-project <handoff.json> "
+            "[--active-goal-hash <hash>] [--receipt <receipt.json>]"
+        )
+    handoff_path = Path(args[0])
+    active_goal_hash: str | None = None
+    receipt_path: Path | None = None
+    agents_root: Path | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown handoff-project option: {arg}")
+        index += 1
+    return handoff_path, active_goal_hash, receipt_path, agents_root
+
+
+def _parse_handoff_chain_cli_args(
+    args: list[str],
+) -> tuple[list[Path], str | None, Path, Path | None]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau handoff-chain-dry-run <handoff.json>... "
+            "--receipt-dir <dir> [--active-goal-hash <hash>]"
+        )
+    handoff_paths: list[Path] = []
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg.startswith("-"):
+            raise RuntimeError(f"Unknown handoff-chain-dry-run option: {arg}")
+        else:
+            handoff_paths.append(Path(arg))
+        index += 1
+    if not handoff_paths:
+        raise RuntimeError("handoff-chain-dry-run requires at least one handoff JSON file")
+    if receipt_dir is None:
+        raise RuntimeError("handoff-chain-dry-run requires --receipt-dir <dir>")
+    return handoff_paths, active_goal_hash, receipt_dir, agents_root
+
+
+def _parse_handoff_loop_cli_args(
+    args: list[str],
+) -> tuple[Path, Path, str | None, Path, int, Path | None]:
+    start_path: Path | None = None
+    responses_dir: Path | None = None
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    max_steps = 5
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--start":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--start requires a value")
+            start_path = Path(args[index])
+        elif arg.startswith("--start="):
+            start_path = Path(arg.partition("=")[2])
+        elif arg == "--responses-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--responses-dir requires a value")
+            responses_dir = Path(args[index])
+        elif arg.startswith("--responses-dir="):
+            responses_dir = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg == "--max-steps":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-steps requires a value")
+            max_steps = _parse_positive_int(args[index], "--max-steps")
+        elif arg.startswith("--max-steps="):
+            max_steps = _parse_positive_int(arg.partition("=")[2], "--max-steps")
+        else:
+            raise RuntimeError(f"Unknown handoff-loop-dry-run option: {arg}")
+        index += 1
+    if start_path is None:
+        raise RuntimeError("handoff-loop-dry-run requires --start <handoff.json>")
+    if responses_dir is None:
+        raise RuntimeError("handoff-loop-dry-run requires --responses-dir <dir>")
+    if receipt_dir is None:
+        raise RuntimeError("handoff-loop-dry-run requires --receipt-dir <dir>")
+    return start_path, responses_dir, active_goal_hash, receipt_dir, max_steps, agents_root
+
+
+def _parse_positive_int(value: str, option: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{option} must be an integer") from exc
+    if parsed < 1:
+        raise RuntimeError(f"{option} must be at least 1")
+    return parsed
 
 
 def _resolve_export_destination(
@@ -1742,6 +1967,122 @@ def backfill_loop_receipt_artifacts_command(run_dir: Path) -> bool:
     payload = backfill_loop_receipt_artifact_index(run_dir)
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     return bool(payload.get("ok"))
+
+
+def project_agent_handoff_command(
+    handoff_path: Path,
+    *,
+    active_goal_hash: str | None,
+    receipt_path: Path | None,
+    agents_root: Path | None,
+) -> bool:
+    """Print a non-mutating GitHub projection for one Tau agent handoff."""
+
+    resolved = handoff_path.expanduser().resolve()
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Agent handoff is unreadable: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("Agent handoff root must be a JSON object")
+
+    if receipt_path is not None:
+        projection = write_agent_handoff_projection_receipt(
+            payload,
+            receipt_path.expanduser().resolve(),
+            active_goal_hash=active_goal_hash,
+            agent_registry_root=agents_root,
+        )
+    else:
+        projection = project_agent_handoff(
+            payload,
+            active_goal_hash=active_goal_hash,
+            agent_registry_root=agents_root,
+        )
+    typer.echo(json.dumps(projection.as_dict(), indent=2, sort_keys=True))
+    return projection.ok
+
+
+def project_agent_handoff_chain_command(
+    handoff_paths: list[Path],
+    *,
+    active_goal_hash: str | None,
+    receipt_dir: Path,
+    agents_root: Path | None,
+) -> bool:
+    """Write a dry-run chain receipt for local handoff routing continuity."""
+
+    payloads: list[dict[str, object]] = []
+    for handoff_path in handoff_paths:
+        resolved = handoff_path.expanduser().resolve()
+        try:
+            payload = json.loads(resolved.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"Agent handoff is unreadable: {resolved}: {exc}") from exc
+        if not isinstance(payload, dict):
+            raise RuntimeError(f"Agent handoff root must be a JSON object: {resolved}")
+        payloads.append(payload)
+
+    chain = write_agent_handoff_chain_receipt(
+        payloads,
+        receipt_dir.expanduser().resolve(),
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+    )
+    typer.echo(json.dumps(chain.as_dict(), indent=2, sort_keys=True))
+    return chain.ok
+
+
+def project_agent_handoff_loop_command(
+    start_path: Path,
+    *,
+    responses_dir: Path,
+    active_goal_hash: str | None,
+    receipt_dir: Path,
+    max_steps: int,
+    agents_root: Path | None,
+) -> bool:
+    """Write a dry-run loop receipt by following next_agent response files."""
+
+    start_payload = _load_json_object(start_path, label="start handoff")
+    response_payloads = _load_handoff_response_dir(responses_dir)
+    loop = write_agent_handoff_loop_receipt(
+        start_payload,
+        response_payloads,
+        receipt_dir.expanduser().resolve(),
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+        max_steps=max_steps,
+    )
+    typer.echo(json.dumps(loop.as_dict(), indent=2, sort_keys=True))
+    return loop.ok
+
+
+def _load_handoff_response_dir(responses_dir: Path) -> dict[str, dict[str, object]]:
+    resolved = responses_dir.expanduser().resolve()
+    if not resolved.exists():
+        raise RuntimeError(f"handoff response directory does not exist: {resolved}")
+    if not resolved.is_dir():
+        raise RuntimeError(f"handoff response path is not a directory: {resolved}")
+    responses: dict[str, dict[str, object]] = {}
+    for path in sorted(resolved.glob("*.json")):
+        payload = _load_json_object(path, label="handoff response")
+        previous_subagent = payload.get("previous_subagent")
+        if not isinstance(previous_subagent, str) or not previous_subagent.strip():
+            raise RuntimeError(f"handoff response missing previous_subagent: {path}")
+        responses[path.stem] = payload
+    return responses
+
+
+def _load_json_object(path: Path, *, label: str) -> dict[str, object]:
+    resolved = path.expanduser().resolve()
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} is unreadable: {resolved}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} root must be a JSON object: {resolved}")
+    return payload
 
 
 def loop2_sanity_command(

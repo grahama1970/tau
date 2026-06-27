@@ -51,11 +51,330 @@ async def _passing_scillm_auth_preflight(
     }
 
 
+def _valid_cli_handoff_payload() -> dict[str, object]:
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": {
+            "repo": "grahama1970/chatgpt-lab",
+            "target": "issue#123",
+        },
+        "goal": {
+            "goal_id": "goal-cli-handoff",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "previous_subagent": "coder",
+        "context": {
+            "summary": "Coder produced a bounded implementation.",
+            "artifacts": ["/tmp/tau/handoff.json"],
+        },
+        "result": {
+            "status": "COMPLETED",
+            "summary": "Implementation is ready for read-only review.",
+            "evidence": ["/tmp/tau/tests.out"],
+        },
+        "rationale": "The implementation path now needs independent validation.",
+        "next_agent": {
+            "name": "reviewer",
+            "executor": "either",
+            "reason": "Reviewer should inspect evidence before routing onward.",
+        },
+        "required_evidence": ["review receipt with PASS, NEEDS_CHANGES, or BLOCKED"],
+        "stop_condition": "Reviewer posts a schema-valid handoff.",
+    }
+
+
 def test_version_command() -> None:
     result = CliRunner().invoke(app, ["--version"])
 
     assert result.exit_code == 0
     assert result.stdout.strip() == "tau 0.1.0"
+
+
+def test_cli_handoff_project_writes_dry_run_receipt(tmp_path: Path) -> None:
+    handoff_path = tmp_path / "handoff.json"
+    receipt_path = tmp_path / "projection" / "receipt.json"
+    handoff_path.write_text(json.dumps(_valid_cli_handoff_payload()), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-project",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_projection_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["target"] == {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"}
+    assert payload["labels"]["add"] == ["agent-work", "next:reviewer", "executor:either"]
+    assert "<!-- tau-agent-handoff:v1 -->" in payload["comment"]["body"]
+    assert receipt == payload
+
+
+def test_cli_handoff_project_refuses_stale_goal_hash(tmp_path: Path) -> None:
+    handoff = _valid_cli_handoff_payload()
+    handoff["goal"]["goal_hash"] = "sha256:stale-goal"
+    handoff_path = tmp_path / "handoff.json"
+    handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-project",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["comment"] is None
+    assert "agent handoff may not change goal.goal_hash" in payload["errors"]
+
+
+def test_cli_handoff_project_accepts_agents_root_route(tmp_path: Path) -> None:
+    agents_root = tmp_path / "agents"
+    external_agent = agents_root / "external-agent"
+    external_agent.mkdir(parents=True)
+    (external_agent / "AGENTS.md").write_text(
+        "---\nid: external-agent\nkind: worker\n---\n# External agent\n",
+        encoding="utf-8",
+    )
+    handoff = _valid_cli_handoff_payload()
+    handoff["next_agent"] = {
+        "name": "external-agent",
+        "executor": "either",
+        "reason": "Registry-backed route.",
+    }
+    handoff_path = tmp_path / "handoff.json"
+    handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-project",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--agents-root",
+            str(agents_root),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["next_agent"] == "external-agent"
+    assert payload["labels"]["add"] == ["agent-work", "next:external-agent", "executor:either"]
+
+
+def test_cli_handoff_chain_dry_run_writes_receipt_dir(tmp_path: Path) -> None:
+    first = _valid_cli_handoff_payload()
+    second = _valid_cli_handoff_payload()
+    second["previous_subagent"] = "reviewer"
+    second["result"] = {
+        "status": "PASS",
+        "summary": "Reviewer accepted the evidence.",
+        "evidence": ["/tmp/tau/review.json"],
+    }
+    second["next_agent"] = {
+        "name": "releaser",
+        "executor": "either",
+        "reason": "Release gate can inspect the review receipt.",
+    }
+    first_path = tmp_path / "handoff-001.json"
+    second_path = tmp_path / "handoff-002.json"
+    receipt_dir = tmp_path / "chain-receipts"
+    first_path.write_text(json.dumps(first), encoding="utf-8")
+    second_path.write_text(json.dumps(second), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-chain-dry-run",
+            str(first_path),
+            str(second_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+    chain_receipt = json.loads((receipt_dir / "chain-receipt.json").read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_chain_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["handoff_count"] == 2
+    assert payload["artifacts"] == [
+        str(receipt_dir.resolve() / "handoff-001.receipt.json"),
+        str(receipt_dir.resolve() / "handoff-002.receipt.json"),
+    ]
+    assert chain_receipt == payload
+    assert (receipt_dir / "handoff-001.receipt.json").exists()
+    assert (receipt_dir / "handoff-002.receipt.json").exists()
+
+
+def test_cli_handoff_chain_dry_run_refuses_discontinuity(tmp_path: Path) -> None:
+    first = _valid_cli_handoff_payload()
+    second = _valid_cli_handoff_payload()
+    second["previous_subagent"] = "coder"
+    first_path = tmp_path / "handoff-001.json"
+    second_path = tmp_path / "handoff-002.json"
+    receipt_dir = tmp_path / "chain-receipts"
+    first_path.write_text(json.dumps(first), encoding="utf-8")
+    second_path.write_text(json.dumps(second), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-chain-dry-run",
+            str(first_path),
+            str(second_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert "previous_subagent must equal prior next_agent" in "\n".join(payload["errors"])
+    assert (receipt_dir / "chain-receipt.json").exists()
+
+
+def test_cli_handoff_loop_dry_run_follows_response_dir(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    reviewer = _valid_cli_handoff_payload()
+    reviewer["previous_subagent"] = "reviewer"
+    reviewer["result"] = {
+        "status": "PASS",
+        "summary": "Reviewer accepted the local dry-run evidence.",
+        "evidence": ["/tmp/tau/review.json"],
+    }
+    reviewer["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides whether to authorize live GitHub mutation.",
+    }
+    start_path = tmp_path / "start.json"
+    responses_dir = tmp_path / "responses"
+    receipt_dir = tmp_path / "loop-receipts"
+    responses_dir.mkdir()
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (responses_dir / "reviewer.json").write_text(json.dumps(reviewer), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-loop-dry-run",
+            "--start",
+            str(start_path),
+            "--responses-dir",
+            str(responses_dir),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+            "--max-steps",
+            "3",
+        ],
+    )
+    payload = json.loads(result.output)
+    loop_receipt = json.loads((receipt_dir / "loop-receipt.json").read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_loop_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "WAITING"
+    assert payload["step_count"] == 2
+    assert payload["terminal_agent"] == "human"
+    assert payload["stop_reason"] == "next_agent_is_human"
+    assert loop_receipt == payload
+    assert (receipt_dir / "loop-step-001.receipt.json").exists()
+    assert (receipt_dir / "loop-step-002.receipt.json").exists()
+
+
+def test_cli_handoff_loop_dry_run_waits_for_missing_response(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    start_path = tmp_path / "start.json"
+    responses_dir = tmp_path / "responses"
+    receipt_dir = tmp_path / "loop-receipts"
+    responses_dir.mkdir()
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-loop-dry-run",
+            "--start",
+            str(start_path),
+            "--responses-dir",
+            str(responses_dir),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["status"] == "WAITING"
+    assert payload["step_count"] == 1
+    assert payload["terminal_agent"] == "reviewer"
+    assert payload["stop_reason"] == "missing_agent_response"
+    assert (receipt_dir / "loop-receipt.json").exists()
+
+
+def test_cli_handoff_loop_dry_run_refuses_discontinuity(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    reviewer = _valid_cli_handoff_payload()
+    reviewer["previous_subagent"] = "coder"
+    start_path = tmp_path / "start.json"
+    responses_dir = tmp_path / "responses"
+    receipt_dir = tmp_path / "loop-receipts"
+    responses_dir.mkdir()
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (responses_dir / "reviewer.json").write_text(json.dumps(reviewer), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-loop-dry-run",
+            "--start",
+            str(start_path),
+            "--responses-dir",
+            str(responses_dir),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["stop_reason"] == "route_discontinuity"
+    assert "previous_subagent must equal prior next_agent" in "\n".join(payload["errors"])
+    assert (receipt_dir / "loop-receipt.json").exists()
 
 
 def test_cli_loop2_serve_starts_receipt_monitor(
