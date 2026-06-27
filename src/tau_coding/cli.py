@@ -37,6 +37,7 @@ from tau_coding.generated_ticket import (
     write_agent_handoff_projection_receipt,
 )
 from tau_coding.github_handoff import (
+    fetch_goal_guardian_ticket_source_from_github,
     transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
     transport_goal_guardian_reconciliation_to_github,
@@ -689,6 +690,25 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "goal-guardian-ticket-source-github-fetch":
+        try:
+            repo_name, output_path, receipt_path, execute, state, limit = (
+                _parse_goal_guardian_ticket_source_github_fetch_args(positional_args[1:])
+            )
+            ok = goal_guardian_ticket_source_github_fetch_command(
+                repo_name,
+                output_path=output_path,
+                receipt_path=receipt_path,
+                execute=execute,
+                state=state,
+                limit=limit,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "handoff-chain-dry-run":
         try:
             handoff_paths, active_goal_hash, receipt_dir, agents_root = (
@@ -1236,6 +1256,64 @@ def _parse_goal_guardian_reconciliation_github_transport_args(
             )
         index += 1
     return reconciliation_receipt_path, receipt_path, apply_github
+
+
+def _parse_goal_guardian_ticket_source_github_fetch_args(
+    args: list[str],
+) -> tuple[str, Path, Path | None, bool, str, int]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau goal-guardian-ticket-source-github-fetch <repo> "
+            "--out <ticket-source.json> [--receipt <receipt.json>] [--execute] "
+            "[--state open|closed|all] [--limit <n>]"
+        )
+    repo = args[0]
+    output_path: Path | None = None
+    receipt_path: Path | None = None
+    execute = False
+    state = "open"
+    limit = 100
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            output_path = Path(args[index])
+        elif arg.startswith("--out="):
+            output_path = Path(arg.partition("=")[2])
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--execute":
+            execute = True
+        elif arg == "--state":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--state requires a value")
+            state = args[index]
+        elif arg.startswith("--state="):
+            state = arg.partition("=")[2]
+        elif arg == "--limit":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--limit requires a value")
+            limit = _parse_positive_int(args[index], "--limit")
+        elif arg.startswith("--limit="):
+            limit = _parse_positive_int(arg.partition("=")[2], "--limit")
+        else:
+            raise RuntimeError(
+                f"Unknown goal-guardian-ticket-source-github-fetch option: {arg}"
+            )
+        index += 1
+    if output_path is None:
+        raise RuntimeError("--out is required")
+    return repo, output_path, receipt_path, execute, state, limit
 
 
 def _parse_handoff_chain_cli_args(
@@ -2917,6 +2995,29 @@ def transport_goal_guardian_reconciliation_to_github_command(
     )
     typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))
     return transport.ok
+
+
+def goal_guardian_ticket_source_github_fetch_command(
+    repo: str,
+    *,
+    output_path: Path,
+    receipt_path: Path | None,
+    execute: bool,
+    state: str,
+    limit: int,
+) -> bool:
+    """Render or run a read-only GitHub issue-list fetch for goal-guardian."""
+
+    result = fetch_goal_guardian_ticket_source_from_github(
+        repo=repo,
+        output_path=output_path,
+        execute=execute,
+        state=state,
+        limit=limit,
+        receipt_path=receipt_path,
+    )
+    typer.echo(json.dumps(result.as_dict(), indent=2, sort_keys=True))
+    return result.ok
 
 
 def project_agent_handoff_chain_command(

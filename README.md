@@ -132,6 +132,13 @@ Implemented local contract slices include:
   goal-guardian reconciliation. The source is opt-in through
   `TAU_GOAL_GUARDIAN_TICKET_SOURCE`; without it, the receipt reports
   `open_ticket_reconciliation.status = "not_started"`.
+- `tau.github_ticket_source_fetch_receipt.v1`: read-only GitHub issue-list
+  fetch receipt. `tau goal-guardian-ticket-source-github-fetch <repo> --out
+  <ticket-source.json>` renders the exact `gh issue list` command by default.
+  Adding `--execute` runs that read-only command and writes a
+  `tau.goal_guardian_ticket_source.v1` artifact for goal-guardian
+  reconciliation. If GitHub rejects the issue list request, Tau records the
+  command result and does not write a ticket-source artifact.
 - command-backed one-step handoff dispatch:
   - `tau handoff-dispatch-command` runs one bounded local command and validates
     its stdout as `tau.agent_handoff.v1`.
@@ -178,6 +185,11 @@ Implemented local contract slices include:
     the comment body and applies `agent-work,next:human,executor:human,goal-change`
     labels by projection. Live mutation remains explicit-only via `--apply` and
     uses the same GitHub auth/target preflight gate.
+  - `tau goal-guardian-ticket-source-github-fetch <repo> --out
+    <ticket-source.json> [--receipt <receipt.json>] [--execute] [--state
+    open|closed|all] [--limit <n>]` produces the structured ticket source used
+    by goal-guardian. Without `--execute`, it only writes the fetch receipt and
+    does not touch GitHub or create the ticket-source file.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. GitHub writes are apply-gated: the default path only renders
@@ -190,6 +202,7 @@ Relevant files:
 ```text
 src/tau_coding/subagent_receipt.py
 src/tau_coding/generated_ticket.py
+src/tau_coding/github_handoff.py
 src/tau_coding/human_goal_change.py
 src/tau_coding/handoff_dispatch.py
 experiments/goal-locked-subagents/

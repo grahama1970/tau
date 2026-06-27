@@ -1,6 +1,9 @@
+import json
 import subprocess
+from pathlib import Path
 
 from tau_coding.github_handoff import (
+    fetch_goal_guardian_ticket_source_from_github,
     transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
     transport_goal_guardian_reconciliation_to_github,
@@ -388,6 +391,123 @@ def test_goal_guardian_reconciliation_transport_refuses_non_human_next_agent() -
     assert result.ok is False
     assert result.applied is False
     assert "next_agent must be human" in "\n".join(result.errors)
+
+
+def test_goal_guardian_ticket_source_github_fetch_dry_run_renders_issue_list() -> None:
+    result = fetch_goal_guardian_ticket_source_from_github(
+        repo="grahama1970/chatgpt-lab",
+        output_path=Path("ticket-source.json"),
+        execute=False,
+        state="open",
+        limit=25,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is True
+    assert result.executed is False
+    assert result.command == [
+        "gh",
+        "issue",
+        "list",
+        "--repo",
+        "grahama1970/chatgpt-lab",
+        "--state",
+        "open",
+        "--limit",
+        "25",
+        "--json",
+        "number,title,state,url,labels",
+    ]
+    assert result.ticket_source is None
+    assert result.ticket_source_path is None
+
+
+def test_goal_guardian_ticket_source_github_fetch_execute_writes_ticket_source(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "goal-guardian-ticket-source.json"
+    receipt_path = tmp_path / "fetch-receipt.json"
+    gh_stdout = json.dumps(
+        [
+            {
+                "number": 7,
+                "title": "Route goal update",
+                "state": "OPEN",
+                "url": "https://github.com/grahama1970/chatgpt-lab/issues/7",
+                "labels": [{"name": "agent-work"}, {"name": "ticket:goal"}],
+            },
+            {
+                "number": 8,
+                "title": "Closed stale task",
+                "state": "CLOSED",
+                "url": "https://github.com/grahama1970/chatgpt-lab/issues/8",
+                "labels": ["agent-done"],
+            },
+        ]
+    )
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        assert stdin is None
+        return subprocess.CompletedProcess(command, 0, stdout=gh_stdout, stderr="")
+
+    result = fetch_goal_guardian_ticket_source_from_github(
+        repo="grahama1970/chatgpt-lab",
+        output_path=output_path,
+        execute=True,
+        state="all",
+        limit=2,
+        receipt_path=receipt_path,
+        runner=runner,
+    )
+    source = json.loads(output_path.read_text())
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.ok is True
+    assert result.dry_run is False
+    assert result.executed is True
+    assert source["schema"] == "tau.goal_guardian_ticket_source.v1"
+    assert source["tickets"] == [
+        {
+            "id": "issue#7",
+            "kind": "issue",
+            "number": 7,
+            "status": "open",
+            "title": "Route goal update",
+            "url": "https://github.com/grahama1970/chatgpt-lab/issues/7",
+            "labels": ["agent-work", "ticket:goal"],
+        },
+        {
+            "id": "issue#8",
+            "kind": "issue",
+            "number": 8,
+            "status": "closed",
+            "title": "Closed stale task",
+            "url": "https://github.com/grahama1970/chatgpt-lab/issues/8",
+            "labels": ["agent-done"],
+        },
+    ]
+    assert result.ticket_source == source
+    assert receipt == result.as_dict()
+
+
+def test_goal_guardian_ticket_source_github_fetch_fail_closed_on_runner_error() -> None:
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        del stdin
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="api denied")
+
+    result = fetch_goal_guardian_ticket_source_from_github(
+        repo="grahama1970/chatgpt-lab",
+        output_path=Path("ticket-source.json"),
+        execute=True,
+        runner=runner,
+    )
+
+    assert result.ok is False
+    assert result.dry_run is False
+    assert result.executed is True
+    assert result.ticket_source is None
+    assert "GitHub issue list failed" in result.errors[0]
+    assert "api denied" in result.errors[0]
 
 
 def _valid_projection() -> dict:

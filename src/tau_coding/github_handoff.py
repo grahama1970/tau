@@ -44,6 +44,147 @@ class GitHubHandoffTransportResult:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class GitHubTicketSourceFetchResult:
+    """Receipt for rendering or executing a read-only GitHub issue list fetch."""
+
+    ok: bool
+    dry_run: bool
+    executed: bool
+    repo: str
+    command: list[str]
+    command_result: dict[str, Any] | None = None
+    ticket_source_path: str | None = None
+    ticket_source: dict[str, Any] | None = None
+    receipt_path: str | None = None
+    errors: tuple[str, ...] = ()
+    schema: str = "tau.github_ticket_source_fetch_receipt.v1"
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable fetch receipt."""
+
+        return {
+            "schema": self.schema,
+            "ok": self.ok,
+            "dry_run": self.dry_run,
+            "executed": self.executed,
+            "repo": self.repo,
+            "command": list(self.command),
+            "command_result": self.command_result,
+            "ticket_source_path": self.ticket_source_path,
+            "ticket_source": self.ticket_source,
+            "receipt_path": self.receipt_path,
+            "errors": list(self.errors),
+        }
+
+
+def fetch_goal_guardian_ticket_source_from_github(
+    *,
+    repo: str,
+    output_path: Path,
+    execute: bool = False,
+    state: str = "open",
+    limit: int = 100,
+    receipt_path: Path | None = None,
+    runner: CommandRunner | None = None,
+) -> GitHubTicketSourceFetchResult:
+    """Render or execute a read-only GitHub issue list fetch for goal-guardian."""
+
+    errors: list[str] = []
+    command = _github_issue_list_command(repo=repo, state=state, limit=limit, errors=errors)
+    if errors:
+        result = GitHubTicketSourceFetchResult(
+            ok=False,
+            dry_run=not execute,
+            executed=False,
+            repo=repo,
+            command=command,
+            errors=tuple(errors),
+        )
+        return _write_ticket_source_fetch_receipt(result, receipt_path)
+
+    if not execute:
+        result = GitHubTicketSourceFetchResult(
+            ok=True,
+            dry_run=True,
+            executed=False,
+            repo=repo,
+            command=command,
+        )
+        return _write_ticket_source_fetch_receipt(result, receipt_path)
+
+    command_runner = runner or _run_gh_command
+    completed = command_runner(command, None)
+    command_result = _completed_process_result(command, completed)
+    if completed.returncode != 0:
+        result = GitHubTicketSourceFetchResult(
+            ok=False,
+            dry_run=False,
+            executed=True,
+            repo=repo,
+            command=command,
+            command_result=command_result,
+            errors=(f"GitHub issue list failed: {_completed_process_detail(completed)}",),
+        )
+        return _write_ticket_source_fetch_receipt(result, receipt_path)
+
+    try:
+        issues = json.loads(completed.stdout or "[]")
+    except json.JSONDecodeError as exc:
+        result = GitHubTicketSourceFetchResult(
+            ok=False,
+            dry_run=False,
+            executed=True,
+            repo=repo,
+            command=command,
+            command_result=command_result,
+            errors=(f"GitHub issue list stdout was not JSON: {exc}",),
+        )
+        return _write_ticket_source_fetch_receipt(result, receipt_path)
+    if not isinstance(issues, list):
+        result = GitHubTicketSourceFetchResult(
+            ok=False,
+            dry_run=False,
+            executed=True,
+            repo=repo,
+            command=command,
+            command_result=command_result,
+            errors=("GitHub issue list stdout root must be a list",),
+        )
+        return _write_ticket_source_fetch_receipt(result, receipt_path)
+
+    try:
+        ticket_source = _ticket_source_from_gh_issues(issues)
+    except ValueError as exc:
+        result = GitHubTicketSourceFetchResult(
+            ok=False,
+            dry_run=False,
+            executed=True,
+            repo=repo,
+            command=command,
+            command_result=command_result,
+            errors=(str(exc),),
+        )
+        return _write_ticket_source_fetch_receipt(result, receipt_path)
+    resolved_output = output_path.expanduser().resolve()
+    resolved_output.parent.mkdir(parents=True, exist_ok=True)
+    resolved_output.write_text(
+        json.dumps(ticket_source, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = GitHubTicketSourceFetchResult(
+        ok=True,
+        dry_run=False,
+        executed=True,
+        repo=repo,
+        command=command,
+        command_result=command_result,
+        ticket_source_path=str(resolved_output),
+        ticket_source=ticket_source,
+    )
+    return _write_ticket_source_fetch_receipt(result, receipt_path)
+
+
 def transport_handoff_projection_to_github(
     projection: Mapping[str, Any],
     *,
@@ -354,6 +495,35 @@ def _github_transport_commands(
     return commands
 
 
+def _github_issue_list_command(
+    *,
+    repo: str,
+    state: str,
+    limit: int,
+    errors: list[str],
+) -> list[str]:
+    if not isinstance(repo, str) or not repo.strip():
+        errors.append("repo must be a non-empty string")
+    if state not in {"open", "closed", "all"}:
+        errors.append("state must be one of: open, closed, all")
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+        errors.append("limit must be a positive integer")
+    safe_limit = max(limit, 1) if isinstance(limit, int) and not isinstance(limit, bool) else 1
+    return [
+        "gh",
+        "issue",
+        "list",
+        "--repo",
+        repo,
+        "--state",
+        state,
+        "--limit",
+        str(safe_limit),
+        "--json",
+        "number,title,state,url,labels",
+    ]
+
+
 def _generated_ticket_create_commands(
     repo: str,
     github_create: Mapping[str, Any],
@@ -566,6 +736,44 @@ def _string_list(value: object, label: str, errors: list[str]) -> list[str]:
     return strings
 
 
+def _ticket_source_from_gh_issues(issues: list[object]) -> dict[str, Any]:
+    tickets: list[dict[str, Any]] = []
+    for index, issue in enumerate(issues):
+        if not isinstance(issue, Mapping):
+            raise ValueError(f"issue[{index}] must be an object")
+        number = issue.get("number")
+        title = issue.get("title")
+        state = issue.get("state")
+        if isinstance(number, bool) or not isinstance(number, int) or number < 1:
+            raise ValueError(f"issue[{index}].number must be a positive integer")
+        if not isinstance(title, str) or not title.strip():
+            raise ValueError(f"issue[{index}].title must be a non-empty string")
+        if not isinstance(state, str) or not state.strip():
+            raise ValueError(f"issue[{index}].state must be a non-empty string")
+        labels = issue.get("labels")
+        ticket_labels: list[str] = []
+        if isinstance(labels, list):
+            for label in labels:
+                if isinstance(label, Mapping):
+                    name = label.get("name")
+                    if isinstance(name, str) and name.strip():
+                        ticket_labels.append(name.strip())
+                elif isinstance(label, str) and label.strip():
+                    ticket_labels.append(label.strip())
+        tickets.append(
+            {
+                "id": f"issue#{number}",
+                "kind": "issue",
+                "number": number,
+                "status": state.lower(),
+                "title": title,
+                "url": issue.get("url") if isinstance(issue.get("url"), str) else None,
+                "labels": ticket_labels,
+            }
+        )
+    return {"schema": "tau.goal_guardian_ticket_source.v1", "tickets": tickets}
+
+
 def _stdin_for_command(command: list[str], projection: Mapping[str, Any]) -> str | None:
     if command[:3] != ["gh", command[1], "comment"] and command[:3] != [
         "gh",
@@ -626,6 +834,31 @@ def _write_transport_receipt(
         commands=result.commands,
         command_results=result.command_results,
         preflight_results=result.preflight_results,
+        receipt_path=str(resolved),
+        errors=result.errors,
+        schema=result.schema,
+    )
+
+
+def _write_ticket_source_fetch_receipt(
+    result: GitHubTicketSourceFetchResult,
+    receipt_path: Path | None,
+) -> GitHubTicketSourceFetchResult:
+    if receipt_path is None:
+        return result
+    resolved = receipt_path.expanduser().resolve()
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    payload = {**result.as_dict(), "receipt_path": str(resolved)}
+    resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return GitHubTicketSourceFetchResult(
+        ok=result.ok,
+        dry_run=result.dry_run,
+        executed=result.executed,
+        repo=result.repo,
+        command=result.command,
+        command_result=result.command_result,
+        ticket_source_path=result.ticket_source_path,
+        ticket_source=result.ticket_source,
         receipt_path=str(resolved),
         errors=result.errors,
         schema=result.schema,

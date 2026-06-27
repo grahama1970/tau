@@ -1586,6 +1586,55 @@ def test_cli_goal_guardian_reconciliation_github_transport_writes_dry_run_receip
     assert receipt == payload
 
 
+def test_cli_goal_guardian_ticket_source_github_fetch_writes_dry_run_receipt(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "goal-guardian-ticket-source.json"
+    receipt_path = tmp_path / "github-ticket-source-fetch.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "goal-guardian-ticket-source-github-fetch",
+            "grahama1970/chatgpt-lab",
+            "--out",
+            str(output_path),
+            "--receipt",
+            str(receipt_path),
+            "--state",
+            "all",
+            "--limit",
+            "10",
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_ticket_source_fetch_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["executed"] is False
+    assert payload["repo"] == "grahama1970/chatgpt-lab"
+    assert payload["command"] == [
+        "gh",
+        "issue",
+        "list",
+        "--repo",
+        "grahama1970/chatgpt-lab",
+        "--state",
+        "all",
+        "--limit",
+        "10",
+        "--json",
+        "number,title,state,url,labels",
+    ]
+    assert payload["ticket_source"] is None
+    assert payload["ticket_source_path"] is None
+    assert receipt == payload
+    assert not output_path.exists()
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
