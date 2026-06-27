@@ -1,6 +1,7 @@
 import subprocess
 
 from tau_coding.github_handoff import (
+    transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
     transport_handoff_projection_to_github,
 )
@@ -164,6 +165,50 @@ def test_generated_ticket_transport_refuses_pull_request_create() -> None:
     assert "supports kind='issue' only" in "\n".join(result.errors)
 
 
+def test_command_loop_terminal_transport_dry_run_uses_last_response_projection() -> None:
+    receipt = _valid_command_loop_receipt()
+
+    result = transport_command_loop_terminal_to_github(receipt)
+
+    assert result.ok is True
+    assert result.schema == "tau.github_command_loop_terminal_transport_receipt.v1"
+    assert result.dry_run is True
+    assert result.applied is False
+    assert result.target == {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"}
+    assert result.commands == (
+        [
+            "gh",
+            "issue",
+            "comment",
+            "123",
+            "--repo",
+            "grahama1970/chatgpt-lab",
+            "--body-file",
+            "-",
+        ],
+        [
+            "gh",
+            "issue",
+            "edit",
+            "123",
+            "--repo",
+            "grahama1970/chatgpt-lab",
+            "--add-label",
+            "agent-work,next:human,executor:human",
+        ],
+    )
+
+
+def test_command_loop_terminal_transport_refuses_non_human_terminal() -> None:
+    receipt = _valid_command_loop_receipt()
+    receipt["terminal_agent"] = "project-or-harness-verifier"
+
+    result = transport_command_loop_terminal_to_github(receipt)
+
+    assert result.ok is False
+    assert "terminal_agent must be human" in "\n".join(result.errors)
+
+
 def _valid_projection() -> dict:
     return {
         "schema": "tau.agent_handoff_projection_receipt.v1",
@@ -179,6 +224,41 @@ def _valid_projection() -> dict:
             "remove": ["agent-active", "agent-blocked"],
         },
         "comment": {"body": "## Tau Agent Handoff\n"},
+        "errors": [],
+    }
+
+
+def _valid_command_loop_receipt() -> dict:
+    return {
+        "schema": "tau.agent_handoff_command_loop_receipt.v1",
+        "ok": True,
+        "status": "WAITING",
+        "step_count": 2,
+        "terminal_agent": "human",
+        "stop_reason": "next_agent_is_human",
+        "mocked": False,
+        "live": True,
+        "runner": "agent-registry-command-loop",
+        "dispatches": [
+            {
+                "selected_agent": "goal-guardian",
+                "response_projection": {
+                    **_valid_projection(),
+                    "next_agent": "project-or-harness-verifier",
+                },
+            },
+            {
+                "selected_agent": "project-or-harness-verifier",
+                "response_projection": {
+                    **_valid_projection(),
+                    "next_agent": "human",
+                    "labels": {
+                        "add": ["agent-work", "next:human", "executor:human"],
+                        "remove": [],
+                    },
+                },
+            },
+        ],
         "errors": [],
     }
 

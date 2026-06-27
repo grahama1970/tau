@@ -1142,6 +1142,82 @@ def test_cli_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
     assert (receipt_dir / "command-loop-receipt.json").exists()
 
 
+def test_cli_handoff_command_loop_github_transport_dry_run(tmp_path: Path) -> None:
+    loop_receipt = {
+        "schema": "tau.agent_handoff_command_loop_receipt.v1",
+        "ok": True,
+        "status": "WAITING",
+        "step_count": 2,
+        "terminal_agent": "human",
+        "stop_reason": "next_agent_is_human",
+        "mocked": False,
+        "live": True,
+        "runner": "agent-registry-command-loop",
+        "dispatches": [
+            {
+                "selected_agent": "goal-guardian",
+                "response_projection": {
+                    "schema": "tau.agent_handoff_projection_receipt.v1",
+                    "ok": True,
+                    "dry_run": True,
+                    "next_agent": "project-or-harness-verifier",
+                    "target": {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"},
+                    "labels": {
+                        "add": [
+                            "agent-work",
+                            "next:project-or-harness-verifier",
+                            "executor:local",
+                        ],
+                        "remove": [],
+                    },
+                    "comment": {"body": "## Goal Guardian\n"},
+                    "errors": [],
+                },
+            },
+            {
+                "selected_agent": "project-or-harness-verifier",
+                "response_projection": {
+                    "schema": "tau.agent_handoff_projection_receipt.v1",
+                    "ok": True,
+                    "dry_run": True,
+                    "next_agent": "human",
+                    "target": {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"},
+                    "labels": {
+                        "add": ["agent-work", "next:human", "executor:human"],
+                        "remove": [],
+                    },
+                    "comment": {"body": "## Terminal Handoff\n"},
+                    "errors": [],
+                },
+            },
+        ],
+        "errors": [],
+    }
+    loop_receipt_path = tmp_path / "command-loop-receipt.json"
+    receipt_path = tmp_path / "github-transport.json"
+    loop_receipt_path.write_text(json.dumps(loop_receipt), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-command-loop-github-transport",
+            str(loop_receipt_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_command_loop_terminal_transport_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["commands"][0][:3] == ["gh", "issue", "comment"]
+    assert receipt == payload
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

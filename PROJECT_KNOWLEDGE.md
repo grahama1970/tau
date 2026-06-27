@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 13:56 by agent
+**Last updated:** 2026-06-27 14:07 by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -11,6 +11,7 @@
 - Tau can now use a committed command-spec overlay with `--command-spec-root`. The selected agent is still validated against `/home/graham/workspace/experiments/agent-skills/agents`, but the executable `tau-dispatch-command.json` can live under Tau's `experiments/goal-locked-subagents/agent-command-specs/` tree for reproducible harness experiments.
 - Built-in `goal-guardian` now has a deterministic adapter. It reads the start handoff from stdin, requires `TAU_HANDOFF_ACTIVE_GOAL_HASH`, refuses stale goal hashes, and emits a normal `tau.agent_handoff.v1` only when the active goal hash is preserved.
 - Tau now has a command-backed local loop receipt. `handoff-command-loop` repeatedly validates the current handoff, loads the selected agent command spec, runs one bounded command, validates the emitted handoff, and stops at `human` or fails closed.
+- Tau can render GitHub dry-run transport for a command-loop terminal handoff. `handoff-command-loop-github-transport` extracts the last response projection from a successful command-loop receipt that stopped at `human`, then renders the exact `gh issue/pr comment` and label-edit commands without applying them.
 
 ## Recent Decisions
 
@@ -23,6 +24,7 @@
 | 2026-06-27 | Store experimental dispatch command specs in Tau overlays | This avoids depending on untracked files in the dirty `agent-skills` repo while still proving routes against real registry identities. |
 | 2026-06-27 | Treat `goal-guardian` as a Tau built-in dispatch role | It is a protocol guard rather than a current `agent-skills/agents` directory entry, so the overlay loader allows built-in Tau roles while still requiring external registry entries for non-built-in agents. |
 | 2026-06-27 | Prove multi-step command loops before GitHub mutation | Local command-loop receipts provide stronger evidence for route continuity than isolated one-step receipts while still avoiding durable GitHub writes. |
+| 2026-06-27 | Require dry-run terminal GitHub transport before live GitHub writes | The command-loop terminal projection must render exact comment and label commands before any future `--apply` path is considered. |
 
 ## Open Questions
 
@@ -45,6 +47,7 @@
 | tests/test_generated_ticket.py | Focused generated-ticket projection tests |
 | tests/test_human_goal_change.py | Focused human goal-change tests |
 | tests/test_handoff_dispatch.py | Focused one-step and command-loop handoff dispatch tests |
+| tests/test_github_handoff.py | Focused dry-run GitHub transport tests for handoffs, generated tickets, and command-loop terminal handoffs |
 
 ## Current Proof Artifacts
 
@@ -54,6 +57,7 @@
 | 2026-06-27 | `/tmp/tau-production-agent-registry-overlay-dispatch/summary.json` | Non-mocked local command dispatch validating `/home/graham/workspace/experiments/agent-skills/agents/project-or-harness-verifier/AGENTS.md` while loading the executable spec from Tau's committed overlay; selected `project-or-harness-verifier`, command exit `0`, response routed to `human`. |
 | 2026-06-27 | `/tmp/tau-goal-guardian-overlay-dispatch/summary.json` | Non-mocked local command dispatch through built-in `goal-guardian`; adapter verified the active goal hash, returned result `PASS`, and routed next to `project-or-harness-verifier`. |
 | 2026-06-27 | `/tmp/tau-command-loop-overlay-dispatch/summary.json` | Non-mocked local command loop through `goal-guardian` then `project-or-harness-verifier`; both command exits were `0`, the loop stopped at `human`, and route continuity preserved target and goal. |
+| 2026-06-27 | `/tmp/tau-command-loop-github-transport/summary.json` | Dry-run GitHub transport for the command-loop terminal handoff; rendered `gh issue comment 123 --repo grahama1970/chatgpt-lab --body-file -` and `gh issue edit 123 --add-label agent-work,next:human,executor:human` without applying them. |
 
 ## Infrastructure State
 

@@ -37,6 +37,7 @@ from tau_coding.generated_ticket import (
     write_agent_handoff_projection_receipt,
 )
 from tau_coding.github_handoff import (
+    transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
     transport_handoff_projection_to_github,
 )
@@ -629,6 +630,21 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-command-loop-github-transport":
+        try:
+            loop_receipt_path, receipt_path = _parse_handoff_command_loop_github_transport_args(
+                positional_args[1:]
+            )
+            ok = transport_handoff_command_loop_terminal_to_github_command(
+                loop_receipt_path,
+                receipt_path=receipt_path,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "handoff-chain-dry-run":
         try:
             handoff_paths, active_goal_hash, receipt_dir, agents_root = (
@@ -1044,6 +1060,32 @@ def _parse_generated_ticket_github_create_cli_args(
             raise RuntimeError(f"Unknown generated-ticket-github-create option: {arg}")
         index += 1
     return ticket_path, active_goal_hash, receipt_path, agents_root, apply_github
+
+
+def _parse_handoff_command_loop_github_transport_args(
+    args: list[str],
+) -> tuple[Path, Path | None]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau handoff-command-loop-github-transport <command-loop-receipt.json> "
+            "[--receipt <receipt.json>]"
+        )
+    loop_receipt_path = Path(args[0])
+    receipt_path: Path | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown handoff-command-loop-github-transport option: {arg}")
+        index += 1
+    return loop_receipt_path, receipt_path
 
 
 def _parse_handoff_chain_cli_args(
@@ -2656,6 +2698,22 @@ def transport_generated_ticket_to_github_command(
         repo=repo,
         github_create=validation.github_create,
         apply=apply_github,
+        receipt_path=receipt_path,
+    )
+    typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))
+    return transport.ok
+
+
+def transport_handoff_command_loop_terminal_to_github_command(
+    loop_receipt_path: Path,
+    *,
+    receipt_path: Path | None,
+) -> bool:
+    """Render GitHub transport commands for a command-loop terminal handoff."""
+
+    payload = _load_json_object(loop_receipt_path, label="command loop receipt")
+    transport = transport_command_loop_terminal_to_github(
+        payload,
         receipt_path=receipt_path,
     )
     typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))

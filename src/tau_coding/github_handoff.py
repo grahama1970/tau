@@ -173,6 +173,41 @@ def transport_generated_ticket_to_github(
     return _write_transport_receipt(result, receipt_path)
 
 
+def transport_command_loop_terminal_to_github(
+    loop_receipt: Mapping[str, Any],
+    *,
+    receipt_path: Path | None = None,
+) -> GitHubHandoffTransportResult:
+    """Render GitHub commands for the terminal projection from one command-loop receipt."""
+
+    schema = "tau.github_command_loop_terminal_transport_receipt.v1"
+    errors: list[str] = []
+    projection = _terminal_command_loop_projection(loop_receipt, errors)
+    if projection is None:
+        result = GitHubHandoffTransportResult(
+            ok=False,
+            dry_run=True,
+            applied=False,
+            target=None,
+            commands=(),
+            errors=tuple(errors),
+            schema=schema,
+        )
+        return _write_transport_receipt(result, receipt_path)
+    transport = transport_handoff_projection_to_github(projection, apply=False)
+    result = GitHubHandoffTransportResult(
+        ok=transport.ok,
+        dry_run=True,
+        applied=False,
+        target=transport.target,
+        commands=transport.commands,
+        command_results=transport.command_results,
+        errors=transport.errors,
+        schema=schema,
+    )
+    return _write_transport_receipt(result, receipt_path)
+
+
 def _github_transport_commands(
     projection: Mapping[str, Any],
     errors: list[str],
@@ -246,6 +281,37 @@ def _generated_ticket_create_commands(
     if labels:
         command.extend(["--label", ",".join(labels)])
     return [command]
+
+
+def _terminal_command_loop_projection(
+    loop_receipt: Mapping[str, Any],
+    errors: list[str],
+) -> Mapping[str, Any] | None:
+    if loop_receipt.get("schema") != "tau.agent_handoff_command_loop_receipt.v1":
+        errors.append("loop receipt schema must be tau.agent_handoff_command_loop_receipt.v1")
+    if loop_receipt.get("ok") is not True:
+        errors.append("command loop receipt must be ok before GitHub transport")
+    if loop_receipt.get("terminal_agent") != "human":
+        errors.append("command loop terminal_agent must be human before terminal transport")
+    dispatches = loop_receipt.get("dispatches")
+    if not isinstance(dispatches, list) or not dispatches:
+        errors.append("command loop receipt dispatches must be a non-empty list")
+        return None
+    last_dispatch = dispatches[-1]
+    if not isinstance(last_dispatch, Mapping):
+        errors.append("command loop last dispatch must be an object")
+        return None
+    projection = last_dispatch.get("response_projection")
+    if not isinstance(projection, Mapping):
+        errors.append("command loop last dispatch requires response_projection")
+        return None
+    if projection.get("ok") is not True:
+        errors.append("command loop terminal response_projection must be ok")
+    if projection.get("next_agent") != "human":
+        errors.append("command loop terminal response_projection.next_agent must be human")
+    if errors:
+        return None
+    return projection
 
 
 def _target_dict(projection: Mapping[str, Any]) -> dict[str, Any] | None:

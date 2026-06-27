@@ -139,11 +139,14 @@ Implemented local contract slices include:
   - `tau handoff-command-loop` follows selected `next_agent` routes through
     opt-in command specs, records each command-backed dispatch step, and stops
     when the route reaches `human`, fails validation, or exhausts `--max-steps`.
+  - `tau handoff-command-loop-github-transport` renders the exact dry-run
+    `gh issue/pr comment` and `gh issue/pr edit` commands for the terminal
+    handoff from a command-loop receipt.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. They do not create GitHub issues yet. GitHub mutation comes after
-the schema, projection, one-step dispatch, and local command-loop contracts are
-proven with focused tests.
+the schema, projection, one-step dispatch, local command-loop, and terminal
+GitHub dry-run transport contracts are proven with focused tests.
 
 Relevant files:
 
