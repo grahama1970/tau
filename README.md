@@ -143,12 +143,15 @@ Implemented local contract slices include:
     `gh issue/pr comment` and `gh issue/pr edit` commands for the terminal
     handoff from a command-loop receipt. GitHub mutation is explicit-only via
     `--apply`; invalid command-loop receipts fail closed before any `gh`
-    commands are run.
+    commands are run. Valid command-loop apply runs `gh auth status` and
+    `gh issue/pr view` preflight checks before posting a comment or editing
+    labels.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. GitHub writes are apply-gated: the default path only renders
 commands, and the `--apply` path still requires a valid terminal command-loop
-receipt before it can call `gh`.
+receipt plus passing GitHub auth and target preflight checks before it can call
+mutating `gh` commands.
 
 Relevant files:
 

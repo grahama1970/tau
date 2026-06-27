@@ -223,11 +223,51 @@ def test_command_loop_terminal_transport_apply_uses_runner() -> None:
     assert result.schema == "tau.github_command_loop_terminal_transport_receipt.v1"
     assert result.dry_run is False
     assert result.applied is True
-    assert len(calls) == 2
-    assert calls[0][0][:3] == ["gh", "issue", "comment"]
-    assert calls[0][1] == "## Tau Agent Handoff\n"
-    assert calls[1][0][:3] == ["gh", "issue", "edit"]
+    assert len(calls) == 4
+    assert calls[0][0] == ["gh", "auth", "status", "--hostname", "github.com"]
+    assert calls[0][1] is None
+    assert calls[1][0] == [
+        "gh",
+        "issue",
+        "view",
+        "123",
+        "--repo",
+        "grahama1970/chatgpt-lab",
+        "--json",
+        "number",
+    ]
     assert calls[1][1] is None
+    assert calls[2][0][:3] == ["gh", "issue", "comment"]
+    assert calls[2][1] == "## Tau Agent Handoff\n"
+    assert calls[3][0][:3] == ["gh", "issue", "edit"]
+    assert calls[3][1] is None
+    assert len(result.preflight_results) == 2
+    assert len(result.command_results) == 2
+
+
+def test_command_loop_terminal_transport_apply_refuses_when_preflight_fails() -> None:
+    receipt = _valid_command_loop_receipt()
+    calls: list[tuple[list[str], str | None]] = []
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        calls.append((command, stdin))
+        if command[:3] == ["gh", "issue", "view"]:
+            return subprocess.CompletedProcess(command, 1, stdout="", stderr="not found")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = transport_command_loop_terminal_to_github(receipt, apply=True, runner=runner)
+
+    assert result.ok is False
+    assert result.schema == "tau.github_command_loop_terminal_transport_receipt.v1"
+    assert result.dry_run is False
+    assert result.applied is False
+    assert len(calls) == 2
+    assert calls[0][0][:3] == ["gh", "auth", "status"]
+    assert calls[1][0][:3] == ["gh", "issue", "view"]
+    assert result.command_results == ()
+    assert len(result.preflight_results) == 2
+    assert "GitHub preflight failed" in result.errors[0]
+    assert "not found" in result.errors[0]
 
 
 def _valid_projection() -> dict:

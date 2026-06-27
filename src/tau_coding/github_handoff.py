@@ -22,6 +22,7 @@ class GitHubHandoffTransportResult:
     target: dict[str, Any] | None = None
     commands: tuple[list[str], ...] = ()
     command_results: tuple[dict[str, Any], ...] = ()
+    preflight_results: tuple[dict[str, Any], ...] = ()
     receipt_path: str | None = None
     errors: tuple[str, ...] = ()
     schema: str = "tau.github_handoff_transport_receipt.v1"
@@ -37,6 +38,7 @@ class GitHubHandoffTransportResult:
             "target": self.target,
             "commands": [list(command) for command in self.commands],
             "command_results": list(self.command_results),
+            "preflight_results": list(self.preflight_results),
             "receipt_path": self.receipt_path,
             "errors": list(self.errors),
         }
@@ -46,6 +48,7 @@ def transport_handoff_projection_to_github(
     projection: Mapping[str, Any],
     *,
     apply: bool = False,
+    require_preflight: bool = False,
     receipt_path: Path | None = None,
     runner: CommandRunner | None = None,
 ) -> GitHubHandoffTransportResult:
@@ -75,14 +78,41 @@ def transport_handoff_projection_to_github(
         return _write_transport_receipt(result, receipt_path)
 
     command_runner = runner or _run_gh_command
+    preflight_results: list[dict[str, Any]] = []
+    if require_preflight:
+        preflight_commands = _github_preflight_commands(projection, errors)
+        if errors:
+            result = GitHubHandoffTransportResult(
+                ok=False,
+                dry_run=False,
+                applied=False,
+                target=_target_dict(projection),
+                commands=tuple(commands),
+                errors=tuple(errors),
+            )
+            return _write_transport_receipt(result, receipt_path)
+        for command in preflight_commands:
+            completed = command_runner(command, None)
+            preflight_results.append(_completed_process_result(command, completed))
+            if completed.returncode != 0:
+                detail = _completed_process_detail(completed)
+                result = GitHubHandoffTransportResult(
+                    ok=False,
+                    dry_run=False,
+                    applied=False,
+                    target=_target_dict(projection),
+                    commands=tuple(commands),
+                    preflight_results=tuple(preflight_results),
+                    errors=(f"GitHub preflight failed: {' '.join(command)}: {detail}",),
+                )
+                return _write_transport_receipt(result, receipt_path)
+
     command_results: list[dict[str, Any]] = []
     for command in commands:
         completed = command_runner(command, _stdin_for_command(command, projection))
         command_results.append(_completed_process_result(command, completed))
         if completed.returncode != 0:
-            stderr = (completed.stderr or "").strip()
-            stdout = (completed.stdout or "").strip()
-            detail = stderr or stdout or f"exit_code={completed.returncode}"
+            detail = _completed_process_detail(completed)
             result = GitHubHandoffTransportResult(
                 ok=False,
                 dry_run=False,
@@ -90,6 +120,7 @@ def transport_handoff_projection_to_github(
                 target=_target_dict(projection),
                 commands=tuple(commands),
                 command_results=tuple(command_results),
+                preflight_results=tuple(preflight_results),
                 errors=(f"GitHub command failed: {' '.join(command)}: {detail}",),
             )
             return _write_transport_receipt(result, receipt_path)
@@ -101,6 +132,7 @@ def transport_handoff_projection_to_github(
         target=_target_dict(projection),
         commands=tuple(commands),
         command_results=tuple(command_results),
+        preflight_results=tuple(preflight_results),
     )
     return _write_transport_receipt(result, receipt_path)
 
@@ -199,6 +231,7 @@ def transport_command_loop_terminal_to_github(
     transport = transport_handoff_projection_to_github(
         projection,
         apply=apply,
+        require_preflight=apply,
         runner=runner,
     )
     result = GitHubHandoffTransportResult(
@@ -208,6 +241,7 @@ def transport_command_loop_terminal_to_github(
         target=transport.target,
         commands=transport.commands,
         command_results=transport.command_results,
+        preflight_results=transport.preflight_results,
         errors=transport.errors,
         schema=schema,
     )
@@ -287,6 +321,23 @@ def _generated_ticket_create_commands(
     if labels:
         command.extend(["--label", ",".join(labels)])
     return [command]
+
+
+def _github_preflight_commands(
+    projection: Mapping[str, Any],
+    errors: list[str],
+) -> list[list[str]]:
+    target = _target_dict(projection)
+    repo = _non_empty_string(target, "repo", "target", errors)
+    target_ref = _non_empty_string(target, "target", "target", errors)
+    ticket_kind, ticket_number = _parse_ticket_ref(target_ref, errors)
+    if errors or not repo:
+        return []
+    command_kind = "pr" if ticket_kind == "pr" else "issue"
+    return [
+        ["gh", "auth", "status", "--hostname", "github.com"],
+        ["gh", command_kind, "view", ticket_number, "--repo", repo, "--json", "number"],
+    ]
 
 
 def _terminal_command_loop_projection(
@@ -390,6 +441,12 @@ def _completed_process_result(
     }
 
 
+def _completed_process_detail(completed: subprocess.CompletedProcess[str]) -> str:
+    stderr = (completed.stderr or "").strip()
+    stdout = (completed.stdout or "").strip()
+    return stderr or stdout or f"exit_code={completed.returncode}"
+
+
 def _write_transport_receipt(
     result: GitHubHandoffTransportResult,
     receipt_path: Path | None,
@@ -407,6 +464,7 @@ def _write_transport_receipt(
         target=result.target,
         commands=result.commands,
         command_results=result.command_results,
+        preflight_results=result.preflight_results,
         receipt_path=str(resolved),
         errors=result.errors,
         schema=result.schema,
