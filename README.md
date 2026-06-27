@@ -122,8 +122,13 @@ Implemented local contract slices include:
   - `tau handoff-dispatch-command` runs one bounded local command and validates
     its stdout as `tau.agent_handoff.v1`.
   - `tau handoff-dispatch-agent-command` selects the next agent from the start
-    handoff, loads that registry entry's opt-in `tau-dispatch-command.json`,
-    runs it once, and writes `tau.agent_handoff_dispatch_receipt.v1`.
+    handoff, validates that agent against an `agent-skills/agents`-style
+    registry, loads that agent's opt-in `tau-dispatch-command.json`, runs it
+    once, and writes `tau.agent_handoff_dispatch_receipt.v1`.
+  - `--command-spec-root` can point at a Tau-owned command-spec overlay such as
+    `experiments/goal-locked-subagents/agent-command-specs/`. This keeps
+    executable dispatch specs versioned with Tau while still validating
+    identities against the real agent registry.
   - `tau handoff-agent-adapter` is a small stdin-to-handoff adapter that lets
     registry command specs emit the minimal handoff JSON without custom wrapper
     code.
@@ -141,6 +146,7 @@ src/tau_coding/generated_ticket.py
 src/tau_coding/human_goal_change.py
 src/tau_coding/handoff_dispatch.py
 experiments/goal-locked-subagents/
+experiments/goal-locked-subagents/agent-command-specs/
 tests/test_subagent_receipt.py
 tests/test_generated_ticket.py
 tests/test_human_goal_change.py

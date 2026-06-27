@@ -702,7 +702,7 @@ def main(
 
     if prompt_option is None and command == "handoff-dispatch-agent-command":
         try:
-            start_path, active_goal_hash, receipt_dir, agents_root = (
+            start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root = (
                 _parse_handoff_dispatch_agent_command_cli_args(positional_args[1:])
             )
             ok = project_agent_handoff_agent_command_dispatch_command(
@@ -710,6 +710,7 @@ def main(
                 active_goal_hash=active_goal_hash,
                 receipt_dir=receipt_dir,
                 agents_root=agents_root,
+                command_spec_root=command_spec_root,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1248,11 +1249,12 @@ def _parse_handoff_dispatch_command_cli_args(
 
 def _parse_handoff_dispatch_agent_command_cli_args(
     args: list[str],
-) -> tuple[Path, str | None, Path, Path]:
+) -> tuple[Path, str | None, Path, Path, Path | None]:
     start_path: Path | None = None
     active_goal_hash: str | None = None
     receipt_dir: Path | None = None
     agents_root: Path | None = None
+    command_spec_root: Path | None = None
     index = 0
     while index < len(args):
         arg = args[index]
@@ -1284,6 +1286,13 @@ def _parse_handoff_dispatch_agent_command_cli_args(
             agents_root = Path(args[index])
         elif arg.startswith("--agents-root="):
             agents_root = Path(arg.partition("=")[2])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            command_spec_root = Path(args[index])
+        elif arg.startswith("--command-spec-root="):
+            command_spec_root = Path(arg.partition("=")[2])
         else:
             raise RuntimeError(f"Unknown handoff-dispatch-agent-command option: {arg}")
         index += 1
@@ -1293,7 +1302,7 @@ def _parse_handoff_dispatch_agent_command_cli_args(
         raise RuntimeError("handoff-dispatch-agent-command requires --receipt-dir <dir>")
     if agents_root is None:
         raise RuntimeError("handoff-dispatch-agent-command requires --agents-root <dir>")
-    return start_path, active_goal_hash, receipt_dir, agents_root
+    return start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root
 
 
 def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
@@ -2627,6 +2636,7 @@ def project_agent_handoff_agent_command_dispatch_command(
     active_goal_hash: str | None,
     receipt_dir: Path,
     agents_root: Path,
+    command_spec_root: Path | None = None,
 ) -> bool:
     """Write a one-step dispatch receipt using the selected agent registry command."""
 
@@ -2650,7 +2660,11 @@ def project_agent_handoff_agent_command_dispatch_command(
     if selected_agent is None:
         raise RuntimeError("start handoff did not select a next agent")
     try:
-        spec = load_agent_dispatch_command_spec(agents_root, selected_agent)
+        spec = load_agent_dispatch_command_spec(
+            agents_root,
+            selected_agent,
+            command_spec_root=command_spec_root,
+        )
     except ValueError as exc:
         resolved_receipt_dir = receipt_dir.expanduser().resolve()
         resolved_receipt_dir.mkdir(parents=True, exist_ok=True)

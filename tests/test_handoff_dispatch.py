@@ -250,6 +250,34 @@ def test_load_agent_dispatch_command_spec_from_registry(tmp_path: Path) -> None:
     assert spec["cwd"] is None
 
 
+def test_load_agent_dispatch_command_spec_from_overlay_requires_registry_entry(
+    tmp_path: Path,
+) -> None:
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    agent_dir = agents_root / "project-or-harness-verifier"
+    spec_dir = spec_root / "project-or-harness-verifier"
+    agent_dir.mkdir(parents=True)
+    spec_dir.mkdir(parents=True)
+    (agent_dir / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    (spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps({"command": [sys.executable, "-c", "print('{}')"], "timeout_s": 3}),
+        encoding="utf-8",
+    )
+
+    spec = load_agent_dispatch_command_spec(
+        agents_root,
+        "project-or-harness-verifier",
+        command_spec_root=spec_root,
+    )
+
+    assert spec["command"] == [sys.executable, "-c", "print('{}')"]
+    assert spec["timeout_s"] == 3.0
+
+
 def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Path) -> None:
     agent_dir = tmp_path / "reviewer"
     agent_dir.mkdir()

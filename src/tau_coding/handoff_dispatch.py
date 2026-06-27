@@ -387,8 +387,13 @@ def write_agent_handoff_command_dispatch_receipt(
     )
 
 
-def load_agent_dispatch_command_spec(root: Path, agent_id: str) -> dict[str, object]:
-    """Load an opt-in Tau command dispatch spec from one agent registry entry."""
+def load_agent_dispatch_command_spec(
+    root: Path,
+    agent_id: str,
+    *,
+    command_spec_root: Path | None = None,
+) -> dict[str, object]:
+    """Load an opt-in Tau command dispatch spec for one validated registry entry."""
 
     if not agent_id or "/" in agent_id or agent_id in {".", ".."}:
         raise ValueError(f"invalid agent id for command dispatch: {agent_id!r}")
@@ -397,7 +402,12 @@ def load_agent_dispatch_command_spec(root: Path, agent_id: str) -> dict[str, obj
         raise ValueError(f"agent registry entry does not exist: {agent_dir}")
     if not (agent_dir / "AGENTS.md").is_file():
         raise ValueError(f"agent registry entry lacks AGENTS.md: {agent_dir}")
-    spec_path = agent_dir / TAU_AGENT_DISPATCH_COMMAND_FILENAME
+    spec_dir = (
+        command_spec_root.expanduser().resolve() / agent_id
+        if command_spec_root
+        else agent_dir
+    )
+    spec_path = spec_dir / TAU_AGENT_DISPATCH_COMMAND_FILENAME
     if not spec_path.is_file():
         raise ValueError(f"agent dispatch command spec missing: {spec_path}")
     try:

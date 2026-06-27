@@ -847,6 +847,76 @@ def test_cli_handoff_dispatch_agent_command_accepts_adapter_command(tmp_path: Pa
     assert payload["command_results"][0]["exit_code"] == 0
 
 
+def test_cli_handoff_dispatch_agent_command_uses_command_spec_overlay(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    start["next_agent"] = {
+        "name": "project-or-harness-verifier",
+        "executor": "local",
+        "reason": "Use a real registry identity with a Tau-owned command spec.",
+    }
+    agents_root = tmp_path / "agents"
+    command_spec_root = tmp_path / "command-specs"
+    agent_dir = agents_root / "project-or-harness-verifier"
+    spec_dir = command_spec_root / "project-or-harness-verifier"
+    receipt_dir = tmp_path / "overlay-command-dispatch-receipts"
+    start_path = tmp_path / "start.json"
+    agent_dir.mkdir(parents=True)
+    spec_dir.mkdir(parents=True)
+    (agent_dir / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import json; "
+                        "from tau_coding.cli import project_agent_handoff_adapter_command; "
+                        "print(json.dumps(project_agent_handoff_adapter_command("
+                        "result_status='COMPLETED', "
+                        "result_summary='Overlay adapter consumed the start handoff.', "
+                        "next_agent='human', "
+                        "next_executor='human', "
+                        "next_reason='Human should decide the next bounded step.', "
+                        "required_evidence='Human posts the next schema-valid route.', "
+                        "stop_condition='Human route is posted.'"
+                        ")))"
+                    ),
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-agent-command",
+            "--start",
+            str(start_path),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            str(command_spec_root),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["selected_agent"] == "project-or-harness-verifier"
+    assert payload["response_projection"]["next_agent"] == "human"
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
