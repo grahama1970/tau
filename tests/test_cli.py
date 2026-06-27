@@ -580,6 +580,94 @@ def test_cli_handoff_dispatch_once_blocks_invalid_response(tmp_path: Path) -> No
     assert (receipt_dir / "dispatch-receipt.json").exists()
 
 
+def test_cli_handoff_dispatch_command_consumes_stdout_response(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    reviewer = _valid_cli_handoff_payload()
+    reviewer["previous_subagent"] = "reviewer"
+    response_path = tmp_path / "reviewer-response.json"
+    command_spec = tmp_path / "command-spec.json"
+    receipt_dir = tmp_path / "command-dispatch-receipts"
+    start_path = tmp_path / "start.json"
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    response_path.write_text(json.dumps(reviewer), encoding="utf-8")
+    command_spec.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"from pathlib import Path; print(Path({str(response_path)!r}).read_text())",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-command",
+            "--start",
+            str(start_path),
+            "--command-spec",
+            str(command_spec),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads((receipt_dir / "dispatch-receipt.json").read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_dispatch_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "COMPLETED"
+    assert payload["selected_agent"] == "reviewer"
+    assert payload["runner"] == "command"
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["command_results"][0]["exit_code"] == 0
+    assert receipt == payload
+
+
+def test_cli_handoff_dispatch_command_blocks_malformed_stdout(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    command_spec = tmp_path / "command-spec.json"
+    receipt_dir = tmp_path / "command-dispatch-receipts"
+    start_path = tmp_path / "start.json"
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    command_spec.write_text(
+        json.dumps({"command": [sys.executable, "-c", "print('not json')"], "timeout_s": 5}),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-dispatch-command",
+            "--start",
+            str(start_path),
+            "--command-spec",
+            str(command_spec),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["stop_reason"] == "invalid_command_json"
+    assert payload["command_results"][0]["exit_code"] == 0
+    assert (receipt_dir / "dispatch-receipt.json").exists()
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

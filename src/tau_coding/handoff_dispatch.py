@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,6 +27,7 @@ class AgentHandoffDispatchResult:
     runner: str = "file-response"
     start_projection: dict[str, Any] | None = None
     response_projection: dict[str, Any] | None = None
+    command_results: tuple[dict[str, Any], ...] = ()
     receipt_dir: str | None = None
     artifacts: tuple[str, ...] = ()
     errors: tuple[str, ...] = ()
@@ -44,6 +46,7 @@ class AgentHandoffDispatchResult:
             "runner": self.runner,
             "start_projection": self.start_projection,
             "response_projection": self.response_projection,
+            "command_results": list(self.command_results),
             "receipt_dir": self.receipt_dir,
             "artifacts": list(self.artifacts),
             "errors": list(self.errors),
@@ -170,6 +173,205 @@ def write_agent_handoff_dispatch_receipt(
         stop_reason=dispatch.stop_reason,
         start_projection=dispatch.start_projection,
         response_projection=dispatch.response_projection,
+        command_results=dispatch.command_results,
+        receipt_dir=str(receipt_dir),
+        artifacts=tuple(artifacts),
+        errors=dispatch.errors,
+    )
+
+
+def dispatch_agent_handoff_command_once(
+    start_payload: Mapping[str, Any],
+    command: list[str],
+    *,
+    timeout_s: float = 30.0,
+    cwd: Path | None = None,
+    active_goal_hash: str | None = None,
+    agent_registry_root: Path | None = None,
+) -> AgentHandoffDispatchResult:
+    """Run one bounded local command and validate its stdout handoff response."""
+
+    start_projection = project_agent_handoff(
+        start_payload,
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agent_registry_root,
+    ).as_dict()
+    selected_agent = start_projection.get("next_agent")
+    if start_projection.get("ok") is not True:
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=selected_agent,
+            stop_reason="invalid_start_handoff",
+            runner="command",
+            start_projection=start_projection,
+            errors=tuple(f"start: {error}" for error in start_projection.get("errors", [])),
+        )
+    if selected_agent == "human":
+        return AgentHandoffDispatchResult(
+            ok=True,
+            status="WAITING",
+            selected_agent=str(selected_agent),
+            stop_reason="next_agent_is_human",
+            runner="command",
+            start_projection=start_projection,
+        )
+    if not command:
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=str(selected_agent),
+            stop_reason="missing_command",
+            runner="command",
+            start_projection=start_projection,
+            errors=("command must not be empty",),
+        )
+
+    stdin = json.dumps(start_payload, sort_keys=True) + "\n"
+    try:
+        completed = subprocess.run(
+            command,
+            input=stdin,
+            cwd=str(cwd) if cwd else None,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_s,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=str(selected_agent),
+            stop_reason="command_timeout",
+            runner="command",
+            start_projection=start_projection,
+            command_results=(
+                {
+                    "command": command,
+                    "exit_code": None,
+                    "timeout_s": timeout_s,
+                    "timed_out": True,
+                    "stdout": exc.stdout or "",
+                    "stderr": exc.stderr or "",
+                },
+            ),
+            errors=(f"command timed out after {timeout_s:g}s",),
+        )
+
+    command_result = {
+        "command": command,
+        "exit_code": completed.returncode,
+        "timeout_s": timeout_s,
+        "timed_out": False,
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+    }
+    if completed.returncode != 0:
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=str(selected_agent),
+            stop_reason="command_failed",
+            runner="command",
+            start_projection=start_projection,
+            command_results=(command_result,),
+            errors=(f"command exited {completed.returncode}",),
+        )
+
+    try:
+        response_payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=str(selected_agent),
+            stop_reason="invalid_command_json",
+            runner="command",
+            start_projection=start_projection,
+            command_results=(command_result,),
+            errors=(f"command stdout was not JSON: {exc}",),
+        )
+    if not isinstance(response_payload, dict):
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=str(selected_agent),
+            stop_reason="invalid_command_json",
+            runner="command",
+            start_projection=start_projection,
+            command_results=(command_result,),
+            errors=("command stdout JSON root must be an object",),
+        )
+
+    dispatch = dispatch_agent_handoff_once(
+        start_payload,
+        {str(selected_agent): response_payload},
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agent_registry_root,
+    )
+    return AgentHandoffDispatchResult(
+        ok=dispatch.ok,
+        status=dispatch.status,
+        selected_agent=dispatch.selected_agent,
+        stop_reason=dispatch.stop_reason,
+        mocked=False,
+        live=True,
+        runner="command",
+        start_projection=dispatch.start_projection,
+        response_projection=dispatch.response_projection,
+        command_results=(command_result,),
+        errors=dispatch.errors,
+    )
+
+
+def write_agent_handoff_command_dispatch_receipt(
+    start_payload: Mapping[str, Any],
+    command: list[str],
+    receipt_dir: Path,
+    *,
+    timeout_s: float = 30.0,
+    cwd: Path | None = None,
+    active_goal_hash: str | None = None,
+    agent_registry_root: Path | None = None,
+) -> AgentHandoffDispatchResult:
+    """Write one command-backed dispatch receipt plus projection artifacts."""
+
+    receipt_dir.mkdir(parents=True, exist_ok=True)
+    dispatch = dispatch_agent_handoff_command_once(
+        start_payload,
+        command,
+        timeout_s=timeout_s,
+        cwd=cwd,
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agent_registry_root,
+    )
+    artifacts: list[str] = []
+    if dispatch.start_projection is not None:
+        start_path = receipt_dir / "start-handoff.receipt.json"
+        _write_json(start_path, dispatch.start_projection)
+        artifacts.append(str(start_path))
+    if dispatch.response_projection is not None:
+        response_path = receipt_dir / f"{dispatch.selected_agent}-response.receipt.json"
+        _write_json(response_path, dispatch.response_projection)
+        artifacts.append(str(response_path))
+    receipt_payload = {
+        **dispatch.as_dict(),
+        "receipt_dir": str(receipt_dir),
+        "artifacts": artifacts,
+    }
+    _write_json(receipt_dir / "dispatch-receipt.json", receipt_payload)
+    return AgentHandoffDispatchResult(
+        ok=dispatch.ok,
+        status=dispatch.status,
+        selected_agent=dispatch.selected_agent,
+        stop_reason=dispatch.stop_reason,
+        mocked=dispatch.mocked,
+        live=dispatch.live,
+        runner=dispatch.runner,
+        start_projection=dispatch.start_projection,
+        response_projection=dispatch.response_projection,
+        command_results=dispatch.command_results,
         receipt_dir=str(receipt_dir),
         artifacts=tuple(artifacts),
         errors=dispatch.errors,

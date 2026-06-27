@@ -39,7 +39,10 @@ from tau_coding.github_handoff import (
     transport_generated_ticket_to_github,
     transport_handoff_projection_to_github,
 )
-from tau_coding.handoff_dispatch import write_agent_handoff_dispatch_receipt
+from tau_coding.handoff_dispatch import (
+    write_agent_handoff_command_dispatch_receipt,
+    write_agent_handoff_dispatch_receipt,
+)
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -675,6 +678,24 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-dispatch-command":
+        try:
+            start_path, command_spec, active_goal_hash, receipt_dir, agents_root = (
+                _parse_handoff_dispatch_command_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_command_dispatch_command(
+                start_path,
+                command_spec=command_spec,
+                active_goal_hash=active_goal_hash,
+                receipt_dir=receipt_dir,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -1135,6 +1156,64 @@ def _parse_handoff_dispatch_cli_args(
     if receipt_dir is None:
         raise RuntimeError("handoff-dispatch-once requires --receipt-dir <dir>")
     return start_path, responses_dir, active_goal_hash, receipt_dir, agents_root
+
+
+def _parse_handoff_dispatch_command_cli_args(
+    args: list[str],
+) -> tuple[Path, Path, str | None, Path, Path | None]:
+    start_path: Path | None = None
+    command_spec: Path | None = None
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--start":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--start requires a value")
+            start_path = Path(args[index])
+        elif arg.startswith("--start="):
+            start_path = Path(arg.partition("=")[2])
+        elif arg == "--command-spec":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec requires a value")
+            command_spec = Path(args[index])
+        elif arg.startswith("--command-spec="):
+            command_spec = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown handoff-dispatch-command option: {arg}")
+        index += 1
+    if start_path is None:
+        raise RuntimeError("handoff-dispatch-command requires --start <handoff.json>")
+    if command_spec is None:
+        raise RuntimeError("handoff-dispatch-command requires --command-spec <command.json>")
+    if receipt_dir is None:
+        raise RuntimeError("handoff-dispatch-command requires --receipt-dir <dir>")
+    return start_path, command_spec, active_goal_hash, receipt_dir, agents_root
 
 
 def _parse_positive_int(value: str, option: str) -> int:
@@ -2389,6 +2468,51 @@ def project_agent_handoff_dispatch_command(
     )
     typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
     return dispatch.ok
+
+
+def project_agent_handoff_command_dispatch_command(
+    start_path: Path,
+    *,
+    command_spec: Path,
+    active_goal_hash: str | None,
+    receipt_dir: Path,
+    agents_root: Path | None,
+) -> bool:
+    """Write a one-step dispatch receipt by running a bounded command."""
+
+    start_payload = _load_json_object(start_path, label="start handoff")
+    spec = _load_command_dispatch_spec(command_spec)
+    dispatch = write_agent_handoff_command_dispatch_receipt(
+        start_payload,
+        spec["command"],
+        receipt_dir.expanduser().resolve(),
+        timeout_s=spec["timeout_s"],
+        cwd=spec["cwd"],
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+    )
+    typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
+    return dispatch.ok
+
+
+def _load_command_dispatch_spec(path: Path) -> dict[str, object]:
+    payload = _load_json_object(path, label="handoff command spec")
+    command = payload.get("command")
+    if (
+        not isinstance(command, list)
+        or not command
+        or not all(isinstance(item, str) and item for item in command)
+    ):
+        raise RuntimeError("handoff command spec requires non-empty string list field: command")
+    timeout_value = payload.get("timeout_s", 30.0)
+    if isinstance(timeout_value, bool) or not isinstance(timeout_value, (int, float)):
+        raise RuntimeError("handoff command spec timeout_s must be a positive number")
+    timeout_s = float(timeout_value)
+    if timeout_s <= 0:
+        raise RuntimeError("handoff command spec timeout_s must be a positive number")
+    cwd_value = payload.get("cwd")
+    cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
+    return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
 
 
 def _load_handoff_response_dir(responses_dir: Path) -> dict[str, dict[str, object]]:

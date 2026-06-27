@@ -1,9 +1,12 @@
 import json
+import sys
 from pathlib import Path
 
 from tau_coding.handoff_dispatch import (
     TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
+    dispatch_agent_handoff_command_once,
     dispatch_agent_handoff_once,
+    write_agent_handoff_command_dispatch_receipt,
     write_agent_handoff_dispatch_receipt,
 )
 
@@ -109,6 +112,92 @@ def test_handoff_dispatch_receipt_writes_projection_artifacts(tmp_path: Path) ->
         str(receipt_dir / "start-handoff.receipt.json"),
         str(receipt_dir / "reviewer-response.receipt.json"),
     ]
+    assert (receipt_dir / "start-handoff.receipt.json").exists()
+    assert (receipt_dir / "reviewer-response.receipt.json").exists()
+
+
+def test_command_handoff_dispatch_consumes_stdout_response(tmp_path: Path) -> None:
+    response = _valid_handoff()
+    response["previous_subagent"] = "reviewer"
+    response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+    response_path = tmp_path / "response.json"
+    response_path.write_text(json.dumps(response), encoding="utf-8")
+
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [
+            sys.executable,
+            "-c",
+            f"from pathlib import Path; print(Path({str(response_path)!r}).read_text())",
+        ],
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert result.ok is True
+    assert result.status == "COMPLETED"
+    assert result.selected_agent == "reviewer"
+    assert result.mocked is False
+    assert result.live is True
+    assert result.runner == "command"
+    assert result.command_results[0]["exit_code"] == 0
+    assert result.response_projection is not None
+    assert result.response_projection["next_agent"] == "human"
+
+
+def test_command_handoff_dispatch_blocks_nonzero_exit() -> None:
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [sys.executable, "-c", "import sys; print('nope'); sys.exit(7)"],
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert result.ok is False
+    assert result.status == "BLOCKED"
+    assert result.stop_reason == "command_failed"
+    assert result.command_results[0]["exit_code"] == 7
+
+
+def test_command_handoff_dispatch_blocks_malformed_json() -> None:
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [sys.executable, "-c", "print('not json')"],
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert result.ok is False
+    assert result.status == "BLOCKED"
+    assert result.stop_reason == "invalid_command_json"
+    assert "command stdout was not JSON" in "\n".join(result.errors)
+
+
+def test_command_handoff_dispatch_receipt_writes_command_results(tmp_path: Path) -> None:
+    response = _valid_handoff()
+    response["previous_subagent"] = "reviewer"
+    response_path = tmp_path / "response.json"
+    response_path.write_text(json.dumps(response), encoding="utf-8")
+    receipt_dir = tmp_path / "command-dispatch"
+
+    result = write_agent_handoff_command_dispatch_receipt(
+        _valid_handoff(),
+        [
+            sys.executable,
+            "-c",
+            f"from pathlib import Path; print(Path({str(response_path)!r}).read_text())",
+        ],
+        receipt_dir,
+        active_goal_hash="sha256:active-goal",
+    )
+    receipt = json.loads((receipt_dir / "dispatch-receipt.json").read_text())
+
+    assert result.ok is True
+    assert receipt["runner"] == "command"
+    assert receipt["mocked"] is False
+    assert receipt["live"] is True
+    assert receipt["command_results"][0]["exit_code"] == 0
     assert (receipt_dir / "start-handoff.receipt.json").exists()
     assert (receipt_dir / "reviewer-response.receipt.json").exists()
 
