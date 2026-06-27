@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.human_goal_change_bridge_receipt.v1",
+  "title": "Tau Human Goal Change Bridge Receipt",
+  "type": "object",
+  "required": [
+    "schema",
+    "ok",
+    "dry_run",
+    "trusted_human",
+    "source",
+    "active_goal_hash",
+    "input_schema",
+    "output_schema",
+    "next_agent",
+    "handoff_path",
+    "handoff_sha256",
+    "start_handoff",
+    "errors"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.human_goal_change_bridge_receipt.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "dry_run": {
+      "const": true
+    },
+    "trusted_human": {
+      "type": "boolean"
+    },
+    "source": {
+      "type": ["string", "null"]
+    },
+    "active_goal_hash": {
+      "type": ["string", "null"]
+    },
+    "input_schema": {
+      "type": ["string", "null"]
+    },
+    "output_schema": {
+      "type": ["string", "null"]
+    },
+    "next_agent": {
+      "type": ["string", "null"]
+    },
+    "handoff_path": {
+      "type": ["string", "null"]
+    },
+    "handoff_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "start_handoff": {
+      "type": ["object", "null"]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

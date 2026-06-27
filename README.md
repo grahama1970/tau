@@ -118,6 +118,11 @@ Implemented local contract slices include:
   ticket comments.
 - `tau.human_goal_change.v1`: rare human-only goal mutation contract that must
   route to `goal-guardian`.
+- `tau.human_goal_change_bridge_receipt.v1`: deterministic local bridge receipt
+  for turning a trusted `tau.human_goal_change.v1` packet into a normal
+  `tau.agent_handoff.v1` start handoff routed to `goal-guardian`. The bridge
+  does not write goal capsules or mutate GitHub; it fails closed unless
+  `--trusted-human` and the active goal hash are supplied.
 - command-backed one-step handoff dispatch:
   - `tau handoff-dispatch-command` runs one bounded local command and validates
     its stdout as `tau.agent_handoff.v1`.
@@ -135,6 +140,11 @@ Implemented local contract slices include:
   - `tau handoff-goal-guardian-adapter` is a deterministic built-in adapter
     that refuses missing/stale active goal hashes and emits a preserved-goal
     `tau.agent_handoff.v1` before routing onward.
+- human-goal-change bridge:
+  - `tau human-goal-change-bridge <human-goal-change.json> --active-goal-hash
+    <hash> --trusted-human --handoff-out <start-handoff.json> --receipt
+    <receipt.json>` writes the generated handoff only on successful validation
+    and always writes a receipt for success or fail-closed validation errors.
 - command-backed handoff loops:
   - `tau handoff-command-loop` follows selected `next_agent` routes through
     opt-in command specs, records each command-backed dispatch step, and stops
@@ -163,6 +173,7 @@ src/tau_coding/human_goal_change.py
 src/tau_coding/handoff_dispatch.py
 experiments/goal-locked-subagents/
 experiments/goal-locked-subagents/agent-command-specs/
+experiments/goal-locked-subagents/schemas/tau.human_goal_change_bridge_receipt.v1.schema.json
 tests/test_subagent_receipt.py
 tests/test_generated_ticket.py
 tests/test_human_goal_change.py
@@ -179,6 +190,12 @@ Run the focused dispatch checks:
 
 ```bash
 uv run pytest tests/test_handoff_dispatch.py tests/test_cli.py -q
+```
+
+Run the bridge and command-loop checks:
+
+```bash
+uv run pytest tests/test_human_goal_change.py tests/test_handoff_dispatch.py tests/test_cli.py tests/test_github_handoff.py -q
 ```
 
 ## Install

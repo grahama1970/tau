@@ -1,0 +1,47 @@
+{
+  "bundle": "tau-human-goal-change-bridge-solution.zip",
+  "files": [
+    {
+      "bytes": 7371,
+      "path": "ARCHITECTURE.md",
+      "sha256": "bc760da89dcf20dccfa8d205da15646785592c50e9d57563bce8415ef46655cd"
+    },
+    {
+      "bytes": 423,
+      "path": "README.md",
+      "sha256": "ec598821f64e62c92784184933b02db5646079f25ec88412a6902c8a6a3dea81"
+    },
+    {
+      "bytes": 29304,
+      "path": "patches/0001-human-goal-change-bridge.patch",
+      "sha256": "5e0909fe2a5094f13726926793c1046cd6c5cc43a3bebfca8be4b960ca1688f2"
+    },
+    {
+      "bytes": 944,
+      "path": "prompt_improvements.md",
+      "sha256": "220b924d8efb7690b7df10c6e8b3ec6a1d49cf13a96b44215d9b27741c7d4809"
+    },
+    {
+      "bytes": 1350,
+      "path": "repo_files/experiments/goal-locked-subagents/schemas/tau.human_goal_change_bridge_receipt.v1.schema.json",
+      "sha256": "1308c9263ac397e139e67276c42c66a200e40189638ec144ac50b7fad79eda1c"
+    },
+    {
+      "bytes": 13203,
+      "path": "repo_files/src/tau_coding/human_goal_change.py",
+      "sha256": "ab9548f8a9780956c08c0a672993799fbb00591c89fade34b744099864166b9a"
+    }
+  ],
+  "mocked_live_scope": "deterministic local/dry-run implementation and tests only; no live GitHub mutation and no browser/WebGPT closure proof",
+  "name": "tau-human-goal-change-bridge-solution",
+  "patches": [
+    "patches/0001-human-goal-change-bridge.patch"
+  ],
+  "primary_cli": "uv run tau human-goal-change-bridge <human-goal-change.json> --active-goal-hash <hash> --trusted-human --handoff-out <start-handoff.json> --receipt <bridge-receipt.json>",
+  "schema": "tau.solution_bundle_manifest.v1",
+  "scope": "Bridge trusted tau.human_goal_change.v1 packets to tau.agent_handoff.v1 start handoffs routed to goal-guardian.",
+  "test_commands": [
+    "uv run pytest tests/test_human_goal_change.py tests/test_handoff_dispatch.py tests/test_cli.py -q",
+    "uv run pytest tests/test_github_handoff.py tests/test_cli.py -q"
+  ]
+}

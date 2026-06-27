@@ -146,6 +146,176 @@ def test_cli_handoff_project_refuses_stale_goal_hash(tmp_path: Path) -> None:
     assert "agent handoff may not change goal.goal_hash" in payload["errors"]
 
 
+def test_cli_human_goal_change_bridge_writes_handoff_and_receipt(tmp_path: Path) -> None:
+    goal_change_path = FIXTURES / "valid-human-goal-change.json"
+    handoff_path = tmp_path / "generated" / "start-handoff.json"
+    receipt_path = tmp_path / "receipts" / "bridge-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "human-goal-change-bridge",
+            str(goal_change_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--trusted-human",
+            "--handoff-out",
+            str(handoff_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+    handoff = json.loads(handoff_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.human_goal_change_bridge_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["trusted_human"] is True
+    assert payload["source"] == str(goal_change_path.resolve())
+    assert payload["handoff_path"] == str(handoff_path.resolve())
+    assert payload["output_schema"] == "tau.agent_handoff.v1"
+    assert payload["next_agent"] == "goal-guardian"
+    assert payload["handoff_sha256"].startswith("sha256:")
+    assert payload["errors"] == []
+    assert receipt == payload
+    assert payload["start_handoff"] == handoff
+    assert handoff["github"] == {
+        "repo": "grahama1970/chatgpt-lab",
+        "target": "issue#123",
+    }
+    assert handoff["goal"]["goal_hash"] == "sha256:active-goal"
+    assert handoff["previous_subagent"] == "human"
+    assert handoff["result"]["status"] == "GOAL_CHANGE_REQUESTED"
+    assert "tau.human_goal_change.v1" in handoff["result"]["evidence"][0]
+    assert handoff["next_agent"] == {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal changes must be reconciled before further work.",
+    }
+
+
+def test_cli_human_goal_change_bridge_refuses_untrusted_author_with_receipt(
+    tmp_path: Path,
+) -> None:
+    goal_change_path = FIXTURES / "valid-human-goal-change.json"
+    handoff_path = tmp_path / "generated" / "start-handoff.json"
+    receipt_path = tmp_path / "receipts" / "bridge-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "human-goal-change-bridge",
+            str(goal_change_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--handoff-out",
+            str(handoff_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.human_goal_change_bridge_receipt.v1"
+    assert payload["ok"] is False
+    assert payload["dry_run"] is True
+    assert payload["trusted_human"] is False
+    assert payload["output_schema"] is None
+    assert payload["start_handoff"] is None
+    assert "human goal change requires trusted human author" in payload["errors"]
+    assert receipt == payload
+    assert not handoff_path.exists()
+
+
+def test_cli_human_goal_change_bridge_start_handoff_enters_command_loop(
+    tmp_path: Path,
+) -> None:
+    goal_change_path = FIXTURES / "valid-human-goal-change.json"
+    handoff_path = tmp_path / "generated" / "start-handoff.json"
+    bridge_receipt_path = tmp_path / "receipts" / "bridge-receipt.json"
+
+    bridge = CliRunner().invoke(
+        app,
+        [
+            "human-goal-change-bridge",
+            str(goal_change_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--trusted-human",
+            "--handoff-out",
+            str(handoff_path),
+            "--receipt",
+            str(bridge_receipt_path),
+        ],
+    )
+    assert bridge.exit_code == 0
+
+    agents_root = tmp_path / "agents"
+    command_spec_root = tmp_path / "command-specs"
+    guardian_spec_root = command_spec_root / "goal-guardian"
+    agents_root.mkdir()
+    guardian_spec_root.mkdir(parents=True)
+    guardian_script = (
+        "import json, sys; "
+        "payload=json.load(sys.stdin); "
+        "payload['previous_subagent']='goal-guardian'; "
+        "payload['context']={"
+        "'summary':'Goal guardian smoke consumed the generated start handoff.', "
+        "'artifacts':payload.get('context', {}).get('artifacts', [])}; "
+        "payload['result']={"
+        "'status':'PASS', "
+        "'summary':'Goal guardian consumed the generated start handoff.', "
+        "'evidence':['smoke command consumed generated start handoff']}; "
+        "payload['rationale']='Smoke command proves command-loop can consume bridge output.'; "
+        "payload['next_agent']={"
+        "'name':'human', "
+        "'executor':'human', "
+        "'reason':'Human receives the reconciliation result.'}; "
+        "payload['required_evidence']=['human reviews the reconciliation result']; "
+        "payload['stop_condition']='Human receives the reconciliation handoff.'; "
+        "print(json.dumps(payload))"
+    )
+    (guardian_spec_root / "tau-dispatch-command.json").write_text(
+        json.dumps({"command": [sys.executable, "-c", guardian_script], "timeout_s": 5}),
+        encoding="utf-8",
+    )
+
+    loop_receipt_dir = tmp_path / "command-loop-receipts"
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-command-loop",
+            "--start",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(loop_receipt_dir),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            str(command_spec_root),
+            "--max-steps",
+            "2",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_command_loop_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "WAITING"
+    assert payload["step_count"] == 1
+    assert payload["terminal_agent"] == "human"
+    assert payload["stop_reason"] == "next_agent_is_human"
+    assert payload["dispatches"][0]["selected_agent"] == "goal-guardian"
+
+
 def test_cli_handoff_project_accepts_agents_root_route(tmp_path: Path) -> None:
     agents_root = tmp_path / "agents"
     external_agent = agents_root / "external-agent"

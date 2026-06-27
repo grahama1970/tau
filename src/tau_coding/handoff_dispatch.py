@@ -563,6 +563,30 @@ def run_agent_handoff_command_loop(
                 errors=(f"step[{step}]: command stdout JSON root must be an object",),
             )
         current_payload = next_payload
+        next_projection = project_agent_handoff(
+            current_payload,
+            active_goal_hash=active_goal_hash,
+            agent_registry_root=agent_registry_root,
+        )
+        if not next_projection.ok:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=next_projection.next_agent,
+                stop_reason="invalid_handoff",
+                dispatches=tuple(dispatches),
+                errors=tuple(f"step[{step}]: {error}" for error in next_projection.errors),
+            )
+        if next_projection.next_agent == "human":
+            return AgentHandoffCommandLoopResult(
+                ok=True,
+                status="WAITING",
+                step_count=step,
+                terminal_agent="human",
+                stop_reason="next_agent_is_human",
+                dispatches=tuple(dispatches),
+            )
 
     return AgentHandoffCommandLoopResult(
         ok=False,

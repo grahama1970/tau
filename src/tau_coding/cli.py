@@ -49,6 +49,7 @@ from tau_coding.handoff_dispatch import (
     write_agent_handoff_command_loop_receipt,
     write_agent_handoff_dispatch_receipt,
 )
+from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -577,6 +578,31 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         raise typer.Exit()
 
+    if prompt_option is None and command == "human-goal-change-bridge":
+        try:
+            bridge_args = _parse_human_goal_change_bridge_cli_args(positional_args[1:])
+            (
+                goal_change_path,
+                active_goal_hash,
+                trusted_human,
+                handoff_out,
+                receipt_path,
+                agents_root,
+            ) = bridge_args
+            ok = human_goal_change_bridge_command(
+                goal_change_path,
+                active_goal_hash=active_goal_hash,
+                trusted_human=trusted_human,
+                handoff_out=handoff_out,
+                receipt_path=receipt_path,
+                agents_root=agents_root,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "handoff-project":
         try:
             handoff_path, active_goal_hash, receipt_path, agents_root = (
@@ -927,6 +953,78 @@ def _parse_loop2_scillm_doctor_receipt_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau loop2-check-scillm-doctor <receipt.json>")
     return Path(args[0])
+
+
+def _parse_human_goal_change_bridge_cli_args(
+    args: list[str],
+) -> tuple[Path, str | None, bool, Path, Path, Path | None]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau human-goal-change-bridge <human-goal-change.json> "
+            "--handoff-out <start-handoff.json> --receipt <receipt.json> "
+            "[--active-goal-hash <hash>] [--trusted-human] [--agents-root <dir>]"
+        )
+    goal_change_path: Path | None = None
+    active_goal_hash: str | None = None
+    trusted_human = False
+    handoff_out: Path | None = None
+    receipt_path: Path | None = None
+    agents_root: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--trusted-human":
+            trusted_human = True
+        elif arg == "--handoff-out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--handoff-out requires a value")
+            handoff_out = Path(args[index])
+        elif arg.startswith("--handoff-out="):
+            handoff_out = Path(arg.partition("=")[2])
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg.startswith("-"):
+            raise RuntimeError(f"Unknown human-goal-change-bridge option: {arg}")
+        elif goal_change_path is None:
+            goal_change_path = Path(arg)
+        else:
+            raise RuntimeError(f"Unexpected human-goal-change-bridge argument: {arg}")
+        index += 1
+
+    if goal_change_path is None:
+        raise RuntimeError("human-goal-change-bridge requires <human-goal-change.json>")
+    if handoff_out is None:
+        raise RuntimeError("human-goal-change-bridge requires --handoff-out <start-handoff.json>")
+    if receipt_path is None:
+        raise RuntimeError("human-goal-change-bridge requires --receipt <receipt.json>")
+    return (
+        goal_change_path,
+        active_goal_hash,
+        trusted_human,
+        handoff_out,
+        receipt_path,
+        agents_root,
+    )
 
 
 def _parse_handoff_project_cli_args(
@@ -2573,6 +2671,32 @@ def backfill_loop_receipt_artifacts_command(run_dir: Path) -> bool:
     payload = backfill_loop_receipt_artifact_index(run_dir)
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     return bool(payload.get("ok"))
+
+
+def human_goal_change_bridge_command(
+    goal_change_path: Path,
+    *,
+    active_goal_hash: str | None,
+    trusted_human: bool,
+    handoff_out: Path,
+    receipt_path: Path,
+    agents_root: Path | None,
+) -> bool:
+    """Bridge a trusted human goal-change packet into a normal start handoff."""
+
+    resolved_goal_change = goal_change_path.expanduser().resolve()
+    payload = _load_json_object(resolved_goal_change, label="human goal change")
+    receipt = write_human_goal_change_bridge_receipt(
+        payload,
+        receipt_path.expanduser().resolve(),
+        handoff_path=handoff_out.expanduser().resolve(),
+        active_goal_hash=active_goal_hash,
+        trusted_human=trusted_human,
+        source=str(resolved_goal_change),
+        agent_registry_root=agents_root,
+    )
+    typer.echo(json.dumps(receipt, indent=2, sort_keys=True))
+    return bool(receipt.get("ok"))
 
 
 def project_agent_handoff_command(

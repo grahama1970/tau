@@ -15,5 +15,16 @@ experiments/loop2-alignment/live-*/*/repo/
 experiments/loop2-alignment/live-*/
 experiments/loop2-alignment/reliability-stress-*/
 
+# Local oracle/review run logs
+.ask/**/ask-artifacts/
+.ask/**/*heartbeat*.jsonl
+.ask/**/*.zip
+.ask/**/*.local-paths.md
+.ask/**/*.raw.md
+.ask/**/*.submitted.md
+.ask/**/*heartbeat*.json
+.ask/**/extracted-download/**/patches/
+.ask/**/extracted-download/**/repo_files/
+
 # Virtual environments
 .venv
