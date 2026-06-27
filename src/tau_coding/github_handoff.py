@@ -21,6 +21,7 @@ class GitHubHandoffTransportResult:
     applied: bool
     target: dict[str, Any] | None = None
     commands: tuple[list[str], ...] = ()
+    command_results: tuple[dict[str, Any], ...] = ()
     receipt_path: str | None = None
     errors: tuple[str, ...] = ()
     schema: str = "tau.github_handoff_transport_receipt.v1"
@@ -35,6 +36,7 @@ class GitHubHandoffTransportResult:
             "applied": self.applied,
             "target": self.target,
             "commands": [list(command) for command in self.commands],
+            "command_results": list(self.command_results),
             "receipt_path": self.receipt_path,
             "errors": list(self.errors),
         }
@@ -73,8 +75,10 @@ def transport_handoff_projection_to_github(
         return _write_transport_receipt(result, receipt_path)
 
     command_runner = runner or _run_gh_command
+    command_results: list[dict[str, Any]] = []
     for command in commands:
         completed = command_runner(command, _stdin_for_command(command, projection))
+        command_results.append(_completed_process_result(command, completed))
         if completed.returncode != 0:
             stderr = (completed.stderr or "").strip()
             stdout = (completed.stdout or "").strip()
@@ -85,6 +89,7 @@ def transport_handoff_projection_to_github(
                 applied=False,
                 target=_target_dict(projection),
                 commands=tuple(commands),
+                command_results=tuple(command_results),
                 errors=(f"GitHub command failed: {' '.join(command)}: {detail}",),
             )
             return _write_transport_receipt(result, receipt_path)
@@ -95,6 +100,7 @@ def transport_handoff_projection_to_github(
         applied=True,
         target=_target_dict(projection),
         commands=tuple(commands),
+        command_results=tuple(command_results),
     )
     return _write_transport_receipt(result, receipt_path)
 
@@ -138,6 +144,7 @@ def transport_generated_ticket_to_github(
 
     command_runner = runner or _run_gh_command
     completed = command_runner(commands[0], str(github_create["body"]))
+    command_results = (_completed_process_result(commands[0], completed),)
     if completed.returncode != 0:
         stderr = (completed.stderr or "").strip()
         stdout = (completed.stdout or "").strip()
@@ -148,6 +155,7 @@ def transport_generated_ticket_to_github(
             applied=False,
             target=target,
             commands=tuple(commands),
+            command_results=command_results,
             errors=(f"GitHub command failed: {' '.join(commands[0])}: {detail}",),
             schema=schema,
         )
@@ -159,6 +167,7 @@ def transport_generated_ticket_to_github(
         applied=True,
         target=target,
         commands=tuple(commands),
+        command_results=command_results,
         schema=schema,
     )
     return _write_transport_receipt(result, receipt_path)
@@ -297,6 +306,18 @@ def _run_gh_command(command: list[str], stdin: str | None) -> subprocess.Complet
     )
 
 
+def _completed_process_result(
+    command: list[str],
+    completed: subprocess.CompletedProcess[str],
+) -> dict[str, Any]:
+    return {
+        "command": list(command),
+        "exit_code": completed.returncode,
+        "stdout": completed.stdout or "",
+        "stderr": completed.stderr or "",
+    }
+
+
 def _write_transport_receipt(
     result: GitHubHandoffTransportResult,
     receipt_path: Path | None,
@@ -313,6 +334,7 @@ def _write_transport_receipt(
         applied=result.applied,
         target=result.target,
         commands=result.commands,
+        command_results=result.command_results,
         receipt_path=str(resolved),
         errors=result.errors,
         schema=result.schema,

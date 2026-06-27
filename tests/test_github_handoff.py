@@ -58,6 +58,10 @@ def test_github_handoff_transport_apply_uses_runner_with_comment_stdin() -> None
     assert calls[0][1] == "## Tau Agent Handoff\n"
     assert calls[1][0][:3] == ["gh", "issue", "edit"]
     assert calls[1][1] is None
+    assert result.command_results == (
+        {"command": calls[0][0], "exit_code": 0, "stdout": "", "stderr": ""},
+        {"command": calls[1][0], "exit_code": 0, "stdout": "", "stderr": ""},
+    )
 
 
 def test_github_handoff_transport_refuses_new_target() -> None:
@@ -135,6 +139,14 @@ def test_generated_ticket_transport_apply_uses_runner_with_body_stdin() -> None:
     assert len(calls) == 1
     assert calls[0][0][:3] == ["gh", "issue", "create"]
     assert calls[0][1] == "Review the generated-ticket contract evidence."
+    assert result.command_results == (
+        {
+            "command": calls[0][0],
+            "exit_code": 0,
+            "stdout": "https://github.com/x/y/issues/1\n",
+            "stderr": "",
+        },
+    )
 
 
 def test_generated_ticket_transport_refuses_pull_request_create() -> None:
