@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 17:48Z / 13:48 EDT by agent
+**Last updated:** 2026-06-27 18:05Z / 14:05 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -14,6 +14,7 @@
 - Tau can render or explicitly apply GitHub transport for a command-loop terminal handoff. `handoff-command-loop-github-transport` extracts the last response projection from a successful command-loop receipt that stopped at `human`, renders the exact `gh issue/pr comment` and label-edit commands by default, and only runs them when `--apply` is passed.
 - The command-loop GitHub apply path is fail-closed before mutation: invalid receipts return `ok: false`, `applied: false`, and zero command executions even when `--apply` is passed.
 - Valid command-loop GitHub apply now runs live preflight checks before mutation: `gh auth status --hostname github.com` and `gh issue/pr view <number> --repo <repo> --json number`. If preflight fails, the receipt records `preflight_results`, leaves `command_results` empty, and returns `applied: false`.
+- The experiment-local Memory/Brave harness now writes `stage_trace` and `current_stage` into `tau.loop2_memory_skill_selector_harness.v1` receipts so chat/TUI consumers can render dynamic Memory pipeline state from receipt data instead of static "thinking" text.
 
 ## Recent Decisions
 
@@ -29,6 +30,7 @@
 | 2026-06-27 | Require dry-run terminal GitHub transport before live GitHub writes | The command-loop terminal projection must render exact comment and label commands before any future `--apply` path is considered. |
 | 2026-06-27 | Keep live GitHub writes behind an explicit `--apply` flag | Default command-loop GitHub transport remains dry-run; `--apply` is only allowed after the terminal command-loop receipt validates and stops at `human`. |
 | 2026-06-27 | Require GitHub auth and target preflight before command-loop mutation | A valid receipt alone is not enough for live writes; Tau must prove the local `gh` session and target issue/PR are available before comment or label commands run. |
+| 2026-06-27 | Make Memory pipeline stages receipt-backed | Sparta Chat/TUI should render `Getting Intent...`, `Extracting Entities...`, `Accessing Memory...`, and branch-specific labels from harness receipts, not from hidden reasoning text or UI-only theater. |
 
 ## Open Questions
 
@@ -65,6 +67,7 @@
 | 2026-06-27 | `/tmp/tau-command-loop-github-transport-apply-rerun/summary.json` | Valid command-loop terminal handoff rendered two dry-run GitHub commands with `ok: true`, `dry_run: true`, `applied: false`, and no errors. |
 | 2026-06-27 | `/tmp/tau-command-loop-github-apply-gate/summary.json` | Invalid command-loop receipt run with `--apply` failed closed with `ok: false`, `dry_run: false`, `applied: false`, and `command_count: 0`. |
 | 2026-06-27 | `/tmp/tau-command-loop-github-preflight/live-invalid-target-summary.json` | Live `gh` preflight for a valid command-loop receipt targeting a nonexistent repo returned auth exit `0`, target-view exit `1`, `command_count: 0`, and `applied: false`. |
+| 2026-06-27 | `/tmp/tau-memory-stage-trace/live-memory-stage-trace-summary.json` | Live Memory-backed harness receipt with `mocked: false`, `live: true`, `memory_first: true`, `selected_skill: memory.clarify`, and `stage_trace` stages `intent`, `extract_entities`, `recall`, `clarify`. |
 
 ## Infrastructure State
 

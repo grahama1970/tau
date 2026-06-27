@@ -65,6 +65,8 @@ Harness receipts must preserve:
 - `recall.items`
 - `recall.confidence`
 - `recall.should_scan`
+- `stage_trace[]` entries with `stage`, `label`, `status`, and `source`
+- `current_stage`, equal to the last `stage_trace[]` item
 
 ### Create Evidence Case
 

@@ -22,6 +22,24 @@ CREATE_EVIDENCE_CASE_RUN_SH = Path(
 PERSONAPLEX_SKILL_PATH = Path(
     "/home/graham/workspace/experiments/agent-skills/skills/personaplex/SKILL.md"
 )
+PIPELINE_STAGE_LABELS = {
+    "intent": "Getting Intent...",
+    "extract_entities": "Extracting Entities...",
+    "recall": "Accessing Memory...",
+    "evidence_case": "Creating Evidence Case...",
+    "brave_search": "Searching Web...",
+    "answer": "Answering...",
+    "clarify": "Clarifying...",
+    "deflect": "Deflecting...",
+    "personaplex": "Preparing Persona Voice...",
+}
+SKILL_STAGE = {
+    "memory.answer": "answer",
+    "memory.clarify": "clarify",
+    "memory.deflect": "deflect",
+    "brave-search": "brave_search",
+    "create-evidence-case": "evidence_case",
+}
 
 
 def utc_now() -> str:
@@ -421,6 +439,64 @@ def branch_failed_closed(branch: dict[str, Any]) -> bool:
     return status not in {"PASS"}
 
 
+def build_stage_trace(
+    memory: dict[str, Any],
+    selection: dict[str, Any],
+    branch: dict[str, Any],
+    persona_voice: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Build receipt-backed stage metadata for chat/TUI consumers."""
+
+    extract_entities = (
+        memory.get("extract_entities") if isinstance(memory.get("extract_entities"), dict) else {}
+    )
+    recall = memory.get("recall") if isinstance(memory.get("recall"), dict) else {}
+    branch_stage = SKILL_STAGE.get(str(selection.get("selected_skill") or ""), "answer")
+    trace = [
+        _stage_item("intent", "PASS", source="memory.intent"),
+        _stage_item(
+            "extract_entities",
+            str(extract_entities.get("status") or "UNKNOWN"),
+            source="memory.extract_entities",
+        ),
+        _stage_item(
+            "recall",
+            _memory_payload_status(recall),
+            source="memory.recall",
+        ),
+        _stage_item(
+            branch_stage,
+            str(branch.get("status") or "UNKNOWN"),
+            source=str(selection.get("selected_skill") or "unknown"),
+        ),
+    ]
+    if persona_voice.get("voice_requested") is True:
+        trace.append(
+            _stage_item(
+                "personaplex",
+                str(persona_voice.get("voice_status") or "UNKNOWN"),
+                source="personaplex",
+            )
+        )
+    return trace
+
+
+def _stage_item(stage: str, status: str, *, source: str) -> dict[str, Any]:
+    return {
+        "schema": "tau.loop2_pipeline_stage.v1",
+        "stage": stage,
+        "label": PIPELINE_STAGE_LABELS[stage],
+        "status": status,
+        "source": source,
+    }
+
+
+def _memory_payload_status(payload: dict[str, Any]) -> str:
+    if payload.get("error"):
+        return "FAILED"
+    return "PASS"
+
+
 def _legacy_brave_reasons(
     memory: dict[str, Any],
     *,
@@ -573,6 +649,7 @@ def build_harness_receipt(
         personaplex_receipt=personaplex_receipt,
         branch=branch,
     )
+    stage_trace = build_stage_trace(memory, selection, branch, persona_voice)
     brave = branch if selection["selected_skill"] == "brave-search" else {
         "schema": "tau.loop2_brave_search.v1",
         "ran": False,
@@ -597,6 +674,8 @@ def build_harness_receipt(
         "selected_skill": selection["selected_skill"],
         "branch": branch,
         "branch_status": str(branch.get("status") or "UNKNOWN"),
+        "stage_trace": stage_trace,
+        "current_stage": stage_trace[-1],
         "fail_closed": fail_closed,
         "persona_voice": persona_voice,
         "brave_required": selection["selected_skill"] == "brave-search",

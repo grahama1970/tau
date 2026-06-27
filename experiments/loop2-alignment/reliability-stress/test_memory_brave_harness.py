@@ -391,6 +391,88 @@ def test_build_harness_receipt_exposes_fail_closed_branch_status(
     assert receipt["fail_closed"] is True
 
 
+@pytest.mark.parametrize(
+    ("selected_skill", "branch_status", "expected_stage", "expected_label"),
+    [
+        ("memory.answer", "PASS", "answer", "Answering..."),
+        ("memory.clarify", "PASS", "clarify", "Clarifying..."),
+        ("memory.deflect", "PASS", "deflect", "Deflecting..."),
+        ("brave-search", "FAILED", "brave_search", "Searching Web..."),
+    ],
+)
+def test_stage_trace_exposes_route_specific_chat_stage(
+    selected_skill: str,
+    branch_status: str,
+    expected_stage: str,
+    expected_label: str,
+) -> None:
+    memory = {
+        "schema": "tau.loop2_memory_route.v1",
+        "intent": {"action": "QUERY", "confidence": 0.9},
+        "extract_entities": {"status": "PASS"},
+        "recall": {"found": True, "should_scan": False, "items": [{}]},
+        "entity_packet": {"entities": [{"id": "x"}], "unresolved_terms": []},
+    }
+    selection = {
+        "schema": "tau.loop2_skill_selection.v1",
+        "selected_skill": selected_skill,
+    }
+    branch = {
+        "schema": "tau.loop2_branch.v1",
+        "ran": branch_status == "PASS",
+        "status": branch_status,
+    }
+    persona_voice = harness.build_persona_voice_packet(requested_persona_id=None)
+
+    trace = harness.build_stage_trace(memory, selection, branch, persona_voice)
+
+    assert [item["stage"] for item in trace] == [
+        "intent",
+        "extract_entities",
+        "recall",
+        expected_stage,
+    ]
+    assert trace[-1]["label"] == expected_label
+    assert trace[-1]["status"] == branch_status
+    assert trace[-1]["source"] == selected_skill
+
+
+def test_build_harness_receipt_includes_stage_trace_for_tui(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_memory_route(query: str, *, scope: str) -> dict[str, object]:
+        return {
+            "schema": "tau.loop2_memory_route.v1",
+            "intent": {"action": "CLARIFY", "confidence": 0.9},
+            "extract_entities": {"status": "PASS"},
+            "recall": {"found": True, "should_scan": False, "items": [{}]},
+            "entity_packet": {"entities": [], "unresolved_terms": ["it"]},
+        }
+
+    def fake_clarify(query: str, *, scope: str) -> dict[str, object]:
+        return {
+            "schema": "tau.loop2_memory_clarify_branch.v1",
+            "ran": True,
+            "endpoint": "/clarify",
+            "payload": {"schema": "memory.clarify.v1", "needs_clarification": True},
+            "status": "PASS",
+        }
+
+    monkeypatch.setattr(harness, "memory_route", fake_memory_route)
+    monkeypatch.setattr(harness, "call_memory_clarify", fake_clarify)
+
+    receipt = harness.build_harness_receipt("clarify it")
+
+    assert receipt["stage_trace"][-1] == {
+        "schema": "tau.loop2_pipeline_stage.v1",
+        "stage": "clarify",
+        "label": "Clarifying...",
+        "status": "PASS",
+        "source": "memory.clarify",
+    }
+    assert receipt["current_stage"] == receipt["stage_trace"][-1]
+
+
 def test_create_evidence_case_branch_uses_test_only_command(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
