@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 18:22Z / 14:22 EDT by agent
+**Last updated:** 2026-06-27 18:29Z / 14:29 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -20,6 +20,7 @@
 - UX Lab's Tau chat adapter now fails closed when a selected Memory route endpoint does not return a route product. The pi-mono commit is `26dbf4917` on `persona/tim-blazytko-1774553751276`; focused tests cover CLARIFY, DEFLECT, ANSWER, RESEARCH, and COMPLIANCE route behavior plus no-handoff semantics for missing CLARIFY/DEFLECT/ANSWER products.
 - UX Lab's Tau chat has live browser route evidence for CLARIFY, DEFLECT, RESEARCH, and COMPLIANCE through the real Memory proxy. `/api/memory/answer` is live and returned `memory.answer.v1` with `can_answer: true`, but current `/api/memory/intent` selected `QUERY` rather than `ANSWER` for the probed Tau answer prompt, so no browser ANSWER route was forced or mocked.
 - UX Lab's Tau chat now renders the full `tau.agent_handoff.v1` JSON contract in successful route messages after the human-readable handoff and GitHub projection tables. The pi-mono commit is `57ddd5304` on `persona/tim-blazytko-1774553751276`; fail-closed route product failures still omit the handoff JSON.
+- Tau now has a committed `reviewer` command-spec overlay that can consume the UI-rendered `tau.agent_handoff.v1` JSON route and emit one bounded reviewer response through `handoff-agent-adapter`. A live command-loop proof extracted the JSON from `http://127.0.0.1:3002/#tau`, selected `reviewer`, ran one command with exit `0`, and stopped at `human`.
 
 ## Recent Decisions
 
@@ -41,6 +42,7 @@
 | 2026-06-27 | Do not emit subagent/GitHub handoff metadata from failed Memory route products | `/intent` success alone is not enough to route downstream. If `/clarify`, `/deflect`, or `/answer` fails, Tau should expose the failed stage and stop before fabricating a Memory product or agent handoff. |
 | 2026-06-27 | Do not fake an ANSWER browser route when Memory intent does not select it | The live answer endpoint is separate evidence from browser route selection. A future Tau slice can add an explicit answer route fixture or improve intent coverage, but current live UI proof should report the limitation honestly. |
 | 2026-06-27 | Render handoff JSON from Tau-owned adapter content instead of a shared-chat-only panel | The shared chat file has unrelated local edits, so the safer bounded slice is to emit the JSON contract from `TauReceiptAdapter` message content and verify it through the existing renderer. |
+| 2026-06-27 | Add a reviewer overlay before claiming UI handoffs are executable | The Tau chat handoff routes successful compliance turns to `reviewer`; the harness needed an explicit bounded reviewer command spec before a UI-extracted handoff could enter `handoff-command-loop`. |
 
 ## Open Questions
 
@@ -87,6 +89,10 @@
 | 2026-06-27 | pi-mono commit `57ddd5304` | Tau handoff JSON contract slice; `npx vitest run src/components/tau/TauChatView.test.ts src/components/tau/tauAgentHandoff.test.ts src/components/tau/tauPeerStatus.test.ts` passed 3 files / 23 tests, and `npx tsc --noEmit --pretty false` exited 0. |
 | 2026-06-27 | `/tmp/tau-uxlab-handoff-json-proof/summary.json` | Live browser proof for `#tau` showing `Tau handoff JSON contract`, `"schema": "tau.agent_handoff.v1"`, `"name": "reviewer"`, GitHub projection labels, and production non-claim text after 5 Memory API requests. |
 | 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-handoff-json-contract-ui/20260627T182214Z.png` | Fresh CDP proof marker for `http://127.0.0.1:3002/#tau` after the handoff JSON slice; latest marker copied to `/home/graham/.codex/ui-verification/latest.json`. |
+| 2026-06-27 | Tau commit `2847e3f` | Added committed `reviewer` command-spec overlay and a focused loader test; `uv run pytest tests/test_handoff_dispatch.py tests/test_cli.py -q` passed 113 tests. |
+| 2026-06-27 | `/tmp/tau-ui-handoff-command-loop/extraction-summary.json` | Live browser extraction of the visible Tau handoff JSON contract from `#tau`; parsed 44 JSON lines, extracted schema `tau.agent_handoff.v1`, next agent `reviewer`, executor `either`, and saved `/tmp/tau-ui-handoff-command-loop/start-handoff-from-ui.json`. |
+| 2026-06-27 | `/tmp/tau-ui-handoff-command-loop/command-loop/command-loop-receipt.json` | Live command-loop receipt consuming the UI-extracted handoff JSON; `mocked: false`, `live: true`, `selected_agents: ["reviewer"]`, command exit `0`, status `WAITING`, terminal agent `human`, and one step artifact. |
+| 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-ui-handoff-command-loop/20260627T182826Z.png` | Fresh CDP proof marker for `http://127.0.0.1:3002/#tau` after the UI-to-command-loop proof; latest marker copied to `/home/graham/.codex/ui-verification/latest.json`. |
 
 ## Infrastructure State
 
