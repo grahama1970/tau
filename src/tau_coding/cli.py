@@ -45,6 +45,7 @@ from tau_coding.handoff_dispatch import (
     load_agent_dispatch_command_spec,
     validate_command_dispatch_spec,
     write_agent_handoff_command_dispatch_receipt,
+    write_agent_handoff_command_loop_receipt,
     write_agent_handoff_dispatch_receipt,
 )
 from tau_coding.loop_monitor import (
@@ -718,6 +719,25 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-command-loop":
+        try:
+            start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root, max_steps = (
+                _parse_handoff_command_loop_cli_args(positional_args[1:])
+            )
+            ok = project_agent_handoff_command_loop_command(
+                start_path,
+                active_goal_hash=active_goal_hash,
+                receipt_dir=receipt_dir,
+                agents_root=agents_root,
+                command_spec_root=command_spec_root,
+                max_steps=max_steps,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "handoff-agent-adapter":
         try:
             options = _parse_handoff_agent_adapter_cli_args(positional_args[1:])
@@ -1312,6 +1332,72 @@ def _parse_handoff_dispatch_agent_command_cli_args(
     if agents_root is None:
         raise RuntimeError("handoff-dispatch-agent-command requires --agents-root <dir>")
     return start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root
+
+
+def _parse_handoff_command_loop_cli_args(
+    args: list[str],
+) -> tuple[Path, str | None, Path, Path, Path | None, int]:
+    start_path: Path | None = None
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    command_spec_root: Path | None = None
+    max_steps = 5
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--start":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--start requires a value")
+            start_path = Path(args[index])
+        elif arg.startswith("--start="):
+            start_path = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            command_spec_root = Path(args[index])
+        elif arg.startswith("--command-spec-root="):
+            command_spec_root = Path(arg.partition("=")[2])
+        elif arg == "--max-steps":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-steps requires a value")
+            max_steps = _parse_positive_int(args[index], "--max-steps")
+        elif arg.startswith("--max-steps="):
+            max_steps = _parse_positive_int(arg.partition("=")[2], "--max-steps")
+        else:
+            raise RuntimeError(f"Unknown handoff-command-loop option: {arg}")
+        index += 1
+    if start_path is None:
+        raise RuntimeError("handoff-command-loop requires --start <handoff.json>")
+    if receipt_dir is None:
+        raise RuntimeError("handoff-command-loop requires --receipt-dir <dir>")
+    if agents_root is None:
+        raise RuntimeError("handoff-command-loop requires --agents-root <dir>")
+    return start_path, active_goal_hash, receipt_dir, agents_root, command_spec_root, max_steps
 
 
 def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
@@ -2756,6 +2842,30 @@ def project_agent_handoff_agent_command_dispatch_command(
     )
     typer.echo(json.dumps(dispatch.as_dict(), indent=2, sort_keys=True))
     return dispatch.ok
+
+
+def project_agent_handoff_command_loop_command(
+    start_path: Path,
+    *,
+    active_goal_hash: str | None,
+    receipt_dir: Path,
+    agents_root: Path,
+    command_spec_root: Path | None,
+    max_steps: int,
+) -> bool:
+    """Write a command-backed loop receipt using selected agent registry commands."""
+
+    start_payload = _load_json_object(start_path, label="start handoff")
+    loop = write_agent_handoff_command_loop_receipt(
+        start_payload,
+        receipt_dir.expanduser().resolve(),
+        agent_registry_root=agents_root,
+        command_spec_root=command_spec_root,
+        active_goal_hash=active_goal_hash,
+        max_steps=max_steps,
+    )
+    typer.echo(json.dumps(loop.as_dict(), indent=2, sort_keys=True))
+    return loop.ok
 
 
 def project_agent_handoff_adapter_command(

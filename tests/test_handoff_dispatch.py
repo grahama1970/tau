@@ -7,6 +7,7 @@ from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
     dispatch_agent_handoff_once,
     load_agent_dispatch_command_spec,
+    run_agent_handoff_command_loop,
     write_agent_handoff_command_dispatch_receipt,
     write_agent_handoff_dispatch_receipt,
 )
@@ -309,6 +310,88 @@ def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Pa
         assert "agent dispatch command spec missing" in str(exc)
     else:
         raise AssertionError("missing command spec should fail")
+
+
+def test_run_agent_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
+    start = _valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Check goal preservation first.",
+    }
+    guardian_response = _valid_handoff()
+    guardian_response["previous_subagent"] = "goal-guardian"
+    guardian_response["next_agent"] = {
+        "name": "project-or-harness-verifier",
+        "executor": "local",
+        "reason": "Verifier should inspect the preserved-goal handoff.",
+    }
+    verifier_response = _valid_handoff()
+    verifier_response["previous_subagent"] = "project-or-harness-verifier"
+    verifier_response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    verifier_dir = agents_root / "project-or-harness-verifier"
+    guardian_spec_dir = spec_root / "goal-guardian"
+    verifier_spec_dir = spec_root / "project-or-harness-verifier"
+    verifier_dir.mkdir(parents=True)
+    guardian_spec_dir.mkdir(parents=True)
+    verifier_spec_dir.mkdir(parents=True)
+    (verifier_dir / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"print({json.dumps(json.dumps(guardian_response))})",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (verifier_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"print({json.dumps(json.dumps(verifier_response))})",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_agent_handoff_command_loop(
+        start,
+        agent_registry_root=agents_root,
+        command_spec_root=spec_root,
+        active_goal_hash="sha256:active-goal",
+        max_steps=4,
+    )
+
+    assert result.ok is True
+    assert result.status == "WAITING"
+    assert result.step_count == 2
+    assert result.terminal_agent == "human"
+    assert result.stop_reason == "next_agent_is_human"
+    assert [dispatch["selected_agent"] for dispatch in result.dispatches] == [
+        "goal-guardian",
+        "project-or-harness-verifier",
+    ]
+    assert all(dispatch["mocked"] is False for dispatch in result.dispatches)
+    assert all(dispatch["live"] is True for dispatch in result.dispatches)
 
 
 def _valid_handoff() -> dict:

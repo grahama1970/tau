@@ -1036,6 +1036,112 @@ def test_cli_handoff_dispatch_agent_command_accepts_builtin_goal_guardian_overla
     assert payload["response_projection"]["next_agent"] == "project-or-harness-verifier"
 
 
+def test_cli_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal preservation should be checked first.",
+    }
+    agents_root = tmp_path / "agents"
+    command_spec_root = tmp_path / "command-specs"
+    verifier_dir = agents_root / "project-or-harness-verifier"
+    guardian_spec_dir = command_spec_root / "goal-guardian"
+    verifier_spec_dir = command_spec_root / "project-or-harness-verifier"
+    receipt_dir = tmp_path / "command-loop-receipts"
+    start_path = tmp_path / "start.json"
+    verifier_dir.mkdir(parents=True)
+    guardian_spec_dir.mkdir(parents=True)
+    verifier_spec_dir.mkdir(parents=True)
+    (verifier_dir / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import json; "
+                        "from tau_coding.cli import "
+                        "project_agent_handoff_goal_guardian_adapter_command; "
+                        "print(json.dumps(project_agent_handoff_goal_guardian_adapter_command("
+                        "next_agent='project-or-harness-verifier', "
+                        "next_executor='local', "
+                        "next_reason='Verifier should inspect preserved-goal receipt.', "
+                        "required_evidence='Verifier posts the next schema-valid route.', "
+                        "stop_condition='Verifier route is posted.'"
+                        ")))"
+                    ),
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (verifier_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import json; "
+                        "from tau_coding.cli import project_agent_handoff_adapter_command; "
+                        "print(json.dumps(project_agent_handoff_adapter_command("
+                        "result_status='COMPLETED', "
+                        "result_summary='Verifier adapter consumed the guardian handoff.', "
+                        "next_agent='human', "
+                        "next_executor='human', "
+                        "next_reason='Human should decide the next bounded step.', "
+                        "required_evidence='Human posts the next schema-valid route.', "
+                        "stop_condition='Human route is posted.'"
+                        ")))"
+                    ),
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-command-loop",
+            "--start",
+            str(start_path),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            str(command_spec_root),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt-dir",
+            str(receipt_dir),
+            "--max-steps",
+            "4",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff_command_loop_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "WAITING"
+    assert payload["step_count"] == 2
+    assert payload["terminal_agent"] == "human"
+    assert [dispatch["selected_agent"] for dispatch in payload["dispatches"]] == [
+        "goal-guardian",
+        "project-or-harness-verifier",
+    ]
+    assert (receipt_dir / "command-loop-receipt.json").exists()
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

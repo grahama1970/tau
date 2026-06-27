@@ -13,6 +13,7 @@ from typing import Any
 from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
 
 TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.v1"
+TAU_AGENT_HANDOFF_COMMAND_LOOP_RECEIPT_SCHEMA = "tau.agent_handoff_command_loop_receipt.v1"
 TAU_AGENT_DISPATCH_COMMAND_FILENAME = "tau-dispatch-command.json"
 
 
@@ -49,6 +50,43 @@ class AgentHandoffDispatchResult:
             "start_projection": self.start_projection,
             "response_projection": self.response_projection,
             "command_results": list(self.command_results),
+            "receipt_dir": self.receipt_dir,
+            "artifacts": list(self.artifacts),
+            "errors": list(self.errors),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class AgentHandoffCommandLoopResult:
+    """Receipt for a bounded command-backed handoff loop."""
+
+    ok: bool
+    status: str
+    step_count: int = 0
+    terminal_agent: str | None = None
+    stop_reason: str | None = None
+    mocked: bool = False
+    live: bool = True
+    runner: str = "agent-registry-command-loop"
+    dispatches: tuple[dict[str, Any], ...] = ()
+    receipt_dir: str | None = None
+    artifacts: tuple[str, ...] = ()
+    errors: tuple[str, ...] = ()
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable command loop receipt."""
+
+        return {
+            "schema": TAU_AGENT_HANDOFF_COMMAND_LOOP_RECEIPT_SCHEMA,
+            "ok": self.ok,
+            "status": self.status,
+            "step_count": self.step_count,
+            "terminal_agent": self.terminal_agent,
+            "stop_reason": self.stop_reason,
+            "mocked": self.mocked,
+            "live": self.live,
+            "runner": self.runner,
+            "dispatches": list(self.dispatches),
             "receipt_dir": self.receipt_dir,
             "artifacts": list(self.artifacts),
             "errors": list(self.errors),
@@ -384,6 +422,200 @@ def write_agent_handoff_command_dispatch_receipt(
         receipt_dir=str(receipt_dir),
         artifacts=tuple(artifacts),
         errors=dispatch.errors,
+    )
+
+
+def run_agent_handoff_command_loop(
+    start_payload: Mapping[str, Any],
+    *,
+    agent_registry_root: Path,
+    command_spec_root: Path | None = None,
+    active_goal_hash: str | None = None,
+    max_steps: int = 5,
+) -> AgentHandoffCommandLoopResult:
+    """Run selected agent commands until the route reaches human or fails closed."""
+
+    if max_steps < 1:
+        return AgentHandoffCommandLoopResult(
+            ok=False,
+            status="BLOCKED",
+            stop_reason="invalid_max_steps",
+            errors=("max_steps must be at least 1",),
+        )
+
+    current_payload = start_payload
+    dispatches: list[dict[str, Any]] = []
+    for step in range(1, max_steps + 1):
+        current_projection = project_agent_handoff(
+            current_payload,
+            active_goal_hash=active_goal_hash,
+            agent_registry_root=agent_registry_root,
+        )
+        if not current_projection.ok:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=current_projection.next_agent,
+                stop_reason="invalid_handoff",
+                dispatches=tuple(dispatches),
+                errors=tuple(f"step[{step}]: {error}" for error in current_projection.errors),
+            )
+        selected_agent = current_projection.next_agent
+        if selected_agent == "human":
+            return AgentHandoffCommandLoopResult(
+                ok=True,
+                status="WAITING",
+                step_count=step - 1,
+                terminal_agent=selected_agent,
+                stop_reason="next_agent_is_human",
+                dispatches=tuple(dispatches),
+            )
+        if selected_agent is None:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=None,
+                stop_reason="missing_next_agent",
+                dispatches=tuple(dispatches),
+                errors=(f"step[{step}]: next_agent is missing",),
+            )
+        try:
+            spec = load_agent_dispatch_command_spec(
+                agent_registry_root,
+                selected_agent,
+                command_spec_root=command_spec_root,
+            )
+        except ValueError as exc:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=selected_agent,
+                stop_reason="missing_agent_command_spec",
+                dispatches=tuple(dispatches),
+                errors=(str(exc),),
+            )
+
+        dispatch = dispatch_agent_handoff_command_once(
+            current_payload,
+            spec["command"],
+            timeout_s=spec["timeout_s"],
+            cwd=spec["cwd"],
+            active_goal_hash=active_goal_hash,
+            agent_registry_root=agent_registry_root,
+        )
+        dispatch_payload = dispatch.as_dict()
+        dispatch_payload["loop_step"] = step
+        dispatches.append(dispatch_payload)
+        if not dispatch.ok:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=dispatch.selected_agent,
+                stop_reason=dispatch.stop_reason or "dispatch_failed",
+                dispatches=tuple(dispatches),
+                errors=dispatch.errors,
+            )
+        if dispatch.response_projection is None:
+            return AgentHandoffCommandLoopResult(
+                ok=True,
+                status=dispatch.status,
+                step_count=step,
+                terminal_agent=dispatch.selected_agent,
+                stop_reason=dispatch.stop_reason,
+                dispatches=tuple(dispatches),
+            )
+        command_results = dispatch.command_results
+        stdout = command_results[0].get("stdout") if command_results else None
+        if not isinstance(stdout, str):
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=dispatch.selected_agent,
+                stop_reason="missing_command_stdout",
+                dispatches=tuple(dispatches),
+                errors=(f"step[{step}]: command stdout missing",),
+            )
+        try:
+            next_payload = json.loads(stdout)
+        except json.JSONDecodeError as exc:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=dispatch.selected_agent,
+                stop_reason="invalid_command_json",
+                dispatches=tuple(dispatches),
+                errors=(f"step[{step}]: command stdout was not JSON: {exc}",),
+            )
+        if not isinstance(next_payload, dict):
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step,
+                terminal_agent=dispatch.selected_agent,
+                stop_reason="invalid_command_json",
+                dispatches=tuple(dispatches),
+                errors=(f"step[{step}]: command stdout JSON root must be an object",),
+            )
+        current_payload = next_payload
+
+    return AgentHandoffCommandLoopResult(
+        ok=False,
+        status="BLOCKED",
+        step_count=max_steps,
+        terminal_agent=dispatches[-1].get("selected_agent") if dispatches else None,
+        stop_reason="max_steps_exhausted",
+        dispatches=tuple(dispatches),
+        errors=(f"command handoff loop exceeded max_steps={max_steps}",),
+    )
+
+
+def write_agent_handoff_command_loop_receipt(
+    start_payload: Mapping[str, Any],
+    receipt_dir: Path,
+    *,
+    agent_registry_root: Path,
+    command_spec_root: Path | None = None,
+    active_goal_hash: str | None = None,
+    max_steps: int = 5,
+) -> AgentHandoffCommandLoopResult:
+    """Write one command-backed loop receipt plus per-step dispatch artifacts."""
+
+    receipt_dir.mkdir(parents=True, exist_ok=True)
+    loop = run_agent_handoff_command_loop(
+        start_payload,
+        agent_registry_root=agent_registry_root,
+        command_spec_root=command_spec_root,
+        active_goal_hash=active_goal_hash,
+        max_steps=max_steps,
+    )
+    artifacts: list[str] = []
+    for dispatch in loop.dispatches:
+        step = int(dispatch["loop_step"])
+        step_path = receipt_dir / f"command-loop-step-{step:03d}.receipt.json"
+        _write_json(step_path, dispatch)
+        artifacts.append(str(step_path))
+    loop_payload = {
+        **loop.as_dict(),
+        "receipt_dir": str(receipt_dir),
+        "artifacts": artifacts,
+    }
+    _write_json(receipt_dir / "command-loop-receipt.json", loop_payload)
+    return AgentHandoffCommandLoopResult(
+        ok=loop.ok,
+        status=loop.status,
+        step_count=loop.step_count,
+        terminal_agent=loop.terminal_agent,
+        stop_reason=loop.stop_reason,
+        dispatches=loop.dispatches,
+        receipt_dir=str(receipt_dir),
+        artifacts=tuple(artifacts),
+        errors=loop.errors,
     )
 
 

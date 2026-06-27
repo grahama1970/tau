@@ -135,11 +135,15 @@ Implemented local contract slices include:
   - `tau handoff-goal-guardian-adapter` is a deterministic built-in adapter
     that refuses missing/stale active goal hashes and emits a preserved-goal
     `tau.agent_handoff.v1` before routing onward.
+- command-backed handoff loops:
+  - `tau handoff-command-loop` follows selected `next_agent` routes through
+    opt-in command specs, records each command-backed dispatch step, and stops
+    when the route reaches `human`, fails validation, or exhausts `--max-steps`.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. They do not create GitHub issues yet. GitHub mutation comes after
-the schema, projection, and one-step dispatch contracts are proven with focused
-tests.
+the schema, projection, one-step dispatch, and local command-loop contracts are
+proven with focused tests.
 
 Relevant files:
 
