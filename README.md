@@ -172,6 +172,12 @@ Implemented local contract slices include:
     receipts fail closed before any `gh` commands are run. Valid command-loop
     apply runs `gh auth status`; existing issue/PR targets also run
     `gh issue/pr view` before posting a comment or editing labels.
+  - `tau goal-guardian-reconciliation-github-transport` renders the dry-run
+    GitHub comment and label commands for a
+    `tau.goal_guardian_reconciliation_receipt.v1`. It embeds the full receipt in
+    the comment body and applies `agent-work,next:human,executor:human,goal-change`
+    labels by projection. Live mutation remains explicit-only via `--apply` and
+    uses the same GitHub auth/target preflight gate.
 
 The current validators and dispatch receipts are intentionally local and
 deterministic. GitHub writes are apply-gated: the default path only renders

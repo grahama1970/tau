@@ -248,6 +248,49 @@ def transport_command_loop_terminal_to_github(
     return _write_transport_receipt(result, receipt_path)
 
 
+def transport_goal_guardian_reconciliation_to_github(
+    receipt: Mapping[str, Any],
+    *,
+    apply: bool = False,
+    receipt_path: Path | None = None,
+    runner: CommandRunner | None = None,
+) -> GitHubHandoffTransportResult:
+    """Render or apply GitHub commands for a goal-guardian reconciliation receipt."""
+
+    schema = "tau.github_goal_guardian_reconciliation_transport_receipt.v1"
+    errors: list[str] = []
+    projection = _goal_guardian_reconciliation_projection(receipt, errors)
+    if projection is None:
+        result = GitHubHandoffTransportResult(
+            ok=False,
+            dry_run=not apply,
+            applied=False,
+            target=None,
+            commands=(),
+            errors=tuple(errors),
+            schema=schema,
+        )
+        return _write_transport_receipt(result, receipt_path)
+    transport = transport_handoff_projection_to_github(
+        projection,
+        apply=apply,
+        require_preflight=apply,
+        runner=runner,
+    )
+    result = GitHubHandoffTransportResult(
+        ok=transport.ok,
+        dry_run=transport.dry_run,
+        applied=transport.applied,
+        target=transport.target,
+        commands=transport.commands,
+        command_results=transport.command_results,
+        preflight_results=transport.preflight_results,
+        errors=transport.errors,
+        schema=schema,
+    )
+    return _write_transport_receipt(result, receipt_path)
+
+
 def _github_transport_commands(
     projection: Mapping[str, Any],
     errors: list[str],
@@ -390,6 +433,92 @@ def _terminal_command_loop_projection(
     if errors:
         return None
     return projection
+
+
+def _goal_guardian_reconciliation_projection(
+    receipt: Mapping[str, Any],
+    errors: list[str],
+) -> Mapping[str, Any] | None:
+    if receipt.get("schema") != "tau.goal_guardian_reconciliation_receipt.v1":
+        errors.append(
+            "reconciliation receipt schema must be tau.goal_guardian_reconciliation_receipt.v1"
+        )
+    if receipt.get("ok") is not True:
+        errors.append("reconciliation receipt must be ok before GitHub transport")
+    if receipt.get("next_agent") != "human":
+        errors.append("reconciliation receipt next_agent must be human before GitHub transport")
+    github = receipt.get("github")
+    if not isinstance(github, Mapping):
+        errors.append("reconciliation receipt github must be an object")
+        return None
+    repo = _non_empty_string(github, "repo", "github", errors)
+    target_ref = _non_empty_string(github, "target", "github", errors)
+    if target_ref and target_ref != "new":
+        _parse_ticket_ref(target_ref, errors)
+    reconciliation = receipt.get("open_ticket_reconciliation")
+    if not isinstance(reconciliation, Mapping):
+        errors.append("reconciliation receipt open_ticket_reconciliation must be an object")
+        return None
+    if errors or repo is None or target_ref is None:
+        return None
+    return {
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "ok": True,
+        "dry_run": True,
+        "next_agent": "human",
+        "target": {"repo": repo, "target": target_ref},
+        "labels": {
+            "add": ["agent-work", "next:human", "executor:human", "goal-change"],
+            "remove": ["next:goal-guardian", "agent-active"],
+        },
+        "comment": {"body": _goal_guardian_reconciliation_comment(receipt, reconciliation)},
+        "errors": [],
+    }
+
+
+def _goal_guardian_reconciliation_comment(
+    receipt: Mapping[str, Any],
+    reconciliation: Mapping[str, Any],
+) -> str:
+    counts = reconciliation.get("counts")
+    counts_text = _counts_text(counts if isinstance(counts, Mapping) else {})
+    new_goal = receipt.get("new_goal")
+    goal_text = ""
+    if isinstance(new_goal, Mapping):
+        value = new_goal.get("text")
+        if isinstance(value, str) and value.strip():
+            goal_text = value.strip()
+    body = [
+        "## Tau Goal-Guardian Reconciliation",
+        "",
+        "- Decision: `REQUIRES_HUMAN_GOAL_VERSION`",
+        "- Next agent: `human`",
+        f"- Ticket reconciliation: `{reconciliation.get('status')}`",
+        f"- Counts: {counts_text}",
+    ]
+    if goal_text:
+        body.extend(["", "### Proposed Goal", "", goal_text])
+    body.extend(
+        [
+            "",
+            "### Reconciliation Receipt",
+            "",
+            "<!-- tau-goal-guardian-reconciliation:v1 -->",
+            "```json",
+            json.dumps(receipt, indent=2, sort_keys=True),
+            "```",
+            "",
+        ]
+    )
+    return "\n".join(body)
+
+
+def _counts_text(counts: Mapping[str, Any]) -> str:
+    ordered = []
+    for name in ("keep", "close", "migrate", "regenerate"):
+        value = counts.get(name, 0)
+        ordered.append(f"{name}={value if isinstance(value, int) else 0}")
+    return ", ".join(ordered)
 
 
 def _target_dict(projection: Mapping[str, Any]) -> dict[str, Any] | None:

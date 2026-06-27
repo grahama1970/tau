@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 19:47Z / 15:47 EDT by agent
+**Last updated:** 2026-06-27 20:02Z / 16:02 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -27,6 +27,7 @@
 - Tau has a committed `.ask/browser-oracles.yaml` plus `.ask/README.md` for WebGPT escalation. Current Tau convention is direct `$webgpt` with project `tau`; `$ask` is reserved for later workflows that need its full review runtime.
 - Goal-guardian now has a bounded reconciliation path for bridged human goal changes. If the incoming handoff contains `context.human_goal_change`, the adapter writes `tau.goal_guardian_reconciliation_receipt.v1`, records the proposed new goal, marks open-ticket reconciliation as not started without an authoritative ticket source, and routes to `human` before any non-human continuation.
 - Goal-guardian reconciliation can now consume an authoritative local `tau.goal_guardian_ticket_source.v1` file via `TAU_GOAL_GUARDIAN_TICKET_SOURCE`. When present, the receipt classifies tickets into `keep`, `close`, `migrate`, and `regenerate` buckets and still routes to `human`.
+- Tau can now render dry-run GitHub transport for a `tau.goal_guardian_reconciliation_receipt.v1`. `goal-guardian-reconciliation-github-transport` validates the receipt, embeds it in a GitHub comment body, derives `agent-work,next:human,executor:human,goal-change`, and remains apply-gated.
 
 ## Recent Decisions
 
@@ -54,6 +55,7 @@
 | 2026-06-27 | Bridge human goal changes into the existing handoff loop instead of adding a parallel loop | The smallest useful feature is a deterministic conversion from human-only goal-change packets to a normal `goal-guardian` start handoff, keeping the existing validator/dispatch/receipt path in control. |
 | 2026-06-27 | Stop human goal changes at goal-guardian until a human goal decision exists | A bridged goal change must not be treated as ordinary preserved-goal PASS. Goal-guardian now emits a reconciliation receipt and routes to `human` rather than continuing to verifier/worker roles. |
 | 2026-06-27 | Keep ticket reconciliation source explicit and local for the first classification slice | Goal-guardian can classify a structured `tau.goal_guardian_ticket_source.v1` artifact without requiring live GitHub mutation or hidden issue discovery. |
+| 2026-06-27 | Project reconciliation receipts to GitHub before live mutation | Classified goal-guardian output now has an inspectable `gh issue comment/edit` dry-run projection; live writes still require `--apply` plus existing auth/target preflight. |
 
 ## Open Questions
 
@@ -117,6 +119,7 @@
 | 2026-06-27 | `/tmp/tau-human-goal-change-bridge-proof/command-loop-2/command-loop-receipt.json` | Non-mocked local command loop from bridge-generated handoff through `goal-guardian` and `project-or-harness-verifier`; both command exits were `0`, final status `WAITING`, terminal agent `human`, `mocked: false`, `live: true`. |
 | 2026-06-27 | `/tmp/tau-goal-guardian-reconciliation-proof/summary.json` | Non-mocked local command loop from bridge-generated handoff through goal-guardian only; `ok: true`, `status: WAITING`, `step_count: 1`, terminal `human`, and reconciliation receipt schema `tau.goal_guardian_reconciliation_receipt.v1` with decision `REQUIRES_HUMAN_GOAL_VERSION`. |
 | 2026-06-27 | `/tmp/tau-goal-guardian-ticket-source-proof/summary.json` | Non-mocked local command loop using `TAU_GOAL_GUARDIAN_TICKET_SOURCE`; `ok: true`, `status: WAITING`, terminal `human`, ticket reconciliation `status: classified`, and counts `{keep:1, close:1, migrate:1, regenerate:1}`. |
+| 2026-06-27 | `/tmp/tau-goal-guardian-github-transport-proof/summary.json` | Dry-run GitHub transport from the classified goal-guardian reconciliation receipt; `ok: true`, `dry_run: true`, `applied: false`, target `grahama1970/chatgpt-lab` / `issue#123`, and two rendered commands: `gh issue comment` plus `gh issue edit` with `agent-work,next:human,executor:human,goal-change`. |
 
 ## Infrastructure State
 

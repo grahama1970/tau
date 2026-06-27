@@ -3,6 +3,7 @@ import subprocess
 from tau_coding.github_handoff import (
     transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
+    transport_goal_guardian_reconciliation_to_github,
     transport_handoff_projection_to_github,
 )
 
@@ -316,6 +317,79 @@ def test_command_loop_terminal_transport_apply_refuses_when_preflight_fails() ->
     assert "not found" in result.errors[0]
 
 
+def test_goal_guardian_reconciliation_transport_dry_run_renders_comment_and_labels() -> None:
+    receipt = _valid_reconciliation_receipt()
+
+    result = transport_goal_guardian_reconciliation_to_github(receipt)
+
+    assert result.ok is True
+    assert result.schema == "tau.github_goal_guardian_reconciliation_transport_receipt.v1"
+    assert result.dry_run is True
+    assert result.applied is False
+    assert result.target == {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"}
+    assert result.commands == (
+        [
+            "gh",
+            "issue",
+            "comment",
+            "123",
+            "--repo",
+            "grahama1970/chatgpt-lab",
+            "--body-file",
+            "-",
+        ],
+        [
+            "gh",
+            "issue",
+            "edit",
+            "123",
+            "--repo",
+            "grahama1970/chatgpt-lab",
+            "--add-label",
+            "agent-work,next:human,executor:human,goal-change",
+            "--remove-label",
+            "next:goal-guardian,agent-active",
+        ],
+    )
+
+
+def test_goal_guardian_reconciliation_transport_apply_uses_preflight_and_body() -> None:
+    receipt = _valid_reconciliation_receipt()
+    calls: list[tuple[list[str], str | None]] = []
+
+    def runner(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        calls.append((command, stdin))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = transport_goal_guardian_reconciliation_to_github(
+        receipt,
+        apply=True,
+        runner=runner,
+    )
+
+    assert result.ok is True
+    assert result.dry_run is False
+    assert result.applied is True
+    assert len(calls) == 4
+    assert calls[0][0] == ["gh", "auth", "status", "--hostname", "github.com"]
+    assert calls[1][0][:3] == ["gh", "issue", "view"]
+    assert calls[2][0][:3] == ["gh", "issue", "comment"]
+    assert "Tau Goal-Guardian Reconciliation" in (calls[2][1] or "")
+    assert "tau-goal-guardian-reconciliation:v1" in (calls[2][1] or "")
+    assert calls[3][0][:3] == ["gh", "issue", "edit"]
+
+
+def test_goal_guardian_reconciliation_transport_refuses_non_human_next_agent() -> None:
+    receipt = _valid_reconciliation_receipt()
+    receipt["next_agent"] = "coder"
+
+    result = transport_goal_guardian_reconciliation_to_github(receipt)
+
+    assert result.ok is False
+    assert result.applied is False
+    assert "next_agent must be human" in "\n".join(result.errors)
+
+
 def _valid_projection() -> dict:
     return {
         "schema": "tau.agent_handoff_projection_receipt.v1",
@@ -376,4 +450,41 @@ def _valid_github_create() -> dict:
         "title": "Review Tau generated-ticket contract evidence",
         "body": "Review the generated-ticket contract evidence.",
         "labels": ["agent-work", "next:reviewer", "executor:either"],
+    }
+
+
+def _valid_reconciliation_receipt() -> dict:
+    return {
+        "schema": "tau.goal_guardian_reconciliation_receipt.v1",
+        "ok": True,
+        "dry_run": True,
+        "github": {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"},
+        "goal": {
+            "goal_id": "goal-tau-orchestration-001",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "decision": "REQUIRES_HUMAN_GOAL_VERSION",
+        "new_goal": {
+            "text": "Build Tau's goal-locked GitHub ticket harness one slice at a time.",
+            "success_criteria": ["New goal capsule is written."],
+            "constraints": ["Only humans can amend immutable goals."],
+            "non_goals": [],
+        },
+        "source_schema": "tau.human_goal_change.v1",
+        "source": "experiments/goal-locked-subagents/fixtures/valid-human-goal-change.json",
+        "source_artifacts": [],
+        "open_ticket_reconciliation": {
+            "status": "classified",
+            "reason": "Classified tickets from authoritative local ticket source.",
+            "source": "experiments/goal-locked-subagents/fixtures/goal-guardian-ticket-source.json",
+            "source_schema": "tau.goal_guardian_ticket_source.v1",
+            "counts": {"keep": 1, "close": 1, "migrate": 1, "regenerate": 1},
+            "keep": [{"id": "issue#101", "title": "Keep current proof artifact review"}],
+            "close": [{"id": "issue#104", "title": "Close superseded branch"}],
+            "migrate": [{"id": "issue#102", "title": "Migrate goal capsule documentation"}],
+            "regenerate": [{"id": "issue#103", "title": "Regenerate stale implementation ticket"}],
+        },
+        "next_agent": "human",
+        "errors": [],
     }

@@ -1528,6 +1528,64 @@ def test_cli_handoff_command_loop_github_transport_apply_flag_is_parsed(tmp_path
     assert "command loop receipt must be ok" in "\n".join(payload["errors"])
 
 
+def test_cli_goal_guardian_reconciliation_github_transport_writes_dry_run_receipt(
+    tmp_path: Path,
+) -> None:
+    reconciliation_receipt = {
+        "schema": "tau.goal_guardian_reconciliation_receipt.v1",
+        "ok": True,
+        "dry_run": True,
+        "github": {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"},
+        "goal": {
+            "goal_id": "goal-tau-orchestration-001",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "decision": "REQUIRES_HUMAN_GOAL_VERSION",
+        "new_goal": {"text": "Build Tau's goal-locked harness one slice at a time."},
+        "source_schema": "tau.human_goal_change.v1",
+        "source": "valid-human-goal-change.json",
+        "source_artifacts": [],
+        "open_ticket_reconciliation": {
+            "status": "classified",
+            "reason": "Classified tickets from authoritative local ticket source.",
+            "source": "goal-guardian-ticket-source.json",
+            "source_schema": "tau.goal_guardian_ticket_source.v1",
+            "counts": {"keep": 1, "close": 1, "migrate": 1, "regenerate": 1},
+            "keep": [{"id": "issue#101"}],
+            "close": [{"id": "issue#104"}],
+            "migrate": [{"id": "issue#102"}],
+            "regenerate": [{"id": "issue#103"}],
+        },
+        "next_agent": "human",
+        "errors": [],
+    }
+    reconciliation_path = tmp_path / "goal-guardian-reconciliation-receipt.json"
+    transport_path = tmp_path / "github-transport.json"
+    reconciliation_path.write_text(json.dumps(reconciliation_receipt), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "goal-guardian-reconciliation-github-transport",
+            str(reconciliation_path),
+            "--receipt",
+            str(transport_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(transport_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_goal_guardian_reconciliation_transport_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["commands"][0][:3] == ["gh", "issue", "comment"]
+    assert payload["commands"][1][:3] == ["gh", "issue", "edit"]
+    assert receipt == payload
+
+
 def test_cli_loop2_serve_starts_receipt_monitor(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

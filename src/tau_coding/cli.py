@@ -39,6 +39,7 @@ from tau_coding.generated_ticket import (
 from tau_coding.github_handoff import (
     transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
+    transport_goal_guardian_reconciliation_to_github,
     transport_handoff_projection_to_github,
 )
 from tau_coding.handoff_dispatch import (
@@ -672,6 +673,22 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "goal-guardian-reconciliation-github-transport":
+        try:
+            reconciliation_receipt_path, receipt_path, apply_github = (
+                _parse_goal_guardian_reconciliation_github_transport_args(positional_args[1:])
+            )
+            ok = transport_goal_guardian_reconciliation_to_github_command(
+                reconciliation_receipt_path,
+                receipt_path=receipt_path,
+                apply_github=apply_github,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "handoff-chain-dry-run":
         try:
             handoff_paths, active_goal_hash, receipt_dir, agents_root = (
@@ -1188,6 +1205,37 @@ def _parse_handoff_command_loop_github_transport_args(
             raise RuntimeError(f"Unknown handoff-command-loop-github-transport option: {arg}")
         index += 1
     return loop_receipt_path, receipt_path, apply_github
+
+
+def _parse_goal_guardian_reconciliation_github_transport_args(
+    args: list[str],
+) -> tuple[Path, Path | None, bool]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau goal-guardian-reconciliation-github-transport "
+            "<reconciliation-receipt.json> [--receipt <receipt.json>] [--apply]"
+        )
+    reconciliation_receipt_path = Path(args[0])
+    receipt_path: Path | None = None
+    apply_github = False
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--apply":
+            apply_github = True
+        else:
+            raise RuntimeError(
+                f"Unknown goal-guardian-reconciliation-github-transport option: {arg}"
+            )
+        index += 1
+    return reconciliation_receipt_path, receipt_path, apply_github
 
 
 def _parse_handoff_chain_cli_args(
@@ -2842,6 +2890,27 @@ def transport_handoff_command_loop_terminal_to_github_command(
 
     payload = _load_json_object(loop_receipt_path, label="command loop receipt")
     transport = transport_command_loop_terminal_to_github(
+        payload,
+        apply=apply_github,
+        receipt_path=receipt_path,
+    )
+    typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))
+    return transport.ok
+
+
+def transport_goal_guardian_reconciliation_to_github_command(
+    reconciliation_receipt_path: Path,
+    *,
+    receipt_path: Path | None,
+    apply_github: bool,
+) -> bool:
+    """Render GitHub transport commands for a goal-guardian reconciliation receipt."""
+
+    payload = _load_json_object(
+        reconciliation_receipt_path,
+        label="goal guardian reconciliation receipt",
+    )
+    transport = transport_goal_guardian_reconciliation_to_github(
         payload,
         apply=apply_github,
         receipt_path=receipt_path,
