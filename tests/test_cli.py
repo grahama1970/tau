@@ -179,6 +179,64 @@ def test_cli_handoff_project_accepts_agents_root_route(tmp_path: Path) -> None:
     assert payload["labels"]["add"] == ["agent-work", "next:external-agent", "executor:either"]
 
 
+def test_cli_handoff_github_transport_defaults_to_dry_run(tmp_path: Path) -> None:
+    handoff_path = tmp_path / "handoff.json"
+    receipt_path = tmp_path / "github-transport" / "receipt.json"
+    handoff_path.write_text(json.dumps(_valid_cli_handoff_payload()), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-github-transport",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_handoff_transport_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["commands"][0][:3] == ["gh", "issue", "comment"]
+    assert payload["commands"][1][:3] == ["gh", "issue", "edit"]
+    assert receipt == payload
+
+
+def test_cli_handoff_github_transport_refuses_invalid_projection(tmp_path: Path) -> None:
+    handoff = _valid_cli_handoff_payload()
+    handoff["next_agent"]["name"] = "unknown-route"
+    handoff_path = tmp_path / "handoff.json"
+    receipt_path = tmp_path / "github-transport" / "receipt.json"
+    handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-github-transport",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["applied"] is False
+    assert payload["commands"] == []
+    assert "next_agent.name must be one of" in "\n".join(payload["errors"])
+    assert receipt == payload
+
+
 def test_cli_handoff_chain_dry_run_writes_receipt_dir(tmp_path: Path) -> None:
     first = _valid_cli_handoff_payload()
     second = _valid_cli_handoff_payload()

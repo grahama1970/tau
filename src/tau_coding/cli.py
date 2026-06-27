@@ -33,6 +33,7 @@ from tau_coding.generated_ticket import (
     write_agent_handoff_loop_receipt,
     write_agent_handoff_projection_receipt,
 )
+from tau_coding.github_handoff import transport_handoff_projection_to_github
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -578,6 +579,24 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-github-transport":
+        try:
+            handoff_path, active_goal_hash, receipt_path, agents_root, apply_github = (
+                _parse_handoff_github_transport_cli_args(positional_args[1:])
+            )
+            ok = transport_agent_handoff_to_github_command(
+                handoff_path,
+                active_goal_hash=active_goal_hash,
+                receipt_path=receipt_path,
+                agents_root=agents_root,
+                apply_github=apply_github,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "handoff-chain-dry-run":
         try:
             handoff_paths, active_goal_hash, receipt_dir, agents_root = (
@@ -810,6 +829,52 @@ def _parse_handoff_project_cli_args(
             raise RuntimeError(f"Unknown handoff-project option: {arg}")
         index += 1
     return handoff_path, active_goal_hash, receipt_path, agents_root
+
+
+def _parse_handoff_github_transport_cli_args(
+    args: list[str],
+) -> tuple[Path, str | None, Path | None, Path | None, bool]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau handoff-github-transport <handoff.json> "
+            "[--active-goal-hash <hash>] [--agents-root <dir>] "
+            "[--receipt <receipt.json>] [--apply]"
+        )
+    handoff_path = Path(args[0])
+    active_goal_hash: str | None = None
+    receipt_path: Path | None = None
+    agents_root: Path | None = None
+    apply_github = False
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg == "--apply":
+            apply_github = True
+        else:
+            raise RuntimeError(f"Unknown handoff-github-transport option: {arg}")
+        index += 1
+    return handoff_path, active_goal_hash, receipt_path, agents_root, apply_github
 
 
 def _parse_handoff_chain_cli_args(
@@ -2001,6 +2066,52 @@ def project_agent_handoff_command(
         )
     typer.echo(json.dumps(projection.as_dict(), indent=2, sort_keys=True))
     return projection.ok
+
+
+def transport_agent_handoff_to_github_command(
+    handoff_path: Path,
+    *,
+    active_goal_hash: str | None,
+    receipt_path: Path | None,
+    agents_root: Path | None,
+    apply_github: bool,
+) -> bool:
+    """Render or apply GitHub transport for one validated handoff."""
+
+    payload = _load_json_object(handoff_path, label="agent handoff")
+    projection = project_agent_handoff(
+        payload,
+        active_goal_hash=active_goal_hash,
+        agent_registry_root=agents_root,
+    )
+    if not projection.ok:
+        transport_receipt = {
+            "schema": "tau.github_handoff_transport_receipt.v1",
+            "ok": False,
+            "dry_run": not apply_github,
+            "applied": False,
+            "target": projection.target,
+            "commands": [],
+            "receipt_path": str(receipt_path.expanduser().resolve()) if receipt_path else None,
+            "errors": list(projection.errors),
+        }
+        if receipt_path is not None:
+            resolved = receipt_path.expanduser().resolve()
+            resolved.parent.mkdir(parents=True, exist_ok=True)
+            resolved.write_text(
+                json.dumps(transport_receipt, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        typer.echo(json.dumps(transport_receipt, indent=2, sort_keys=True))
+        return False
+
+    transport = transport_handoff_projection_to_github(
+        projection.as_dict(),
+        apply=apply_github,
+        receipt_path=receipt_path,
+    )
+    typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))
+    return transport.ok
 
 
 def project_agent_handoff_chain_command(
