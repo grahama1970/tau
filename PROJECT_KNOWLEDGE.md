@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 18:05Z / 14:05 EDT by agent
+**Last updated:** 2026-06-27 18:12Z / 14:12 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -15,6 +15,7 @@
 - The command-loop GitHub apply path is fail-closed before mutation: invalid receipts return `ok: false`, `applied: false`, and zero command executions even when `--apply` is passed.
 - Valid command-loop GitHub apply now runs live preflight checks before mutation: `gh auth status --hostname github.com` and `gh issue/pr view <number> --repo <repo> --json number`. If preflight fails, the receipt records `preflight_results`, leaves `command_results` empty, and returns `applied: false`.
 - The experiment-local Memory/Brave harness now writes `stage_trace` and `current_stage` into `tau.loop2_memory_skill_selector_harness.v1` receipts so chat/TUI consumers can render dynamic Memory pipeline state from receipt data instead of static "thinking" text.
+- UX Lab's Tau chat surface now renders a receipt-backed current-stage panel from the Memory stage-trace proof. The pi-mono commit is `225321964` on `persona/tim-blazytko-1774553751276`; the rendered `#tau` page shows `Receipt-backed current stage`, `Clarifying...`, and the stage-trace artifact path.
 
 ## Recent Decisions
 
@@ -31,6 +32,7 @@
 | 2026-06-27 | Keep live GitHub writes behind an explicit `--apply` flag | Default command-loop GitHub transport remains dry-run; `--apply` is only allowed after the terminal command-loop receipt validates and stops at `human`. |
 | 2026-06-27 | Require GitHub auth and target preflight before command-loop mutation | A valid receipt alone is not enough for live writes; Tau must prove the local `gh` session and target issue/PR are available before comment or label commands run. |
 | 2026-06-27 | Make Memory pipeline stages receipt-backed | Sparta Chat/TUI should render `Getting Intent...`, `Extracting Entities...`, `Accessing Memory...`, and branch-specific labels from harness receipts, not from hidden reasoning text or UI-only theater. |
+| 2026-06-27 | Version the UX Lab Tau chat surface with receipt-backed stage rendering | `#tau` was already referenced by UX Lab routing, but the Tau chat files were untracked in pi-mono. Committing them makes the route reproducible and ties visible process status to `tau.loop2_pipeline_stage.v1` metadata. |
 
 ## Open Questions
 
@@ -68,6 +70,7 @@
 | 2026-06-27 | `/tmp/tau-command-loop-github-apply-gate/summary.json` | Invalid command-loop receipt run with `--apply` failed closed with `ok: false`, `dry_run: false`, `applied: false`, and `command_count: 0`. |
 | 2026-06-27 | `/tmp/tau-command-loop-github-preflight/live-invalid-target-summary.json` | Live `gh` preflight for a valid command-loop receipt targeting a nonexistent repo returned auth exit `0`, target-view exit `1`, `command_count: 0`, and `applied: false`. |
 | 2026-06-27 | `/tmp/tau-memory-stage-trace/live-memory-stage-trace-summary.json` | Live Memory-backed harness receipt with `mocked: false`, `live: true`, `memory_first: true`, `selected_skill: memory.clarify`, and `stage_trace` stages `intent`, `extract_entities`, `recall`, `clarify`. |
+| 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-uxlab-stage-trace-render/20260627T175254Z.png` | Fresh CDP proof for `http://127.0.0.1:3002/#tau`; read JSON contains `Receipt-backed current stage`, `Clarifying...`, and `/tmp/tau-memory-stage-trace/live-memory-stage-trace-summary.json`. |
 
 ## Infrastructure State
 
