@@ -1,16 +1,16 @@
-# Tau - Goal-Locked Agent Harness
+# T’au - Goal-Locked Agent Harness
 
 <p align="center">
   <img
     src="docs/assets/tau-header.webp"
-    alt="Tau agentic harness console in a science-fiction workspace"
+    alt="T’au agentic harness console in a science-fiction workspace"
     style="max-width: 100%; height: auto; display: block;"
   />
 </p>
 
 > Turn agent work into receipt-backed, goal-locked loops.
 
-Tau started as a small Python coding-agent harness inspired by Pi. This fork is
+T’au started as a small Python coding-agent harness inspired by Pi. This fork is
 being hardened into an experimental agentic harness for long-running work:
 Memory-first chat, bounded subagents, explicit handoffs, human-controlled goal
 changes, and GitHub tickets as the durable transport.
@@ -19,17 +19,17 @@ The important idea is simple:
 
 ```text
 agents may work and recommend the next step
-Tau validates the receipt and routes the next step
+T’au validates the receipt and routes the next step
 only the human may change the immutable goal
 ```
 
-Tau is not trying to hide orchestration inside model reasoning. Every meaningful
+T’au is not trying to hide orchestration inside model reasoning. Every meaningful
 transition should leave a local receipt, a schema-valid JSON block, or a
 GitHub-shaped projection that another agent or human can inspect.
 
 ## What it does
 
-Tau currently provides two layers:
+T’au currently provides two layers:
 
 1. **Coding-agent runtime** - an installable `tau` command with provider
    configuration, a Textual TUI, session history, slash commands, local tools,
@@ -53,25 +53,25 @@ longer work:
 
 ## When to use it
 
-Use Tau when an agent task needs durable state and explicit routing instead of a
+Use T’au when an agent task needs durable state and explicit routing instead of a
 single chat response.
 
-| Situation | Why Tau helps |
+| Situation | Why T’au helps |
 | --- | --- |
 | Long-running implementation work | Each bounded step emits a receipt and names the next agent. |
 | Human course correction | Human goal changes are explicit packets routed through `goal-guardian`. |
-| ChatGPT Pro/WebGPT collaboration | WebGPT can draft tickets; Tau validates and projects them. |
-| GitHub-backed task queues | Tau derives labels such as `next:<agent>` and `executor:<executor>`. |
+| ChatGPT Pro/WebGPT collaboration | WebGPT can draft tickets; T’au validates and projects them. |
+| GitHub-backed task queues | T’au derives labels such as `next:<agent>` and `executor:<executor>`. |
 | Memory-first chat | User turns enter through Memory intent before routing to answer, clarify, deflect, research, or compliance paths. |
 | Reliability hardening | Local tests, live browser runs, and proof summaries are kept separate from mocked wiring tests. |
 
-Tau is still experimental. Treat dry-run GitHub transport, local command-loop
+T’au is still experimental. Treat dry-run GitHub transport, local command-loop
 receipts, and UX Lab chat evidence as proof of specific rungs, not proof of a
 finished global Sparta Chat or production orchestration system.
 
 ## Quickstart
 
-Install and run the original Tau CLI:
+Install and run the original T’au CLI:
 
 ```bash
 cd /home/graham/workspace/experiments/tau
@@ -110,14 +110,14 @@ commands.
 
 ## Memory-first chat direction
 
-Tau chat should begin with the `$memory` pipeline, not with ad hoc product logic.
+T’au chat should begin with the `$memory` pipeline, not with ad hoc product logic.
 The intended route is:
 
 ```text
 intent -> extract entities -> access memory -> answer | clarify | deflect | research | compliance
 ```
 
-The UX Lab Tau chat surface currently lives in the `pi-mono` workspace and is
+The UX Lab T’au chat surface currently lives in the `pi-mono` workspace and is
 used as the browser proving ground for the shared global chat UX. The latest
 bounded slices prove:
 
@@ -136,7 +136,7 @@ policy before it can be treated as production behavior.
 
 ## Goal-locked harness model
 
-Tau's agent-facing contract is deliberately small. A normal handoff contains:
+T’au's agent-facing contract is deliberately small. A normal handoff contains:
 
 ```json
 {
@@ -171,7 +171,7 @@ Tau's agent-facing contract is deliberately small. A normal handoff contains:
 }
 ```
 
-Tau owns the deterministic expansion:
+T’au owns the deterministic expansion:
 
 ```text
 next_agent.name     -> next:<agent>
@@ -182,7 +182,7 @@ schema              -> parser and validator selection
 ```
 
 Agents do not get to invent missing labels, mutate the immutable goal, or skip
-the next route. If the JSON does not validate, Tau should refuse to dispatch.
+the next route. If the JSON does not validate, T’au should refuse to dispatch.
 
 ## Repository map
 
@@ -192,7 +192,7 @@ src/tau_agent/                      portable agent loop, events, tools, sessions
 src/tau_coding/                     CLI app, coding tools, TUI, harness commands
 experiments/goal-locked-subagents/  goal-locked contract schemas and fixtures
 experiments/loop2-alignment/        Loop2 and Memory/Brave alignment experiments
-docs/                               original Tau architecture and usage docs
+docs/                               original T’au architecture and usage docs
 PROJECT_KNOWLEDGE.md                current project memory for humans and agents
 ```
 
@@ -210,7 +210,7 @@ experiments/goal-locked-subagents/agent-command-specs/
 
 ## Evidence discipline
 
-Tau reports should distinguish mocked wiring from live behavior.
+T’au reports should distinguish mocked wiring from live behavior.
 
 Use this language when reporting a rung:
 
@@ -229,19 +229,19 @@ Recent evidence includes:
 - `/tmp/tau-live-memory-chat-proof-compliance-20260627T233340Z`
 - `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png`
 
-Those artifacts prove the named rung only. They do not prove final Tau/Sparta
+Those artifacts prove the named rung only. They do not prove final T’au/Sparta
 Chat readiness, live GitHub ticket mutation, or unrestricted subagent execution.
 
 ## WebGPT escalation
 
-Tau can use WebGPT between phases, when architecture is uncertain, when the
+T’au can use WebGPT between phases, when architecture is uncertain, when the
 agent is drifting, or when a complex harness decision needs external review.
-The project-local browser binding lives under `.ask/`, but the current Tau
+The project-local browser binding lives under `.ask/`, but the current T’au
 convention is direct `$webgpt` for phase and architecture review. WebGPT output
 is design input; deterministic local artifacts remain the proof source.
 
 ## Upstream
 
 This repository is a fork of `alejandro-ao/tau`, pushed under
-`grahama1970/tau` for the harness experiments. The original Tau architecture
+`grahama1970/tau` for the harness experiments. The original T’au architecture
 docs are still useful and remain under `docs/`.
