@@ -690,6 +690,24 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-command-loop-reconciliation-github-transport":
+        try:
+            loop_receipt_path, receipt_path, apply_github = (
+                _parse_handoff_command_loop_reconciliation_github_transport_args(
+                    positional_args[1:]
+                )
+            )
+            ok = transport_handoff_command_loop_reconciliation_to_github_command(
+                loop_receipt_path,
+                receipt_path=receipt_path,
+                apply_github=apply_github,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "goal-guardian-ticket-source-github-fetch":
         try:
             repo_name, output_path, receipt_path, execute, state, limit = (
@@ -1263,6 +1281,37 @@ def _parse_goal_guardian_reconciliation_github_transport_args(
             )
         index += 1
     return reconciliation_receipt_path, receipt_path, apply_github
+
+
+def _parse_handoff_command_loop_reconciliation_github_transport_args(
+    args: list[str],
+) -> tuple[Path, Path | None, bool]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau handoff-command-loop-reconciliation-github-transport "
+            "<command-loop-receipt.json> [--receipt <receipt.json>] [--apply]"
+        )
+    loop_receipt_path = Path(args[0])
+    receipt_path: Path | None = None
+    apply_github = False
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--apply":
+            apply_github = True
+        else:
+            raise RuntimeError(
+                f"Unknown handoff-command-loop-reconciliation-github-transport option: {arg}"
+            )
+        index += 1
+    return loop_receipt_path, receipt_path, apply_github
 
 
 def _parse_goal_guardian_ticket_source_github_fetch_args(
@@ -3023,6 +3072,51 @@ def transport_goal_guardian_reconciliation_to_github_command(
     return transport.ok
 
 
+def transport_handoff_command_loop_reconciliation_to_github_command(
+    loop_receipt_path: Path,
+    *,
+    receipt_path: Path | None,
+    apply_github: bool,
+) -> bool:
+    """Render GitHub transport for a goal-guardian receipt inside a loop receipt."""
+
+    loop_receipt_resolved = loop_receipt_path.expanduser().resolve()
+    loop_receipt = _load_json_object(loop_receipt_resolved, label="command loop receipt")
+    reconciliation_path = _goal_guardian_reconciliation_artifact_from_loop(
+        loop_receipt,
+        loop_receipt_path=loop_receipt_resolved,
+    )
+    reconciliation_receipt = _load_json_object(
+        reconciliation_path,
+        label="goal guardian reconciliation receipt",
+    )
+    ticket_source_path = _goal_guardian_ticket_source_from_reconciliation(
+        reconciliation_receipt
+    )
+    transport = transport_goal_guardian_reconciliation_to_github(
+        reconciliation_receipt,
+        apply=apply_github,
+    )
+    payload = {
+        "schema": "tau.github_command_loop_reconciliation_transport_receipt.v1",
+        "ok": transport.ok,
+        "dry_run": transport.dry_run,
+        "applied": transport.applied,
+        "source_loop_receipt_path": str(loop_receipt_resolved),
+        "reconciliation_receipt_path": str(reconciliation_path),
+        "ticket_source_path": ticket_source_path,
+        "transport": transport.as_dict(),
+        "errors": list(transport.errors),
+    }
+    if receipt_path is not None:
+        payload["receipt_path"] = str(receipt_path.expanduser().resolve())
+        _write_json_receipt(receipt_path, payload)
+    else:
+        payload["receipt_path"] = None
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    return transport.ok
+
+
 def goal_guardian_ticket_source_github_fetch_command(
     repo: str,
     *,
@@ -3044,6 +3138,61 @@ def goal_guardian_ticket_source_github_fetch_command(
     )
     typer.echo(json.dumps(result.as_dict(), indent=2, sort_keys=True))
     return result.ok
+
+
+def _goal_guardian_reconciliation_artifact_from_loop(
+    loop_receipt: dict[str, object],
+    *,
+    loop_receipt_path: Path,
+) -> Path:
+    if loop_receipt.get("schema") != "tau.agent_handoff_command_loop_receipt.v1":
+        raise RuntimeError(
+            "command loop receipt schema must be tau.agent_handoff_command_loop_receipt.v1"
+        )
+    if loop_receipt.get("ok") is not True:
+        raise RuntimeError("command loop receipt must be ok before reconciliation GitHub transport")
+    artifact = _find_goal_guardian_reconciliation_artifact(loop_receipt.get("artifacts"))
+    if artifact is None:
+        dispatches = loop_receipt.get("dispatches")
+        if isinstance(dispatches, list):
+            for dispatch in dispatches:
+                if isinstance(dispatch, dict):
+                    artifact = _find_goal_guardian_reconciliation_artifact(
+                        dispatch.get("artifacts")
+                    )
+                    if artifact is not None:
+                        break
+    if artifact is None:
+        raise RuntimeError("command loop receipt lacks goal-guardian reconciliation artifact")
+    path = Path(artifact).expanduser()
+    if not path.is_absolute():
+        path = loop_receipt_path.parent / path
+    resolved = path.resolve()
+    if not resolved.is_file():
+        raise RuntimeError(f"goal-guardian reconciliation artifact does not exist: {resolved}")
+    return resolved
+
+
+def _find_goal_guardian_reconciliation_artifact(artifacts: object) -> str | None:
+    if not isinstance(artifacts, list):
+        return None
+    for artifact in artifacts:
+        if (
+            isinstance(artifact, str)
+            and artifact.endswith("goal-guardian-reconciliation-receipt.json")
+        ):
+            return artifact
+    return None
+
+
+def _goal_guardian_ticket_source_from_reconciliation(
+    reconciliation_receipt: dict[str, object],
+) -> str | None:
+    reconciliation = reconciliation_receipt.get("open_ticket_reconciliation")
+    if not isinstance(reconciliation, dict):
+        return None
+    source = reconciliation.get("source")
+    return source if isinstance(source, str) and source.strip() else None
 
 
 def project_agent_handoff_chain_command(

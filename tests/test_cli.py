@@ -1586,6 +1586,84 @@ def test_cli_goal_guardian_reconciliation_github_transport_writes_dry_run_receip
     assert receipt == payload
 
 
+def test_cli_handoff_command_loop_reconciliation_github_transport_traces_source(
+    tmp_path: Path,
+) -> None:
+    reconciliation_receipt = {
+        "schema": "tau.goal_guardian_reconciliation_receipt.v1",
+        "ok": True,
+        "dry_run": True,
+        "github": {"repo": "grahama1970/chatgpt-lab", "target": "issue#123"},
+        "goal": {
+            "goal_id": "goal-tau-orchestration-001",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "decision": "REQUIRES_HUMAN_GOAL_VERSION",
+        "new_goal": {"text": "Build Tau's goal-locked harness one slice at a time."},
+        "source_schema": "tau.human_goal_change.v1",
+        "source": "valid-human-goal-change.json",
+        "source_artifacts": [],
+        "open_ticket_reconciliation": {
+            "status": "classified",
+            "reason": "Classified tickets from authoritative local ticket source.",
+            "source": str(tmp_path / "goal-guardian-ticket-source.json"),
+            "source_schema": "tau.goal_guardian_ticket_source.v1",
+            "counts": {"keep": 1, "close": 0, "migrate": 0, "regenerate": 0},
+            "keep": [{"id": "issue#101"}],
+            "close": [],
+            "migrate": [],
+            "regenerate": [],
+        },
+        "next_agent": "human",
+        "errors": [],
+    }
+    reconciliation_path = tmp_path / "artifacts" / "goal-guardian-reconciliation-receipt.json"
+    reconciliation_path.parent.mkdir()
+    reconciliation_path.write_text(json.dumps(reconciliation_receipt), encoding="utf-8")
+    loop_receipt = {
+        "schema": "tau.agent_handoff_command_loop_receipt.v1",
+        "ok": True,
+        "status": "WAITING",
+        "step_count": 1,
+        "terminal_agent": "human",
+        "stop_reason": "next_agent_is_human",
+        "mocked": False,
+        "live": True,
+        "runner": "agent-registry-command-loop",
+        "dispatches": [
+            {"selected_agent": "goal-guardian", "artifacts": [str(reconciliation_path)]}
+        ],
+        "artifacts": [str(reconciliation_path)],
+        "errors": [],
+    }
+    loop_path = tmp_path / "command-loop-receipt.json"
+    transport_path = tmp_path / "github-transport.json"
+    loop_path.write_text(json.dumps(loop_receipt), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-command-loop-reconciliation-github-transport",
+            str(loop_path),
+            "--receipt",
+            str(transport_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(transport_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_command_loop_reconciliation_transport_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["source_loop_receipt_path"] == str(loop_path.resolve())
+    assert payload["reconciliation_receipt_path"] == str(reconciliation_path.resolve())
+    assert payload["ticket_source_path"] == str(tmp_path / "goal-guardian-ticket-source.json")
+    assert payload["transport"]["commands"][0][:3] == ["gh", "issue", "comment"]
+    assert payload["transport"]["commands"][1][:3] == ["gh", "issue", "edit"]
+    assert receipt == payload
+
+
 def test_cli_goal_guardian_ticket_source_github_fetch_writes_dry_run_receipt(
     tmp_path: Path,
 ) -> None:

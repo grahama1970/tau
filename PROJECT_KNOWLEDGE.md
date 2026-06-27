@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 20:59Z / 16:59 EDT by agent
+**Last updated:** 2026-06-27 21:10Z / 17:10 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -31,6 +31,7 @@
 - Tau can now fetch a goal-guardian ticket source from GitHub Issues with `goal-guardian-ticket-source-github-fetch`. The default path is dry-run and only renders `gh issue list`; `--execute` runs the read-only issue-list command, writes `tau.goal_guardian_ticket_source.v1`, and fails closed without writing a source when GitHub rejects the request.
 - `handoff-goal-guardian-adapter` now accepts `--ticket-source <path>` for explicit goal-change ticket reconciliation input. This keeps command specs and direct adapter runs from depending on hidden environment state; `TAU_GOAL_GUARDIAN_TICKET_SOURCE` remains a fallback.
 - `handoff-command-loop` now accepts `--goal-guardian-ticket-source <path>`. When the selected agent is `goal-guardian` and its command spec invokes `handoff-goal-guardian-adapter`, Tau appends `--ticket-source <resolved path>` to the recorded command so the command-loop receipt names the exact ticket-source artifact used for reconciliation.
+- `handoff-command-loop-reconciliation-github-transport` now starts from a command-loop receipt, extracts the goal-guardian reconciliation artifact, renders the dry-run GitHub comment/label commands, and writes a wrapper receipt that names the source loop receipt, reconciliation receipt, and ticket-source artifact.
 
 ## Recent Decisions
 
@@ -62,6 +63,7 @@
 | 2026-06-27 | Fetch GitHub ticket sources through an explicit read-only command | Goal-guardian needs real GitHub-shaped tickets, but Tau should not mutate GitHub or fabricate ticket state. The fetch command is dry-run by default and `--execute` only runs `gh issue list`. |
 | 2026-06-27 | Prefer explicit goal-guardian ticket-source inputs over hidden env state | The adapter can now classify a passed `--ticket-source` even when the fallback env var is absent or wrong, making receipts easier to reproduce from command artifacts. |
 | 2026-06-27 | Record explicit ticket-source inputs in command-loop receipts | Passing `--goal-guardian-ticket-source` appends the source path to the goal-guardian adapter command, which makes the receipt replayable from command artifacts rather than out-of-band environment setup. |
+| 2026-06-27 | Project command-loop reconciliation through GitHub with source trace | The wrapper command avoids manually locating the reconciliation artifact and records loop, reconciliation, and ticket-source paths next to the dry-run GitHub commands. |
 
 ## Open Questions
 
@@ -129,7 +131,7 @@
 | 2026-06-27 | `/tmp/tau-goal-guardian-github-transport-proof/summary.json` | Dry-run GitHub transport from the classified goal-guardian reconciliation receipt; `ok: true`, `dry_run: true`, `applied: false`, target `grahama1970/chatgpt-lab` / `issue#123`, and two rendered commands: `gh issue comment` plus `gh issue edit` with `agent-work,next:human,executor:human,goal-change`. |
 | 2026-06-27 | `/tmp/tau-github-ticket-source-fetch-proof/summary.json` | Read-only GitHub ticket-source fetch proof. Dry-run rendered `gh issue list` without execution; live `--execute` against `grahama1970/chatgpt-lab` wrote 4 tickets to `tau.goal_guardian_ticket_source.v1`; the same source was consumed by a non-mocked goal-guardian command loop with reconciliation counts `{keep:1, close:0, migrate:3, regenerate:0}`. A `grahama1970/tau` execute attempt failed closed because Issues are disabled. |
 | 2026-06-27 | `/tmp/tau-goal-guardian-explicit-ticket-source-proof/summary.json` | Explicit ticket-source proof. Live `gh issue list` wrote 4 `chatgpt-lab` tickets, the human goal-change bridge produced a `goal-guardian` handoff, and `handoff-goal-guardian-adapter --ticket-source ...` classified the source while `TAU_GOAL_GUARDIAN_TICKET_SOURCE` pointed at a missing path. Result routed to `human` with counts `{keep:1, close:0, migrate:3, regenerate:0}`. |
-| 2026-06-27 | `/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json` | Command-loop explicit ticket-source proof. Live GitHub issue fetch wrote 4 tickets, the bridge produced a `goal-guardian` start handoff, and `handoff-command-loop --goal-guardian-ticket-source ...` recorded `--ticket-source /tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json` in the step command. The reconciliation receipt used the same source and routed to `human` with counts `{keep:1, close:0, migrate:3, regenerate:0}`. |
+| 2026-06-27 | `/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json` | Command-loop explicit ticket-source and GitHub projection proof. Live GitHub issue fetch wrote 4 tickets, the bridge produced a `goal-guardian` start handoff, `handoff-command-loop --goal-guardian-ticket-source ...` recorded `--ticket-source /tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json`, and `handoff-command-loop-reconciliation-github-transport` rendered two dry-run GitHub commands while naming the same loop receipt, reconciliation receipt, and ticket-source path. Counts remained `{keep:1, close:0, migrate:3, regenerate:0}`. |
 
 ## Infrastructure State
 

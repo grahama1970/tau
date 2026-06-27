@@ -190,6 +190,11 @@ Implemented local contract slices include:
     the comment body and applies `agent-work,next:human,executor:human,goal-change`
     labels by projection. Live mutation remains explicit-only via `--apply` and
     uses the same GitHub auth/target preflight gate.
+  - `tau handoff-command-loop-reconciliation-github-transport
+    <command-loop-receipt.json>` extracts the goal-guardian reconciliation
+    artifact from a command-loop receipt, renders the dry-run GitHub transport,
+    and writes a wrapper receipt naming the source loop receipt, reconciliation
+    receipt, and ticket-source artifact.
   - `tau goal-guardian-ticket-source-github-fetch <repo> --out
     <ticket-source.json> [--receipt <receipt.json>] [--execute] [--state
     open|closed|all] [--limit <n>]` produces the structured ticket source used
