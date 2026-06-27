@@ -1,0 +1,28 @@
+{
+  "schema": "tau.subagent_receipt.v1",
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal",
+    "immutable_goal_preserved": true
+  },
+  "context": {
+    "run_id": "tau-run-002",
+    "ticket": "issue#124",
+    "subagent": "coder",
+    "actor_type": "subagent"
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "Patched a bounded artifact.",
+    "mocked": true,
+    "live": false
+  },
+  "rationale": "The patch needs review.",
+  "evidence": [],
+  "next": {
+    "reason": "Review the patch.",
+    "executor": "either"
+  },
+  "stop_condition": "Reviewer posts a schema-valid receipt."
+}

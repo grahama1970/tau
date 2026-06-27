@@ -233,6 +233,20 @@ BUILTIN_PROVIDER_CATALOG: tuple[ProviderCatalogEntry, ...] = (
         thinking_default="medium",
         thinking_parameter="reasoning_effort",
     ),
+    ProviderCatalogEntry(
+        name="chutes",
+        display_name="Chutes.ai",
+        kind="openai-compatible",
+        base_url="https://llm.chutes.ai/v1",
+        api_key_env="CHUTES_API_TOKEN",
+        credential_name="chutes",
+        models=(
+            "Qwen/Qwen3-32B-TEE",
+            "deepseek-ai/DeepSeek-V3",
+        ),
+        default_model="Qwen/Qwen3-32B-TEE",
+        docs_url="https://chutes.ai",
+    ),
 )
 
 

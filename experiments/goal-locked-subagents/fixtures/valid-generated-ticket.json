@@ -1,0 +1,32 @@
+{
+  "schema": "tau.generated_ticket.v1",
+  "github": {
+    "repo": "grahama1970/chatgpt-lab"
+  },
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal"
+  },
+  "previous_subagent": "chatgpt-pro",
+  "context": {
+    "summary": "Tau has a local subagent receipt validator but needs a generated-ticket validator.",
+    "artifacts": []
+  },
+  "ticket": {
+    "kind": "issue",
+    "title": "Review Tau generated-ticket contract evidence",
+    "body": "Review the generated-ticket contract evidence."
+  },
+  "requested_work": "Review the generated-ticket contract evidence.",
+  "rationale": "The next safe step is independent validation.",
+  "next_agent": {
+    "name": "reviewer",
+    "reason": "This is a read-only validation task."
+  },
+  "required_evidence": [
+    "Focused generated-ticket validator tests pass."
+  ],
+  "stop_condition": "Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.",
+  "goal_amendment_proposal": null
+}

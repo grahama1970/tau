@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.subagent_receipt.v1",
+  "title": "Tau Subagent Receipt",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "goal",
+    "context",
+    "result",
+    "rationale",
+    "evidence",
+    "next",
+    "stop_condition"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.subagent_receipt.v1"
+    },
+    "goal": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "goal_id",
+        "goal_version",
+        "goal_hash",
+        "immutable_goal_preserved"
+      ],
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "goal_hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "immutable_goal_preserved": {
+          "type": "boolean"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "run_id",
+        "subagent",
+        "actor_type"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subagent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "webgpt",
+            "subagent",
+            "github-actions",
+            "local-cron",
+            "tau"
+          ]
+        },
+        "ticket": {
+          "type": "string"
+        },
+        "artifacts_read": {
+          "type": "array"
+        },
+        "assumptions": {
+          "type": "array"
+        },
+        "unknowns": {
+          "type": "array"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "status",
+        "summary",
+        "mocked",
+        "live"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "COMPLETED",
+            "NEEDS_CHANGES",
+            "BLOCKED",
+            "INSUFFICIENT_EVIDENCE",
+            "REFUSED"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mocked": {
+          "type": "boolean"
+        },
+        "live": {
+          "type": "boolean"
+        },
+        "artifacts": {
+          "type": "array"
+        },
+        "commands_run": {
+          "type": "array"
+        }
+      }
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "next": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "subagent",
+        "reason",
+        "executor"
+      ],
+      "properties": {
+        "subagent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executor": {
+          "type": "string",
+          "enum": [
+            "local",
+            "github-actions",
+            "either",
+            "human"
+          ]
+        }
+      }
+    },
+    "stop_condition": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

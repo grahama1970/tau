@@ -1,6 +1,6 @@
 """Display state for Tau's Textual TUI."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -25,6 +25,45 @@ TOOL_RESULT_PREVIEW_LINES = 8
 TOOL_PATCH_PREVIEW_LINES = 32
 TOOL_RESULT_PREVIEW_CHARS = 2_000
 TERMINAL_COMMAND_OUTPUT_PREVIEW_LINES = 120
+DEFAULT_THINKING_PLACEHOLDER_TEXT = "Thinking… Press Ctrl+T to show thinking tokens."
+MEMORY_PIPELINE_STAGE_LABELS = {
+    "intent": "Getting Intent...",
+    "get_intent": "Getting Intent...",
+    "extract_entities": "Extracting Entities...",
+    "entities": "Extracting Entities...",
+    "recall": "Accessing Memory...",
+    "memory": "Accessing Memory...",
+    "access_memory": "Accessing Memory...",
+    "evidence_case": "Creating Evidence Case...",
+    "create_evidence_case": "Creating Evidence Case...",
+    "brave_search": "Searching Web...",
+    "search": "Searching Web...",
+    "research": "Searching Web...",
+    "figure": "Creating Figure...",
+    "create_figure": "Creating Figure...",
+    "personaplex": "Preparing Persona Voice...",
+    "persona_voice": "Preparing Persona Voice...",
+    "answer": "Answering...",
+    "clarify": "Clarifying...",
+    "deflect": "Deflecting...",
+}
+
+
+@dataclass(frozen=True, slots=True)
+class LoopMonitorStatus:
+    """Visible status for a Loop2/Tau harness monitor envelope."""
+
+    label: str
+    run_id: str = ""
+    stream_status: str = ""
+    event_count: int | None = None
+    last_event_type: str = ""
+    receipt_status: str = ""
+    proof_scope: str = ""
+    mocked: bool | None = None
+    live: bool | None = None
+    does_not_prove: tuple[str, ...] = ()
+    source: str = ""
 
 
 @dataclass(slots=True)
@@ -48,6 +87,8 @@ class TuiState:
     error: str | None = None
     show_tool_results: bool = False
     show_thinking: bool = False
+    thinking_status: str | None = None
+    loop_monitor_status: LoopMonitorStatus | None = None
     queued_steering: tuple[str, ...] = ()
     queued_follow_up: tuple[str, ...] = ()
     skills: tuple[Skill, ...] = ()
@@ -152,6 +193,32 @@ class TuiState:
         self.show_thinking = not self.show_thinking
         return self.show_thinking
 
+    @property
+    def thinking_placeholder_text(self) -> str:
+        """Return the visible hidden-thinking label for the current run stage."""
+        return self.thinking_status or DEFAULT_THINKING_PLACEHOLDER_TEXT
+
+    def set_thinking_status(self, stage: str | None) -> None:
+        """Set the hidden-thinking label from a structured pipeline stage."""
+        if stage is None:
+            self.thinking_status = None
+            return
+        normalized = stage.strip().lower().replace("-", "_").replace(" ", "_")
+        if not normalized:
+            self.thinking_status = None
+            return
+        self.thinking_status = MEMORY_PIPELINE_STAGE_LABELS.get(normalized, stage.strip())
+
+    def set_loop_monitor_status(self, status: LoopMonitorStatus | None) -> None:
+        """Replace the visible Loop2/Tau monitor status."""
+        self.loop_monitor_status = status
+
+    def set_loop_monitor_status_from_payload(self, payload: JSONValue | None) -> None:
+        """Replace loop monitor status from a structured event payload."""
+        status = loop_monitor_status_from_payload(payload)
+        if status is not None:
+            self.loop_monitor_status = status
+
     def update_queue(self, *, steering: tuple[str, ...], follow_up: tuple[str, ...]) -> None:
         """Replace visible queued-message state."""
         self.queued_steering = steering
@@ -167,6 +234,8 @@ class TuiState:
         self.items.clear()
         self.assistant_buffer = ""
         self.error = None
+        self.thinking_status = None
+        self.loop_monitor_status = None
 
     def set_skills(self, skills: Iterable[Skill]) -> None:
         """Replace loaded skill metadata used for presentation-only path matching."""
@@ -206,6 +275,54 @@ class TuiState:
             if _normalized_path(skill.path) == read_path:
                 return skill.name
         return None
+
+
+def loop_monitor_status_from_payload(payload: JSONValue | None) -> LoopMonitorStatus | None:
+    """Parse a structured monitor payload into visible TUI state."""
+    if not isinstance(payload, Mapping):
+        return None
+
+    label = _string_value(payload.get("label"))
+    stream_status = _string_value(payload.get("stream_status"))
+    receipt_status = _string_value(payload.get("receipt_status"))
+    run_state = _string_value(payload.get("run_state"))
+    derived_label = label or stream_status or receipt_status or run_state
+    if not derived_label:
+        return None
+
+    return LoopMonitorStatus(
+        label=derived_label,
+        run_id=_string_value(payload.get("run_id")),
+        stream_status=stream_status,
+        event_count=_int_value(payload.get("event_count")),
+        last_event_type=_string_value(payload.get("last_event_type")),
+        receipt_status=receipt_status,
+        proof_scope=_string_value(payload.get("proof_scope")),
+        mocked=_bool_value(payload.get("mocked")),
+        live=_bool_value(payload.get("live")),
+        does_not_prove=_string_tuple(payload.get("does_not_prove")),
+        source=_string_value(payload.get("source")),
+    )
+
+
+def _string_value(value: JSONValue | None) -> str:
+    return value if isinstance(value, str) else ""
+
+
+def _int_value(value: JSONValue | None) -> int | None:
+    if isinstance(value, bool):
+        return None
+    return value if isinstance(value, int) else None
+
+
+def _bool_value(value: JSONValue | None) -> bool | None:
+    return value if isinstance(value, bool) else None
+
+
+def _string_tuple(value: JSONValue | None) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        return ()
+    return tuple(item for item in value if isinstance(item, str))
 
 
 def _parse_branch_summary_message(content: str) -> str | None:

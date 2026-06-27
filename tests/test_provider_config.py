@@ -37,11 +37,15 @@ def test_load_provider_settings_missing_file_uses_openai_default(tmp_path: Path)
         "anthropic",
         "openrouter",
         "huggingface",
+        "chutes",
     ]
     assert settings.providers[0].default_model == DEFAULT_MODEL
     assert settings.get_provider("anthropic").api_key_env == "ANTHROPIC_API_KEY"
     assert settings.get_provider("openrouter").api_key_env == "OPENROUTER_API_KEY"
     assert settings.get_provider("huggingface").api_key_env == "HF_TOKEN"
+    assert settings.get_provider("chutes").api_key_env == "CHUTES_API_TOKEN"
+    assert settings.get_provider("chutes").base_url == "https://llm.chutes.ai/v1"
+    assert settings.get_provider("chutes").default_model == "Qwen/Qwen3-32B-TEE"
 
 
 def test_builtin_openai_declares_model_scoped_thinking_capabilities() -> None:
@@ -148,7 +152,20 @@ def test_save_provider_settings_writes_backup_when_replacing(tmp_path: Path) -> 
     )
 
 
-def test_save_and_load_provider_settings_round_trip(tmp_path: Path) -> None:
+def test_save_and_load_provider_settings_round_trip(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    for env_name in (
+        "OPENAI_API_KEY",
+        "OPENAI_CODEX_ACCESS_TOKEN",
+        "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY",
+        "HF_TOKEN",
+        "CHUTES_API_TOKEN",
+        "CHUTES_API_KEY",
+    ):
+        monkeypatch.delenv(env_name, raising=False)
     paths = TauPaths(home=tmp_path / ".tau")
     settings = ProviderSettings(
         default_provider="local",
@@ -234,6 +251,7 @@ def test_upsert_openai_compatible_provider_replaces_and_sets_default() -> None:
     assert updated.default_provider == "local"
     assert [item.name for item in updated.providers] == [
         "anthropic",
+        "chutes",
         "huggingface",
         "local",
         "openai",
@@ -699,6 +717,8 @@ def test_load_provider_settings_restores_builtin_providers_with_stored_credentia
         "ANTHROPIC_API_KEY",
         "OPENROUTER_API_KEY",
         "HF_TOKEN",
+        "CHUTES_API_TOKEN",
+        "CHUTES_API_KEY",
     ):
         monkeypatch.delenv(env_name, raising=False)
     tau_home = tmp_path / ".tau"

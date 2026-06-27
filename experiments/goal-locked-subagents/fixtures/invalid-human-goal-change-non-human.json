@@ -1,0 +1,30 @@
+{
+  "schema": "tau.human_goal_change.v1",
+  "github": {
+    "repo": "grahama1970/chatgpt-lab",
+    "target": "issue#123"
+  },
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal"
+  },
+  "previous_subagent": "coder",
+  "context": {
+    "summary": "This fixture intentionally attempts a non-human goal change.",
+    "artifacts": []
+  },
+  "new_goal": {
+    "text": "Unauthorized new goal.",
+    "success_criteria": [],
+    "constraints": [],
+    "non_goals": []
+  },
+  "rationale": "Invalid actor.",
+  "next_agent": {
+    "name": "reviewer",
+    "reason": "Invalid route."
+  },
+  "required_evidence": [],
+  "stop_condition": "Invalid fixture should be refused."
+}

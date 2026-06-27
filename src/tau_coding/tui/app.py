@@ -2177,6 +2177,7 @@ class TauTuiApp(App[None]):
                 event.delta,
                 theme=theme,
                 show_thinking=self.state.show_thinking,
+                placeholder_text=self.state.thinking_placeholder_text,
             )
             self._sync_activity_indicator()
             return
@@ -2197,6 +2198,10 @@ class TauTuiApp(App[None]):
                 show_tool_results=self.state.show_tool_results,
             )
             self._refresh_chrome()
+            return
+        if isinstance(event, ToolExecutionUpdateEvent) and _tool_update_has_pipeline_stage(event):
+            await transcript.finish_assistant_message()
+            self._refresh()
             return
         if isinstance(event, ToolExecutionUpdateEvent | RetryEvent | ErrorEvent):
             await transcript.finish_assistant_message()
@@ -3308,6 +3313,12 @@ def _is_thinking_cycle_key(key: str, configured_key: str) -> bool:
     if key == configured_key:
         return True
     return configured_key == "shift+tab" and key == "backtab"
+
+
+def _tool_update_has_pipeline_stage(event: ToolExecutionUpdateEvent) -> bool:
+    if event.data is None:
+        return False
+    return any(key in event.data for key in ("memory_stage", "pipeline_stage", "stage"))
 
 
 def _theme_css_variables(theme: TuiTheme) -> dict[str, str]:

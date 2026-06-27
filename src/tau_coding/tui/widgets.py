@@ -33,7 +33,12 @@ from tau_coding.skills import Skill
 from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.tui.autocomplete import CompletionState
 from tau_coding.tui.config import TAU_DARK_THEME, TuiRoleStyle, TuiTheme
-from tau_coding.tui.state import ChatItem, TuiState
+from tau_coding.tui.state import (
+    DEFAULT_THINKING_PLACEHOLDER_TEXT,
+    ChatItem,
+    LoopMonitorStatus,
+    TuiState,
+)
 
 TAU_SIDEBAR_LOGO = "τ = 2π"
 
@@ -405,7 +410,7 @@ class TranscriptView(VerticalScroll):
                         TranscriptMessageWidget(
                             ChatItem(
                                 role="thinking",
-                                text="Thinking… Press Ctrl+T to show thinking tokens.",
+                                text=state.thinking_placeholder_text,
                             ),
                             theme=theme,
                             show_tool_results=state.show_tool_results,
@@ -500,6 +505,7 @@ class TranscriptView(VerticalScroll):
         *,
         theme: TuiTheme = TAU_DARK_THEME,
         show_thinking: bool,
+        placeholder_text: str = DEFAULT_THINKING_PLACEHOLDER_TEXT,
         scroll_end: bool = False,
     ) -> None:
         """Append streamed thinking text or one hidden-thinking placeholder."""
@@ -509,7 +515,7 @@ class TranscriptView(VerticalScroll):
             await self.append_item(
                 ChatItem(
                     role="thinking",
-                    text="Thinking… Press Ctrl+T to show thinking tokens.",
+                    text=placeholder_text,
                 ),
                 theme=theme,
                 scroll_end=scroll_end,
@@ -726,11 +732,25 @@ def render_session_sidebar(
         empty="No context files",
         theme=theme,
     )
+    loop_monitor = _loop_monitor_status(session)
+    loop_monitor_section = (
+        (
+            _sidebar_separator(theme=theme),
+            _sidebar_section(
+                "loop2 monitor",
+                _render_loop_monitor_status(loop_monitor, theme=theme),
+                theme=theme,
+            ),
+        )
+        if loop_monitor is not None
+        else ()
+    )
     equation = Text(TAU_SIDEBAR_LOGO, style=f"bold {theme.prompt_text}")
 
     return Group(
         Padding(Align.center(equation), (0, 0, 1, 0)),
         _sidebar_section("session", metadata, theme=theme),
+        *loop_monitor_section,
         _sidebar_separator(theme=theme),
         _sidebar_section("context", context, theme=theme),
         _sidebar_separator(theme=theme),
@@ -776,6 +796,11 @@ def render_compact_session_info(
     right.append(f"{session.provider_name}:{session.model}", style=theme.prompt_text)
     right.append(" ")
     right.append(f"({_thinking_level(session)})", style=theme.completion_description)
+    loop_monitor = _loop_monitor_status(session)
+    if loop_monitor is not None:
+        right.append("  ")
+        right.append("loop2:", style=theme.completion_description)
+        right.append(loop_monitor.label, style=theme.accent)
 
     table = Table.grid(expand=True)
     table.add_column(ratio=1)
@@ -1231,6 +1256,53 @@ def _thinking_level(session: SessionSummarySource) -> str:
     state = getattr(session, "state", None)
     thinking_level = getattr(state, "thinking_level", None)
     return str(thinking_level) if thinking_level else "--"
+
+
+def _loop_monitor_status(session: SessionSummarySource) -> LoopMonitorStatus | None:
+    status = getattr(session, "loop_monitor_status", None)
+    if isinstance(status, LoopMonitorStatus):
+        return status
+    state = getattr(session, "state", None)
+    status = getattr(state, "loop_monitor_status", None)
+    return status if isinstance(status, LoopMonitorStatus) else None
+
+
+def _render_loop_monitor_status(
+    status: LoopMonitorStatus,
+    *,
+    theme: TuiTheme,
+) -> RenderableType:
+    table = Table.grid(padding=(0, 1))
+    table.add_column(style=theme.completion_description, no_wrap=True)
+    table.add_column(style=theme.prompt_text)
+    table.add_row("status", status.label)
+    if status.run_id:
+        table.add_row("run", status.run_id)
+    if status.event_count is not None:
+        table.add_row("events", str(status.event_count))
+    if status.last_event_type:
+        table.add_row("last", status.last_event_type)
+    if status.receipt_status:
+        table.add_row("receipt", status.receipt_status)
+    evidence = _loop_monitor_evidence_label(status)
+    if evidence:
+        table.add_row("evidence", evidence)
+    if status.proof_scope:
+        table.add_row("scope", status.proof_scope)
+    if status.does_not_prove:
+        table.add_row("does not prove", "; ".join(status.does_not_prove))
+    if status.source:
+        table.add_row("source", status.source)
+    return table
+
+
+def _loop_monitor_evidence_label(status: LoopMonitorStatus) -> str:
+    parts: list[str] = []
+    if status.mocked is not None:
+        parts.append(f"mocked:{str(status.mocked).lower()}")
+    if status.live is not None:
+        parts.append(f"live:{str(status.live).lower()}")
+    return " ".join(parts)
 
 
 def _git_branch(cwd: Path) -> str:

@@ -1,0 +1,183 @@
+{
+  "schema": "tau.loop2_alignment.tool_map.v1",
+  "purpose": "Describe the Tau commands used to align one Tau loop with the Loop2 one-node contract.",
+  "loop2_contract": {
+    "runner_scope": "one bounded repair node",
+    "required_artifacts": [
+      "contract.json",
+      "events.jsonl",
+      "current-state.json",
+      "transport-dag-evidence.json",
+      "final-receipt.json",
+      "node-result.json"
+    ],
+    "monitor_endpoints": [
+      "/api/loop2/runs/{run_id}/summary",
+      "/api/loop2/runs/{run_id}/transport-dag-evidence",
+      "/api/loop2/runs/{run_id}/events",
+      "/api/loop2/runs/{run_id}/events/stream"
+    ]
+  },
+  "tau_commands": [
+    {
+      "command": "tau loop2-run <contract.json>",
+      "does": "Runs one bounded Tau loop from a Loop2 repair-node contract.",
+      "fixture_behavior": "For backend=fixture, uses an in-process FakeProvider, writes Loop2 artifacts, runs configured local checks, validates the receipt artifacts, and prints one JSON result.",
+      "success_indicators": [
+        "ok is true",
+        "receipt_validation.ran is true",
+        "receipt_validation.ok is true",
+        "mocked/live match the execution backend"
+      ],
+      "fixture_proves": [
+        "contract-to-Tau-loop wiring",
+        "local check capture",
+        "six Loop2 artifact files exist and validate"
+      ],
+      "fixture_does_not_prove": [
+        "live Scillm behavior",
+        "OpenCode repair behavior",
+        "semantic repair quality"
+      ],
+      "live_delegated_behavior": "For backend=scillm with --loop2-src, delegates to the native Loop2 runner after Scillm doctor, materialization, and auth preflight checks. Tau sanitizes persisted native artifacts, writes tau-sanitization.json, validates native artifacts, and prints one JSON result.",
+      "live_success_indicators": [
+        "ok is true",
+        "delegated is true",
+        "mocked is false",
+        "live is true",
+        "node_result.status is PASS",
+        "native_validation.ok is true",
+        "artifact_sanitization.ran is true",
+        "artifact_sanitization.redacted_keys contains contract.scillm.api_key"
+      ]
+    },
+    {
+      "command": "tau loop2-check-monitor <run_dir>",
+      "does": "Checks the four Loop2 monitor surfaces for one Tau receipt run directory.",
+      "success_indicators": [
+        "ok is true",
+        "checked_endpoints contains summary, transport-dag-evidence, events, and events/stream",
+        "errors is empty"
+      ]
+    },
+    {
+      "command": "tau loop2-inspect <run_dir>",
+      "does": "Prints a JSON summary of one Tau Loop2 receipt run directory.",
+      "validation_default": {
+        "loop2_contract_validation.ran": false,
+        "meaning": "The summary was read but Loop2 contract validation was not run."
+      },
+      "validation_option": {
+        "flag": "--loop2-inspect-validate",
+        "does": "Runs Loop2 contract validation and includes checked artifacts and errors."
+      }
+    },
+    {
+      "command": "tau loop2-validate <run_dir>",
+      "does": "Validates Tau-emitted Loop2 receipt artifacts against Loop2 contracts and Tau artifact invariants."
+    },
+    {
+      "command": "tau loop2-validate-native <run_dir>",
+      "does": "Validates artifacts emitted by the native Loop2 runner."
+    },
+    {
+      "command": "tau loop2-sanity",
+      "does": "Creates one fixture Tau Loop2 run and checks its artifacts plus monitor surface.",
+      "proves": "Fixture wiring only."
+    }
+  ],
+  "scillm_delegate_request": {
+    "surface": "delegate",
+    "method": "POST",
+    "url": "http://localhost:4001/v1/scillm/opencode/runs",
+    "headers": {
+      "Authorization": "Bearer ${SCILLM_API_KEY}",
+      "X-Caller-Skill": "tau-loop2-alignment",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "agent": "build",
+      "prompt": "Read the Tau loop-to-Loop2 alignment code. Be blunt. Identify the minimal complete amendment so fixture tau loop2-run works, emits Loop2 artifacts, validates them, and does not add spaghetti. Do not edit. Return: essential files, unnecessary changes, next one patch, and deterministic proof command.",
+      "skills": [
+        "memory",
+        "debugger",
+        "scillm",
+        "loop2"
+      ],
+      "timeout_s": 600
+    },
+    "requires_before_use": [
+      "Scillm doctor/auth passes",
+      "Do not treat delegate output as proof until local commands validate behavior"
+    ]
+  },
+  "scillm_tool_call_request": {
+    "surface": "chat_tools",
+    "tools_path": "experiments/loop2-alignment/scillm_tau_loop2_tools.json",
+    "command": "scillm --json --tools experiments/loop2-alignment/scillm_tau_loop2_tools.json --tool-choice auto openai/gpt-5.5 \"Which Tau/Loop2 check should run next?\"",
+    "meaning": "A non-agent model may propose one of the Tau/Loop2 tool calls. Scillm does not execute it.",
+    "caller_responsibilities": [
+      "validate the returned function name against the tools JSON",
+      "validate arguments before execution",
+      "execute the Tau command locally",
+      "record command output and artifact paths as evidence"
+    ],
+    "requires_before_use": [
+      "scillm tools check passes for the tools JSON",
+      "Scillm doctor/auth passes before a live model call"
+    ]
+  },
+  "latest_fixture_evidence_shape": {
+    "mocked": true,
+    "live": false,
+    "expected_result_fields": {
+      "schema": "tau.loop2_contract_run.v1",
+      "ok": true,
+      "receipt_validation": {
+        "ran": true,
+        "ok": true,
+        "errors": []
+      }
+    }
+  },
+  "live_evidence": [
+    {
+      "name": "live_scillm_opencode_repair",
+      "status": "proven",
+      "mocked": false,
+      "live": true,
+      "proof": "experiments/loop2-alignment/live-sidecar-20260626T182740Z/live-sidecar-proof.json",
+      "proves": [
+        "Tau delegated one live Loop2 Scillm/OpenCode repair",
+        "the repair changed src/buggy_math.py",
+        "the configured pytest command exited 0",
+        "native Loop2 validation checked tau_sanitization"
+      ]
+    },
+    {
+      "name": "env_scillm_auth_contract_preparation",
+      "status": "proven",
+      "mocked": false,
+      "live": true,
+      "proof": "experiments/loop2-alignment/live-env-auth-20260626T183449Z/live-env-auth-proof.json",
+      "proves": [
+        "Tau can use SCILLM_API_KEY in a temporary execution contract",
+        "the source contract is not mutated",
+        "persisted native artifacts redact contract.scillm.api_key"
+      ]
+    },
+    {
+      "name": "scillm_auth_preflight",
+      "status": "proven",
+      "mocked": false,
+      "live": true,
+      "proof": "experiments/loop2-alignment/live-auth-preflight-20260626T184040Z/live-auth-preflight-proof.json",
+      "proves": [
+        "bad Scillm auth fails in Tau before Loop2 runner invocation",
+        "good Scillm auth proceeds to a live delegated repair",
+        "preflight evidence is included in Tau loop2-run JSON output"
+      ]
+    }
+  ],
+  "still_missing": []
+}

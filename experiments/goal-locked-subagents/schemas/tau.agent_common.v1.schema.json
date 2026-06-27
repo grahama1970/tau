@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.agent_common.v1",
+  "title": "Tau Agent Harness Minimal Common Definitions",
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "githubTarget": {
+      "type": "object",
+      "required": ["repo"],
+      "properties": {
+        "repo": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "issue#123, pr#123, or new"
+        }
+      },
+      "additionalProperties": true
+    },
+    "goalRef": {
+      "type": "object",
+      "required": ["goal_id", "goal_version", "goal_hash"],
+      "properties": {
+        "goal_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "goal_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "goal_hash": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "context": {
+      "type": "object",
+      "required": ["summary", "artifacts"],
+      "properties": {
+        "summary": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "nextAgent": {
+      "type": "object",
+      "required": ["name", "reason"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "executor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

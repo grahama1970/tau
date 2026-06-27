@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.generated_ticket.v1",
+  "title": "Tau Generated Ticket",
+  "type": "object",
+  "required": [
+    "schema",
+    "github",
+    "goal",
+    "previous_subagent",
+    "context",
+    "ticket",
+    "requested_work",
+    "rationale",
+    "next_agent",
+    "required_evidence",
+    "stop_condition",
+    "goal_amendment_proposal"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.generated_ticket.v1"
+    },
+    "github": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/githubTarget"
+    },
+    "goal": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/goalRef"
+    },
+    "previous_subagent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/context"
+    },
+    "ticket": {
+      "type": "object",
+      "required": ["kind", "title", "body"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "requested_work": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "next_agent": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/nextAgent"
+    },
+    "required_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_condition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_amendment_proposal": {
+      "type": ["object", "null"]
+    }
+  },
+  "additionalProperties": true
+}

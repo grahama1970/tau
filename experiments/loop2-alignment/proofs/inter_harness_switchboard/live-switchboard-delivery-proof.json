@@ -1,0 +1,62 @@
+{
+  "checks": {
+    "does_not_prove": [
+      "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+    ],
+    "from_tau": true,
+    "metadata_live": true,
+    "metadata_mocked": false,
+    "metadata_ready": true,
+    "metadata_schema": "tau.loop_harness_peer_message.v1",
+    "to_pi_mono": true
+  },
+  "found_message": true,
+  "inbox_count": 1,
+  "inbox_status_code": 200,
+  "message": {
+    "from": "tau",
+    "id": "msg_1782512425136_ivtue7c",
+    "message": "Tau Loop2 receipt is available. Consume the peer metadata, read the transport DAG evidence endpoint, and preserve claims.does_not_prove.",
+    "metadata": {
+      "claims": {
+        "does_not_prove": [
+          "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+        ],
+        "proves": [
+          "loop2 executed one bounded repair-node contract",
+          "configured local checks were run and captured"
+        ]
+      },
+      "endpoints": {
+        "events": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/events",
+        "events_stream": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/events/stream",
+        "peer_message": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/peer-message",
+        "summary": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/summary",
+        "transport_dag_evidence": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/transport-dag-evidence"
+      },
+      "live": true,
+      "mocked": false,
+      "node_id": "tau-stress-list_total",
+      "proof_scope": "one bounded loop2 repair node",
+      "ready": true,
+      "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/list_total/.loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9",
+      "run_id": "loop2-tau-stress-list_total-1782507312-adb5e9",
+      "schema": "tau.loop_harness_peer_message.v1",
+      "schemas": {
+        "final_receipt": "loop2.final_receipt.v1",
+        "node_result": "loop2.node_result.v1",
+        "transport_dag_evidence": "ux_lab.transport_dag_run_evidence.v1"
+      },
+      "status": "PASS"
+    },
+    "priority": "normal",
+    "subject": "Tau Loop2 receipt available: loop2-tau-stress-list_total-1782507312-adb5e9",
+    "timestamp": "2026-06-26T22:20:25.137Z",
+    "to": "pi-mono",
+    "type": "info"
+  },
+  "message_id": "msg_1782512425136_ivtue7c",
+  "schema": "tau.pi_mono_switchboard_live_delivery_proof.v1",
+  "switchboard_url": "http://127.0.0.1:7891",
+  "target": "pi-mono"
+}

@@ -1,8 +1,12 @@
 """Persistent coding-session wrapper built on AgentHarness."""
 
+import asyncio
+import fnmatch
+import shutil
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, replace
 from pathlib import Path
+from time import monotonic
 from typing import Final, Literal, cast
 
 from tau_agent import (
@@ -52,6 +56,7 @@ from tau_coding.diagnostics import (
     AgentCallDiagnosticLogger,
     new_agent_call_run_id,
 )
+from tau_coding.loop_receipt import LoopReceiptConfig, LoopReceiptRecorder
 from tau_coding.paths import TauPaths
 from tau_coding.prompt_templates import (
     PromptTemplate,
@@ -190,6 +195,7 @@ class CodingSessionConfig:
     auto_compact_token_threshold: int | None = None
     auto_compact_enabled: bool = True
     thinking_level: ThinkingLevel = DEFAULT_THINKING_LEVEL
+    loop_receipt: LoopReceiptConfig | None = None
 
 
 class CodingSession:
@@ -1118,8 +1124,12 @@ class CodingSession:
         await self._try_auto_compact(context=context, phase="auto_compact_before_prompt")
         persisted_count = len(self._harness.messages)
         overflow_event: ErrorEvent | None = None
+        terminal_error_message = ""
+        loop_receipt = self._start_loop_receipt(objective=expanded_content)
         try:
             async for event in self._harness.prompt(expanded_content):
+                if loop_receipt is not None:
+                    loop_receipt.record(event)
                 if isinstance(event, MessageEndEvent):
                     persisted_count = await self._persist_messages_since(persisted_count)
                 if isinstance(event, ErrorEvent) and not event.recoverable:
@@ -1130,6 +1140,8 @@ class CodingSession:
                     )
                     if _is_context_overflow_error(event):
                         overflow_event = event
+                    else:
+                        terminal_error_message = event.message
                 yield event
             persisted_count = await self._persist_messages_since(persisted_count)
             if overflow_event is not None:
@@ -1137,6 +1149,8 @@ class CodingSession:
                 if compacted:
                     retry_persisted_count = len(self._harness.messages)
                     async for retry_event in self._harness.continue_():
+                        if loop_receipt is not None:
+                            loop_receipt.record(retry_event)
                         if isinstance(retry_event, MessageEndEvent):
                             retry_persisted_count = await self._persist_messages_since(
                                 retry_persisted_count
@@ -1149,9 +1163,20 @@ class CodingSession:
                                     event=retry_event,
                                 )
                             )
+                            terminal_error_message = retry_event.message
                         yield retry_event
                     await self._persist_messages_since(retry_persisted_count)
+                if loop_receipt is not None:
+                    await self._finish_loop_receipt(
+                        loop_receipt,
+                        terminal_error_message=terminal_error_message,
+                    )
                 return
+            if loop_receipt is not None:
+                await self._finish_loop_receipt(
+                    loop_receipt,
+                    terminal_error_message=terminal_error_message,
+                )
             await self._try_auto_compact(context=context, phase="auto_compact_after_prompt")
         except Exception as exc:
             self._last_diagnostic_log_path = self._diagnostic_logger.log_exception(
@@ -1194,6 +1219,160 @@ class CodingSession:
             session_id=self.session_id,
             run_id=new_agent_call_run_id(),
         )
+
+    def _start_loop_receipt(self, *, objective: str) -> LoopReceiptRecorder | None:
+        config = self._config.loop_receipt
+        if config is None:
+            return None
+        recorder = LoopReceiptRecorder.create(root_dir=config.root_dir)
+        recorder.write_contract(
+            node_id=config.node_id,
+            objective=objective,
+            repo=self.cwd,
+            allowed_globs=config.allowed_globs,
+            checks=config.checks,
+            max_attempts=config.max_attempts,
+            backend=config.backend,
+            backend_config=config.backend_config,
+            required_changed_globs=config.required_changed_globs,
+            run_root=config.root_dir,
+        )
+        return recorder
+
+    async def _finish_loop_receipt(
+        self,
+        recorder: LoopReceiptRecorder,
+        *,
+        terminal_error_message: str = "",
+    ) -> None:
+        config = self._config.loop_receipt
+        if config is None:
+            return
+        checks = await self._run_loop_receipt_checks(recorder)
+        checks_passed = all(check["exit_code"] == 0 for check in checks)
+        changed_files = await self._loop_receipt_changed_files()
+        missing_required = _missing_required_changed_globs(
+            changed_files,
+            config.required_changed_globs,
+        )
+        if terminal_error_message:
+            receipt_status = "BLOCKED"
+            receipt_error = terminal_error_message
+        elif checks_passed and missing_required:
+            receipt_status = "BLOCKED"
+            receipt_error = "required changed globs missing: " + ", ".join(missing_required)
+            recorder.emit_loop2_event(
+                "required_changes_missing",
+                node_id=config.node_id,
+                status="blocked",
+                message=receipt_error,
+                data={"missing_required_globs": missing_required},
+            )
+        else:
+            receipt_status = "PASS" if checks_passed else "FAILED"
+            receipt_error = ""
+        recorder.write_final_receipt(
+            node_id=config.node_id,
+            status=receipt_status,
+            mocked=config.mocked,
+            live=config.live,
+            provider=self.provider_name,
+            model=self.model,
+            checks=checks,
+            changed_files=changed_files,
+            proof_scope=config.proof_scope,
+            proves=config.proves,
+            does_not_prove=config.does_not_prove,
+            error=receipt_error,
+        )
+        recorder.emit_loop2_event(
+            "receipt_written",
+            node_id=config.node_id,
+            status="completed" if receipt_status == "PASS" else "blocked",
+        )
+        recorder.write_transport_dag_evidence()
+        recorder.write_node_result(
+            node_id=config.node_id,
+            status=receipt_status,
+            mocked=config.mocked,
+            live=config.live,
+            checks=checks,
+            changed_files=changed_files,
+        )
+
+    async def _run_loop_receipt_checks(
+        self,
+        recorder: LoopReceiptRecorder,
+    ) -> list[dict[str, object]]:
+        config = self._config.loop_receipt
+        if config is None:
+            return []
+        check_results: list[dict[str, object]] = []
+        checks_dir = recorder.run.run_dir / "checks"
+        checks_dir.mkdir(parents=True, exist_ok=True)
+        recorder.emit_loop2_event("checks_started", node_id=config.node_id, status="running")
+        for index, command in enumerate(config.checks, start=1):
+            stdout_path = checks_dir / f"check-{index:04d}.stdout.txt"
+            stderr_path = checks_dir / f"check-{index:04d}.stderr.txt"
+            started = monotonic()
+            process = await asyncio.create_subprocess_shell(
+                command,
+                cwd=self.cwd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await process.communicate()
+            elapsed_s = monotonic() - started
+            stdout_path.write_bytes(stdout)
+            stderr_path.write_bytes(stderr)
+            check_result = {
+                "command": command,
+                "exit_code": int(process.returncode or 0),
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+                "elapsed_s": elapsed_s,
+            }
+            check_results.append(check_result)
+            recorder.emit_loop2_event(
+                "check_finished",
+                node_id=config.node_id,
+                status="completed" if check_result["exit_code"] == 0 else "failed",
+                message=command,
+                data=check_result,
+            )
+        checks_ok = all(check["exit_code"] == 0 for check in check_results)
+        recorder.emit_loop2_event(
+            "checks_finished",
+            node_id=config.node_id,
+            status="completed" if checks_ok else "failed",
+        )
+        return check_results
+
+    async def _loop_receipt_changed_files(self) -> list[str]:
+        config = self._config.loop_receipt
+        if config is None:
+            return []
+        if config.changed_files:
+            return list(config.changed_files)
+        if not (self.cwd / ".git").exists() or shutil.which("git") is None:
+            return []
+        process = await asyncio.create_subprocess_exec(
+            "git",
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+            cwd=self.cwd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        stdout, _stderr = await process.communicate()
+        if process.returncode != 0:
+            return []
+        files: list[str] = []
+        for line in stdout.decode("utf-8", errors="replace").splitlines():
+            if len(line) > 3:
+                files.append(line[3:].strip())
+        return sorted(files)
 
     async def _persist_messages_since(self, persisted_count: int) -> int:
         """Persist completed harness messages after ``persisted_count``.
@@ -1735,6 +1914,17 @@ def parse_terminal_command(text: str) -> TerminalCommandRequest | None:
             return None
         return TerminalCommandRequest(command=command, add_to_context=True)
     return None
+
+
+def _missing_required_changed_globs(
+    changed_files: list[str],
+    required_globs: tuple[str, ...],
+) -> list[str]:
+    return [
+        pattern
+        for pattern in required_globs
+        if not any(fnmatch.fnmatch(path, pattern) for path in changed_files)
+    ]
 
 
 def _category_summary(

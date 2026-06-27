@@ -94,6 +94,92 @@ def test_tui_adapter_groups_thinking_deltas_separately() -> None:
     assert state.show_thinking is False
 
 
+def test_tui_adapter_updates_hidden_thinking_status_from_pipeline_stage() -> None:
+    state = TuiState()
+    adapter = TuiEventAdapter(state)
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
+            tool_call_id="memory-1",
+            message="intent classified",
+            data={"memory_stage": "intent"},
+        )
+    )
+    assert state.thinking_placeholder_text == "Getting Intent..."
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
+            tool_call_id="memory-1",
+            message="entities extracted",
+            data={"pipeline_stage": "extract_entities"},
+        )
+    )
+    assert state.thinking_placeholder_text == "Extracting Entities..."
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
+            tool_call_id="memory-1",
+            message="plain update",
+        )
+    )
+    assert state.thinking_placeholder_text == "Extracting Entities..."
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
+            tool_call_id="figure-1",
+            message="figure started",
+            data={"stage": "figure"},
+        )
+    )
+    assert state.thinking_placeholder_text == "Creating Figure..."
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
+            tool_call_id="voice-1",
+            message="voice metadata attached",
+            data={"stage": "personaplex"},
+        )
+    )
+    assert state.thinking_placeholder_text == "Preparing Persona Voice..."
+
+
+def test_tui_adapter_updates_loop_monitor_status_from_tool_update() -> None:
+    state = TuiState()
+    adapter = TuiEventAdapter(state)
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
+            tool_call_id="loop2-monitor",
+            message="loop event stream updated",
+            data={
+                "loop2_monitor": {
+                    "label": "STREAM READY",
+                    "run_id": "loop2-tau-stress-math_add-1782507220-da39d0",
+                    "event_count": 25,
+                    "last_event_type": "receipt_written",
+                    "receipt_status": "PASS",
+                    "proof_scope": "loop2_tau_harness_stream",
+                    "mocked": False,
+                    "live": True,
+                    "does_not_prove": ["provider semantic correctness"],
+                    "source": "http://127.0.0.1:8876",
+                }
+            },
+        )
+    )
+
+    assert state.loop_monitor_status is not None
+    assert state.loop_monitor_status.label == "STREAM READY"
+    assert state.loop_monitor_status.run_id == "loop2-tau-stress-math_add-1782507220-da39d0"
+    assert state.loop_monitor_status.event_count == 25
+    assert state.loop_monitor_status.last_event_type == "receipt_written"
+    assert state.loop_monitor_status.receipt_status == "PASS"
+    assert state.loop_monitor_status.proof_scope == "loop2_tau_harness_stream"
+    assert state.loop_monitor_status.mocked is False
+    assert state.loop_monitor_status.live is True
+    assert state.loop_monitor_status.does_not_prove == ("provider semantic correctness",)
+
+
 def test_tui_adapter_flushes_assistant_buffer_before_tool_events() -> None:
     state = TuiState()
     adapter = TuiEventAdapter(state)

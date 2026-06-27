@@ -1,0 +1,36 @@
+{
+  "schema": "tau.human_goal_change.v1",
+  "github": {
+    "repo": "grahama1970/chatgpt-lab",
+    "target": "issue#123"
+  },
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal"
+  },
+  "previous_subagent": "human",
+  "context": {
+    "summary": "The current goal needs to include GitHub ticket orchestration.",
+    "artifacts": []
+  },
+  "new_goal": {
+    "text": "Build Tau's goal-locked GitHub ticket harness one validated slice at a time.",
+    "success_criteria": [
+      "New goal capsule is written."
+    ],
+    "constraints": [
+      "Only humans can amend immutable goals."
+    ],
+    "non_goals": []
+  },
+  "rationale": "The goal change is required to align the harness with durable GitHub routing.",
+  "next_agent": {
+    "name": "goal-guardian",
+    "reason": "Goal changes must be reconciled before further work."
+  },
+  "required_evidence": [
+    "Open tickets are classified as keep, close, migrate, or regenerate."
+  ],
+  "stop_condition": "Goal guardian posts a reconciliation receipt."
+}

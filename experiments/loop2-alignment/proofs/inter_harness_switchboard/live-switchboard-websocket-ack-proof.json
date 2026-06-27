@@ -1,0 +1,157 @@
+{
+  "schema": "tau.pi_mono_switchboard_websocket_ack_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "switchboard_url": "http://127.0.0.1:30176",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0",
+  "health": {
+    "status": "ok",
+    "uptime": 0.3048136,
+    "agents": 0,
+    "connectedAgents": 0,
+    "totalMessages": 0
+  },
+  "connected": {
+    "type": "connected",
+    "agent": "pi-mono",
+    "pendingMessages": 0
+  },
+  "cli": {
+    "status": 0,
+    "stdout_json": {
+      "errors": [],
+      "ok": true,
+      "request": {
+        "from": "tau",
+        "message": "Tau Loop2 receipt is available. Consume the peer metadata, read the transport DAG evidence endpoint, and preserve claims.does_not_prove.",
+        "metadata": {
+          "claims": {
+            "does_not_prove": [
+              "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+            ],
+            "proves": [
+              "loop2 executed one bounded repair-node contract",
+              "configured local checks were run and captured"
+            ]
+          },
+          "endpoints": {
+            "events": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/events",
+            "events_stream": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/events/stream",
+            "peer_message": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/peer-message",
+            "summary": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/summary",
+            "transport_dag_evidence": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/transport-dag-evidence"
+          },
+          "live": true,
+          "mocked": false,
+          "node_id": "tau-stress-math_add",
+          "proof_scope": "one bounded loop2 repair node",
+          "ready": true,
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0",
+          "run_id": "loop2-tau-stress-math_add-1782507220-da39d0",
+          "schema": "tau.loop_harness_peer_message.v1",
+          "schemas": {
+            "final_receipt": "loop2.final_receipt.v1",
+            "node_result": "loop2.node_result.v1",
+            "transport_dag_evidence": "ux_lab.transport_dag_run_evidence.v1"
+          },
+          "status": "PASS"
+        },
+        "priority": "normal",
+        "subject": "Tau Loop2 receipt available: loop2-tau-stress-math_add-1782507220-da39d0",
+        "to": "pi-mono",
+        "type": "info"
+      },
+      "response": {
+        "id": "msg_1782513782654_l6ft7n5",
+        "message": {
+          "from": "tau",
+          "id": "msg_1782513782654_l6ft7n5",
+          "message": "Tau Loop2 receipt is available. Consume the peer metadata, read the transport DAG evidence endpoint, and preserve claims.does_not_prove.",
+          "metadata": {
+            "claims": {
+              "does_not_prove": [
+                "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+              ],
+              "proves": [
+                "loop2 executed one bounded repair-node contract",
+                "configured local checks were run and captured"
+              ]
+            },
+            "endpoints": {
+              "events": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/events",
+              "events_stream": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/events/stream",
+              "peer_message": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/peer-message",
+              "summary": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/summary",
+              "transport_dag_evidence": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/transport-dag-evidence"
+            },
+            "live": true,
+            "mocked": false,
+            "node_id": "tau-stress-math_add",
+            "proof_scope": "one bounded loop2 repair node",
+            "ready": true,
+            "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0",
+            "run_id": "loop2-tau-stress-math_add-1782507220-da39d0",
+            "schema": "tau.loop_harness_peer_message.v1",
+            "schemas": {
+              "final_receipt": "loop2.final_receipt.v1",
+              "node_result": "loop2.node_result.v1",
+              "transport_dag_evidence": "ux_lab.transport_dag_run_evidence.v1"
+            },
+            "status": "PASS"
+          },
+          "priority": "normal",
+          "subject": "Tau Loop2 receipt available: loop2-tau-stress-math_add-1782507220-da39d0",
+          "timestamp": "2026-06-26T22:43:02.654Z",
+          "to": "pi-mono",
+          "type": "info"
+        },
+        "success": true
+      },
+      "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0",
+      "schema": "tau.loop_peer_switchboard_emit.v1",
+      "status_code": 201,
+      "switchboard_url": "http://127.0.0.1:30176/emit"
+    },
+    "stderr_tail": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/.tmp_venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+  },
+  "received": {
+    "type": "message",
+    "message_id": "msg_1782513782654_l6ft7n5",
+    "from": "tau",
+    "to": "pi-mono",
+    "subject": "Tau Loop2 receipt available: loop2-tau-stress-math_add-1782507220-da39d0",
+    "metadata_schema": "tau.loop_harness_peer_message.v1",
+    "metadata_run_id": "loop2-tau-stress-math_add-1782507220-da39d0",
+    "metadata_live": true,
+    "metadata_mocked": false,
+    "metadata_does_not_prove": [
+      "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+    ]
+  },
+  "acked": {
+    "type": "acked",
+    "id": "msg_1782513782654_l6ft7n5",
+    "success": true
+  },
+  "inbox_after": {
+    "agent": "pi-mono",
+    "count": 0,
+    "messages": [],
+    "hasMore": false
+  },
+  "claims": {
+    "proves": [
+      "Tau peer handoff can be emitted through pi-mono Switchboard",
+      "A pi-mono WebSocket consumer receives the Tau peer message",
+      "The consumer can acknowledge the message through the existing Switchboard ack protocol",
+      "The acknowledged message is removed from the pi-mono inbox"
+    ],
+    "does_not_prove": [
+      "semantic downstream processing by a production pi-mono agent",
+      "multi-harness fanout beyond one pi-mono consumer",
+      "human acceptance of the final Sparta Chat product surface"
+    ]
+  },
+  "server_log_tail": "[Switchboard] Running on http://127.0.0.1:30176\n[Switchboard] WebSocket on ws://127.0.0.1:30176?agent=<name>\n[Switchboard] PID: 316292\n[Switchboard] WebSocket connected: pi-mono\n[Switchboard] Pushed message msg_1782513782654_l6ft7n5 to pi-mono via WebSocket\n[Switchboard] Message msg_1782513782654_l6ft7n5: tau -> pi-mono (pushed: true)\n[Switchboard] Message msg_1782513782654_l6ft7n5 acknowledged by pi-mono\n\n"
+}

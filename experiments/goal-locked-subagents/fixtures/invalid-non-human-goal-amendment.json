@@ -1,0 +1,29 @@
+{
+  "schema": "tau.subagent_receipt.v1",
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 2,
+    "goal_hash": "sha256:changed-goal",
+    "immutable_goal_preserved": false
+  },
+  "context": {
+    "run_id": "tau-run-003",
+    "ticket": "issue#125",
+    "subagent": "researcher",
+    "actor_type": "subagent"
+  },
+  "result": {
+    "status": "BLOCKED",
+    "summary": "The subagent attempted to reframe the goal.",
+    "mocked": false,
+    "live": true
+  },
+  "rationale": "Goal changes must route to the human authority.",
+  "evidence": [],
+  "next": {
+    "subagent": "human",
+    "reason": "Only the human can approve a goal amendment.",
+    "executor": "human"
+  },
+  "stop_condition": "Human accepts or rejects the goal amendment."
+}

@@ -26,6 +26,7 @@ from tau_agent import (
     ToolCall,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
+    ToolExecutionUpdateEvent,
     ToolResultMessage,
     UserMessage,
 )
@@ -64,8 +65,8 @@ from tau_coding.tui.app import (
     TreePickerScreen,
     _activity_prompt_border_color,
     _completion_selected_render_line,
-    _theme_css_variables,
     _terminal_command_prefix_span,
+    _theme_css_variables,
     _visible_completion_state,
 )
 from tau_coding.tui.autocomplete import CompletionItem, CompletionState
@@ -77,13 +78,13 @@ from tau_coding.tui.config import (
     TuiSettings,
     tui_settings_path,
 )
-from tau_coding.tui.state import ChatItem
+from tau_coding.tui.state import ChatItem, LoopMonitorStatus
 from tau_coding.tui.widgets import (
     LeftAlignedMarkdownHeading,
     StreamingTranscriptMessageWidget,
+    ThemedMarkdownWidget,
     TranscriptMessageWidget,
     TranscriptView,
-    ThemedMarkdownWidget,
     _compact_token_count,
     _syntax_language,
     _transcript_plain_body_text,
@@ -92,7 +93,6 @@ from tau_coding.tui.widgets import (
     render_session_sidebar,
     transcript_item_selection_text,
 )
-
 
 ANSI_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
@@ -115,6 +115,7 @@ def _style_rgb(color: str) -> str:
 
 class FakeSessionState:
     thinking_level = "medium"
+    loop_monitor_status = None
 
 
 class FakeSession:
@@ -442,6 +443,36 @@ def test_session_sidebar_lists_multiple_context_files() -> None:
     assert "docs/AGENTS.md" in output
 
 
+def test_session_sidebar_renders_loop_monitor_status() -> None:
+    session = FakeSession()
+    session.state.loop_monitor_status = LoopMonitorStatus(
+        label="STREAM READY",
+        run_id="loop2-tau-stress-math_add-1782507220-da39d0",
+        event_count=25,
+        last_event_type="receipt_written",
+        receipt_status="PASS",
+        proof_scope="loop2_tau_harness_stream",
+        mocked=False,
+        live=True,
+        does_not_prove=("provider semantic correctness",),
+        source="http://127.0.0.1:8876",
+    )
+    console = Console(record=True, width=120)
+
+    console.print(render_session_sidebar(session))
+
+    output = console.export_text()
+    assert "loop2 monitor" in output
+    assert "STREAM READY" in output
+    assert "loop2-tau-stress-math_add-1782507220-da39d0" in output
+    assert "events" in output
+    assert "25" in output
+    assert "receipt_written" in output
+    assert "PASS" in output
+    assert "mocked:false live:true" in output
+    assert "provider semantic correctness" in output
+
+
 def test_compact_session_info_renders_sidebar_facts() -> None:
     console = Console(record=True, width=120)
 
@@ -452,6 +483,18 @@ def test_compact_session_info_renders_sidebar_facts() -> None:
     assert "12k/200k context" in output
     assert "openai:fake-model" in output
     assert "(medium)" in output
+
+
+def test_compact_session_info_includes_loop_monitor_status() -> None:
+    session = FakeSession()
+    session.state.loop_monitor_status = LoopMonitorStatus(label="STREAM READY")
+    console = Console(record=True, width=120)
+
+    console.print(render_compact_session_info(session))
+
+    output = console.export_text()
+    assert "loop2:STREAM" in output
+    assert "READY" in output
 
 
 def test_compact_token_count_uses_thousands_suffix() -> None:
@@ -3736,6 +3779,36 @@ async def test_tui_app_toggles_thinking_tokens_from_keybinding_while_running() -
         assert "internal plan" not in transcript_text()
 
     assert notifications == []
+
+
+@pytest.mark.anyio
+async def test_tui_app_updates_hidden_thinking_label_from_pipeline_stage() -> None:
+    app = TauTuiApp(FakeSession())
+
+    def transcript_text() -> str:
+        transcript = app.query_one("#transcript", TranscriptView)
+        return "\n".join(line.text for line in transcript.lines)
+
+    async with app.run_test() as pilot:
+        app.state.add_thinking_delta("internal memory routing")
+        app._refresh()
+        await pilot.pause()
+
+        assert "Thinking… Press Ctrl+T to show thinking tokens." in transcript_text()
+        assert "internal memory routing" not in transcript_text()
+
+        event = ToolExecutionUpdateEvent(
+            tool_call_id="memory-1",
+            message="intent classified",
+            data={"memory_stage": "intent"},
+        )
+        app.adapter.apply(event)
+        await app._apply_streaming_transcript_event(event)
+        await pilot.pause()
+
+        assert "Getting Intent..." in transcript_text()
+        assert "Thinking… Press Ctrl+T to show thinking tokens." not in transcript_text()
+        assert "internal memory routing" not in transcript_text()
 
 
 @pytest.mark.anyio

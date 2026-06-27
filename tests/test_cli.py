@@ -1,3 +1,5 @@
+import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,7 +14,14 @@ from tau_ai import (
     ProviderResponseStartEvent,
     ProviderTextDeltaEvent,
 )
-from tau_coding import CodingSessionRecord, SessionManager, cli
+from tau_coding import (
+    CodingSessionRecord,
+    LoopReceiptConfig,
+    LoopReceiptMonitorCheckResult,
+    LoopReceiptValidationResult,
+    SessionManager,
+    cli,
+)
 from tau_coding.cli import app, run_print_mode
 from tau_coding.paths import TauPaths
 from tau_coding.provider_config import (
@@ -26,11 +35,2309 @@ from tau_coding.system_prompt import BuildSystemPromptOptions, build_system_prom
 from tau_coding.tools import create_coding_tools
 
 
+async def _passing_scillm_auth_preflight(
+    contract: dict[str, object],
+) -> dict[str, object]:
+    del contract
+    return {
+        "schema": "tau.scillm_proxy_auth_preflight.v1",
+        "ran": True,
+        "ok": True,
+        "base_url": "http://127.0.0.1:4001",
+        "endpoint": "/v1/scillm/loop2/capabilities",
+        "caller_skill": "tau",
+        "status_code": 200,
+        "errors": [],
+    }
+
+
 def test_version_command() -> None:
     result = CliRunner().invoke(app, ["--version"])
 
     assert result.exit_code == 0
     assert result.stdout.strip() == "tau 0.1.0"
+
+
+def test_cli_loop2_serve_starts_receipt_monitor(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    run_dir.mkdir()
+    calls: list[tuple[Path, str, int]] = []
+    closed = False
+
+    class FakeServer:
+        server_address = ("127.0.0.1", 43210)
+
+        def serve_forever(self) -> None:
+            return
+
+        def server_close(self) -> None:
+            nonlocal closed
+            closed = True
+
+    def fake_create_loop_receipt_monitor_server(
+        selected_run_dir: Path,
+        *,
+        host: str,
+        port: int,
+    ) -> FakeServer:
+        calls.append((selected_run_dir, host, port))
+        return FakeServer()
+
+    monkeypatch.setattr(
+        cli,
+        "create_loop_receipt_monitor_server",
+        fake_create_loop_receipt_monitor_server,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-serve-host",
+            "127.0.0.1",
+            "--loop2-serve-port",
+            "0",
+            "loop2-serve",
+            str(run_dir),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [(run_dir.resolve(), "127.0.0.1", 0)]
+    assert closed is True
+    assert (
+        f"Serving Tau Loop2 receipt run {run_dir.name} at "
+        f"http://127.0.0.1:43210/api/loop2/runs/{run_dir.name}"
+    ) in result.output
+
+
+def test_cli_loop2_serve_rejects_missing_run_dir(tmp_path: Path) -> None:
+    run_dir = tmp_path / "missing-run"
+
+    result = CliRunner().invoke(app, ["loop2-serve", str(run_dir)])
+
+    assert result.exit_code != 0
+    assert "Loop2 receipt run directory does not exist" in result.output
+
+
+def test_cli_loop2_validate_prints_success_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    loop2_src = tmp_path / "loop2-src"
+    calls: list[tuple[Path, Path | None]] = []
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        calls.append((selected_run_dir, loop2_src))
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "node_result"),
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["--loop2-src", str(loop2_src), "loop2-validate", str(run_dir)],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [(run_dir.resolve(), loop2_src)]
+    assert payload == {
+        "schema": "tau.loop_receipt.validation.v1",
+        "run_dir": str(run_dir.resolve()),
+        "ok": True,
+        "checked_artifacts": ["contract", "final_receipt", "node_result"],
+        "errors": [],
+    }
+
+
+def test_cli_loop2_validate_exits_nonzero_on_contract_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del selected_run_dir, loop2_src
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=("contract",),
+            errors=("final_receipt: bad status",),
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-validate", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["checked_artifacts"] == ["contract"]
+    assert payload["errors"] == ["final_receipt: bad status"]
+
+
+def test_cli_loop2_validate_contract_prints_success_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    loop2_src = tmp_path / "loop2-src"
+    calls: list[tuple[Path, Path | None]] = []
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        calls.append((selected_contract_path, loop2_src))
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src),
+            "loop2-validate-contract",
+            str(contract_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [(contract_path.resolve(), loop2_src)]
+    assert payload == {
+        "schema": "tau.loop2_contract.validation.v1",
+        "contract": str(contract_path.resolve()),
+        "ok": True,
+        "checked_artifacts": ["contract"],
+        "errors": [],
+    }
+
+
+def test_cli_loop2_validate_contract_exits_nonzero_on_contract_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del selected_contract_path, loop2_src
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=(),
+            errors=("contract: checks must not be empty",),
+        )
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+
+    result = CliRunner().invoke(app, ["loop2-validate-contract", str(contract_path)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["checked_artifacts"] == []
+    assert payload["errors"] == ["contract: checks must not be empty"]
+
+
+def test_cli_loop2_validate_native_prints_success_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "native-loop2-run"
+    loop2_src = tmp_path / "loop2-src"
+    calls: list[tuple[Path, Path | None]] = []
+
+    def fake_validate_native_loop2_run_with_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        calls.append((selected_run_dir, loop2_src))
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "node_result"),
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "validate_native_loop2_run_with_contracts",
+        fake_validate_native_loop2_run_with_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["--loop2-src", str(loop2_src), "loop2-validate-native", str(run_dir)],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [(run_dir.resolve(), loop2_src)]
+    assert payload == {
+        "schema": "tau.native_loop2_run.validation.v1",
+        "run_dir": str(run_dir.resolve()),
+        "ok": True,
+        "checked_artifacts": ["contract", "final_receipt", "node_result"],
+        "errors": [],
+    }
+
+
+def test_cli_loop2_validate_native_exits_nonzero_on_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "native-loop2-run"
+
+    def fake_validate_native_loop2_run_with_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del selected_run_dir, loop2_src
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=("contract",),
+            errors=("current_state: schema mismatch",),
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "validate_native_loop2_run_with_contracts",
+        fake_validate_native_loop2_run_with_contracts,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-validate-native", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.native_loop2_run.validation.v1"
+    assert payload["ok"] is False
+    assert payload["checked_artifacts"] == ["contract"]
+    assert payload["errors"] == ["current_state: schema mismatch"]
+
+
+def test_cli_loop2_run_passes_loop2_contract_to_print_mode(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    run_root = tmp_path / ".loop2" / "runs"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-one",
+                "objective": "Fix the thing.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "required_changed_globs": ["src/**/*.py"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "fixture",
+                "run_root": str(run_root),
+            }
+        )
+    )
+    calls: list[tuple[str, Path, LoopReceiptConfig | None]] = []
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del loop2_src
+        assert selected_contract_path == contract_path.resolve()
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    receipt_validation_calls: list[tuple[Path, Path | None]] = []
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        receipt_validation_calls.append((selected_run_dir, loop2_src))
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "node_result"),
+        )
+
+    async def fake_run_fixture_loop2_print_mode(
+        *,
+        prompt: str,
+        model: str,
+        cwd: Path,
+        output: PrintOutputMode,
+        loop_receipt: LoopReceiptConfig,
+    ) -> bool:
+        del model, output
+        calls.append((prompt, cwd, loop_receipt))
+        run_dir = run_root / "tau-loop-test"
+        run_dir.mkdir(parents=True)
+        return True
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+    monkeypatch.setattr(
+        cli,
+        "_run_fixture_loop2_print_mode",
+        fake_run_fixture_loop2_print_mode,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-run", str(contract_path)])
+
+    assert result.exit_code == 0
+    assert receipt_validation_calls == [(run_root / "tau-loop-test", None)]
+    assert len(calls) == 1
+    prompt, cwd, receipt = calls[0]
+    assert prompt == "Fix the thing."
+    assert cwd == tmp_path
+    assert receipt == LoopReceiptConfig(
+        root_dir=run_root,
+        node_id="repair-one",
+        allowed_globs=("src/**",),
+        required_changed_globs=("src/**/*.py",),
+        checks=("python -m pytest",),
+    )
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is True
+    assert payload["run_dir"] == str(run_root / "tau-loop-test")
+    assert payload["mocked"] is True
+    assert payload["live"] is False
+    assert payload["receipt_validation"] == {
+        "ran": True,
+        "ok": True,
+        "checked_artifacts": ["contract", "final_receipt", "node_result"],
+        "errors": [],
+    }
+
+
+def test_cli_loop2_run_rejects_fixture_run_when_receipt_validation_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    run_root = tmp_path / ".loop2" / "runs"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-one",
+                "objective": "Fix the thing.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "fixture",
+                "run_root": str(run_root),
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del loop2_src
+        assert selected_contract_path == contract_path.resolve()
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    async def fake_run_fixture_loop2_print_mode(
+        *,
+        prompt: str,
+        model: str,
+        cwd: Path,
+        output: PrintOutputMode,
+        loop_receipt: LoopReceiptConfig,
+    ) -> bool:
+        del prompt, model, cwd, output, loop_receipt
+        (run_root / "tau-loop-test").mkdir(parents=True)
+        return True
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_run_dir == run_root / "tau-loop-test"
+        assert loop2_src is None
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=("contract",),
+            errors=("node_result: missing events",),
+    )
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(
+        cli,
+        "_run_fixture_loop2_print_mode",
+        fake_run_fixture_loop2_print_mode,
+    )
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-run", str(contract_path)])
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is False
+    assert payload["run_dir"] == str(run_root / "tau-loop-test")
+    assert payload["receipt_validation"] == {
+        "ran": True,
+        "ok": False,
+        "checked_artifacts": ["contract"],
+        "errors": ["node_result: missing events"],
+    }
+    assert payload["errors"] == ["node_result: missing events"]
+
+
+def test_cli_loop2_run_fixture_output_is_single_json_payload(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    run_root = tmp_path / ".loop2" / "runs"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-one",
+                "objective": "Fix the thing.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": [f"{sys.executable} -c \"print('check ok')\""],
+                "max_attempts": 1,
+                "backend": "fixture",
+                "run_root": str(run_root),
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del loop2_src
+        assert selected_contract_path == contract_path.resolve()
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_run_dir.parent == run_root
+        assert loop2_src is None
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "node_result"),
+        )
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-run", str(contract_path)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is True
+    assert "Fixture loop complete." not in result.output
+
+
+def test_cli_loop2_run_rejects_invalid_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    contract_path.write_text("{}")
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del selected_contract_path, loop2_src
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=("contract",),
+            errors=("node_id missing",),
+        )
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+
+    result = CliRunner().invoke(app, ["loop2-run", str(contract_path)])
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload == {
+        "contract": str(contract_path.resolve()),
+        "errors": ["node_id missing"],
+        "live": False,
+        "mocked": True,
+        "ok": False,
+        "schema": "tau.loop2_contract_run.v1",
+    }
+
+
+def test_cli_loop2_run_rejects_scillm_backend_until_delegation_exists(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "dev-proxy-key-123",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+    calls = 0
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del loop2_src
+        assert selected_contract_path == contract_path.resolve()
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+    ) -> bool:
+        nonlocal calls
+        del prompt, model, cwd, output, provider_name, loop_receipt
+        calls += 1
+        return True
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(app, ["--provider", "chutes", "loop2-run", str(contract_path)])
+
+    assert result.exit_code == 1
+    assert calls == 0
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is False
+    assert payload["node_id"] == "repair-scillm"
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["checks"] == ["python -m pytest"]
+    assert payload["run_dir"] == ""
+    assert payload["errors"] == [
+        "tau loop2-run currently supports backend=fixture only; "
+        "backend=scillm requires --loop2-src pointing at the Loop2 runner"
+    ]
+
+
+def test_cli_loop2_run_delegates_scillm_backend_to_loop2_runner(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.delenv("SCILLM_API_KEY", raising=False)
+    contract_path = tmp_path / "contract.json"
+    run_dir = tmp_path / ".loop2" / "runs" / "loop2-run-test"
+    final_receipt = run_dir / "final-receipt.json"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    args_path = tmp_path / "runner-args.txt"
+    runner.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f"printf '%s\\n' \"$@\" > {args_path}",
+                f"mkdir -p {run_dir / 'checks'}",
+                f"cat > {run_dir / 'contract.json'} <<'CONTRACT'",
+                json.dumps(
+                    {
+                        "schema": "loop2.repair_node_contract.v1",
+                        "node_id": "repair-scillm",
+                        "objective": "Fix with Loop2 Scillm.",
+                        "repo": str(tmp_path),
+                        "allowed_globs": ["src/**"],
+                        "checks": ["python -m pytest"],
+                        "max_attempts": 1,
+                        "backend": "scillm",
+                        "scillm": {
+                            "base_url": "http://127.0.0.1:4001",
+                            "api_key": "secret-scillm-key",
+                            "agent_id": "",
+                            "agent": "build",
+                            "mode": "workspace_write",
+                            "model": "opencode-go/kimi-k2.6",
+                            "timeout_s": 900,
+                        },
+                    }
+                ),
+                "CONTRACT",
+                f"touch {run_dir / 'current-state.json'}",
+                f"touch {run_dir / 'events.jsonl'}",
+                f"cat > {final_receipt} <<'FINAL_RECEIPT'",
+                json.dumps(
+                    {
+                        "schema": "loop2.final_receipt.v1",
+                        "node_id": "repair-scillm",
+                        "status": "PASS",
+                        "run_id": "loop2-run-test",
+                        "mocked": False,
+                        "live": True,
+                        "proof_scope": "one bounded loop2 repair node",
+                        "changed_files": [
+                            "src/fixed.py",
+                            "src/__pycache__/fixed.cpython-314.pyc",
+                        ],
+                        "checks": [
+                            {
+                                "command": "python -m pytest",
+                                "exit_code": 0,
+                                "stdout_path": str(run_dir / "checks" / "stdout.txt"),
+                                "stderr_path": str(run_dir / "checks" / "stderr.txt"),
+                                "elapsed_s": 0.01,
+                            }
+                        ],
+                        "claims": {"proves": [], "does_not_prove": []},
+                        "artifacts": {
+                            "run_dir": str(run_dir),
+                            "events": str(run_dir / "events.jsonl"),
+                            "current_state": str(run_dir / "current-state.json"),
+                            "transport_dag_evidence": str(
+                                run_dir / "transport-dag-evidence.json"
+                            ),
+                            "node_result": str(run_dir / "node-result.json"),
+                        },
+                    }
+                ),
+                "FINAL_RECEIPT",
+                f"touch {run_dir / 'transport-dag-evidence.json'}",
+                f"cat > {run_dir / 'node-result.json'} <<'NODE_RESULT'",
+                json.dumps(
+                    {
+                        "schema": "loop2.node_result.v1",
+                        "node_id": "repair-scillm",
+                        "status": "PASS",
+                        "run_id": "loop2-run-test",
+                        "final_receipt": str(final_receipt),
+                        "transport_dag_evidence": str(run_dir / "transport-dag-evidence.json"),
+                        "events": str(run_dir / "events.jsonl"),
+                        "changed_files": [
+                            "src/fixed.py",
+                            "src/__pycache__/fixed.cpython-314.pyc",
+                        ],
+                        "checks": [
+                            {
+                                "command": "python -m pytest",
+                                "exit_code": 0,
+                                "stdout_path": str(run_dir / "checks" / "stdout.txt"),
+                                "stderr_path": str(run_dir / "checks" / "stderr.txt"),
+                                "elapsed_s": 0.01,
+                            }
+                        ],
+                        "mocked": False,
+                        "live": True,
+                    }
+                ),
+                "NODE_RESULT",
+                f"touch {run_dir / 'checks' / 'stdout.txt'}",
+                f"touch {run_dir / 'checks' / 'stderr.txt'}",
+                "cat <<'JSON'",
+                json.dumps(
+                    {
+                        "schema": "loop2.node_result.v1",
+                        "node_id": "repair-scillm",
+                        "status": "PASS",
+                        "run_id": "loop2-run-test",
+                        "final_receipt": str(final_receipt),
+                        "transport_dag_evidence": str(run_dir / "transport-dag-evidence.json"),
+                        "events": str(run_dir / "events.jsonl"),
+                        "changed_files": ["src/fixed.py"],
+                        "checks": [
+                            {
+                                "command": "python -m pytest",
+                                "exit_code": 0,
+                                "stdout_path": str(run_dir / "checks" / "stdout.txt"),
+                                "stderr_path": str(run_dir / "checks" / "stderr.txt"),
+                                "elapsed_s": 0.01,
+                            }
+                        ],
+                        "mocked": False,
+                        "live": True,
+                    }
+                ),
+                "JSON",
+            ]
+        )
+    )
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "dev-proxy-key-123",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    native_validation_calls: list[tuple[Path, Path | None]] = []
+
+    def fake_validate_native_loop2_run_with_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        native_validation_calls.append((selected_run_dir, loop2_src))
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "node_result"),
+        )
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(cli, "_scillm_materialization_preflight_errors", lambda contract: [])
+    monkeypatch.setattr(cli, "_scillm_proxy_auth_preflight", _passing_scillm_auth_preflight)
+    monkeypatch.setattr(
+        cli,
+        "validate_native_loop2_run_with_contracts",
+        fake_validate_native_loop2_run_with_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert native_validation_calls == [(run_dir.resolve(), loop2_src_path)]
+    assert args_path.read_text().splitlines() == [
+        "run",
+        "--contract",
+        str(contract_path.resolve()),
+        "--json",
+    ]
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is True
+    assert payload["delegated"] is True
+    assert payload["runner"] == str(runner.resolve())
+    assert payload["run_dir"] == str(run_dir)
+    assert payload["node_id"] == "repair-scillm"
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["node_result"]["schema"] == "loop2.node_result.v1"
+    assert payload["node_result"]["changed_files"] == ["src/fixed.py"]
+    assert payload["native_validation"] == {
+        "ok": True,
+        "checked_artifacts": ["contract", "final_receipt", "node_result"],
+        "errors": [],
+    }
+    assert payload["artifact_sanitization"]["schema"] == (
+        "tau.loop2_delegated_artifact_sanitization.v1"
+    )
+    assert payload["artifact_sanitization"]["ran"] is True
+    assert payload["artifact_sanitization"]["changed_artifacts"] == [
+        "contract.json",
+        "final-receipt.json",
+        "node-result.json",
+    ]
+    assert payload["artifact_sanitization"]["redacted_keys"] == ["contract.scillm.api_key"]
+    assert payload["artifact_sanitization"]["filtered_changed_files"] == 2
+    assert Path(payload["artifact_sanitization"]["artifact"]).exists()
+    assert payload["checks"][0]["exit_code"] == 0
+    final_receipt_payload = json.loads(final_receipt.read_text())
+    assert final_receipt_payload["artifacts"]["tau_sanitization"] == str(
+        run_dir / "tau-sanitization.json"
+    )
+    emitted_contract = json.loads((run_dir / "contract.json").read_text())
+    assert emitted_contract["scillm"]["api_key"] == "<redacted-scillm-api-key>"
+    assert "secret-scillm-key" not in (run_dir / "contract.json").read_text()
+
+
+def test_cli_loop2_run_prepares_delegated_scillm_contract_from_env(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("SCILLM_API_KEY", "active-scillm-proxy-key")
+    contract_path = tmp_path / "contract.json"
+    observed_contract_path = tmp_path / "observed-contract.json"
+    args_path = tmp_path / "runner-args.txt"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    runner.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f"printf '%s\\n' \"$@\" > {args_path}",
+                f"cp \"$3\" {observed_contract_path}",
+                "cat <<'JSON'",
+                json.dumps(
+                    {
+                        "schema": "loop2.node_result.v1",
+                        "node_id": "repair-scillm",
+                        "status": "BLOCKED",
+                        "run_id": "loop2-run-test",
+                        "final_receipt": "",
+                        "transport_dag_evidence": "",
+                        "events": "",
+                        "changed_files": [],
+                        "checks": [],
+                        "mocked": False,
+                        "live": True,
+                    }
+                ),
+                "JSON",
+            ]
+        )
+    )
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "stale-scillm-key",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(cli, "_scillm_materialization_preflight_errors", lambda contract: [])
+    monkeypatch.setattr(cli, "_scillm_proxy_auth_preflight", _passing_scillm_auth_preflight)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    runner_args = args_path.read_text().splitlines()
+    original_contract = json.loads(contract_path.read_text())
+    observed_contract = json.loads(observed_contract_path.read_text())
+
+    assert result.exit_code == 1
+    assert payload["contract"] == str(contract_path.resolve())
+    assert payload["contract_preparation"]["ran"] is True
+    assert payload["contract_preparation"]["auth_source"] == "env:SCILLM_API_KEY"
+    assert payload["contract_preparation"]["redacted_keys"] == ["contract.scillm.api_key"]
+    assert runner_args[:2] == ["run", "--contract"]
+    assert runner_args[2] != str(contract_path.resolve())
+    assert runner_args[3] == "--json"
+    assert original_contract["scillm"]["api_key"] == "stale-scillm-key"
+    assert observed_contract["scillm"]["api_key"] == "active-scillm-proxy-key"
+
+
+def test_cli_loop2_run_blocks_before_runner_when_scillm_auth_preflight_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    runner_called = tmp_path / "runner-called"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    runner.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f"touch {runner_called}",
+                "cat <<'JSON'",
+                json.dumps(
+                    {
+                        "schema": "loop2.node_result.v1",
+                        "node_id": "repair-scillm",
+                        "status": "PASS",
+                        "run_id": "loop2-run-test",
+                        "final_receipt": "",
+                        "transport_dag_evidence": "",
+                        "events": "",
+                        "changed_files": [],
+                        "checks": [],
+                        "mocked": False,
+                        "live": True,
+                    }
+                ),
+                "JSON",
+            ]
+        )
+    )
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "bad-scillm-key",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    async def failing_scillm_auth_preflight(
+        contract: dict[str, object],
+    ) -> dict[str, object]:
+        scillm = contract["scillm"]
+        assert isinstance(scillm, dict)
+        assert scillm["api_key"] == "bad-scillm-key"
+        return {
+            "schema": "tau.scillm_proxy_auth_preflight.v1",
+            "ran": True,
+            "ok": False,
+            "base_url": "http://127.0.0.1:4001",
+            "endpoint": "/v1/scillm/loop2/capabilities",
+            "caller_skill": "tau",
+            "status_code": 401,
+            "errors": ["Scillm proxy auth preflight failed with HTTP 401"],
+        }
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(cli, "_scillm_materialization_preflight_errors", lambda contract: [])
+    monkeypatch.setattr(cli, "_scillm_proxy_auth_preflight", failing_scillm_auth_preflight)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert not runner_called.exists()
+    assert payload["ok"] is False
+    assert payload["run_dir"] == ""
+    assert payload["delegated"] is True
+    assert payload["scillm_auth_preflight"] == {
+        "schema": "tau.scillm_proxy_auth_preflight.v1",
+        "ran": True,
+        "ok": False,
+        "base_url": "http://127.0.0.1:4001",
+        "endpoint": "/v1/scillm/loop2/capabilities",
+        "caller_skill": "tau",
+        "status_code": 401,
+        "errors": ["Scillm proxy auth preflight failed with HTTP 401"],
+    }
+    assert payload["errors"] == ["Scillm proxy auth preflight failed with HTTP 401"]
+
+
+def test_delegated_loop2_run_sanitizer_filters_generated_changed_files(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "native-run"
+    run_dir.mkdir()
+    changed_files = [
+        "src/buggy_math.py",
+        "src/__pycache__/buggy_math.cpython-314.pyc",
+        "tests/__pycache__/test_buggy_math.cpython-314-pytest-9.1.1.pyc",
+        ".pytest_cache/v/cache/nodeids",
+    ]
+    for artifact_name in ("final-receipt.json", "node-result.json"):
+        (run_dir / artifact_name).write_text(
+            json.dumps(
+                {
+                    "schema": f"test.{artifact_name}",
+                    "changed_files": changed_files,
+                }
+            )
+        )
+    (run_dir / "contract.json").write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "scillm": {"api_key": "secret-scillm-key"},
+            }
+        )
+    )
+
+    sanitization = cli._sanitize_delegated_loop2_run_artifacts(run_dir)
+
+    for artifact_name in ("final-receipt.json", "node-result.json"):
+        payload = json.loads((run_dir / artifact_name).read_text())
+        assert payload["changed_files"] == ["src/buggy_math.py"]
+    contract = json.loads((run_dir / "contract.json").read_text())
+    assert contract["scillm"]["api_key"] == "<redacted-scillm-api-key>"
+    assert sanitization["changed_artifacts"] == [
+        "contract.json",
+        "final-receipt.json",
+        "node-result.json",
+    ]
+    assert sanitization["redacted_keys"] == ["contract.scillm.api_key"]
+    assert sanitization["filtered_changed_files"] == 6
+    final_receipt_payload = json.loads((run_dir / "final-receipt.json").read_text())
+    assert final_receipt_payload["artifacts"]["tau_sanitization"] == str(
+        run_dir / "tau-sanitization.json"
+    )
+    assert json.loads((run_dir / "tau-sanitization.json").read_text()) == sanitization
+
+
+def test_cli_loop2_run_rejects_tmp_repo_before_scillm_delegation(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    runner_called = tmp_path / "runner-called"
+    runner.write_text(f"#!/usr/bin/env bash\ntouch {runner_called}\nexit 99\n")
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "dev-proxy-key-123",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert not runner_called.exists()
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is False
+    assert payload["delegated"] is True
+    assert payload["run_dir"] == ""
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["errors"] == [
+        "delegated Scillm loop2 repo is not materializable by the OpenCode "
+        f"worker from /tmp: {tmp_path.resolve()}. Move the repair repo under "
+        "the project workspace before running live loop2."
+    ]
+
+
+def test_cli_loop2_run_rejects_delegated_result_with_missing_artifacts(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    run_dir = tmp_path / ".loop2" / "runs" / "loop2-run-test"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    runner.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "cat <<'JSON'",
+                json.dumps(
+                    {
+                        "schema": "loop2.node_result.v1",
+                        "node_id": "repair-scillm",
+                        "status": "PASS",
+                        "run_id": "loop2-run-test",
+                        "final_receipt": str(run_dir / "final-receipt.json"),
+                        "transport_dag_evidence": str(run_dir / "transport-dag-evidence.json"),
+                        "events": str(run_dir / "events.jsonl"),
+                        "changed_files": [],
+                        "checks": [
+                            {
+                                "command": "python -m pytest",
+                                "exit_code": 0,
+                                "stdout_path": str(run_dir / "checks" / "stdout.txt"),
+                                "stderr_path": str(run_dir / "checks" / "stderr.txt"),
+                                "elapsed_s": 0.01,
+                            }
+                        ],
+                        "mocked": False,
+                        "live": True,
+                    }
+                ),
+                "JSON",
+            ]
+        )
+    )
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "dev-proxy-key-123",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(cli, "_scillm_materialization_preflight_errors", lambda contract: [])
+    monkeypatch.setattr(cli, "_scillm_proxy_auth_preflight", _passing_scillm_auth_preflight)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is False
+    assert payload["delegated"] is True
+    assert payload["run_dir"] == str(run_dir)
+    assert payload["errors"][0].startswith("missing delegated Loop2 artifacts:")
+
+
+def test_cli_loop2_run_rejects_delegated_result_with_native_validation_errors(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    run_dir = tmp_path / ".loop2" / "runs" / "loop2-run-test"
+    final_receipt = run_dir / "final-receipt.json"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    runner.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f"mkdir -p {run_dir / 'checks'}",
+                f"touch {run_dir / 'contract.json'}",
+                f"touch {run_dir / 'current-state.json'}",
+                f"touch {run_dir / 'events.jsonl'}",
+                f"touch {final_receipt}",
+                f"touch {run_dir / 'transport-dag-evidence.json'}",
+                f"touch {run_dir / 'node-result.json'}",
+                f"touch {run_dir / 'checks' / 'stdout.txt'}",
+                f"touch {run_dir / 'checks' / 'stderr.txt'}",
+                "cat <<'JSON'",
+                json.dumps(
+                    {
+                        "schema": "loop2.node_result.v1",
+                        "node_id": "repair-scillm",
+                        "status": "PASS",
+                        "run_id": "loop2-run-test",
+                        "final_receipt": str(final_receipt),
+                        "transport_dag_evidence": str(run_dir / "transport-dag-evidence.json"),
+                        "events": str(run_dir / "events.jsonl"),
+                        "changed_files": ["src/fixed.py"],
+                        "checks": [
+                            {
+                                "command": "python -m pytest",
+                                "exit_code": 0,
+                                "stdout_path": str(run_dir / "checks" / "stdout.txt"),
+                                "stderr_path": str(run_dir / "checks" / "stderr.txt"),
+                                "elapsed_s": 0.01,
+                            }
+                        ],
+                        "mocked": False,
+                        "live": True,
+                    }
+                ),
+                "JSON",
+            ]
+        )
+    )
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "dev-proxy-key-123",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    def fake_validate_native_loop2_run_with_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_run_dir == run_dir.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=("contract", "final_receipt"),
+            errors=("node_result: status mismatch",),
+        )
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+    monkeypatch.setattr(cli, "_scillm_materialization_preflight_errors", lambda contract: [])
+    monkeypatch.setattr(cli, "_scillm_proxy_auth_preflight", _passing_scillm_auth_preflight)
+    monkeypatch.setattr(
+        cli,
+        "validate_native_loop2_run_with_contracts",
+        fake_validate_native_loop2_run_with_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is False
+    assert payload["delegated"] is True
+    assert payload["native_validation"] == {
+        "ok": False,
+        "checked_artifacts": ["contract", "final_receipt"],
+        "errors": ["node_result: status mismatch"],
+    }
+    assert payload["errors"] == [
+        "native Loop2 validation failed: node_result: status mismatch"
+    ]
+
+
+def test_cli_loop2_run_rejects_blocked_scillm_doctor_receipt(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "contract.json"
+    doctor_receipt = tmp_path / "scillm-doctor-receipt.json"
+    doctor_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "BLOCKED",
+                "mocked": False,
+                "live": True,
+                "reason": "proxy_auth_preflight_failed",
+            }
+        )
+    )
+    loop2_src_path = tmp_path / "loop2" / "src"
+    loop2_src_path.mkdir(parents=True)
+    runner = loop2_src_path.parent / "run.sh"
+    runner.write_text("#!/usr/bin/env bash\nexit 99\n")
+    runner.chmod(0o755)
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "loop2.repair_node_contract.v1",
+                "node_id": "repair-scillm",
+                "objective": "Fix with Loop2 Scillm.",
+                "repo": str(tmp_path),
+                "allowed_globs": ["src/**"],
+                "checks": ["python -m pytest"],
+                "max_attempts": 1,
+                "backend": "scillm",
+                "run_root": str(tmp_path / ".loop2" / "runs"),
+                "scillm": {
+                    "base_url": "http://127.0.0.1:4001",
+                    "api_key": "dev-proxy-key-123",
+                    "agent_id": "",
+                    "agent": "build",
+                    "mode": "workspace_write",
+                    "model": "opencode-go/kimi-k2.6",
+                    "timeout_s": 900,
+                },
+            }
+        )
+    )
+
+    def fake_validate_loop2_contract_file(
+        selected_contract_path: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_contract_path == contract_path.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(ok=True, checked_artifacts=("contract",))
+
+    monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-scillm-doctor-receipt",
+            str(doctor_receipt),
+            "--provider",
+            "chutes",
+            "loop2-run",
+            str(contract_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload["schema"] == "tau.loop2_contract_run.v1"
+    assert payload["ok"] is False
+    assert payload["delegated"] is True
+    assert payload["run_dir"] == ""
+    assert payload["scillm_doctor_receipt"] == str(doctor_receipt.resolve())
+    assert payload["errors"] == [
+        "Scillm doctor receipt status is 'BLOCKED': proxy_auth_preflight_failed"
+    ]
+
+
+def test_cli_loop2_inspect_prints_summary_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    calls: list[Path] = []
+
+    def fake_loop_receipt_summary(selected_run_dir: Path) -> dict[str, object]:
+        calls.append(selected_run_dir)
+        return {
+            "schema": "tau.loop_receipt.summary.v1",
+            "found": True,
+            "run_id": "tau-loop-run",
+            "status": "PASS",
+            "mocked": True,
+            "live": False,
+        }
+
+    monkeypatch.setattr(cli, "loop_receipt_summary", fake_loop_receipt_summary)
+
+    result = CliRunner().invoke(app, ["loop2-inspect", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [run_dir.resolve()]
+    assert payload["schema"] == "tau.loop_receipt.summary.v1"
+    assert payload["found"] is True
+    assert payload["status"] == "PASS"
+    assert payload["loop2_contract_validation"] == {
+        "ran": False,
+        "ok": None,
+        "validator": None,
+        "checked_artifacts": [],
+        "errors": ["not run; pass --loop2-inspect-validate to validate Loop2 contracts"],
+    }
+    assert payload["tau_delegation"] == {
+        "schema": "tau.loop2_delegation.inspect.v1",
+        "delegated": False,
+        "tau_sanitization_present": False,
+        "tau_sanitization_artifact": "",
+        "changed_artifacts": [],
+        "redacted_keys": [],
+        "filtered_changed_files": 0,
+        "validation_checked_tau_sanitization": None,
+    }
+
+
+def test_cli_loop2_inspect_exits_nonzero_for_incomplete_run(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+
+    def fake_loop_receipt_summary(selected_run_dir: Path) -> dict[str, object]:
+        return {
+            "schema": "tau.loop_receipt.summary.v1",
+            "found": False,
+            "run_id": selected_run_dir.name,
+            "missing_artifacts": ["contract", "final_receipt"],
+        }
+
+    monkeypatch.setattr(cli, "loop_receipt_summary", fake_loop_receipt_summary)
+
+    result = CliRunner().invoke(app, ["loop2-inspect", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["found"] is False
+    assert payload["missing_artifacts"] == ["contract", "final_receipt"]
+    assert payload["loop2_contract_validation"]["ran"] is False
+
+
+def test_cli_loop2_inspect_can_include_contract_validation(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    loop2_src = tmp_path / "loop2-src"
+    calls: list[tuple[Path, Path | None]] = []
+
+    def fake_loop_receipt_summary(selected_run_dir: Path) -> dict[str, object]:
+        return {
+            "schema": "tau.loop_receipt.summary.v1",
+            "found": True,
+            "run_id": selected_run_dir.name,
+            "status": "PASS",
+        }
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        calls.append((selected_run_dir, loop2_src))
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "node_result"),
+        )
+
+    monkeypatch.setattr(cli, "loop_receipt_summary", fake_loop_receipt_summary)
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src),
+            "--loop2-inspect-validate",
+            "loop2-inspect",
+            str(run_dir),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [(run_dir.resolve(), loop2_src)]
+    assert payload["found"] is True
+    assert payload["loop2_contract_validation"] == {
+        "ran": True,
+        "ok": True,
+        "validator": "tau_receipt",
+        "checked_artifacts": ["contract", "final_receipt", "node_result"],
+        "errors": [],
+    }
+
+
+def test_cli_loop2_inspect_projects_tau_delegation_sidecar(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "native-loop2-run"
+    sidecar_path = run_dir / "tau-sanitization.json"
+    loop2_src_path = tmp_path / "loop2-src"
+
+    def fake_loop_receipt_summary(selected_run_dir: Path) -> dict[str, object]:
+        assert selected_run_dir == run_dir.resolve()
+        return {
+            "schema": "tau.loop_receipt.summary.v1",
+            "found": True,
+            "run_id": selected_run_dir.name,
+            "status": "PASS",
+            "artifacts": {"tau_sanitization": str(sidecar_path)},
+            "tau_sanitization": {
+                "schema": "tau.loop2_delegated_artifact_sanitization.v1",
+                "ran": True,
+                "artifact": str(sidecar_path),
+                "changed_artifacts": [
+                    "contract.json",
+                    "final-receipt.json",
+                    "node-result.json",
+                ],
+                "redacted_keys": ["contract.scillm.api_key"],
+                "filtered_changed_files": 8,
+            },
+        }
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        raise AssertionError("delegated native loop2 inspect should not use tau receipt validator")
+
+    def fake_validate_native_loop2_run_with_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        assert selected_run_dir == run_dir.resolve()
+        assert loop2_src == loop2_src_path
+        return LoopReceiptValidationResult(
+            ok=True,
+            checked_artifacts=("contract", "final_receipt", "tau_sanitization"),
+        )
+
+    monkeypatch.setattr(cli, "loop_receipt_summary", fake_loop_receipt_summary)
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+    monkeypatch.setattr(
+        cli,
+        "validate_native_loop2_run_with_contracts",
+        fake_validate_native_loop2_run_with_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-src",
+            str(loop2_src_path),
+            "--loop2-inspect-validate",
+            "loop2-inspect",
+            str(run_dir),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload["loop2_contract_validation"] == {
+        "ran": True,
+        "ok": True,
+        "validator": "native_loop2",
+        "checked_artifacts": ["contract", "final_receipt", "tau_sanitization"],
+        "errors": [],
+    }
+    assert payload["tau_delegation"] == {
+        "schema": "tau.loop2_delegation.inspect.v1",
+        "delegated": True,
+        "tau_sanitization_present": True,
+        "tau_sanitization_artifact": str(sidecar_path),
+        "changed_artifacts": [
+            "contract.json",
+            "final-receipt.json",
+            "node-result.json",
+        ],
+        "redacted_keys": ["contract.scillm.api_key"],
+        "filtered_changed_files": 8,
+        "validation_checked_tau_sanitization": True,
+    }
+
+
+def test_cli_loop2_inspect_exits_nonzero_when_embedded_validation_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+
+    def fake_loop_receipt_summary(selected_run_dir: Path) -> dict[str, object]:
+        return {
+            "schema": "tau.loop_receipt.summary.v1",
+            "found": True,
+            "run_id": selected_run_dir.name,
+            "status": "PASS",
+        }
+
+    def fake_validate_loop_receipt_with_loop2_contracts(
+        selected_run_dir: Path,
+        *,
+        loop2_src: Path | None,
+    ) -> LoopReceiptValidationResult:
+        del selected_run_dir, loop2_src
+        return LoopReceiptValidationResult(
+            ok=False,
+            checked_artifacts=("contract",),
+            errors=("node_result: missing events",),
+        )
+
+    monkeypatch.setattr(cli, "loop_receipt_summary", fake_loop_receipt_summary)
+    monkeypatch.setattr(
+        cli,
+        "validate_loop_receipt_with_loop2_contracts",
+        fake_validate_loop_receipt_with_loop2_contracts,
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["--loop2-inspect-validate", "loop2-inspect", str(run_dir)],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["found"] is True
+    assert payload["loop2_contract_validation"] == {
+        "ran": True,
+        "ok": False,
+        "validator": "tau_receipt",
+        "checked_artifacts": ["contract"],
+        "errors": ["node_result: missing events"],
+    }
+
+
+def test_cli_loop2_check_monitor_prints_success_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    calls: list[Path] = []
+
+    def fake_check_loop_receipt_monitor_contract(
+        selected_run_dir: Path,
+    ) -> LoopReceiptMonitorCheckResult:
+        calls.append(selected_run_dir)
+        return LoopReceiptMonitorCheckResult(
+            ok=True,
+            checked_endpoints=(
+                "summary",
+                "transport-dag-evidence",
+                "events",
+                "events/stream",
+            ),
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "check_loop_receipt_monitor_contract",
+        fake_check_loop_receipt_monitor_contract,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-check-monitor", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [run_dir.resolve()]
+    assert payload == {
+        "schema": "tau.loop2_monitor_check.v1",
+        "run_dir": str(run_dir.resolve()),
+        "ok": True,
+        "checked_endpoints": [
+            "summary",
+            "transport-dag-evidence",
+            "events",
+            "events/stream",
+        ],
+        "errors": [],
+    }
+
+
+def test_cli_loop2_check_monitor_exits_nonzero_on_endpoint_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+
+    def fake_check_loop_receipt_monitor_contract(
+        selected_run_dir: Path,
+    ) -> LoopReceiptMonitorCheckResult:
+        del selected_run_dir
+        return LoopReceiptMonitorCheckResult(
+            ok=False,
+            checked_endpoints=("summary",),
+            errors=("events: HTTP 404",),
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "check_loop_receipt_monitor_contract",
+        fake_check_loop_receipt_monitor_contract,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-check-monitor", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["checked_endpoints"] == ["summary"]
+    assert payload["errors"] == ["events: HTTP 404"]
+
+
+def test_cli_loop2_emit_peer_prints_switchboard_receipt(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    run_dir.mkdir()
+    calls: list[tuple[Path, str, str, str | None]] = []
+
+    class FakeEmitResult:
+        ok = True
+        switchboard_url = "http://127.0.0.1:7890/emit"
+        status_code = 201
+        request = {
+            "from": "tau",
+            "to": "pi-mono",
+            "message": "Tau Loop2 receipt is available.",
+            "type": "info",
+            "priority": "normal",
+            "subject": "Tau Loop2 receipt available: run-id",
+            "metadata": {
+                "schema": "tau.loop_harness_peer_message.v1",
+                "run_id": "run-id",
+                "claims": {"does_not_prove": ["full DAG scheduling"]},
+            },
+        }
+        response = {"success": True, "id": "msg_123"}
+        errors: tuple[str, ...] = ()
+
+    def fake_emit_loop_peer_to_switchboard(
+        selected_run_dir: Path,
+        *,
+        switchboard_url: str,
+        target_harness: str,
+        monitor_base_url: str | None,
+    ) -> FakeEmitResult:
+        calls.append((selected_run_dir, switchboard_url, target_harness, monitor_base_url))
+        return FakeEmitResult()
+
+    monkeypatch.setattr(cli, "emit_loop_peer_to_switchboard", fake_emit_loop_peer_to_switchboard)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--loop2-switchboard-url",
+            "http://127.0.0.1:7890",
+            "--loop2-peer-target",
+            "pi-mono",
+            "--loop2-serve-host",
+            "127.0.0.1",
+            "--loop2-serve-port",
+            "4321",
+            "loop2-emit-peer",
+            str(run_dir),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [
+        (
+            run_dir.resolve(),
+            "http://127.0.0.1:7890",
+            "pi-mono",
+            "http://127.0.0.1:4321",
+        )
+    ]
+    assert payload["schema"] == "tau.loop_peer_switchboard_emit.v1"
+    assert payload["ok"] is True
+    assert payload["status_code"] == 201
+    assert payload["request"]["to"] == "pi-mono"
+    assert payload["request"]["metadata"]["claims"]["does_not_prove"] == ["full DAG scheduling"]
+
+
+def test_cli_loop2_check_scillm_doctor_accepts_passing_receipt(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "reason": "",
+            }
+        )
+    )
+
+    result = CliRunner().invoke(app, ["loop2-check-scillm-doctor", str(receipt_path)])
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload == {
+        "schema": "tau.loop2_scillm_doctor_check.v1",
+        "receipt": str(receipt_path.resolve()),
+        "ok": True,
+        "errors": [],
+    }
+
+
+def test_cli_loop2_check_scillm_doctor_rejects_blocked_receipt(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "scillm.project_agent_sanity.v1",
+                "status": "BLOCKED",
+                "mocked": False,
+                "live": True,
+                "reason": "proxy_auth_preflight_failed",
+            }
+        )
+    )
+
+    result = CliRunner().invoke(app, ["loop2-check-scillm-doctor", str(receipt_path)])
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload == {
+        "schema": "tau.loop2_scillm_doctor_check.v1",
+        "receipt": str(receipt_path.resolve()),
+        "ok": False,
+        "errors": ["Scillm doctor receipt status is 'BLOCKED': proxy_auth_preflight_failed"],
+    }
+
+
+def test_cli_loop2_backfill_artifacts_prints_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+    calls: list[Path] = []
+
+    def fake_backfill_loop_receipt_artifact_index(selected_run_dir: Path) -> dict[str, object]:
+        calls.append(selected_run_dir)
+        return {
+            "schema": "tau.loop_receipt.artifact_index_backfill.v1",
+            "ok": True,
+            "run_dir": str(selected_run_dir),
+            "changed": True,
+            "added_keys": ["contract", "final_receipt"],
+            "backup_path": str(
+                selected_run_dir / "final-receipt.json.before-artifact-index-backfill"
+            ),
+            "errors": [],
+        }
+
+    monkeypatch.setattr(
+        cli,
+        "backfill_loop_receipt_artifact_index",
+        fake_backfill_loop_receipt_artifact_index,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-backfill-artifacts", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [run_dir]
+    assert payload["schema"] == "tau.loop_receipt.artifact_index_backfill.v1"
+    assert payload["ok"] is True
+    assert payload["changed"] is True
+    assert payload["added_keys"] == ["contract", "final_receipt"]
+
+
+def test_cli_loop2_backfill_artifacts_exits_nonzero_on_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "tau-loop-run"
+
+    def fake_backfill_loop_receipt_artifact_index(selected_run_dir: Path) -> dict[str, object]:
+        del selected_run_dir
+        return {
+            "schema": "tau.loop_receipt.artifact_index_backfill.v1",
+            "ok": False,
+            "changed": False,
+            "errors": ["missing final receipt"],
+        }
+
+    monkeypatch.setattr(
+        cli,
+        "backfill_loop_receipt_artifact_index",
+        fake_backfill_loop_receipt_artifact_index,
+    )
+
+    result = CliRunner().invoke(app, ["loop2-backfill-artifacts", str(run_dir)])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["errors"] == ["missing final receipt"]
+
+
+def test_cli_loop2_sanity_prints_fixture_proof_json(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    root_dir = tmp_path / "sanity"
+    repo = tmp_path / "repo"
+    loop2_src = tmp_path / "loop2-src"
+    calls: list[tuple[Path, Path, Path | None]] = []
+
+    def fake_run_loop2_sanity(
+        *,
+        root_dir: Path,
+        repo: Path,
+        loop2_src: Path | None,
+    ) -> dict[str, object]:
+        calls.append((root_dir, repo, loop2_src))
+        return {
+            "schema": "tau.loop2_sanity.v1",
+            "ok": True,
+            "run_dir": str(root_dir / "run-1"),
+            "mocked": True,
+            "live": False,
+            "loop2_contract_validation": {
+                "ok": True,
+                "checked_artifacts": ["contract"],
+                "errors": [],
+            },
+            "monitor_check": {
+                "ok": True,
+                "checked_endpoints": ["summary"],
+                "errors": [],
+            },
+        }
+
+    monkeypatch.setattr(cli, "run_loop2_sanity", fake_run_loop2_sanity)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(repo),
+            "--loop2-src",
+            str(loop2_src),
+            "--loop2-sanity-root",
+            str(root_dir),
+            "loop2-sanity",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert calls == [(root_dir, repo, loop2_src)]
+    assert payload["schema"] == "tau.loop2_sanity.v1"
+    assert payload["ok"] is True
+    assert payload["mocked"] is True
+    assert payload["live"] is False
+
+
+def test_cli_loop2_sanity_exits_nonzero_on_failed_check(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    def fake_run_loop2_sanity(
+        *,
+        root_dir: Path,
+        repo: Path,
+        loop2_src: Path | None,
+    ) -> dict[str, object]:
+        del root_dir, repo, loop2_src
+        return {
+            "schema": "tau.loop2_sanity.v1",
+            "ok": False,
+            "mocked": True,
+            "live": False,
+        }
+
+    monkeypatch.setattr(cli, "run_loop2_sanity", fake_run_loop2_sanity)
+
+    result = CliRunner().invoke(app, ["loop2-sanity"])
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.loop2_sanity.v1"
+    assert payload["ok"] is False
 
 
 def test_cli_without_prompt_invokes_tui_runner(
@@ -364,6 +2671,125 @@ async def test_run_print_mode_can_emit_live_transcript(
     assert captured.err == ""
 
 
+@pytest.mark.anyio
+async def test_run_print_mode_writes_loop2_receipts(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Done")),
+            ]
+        ]
+    )
+    receipt_root = tmp_path / ".loop2" / "runs"
+    check_command = f"{sys.executable} -c \"print('cli check ok')\""
+
+    ok = await run_print_mode(
+        prompt="Say hello",
+        model="fake",
+        cwd=tmp_path,
+        provider=provider,
+        loop_receipt=LoopReceiptConfig(
+            root_dir=receipt_root,
+            node_id="cli-print",
+            allowed_globs=("src/**",),
+            checks=(check_command,),
+        ),
+    )
+
+    _captured = capsys.readouterr()
+    run_dirs = sorted(path for path in receipt_root.iterdir() if path.is_dir())
+    assert ok is True
+    assert len(run_dirs) == 1
+    run_dir = run_dirs[0]
+    contract = json.loads((run_dir / "contract.json").read_text())
+    receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+    evidence = json.loads((run_dir / "transport-dag-evidence.json").read_text())
+    rows = [json.loads(line) for line in (run_dir / "events.jsonl").read_text().splitlines()]
+
+    assert contract["schema"] == "loop2.repair_node_contract.v1"
+    assert contract["node_id"] == "cli-print"
+    assert contract["checks"] == [check_command]
+    assert receipt["schema"] == "loop2.final_receipt.v1"
+    assert receipt["status"] == "PASS"
+    assert receipt["checks"][0]["exit_code"] == 0
+    assert Path(receipt["checks"][0]["stdout_path"]).read_text() == "cli check ok\n"
+    assert [row["event_type"] for row in rows[-4:]] == [
+        "checks_started",
+        "check_finished",
+        "checks_finished",
+        "receipt_written",
+    ]
+    assert node_result["checks"] == receipt["checks"]
+    assert evidence["schema"] == "ux_lab.transport_dag_run_evidence.v1"
+    assert evidence["progress_stream"]["last_event_type"] == "receipt_written"
+
+
+@pytest.mark.anyio
+async def test_run_print_mode_writes_loop2_receipts_from_contract_adapter(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Done")),
+            ]
+        ]
+    )
+    run_root = tmp_path / ".loop2" / "runs"
+    check_command = f"{sys.executable} -c \"print('contract check ok')\""
+    contract: dict[str, object] = {
+        "schema": "loop2.repair_node_contract.v1",
+        "node_id": "contract-node",
+        "objective": "Run from a Loop2 contract.",
+        "repo": str(tmp_path),
+        "allowed_globs": ["**/*"],
+        "required_changed_globs": [],
+        "checks": [check_command],
+        "max_attempts": 1,
+        "backend": "fixture",
+        "run_root": str(run_root),
+    }
+
+    ok = await run_print_mode(
+        prompt=str(contract["objective"]),
+        model="fake",
+        cwd=tmp_path,
+        provider=provider,
+        loop_receipt=cli._loop_receipt_config_from_contract(contract),
+    )
+
+    _captured = capsys.readouterr()
+    run_dirs = sorted(path for path in run_root.iterdir() if path.is_dir())
+    assert ok is True
+    assert len(run_dirs) == 1
+    run_dir = run_dirs[0]
+    validation = cli.validate_loop_receipt_with_loop2_contracts(
+        run_dir,
+        loop2_src=Path(__file__).resolve().parents[2]
+        / "agent-skills"
+        / "skills"
+        / "loop2"
+        / "src",
+    )
+    receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    emitted_contract = json.loads((run_dir / "contract.json").read_text())
+
+    assert validation.ok is True
+    assert emitted_contract["node_id"] == "contract-node"
+    assert emitted_contract["objective"] == "Run from a Loop2 contract."
+    assert emitted_contract["run_root"] == str(run_root)
+    assert receipt["mocked"] is True
+    assert receipt["live"] is False
+    assert receipt["checks"][0]["exit_code"] == 0
+    assert Path(receipt["checks"][0]["stdout_path"]).read_text() == "contract check ok\n"
+
+
 def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_run_openai_print_mode(
         prompt: str,
@@ -371,6 +2797,7 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
         cwd: Path,
         output: PrintOutputMode,
         provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
     ) -> bool:
         return False
 
@@ -379,6 +2806,130 @@ def test_cli_exits_nonzero_when_print_mode_fails(monkeypatch: pytest.MonkeyPatch
     result = CliRunner().invoke(app, ["-p", "hello"])
 
     assert result.exit_code == 1
+
+
+def test_cli_print_mode_passes_loop2_receipt_options(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[LoopReceiptConfig | None] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name
+        calls.append(loop_receipt)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "-p",
+            "hello",
+            "--loop2-receipt-root",
+            str(tmp_path / ".loop2" / "runs"),
+            "--loop2-node-id",
+            "cli-node",
+            "--loop2-allowed-glob",
+            "src/**",
+            "--loop2-required-changed-glob",
+            "src/**/*.py",
+            "--loop2-check",
+            "python -m pytest",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert len(calls) == 1
+    assert calls[0] == LoopReceiptConfig(
+        root_dir=tmp_path / ".loop2" / "runs",
+        node_id="cli-node",
+        allowed_globs=("src/**",),
+        required_changed_globs=("src/**/*.py",),
+        checks=("python -m pytest",),
+    )
+
+
+def test_cli_print_mode_marks_nonfake_loop2_receipt_live(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[LoopReceiptConfig | None] = []
+
+    async def fake_run_openai_print_mode(
+        prompt: str,
+        model: str | None,
+        cwd: Path,
+        output: PrintOutputMode,
+        provider_name: str | None,
+        loop_receipt: LoopReceiptConfig | None,
+    ) -> bool:
+        del prompt, model, cwd, output, provider_name
+        calls.append(loop_receipt)
+        return True
+
+    monkeypatch.setattr(cli, "run_openai_print_mode", fake_run_openai_print_mode)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "--cwd",
+            str(tmp_path),
+            "--provider",
+            "chutes",
+            "-p",
+            "hello",
+            "--loop2-receipt-root",
+            str(tmp_path / ".loop2" / "runs"),
+            "--loop2-check",
+            "python -m pytest",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert len(calls) == 1
+    assert calls[0] is not None
+    assert calls[0].mocked is False
+    assert calls[0].live is True
+
+
+def test_cli_print_mode_rejects_loop2_receipt_without_check(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "-p",
+            "hello",
+            "--loop2-receipt-root",
+            str(tmp_path / ".loop2" / "runs"),
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "--loop2-receipt-root requires at least one --loop2-check" in result.output
+
+
+def test_cli_print_mode_rejects_loop2_required_changed_glob_without_receipt_root(
+    tmp_path: Path,
+) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "-p",
+            "hello",
+            "--loop2-required-changed-glob",
+            "src/**/*.py",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "--loop2-required-changed-glob requires --loop2-receipt-root" in result.output
 
 
 def test_default_tui_invokes_tui_runner_with_flags(
@@ -645,6 +3196,7 @@ def test_providers_command_lists_default_provider(
     assert " \tanthropic\tanthropic\tclaude-sonnet-4-6" in result.stdout
     assert " \topenrouter\topenai-compatible\topenai/gpt-5.5" in result.stdout
     assert " \thuggingface\topenai-compatible\topenai/gpt-oss-120b" in result.stdout
+    assert " \tchutes\topenai-compatible\tQwen/Qwen3-32B-TEE" in result.stdout
 
 
 def test_render_provider_settings_shows_credential_source(
@@ -751,3 +3303,44 @@ def test_setup_command_warns_when_api_key_env_is_missing(
 
     assert result.exit_code == 0
     assert "Set MISSING_API_KEY before running Tau with this provider." in result.stderr
+
+
+def test_setup_chutes_command_writes_builtin_chutes_provider(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("CHUTES_API_TOKEN", "test-key")
+
+    result = CliRunner().invoke(app, ["setup-chutes"])
+
+    settings = load_provider_settings(TauPaths(home=tmp_path / ".tau"))
+    provider = settings.get_provider("chutes")
+    assert result.exit_code == 0
+    assert "Saved provider 'chutes'" in result.stdout
+    assert settings.default_provider == "chutes"
+    assert provider.base_url == "https://llm.chutes.ai/v1"
+    assert provider.api_key_env == "CHUTES_API_TOKEN"
+    assert provider.credential_name == "chutes"
+    assert provider.default_model == "Qwen/Qwen3-32B-TEE"
+    assert "Qwen/Qwen3-32B-TEE" in provider.models
+
+
+def test_setup_chutes_command_accepts_model_override_and_warns_without_token(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("CHUTES_API_TOKEN", raising=False)
+
+    result = CliRunner().invoke(
+        app,
+        ["--model", "Qwen/Qwen3-32B-TEE", "--no-set-default", "setup-chutes"],
+    )
+
+    settings = load_provider_settings(TauPaths(home=tmp_path / ".tau"))
+    provider = settings.get_provider("chutes")
+    assert result.exit_code == 0
+    assert settings.default_provider == "openai"
+    assert provider.default_model == "Qwen/Qwen3-32B-TEE"
+    assert "Set CHUTES_API_TOKEN before running Tau with this provider." in result.stderr

@@ -1,5 +1,8 @@
 import asyncio
 import json
+import shutil
+import subprocess
+import sys
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -36,6 +39,7 @@ from tau_coding import (
     CodingSession,
     CodingSessionConfig,
     FileCredentialStore,
+    LoopReceiptConfig,
     ModelChoice,
     OpenAICodexProviderConfig,
     OpenAICompatibleProviderConfig,
@@ -243,7 +247,14 @@ async def test_prompt_logs_error_event_diagnostic_data(tmp_path: Path) -> None:
     storage = JsonlSessionStorage(tmp_path / "session.jsonl")
     tau_paths = TauPaths(home=tmp_path / "tau-home", agents_home=tmp_path / "agents-home")
     provider = FakeProvider(
-        [[ProviderErrorEvent(message="provider failed", data={"status_code": 400, "body": "bad request"})]]
+        [
+            [
+                ProviderErrorEvent(
+                    message="provider failed",
+                    data={"status_code": 400, "body": "bad request"},
+                )
+            ]
+        ]
     )
     session = await CodingSession.load(
         CodingSessionConfig(
@@ -465,6 +476,381 @@ async def test_prompt_queues_steering_while_session_is_running(tmp_path: Path) -
     assert [entry.message for entry in message_entries] == list(session.messages)
     assert [entry.entry_id for entry in leaf_entries] == [entry.id for entry in message_entries]
     assert any(isinstance(event, QueueUpdateEvent) for event in run_events)
+
+
+@pytest.mark.anyio
+async def test_prompt_writes_loop2_receipt_artifacts_when_enabled(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Hello")),
+            ]
+        ]
+    )
+    receipt_root = tmp_path / ".tau-loop2" / "runs"
+    check_command = f"{sys.executable} -c \"print('check ok')\""
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=tmp_path,
+            loop_receipt=LoopReceiptConfig(
+                root_dir=receipt_root,
+                node_id="session-prompt",
+                allowed_globs=("src/**", "tests/**"),
+                checks=(check_command,),
+            ),
+        )
+    )
+
+    events = await _collect_session_events(session.prompt("Hello"))
+
+    run_dirs = sorted(path for path in receipt_root.iterdir() if path.is_dir())
+    assert len(run_dirs) == 1
+    run_dir = run_dirs[0]
+    contract = json.loads((run_dir / "contract.json").read_text())
+    rows = [json.loads(line) for line in (run_dir / "events.jsonl").read_text().splitlines()]
+    final_receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+    evidence = json.loads((run_dir / "transport-dag-evidence.json").read_text())
+
+    assert [event.type for event in events] == [
+        "agent_start",
+        "turn_start",
+        "message_start",
+        "message_end",
+        "message_start",
+        "message_end",
+        "turn_end",
+        "agent_end",
+    ]
+    assert contract["schema"] == "loop2.repair_node_contract.v1"
+    assert contract["node_id"] == "session-prompt"
+    assert contract["objective"] == "Hello"
+    assert contract["repo"] == str(tmp_path)
+    assert contract["allowed_globs"] == ["src/**", "tests/**"]
+    assert contract["checks"] == [check_command]
+    assert contract["backend"] == "fixture"
+    assert [row["event"]["type"] for row in rows[: len(events)]] == [
+        event.type for event in events
+    ]
+    assert [row["event_type"] for row in rows[len(events) :]] == [
+        "checks_started",
+        "check_finished",
+        "checks_finished",
+        "receipt_written",
+    ]
+    assert final_receipt["schema"] == "loop2.final_receipt.v1"
+    assert final_receipt["run_id"] == run_dir.name
+    assert final_receipt["node_id"] == "session-prompt"
+    assert final_receipt["status"] == "PASS"
+    assert final_receipt["mocked"] is True
+    assert final_receipt["live"] is False
+    assert final_receipt["claims"] == {
+        "proves": [
+            "Tau recorded one prompt run as Loop2-compatible artifacts.",
+            "Tau executed configured local checks and captured their stdout/stderr artifacts.",
+        ],
+        "does_not_prove": [
+            "Loop2 runner execution",
+            "live Scillm/OpenCode transport behavior",
+        ],
+    }
+    assert final_receipt["artifacts"]["events"] == str(run_dir / "events.jsonl")
+    assert len(final_receipt["checks"]) == 1
+    check = final_receipt["checks"][0]
+    assert check["command"] == check_command
+    assert check["exit_code"] == 0
+    assert Path(check["stdout_path"]).read_text() == "check ok\n"
+    assert Path(check["stderr_path"]).read_text() == ""
+    assert check["elapsed_s"] >= 0
+    assert rows[len(events) + 1]["data"]["exit_code"] == 0
+    assert rows[-1]["event_type"] == "receipt_written"
+    assert rows[-1]["status"] == "completed"
+    assert node_result == {
+        "schema": "loop2.node_result.v1",
+        "node_id": "session-prompt",
+        "status": "PASS",
+        "run_id": run_dir.name,
+        "final_receipt": str(run_dir / "final-receipt.json"),
+        "transport_dag_evidence": str(run_dir / "transport-dag-evidence.json"),
+        "events": str(run_dir / "events.jsonl"),
+        "changed_files": [],
+        "checks": final_receipt["checks"],
+        "mocked": True,
+        "live": False,
+    }
+    assert evidence["schema"] == "ux_lab.transport_dag_run_evidence.v1"
+    assert evidence["graph_id"] == "loop2:session-prompt"
+    assert evidence["progress_stream"]["event_count"] == len(rows)
+    assert evidence["progress_stream"]["last_event_type"] == "receipt_written"
+    assert "checks_started" in evidence["progress_stream"]["event_types"]
+    assert evidence["nodes"][2]["started_at"]
+    assert evidence["nodes"][3]["started_at"]
+
+
+@pytest.mark.anyio
+async def test_prompt_loop2_receipt_marks_failed_check(tmp_path: Path) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Hello")),
+            ]
+        ]
+    )
+    receipt_root = tmp_path / ".tau-loop2" / "runs"
+    check_command = (
+        f"{sys.executable} -c "
+        "\"import sys; sys.stderr.write('bad check\\\\n'); sys.exit(7)\""
+    )
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=tmp_path,
+            loop_receipt=LoopReceiptConfig(
+                root_dir=receipt_root,
+                node_id="session-prompt",
+                allowed_globs=("src/**",),
+                checks=(check_command,),
+            ),
+        )
+    )
+
+    _events = await _collect_session_events(session.prompt("Hello"))
+
+    run_dir = next(path for path in receipt_root.iterdir() if path.is_dir())
+    final_receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+    evidence = json.loads((run_dir / "transport-dag-evidence.json").read_text())
+    rows = [json.loads(line) for line in (run_dir / "events.jsonl").read_text().splitlines()]
+    check = final_receipt["checks"][0]
+
+    assert final_receipt["status"] == "FAILED"
+    assert node_result["status"] == "FAILED"
+    assert "local check-runner execution" not in final_receipt["claims"]["does_not_prove"]
+    assert check["exit_code"] == 7
+    assert Path(check["stderr_path"]).read_text() == "bad check\n"
+    assert [row["event_type"] for row in rows[-4:]] == [
+        "checks_started",
+        "check_finished",
+        "checks_finished",
+        "receipt_written",
+    ]
+    assert rows[-3]["status"] == "failed"
+    assert rows[-2]["status"] == "failed"
+    assert rows[-1]["status"] == "blocked"
+    assert [node["status"] for node in evidence["nodes"]] == [
+        "accepted",
+        "failed",
+        "failed",
+        "failed",
+    ]
+
+
+@pytest.mark.anyio
+async def test_prompt_loop2_receipt_blocks_on_nonrecoverable_provider_error(
+    tmp_path: Path,
+) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider([[ProviderErrorEvent(message="provider failed")]])
+    receipt_root = tmp_path / ".tau-loop2" / "runs"
+    check_command = f"{sys.executable} -c \"print('check ok')\""
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=tmp_path,
+            loop_receipt=LoopReceiptConfig(
+                root_dir=receipt_root,
+                node_id="session-prompt",
+                allowed_globs=("src/**",),
+                checks=(check_command,),
+            ),
+        )
+    )
+
+    _events = await _collect_session_events(session.prompt("Hello"))
+
+    run_dir = next(path for path in receipt_root.iterdir() if path.is_dir())
+    final_receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+    rows = [json.loads(line) for line in (run_dir / "events.jsonl").read_text().splitlines()]
+
+    assert final_receipt["status"] == "BLOCKED"
+    assert final_receipt["error"] == "provider failed"
+    assert node_result["status"] == "BLOCKED"
+    assert final_receipt["checks"][0]["exit_code"] == 0
+    assert any(row.get("event", {}).get("type") == "error" for row in rows)
+    assert rows[-1]["event_type"] == "receipt_written"
+    assert rows[-1]["status"] == "blocked"
+
+
+@pytest.mark.anyio
+@pytest.mark.skipif(shutil.which("git") is None, reason="git is not available")
+async def test_prompt_loop2_receipt_derives_changed_files_from_git(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.DEVNULL)
+    (repo / "new-file.txt").write_text("new\n", encoding="utf-8")
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Hello")),
+            ]
+        ]
+    )
+    receipt_root = tmp_path / "receipts"
+    check_command = f"{sys.executable} -c \"print('check ok')\""
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=repo,
+            loop_receipt=LoopReceiptConfig(
+                root_dir=receipt_root,
+                node_id="session-prompt",
+                allowed_globs=("**/*",),
+                checks=(check_command,),
+                required_changed_globs=("*.txt",),
+            ),
+        )
+    )
+
+    _events = await _collect_session_events(session.prompt("Hello"))
+
+    run_dir = next(path for path in receipt_root.iterdir() if path.is_dir())
+    final_receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+
+    assert final_receipt["changed_files"] == ["new-file.txt"]
+    assert final_receipt["status"] == "PASS"
+    assert final_receipt["error"] == ""
+    assert node_result["changed_files"] == ["new-file.txt"]
+    assert node_result["status"] == "PASS"
+
+
+@pytest.mark.anyio
+@pytest.mark.skipif(shutil.which("git") is None, reason="git is not available")
+async def test_prompt_loop2_receipt_blocks_when_required_changed_glob_missing(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init"], cwd=repo, check=True, stdout=subprocess.DEVNULL)
+    (repo / "new-file.txt").write_text("new\n", encoding="utf-8")
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Hello")),
+            ]
+        ]
+    )
+    receipt_root = tmp_path / "receipts"
+    check_command = f"{sys.executable} -c \"print('check ok')\""
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=repo,
+            loop_receipt=LoopReceiptConfig(
+                root_dir=receipt_root,
+                node_id="session-prompt",
+                allowed_globs=("**/*",),
+                checks=(check_command,),
+                required_changed_globs=("src/**/*.py",),
+            ),
+        )
+    )
+
+    _events = await _collect_session_events(session.prompt("Hello"))
+
+    run_dir = next(path for path in receipt_root.iterdir() if path.is_dir())
+    final_receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+    evidence = json.loads((run_dir / "transport-dag-evidence.json").read_text())
+    rows = [json.loads(line) for line in (run_dir / "events.jsonl").read_text().splitlines()]
+
+    assert final_receipt["changed_files"] == ["new-file.txt"]
+    assert final_receipt["status"] == "BLOCKED"
+    assert final_receipt["error"] == "required changed globs missing: src/**/*.py"
+    assert node_result["status"] == "BLOCKED"
+    assert node_result["changed_files"] == ["new-file.txt"]
+    assert [row["event_type"] for row in rows[-2:]] == [
+        "required_changes_missing",
+        "receipt_written",
+    ]
+    assert rows[-2]["status"] == "blocked"
+    assert rows[-2]["data"] == {"missing_required_globs": ["src/**/*.py"]}
+    assert rows[-1]["status"] == "blocked"
+    assert [node["status"] for node in evidence["nodes"]] == [
+        "accepted",
+        "failed",
+        "accepted",
+        "failed",
+    ]
+
+
+@pytest.mark.anyio
+async def test_prompt_loop2_receipt_preserves_explicit_changed_files(
+    tmp_path: Path,
+) -> None:
+    storage = JsonlSessionStorage(tmp_path / "session.jsonl")
+    provider = FakeProvider(
+        [
+            [
+                ProviderResponseStartEvent(model="fake"),
+                ProviderResponseEndEvent(message=AssistantMessage(content="Hello")),
+            ]
+        ]
+    )
+    receipt_root = tmp_path / "receipts"
+    check_command = f"{sys.executable} -c \"print('check ok')\""
+    session = await CodingSession.load(
+        CodingSessionConfig(
+            provider=provider,
+            model="fake",
+            system="You are Tau.",
+            storage=storage,
+            cwd=tmp_path,
+            loop_receipt=LoopReceiptConfig(
+                root_dir=receipt_root,
+                node_id="session-prompt",
+                allowed_globs=("**/*",),
+                checks=(check_command,),
+                changed_files=("manual.py",),
+            ),
+        )
+    )
+
+    _events = await _collect_session_events(session.prompt("Hello"))
+
+    run_dir = next(path for path in receipt_root.iterdir() if path.is_dir())
+    final_receipt = json.loads((run_dir / "final-receipt.json").read_text())
+    node_result = json.loads((run_dir / "node-result.json").read_text())
+
+    assert final_receipt["changed_files"] == ["manual.py"]
+    assert node_result["changed_files"] == ["manual.py"]
 
 
 @pytest.mark.anyio

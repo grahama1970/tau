@@ -89,9 +89,57 @@ Tau currently includes:
 - context accounting, manual compaction, and optional automatic compaction
 - Rich/plain/json/transcript rendering paths for print-mode output
 - a deterministic fake provider used by tests
+- experimental Loop2-compatible run receipts and monitor artifacts for bounded
+  harness runs
+- experimental goal-locked subagent contracts for routed handoffs, generated
+  tickets, and human-only goal changes
+- deterministic GitHub label projection for generated ticket drafts, where Tau
+  derives `agent-work`, `next:<agent>`, and `executor:<executor>` labels instead
+  of asking model agents to emit duplicated label state
 
 Tau is still evolving. Expect the command surface and internals to improve as the
 roadmap progresses.
+
+## Experimental agentic harness work
+
+This fork is being used to harden Tau as a goal-locked agentic harness. The
+current experiment keeps model-facing JSON small and moves strict routing rules
+into Tau validators.
+
+Implemented local contract slices include:
+
+- `tau.subagent_receipt.v1`: common receipt envelope for bounded subagents,
+  requiring goal, context, result, rationale, evidence, next route, and stop
+  condition.
+- `tau.generated_ticket.v1`: minimal ChatGPT Pro/WebGPT ticket draft contract.
+  The model supplies ticket kind/title/body, requested work, rationale, next
+  agent, required evidence, and stop condition. Tau derives GitHub labels.
+- `tau.agent_handoff.v1`: minimal handoff schema for subagents and existing
+  ticket comments.
+- `tau.human_goal_change.v1`: rare human-only goal mutation contract that must
+  route to `goal-guardian`.
+
+The current validators are intentionally local and deterministic. They do not
+create GitHub issues yet. GitHub mutation comes after the schema and projection
+contracts are proven with focused tests.
+
+Relevant files:
+
+```text
+src/tau_coding/subagent_receipt.py
+src/tau_coding/generated_ticket.py
+src/tau_coding/human_goal_change.py
+experiments/goal-locked-subagents/
+tests/test_subagent_receipt.py
+tests/test_generated_ticket.py
+tests/test_human_goal_change.py
+```
+
+Run the focused harness checks:
+
+```bash
+uv run pytest tests/test_subagent_receipt.py tests/test_generated_ticket.py tests/test_human_goal_change.py -q
+```
 
 ## Install
 

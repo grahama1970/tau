@@ -1,11 +1,19 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 build/
 dist/
 wheels/
 *.egg-info
 site/
+.loop2/
+experiments/loop2-alignment/live-*/repo/
+experiments/loop2-alignment/live-*/*/repo/
+experiments/loop2-alignment/live-*/
+experiments/loop2-alignment/reliability-stress-*/
 
 # Virtual environments
 .venv

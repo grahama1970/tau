@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.human_goal_change.v1",
+  "title": "Tau Human Goal Change",
+  "type": "object",
+  "required": [
+    "schema",
+    "github",
+    "goal",
+    "previous_subagent",
+    "context",
+    "new_goal",
+    "rationale",
+    "next_agent",
+    "required_evidence",
+    "stop_condition"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.human_goal_change.v1"
+    },
+    "github": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/githubTarget"
+    },
+    "goal": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/goalRef"
+    },
+    "previous_subagent": {
+      "const": "human"
+    },
+    "context": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/context"
+    },
+    "new_goal": {
+      "type": "object",
+      "required": ["text", "success_criteria", "constraints", "non_goals"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "success_criteria": {
+          "type": "array"
+        },
+        "constraints": {
+          "type": "array"
+        },
+        "non_goals": {
+          "type": "array"
+        }
+      },
+      "additionalProperties": true
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "next_agent": {
+      "$ref": "tau.agent_common.v1.schema.json#/$defs/nextAgent"
+    },
+    "required_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_condition": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": true
+}

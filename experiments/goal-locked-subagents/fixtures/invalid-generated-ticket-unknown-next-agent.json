@@ -1,0 +1,32 @@
+{
+  "schema": "tau.generated_ticket.v1",
+  "github": {
+    "repo": "grahama1970/chatgpt-lab"
+  },
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal"
+  },
+  "previous_subagent": "chatgpt-pro",
+  "context": {
+    "summary": "This fixture intentionally routes to an unknown next agent.",
+    "artifacts": []
+  },
+  "ticket": {
+    "kind": "issue",
+    "title": "Review Tau generated-ticket contract evidence",
+    "body": "Review the generated-ticket contract evidence."
+  },
+  "requested_work": "Review the generated-ticket contract evidence.",
+  "rationale": "This intentionally has an invalid route.",
+  "next_agent": {
+    "name": "unregistered-agent",
+    "reason": "Invalid route."
+  },
+  "required_evidence": [
+    "Focused generated-ticket validator tests pass."
+  ],
+  "stop_condition": "Reviewer posts a schema-valid receipt.",
+  "goal_amendment_proposal": null
+}

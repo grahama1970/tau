@@ -71,6 +71,8 @@ class TuiEventAdapter:
             return
 
         if isinstance(event, ToolExecutionUpdateEvent):
+            self._apply_pipeline_stage(event)
+            self._apply_loop_monitor_status(event)
             self.state.add_item("tool", f"… {event.message}")
             return
 
@@ -96,3 +98,22 @@ class TuiEventAdapter:
         if self.state.assistant_buffer:
             self.state.add_item("assistant", self.state.assistant_buffer)
             self.state.assistant_buffer = ""
+
+    def _apply_pipeline_stage(self, event: ToolExecutionUpdateEvent) -> None:
+        if event.data is None:
+            return
+        stage = event.data.get("memory_stage")
+        if stage is None:
+            stage = event.data.get("pipeline_stage")
+        if stage is None:
+            stage = event.data.get("stage")
+        if isinstance(stage, str):
+            self.state.set_thinking_status(stage)
+
+    def _apply_loop_monitor_status(self, event: ToolExecutionUpdateEvent) -> None:
+        if event.data is None:
+            return
+        monitor_status = event.data.get("loop2_monitor")
+        if monitor_status is None:
+            monitor_status = event.data.get("tau_loop_monitor")
+        self.state.set_loop_monitor_status_from_payload(monitor_status)

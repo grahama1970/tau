@@ -1,0 +1,23 @@
+{
+  "endpoint_peer_message": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/peer-message",
+  "peer_ready": true,
+  "peer_schema": "tau.loop_harness_peer_message.v1",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/list_total/.loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9",
+  "run_id": "loop2-tau-stress-list_total-1782507312-adb5e9",
+  "schema": "tau.inter_harness_switchboard_pi_mono_proof.v1",
+  "switchboard": {
+    "from": "tau",
+    "metadata_claims_does_not_prove": [
+      "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+    ],
+    "metadata_endpoint_peer_message": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/peer-message",
+    "metadata_run_id": "loop2-tau-stress-list_total-1782507312-adb5e9",
+    "priority": "normal",
+    "subject": "Tau Loop2 receipt available: loop2-tau-stress-list_total-1782507312-adb5e9",
+    "to": "pi-mono",
+    "type": "info"
+  },
+  "target": {
+    "harness": "pi-mono"
+  }
+}

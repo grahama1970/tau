@@ -1,0 +1,28 @@
+{
+  "schema": "tau.pi_mono_switchboard_websocket_push_proof.v1",
+  "ok": true,
+  "started_at": "2026-06-26T22:22:43.895Z",
+  "connected": {
+    "type": "connected",
+    "agent": "pi-mono",
+    "pendingMessages": 0
+  },
+  "event_type": "message",
+  "message_id": "msg_1782512574129_9en3jm6",
+  "message": {
+    "from": "tau",
+    "to": "pi-mono",
+    "type": "info",
+    "priority": "normal",
+    "subject": "Tau Loop2 receipt available: loop2-tau-stress-list_total-1782507312-adb5e9",
+    "metadata_schema": "tau.loop_harness_peer_message.v1",
+    "metadata_ready": true,
+    "metadata_live": true,
+    "metadata_mocked": false,
+    "metadata_run_id": "loop2-tau-stress-list_total-1782507312-adb5e9",
+    "metadata_claims_does_not_prove": [
+      "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+    ],
+    "endpoint_peer_message": "http://127.0.0.1:4321/api/loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9/peer-message"
+  }
+}

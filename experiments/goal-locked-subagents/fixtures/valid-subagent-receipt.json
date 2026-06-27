@@ -1,0 +1,34 @@
+{
+  "schema": "tau.subagent_receipt.v1",
+  "goal": {
+    "goal_id": "goal-tau-orchestration-001",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal",
+    "immutable_goal_preserved": true
+  },
+  "context": {
+    "run_id": "tau-run-001",
+    "ticket": "issue#123",
+    "subagent": "researcher",
+    "actor_type": "subagent",
+    "artifacts_read": [],
+    "assumptions": [],
+    "unknowns": []
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "Built the problem model and identified the next verifier lane.",
+    "artifacts": [],
+    "commands_run": [],
+    "mocked": false,
+    "live": true
+  },
+  "rationale": "The next safe transition is read-only verification of the produced evidence.",
+  "evidence": [],
+  "next": {
+    "subagent": "reviewer",
+    "reason": "Review the evidence before allowing implementation.",
+    "executor": "either"
+  },
+  "stop_condition": "Reviewer posts a schema-valid receipt."
+}

@@ -1,0 +1,195 @@
+{
+  "schema": "tau.goal_completion_audit.v1",
+  "created_utc": "2026-06-26T22:34:12Z",
+  "objective": "Harden and finish the Tau loop, harness, TUI, inter-harness communication, and UX Lab chat surface using the working Tau receipts, the Watch chat UX at http://127.0.0.1:3002/#watch as the chat reference, and pi-mono existing inter-harness/transport patterns as the communication reference.",
+  "status": "OBJECTIVE_SATISFIED_WITH_EXPLICIT_NON_CLAIMS",
+  "mocked": "mixed",
+  "live": "mixed",
+  "requirements": [
+    {
+      "id": "tau_loop_non_mocked_reliability",
+      "requirement": "Tau loop should work before additional harness/UI complexity is layered on it, with non-mocked reliability sanity coverage.",
+      "evidence": [
+        {
+          "path": "experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json",
+          "observed": "schema=tau.loop2_reliability_stress.v1; status=PASS; mocked=false; live=true; requested_cases=3; completed_cases=3; passed_cases=3; failed_cases=0"
+        },
+        {
+          "command": "uv run pytest tests/test_loop_receipt.py tests/test_loop_monitor.py -q",
+          "observed": "61 passed in prior run"
+        },
+        {
+          "command": "uv run pytest tests/test_loop_receipt.py::test_loop_peer_switchboard_emit_request_matches_pi_mono_contract tests/test_cli.py::test_cli_loop2_emit_peer_prints_switchboard_receipt tests/test_loop_receipt.py tests/test_loop_monitor.py -q",
+          "observed": "63 passed in prior run"
+        },
+        {
+          "command": "uv run pytest tests/test_loop_receipt.py tests/test_loop_monitor.py tests/test_tui_adapter.py tests/test_tui_app.py tests/test_cli.py::test_cli_loop2_emit_peer_prints_switchboard_receipt tests/test_cli.py::test_cli_loop2_check_monitor_prints_success_json -q",
+          "observed": "255 passed in 39.37s on 2026-06-26T22:35Z"
+        }
+      ],
+      "assessment": "PROVEN_FOR_BOUNDED_SUBSET",
+      "does_not_prove": [
+        "full production DAG scheduling",
+        "long-running soak behavior",
+        "semantic quality of all repair nodes"
+      ]
+    },
+    {
+      "id": "memory_skill_selector_harness",
+      "requirement": "Harness must use the Memory pipeline: intent, extract-entities, memory recall/access, create-evidence-case for compliance, and answer/deflect/clarify branch selection.",
+      "evidence": [
+        {
+          "path": "experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json",
+          "observed": "schema=tau.loop2_memory_skill_selector_harness.v1; mocked=false; live=true; memory_first=true; selected_skill=create-evidence-case; intent_action=COMPLIANCE; intent_confidence=0.95"
+        },
+        {
+          "path": "experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json",
+          "observed": "count=5; rows are live and mocked=false; selected_skill values include brave-search, create-evidence-case, and memory.clarify"
+        }
+      ],
+      "assessment": "PROVEN_FOR_REPRESENTATIVE_BRANCHES",
+      "does_not_prove": [
+        "every possible Memory intent branch",
+        "full compliance adjudication quality beyond deterministic branch receipts"
+      ]
+    },
+    {
+      "id": "brave_search_when_required",
+      "requirement": "Harness must route to Brave Search when external/current information is required.",
+      "evidence": [
+        {
+          "path": "experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json",
+          "observed": "2 of 5 live contract rows selected brave-search"
+        }
+      ],
+      "assessment": "PROVEN_FOR_CONTRACT_FIXTURES",
+      "does_not_prove": [
+        "live Brave network call transcript for each current-info scenario",
+        "ranking/answer quality of Brave results"
+      ]
+    },
+    {
+      "id": "tui_loop_monitor_status",
+      "requirement": "Tau TUI must display loop/harness status instead of hiding receipt state.",
+      "evidence": [
+        {
+          "files": [
+            "src/tau_coding/tui/state.py",
+            "src/tau_coding/tui/adapter.py",
+            "src/tau_coding/tui/widgets.py",
+            "tests/test_tui_adapter.py",
+            "tests/test_tui_app.py"
+          ],
+          "observed": "LoopMonitorStatus parsing/rendering is present in source; prior targeted tests reported 191 passed"
+        }
+      ],
+      "assessment": "PROVEN_BY_TARGETED_TESTS_PRIOR_RUN",
+      "does_not_prove": [
+        "manual terminal visual acceptance on every terminal size",
+        "final Sparta Chat production rendering"
+      ]
+    },
+    {
+      "id": "inter_harness_switchboard",
+      "requirement": "Tau harness must communicate with other harnesses using pi-mono inter-harness transport patterns.",
+      "evidence": [
+        {
+          "path": "experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-delivery-proof.json",
+          "observed": "schema=tau.pi_mono_switchboard_live_delivery_proof.v1; found_message=true; target=pi-mono; checks.from_tau=true; checks.to_pi_mono=true; metadata_schema=tau.loop_harness_peer_message.v1; metadata_live=true; metadata_mocked=false"
+        },
+        {
+          "path": "experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json",
+          "observed": "schema=tau.pi_mono_switchboard_websocket_push_proof.v1; ok=true; event_type=message; connected.agent=pi-mono; message.from=tau; message.to=pi-mono; message.metadata_schema=tau.loop_harness_peer_message.v1; message.metadata_live=true; message.metadata_mocked=false"
+        },
+        {
+          "path": "experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json",
+          "observed": "schema=tau.pi_mono_switchboard_websocket_ack_proof.v1; ok=true; mocked=false; live=true; connected.agent=pi-mono; received.from=tau; received.to=pi-mono; acked.success=true; inbox_after.count=0"
+        },
+        {
+          "source": "src/tau_coding/loop_receipt.py",
+          "observed": "build_loop_peer_switchboard_emit_request and emit_loop_peer_to_switchboard build/post pi-mono switchboard envelopes"
+        },
+        {
+          "source": "src/tau_coding/cli.py",
+          "observed": "loop2-emit-peer CLI command is present"
+        }
+      ],
+      "assessment": "PROVEN_FOR_LIVE_HTTP_DELIVERY_WEBSOCKET_PUSH_AND_WEBSOCKET_ACK",
+      "does_not_prove": [
+        "semantic downstream processing by a production pi-mono agent",
+        "multi-harness fanout beyond one pi-mono target"
+      ]
+    },
+    {
+      "id": "ux_lab_tau_chat_surface",
+      "requirement": "UX Lab must include a Tau chat surface that borrows from Watch/Sparta Chat UX and shows receipt-backed state, proof boundaries, and peer communication.",
+      "evidence": [
+        {
+          "source": "packages/ux-lab/src/components/tau/TauChatView.tsx",
+          "observed": "Tau chat surface renders receipt cards, pipeline steps, peer monitor, loop monitor, stream status, Watch/Sparta capability cards, and SharedChatShell sidebar"
+        },
+        {
+          "path": "/tmp/codex-ui-verification/pi-mono/tau-chat-switchboard-push-receipt/20260626T222550Z.png",
+          "observed": "Prior CDP screenshot showed Tau chat switchboard receipt content"
+        },
+        {
+          "path": "/tmp/codex-ui-verification/pi-mono/tau-goal-audit-refresh/20260626T223612Z.png",
+          "observed": "Fresh CDP screenshot on http://127.0.0.1:3002/#tau shows receipt cards, stage contract, and Tau chat shell"
+        },
+        {
+          "path": "/home/graham/.codex/ui-verification/latest.json",
+          "observed": "latest UI marker refreshed to url=http://127.0.0.1:3002/#tau; name=tau-goal-audit-refresh"
+        },
+        {
+          "path": "/tmp/codex-ui-verification/pi-mono/watch-final-pass-interaction/proof.json",
+          "observed": "Watch reference interaction proof shows dynamic status header behavior: before=MEMORY PIPELINE READY (25), during=PROFILING WILLIE"
+        }
+      ],
+      "assessment": "PROVEN_AS_EXPERIMENT_SURFACE",
+      "does_not_prove": [
+        "final production Sparta Chat engine integration",
+        "full UX acceptance across every viewport"
+      ]
+    },
+    {
+      "id": "personaplex_embry_voice_boundary",
+      "requirement": "TUI/chat must handle Embry persona voice through PersonaPlex without falsely claiming unavailable audio synthesis.",
+      "evidence": [
+        {
+          "path": "experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json",
+          "observed": "persona_voice.schema=tau.sparta_chat_persona_voice.v1; voice_engine=personaplex; voice_status=NOT_REQUESTED; claims.proves includes routing metadata preservation; claims.does_not_prove includes PersonaPlex audio synthesis and live full-duplex readiness"
+        },
+        {
+          "source": "packages/ux-lab/src/components/tau/TauChatView.tsx",
+          "observed": "UI text states PersonaPlex is fail-closed voice metadata until a real cache replay receipt is attached"
+        }
+      ],
+      "assessment": "PROVEN_FOR_FAIL_CLOSED_METADATA",
+      "does_not_prove": [
+        "PersonaPlex audio synthesis",
+        "published Embry voice identity",
+        "live full-duplex PersonaPlex readiness"
+      ]
+    }
+  ],
+  "remaining_gaps": [],
+  "explicit_non_claims": [
+    {
+      "id": "production_sparta_chat_product",
+      "detail": "The objective names the UX Lab Tau chat surface, not replacement of final production Sparta Chat. This audit does not claim production Sparta Chat engine integration."
+    },
+    {
+      "id": "personaplex_audio_synthesis",
+      "detail": "The objective requires Tau/TUI/chat to handle Embry PersonaPlex voice routing. This is satisfied as fail-closed routing metadata; this audit does not claim real audio synthesis or live full-duplex PersonaPlex readiness."
+    },
+    {
+      "id": "semantic_downstream_peer_processing",
+      "detail": "The objective requires inter-harness communication using pi-mono transport patterns. Delivery, WebSocket receive, ack, and inbox removal are proven. This audit does not claim a production pi-mono agent semantically processed the Tau receipt."
+    }
+  ],
+  "next_actions": [
+    "Promote the experiment surface into final Sparta Chat only under a separate product-integration goal.",
+    "Attach a real PersonaPlex receipt only under a separate audio synthesis/live voice goal.",
+    "Add multi-target fanout only if a second named harness is introduced."
+  ]
+}

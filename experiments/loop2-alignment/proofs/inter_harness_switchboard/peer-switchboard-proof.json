@@ -1,0 +1,30 @@
+{
+  "monitor_check": {
+    "checked_endpoints": [
+      "summary",
+      "transport-dag-evidence",
+      "events",
+      "events/stream",
+      "peer-message"
+    ],
+    "errors": [],
+    "ok": true
+  },
+  "peer_ready": true,
+  "peer_response_status": 200,
+  "peer_schema": "tau.loop_harness_peer_message.v1",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/list_total/.loop2/runs/loop2-tau-stress-list_total-1782507312-adb5e9",
+  "run_id": "loop2-tau-stress-list_total-1782507312-adb5e9",
+  "schema": "tau.inter_harness_switchboard_proof.v1",
+  "switchboard": {
+    "from": "tau",
+    "metadata_claims_does_not_prove": [
+      "full DAG scheduling, worktree assignment, or cross-node policy behavior"
+    ],
+    "metadata_run_id": "loop2-tau-stress-list_total-1782507312-adb5e9",
+    "priority": "normal",
+    "subject": "Tau Loop2 receipt available: loop2-tau-stress-list_total-1782507312-adb5e9",
+    "to": "*",
+    "type": "info"
+  }
+}
