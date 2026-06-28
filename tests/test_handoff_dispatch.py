@@ -8,6 +8,7 @@ from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_once,
     load_agent_dispatch_command_spec,
     run_agent_handoff_command_loop,
+    write_agent_handoff_command_loop_receipt,
     write_agent_handoff_command_dispatch_receipt,
     write_agent_handoff_dispatch_receipt,
 )
@@ -461,6 +462,84 @@ def test_run_agent_handoff_command_loop_appends_goal_guardian_ticket_source(
     assert result.ok is True
     assert result.terminal_agent == "human"
     assert command[-2:] == ["--ticket-source", str(ticket_source.resolve())]
+
+
+def test_run_agent_handoff_command_loop_blocks_stale_start_goal_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    start = _valid_handoff()
+    start["goal"]["goal_hash"] = "sha256:stale-goal"
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    reviewer_dir = spec_root / "reviewer"
+    agents_root.mkdir()
+    reviewer_dir.mkdir(parents=True)
+    (reviewer_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    "raise SystemExit('selected command must not run for stale start handoff')",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_agent_handoff_command_loop(
+        start,
+        agent_registry_root=agents_root,
+        command_spec_root=spec_root,
+        active_goal_hash="sha256:active-goal",
+        max_steps=1,
+    )
+
+    assert result.ok is False
+    assert result.status == "BLOCKED"
+    assert result.step_count == 1
+    assert result.terminal_agent is None
+    assert result.stop_reason == "invalid_handoff"
+    assert result.dispatches == ()
+    assert "step[1]: agent handoff may not change goal.goal_hash" in "\n".join(
+        result.errors
+    )
+
+
+def test_write_agent_handoff_command_loop_receipt_blocks_stale_start_without_artifacts(
+    tmp_path: Path,
+) -> None:
+    start = _valid_handoff()
+    start["goal"]["goal_hash"] = "sha256:stale-goal"
+    receipt_dir = tmp_path / "loop-receipts"
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    agents_root.mkdir()
+    spec_root.mkdir()
+
+    result = write_agent_handoff_command_loop_receipt(
+        start,
+        receipt_dir,
+        agent_registry_root=agents_root,
+        command_spec_root=spec_root,
+        active_goal_hash="sha256:active-goal",
+        max_steps=1,
+    )
+    receipt = json.loads((receipt_dir / "command-loop-receipt.json").read_text())
+
+    assert result.ok is False
+    assert result.status == "BLOCKED"
+    assert result.stop_reason == "invalid_handoff"
+    assert result.dispatches == ()
+    assert result.artifacts == ()
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dispatches"] == []
+    assert receipt["artifacts"] == []
+    assert "step[1]: agent handoff may not change goal.goal_hash" in "\n".join(
+        receipt["errors"]
+    )
 
 
 def _valid_handoff() -> dict:
