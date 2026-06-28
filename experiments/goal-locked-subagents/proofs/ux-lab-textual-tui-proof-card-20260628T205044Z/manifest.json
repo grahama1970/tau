@@ -1,0 +1,100 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "ux-lab-textual-tui-proof-card-20260628T205044Z",
+  "created_utc": "2026-06-28T20:50:44Z",
+  "surface": "ux-lab:#tau:textual-tui-proof-card",
+  "mocked": true,
+  "live": false,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "source_type": "UX Lab renders Tau-owned repeatable Textual TUI proof metadata as a distinct fail-closed card.",
+    "route": "http://127.0.0.1:3002/#tau",
+    "api_route": "http://127.0.0.1:3001/api/tau/tui/textual-proof",
+    "source_manifest": "experiments/goal-locked-subagents/proofs/textual-tui-proof-cli-20260628T204400Z/manifest.json",
+    "ux_lab_code": [
+      "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/server/tauRoutes.ts",
+      "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.tsx"
+    ],
+    "ux_lab_tests": [
+      "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/server/tauRoutes.test.ts",
+      "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.test.ts"
+    ]
+  },
+  "evidence": {
+    "api_response": {
+      "command": "curl -sS http://127.0.0.1:3001/api/tau/tui/textual-proof | jq '{ok, schema: .receipt.schema, mocked: .receipt.mocked, live: .receipt.live, status: .receipt.status, runId: .receipt.runId, screenshotPng: .receipt.screenshotPng, error, detail}'",
+      "exit_code": 0,
+      "ok": true,
+      "schema": "tau.textual_tui_proof_view.v1",
+      "mocked": true,
+      "live": false,
+      "status": "evidence-recorded",
+      "run_id": "loop2-tau-stress-math_add-1782507220-da39d0",
+      "screenshot_png": "/tmp/tau-tui-proof-cli-20260628T2044/tau-textual-tui-memory-stage.png"
+    },
+    "focused_tests": [
+      {
+        "command": "npx vitest run server/tauRoutes.test.ts",
+        "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+        "exit_code": 0,
+        "summary": "1 test file passed; 44 tests passed"
+      },
+      {
+        "command": "npx vitest run src/components/tau/TauChatView.test.ts",
+        "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+        "exit_code": 0,
+        "summary": "1 test file passed; 27 tests passed"
+      },
+      {
+        "command": "npx tsc --noEmit --pretty false",
+        "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+        "exit_code": 0,
+        "summary": "TypeScript check exited 0"
+      }
+    ],
+    "browser_visual": {
+      "schema": "tau.ux_lab_textual_tui_proof_card_visual.v1",
+      "ok": true,
+      "url": "http://127.0.0.1:3002/#tau",
+      "qid": "tau:textual-tui:proof-card",
+      "status": "FIXTURE PROOF",
+      "screenshot": "/tmp/tau-textual-tui-proof-card-20260628T2050/textual-tui-proof-card.png",
+      "page_screenshot": "/tmp/tau-textual-tui-proof-card-20260628T2050/tau-page.png",
+      "proof_json": "/tmp/tau-textual-tui-proof-card-20260628T2050/proof.json",
+      "visible_assertions": [
+        "Textual TUI Proof",
+        "FIXTURE PROOF",
+        "MOCKED true",
+        "LIVE false",
+        "does not prove: live provider call",
+        "does not prove: live Memory backend call from the TUI process"
+      ]
+    },
+    "cdp": {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:3002/#tau --name tau-textual-tui-proof-card",
+      "exit_code": 0,
+      "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+      "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-textual-tui-proof-card/20260628T204933Z.png",
+      "read_json": "/tmp/codex-ui-verification/pi-mono/tau-textual-tui-proof-card/20260628T204933Z.read.json",
+      "read_json_contains_qid": "tau:textual-tui:proof-card"
+    },
+    "runtime_note": {
+      "api_restart": "The tsx watch API restart hit ENOSPC for file watchers; UX Lab API was restarted in non-watch tsx server/index.ts mode on 127.0.0.1:3001.",
+      "vite": "Vite UI remained on 127.0.0.1:3002 for React hot reload."
+    }
+  },
+  "claims": {
+    "proves": [
+      "UX Lab renders a separate Textual TUI proof card instead of representing the receipt terminal as the interactive TUI.",
+      "The rendered card visibly preserves the fixture/live boundary: mocked=true and live=false.",
+      "The Tau Textual TUI proof card is backed by the Tau-owned repeatable tui-proof manifest and API normalizer."
+    ],
+    "does_not_prove": [
+      "Interactive Textual TUI embedded in the browser.",
+      "Live TUI provider call.",
+      "Live Memory backend call from the TUI process.",
+      "Same-message React chat and live Textual process synchronization.",
+      "Final Sparta Chat readiness."
+    ]
+  }
+}
