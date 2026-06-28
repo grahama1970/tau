@@ -1,0 +1,29 @@
+{
+  "applied": false,
+  "command_results": [],
+  "commands": [
+    [
+      "gh",
+      "issue",
+      "create",
+      "--repo",
+      "grahama1970/tau",
+      "--title",
+      "Tau handoff: human",
+      "--body-file",
+      "-",
+      "--label",
+      "agent-work,next:human,executor:human"
+    ]
+  ],
+  "dry_run": true,
+  "errors": [],
+  "ok": true,
+  "preflight_results": [],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/github-transport-dry-run.json",
+  "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "new"
+  }
+}

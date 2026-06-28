@@ -1,0 +1,37 @@
+{
+  "schema": "tau.ui_handoff_live_terminal_transport_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "captured_at": "2026-06-28T12:57:22Z",
+  "issue": {
+    "number": 4,
+    "url": "https://github.com/grahama1970/tau/issues/4",
+    "final_state": "CLOSED",
+    "final_labels": [
+      "agent-work",
+      "agent-done"
+    ]
+  },
+  "artifacts": {
+    "summary": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/summary.json",
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/command-loop/command-loop-receipt.json",
+    "github_transport_dry_run": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/github-transport-dry-run.json",
+    "github_transport_apply": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/github-transport-apply.json",
+    "github_issue_created": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/github-issue-4-created.json",
+    "github_issue_final": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/github-issue-4-final.json"
+  },
+  "claims": {
+    "proves": [
+      "Fresh Tau browser COMPLIANCE handoff was consumed by handoff-command-loop.",
+      "Tau command-loop selected reviewer and stopped at human.",
+      "Tau terminal GitHub transport applied a live gh issue create against grahama1970/tau.",
+      "Disposable proof issue was closed and relabeled agent-done."
+    ],
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Unbounded autonomous subagent operation.",
+      "Cron/GitHub Actions scheduling for this exact run."
+    ]
+  }
+}
