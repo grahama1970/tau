@@ -1,0 +1,110 @@
+{
+  "schema": "tau.answer_route_browser_proof_manifest.v1",
+  "created_at": "2026-06-28T15:22:30Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "Tau UX Lab chat ANSWER route via Memory intent response_mode=memory_grounded_answer",
+  "success_proof": {
+    "proof_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T152045Z/browser-answer/proof.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T152045Z/browser-answer/tau-live-memory-chat.png",
+    "url": "http://127.0.0.1:3002/?tauAnswer=20260628T152045Z#tau",
+    "prompt": "What is the current project status?",
+    "memory_requests": [
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/intent",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/answer",
+        "status": 200
+      }
+    ],
+    "visible_assertions_subset": {
+      "answer_product_visible": true,
+      "can_answer_visible": true,
+      "handoff_schema_valid": true,
+      "handoff_github_transport_receipt_dry_run": true,
+      "handoff_orchestrator_intake_accepted": true,
+      "subagent_receipt_expectation_persisted": true,
+      "external_subagent_receipt_intake_accepted": true
+    }
+  },
+  "prior_fail_closed_proof": {
+    "proof_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T151635Z/browser-answer/proof.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T151635Z/browser-answer/tau-live-memory-chat-failed.png",
+    "ok": false,
+    "memory_requests": [
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/intent",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/answer",
+        "status": 502
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      }
+    ],
+    "errors": [
+      "console:error:Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "console:error:Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "console:error:Failed to load resource: net::ERR_NETWORK_CHANGED",
+      "console:error:Failed to load resource: net::ERR_NETWORK_CHANGED",
+      "console:error:Failed to load resource: net::ERR_NETWORK_CHANGED",
+      "console:error:Failed to load resource: the server responded with a status of 502 (Bad Gateway)",
+      "page.waitForFunction: Timeout 30000ms exceeded.\n    at main (/home/graham/workspace/experiments/pi-mono/packages/ux-lab/scripts/tau-live-memory-chat-proof.mjs:861:14)"
+    ]
+  },
+  "ui_cdp_marker": {
+    "verified_at": "2026-06-28T15:21:47.554683+00:00",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "root": "/home/graham/workspace/experiments/tau",
+    "output_root": "/tmp/codex-ui-verification/tau",
+    "url": "http://127.0.0.1:3002/?tauAnswer=20260628T152045Z#tau",
+    "name": "tau-answer-route-live",
+    "screenshot": "/tmp/codex-ui-verification/tau/tau-answer-route-live/20260628T152112Z.png",
+    "read_json": "/tmp/codex-ui-verification/tau/tau-answer-route-live/20260628T152112Z.read.json"
+  },
+  "claims": {
+    "proves": [
+      "Tau chat can route a live Memory intent with response_mode=memory_grounded_answer through /api/memory/answer.",
+      "The live browser turn returned memory.answer.v1 through the Tau chat route with can_answer visible.",
+      "The same browser turn rendered tau.agent_handoff.v1, derived GitHub projection labels, and dry-run GitHub transport receipt.",
+      "A prior live /answer 502 did not emit a downstream handoff, preserving fail-closed behavior."
+    ],
+    "does_not_prove": [
+      "Natural live Memory action=ANSWER emission; this proof uses QUERY plus response_mode=memory_grounded_answer.",
+      "Applied GitHub mutation for the ANSWER handoff; transport is dryRun=true.",
+      "A real external subagent execution from the ANSWER route; receipt intake is dry-run/fixture-backed.",
+      "Production Sparta Chat readiness."
+    ]
+  }
+}

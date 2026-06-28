@@ -1,0 +1,48 @@
+{
+  "schema": "tau.live_memory_chat_browser_proof.v1",
+  "ok": false,
+  "mocked": false,
+  "live": true,
+  "scenario": "answer",
+  "url": "http://127.0.0.1:3002/?tauAnswer=20260628T151635Z#tau",
+  "prompt": "What is the current project status?",
+  "visibleAssertions": {},
+  "memoryRequests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/answer",
+      "status": 502
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    }
+  ],
+  "errors": [
+    "console:error:Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console:error:Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console:error:Failed to load resource: net::ERR_NETWORK_CHANGED",
+    "console:error:Failed to load resource: net::ERR_NETWORK_CHANGED",
+    "console:error:Failed to load resource: net::ERR_NETWORK_CHANGED",
+    "console:error:Failed to load resource: the server responded with a status of 502 (Bad Gateway)",
+    "page.waitForFunction: Timeout 30000ms exceeded.\n    at main (/home/graham/workspace/experiments/pi-mono/packages/ux-lab/scripts/tau-live-memory-chat-proof.mjs:861:14)"
+  ],
+  "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T151635Z/browser-answer/tau-live-memory-chat-failed.png",
+  "capturedAt": "2026-06-28T15:17:20.906Z"
+}
