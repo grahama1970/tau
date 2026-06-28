@@ -1,0 +1,79 @@
+{
+  "schema": "tau.project_watchdog_same_run_compliance_apply_transport_proof.v1",
+  "checked_at": "2026-06-28T22:48:00Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "watchdog": {
+    "source_receipt": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T224401Z/receipt.json",
+    "copied_receipt": "project-watchdog-20260628T224401Z/receipt.json",
+    "run_id": "project-watchdog-20260628T224401Z",
+    "status": "COMPLETED",
+    "handled_count": 1,
+    "action": "tau_handoff_dispatch"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "source_issue": 19,
+    "source_issue_url": "https://github.com/grahama1970/tau/issues/19",
+    "source_issue_created_json": "github-issue-19-created.json",
+    "source_issue_final_json": "github-issue-19-final.json",
+    "source_issue_final_state": "CLOSED",
+    "created_issue": 20,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/20",
+    "created_issue_created_json": "github-issue-20-created.json",
+    "created_issue_final_json": "github-issue-20-final.json",
+    "created_issue_final_state": "CLOSED",
+    "open_issues_after": "github-open-issues-after.json"
+  },
+  "inputs": {
+    "issue_body": "issue-body.md",
+    "receipt": "project-watchdog-20260628T224401Z/tau-handoff-dispatch-inputs.json",
+    "start": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json",
+    "max_steps": 1,
+    "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "apply_transport": true
+  },
+  "command_loop": {
+    "receipt": "project-watchdog-20260628T224401Z/tau-command-loop/command-loop-receipt.json",
+    "step_receipt": "project-watchdog-20260628T224401Z/tau-command-loop/command-loop-step-001.receipt.json",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "step_count": 1,
+    "command_exit_code": 0,
+    "selected_agent": "reviewer",
+    "previous_subagent": "reviewer",
+    "next_agent": "human",
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "github_transport": {
+    "receipt": "project-watchdog-20260628T224401Z/tau-github-transport.json",
+    "ok": true,
+    "dry_run": false,
+    "applied": true,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/20"
+  },
+  "redaction": {
+    "applied": true,
+    "reason": "Copied GitHub auth preflight stdout included masked token metadata; token/status lines were redacted in committed proof copies.",
+    "scan": "Secret-token prefix and auth-token metadata scan returned no proof-directory matches after redaction."
+  },
+  "proof_boundary": {
+    "proves": [
+      "the installed global project-watchdog cron picked up a real Tau GitHub issue marked with project-watchdog-action:tau-handoff-dispatch and apply_transport=true",
+      "the watchdog parsed the issue body into the same-run COMPLIANCE start handoff path and bounded loop options",
+      "the watchdog ran one live non-mocked Tau command-loop tick from that issue and routed reviewer to human",
+      "the watchdog applied terminal Tau GitHub transport and created a next:human issue",
+      "the source proof issue and created next:human issue were both closed after artifact capture"
+    ],
+    "does_not_prove": [
+      "multi-step autonomous non-human subagent chains",
+      "fresh browser UI rendering for this watchdog-only slice",
+      "semantic correctness of the underlying COMPLIANCE evidence case",
+      "production Sparta Chat readiness",
+      "human acceptance of the created next:human route"
+    ]
+  }
+}

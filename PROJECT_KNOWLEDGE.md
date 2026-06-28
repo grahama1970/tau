@@ -1,10 +1,11 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-28 22:37Z / 18:37 EDT by agent
+**Last updated:** 2026-06-28 22:48Z / 18:48 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
 
+- 2026-06-28 Fresh installed-cron watchdog apply proof is recorded in `experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-apply-20260628T224349Z/manifest.json`. Issue #19 carried `project-watchdog-action:tau-handoff-dispatch` for the same-run COMPLIANCE start handoff with `apply_transport=true`; watchdog run `project-watchdog-20260628T224401Z` acquired the work, ran one live non-mocked Tau command-loop tick, selected `reviewer`, recorded command exit `0`, stopped at `human`, applied terminal GitHub transport, and created issue #20 with `next:human`. Both proof-only issues were closed after artifact capture, and `github-open-issues-after.json` records no open Tau issues. This proves cron can apply the terminal GitHub projection for the same-run handoff; it does not prove multi-step autonomous non-human chains, semantic correctness of the COMPLIANCE evidence case, human acceptance, or final Sparta Chat readiness.
 - Project initialized, knowledge tracking started
 - T’au is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. T’au derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.
 - The human-facing README now follows the `watch` skill README pattern: compressed banner image first, short promise, practical "what it does", "when to use it", quickstart, current direction, repository map, and evidence discipline. The header image is stored as `docs/assets/tau-header.webp`, compressed with Pillow from the provided PNG.
