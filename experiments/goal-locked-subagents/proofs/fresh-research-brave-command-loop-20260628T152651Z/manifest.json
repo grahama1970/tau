@@ -1,0 +1,106 @@
+{
+  "schema": "tau.fresh_research_brave_command_loop_proof.v1",
+  "created_at": "2026-06-28T15:29:10Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "Fresh Tau chat RESEARCH route plus explicit live Brave receipt authorization through bounded command loop",
+  "browser_research": {
+    "proof_json": "experiments/goal-locked-subagents/proofs/fresh-research-browser-route-20260628T152708Z/browser-research/proof.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-research-browser-route-20260628T152708Z/browser-research/tau-live-memory-chat.png",
+    "url": "http://127.0.0.1:3002/?tauResearch=20260628T152708Z#tau",
+    "prompt": "search the web for latest Chutes pricing",
+    "memory_requests": [
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/intent",
+        "status": 200
+      }
+    ],
+    "next_agent": "research-auditor",
+    "transport_dry_run": true,
+    "visible_assertions_subset": {
+      "research_lead_visible": true,
+      "memory_action_visible": true,
+      "research_product_not_called_visible": true,
+      "handoff_schema_valid": true,
+      "handoff_next_agent_matches": true,
+      "handoff_github_transport_receipt_dry_run": true
+    }
+  },
+  "brave_receipt": {
+    "receipt_json": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/receipt.json",
+    "stdout_json": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/stdout.json",
+    "stderr_txt": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/stderr.txt",
+    "env_redacted_txt": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/env-redacted.txt",
+    "exit_code_txt": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/exit_code.txt",
+    "schema": "tau.external_research_receipt.v1",
+    "method": "brave-search",
+    "query": "latest Chutes pricing",
+    "retrieved_at": "2026-06-28T15:26:53Z",
+    "source_count": 2,
+    "sources": [
+      {
+        "title": "Pricing - Chutes",
+        "url": "https://chutes.ai/pricing"
+      },
+      {
+        "title": "Chutes Price: SN64/USD Live Price Chart, Market Cap & News Today | CoinGecko",
+        "url": "https://www.coingecko.com/en/coins/chutes"
+      }
+    ]
+  },
+  "authorized_command_loop": {
+    "start_handoff": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/start-handoff-from-browser-authorized.json",
+    "receipt_json": "experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/command-loop/command-loop-receipt.json",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "status": "WAITING",
+    "step_count": 2,
+    "selected_agents": [
+      "research-auditor",
+      "reviewer"
+    ],
+    "command_exits": [
+      0,
+      0
+    ],
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "ui_cdp_marker": {
+    "verified_at": "2026-06-28T15:28:47.608558+00:00",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "root": "/home/graham/workspace/experiments/tau",
+    "output_root": "/tmp/codex-ui-verification/tau",
+    "url": "http://127.0.0.1:3002/?tauResearch=20260628T152708Z#tau",
+    "name": "tau-research-route-live",
+    "screenshot": "/tmp/codex-ui-verification/tau/tau-research-route-live/20260628T152812Z.png",
+    "read_json": "/tmp/codex-ui-verification/tau/tau-research-route-live/20260628T152812Z.read.json"
+  },
+  "claims": {
+    "proves": [
+      "Tau chat can route a live Memory RESEARCH intent to tau.agent_handoff.v1 with next_agent=research-auditor without calling recall, answer, deflect, or Brave from the chat surface.",
+      "Tau chat preserves the boundary that web results are not claimed until a separate research lane produces evidence.",
+      "Tau external-research-receipt --from-brave produced tau.external_research_receipt.v1 from a live Brave Search call with two source URLs.",
+      "A browser-emitted RESEARCH handoff with explicit research_authorization was consumed by the bounded command loop through research-auditor then reviewer, ending at human."
+    ],
+    "does_not_prove": [
+      "Semantic correctness or sufficiency of the Brave results.",
+      "Applied GitHub mutation for this RESEARCH handoff; the browser projection is dryRun=true.",
+      "Production Sparta Chat readiness.",
+      "Unbounded autonomous research operation."
+    ]
+  }
+}

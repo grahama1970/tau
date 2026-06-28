@@ -1,0 +1,2 @@
+BRAVE_API_KEY_set=yes
+BRAVE_SEARCH_API_KEY_set=yes
