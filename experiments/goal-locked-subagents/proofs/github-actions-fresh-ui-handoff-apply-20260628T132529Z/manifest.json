@@ -1,0 +1,99 @@
+{
+  "schema": "tau.github_actions_fresh_ui_handoff_apply_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_at": "2026-06-28T13:25:29Z",
+  "fresh_browser_source": {
+    "suite_summary": "experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/summary.json",
+    "compliance_proof": "experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/compliance/proof.json",
+    "compliance_screenshot": "experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/compliance/tau-live-memory-chat.png",
+    "scenario": "compliance",
+    "mocked": false,
+    "live": true,
+    "handoff_schema": "tau.agent_handoff.v1",
+    "handoff_next_agent": "reviewer"
+  },
+  "fresh_local_command_loop": {
+    "summary": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/summary.json",
+    "start_handoff": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json",
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/command-loop/command-loop-receipt.json",
+    "selected_agent": "reviewer",
+    "terminal_agent": "human",
+    "command_exit_code": 0
+  },
+  "workflow": {
+    "name": "Tau handoff dispatch",
+    "file": ".github/workflows/tau-handoff-dispatch.yml",
+    "event": "workflow_dispatch",
+    "run_id": 28323704277,
+    "url": "https://github.com/grahama1970/tau/actions/runs/28323704277",
+    "head_branch": "main",
+    "head_sha": "32a719ed37c5fd4776194aab73f214ee11136b85",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "input": {
+    "start_handoff_path": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json",
+    "max_steps": 1,
+    "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "apply_github_transport": true
+  },
+  "observed_receipts": {
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/artifacts/tau-handoff-actions-28323704277/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/artifacts/tau-handoff-actions-28323704277/command-loop-step-001.receipt.json",
+    "github_transport_receipt": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/artifacts/tau-handoff-actions-28323704277/github-transport.json",
+    "workflow_stdout": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/artifacts/tau-handoff-actions-28323704277/workflow-command-loop.stdout.json",
+    "transport_stdout": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/artifacts/tau-handoff-actions-28323704277/workflow-github-transport.stdout.json",
+    "run_metadata": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/run.json",
+    "run_log": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/logs/run.log",
+    "final_issue_state": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-apply-20260628T132529Z/github-issue-7-final.json"
+  },
+  "command_loop_summary": {
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "status": "WAITING",
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human",
+    "next_agent": "human"
+  },
+  "github_transport_summary": {
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": false,
+    "applied": true,
+    "command_count": 1,
+    "preflight_auth_exit_code": 0,
+    "mutation_command_exit_code": 0,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/7",
+    "created_issue_number": 7,
+    "created_by": "github-actions[bot]"
+  },
+  "disposition": {
+    "issue_number": 7,
+    "issue_url": "https://github.com/grahama1970/tau/issues/7",
+    "final_state": "CLOSED",
+    "final_labels": [
+      "agent-work",
+      "agent-done"
+    ],
+    "comment_count": 2
+  },
+  "claims": {
+    "proves": [
+      "A fresh live Tau browser COMPLIANCE proof emitted a tau.agent_handoff.v1 routed to reviewer.",
+      "The same fresh handoff was committed as a start-handoff artifact and consumed by GitHub Actions from main.",
+      "With apply_github_transport=true, GitHub Actions applied the terminal GitHub transport from that fresh UI-derived handoff and created issue #7.",
+      "The disposable issue #7 final state was captured after proof disposition."
+    ],
+    "does_not_prove": [
+      "Unbounded autonomous subagent operation.",
+      "Production Sparta Chat readiness.",
+      "Human-free acceptance of final evidence-case content."
+    ]
+  }
+}
