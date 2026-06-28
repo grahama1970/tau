@@ -1,0 +1,17 @@
+{
+  "method": "brave-search",
+  "query": "latest Chutes pricing",
+  "retrieved_at": "2026-06-28T02:13:22Z",
+  "schema": "tau.external_research_receipt.v1",
+  "sources": [
+    {
+      "title": "Pricing - Chutes",
+      "url": "https://chutes.ai/pricing"
+    },
+    {
+      "title": "Chutes Price: SN64/USD Live Price Chart, Market Cap & News Today | CoinGecko",
+      "url": "https://www.coingecko.com/en/coins/chutes"
+    }
+  ],
+  "summary": "Live Brave Search receipt for Tau research handoff proof."
+}

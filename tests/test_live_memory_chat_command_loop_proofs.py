@@ -9,6 +9,10 @@ RESEARCH_RECEIPT_PRODUCER_PROOF_DIR = (
     Path(__file__).resolve().parents[1]
     / "experiments/goal-locked-subagents/proofs/external-research-receipt-producer-20260628T022000Z"
 )
+LIVE_BRAVE_RECEIPT_PROOF_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z"
+)
 
 
 def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> None:
@@ -91,3 +95,31 @@ def test_external_research_receipt_producer_proof_matches_written_receipt() -> N
     assert receipt["schema"] == "tau.external_research_receipt.v1"
     assert receipt["method"] == "brave-search"
     assert len(receipt["sources"]) == 1
+
+
+def test_live_brave_receipt_proof_routes_through_research_auditor() -> None:
+    manifest = json.loads((LIVE_BRAVE_RECEIPT_PROOF_DIR / "manifest.json").read_text())
+    receipt = json.loads((LIVE_BRAVE_RECEIPT_PROOF_DIR / "receipt.json").read_text())
+    command_loop = json.loads(
+        (LIVE_BRAVE_RECEIPT_PROOF_DIR / "command-loop/command-loop-receipt.json").read_text()
+    )
+
+    assert manifest["schema"] == "tau.live_brave_research_receipt_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["external_research_receipt_live"] is True
+    assert manifest["exit_code"] == 0
+    assert manifest["receipt_schema"] == "tau.external_research_receipt.v1"
+    assert manifest["source_count"] >= 1
+    assert manifest["stdout_matches_receipt"] is True
+    assert receipt["schema"] == "tau.external_research_receipt.v1"
+    assert receipt["method"] == "brave-search"
+    assert len(receipt["sources"]) == manifest["source_count"]
+    assert command_loop["ok"] is True
+    assert command_loop["mocked"] is False
+    assert command_loop["live"] is True
+    assert command_loop["step_count"] == 2
+    assert command_loop["terminal_agent"] == "human"
+    assert command_loop["stop_reason"] == "next_agent_is_human"
+    assert manifest["command_loop_selected_agents"] == ["research-auditor", "reviewer"]
+    assert manifest["command_loop_command_exits"] == [0, 0]

@@ -1,0 +1,41 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Semantic correctness of each Brave result.",
+      "Reviewer approval of the cited sources.",
+      "Final Tau chat answer readiness."
+    ],
+    "proves": [
+      "Tau external-research-receipt --from-brave produced tau.external_research_receipt.v1 from a live Brave Search call.",
+      "The live receipt contains at least one source URL.",
+      "The live Brave receipt routes through Tau command-loop research-auditor to reviewer, then human."
+    ]
+  },
+  "command": "uv run tau external-research-receipt --from-brave --query <redacted-query> --count 2 --summary <summary> --output <receipt>",
+  "command_loop_command_exits": [
+    0,
+    0
+  ],
+  "command_loop_ok": true,
+  "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/command-loop/command-loop-receipt.json",
+  "command_loop_selected_agents": [
+    "research-auditor",
+    "reviewer"
+  ],
+  "command_loop_status": "WAITING",
+  "command_loop_step_count": 2,
+  "command_loop_stop_reason": "next_agent_is_human",
+  "command_loop_terminal_agent": "human",
+  "exit_code": 0,
+  "external_research_receipt_live": true,
+  "live": true,
+  "method": "brave-search",
+  "mocked": false,
+  "receipt": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/receipt.json",
+  "receipt_schema": "tau.external_research_receipt.v1",
+  "schema": "tau.live_brave_research_receipt_proof.v1",
+  "source_count": 2,
+  "stderr": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/stderr.txt",
+  "stdout_json": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/stdout.json",
+  "stdout_matches_receipt": true
+}

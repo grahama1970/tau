@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -1086,6 +1087,98 @@ def test_cli_external_research_receipt_refuses_malformed_source() -> None:
 
     assert result.exit_code != 0
     assert "--source must use title|url format" in result.output
+
+
+def test_cli_external_research_receipt_can_call_brave_without_key_leak(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    calls: list[object] = []
+
+    def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append({"args": args, "kwargs": kwargs})
+        serialized_args = json.dumps(args)
+        assert "BRAVE_API_KEY" not in serialized_args
+        assert "BRAVE_SEARCH_API_KEY" not in serialized_args
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "query": "latest Chutes pricing",
+                    "results": [
+                        {
+                            "title": "Chutes pricing",
+                            "url": "https://chutes.ai/pricing",
+                        }
+                    ],
+                }
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+    monkeypatch.setenv("BRAVE_API_KEY", "must-not-appear")
+    output_path = tmp_path / "brave-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "external-research-receipt",
+            "--from-brave",
+            "--query",
+            "latest Chutes pricing",
+            "--count",
+            "1",
+            "--retrieved-at",
+            "2026-06-28T02:35:00Z",
+            "--output",
+            str(output_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert len(calls) == 1
+    assert payload == written
+    assert payload["schema"] == "tau.external_research_receipt.v1"
+    assert payload["method"] == "brave-search"
+    assert payload["sources"] == [
+        {
+            "title": "Chutes pricing",
+            "url": "https://chutes.ai/pricing",
+        }
+    ]
+    assert "must-not-appear" not in result.output
+
+
+def test_cli_external_research_receipt_refuses_failed_brave(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=7,
+            stdout="",
+            stderr="network unavailable",
+        )
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "external-research-receipt",
+            "--from-brave",
+            "--query",
+            "latest Chutes pricing",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "Brave Search failed with exit code 7" in result.output
+    assert "network unavailable" in result.output
 
 
 def test_cli_handoff_research_auditor_adapter_refuses_invalid_research_receipt(

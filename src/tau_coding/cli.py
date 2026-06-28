@@ -3,6 +3,8 @@
 import asyncio
 import io
 import json
+import os
+import subprocess
 import sys
 import tempfile
 from contextlib import redirect_stdout
@@ -1859,6 +1861,8 @@ def _parse_external_research_receipt_cli_args(
         "sources": [],
         "output": None,
         "retrieved_at": None,
+        "from_brave": None,
+        "count": "5",
     }
     index = 0
     while index < len(args):
@@ -1870,6 +1874,7 @@ def _parse_external_research_receipt_cli_args(
             "--source",
             "--output",
             "--retrieved-at",
+            "--count",
         }:
             index += 1
             if index >= len(args):
@@ -1884,6 +1889,8 @@ def _parse_external_research_receipt_cli_args(
                 options["output"] = Path(value)
             else:
                 options[arg.removeprefix("--").replace("-", "_")] = value
+        elif arg == "--from-brave":
+            options["from_brave"] = "true"
         elif any(
             arg.startswith(f"{flag}=")
             for flag in (
@@ -1893,6 +1900,7 @@ def _parse_external_research_receipt_cli_args(
                 "--source",
                 "--output",
                 "--retrieved-at",
+                "--count",
             )
         ):
             key, _, value = arg.partition("=")
@@ -1913,7 +1921,8 @@ def _parse_external_research_receipt_cli_args(
     if not isinstance(query, str) or not query.strip():
         raise RuntimeError("--query requires a non-empty value")
     sources = options["sources"]
-    if not isinstance(sources, list) or not sources:
+    from_brave = options["from_brave"] == "true"
+    if not from_brave and (not isinstance(sources, list) or not sources):
         raise RuntimeError("at least one --source title|url value is required")
     method = options["method"]
     if not isinstance(method, str) or not method.strip():
@@ -3763,6 +3772,8 @@ def project_agent_external_research_receipt_command(
     sources: list[str],
     output: Path | None,
     retrieved_at: str | None,
+    from_brave: str | None = None,
+    count: str | None = None,
 ) -> dict[str, object]:
     """Create a durable external research receipt from explicit source evidence."""
 
@@ -3772,7 +3783,13 @@ def project_agent_external_research_receipt_command(
         raise RuntimeError("--query requires a non-empty value")
     if not normalized_method:
         raise RuntimeError("--method requires a non-empty value")
-    parsed_sources = [_parse_external_research_source(source) for source in sources]
+    if from_brave == "true":
+        parsed_sources = _brave_search_sources(normalized_query, count=count)
+        if summary is None:
+            summary = f"Brave Search returned {len(parsed_sources)} source(s) for review."
+        normalized_method = "brave-search"
+    else:
+        parsed_sources = [_parse_external_research_source(source) for source in sources]
     if not parsed_sources:
         raise RuntimeError("at least one --source title|url value is required")
     receipt = {
@@ -3982,6 +3999,53 @@ def _parse_external_research_source(value: str) -> dict[str, str]:
     if not url:
         raise RuntimeError("--source url must be non-empty")
     return {"title": title, "url": url}
+
+
+def _brave_search_sources(query: str, *, count: str | None) -> list[dict[str, str]]:
+    result_count = _parse_positive_int(count or "5", "--count")
+    command = [
+        "bash",
+        "-lc",
+        (
+            "source ~/.zshrc >/dev/null 2>&1 || true; "
+            "/home/graham/workspace/experiments/agent-skills/skills/brave-search/run.sh "
+            f"web {json.dumps(query)} --count {result_count} --json"
+        ),
+    ]
+    process = subprocess.run(
+        command,
+        check=False,
+        text=True,
+        capture_output=True,
+        env=dict(os.environ),
+        timeout=90,
+    )
+    if process.returncode != 0:
+        detail = (process.stderr or process.stdout).strip()
+        raise RuntimeError(f"Brave Search failed with exit code {process.returncode}: {detail}")
+    try:
+        payload = json.loads(process.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Brave Search returned unreadable JSON: {exc}") from exc
+    results = payload.get("results") if isinstance(payload, dict) else None
+    if not isinstance(results, list) or not results:
+        raise RuntimeError("Brave Search returned no results")
+    sources: list[dict[str, str]] = []
+    for index, result in enumerate(results):
+        if not isinstance(result, dict):
+            continue
+        title = result.get("title")
+        url = result.get("url")
+        if not isinstance(title, str) or not title.strip():
+            title = result.get("description")
+        if not isinstance(title, str) or not title.strip():
+            title = f"Brave result {index + 1}"
+        if not isinstance(url, str) or not url.strip():
+            continue
+        sources.append({"title": title.strip(), "url": url.strip()})
+    if not sources:
+        raise RuntimeError("Brave Search returned no usable result URLs")
+    return sources
 
 
 def _project_agent_goal_guardian_reconciliation_handoff(
