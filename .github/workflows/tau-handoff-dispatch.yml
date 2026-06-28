@@ -47,23 +47,96 @@ jobs:
         with:
           python-version-file: .python-version
 
-      - name: Run bounded Tau handoff loop
+      - name: Resolve Tau dispatch inputs
         env:
-          TAU_START_HANDOFF: ${{ inputs.start_handoff_path }}
-          TAU_MAX_STEPS: ${{ inputs.max_steps }}
-          TAU_ACTIVE_GOAL_HASH: ${{ inputs.active_goal_hash }}
+          TAU_START_HANDOFF_INPUT: ${{ inputs.start_handoff_path }}
+          TAU_MAX_STEPS_INPUT: ${{ inputs.max_steps }}
+          TAU_ACTIVE_GOAL_HASH_INPUT: ${{ inputs.active_goal_hash }}
+          TAU_APPLY_GITHUB_TRANSPORT_INPUT: ${{ inputs.apply_github_transport }}
           TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
         run: |
           set -euo pipefail
-          if [ -z "${TAU_START_HANDOFF:-}" ]; then
-            TAU_START_HANDOFF="experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json"
-          fi
-          if [ -z "${TAU_MAX_STEPS:-}" ]; then
-            TAU_MAX_STEPS="1"
-          fi
-          if [ -z "${TAU_ACTIVE_GOAL_HASH:-}" ]; then
-            TAU_ACTIVE_GOAL_HASH="sha256:0000000000000000000000000000000000000000000000000000000000000000"
-          fi
+          mkdir -p "$TAU_RECEIPT_DIR"
+          python - <<'PY'
+          import json
+          import os
+          import shlex
+          import sys
+          from pathlib import PurePosixPath
+
+          default_start = "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json"
+          default_goal_hash = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+          event_path = os.environ.get("GITHUB_EVENT_PATH", "")
+          receipt_dir = os.environ["TAU_RECEIPT_DIR"]
+          source = event_name or "unknown"
+          start = os.environ.get("TAU_START_HANDOFF_INPUT") or default_start
+          max_steps = os.environ.get("TAU_MAX_STEPS_INPUT") or "1"
+          goal_hash = os.environ.get("TAU_ACTIVE_GOAL_HASH_INPUT") or default_goal_hash
+          apply_transport = os.environ.get("TAU_APPLY_GITHUB_TRANSPORT_INPUT") or "false"
+          comment_body = ""
+
+          if event_name == "issue_comment":
+              with open(event_path, "r", encoding="utf-8") as handle:
+                  event = json.load(handle)
+              comment_body = event.get("comment", {}).get("body", "")
+              tokens = shlex.split(comment_body.replace("\r", " "))
+              for token in tokens:
+                  key, sep, value = token.partition("=")
+                  if not sep:
+                      continue
+                  if key in {"start", "start_handoff_path"}:
+                      start = value
+                  elif key in {"max_steps", "steps"}:
+                      max_steps = value
+                  elif key in {"active_goal_hash", "goal_hash"}:
+                      goal_hash = value
+                  elif key in {"apply", "apply_github_transport"}:
+                      apply_transport = value.lower()
+
+          def reject(message: str) -> None:
+              print(f"::error::{message}")
+              sys.exit(64)
+
+          path = PurePosixPath(start)
+          if path.is_absolute() or ".." in path.parts:
+              reject(f"start handoff path must be repo-relative without '..': {start}")
+          if not os.path.isfile(start):
+              reject(f"start handoff path does not exist in checkout: {start}")
+          if not max_steps.isdecimal() or int(max_steps) < 1:
+              reject(f"max_steps must be a positive integer: {max_steps}")
+          if apply_transport not in {"true", "false"}:
+              reject(f"apply_github_transport must be true or false: {apply_transport}")
+          if not goal_hash.startswith("sha256:"):
+              reject(f"active goal hash must start with sha256:: {goal_hash}")
+
+          resolved = {
+              "schema": "tau.github_actions_dispatch_inputs.v1",
+              "event_name": event_name,
+              "source": source,
+              "start_handoff_path": start,
+              "max_steps": int(max_steps),
+              "active_goal_hash": goal_hash,
+              "apply_github_transport": apply_transport == "true",
+              "comment_body": comment_body,
+          }
+          os.makedirs(receipt_dir, exist_ok=True)
+          with open(os.path.join(receipt_dir, "resolved-dispatch-inputs.json"), "w", encoding="utf-8") as handle:
+              json.dump(resolved, handle, indent=2, sort_keys=True)
+              handle.write("\n")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as handle:
+              handle.write(f"TAU_START_HANDOFF={start}\n")
+              handle.write(f"TAU_MAX_STEPS={max_steps}\n")
+              handle.write(f"TAU_ACTIVE_GOAL_HASH={goal_hash}\n")
+              handle.write(f"TAU_APPLY_GITHUB_TRANSPORT={apply_transport}\n")
+          print(json.dumps(resolved, indent=2, sort_keys=True))
+          PY
+
+      - name: Run bounded Tau handoff loop
+        env:
+          TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
+        run: |
+          set -euo pipefail
           mkdir -p "$TAU_RECEIPT_DIR"
           uv run tau handoff-command-loop \
             --start "$TAU_START_HANDOFF" \
@@ -77,13 +150,9 @@ jobs:
       - name: Render or apply terminal GitHub transport
         env:
           GH_TOKEN: ${{ github.token }}
-          TAU_APPLY_GITHUB_TRANSPORT: ${{ inputs.apply_github_transport }}
           TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
         run: |
           set -euo pipefail
-          if [ -z "${TAU_APPLY_GITHUB_TRANSPORT:-}" ]; then
-            TAU_APPLY_GITHUB_TRANSPORT="false"
-          fi
           transport_args=(
             handoff-command-loop-github-transport
             "$TAU_RECEIPT_DIR/command-loop-receipt.json"
