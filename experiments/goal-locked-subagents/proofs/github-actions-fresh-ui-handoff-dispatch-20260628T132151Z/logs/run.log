@@ -1,0 +1,437 @@
+dispatch	Set up job	﻿2026-06-28T13:21:55.9281993Z Current runner version: '2.335.1'
+dispatch	Set up job	2026-06-28T13:21:55.9305982Z ##[group]Runner Image Provisioner
+dispatch	Set up job	2026-06-28T13:21:55.9306894Z Hosted Compute Agent
+dispatch	Set up job	2026-06-28T13:21:55.9307451Z Version: 20260611.554
+dispatch	Set up job	2026-06-28T13:21:55.9308068Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+dispatch	Set up job	2026-06-28T13:21:55.9308730Z Build Date: 2026-06-11T21:40:46Z
+dispatch	Set up job	2026-06-28T13:21:55.9309346Z Worker ID: {8a217519-4728-4da9-a907-f8d358657391}
+dispatch	Set up job	2026-06-28T13:21:55.9310021Z Azure Region: westus3
+dispatch	Set up job	2026-06-28T13:21:55.9310568Z ##[endgroup]
+dispatch	Set up job	2026-06-28T13:21:55.9311851Z ##[group]Operating System
+dispatch	Set up job	2026-06-28T13:21:55.9312484Z Ubuntu
+dispatch	Set up job	2026-06-28T13:21:55.9312943Z 24.04.4
+dispatch	Set up job	2026-06-28T13:21:55.9313428Z LTS
+dispatch	Set up job	2026-06-28T13:21:55.9313912Z ##[endgroup]
+dispatch	Set up job	2026-06-28T13:21:55.9314758Z ##[group]Runner Image
+dispatch	Set up job	2026-06-28T13:21:55.9315400Z Image: ubuntu-24.04
+dispatch	Set up job	2026-06-28T13:21:55.9315918Z Version: 20260622.220.1
+dispatch	Set up job	2026-06-28T13:21:55.9316917Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260622.220/images/ubuntu/Ubuntu2404-Readme.md
+dispatch	Set up job	2026-06-28T13:21:55.9318455Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260622.220
+dispatch	Set up job	2026-06-28T13:21:55.9319372Z ##[endgroup]
+dispatch	Set up job	2026-06-28T13:21:55.9320497Z ##[group]GITHUB_TOKEN Permissions
+dispatch	Set up job	2026-06-28T13:21:55.9322614Z Actions: read
+dispatch	Set up job	2026-06-28T13:21:55.9323162Z Contents: read
+dispatch	Set up job	2026-06-28T13:21:55.9324040Z Issues: write
+dispatch	Set up job	2026-06-28T13:21:55.9324746Z Metadata: read
+dispatch	Set up job	2026-06-28T13:21:55.9325247Z ##[endgroup]
+dispatch	Set up job	2026-06-28T13:21:55.9327605Z Secret source: Actions
+dispatch	Set up job	2026-06-28T13:21:55.9328312Z Prepare workflow directory
+dispatch	Set up job	2026-06-28T13:21:55.9696447Z Prepare all required actions
+dispatch	Set up job	2026-06-28T13:21:55.9734476Z Getting action download info
+dispatch	Set up job	2026-06-28T13:21:56.2779700Z Download action repository 'actions/checkout@v5' (SHA:93cb6efe18208431cddfb8368fd83d5badbf9bfd)
+dispatch	Set up job	2026-06-28T13:21:56.3509757Z Download action repository 'astral-sh/setup-uv@v7' (SHA:37802adc94f370d6bfd71619e3f0bf239e1f3b78)
+dispatch	Set up job	2026-06-28T13:21:57.3233258Z Download action repository 'actions/setup-python@v6' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+dispatch	Set up job	2026-06-28T13:21:58.2737562Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+dispatch	Set up job	2026-06-28T13:21:58.4577038Z Complete job name: dispatch
+dispatch	Checkout	﻿2026-06-28T13:21:58.5350969Z ##[group]Run actions/checkout@v5
+dispatch	Checkout	2026-06-28T13:21:58.5351643Z with:
+dispatch	Checkout	2026-06-28T13:21:58.5351932Z   repository: grahama1970/tau
+dispatch	Checkout	2026-06-28T13:21:58.5355270Z   token: ***
+dispatch	Checkout	2026-06-28T13:21:58.5355520Z   ssh-strict: true
+dispatch	Checkout	2026-06-28T13:21:58.5355770Z   ssh-user: git
+dispatch	Checkout	2026-06-28T13:21:58.5356039Z   persist-credentials: true
+dispatch	Checkout	2026-06-28T13:21:58.5356313Z   clean: true
+dispatch	Checkout	2026-06-28T13:21:58.5356587Z   sparse-checkout-cone-mode: true
+dispatch	Checkout	2026-06-28T13:21:58.5356888Z   fetch-depth: 1
+dispatch	Checkout	2026-06-28T13:21:58.5357138Z   fetch-tags: false
+dispatch	Checkout	2026-06-28T13:21:58.5357400Z   show-progress: true
+dispatch	Checkout	2026-06-28T13:21:58.5357680Z   lfs: false
+dispatch	Checkout	2026-06-28T13:21:58.5357914Z   submodules: false
+dispatch	Checkout	2026-06-28T13:21:58.5358169Z   set-safe-directory: true
+dispatch	Checkout	2026-06-28T13:21:58.5358664Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:58.6305003Z Syncing repository: grahama1970/tau
+dispatch	Checkout	2026-06-28T13:21:58.6306570Z ##[group]Getting Git version info
+dispatch	Checkout	2026-06-28T13:21:58.6306996Z Working directory is '/home/runner/work/tau/tau'
+dispatch	Checkout	2026-06-28T13:21:58.6307787Z [command]/usr/bin/git version
+dispatch	Checkout	2026-06-28T13:21:58.6340000Z git version 2.54.0
+dispatch	Checkout	2026-06-28T13:21:58.6358620Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:58.6373407Z Temporarily overriding HOME='/home/runner/work/_temp/f1845357-b184-4cf5-a494-e19e29226d1b' before making global git config changes
+dispatch	Checkout	2026-06-28T13:21:58.6375157Z Adding repository directory to the temporary git global config as a safe directory
+dispatch	Checkout	2026-06-28T13:21:58.6379461Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tau/tau
+dispatch	Checkout	2026-06-28T13:21:58.6419724Z Deleting the contents of '/home/runner/work/tau/tau'
+dispatch	Checkout	2026-06-28T13:21:58.6423057Z ##[group]Initializing the repository
+dispatch	Checkout	2026-06-28T13:21:58.6427350Z [command]/usr/bin/git init /home/runner/work/tau/tau
+dispatch	Checkout	2026-06-28T13:21:58.6509074Z hint: Using 'master' as the name for the initial branch. This default branch name
+dispatch	Checkout	2026-06-28T13:21:58.6509964Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+dispatch	Checkout	2026-06-28T13:21:58.6510505Z hint: to use in all of your new repositories, which will suppress this warning,
+dispatch	Checkout	2026-06-28T13:21:58.6510939Z hint: call:
+dispatch	Checkout	2026-06-28T13:21:58.6511388Z hint:
+dispatch	Checkout	2026-06-28T13:21:58.6511733Z hint: 	git config --global init.defaultBranch <name>
+dispatch	Checkout	2026-06-28T13:21:58.6512397Z hint:
+dispatch	Checkout	2026-06-28T13:21:58.6512856Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+dispatch	Checkout	2026-06-28T13:21:58.6513392Z hint: 'development'. The just-created branch can be renamed via this command:
+dispatch	Checkout	2026-06-28T13:21:58.6513857Z hint:
+dispatch	Checkout	2026-06-28T13:21:58.6514265Z hint: 	git branch -m <name>
+dispatch	Checkout	2026-06-28T13:21:58.6514707Z hint:
+dispatch	Checkout	2026-06-28T13:21:58.6515392Z hint: Disable this message with "git config set advice.defaultBranchName false"
+dispatch	Checkout	2026-06-28T13:21:58.6516361Z Initialized empty Git repository in /home/runner/work/tau/tau/.git/
+dispatch	Checkout	2026-06-28T13:21:58.6522925Z [command]/usr/bin/git remote add origin https://github.com/grahama1970/tau
+dispatch	Checkout	2026-06-28T13:21:58.6556323Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:58.6557019Z ##[group]Disabling automatic garbage collection
+dispatch	Checkout	2026-06-28T13:21:58.6560826Z [command]/usr/bin/git config --local gc.auto 0
+dispatch	Checkout	2026-06-28T13:21:58.6583426Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:58.6584338Z ##[group]Setting up auth
+dispatch	Checkout	2026-06-28T13:21:58.6589310Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+dispatch	Checkout	2026-06-28T13:21:58.6615102Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+dispatch	Checkout	2026-06-28T13:21:58.6884386Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dispatch	Checkout	2026-06-28T13:21:58.6916325Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+dispatch	Checkout	2026-06-28T13:21:58.7077619Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+dispatch	Checkout	2026-06-28T13:21:58.7102277Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+dispatch	Checkout	2026-06-28T13:21:58.7267577Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+dispatch	Checkout	2026-06-28T13:21:58.7294592Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:58.7295451Z ##[group]Fetching the repository
+dispatch	Checkout	2026-06-28T13:21:58.7302435Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +152c035fbb8eaa7c5f3fbdc68d2c052593ae9af2:refs/remotes/origin/main
+dispatch	Checkout	2026-06-28T13:21:59.9299604Z From https://github.com/grahama1970/tau
+dispatch	Checkout	2026-06-28T13:21:59.9300700Z  * [new ref]         152c035fbb8eaa7c5f3fbdc68d2c052593ae9af2 -> origin/main
+dispatch	Checkout	2026-06-28T13:21:59.9332138Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:59.9332879Z ##[group]Determining the checkout info
+dispatch	Checkout	2026-06-28T13:21:59.9333618Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:59.9338845Z [command]/usr/bin/git sparse-checkout disable
+dispatch	Checkout	2026-06-28T13:21:59.9375131Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+dispatch	Checkout	2026-06-28T13:21:59.9397324Z ##[group]Checking out the ref
+dispatch	Checkout	2026-06-28T13:21:59.9402586Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+dispatch	Checkout	2026-06-28T13:21:59.9779833Z Switched to a new branch 'main'
+dispatch	Checkout	2026-06-28T13:21:59.9780833Z branch 'main' set up to track 'origin/main'.
+dispatch	Checkout	2026-06-28T13:21:59.9787735Z ##[endgroup]
+dispatch	Checkout	2026-06-28T13:21:59.9834566Z [command]/usr/bin/git log -1 --format=%H
+dispatch	Checkout	2026-06-28T13:21:59.9853456Z 152c035fbb8eaa7c5f3fbdc68d2c052593ae9af2
+dispatch	Install uv	﻿2026-06-28T13:22:00.0087594Z ##[group]Run astral-sh/setup-uv@v7
+dispatch	Install uv	2026-06-28T13:22:00.0087891Z with:
+dispatch	Install uv	2026-06-28T13:22:00.0088079Z   enable-cache: true
+dispatch	Install uv	2026-06-28T13:22:00.0088300Z   activate-environment: false
+dispatch	Install uv	2026-06-28T13:22:00.0088566Z   working-directory: /home/runner/work/tau/tau
+dispatch	Install uv	2026-06-28T13:22:00.0091601Z   github-token: ***
+dispatch	Install uv	2026-06-28T13:22:00.0092285Z   cache-dependency-glob: **/*requirements*.txt
+dispatch	Install uv	**/*requirements*.in
+dispatch	Install uv	**/*constraints*.txt
+dispatch	Install uv	**/*constraints*.in
+dispatch	Install uv	**/pyproject.toml
+dispatch	Install uv	**/uv.lock
+dispatch	Install uv	**/*.py.lock
+dispatch	Install uv	
+dispatch	Install uv	2026-06-28T13:22:00.0092931Z   restore-cache: true
+dispatch	Install uv	2026-06-28T13:22:00.0093151Z   save-cache: true
+dispatch	Install uv	2026-06-28T13:22:00.0093352Z   prune-cache: true
+dispatch	Install uv	2026-06-28T13:22:00.0093556Z   cache-python: false
+dispatch	Install uv	2026-06-28T13:22:00.0093779Z   ignore-nothing-to-cache: false
+dispatch	Install uv	2026-06-28T13:22:00.0094029Z   ignore-empty-workdir: false
+dispatch	Install uv	2026-06-28T13:22:00.0094511Z   add-problem-matchers: true
+dispatch	Install uv	2026-06-28T13:22:00.0094762Z   resolution-strategy: highest
+dispatch	Install uv	2026-06-28T13:22:00.0094995Z ##[endgroup]
+dispatch	Install uv	2026-06-28T13:22:00.1745838Z Trying to find version for uv in: /home/runner/work/tau/tau/uv.toml
+dispatch	Install uv	2026-06-28T13:22:00.1746501Z Could not find file: /home/runner/work/tau/tau/uv.toml
+dispatch	Install uv	2026-06-28T13:22:00.1746921Z Trying to find version for uv in: /home/runner/work/tau/tau/pyproject.toml
+dispatch	Install uv	2026-06-28T13:22:00.1755579Z Could not determine uv version from uv.toml or pyproject.toml. Falling back to latest.
+dispatch	Install uv	2026-06-28T13:22:00.1758082Z Fetching version data from https://raw.githubusercontent.com/astral-sh/versions/main/v1/uv.ndjson ...
+dispatch	Install uv	2026-06-28T13:22:00.2920103Z Downloading uv from "https://releases.astral.sh/github/uv/releases/download/0.11.25/uv-x86_64-unknown-linux-gnu.tar.gz" ...
+dispatch	Install uv	2026-06-28T13:22:00.5850652Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/91fb2d70-8b46-4ffb-9ec0-69518c5ea44e -f /home/runner/work/_temp/01ea47cc-4757-401d-bcf2-7d956ce731dc
+dispatch	Install uv	2026-06-28T13:22:01.0683990Z Added /home/runner/.local/bin to the path
+dispatch	Install uv	2026-06-28T13:22:01.0687500Z Added /opt/hostedtoolcache/uv/0.11.25/x86_64 to the path
+dispatch	Install uv	2026-06-28T13:22:01.0688800Z Set UV_PYTHON_INSTALL_DIR to /home/runner/work/_temp/uv-python-dir
+dispatch	Install uv	2026-06-28T13:22:01.0689445Z Added /home/runner/work/_temp/uv-python-dir to the path
+dispatch	Install uv	2026-06-28T13:22:01.0713338Z Set UV_CACHE_DIR to /home/runner/work/_temp/setup-uv-cache
+dispatch	Install uv	2026-06-28T13:22:01.0713831Z Successfully installed uv version 0.11.25
+dispatch	Install uv	2026-06-28T13:22:01.1630439Z Searching files using cache dependency glob: /home/runner/work/tau/tau/**/*requirements*.txt,/home/runner/work/tau/tau/**/*requirements*.in,/home/runner/work/tau/tau/**/*constraints*.txt,/home/runner/work/tau/tau/**/*constraints*.in,/home/runner/work/tau/tau/**/pyproject.toml,/home/runner/work/tau/tau/**/uv.lock,/home/runner/work/tau/tau/**/*.py.lock
+dispatch	Install uv	2026-06-28T13:22:01.2142159Z /home/runner/work/tau/tau/pyproject.toml
+dispatch	Install uv	2026-06-28T13:22:01.2292830Z /home/runner/work/tau/tau/uv.lock
+dispatch	Install uv	2026-06-28T13:22:01.2300226Z Found 2 files to hash.
+dispatch	Install uv	2026-06-28T13:22:01.2355871Z Trying to restore cache from GitHub Actions cache with key: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-828c7feeb4bbac6eba90e08cb3ab6cef693f45ecfd14fde0ae725cc3e01266cd
+dispatch	Install uv	2026-06-28T13:22:01.4475126Z Cache hit for: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-828c7feeb4bbac6eba90e08cb3ab6cef693f45ecfd14fde0ae725cc3e01266cd
+dispatch	Install uv	2026-06-28T13:22:02.0928606Z Received 85928 of 85928 (100.0%), 0.2 MBs/sec
+dispatch	Install uv	2026-06-28T13:22:02.0929407Z Cache Size: ~0 MB (85928 B)
+dispatch	Install uv	2026-06-28T13:22:02.0958418Z [command]/usr/bin/tar -xf /home/runner/work/_temp/69f249e8-f5fd-4453-a343-e6f066748e06/cache.tzst -P -C /home/runner/work/tau/tau --use-compress-program unzstd
+dispatch	Install uv	2026-06-28T13:22:02.1031877Z Cache restored successfully
+dispatch	Install uv	2026-06-28T13:22:02.1036599Z cache restored from GitHub Actions cache with key: setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-828c7feeb4bbac6eba90e08cb3ab6cef693f45ecfd14fde0ae725cc3e01266cd
+dispatch	Set up Python	﻿2026-06-28T13:22:02.1697816Z ##[group]Run actions/setup-python@v6
+dispatch	Set up Python	2026-06-28T13:22:02.1698124Z with:
+dispatch	Set up Python	2026-06-28T13:22:02.1698345Z   python-version-file: .python-version
+dispatch	Set up Python	2026-06-28T13:22:02.1698628Z   check-latest: false
+dispatch	Set up Python	2026-06-28T13:22:02.1701574Z   token: ***
+dispatch	Set up Python	2026-06-28T13:22:02.1701783Z   update-environment: true
+dispatch	Set up Python	2026-06-28T13:22:02.1702039Z   allow-prereleases: false
+dispatch	Set up Python	2026-06-28T13:22:02.1702285Z   freethreaded: false
+dispatch	Set up Python	2026-06-28T13:22:02.1702513Z env:
+dispatch	Set up Python	2026-06-28T13:22:02.1702919Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+dispatch	Set up Python	2026-06-28T13:22:02.1703301Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+dispatch	Set up Python	2026-06-28T13:22:02.1703616Z ##[endgroup]
+dispatch	Set up Python	2026-06-28T13:22:02.2944231Z Resolved .python-version as 3.14
+dispatch	Set up Python	2026-06-28T13:22:02.2945699Z ##[group]Installed versions
+dispatch	Set up Python	2026-06-28T13:22:02.3032236Z Successfully set up CPython (3.14.6)
+dispatch	Set up Python	2026-06-28T13:22:02.3032871Z ##[endgroup]
+dispatch	Run bounded Tau handoff loop	﻿2026-06-28T13:22:02.3139675Z ##[group]Run set -euo pipefail
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3140088Z [36;1mset -euo pipefail[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3140392Z [36;1mif [ -z "${TAU_START_HANDOFF:-}" ]; then[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3141125Z [36;1m  TAU_START_HANDOFF="experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json"[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3141762Z [36;1mfi[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3141997Z [36;1mif [ -z "${TAU_MAX_STEPS:-}" ]; then[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3142309Z [36;1m  TAU_MAX_STEPS="1"[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3142565Z [36;1mfi[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3142817Z [36;1mif [ -z "${TAU_ACTIVE_GOAL_HASH:-}" ]; then[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3143337Z [36;1m  TAU_ACTIVE_GOAL_HASH="sha256:0000000000000000000000000000000000000000000000000000000000000000"[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3143806Z [36;1mfi[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3144024Z [36;1mmkdir -p "$TAU_RECEIPT_DIR"[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3144622Z [36;1muv run tau handoff-command-loop \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3144959Z [36;1m  --start "$TAU_START_HANDOFF" \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3145358Z [36;1m  --active-goal-hash "$TAU_ACTIVE_GOAL_HASH" \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3145714Z [36;1m  --receipt-dir "$TAU_RECEIPT_DIR" \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3146156Z [36;1m  --agents-root experiments/goal-locked-subagents/agent-command-specs \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3146746Z [36;1m  --command-spec-root experiments/goal-locked-subagents/agent-command-specs \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3147221Z [36;1m  --max-steps "$TAU_MAX_STEPS" \[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3147607Z [36;1m  | tee "$TAU_RECEIPT_DIR/workflow-command-loop.stdout.json"[0m
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3280114Z shell: /usr/bin/bash -e {0}
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3280432Z env:
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3280713Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3281098Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3281460Z   pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3281888Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3282310Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3282670Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3283026Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3283395Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3284010Z   TAU_START_HANDOFF: experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3284739Z   TAU_MAX_STEPS: 1
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3285115Z   TAU_ACTIVE_GOAL_HASH: sha256:0000000000000000000000000000000000000000000000000000000000000000
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3285592Z   TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/28323610461
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3285904Z ##[endgroup]
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3543336Z Using CPython 3.14.6 interpreter at: /opt/hostedtoolcache/Python/3.14.6/x64/bin/python3.14
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3544317Z Creating virtual environment at: .venv
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.3676681Z    Building tau @ file:///home/runner/work/tau/tau
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.4582258Z Downloading pygments (1.2MiB)
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.4583173Z Downloading ast-serialize (1.2MiB)
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.4585447Z Downloading pydantic-core (2.0MiB)
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.4587369Z Downloading ruff (11.0MiB)
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.4591535Z Downloading mypy (14.3MiB)
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.7536418Z  Downloaded ast-serialize
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.7995259Z  Downloaded pydantic-core
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.9050601Z  Downloaded pygments
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:02.9679634Z  Downloaded ruff
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:03.1465895Z  Downloaded mypy
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:03.2217873Z       Built tau @ file:///home/runner/work/tau/tau
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:03.2467751Z Installed 34 packages in 24ms
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7555525Z {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7556758Z   "artifacts": [
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7558631Z     "/home/runner/work/tau/tau/artifacts/tau-handoff-actions/28323610461/command-loop-step-001.receipt.json"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7560661Z   ],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7561680Z   "dispatches": [
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7562661Z     {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7563421Z       "artifacts": [],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7564522Z       "command_results": [
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7565423Z         {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7566150Z           "command": [
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7567159Z             "uv",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7567928Z             "run",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7568755Z             "tau",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7569624Z             "handoff-agent-adapter",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7570690Z             "--result-status",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7571778Z             "COMPLETED",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7572701Z             "--result-summary",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7574626Z             "Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7576483Z             "--next-agent",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7577593Z             "human",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7578462Z             "--next-executor",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7579392Z             "human",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7580284Z             "--next-reason",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7581739Z             "Human review is required before another bounded Tau route.",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7583312Z             "--required-evidence",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7584984Z             "Human posts a schema-valid handoff, goal decision, or stop instruction.",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7586569Z             "--stop-condition",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7587600Z             "Human route is posted."
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7588642Z           ],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7589495Z           "exit_code": 0,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7590419Z           "stderr": "",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7614470Z           "stdout": "{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\",\n      \"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\"\n    ],\n    \"summary\": \"Registry command adapter handled route for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"goal_id\": \"goal-tau-chat-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human review is required before another bounded Tau route.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"reviewer completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Human posts a schema-valid handoff, goal decision, or stop instruction.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Human route is posted.\"\n}\n",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7630896Z           "timed_out": false,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7631496Z           "timeout_s": 30.0
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7631918Z         }
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7632242Z       ],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7632673Z       "errors": [],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7633127Z       "live": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7633552Z       "loop_step": 1,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7633964Z       "mocked": false,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7634595Z       "ok": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7635068Z       "receipt_dir": null,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7635553Z       "response_projection": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7636050Z         "comment": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7651232Z           "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Human route is posted.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\",\n      \"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\"\n    ],\n    \"summary\": \"Registry command adapter handled route for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"goal_id\": \"goal-tau-chat-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human review is required before another bounded Tau route.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"reviewer completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Human posts a schema-valid handoff, goal decision, or stop instruction.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Human route is posted.\"\n}\n```\n"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7667594Z         },
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7668141Z         "dry_run": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7668649Z         "errors": [],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7669064Z         "labels": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7669496Z           "add": [
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7669929Z             "agent-work",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7670336Z             "next:human",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7670796Z             "executor:human"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7671216Z           ],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7671639Z           "remove": []
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7672081Z         },
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7672429Z         "next_agent": "human",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7672918Z         "ok": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7673373Z         "schema": "tau.agent_handoff_projection_receipt.v1",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7674024Z         "target": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7674570Z           "repo": "grahama1970/tau",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7675008Z           "target": "new"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7675467Z         }
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7675806Z       },
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7676256Z       "runner": "command",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7676872Z       "schema": "tau.agent_handoff_dispatch_receipt.v1",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7677458Z       "selected_agent": "reviewer",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7678040Z       "start_projection": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7678488Z         "comment": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7693683Z           "body": "## Tau Agent Handoff\n\n- Result: `NEEDS_REVIEW`\n- Summary: Memory action COMPLIANCE completed in Tau Chat. item_count=5 found=true\n- Next agent: `reviewer`\n- Executor: `either`\n- Stop condition: Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\",\n      \"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\"\n    ],\n    \"summary\": \"Tau Chat handled: How does Tau handle a CWE-287 SPARTA evidence case?\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"goal_id\": \"goal-tau-chat-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"either\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Compliance evidence needs independent review before stronger claims.\"\n  },\n  \"previous_subagent\": \"webgpt-ticket-author\",\n  \"rationale\": \"Tau has Memory intent/recall evidence but not a final reviewed evidence case.\",\n  \"required_evidence\": [\n    \"Reviewer receipt over the Memory packet and any evidence-case artifact.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/api/memory/intent\",\n      \"/api/memory/recall\"\n    ],\n    \"status\": \"NEEDS_REVIEW\",\n    \"summary\": \"Memory action COMPLIANCE completed in Tau Chat. item_count=5 found=true\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.\"\n}\n```\n"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7709554Z         },
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7709980Z         "dry_run": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7710372Z         "errors": [],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7710885Z         "labels": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7711292Z           "add": [
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7711835Z             "agent-work",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7712306Z             "next:reviewer",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7712744Z             "executor:either"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7713300Z           ],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7713684Z           "remove": []
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7714467Z         },
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7714874Z         "next_agent": "reviewer",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7715320Z         "ok": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7715878Z         "schema": "tau.agent_handoff_projection_receipt.v1",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7716439Z         "target": {
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7716958Z           "repo": "grahama1970/tau",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7717433Z           "target": "new"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7717835Z         }
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7718234Z       },
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7718665Z       "status": "COMPLETED",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7719212Z       "stop_reason": "response_consumed"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7719705Z     }
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7720038Z   ],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7720458Z   "errors": [],
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7720874Z   "live": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7721313Z   "mocked": false,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7721697Z   "ok": true,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7722294Z   "receipt_dir": "/home/runner/work/tau/tau/artifacts/tau-handoff-actions/28323610461",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7723218Z   "runner": "agent-registry-command-loop",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7723875Z   "schema": "tau.agent_handoff_command_loop_receipt.v1",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7724667Z   "status": "WAITING",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7725097Z   "step_count": 1,
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7725500Z   "stop_reason": "next_agent_is_human",
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7726084Z   "terminal_agent": "human"
+dispatch	Run bounded Tau handoff loop	2026-06-28T13:22:05.7726520Z }
+dispatch	Render or apply terminal GitHub transport	﻿2026-06-28T13:22:05.8732941Z ##[group]Run set -euo pipefail
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8733357Z [36;1mset -euo pipefail[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8733851Z [36;1mif [ -z "${TAU_APPLY_GITHUB_TRANSPORT:-}" ]; then[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8734863Z [36;1m  TAU_APPLY_GITHUB_TRANSPORT="false"[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8735316Z [36;1mfi[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8735649Z [36;1mtransport_args=([0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8736026Z [36;1m  handoff-command-loop-github-transport[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8736501Z [36;1m  "$TAU_RECEIPT_DIR/command-loop-receipt.json"[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8736939Z [36;1m  --receipt "$TAU_RECEIPT_DIR/github-transport.json"[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8737329Z [36;1m)[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8737684Z [36;1mif [ "$TAU_APPLY_GITHUB_TRANSPORT" = "true" ]; then[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8738103Z [36;1m  transport_args+=(--apply)[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8829193Z [36;1mfi[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8829679Z [36;1muv run tau "${transport_args[@]}" \[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8830382Z [36;1m  | tee "$TAU_RECEIPT_DIR/workflow-github-transport.stdout.json"[0m
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8856252Z shell: /usr/bin/bash -e {0}
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8856521Z env:
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8856803Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8857183Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8857676Z   pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8858084Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8858490Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8858843Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8859200Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8859559Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8862654Z   GH_TOKEN: ***
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8862876Z   TAU_APPLY_GITHUB_TRANSPORT: false
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8863194Z   TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/28323610461
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:05.8863515Z ##[endgroup]
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3934352Z {
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3935013Z   "applied": false,
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3935653Z   "command_results": [],
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3936294Z   "commands": [
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3936857Z     [
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3937362Z       "gh",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3937926Z       "issue",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3938464Z       "create",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3939007Z       "--repo",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3939563Z       "grahama1970/tau",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3940184Z       "--title",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3940744Z       "Tau handoff: human",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3941407Z       "--body-file",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3941987Z       "-",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3942498Z       "--label",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3943153Z       "agent-work,next:human,executor:human"
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3943953Z     ]
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3944634Z   ],
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3945152Z   "dry_run": true,
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3945740Z   "errors": [],
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3946315Z   "ok": true,
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3946906Z   "preflight_results": [],
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3948331Z   "receipt_path": "/home/runner/work/tau/tau/artifacts/tau-handoff-actions/28323610461/github-transport.json",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3950142Z   "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3951197Z   "target": {
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3951770Z     "repo": "grahama1970/tau",
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3952446Z     "target": "new"
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3952997Z   }
+dispatch	Render or apply terminal GitHub transport	2026-06-28T13:22:06.3953480Z }
+dispatch	Upload Tau handoff receipts	﻿2026-06-28T13:22:06.4959688Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4960981Z ##[group]Run actions/upload-artifact@v4
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4961258Z with:
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4961482Z   name: tau-handoff-actions-28323610461
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4961790Z   path: artifacts/tau-handoff-actions/28323610461
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4962087Z   if-no-files-found: error
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4962319Z   compression-level: 6
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4962547Z   overwrite: false
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4962759Z   include-hidden-files: false
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4963005Z env:
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4963257Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4963616Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4964006Z   pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4964741Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4965146Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4965523Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4965894Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4966260Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.4966584Z ##[endgroup]
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.6530788Z (node:2378) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.6531498Z (Use `node --trace-deprecation ...` to show where the warning was created)
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.6591748Z With the provided path, there will be 5 files uploaded
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.6597129Z Artifact name is valid!
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.6597632Z Root directory input is valid!
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.9625419Z Beginning upload of artifact content to blob storage
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:06.9889859Z (node:2378) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.2388735Z Uploaded bytes 7129
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.3063473Z Finished uploading artifact content to blob storage!
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.3065640Z SHA256 digest of uploaded artifact zip is 3651fe48b60b83cf2b590507eb49031534069cd802351bc0d833d32430896298
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.3066820Z Finalizing artifact upload
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.5234350Z Artifact tau-handoff-actions-28323610461.zip successfully finalized. Artifact ID 7935022747
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.5235376Z Artifact tau-handoff-actions-28323610461 has been successfully uploaded! Final size is 7129 bytes. Artifact ID is 7935022747
+dispatch	Upload Tau handoff receipts	2026-06-28T13:22:07.5241660Z Artifact download URL: https://github.com/grahama1970/tau/actions/runs/28323610461/artifacts/7935022747
+dispatch	Post Set up Python	﻿2026-06-28T13:22:07.5387907Z Post job cleanup.
+dispatch	Post Install uv	﻿2026-06-28T13:22:07.6691840Z Post job cleanup.
+dispatch	Post Install uv	2026-06-28T13:22:07.7989760Z UV_CACHE_DIR is already set to /home/runner/work/_temp/setup-uv-cache
+dispatch	Post Install uv	2026-06-28T13:22:07.7995001Z UV_PYTHON_INSTALL_DIR is already set to /home/runner/work/_temp/uv-python-dir
+dispatch	Post Install uv	2026-06-28T13:22:07.7998124Z Cache hit occurred on key setup-uv-2-x86_64-unknown-linux-gnu-ubuntu-24.04-unknown-pruned-828c7feeb4bbac6eba90e08cb3ab6cef693f45ecfd14fde0ae725cc3e01266cd, not saving cache.
+dispatch	Post Checkout	﻿2026-06-28T13:22:07.8605547Z Post job cleanup.
+dispatch	Post Checkout	2026-06-28T13:22:07.9394509Z [command]/usr/bin/git version
+dispatch	Post Checkout	2026-06-28T13:22:07.9428311Z git version 2.54.0
+dispatch	Post Checkout	2026-06-28T13:22:07.9462121Z Temporarily overriding HOME='/home/runner/work/_temp/1ee93687-0806-4883-8589-fd7f3b602645' before making global git config changes
+dispatch	Post Checkout	2026-06-28T13:22:07.9463058Z Adding repository directory to the temporary git global config as a safe directory
+dispatch	Post Checkout	2026-06-28T13:22:07.9467203Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tau/tau
+dispatch	Post Checkout	2026-06-28T13:22:07.9499307Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+dispatch	Post Checkout	2026-06-28T13:22:07.9528845Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+dispatch	Post Checkout	2026-06-28T13:22:07.9708091Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+dispatch	Post Checkout	2026-06-28T13:22:07.9730922Z http.https://github.com/.extraheader
+dispatch	Post Checkout	2026-06-28T13:22:07.9740583Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+dispatch	Post Checkout	2026-06-28T13:22:07.9767399Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+dispatch	Post Checkout	2026-06-28T13:22:07.9942509Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+dispatch	Post Checkout	2026-06-28T13:22:07.9970108Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+dispatch	Complete job	﻿2026-06-28T13:22:08.0290149Z Cleaning up orphan processes
+dispatch	Complete job	2026-06-28T13:22:08.0502810Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

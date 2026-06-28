@@ -1,0 +1,83 @@
+{
+  "schema": "tau.github_actions_fresh_ui_handoff_dispatch_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_at": "2026-06-28T13:21:51Z",
+  "fresh_browser_source": {
+    "suite_summary": "experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/summary.json",
+    "compliance_proof": "experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/compliance/proof.json",
+    "compliance_screenshot": "experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/compliance/tau-live-memory-chat.png",
+    "scenario": "compliance",
+    "mocked": false,
+    "live": true,
+    "handoff_schema": "tau.agent_handoff.v1",
+    "handoff_next_agent": "reviewer"
+  },
+  "fresh_local_command_loop": {
+    "summary": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/summary.json",
+    "start_handoff": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json",
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/command-loop/command-loop-receipt.json",
+    "selected_agent": "reviewer",
+    "terminal_agent": "human",
+    "command_exit_code": 0
+  },
+  "workflow": {
+    "name": "Tau handoff dispatch",
+    "file": ".github/workflows/tau-handoff-dispatch.yml",
+    "event": "workflow_dispatch",
+    "run_id": 28323610461,
+    "url": "https://github.com/grahama1970/tau/actions/runs/28323610461",
+    "head_branch": "main",
+    "head_sha": "152c035fbb8eaa7c5f3fbdc68d2c052593ae9af2",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "input": {
+    "start_handoff_path": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json",
+    "max_steps": 1,
+    "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "apply_github_transport": false
+  },
+  "observed_receipts": {
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/artifacts/tau-handoff-actions-28323610461/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/artifacts/tau-handoff-actions-28323610461/command-loop-step-001.receipt.json",
+    "github_transport_receipt": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/artifacts/tau-handoff-actions-28323610461/github-transport.json",
+    "workflow_stdout": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/artifacts/tau-handoff-actions-28323610461/workflow-command-loop.stdout.json",
+    "transport_stdout": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/artifacts/tau-handoff-actions-28323610461/workflow-github-transport.stdout.json",
+    "run_metadata": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/run.json",
+    "run_log": "experiments/goal-locked-subagents/proofs/github-actions-fresh-ui-handoff-dispatch-20260628T132151Z/logs/run.log"
+  },
+  "command_loop_summary": {
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "status": "WAITING",
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human",
+    "next_agent": "human"
+  },
+  "github_transport_summary": {
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": true,
+    "applied": false,
+    "command_count": 1,
+    "command_results_count": 0
+  },
+  "claims": {
+    "proves": [
+      "A fresh live Tau browser COMPLIANCE proof emitted a tau.agent_handoff.v1 routed to reviewer.",
+      "The same fresh handoff was committed as a start-handoff artifact and consumed by GitHub Actions from main.",
+      "GitHub Actions ran one bounded Tau handoff-command-loop tick from that fresh UI-derived start handoff and uploaded command-loop plus dry-run GitHub transport receipts."
+    ],
+    "does_not_prove": [
+      "Live GitHub mutation for this fresh UI-derived Actions run.",
+      "Unbounded autonomous subagent operation.",
+      "Production Sparta Chat readiness."
+    ]
+  }
+}
