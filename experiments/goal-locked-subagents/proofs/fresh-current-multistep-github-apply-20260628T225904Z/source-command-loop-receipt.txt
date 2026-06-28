@@ -1,0 +1,1 @@
+experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/command-loop/command-loop-receipt.json

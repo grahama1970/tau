@@ -1,0 +1,48 @@
+{
+  "schema": "tau.fresh_current_multistep_github_apply_proof.v1",
+  "created_utc": "2026-06-28T22:59:04Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "Apply-gated GitHub transport for the fresh current multi-step Tau command-loop terminal handoff.",
+  "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/command-loop/command-loop-receipt.json",
+  "transport": {
+    "dry_run_receipt": "experiments/goal-locked-subagents/proofs/fresh-current-multistep-github-apply-20260628T225904Z/dry-run-transport.json",
+    "apply_receipt": "experiments/goal-locked-subagents/proofs/fresh-current-multistep-github-apply-20260628T225904Z/apply-transport.json",
+    "dry_run_ok": true,
+    "apply_ok": true,
+    "dry_run_applied": false,
+    "apply_applied": true,
+    "command_exit_code": 0,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/21"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "created_issue": 21,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/21",
+    "created_issue_created_json": "github-issue-21-created.json",
+    "created_issue_final_json": "github-issue-21-final.json",
+    "created_issue_initial_state": "OPEN",
+    "created_issue_final_state": "CLOSED",
+    "open_issues_after": "github-open-issues-after.json"
+  },
+  "redaction": {
+    "applied": true,
+    "reason": "Copied GitHub auth preflight stdout included masked token metadata; token/status lines were redacted in committed proof copies.",
+    "scan": "Secret-token prefix and auth-token metadata scan returned no proof-directory matches after redaction."
+  },
+  "claims": {
+    "proves": [
+      "The terminal next:human handoff from the fresh current multi-step command-loop receipt can be applied to GitHub as a real issue in grahama1970/tau.",
+      "The applied transport created issue #21 with next:human/executor:human labels before proof disposition.",
+      "The proof-only issue was closed after artifact capture and no Tau issues remained open."
+    ],
+    "does_not_prove": [
+      "unbounded autonomous operation",
+      "semantic correctness of Memory answers or COMPLIANCE evidence cases",
+      "human acceptance of the created next:human route",
+      "production Sparta Chat readiness",
+      "browser UI rendering for this proof slice"
+    ]
+  }
+}
