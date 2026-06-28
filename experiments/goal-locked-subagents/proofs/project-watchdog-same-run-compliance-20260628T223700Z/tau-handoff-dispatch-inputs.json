@@ -1,0 +1,9 @@
+{
+  "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "apply_transport": false,
+  "issue": "issue#18",
+  "issue_url": "https://github.com/grahama1970/tau/issues/18",
+  "max_steps": 1,
+  "schema": "agent_skills.project_watchdog.tau_handoff_dispatch_inputs.v1",
+  "start": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json"
+}

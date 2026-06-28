@@ -1,0 +1,112 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T22:37:00Z",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "scope": "Installed project-watchdog cron consumed a live GitHub issue pointing at the fresh same-run COMPLIANCE handoff, ran one bounded Tau command-loop tick, commented evidence, and closed the issue.",
+  "source_proof": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/manifest.json",
+  "source_start_handoff": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json",
+  "github_issue": {
+    "number": 18,
+    "url": "https://github.com/grahama1970/tau/issues/18",
+    "title": "Tau watchdog proof: same-run compliance handoff",
+    "created_body": "issue-body.md",
+    "created_state": "OPEN",
+    "created_labels": [
+      "agent-work",
+      "executor:local",
+      "next:reviewer"
+    ],
+    "final_state": "CLOSED",
+    "final_labels": [
+      "agent-work",
+      "agent-done"
+    ],
+    "comment_count": 2
+  },
+  "watchdog": {
+    "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+    "run_id": "project-watchdog-20260628T223601Z",
+    "receipt": "watchdog-receipt.json",
+    "source_receipt": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/receipt.json",
+    "ok": true,
+    "status": "COMPLETED",
+    "handled_count": 1,
+    "issue": "issue#18"
+  },
+  "watchdog_inputs": {
+    "receipt": "tau-handoff-dispatch-inputs.json",
+    "action": "tau_handoff_dispatch",
+    "start": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json",
+    "max_steps": 1,
+    "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "apply_transport": false
+  },
+  "command_loop": {
+    "receipt": "command-loop-receipt.json",
+    "step_receipt": "command-loop-step-001.receipt.json",
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "step_count": 1,
+    "status": "WAITING",
+    "selected_agent": "reviewer",
+    "selected_agent_command_exit_code": 0,
+    "selected_agent_timed_out": false,
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "github_transport": {
+    "receipt": "github-transport.json",
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": true,
+    "applied": false,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    }
+  },
+  "commands": [
+    {
+      "command": "gh issue create --repo grahama1970/tau --title \"Tau watchdog proof: same-run compliance handoff\" --body-file experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-20260628T223700Z/issue-body.md --label agent-work,executor:local,next:reviewer",
+      "exit_code": 0
+    },
+    {
+      "command": "poll gh issue view 18 --repo grahama1970/tau until project-watchdog evidence comment and CLOSED state appeared",
+      "exit_code": 0
+    },
+    {
+      "command": "cp /home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/{receipt.json,tau-handoff-dispatch-inputs.json,tau-command-loop/command-loop-receipt.json,tau-command-loop/command-loop-step-001.receipt.json,tau-github-transport.json} experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-20260628T223700Z/",
+      "exit_code": 0
+    }
+  ],
+  "artifacts": {
+    "issue_body": "issue-body.md",
+    "issue_created": "github-issue-created.json",
+    "issue_after_watchdog": "github-issue-after-watchdog.json",
+    "issue_final": "github-issue-final.json",
+    "watchdog_receipt": "watchdog-receipt.json",
+    "watchdog_inputs": "tau-handoff-dispatch-inputs.json",
+    "command_loop_receipt": "command-loop-receipt.json",
+    "command_loop_step_receipt": "command-loop-step-001.receipt.json",
+    "github_transport_receipt": "github-transport.json"
+  },
+  "claims": {
+    "proves": [
+      "The installed project-watchdog cron can discover a live grahama1970/tau issue with project-watchdog-action:tau-handoff-dispatch and route it to Tau.",
+      "For the fresh same-run COMPLIANCE handoff, watchdog ran one non-mocked live Tau handoff-command-loop tick, selected reviewer, observed command exit 0, and stopped at human.",
+      "Watchdog posted lease and evidence comments, relabeled the issue to agent-done, and closed the proof issue."
+    ],
+    "does_not_prove": [
+      "Unbounded autonomous multi-step operation.",
+      "GitHub transport apply from this watchdog issue; apply_transport=false kept terminal transport dry-run.",
+      "Semantic correctness of the COMPLIANCE evidence case.",
+      "Production Sparta Chat readiness.",
+      "A human-approved final route after the next:human stop.",
+      "Interactive browser-embedded Textual TUI."
+    ]
+  }
+}

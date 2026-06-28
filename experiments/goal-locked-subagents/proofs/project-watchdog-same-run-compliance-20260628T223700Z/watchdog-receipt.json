@@ -1,0 +1,256 @@
+{
+  "apply": true,
+  "cron_log_file": "/home/graham/.local/state/project-watchdog/logs/cron.log",
+  "errors": [],
+  "handled_count": 1,
+  "handled_issues": [
+    {
+      "action": "tau_handoff_dispatch",
+      "artifacts": [
+        "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-handoff-dispatch-inputs.json",
+        "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-command-loop/command-loop-receipt.json",
+        "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-github-transport.json"
+      ],
+      "commands": [
+        {
+          "command": [
+            "gh",
+            "issue",
+            "comment",
+            "18",
+            "--repo",
+            "grahama1970/tau",
+            "--body",
+            "## Project Watchdog: Lease acquired\n\n<!-- project-watchdog:v1 -->\n```json\n{\n  \"action\": \"tau_handoff_dispatch\",\n  \"inputs\": {\n    \"active_goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"apply_transport\": false,\n    \"issue\": \"issue#18\",\n    \"issue_url\": \"https://github.com/grahama1970/tau/issues/18\",\n    \"max_steps\": 1,\n    \"schema\": \"agent_skills.project_watchdog.tau_handoff_dispatch_inputs.v1\",\n    \"start\": \"experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json\"\n  },\n  \"issue\": \"issue#18\",\n  \"run_id\": \"project-watchdog-20260628T223601Z\",\n  \"schema\": \"agent_skills.project_watchdog.lease.v1\",\n  \"selected_agent\": \"tau-handoff-dispatch\"\n}\n```\n"
+          ],
+          "cwd": null,
+          "duration_seconds": 0.776073,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/18#issuecomment-4827611675\n"
+        },
+        {
+          "command": [
+            "gh",
+            "issue",
+            "edit",
+            "18",
+            "--repo",
+            "grahama1970/tau",
+            "--add-label",
+            "agent-active"
+          ],
+          "cwd": null,
+          "duration_seconds": 1.150949,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/18\n"
+        },
+        {
+          "command": [
+            "/home/graham/.local/bin/uv",
+            "run",
+            "tau",
+            "handoff-command-loop",
+            "--start",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json",
+            "--receipt-dir",
+            "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-command-loop",
+            "--agents-root",
+            "/home/graham/workspace/experiments/agent-skills/agents",
+            "--command-spec-root",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs",
+            "--active-goal-hash",
+            "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "--max-steps",
+            "1"
+          ],
+          "cwd": "/home/graham/workspace/experiments/tau",
+          "duration_seconds": 0.992711,
+          "exit_code": 0,
+          "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/project-watchdog/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+          "stdout": "{\n  \"artifacts\": [\n    \"/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-command-loop/command-loop-step-001.receipt.json\"\n  ],\n  \"dispatches\": [\n    {\n      \"artifacts\": [],\n      \"command_results\": [\n        {\n          \"command\": [\n            \"uv\",\n            \"run\",\n            \"tau\",\n            \"handoff-agent-adapter\",\n            \"--result-status\",\n            \"COMPLETED\",\n            \"--result-summary\",\n            \"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\",\n            \"--next-agent\",\n            \"human\",\n            \"--next-executor\",\n            \"human\",\n            \"--next-reason\",\n            \"Human review is required before another bounded Tau route.\",\n            \"--required-evidence\",\n            \"Human posts a schema-valid handoff, goal decision, or stop instruction.\",\n            \"--stop-condition\",\n            \"Human route is posted.\"\n          ],\n          \"exit_code\": 0,\n          \"stderr\": \"\",\n          \"stdout\": \"{\\n  \\\"context\\\": {\\n    \\\"artifacts\\\": [\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\\\"\\n    ],\\n    \\\"summary\\\": \\\"Registry command adapter handled route for reviewer.\\\"\\n  },\\n  \\\"github\\\": {\\n    \\\"repo\\\": \\\"grahama1970/tau\\\",\\n    \\\"target\\\": \\\"new\\\"\\n  },\\n  \\\"goal\\\": {\\n    \\\"goal_hash\\\": \\\"sha256:0000000000000000000000000000000000000000000000000000000000000000\\\",\\n    \\\"goal_id\\\": \\\"goal-tau-chat-hardening\\\",\\n    \\\"goal_version\\\": 1\\n  },\\n  \\\"next_agent\\\": {\\n    \\\"executor\\\": \\\"human\\\",\\n    \\\"name\\\": \\\"human\\\",\\n    \\\"reason\\\": \\\"Human review is required before another bounded Tau route.\\\"\\n  },\\n  \\\"previous_subagent\\\": \\\"reviewer\\\",\\n  \\\"rationale\\\": \\\"reviewer completed one bounded adapter turn; routing follows the configured next agent.\\\",\\n  \\\"required_evidence\\\": [\\n    \\\"Human posts a schema-valid handoff, goal decision, or stop instruction.\\\"\\n  ],\\n  \\\"result\\\": {\\n    \\\"evidence\\\": [\\n      \\\"tau handoff-agent-adapter emitted this schema-valid response from stdin\\\"\\n    ],\\n    \\\"status\\\": \\\"COMPLETED\\\",\\n    \\\"summary\\\": \\\"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\\\"\\n  },\\n  \\\"schema\\\": \\\"tau.agent_handoff.v1\\\",\\n  \\\"stop_condition\\\": \\\"Human route is posted.\\\"\\n}\\n\",\n          \"timed_out\": false,\n          \"timeout_s\": 30.0\n        }\n      ],\n      \"errors\": [],\n      \"live\": true,\n      \"loop_step\": 1,\n      \"mocked\": false,\n      \"ok\": true,\n      \"receipt_dir\": null,\n      \"response_projection\": {\n        \"comment\": {\n          \"body\": \"## Tau Agent Handoff\\n\\n- Result: `COMPLETED`\\n- Summary: Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\\n- Next agent: `human`\\n- Executor: `human`\\n- Stop condition: Human route is posted.\\n\\n<!-- tau-agent-handoff:v1 -->\\n```json\\n{\\n  \\\"context\\\": {\\n    \\\"artifacts\\\": [\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\\\"\\n    ],\\n    \\\"summary\\\": \\\"Registry command adapter handled route for reviewer.\\\"\\n  },\\n  \\\"github\\\": {\\n    \\\"repo\\\": \\\"grahama1970/tau\\\",\\n    \\\"target\\\": \\\"new\\\"\\n  },\\n  \\\"goal\\\": {\\n    \\\"goal_hash\\\": \\\"sha256:0000000000000000000000000000000000000000000000000000000000000000\\\",\\n    \\\"goal_id\\\": \\\"goal-tau-chat-hardening\\\",\\n    \\\"goal_version\\\": 1\\n  },\\n  \\\"next_agent\\\": {\\n    \\\"executor\\\": \\\"human\\\",\\n    \\\"name\\\": \\\"human\\\",\\n    \\\"reason\\\": \\\"Human review is required before another bounded Tau route.\\\"\\n  },\\n  \\\"previous_subagent\\\": \\\"reviewer\\\",\\n  \\\"rationale\\\": \\\"reviewer completed one bounded adapter turn; routing follows the configured next agent.\\\",\\n  \\\"required_evidence\\\": [\\n    \\\"Human posts a schema-valid handoff, goal decision, or stop instruction.\\\"\\n  ],\\n  \\\"result\\\": {\\n    \\\"evidence\\\": [\\n      \\\"tau handoff-agent-adapter emitted this schema-valid response from stdin\\\"\\n    ],\\n    \\\"status\\\": \\\"COMPLETED\\\",\\n    \\\"summary\\\": \\\"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\\\"\\n  },\\n  \\\"schema\\\": \\\"tau.agent_handoff.v1\\\",\\n  \\\"stop_condition\\\": \\\"Human route is posted.\\\"\\n}\\n```\\n\"\n        },\n        \"dry_run\": true,\n        \"errors\": [],\n        \"labels\": {\n          \"add\": [\n            \"agent-work\",\n            \"next:human\",\n            \"executor:human\"\n          ],\n          \"remove\": []\n        },\n        \"next_agent\": \"human\",\n        \"ok\": true,\n        \"schema\": \"tau.agent_handoff_projection_receipt.v1\",\n        \"target\": {\n          \"repo\": \"grahama1970/tau\",\n          \"target\": \"new\"\n        }\n      },\n      \"runner\": \"command\",\n      \"schema\": \"tau.agent_handoff_dispatch_receipt.v1\",\n      \"selected_agent\": \"reviewer\",\n      \"start_projection\": {\n        \"comment\": {\n          \"body\": \"## Tau Agent Handoff\\n\\n- Result: `NEEDS_REVIEW`\\n- Summary: Memory action COMPLIANCE completed in Tau Chat. item_count=5 found=true\\n- Next agent: `reviewer`\\n- Executor: `either`\\n- Stop condition: Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.\\n\\n<!-- tau-agent-handoff:v1 -->\\n```json\\n{\\n  \\\"context\\\": {\\n    \\\"artifacts\\\": [\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\\\",\\n      \\\"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\\\",\\n      \\\"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\\\",\\n      \\\"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\\\"\\n    ],\\n    \\\"summary\\\": \\\"Tau Chat handled: How does Tau handle a CWE-287 SPARTA evidence case?\\\"\\n  },\\n  \\\"github\\\": {\\n    \\\"repo\\\": \\\"grahama1970/tau\\\",\\n    \\\"target\\\": \\\"new\\\"\\n  },\\n  \\\"goal\\\": {\\n    \\\"goal_hash\\\": \\\"sha256:0000000000000000000000000000000000000000000000000000000000000000\\\",\\n    \\\"goal_id\\\": \\\"goal-tau-chat-hardening\\\",\\n    \\\"goal_version\\\": 1\\n  },\\n  \\\"next_agent\\\": {\\n    \\\"executor\\\": \\\"either\\\",\\n    \\\"name\\\": \\\"reviewer\\\",\\n    \\\"reason\\\": \\\"Compliance evidence needs independent review before stronger claims.\\\"\\n  },\\n  \\\"previous_subagent\\\": \\\"webgpt-ticket-author\\\",\\n  \\\"rationale\\\": \\\"Tau has Memory intent/recall evidence but not a final reviewed evidence case.\\\",\\n  \\\"required_evidence\\\": [\\n    \\\"Reviewer receipt over the Memory packet and any evidence-case artifact.\\\"\\n  ],\\n  \\\"result\\\": {\\n    \\\"evidence\\\": [\\n      \\\"/api/memory/intent\\\",\\n      \\\"/api/memory/recall\\\"\\n    ],\\n    \\\"status\\\": \\\"NEEDS_REVIEW\\\",\\n    \\\"summary\\\": \\\"Memory action COMPLIANCE completed in Tau Chat. item_count=5 found=true\\\"\\n  },\\n  \\\"schema\\\": \\\"tau.agent_handoff.v1\\\",\\n  \\\"stop_condition\\\": \\\"Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.\\\"\\n}\\n```\\n\"\n        },\n        \"dry_run\": true,\n        \"errors\": [],\n        \"labels\": {\n          \"add\": [\n            \"agent-work\",\n            \"next:reviewer\",\n            \"executor:either\"\n          ],\n          \"remove\": []\n        },\n        \"next_agent\": \"reviewer\",\n        \"ok\": true,\n        \"schema\": \"tau.agent_handoff_projection_receipt.v1\",\n        \"target\": {\n          \"repo\": \"grahama1970/tau\",\n          \"target\": \"new\"\n        }\n      },\n      \"status\": \"COMPLETED\",\n      \"stop_reason\": \"response_consumed\"\n    }\n  ],\n  \"errors\": [],\n  \"live\": true,\n  \"mocked\": false,\n  \"ok\": true,\n  \"receipt_dir\": \"/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-command-loop\",\n  \"runner\": \"agent-registry-command-loop\",\n  \"schema\": \"tau.agent_handoff_command_loop_receipt.v1\",\n  \"status\": \"WAITING\",\n  \"step_count\": 1,\n  \"stop_reason\": \"next_agent_is_human\",\n  \"terminal_agent\": \"human\"\n}\n"
+        },
+        {
+          "command": [
+            "/home/graham/.local/bin/uv",
+            "run",
+            "tau",
+            "handoff-command-loop-github-transport",
+            "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-command-loop/command-loop-receipt.json",
+            "--receipt",
+            "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-github-transport.json"
+          ],
+          "cwd": "/home/graham/workspace/experiments/tau",
+          "duration_seconds": 0.46749,
+          "exit_code": 0,
+          "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/project-watchdog/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+          "stdout": "{\n  \"applied\": false,\n  \"command_results\": [],\n  \"commands\": [\n    [\n      \"gh\",\n      \"issue\",\n      \"create\",\n      \"--repo\",\n      \"grahama1970/tau\",\n      \"--title\",\n      \"Tau handoff: human\",\n      \"--body-file\",\n      \"-\",\n      \"--label\",\n      \"agent-work,next:human,executor:human\"\n    ]\n  ],\n  \"dry_run\": true,\n  \"errors\": [],\n  \"ok\": true,\n  \"preflight_results\": [],\n  \"receipt_path\": \"/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-github-transport.json\",\n  \"schema\": \"tau.github_command_loop_terminal_transport_receipt.v1\",\n  \"target\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  }\n}\n"
+        },
+        {
+          "command": [
+            "gh",
+            "issue",
+            "comment",
+            "18",
+            "--repo",
+            "grahama1970/tau",
+            "--body",
+            "## Project Watchdog: Tau handoff dispatch evidence\n\n<!-- project-watchdog:v1 -->\n```json\n{\n  \"command_loop_receipt\": \"/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-command-loop/command-loop-receipt.json\",\n  \"github_transport_receipt\": \"/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/tau-github-transport.json\",\n  \"inputs\": {\n    \"active_goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"apply_transport\": false,\n    \"issue\": \"issue#18\",\n    \"issue_url\": \"https://github.com/grahama1970/tau/issues/18\",\n    \"max_steps\": 1,\n    \"schema\": \"agent_skills.project_watchdog.tau_handoff_dispatch_inputs.v1\",\n    \"start\": \"experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json\"\n  },\n  \"issue\": \"issue#18\",\n  \"live\": true,\n  \"loop_exit_code\": 0,\n  \"mocked\": false,\n  \"run_id\": \"project-watchdog-20260628T223601Z\",\n  \"schema\": \"agent_skills.project_watchdog.tau_handoff_dispatch_receipt.v1\",\n  \"scope\": \"Runs one bounded Tau handoff command-loop tick from a GitHub issue and renders or applies terminal GitHub transport.\",\n  \"transport_exit_code\": 0\n}\n```\n"
+          ],
+          "cwd": null,
+          "duration_seconds": 0.842354,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/18#issuecomment-4827611790\n"
+        },
+        {
+          "command": [
+            "gh",
+            "issue",
+            "edit",
+            "18",
+            "--repo",
+            "grahama1970/tau",
+            "--add-label",
+            "agent-done",
+            "--remove-label",
+            "agent-active",
+            "--remove-label",
+            "next:coder",
+            "--remove-label",
+            "next:reviewer",
+            "--remove-label",
+            "executor:local"
+          ],
+          "cwd": null,
+          "duration_seconds": 1.0013,
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "https://github.com/grahama1970/tau/issues/18\n"
+        },
+        {
+          "command": [
+            "gh",
+            "issue",
+            "close",
+            "18",
+            "--repo",
+            "grahama1970/tau",
+            "--reason",
+            "completed"
+          ],
+          "cwd": null,
+          "duration_seconds": 1.079558,
+          "exit_code": 0,
+          "stderr": "\u2713 Closed issue grahama1970/tau#18 (Tau watchdog proof: same-run compliance handoff)\n",
+          "stdout": ""
+        }
+      ],
+      "issue_number": 18,
+      "issue_url": "https://github.com/grahama1970/tau/issues/18",
+      "ok": true,
+      "project_id": "tau",
+      "selected_agent": null,
+      "status": "COMPLETED",
+      "summary": "Tau handoff dispatch executed"
+    }
+  ],
+  "live": true,
+  "log_file": "/home/graham/.local/state/project-watchdog/logs/project-watchdog.log",
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z",
+  "receipt_path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T223601Z/receipt.json",
+  "run_id": "project-watchdog-20260628T223601Z",
+  "scanned_issues": [
+    {
+      "body": "Tau watchdog proof issue for the fresh same-run COMPLIANCE chat-to-command-loop handoff.\n\nproject-watchdog-action:tau-handoff-dispatch start=experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/start-handoff.json max_steps=1 active_goal_hash=sha256:0000000000000000000000000000000000000000000000000000000000000000 apply_transport=false\n\nExpected behavior: global project-watchdog cron picks this up as one bounded local Tau tick, selects the `reviewer` command spec from the handoff, writes a receipt, comments evidence, and closes or routes the issue without leaving it active.\n",
+      "labels": [
+        {
+          "color": "5319e7",
+          "description": "Tau agent harness work item",
+          "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+          "name": "agent-work"
+        },
+        {
+          "color": "0052cc",
+          "description": "Tau route executes locally",
+          "id": "LA_kwDOTG11HM8AAAACpOWVNA",
+          "name": "executor:local"
+        },
+        {
+          "color": "1d76db",
+          "description": "Next Tau subagent is reviewer",
+          "id": "LA_kwDOTG11HM8AAAACpR99uQ",
+          "name": "next:reviewer"
+        }
+      ],
+      "number": 18,
+      "title": "Tau watchdog proof: same-run compliance handoff",
+      "url": "https://github.com/grahama1970/tau/issues/18",
+      "watchdog_action": "tau_handoff_dispatch"
+    }
+  ],
+  "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+  "state_snapshot": {
+    "global": {
+      "reason": "human requested live cron issue-fix proof for Tau",
+      "resume_allowed_by": [
+        "human"
+      ],
+      "resume_requires": [
+        "dispatcher-implementation",
+        "dry-run-scan-receipt",
+        "no-live-mutation-without-apply"
+      ],
+      "state": "active"
+    },
+    "projects": {
+      "agent-skills": {
+        "reason": "Repository has extensive unrelated dirty worktree state; mutation requires explicit dirty-worktree policy.",
+        "resume_requires": [
+          "clean-worktree-policy",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "chatgpt-lab": {
+        "reason": "Existing PhatGPT watchdog needs an adapter to the shared lease and receipt protocol before global scheduling.",
+        "resume_requires": [
+          "shared-lease-adapter",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "pi-mono": {
+        "reason": "Registered as a reference project; safe bounded issue runner is not confirmed.",
+        "resume_requires": [
+          "safe-bounded-runner",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "scillm": {
+        "reason": "Registered for future issue routing; bounded watchdog command contract is not proven yet.",
+        "resume_requires": [
+          "project-command-contract",
+          "valid-github-auth"
+        ],
+        "state": "paused"
+      },
+      "tau": {
+        "last_operator": "human-approved-development-session",
+        "reason": "Tau has a proven one-tick handoff path, recent live GitHub mutation proof, and a generic issue-to-handoff watchdog proof for project-watchdog-action:tau-handoff-dispatch.",
+        "resume_requires": [
+          "valid-goal-file",
+          "valid-github-auth"
+        ],
+        "state": "active"
+      }
+    },
+    "schema": "agent_skills.project_watchdog.state.v1",
+    "updated_at": "2026-06-28"
+  },
+  "status": "COMPLETED"
+}
