@@ -81,13 +81,18 @@
         }
       }
     },
-    "prior_same_message_browser_proof": {
-      "receipt": "/tmp/tau-chat-tui-same-message-20260628T1546/proof.json",
-      "screenshot": "/tmp/tau-chat-tui-same-message-20260628T1546/same-message-research.png",
+    "fresh_same_message_browser_proof": {
+      "receipt": "/tmp/tau-chat-xterm-same-message-20260628T1827/proof.json",
+      "screenshot": "/tmp/tau-chat-xterm-same-message-20260628T1827/same-message-xterm-compliance.png",
       "ok": true,
       "mocked": false,
       "live": true,
-      "observed_current_stage": "Searching Web..."
+      "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+      "observed_current_stage": "[skipped] evidence_case",
+      "stage_list": "Getting Intent... finalizing-intent RUNNING; Getting Intent... finalizing-intent PASS; Extracting Entities... extracting-entities PASS; Accessing Memory... looking-in-memory RUNNING; Accessing Memory... looking-in-memory PASS; Creating Evidence Case... checking-gates SKIPPED",
+      "chat_has_evidence_case": true,
+      "semantic_tui_has_evidence_case": true,
+      "visible_body_has_handoff": true
     }
   },
   "claims": {
@@ -95,7 +100,7 @@
       "The live UX Lab #tau route renders the Tau proof rail, xterm-backed TUI mirror, and Watch-style chat side by side.",
       "The proof rail and TUI/chat panes can be resized by dragging the live handles.",
       "Focused Tau UX Lab tests and TypeScript checks passed after the xterm/resizable-pane slice.",
-      "The chat and TUI mirror share the same in-browser Tau turn state for the exercised message path."
+      "The chat and TUI mirror share the same in-browser Tau turn state for a fresh compliance/evidence-case prompt."
     ],
     "does_not_prove": [
       "The xterm pane is connected to a real Tau PTY process.",
