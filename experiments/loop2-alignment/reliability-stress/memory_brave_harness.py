@@ -223,6 +223,9 @@ def select_skill(
     elif action in {"OFF_TOPIC", "UNSAFE"}:
         selected = "memory.deflect"
         reasons.append(f"memory_intent_{action.lower()}")
+    elif action and action not in {"QUERY", "ANSWER", "CLARIFY", "COMPLIANCE", "RESEARCH", "NO_MATCH"}:
+        selected = "memory.deflect"
+        reasons.append("unsupported_memory_intent_action")
     elif action == "COMPLIANCE":
         selected = "create-evidence-case"
         reasons.append("memory_intent_compliance")
