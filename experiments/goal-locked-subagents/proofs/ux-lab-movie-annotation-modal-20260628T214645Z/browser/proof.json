@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "checks": {
+    "modalVisible": true,
+    "segmentSelectVisible": true,
+    "playheadVisible": true,
+    "characterSelectVisible": true,
+    "frameVisible": true,
+    "receiptPreviewVisible": true,
+    "closeHasQsAction": "TAU_CLOSE_ANNOTATION_MODAL",
+    "openHasTitle": "Open the focused T’au movie annotation workspace"
+  },
+  "errors": [],
+  "screenshot": "/tmp/tau-annotation-modal-proof-20260628T1746/tau-annotation-modal.png"
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "proof_id": "ux-lab-movie-annotation-modal-20260628T214645Z",
+  "created_utc": "2026-06-28T21:46:45Z",
+  "summary": "UX Lab #tau now exposes a focused Watch-style movie annotation modal: select segment, move playhead, choose character/actor, draw a normalized bbox, and produce a local draft receipt preview.",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "source": {
+    "repo": "pi-mono",
+    "route": "http://127.0.0.1:3002/#tau",
+    "commit": "d3dbe8add",
+    "files": [
+      "packages/ux-lab/src/components/tau/TauChatView.tsx",
+      "packages/ux-lab/src/components/tau/TauChatView.test.ts"
+    ]
+  },
+  "checks": [
+    {
+      "command": "npx vitest run src/components/tau/TauChatView.test.ts server/tauRoutes.test.ts",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "2 files passed; 76 tests passed"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "TypeScript check passed"
+    },
+    {
+      "command": "Playwright live #tau modal interaction",
+      "cwd": "/home/graham/workspace/experiments/pi-mono",
+      "exit_code": 0,
+      "result": "modal, segment select, playhead, character select, frame, receipt preview visible; browser errors empty"
+    },
+    {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:3002/#tau --name tau-annotation-modal-workflow",
+      "cwd": "/home/graham/workspace/experiments/pi-mono",
+      "exit_code": 0,
+      "result": "fresh CDP screenshot/read artifacts created"
+    }
+  ],
+  "artifacts": {
+    "browser_proof": "experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-modal-20260628T214645Z/browser/proof.json",
+    "browser_screenshot": "experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-modal-20260628T214645Z/browser/tau-annotation-modal.png",
+    "cdp_screenshot": "experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-modal-20260628T214645Z/cdp/tau-annotation-route.png",
+    "cdp_read_json": "experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-modal-20260628T214645Z/cdp/tau-annotation-route.read.json",
+    "ui_verification_marker": "/home/graham/.codex/ui-verification/latest.json"
+  },
+  "claims": {
+    "proves": [
+      "UX Lab #tau renders a focused opaque movie annotation modal.",
+      "The modal exposes segment selection, playhead movement, character selection, actor editing, bbox drawing, box list, and a local draft receipt preview.",
+      "Annotation labels render above bbox overlays with truncation enabled.",
+      "Draft storage keys are scoped per movie segment.",
+      "The live browser route can open the modal without console/page errors in the captured run."
+    ],
+    "does_not_prove": [
+      "Watch annotation endpoint write.",
+      "Movie-library persistence.",
+      "Real video asset playback for this Tau modal slice.",
+      "Model identity correctness.",
+      "Final Sparta Chat readiness.",
+      "Live GitHub mutation or subagent execution from the annotation modal."
+    ]
+  }
+}
