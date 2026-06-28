@@ -68,6 +68,14 @@ whether that handoff is valid enough to continue. Long-running behavior comes
 from an orchestrator repeatedly invoking bounded steps, not from an unbounded
 model while-loop.
 
+T’au has a special parameter-driven orchestration mode. Normal chat or CLI use
+does one local turn. When a `tau.agent_handoff.v1` start handoff is supplied via
+`--start` or `TAU_ORCHESTRATOR_START`, T’au enters the orchestrated subagent loop:
+validate the handoff, select `next_agent.name`, run one bounded command spec,
+validate the emitted handoff, write receipts, and stop at `human` or a
+fail-closed condition. Cron can repeat those bounded ticks, but no subagent owns
+an unbounded while-loop.
+
 The current loop/harness direction is:
 
 ```text

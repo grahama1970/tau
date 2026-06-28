@@ -7,6 +7,7 @@
     "owns": [
       "Memory-first chat route contract",
       "T’au agent handoff JSON rendering contract",
+      "Parameter-driven orchestrated subagent loop mode",
       "External subagent receipt intake and dry-run GitHub projection contract",
       "Proof boundaries for UX Lab integration"
     ]
@@ -52,6 +53,20 @@
     "tau.external_subagent_receipt_intake.v1",
     "tau.external_subagent_github_projection.v1"
   ],
+  "orchestration_mode": {
+    "name": "parameter_driven_orchestrated_loop",
+    "activation": "Provide a tau.agent_handoff.v1 start handoff through --start or TAU_ORCHESTRATOR_START.",
+    "runner": "handoff-command-loop",
+    "scheduler": "docker/tau-cron.sh",
+    "loop_rule": "Each tick validates one handoff, runs one selected bounded subagent command, validates the emitted tau.agent_handoff.v1, writes receipts, and stops at human or an explicit failure condition.",
+    "agent_source": "/home/graham/workspace/experiments/agent-skills/agents plus Tau command-spec overlays",
+    "github_transport": "Dry-run comment and label projections are rendered by default; live mutation requires explicit --apply and preflight checks.",
+    "non_claims": [
+      "The browser chat does not execute real subagents.",
+      "Dry-run projections do not mutate GitHub.",
+      "Cron scheduling is not proof that a task succeeded."
+    ]
+  },
   "proof_boundaries": {
     "proves": [
       "UX Lab can render and exercise the T’au chat contract as an integration viewer.",
