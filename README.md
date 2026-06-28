@@ -84,6 +84,45 @@ The TUI remains the local coding interface. The chat is the Watch-style human
 inspection surface for the harness: it shows Memory stages, route products,
 handoff JSON, dry-run GitHub projection, and explicit non-claims.
 
+## Interface snapshots
+
+The checked-in screenshots below show the two current human-facing surfaces.
+They are evidence of rendering surfaces, not proof of final Sparta Chat
+readiness or live GitHub mutation.
+
+### Textual TUI
+
+<p align="center">
+  <img
+    src="docs/assets/tau-tui-memory-stage.webp"
+    alt="T’au Textual TUI showing Memory pipeline stage text and handoff routing"
+    style="max-width: 100%; height: auto; display: block;"
+  />
+</p>
+
+The TUI is the terminal renderer for local agent work. Original upstream Tau
+could render transcript, tool, status, and session state. This fork is extending
+that surface so harness events can expose Memory pipeline stages such as
+`Getting Intent...`, `Extracting Entities...`, `Accessing Memory...`, and
+`Creating Evidence Case...` without relying on hidden model reasoning.
+
+### React chat integration viewer
+
+<p align="center">
+  <img
+    src="docs/assets/tau-react-chat-memory-stage.webp"
+    alt="T’au UX Lab chat viewer showing receipt-backed Memory stage feedback"
+    style="max-width: 100%; height: auto; display: block;"
+  />
+</p>
+
+The React chat surface is hosted by UX Lab as an integration viewer for the
+T’au-owned contract in `ui/tau-chat-contract.json`. It borrows the Watch/Sparta
+Chat interaction model: content-rich messages, dynamic process status, route
+products, evidence blocks, and embedded artifact affordances. T’au owns the
+contract and receipts; UX Lab proves that the contract can be rendered in a
+browser.
+
 ## What changed from upstream Tau
 
 This fork keeps the original Python teaching architecture, but adds a goal-locked
@@ -155,9 +194,18 @@ uv run pytest tests/test_handoff_dispatch.py tests/test_github_handoff.py -q
 Run a local command-loop harness receipt:
 
 ```bash
-uv run tau handoff-command-loop \
+uv run tau human-goal-change-bridge \
   experiments/goal-locked-subagents/fixtures/valid-human-goal-change.json \
+  --active-goal-hash 'sha256:active-goal' \
+  --trusted-human \
+  --handoff-out /tmp/tau-start-handoff.json \
+  --receipt /tmp/tau-bridge-receipt.json
+
+uv run tau handoff-command-loop \
+  --start /tmp/tau-start-handoff.json \
+  --receipt-dir /tmp/tau-command-loop \
   --max-steps 1 \
+  --agents-root experiments/goal-locked-subagents/agent-command-specs \
   --command-spec-root experiments/goal-locked-subagents/agent-command-specs
 ```
 
@@ -172,6 +220,39 @@ uv run tau handoff-command-loop-github-transport \
 By default, GitHub transport renders commands only. Live mutation requires
 `--apply` and still runs auth/target preflight checks before comment or label
 commands.
+
+## Docker stack
+
+T’au can be built and run from the repo with Docker Compose:
+
+```bash
+docker compose --profile cli run --rm tau --help
+```
+
+The stack intentionally separates Tau-owned containers from external project
+services:
+
+| Service | Purpose |
+| --- | --- |
+| `tau` | One-shot CLI/TUI/harness container for local commands and smoke checks. |
+| `tau-cron` | Long-running scheduler that invokes one bounded `handoff-command-loop` tick per interval. |
+| external `embry-memory` | Memory daemon expected at `MEMORY_DAEMON_URL`, usually `http://host.docker.internal:8601`. |
+| external `scillm` | Optional SciLLM proxy expected at `SCILLM_BASE_URL`, usually `http://host.docker.internal:4001`. |
+| external `ux-lab` | Browser integration viewer, usually `http://host.docker.internal:3002/#tau`. |
+
+Start the cron-style orchestrator only after mounting a start handoff:
+
+```bash
+TAU_ORCHESTRATOR_START=/workspace/.loop2/start-handoff.json \
+TAU_ACTIVE_GOAL_HASH='sha256:...' \
+docker compose --profile orchestrator up tau-cron
+```
+
+`tau-cron` does not run an unbounded subagent. It wakes up, invokes one bounded
+`handoff-command-loop` tick, writes receipts under `/data/receipts`, sleeps, and
+repeats. If the handoff is malformed, the goal hash is stale, a required route
+is missing, or an external service is unavailable, the tick fails closed and the
+next receipt records the failure.
 
 ## Memory-first chat direction
 
@@ -193,6 +274,20 @@ has a project-owned operational contract and an external UX Lab surface for
 inspection. UX Lab may render and exercise the T’au contract, but it must not be
 treated as the canonical owner of the T’au chat contract, harness receipt
 schemas, or final Sparta Chat readiness claims.
+
+The original Tau interface was deliberately limited: it could display local
+agent transcript and tool output, but it did not understand evidence cases,
+content embeds, Watch-style media messages, Memory route products, or
+subagent/GitHub handoff receipts. This fork adds the contracts those richer
+surfaces need. The target chat UX is a shared Watch/Sparta-style renderer that
+can show:
+
+- Memory pipeline stages and route decisions
+- answer, clarify, deflect, research, and compliance products
+- evidence-case and `create-figure` artifacts when those skills are selected
+- content embeds and media/artifact cards
+- persona voice metadata, including Embry voice/persona hooks
+- full `tau.agent_handoff.v1` JSON and dry-run GitHub projection details
 
 The latest bounded browser slices prove:
 
@@ -259,6 +354,41 @@ schema              -> parser and validator selection
 Agents do not get to invent missing labels, mutate the immutable goal, or skip
 the next route. If the JSON does not validate, T’au refuses to dispatch.
 
+## Special orchestration mode
+
+The default Tau loop is local and bounded: run one prompt, command, or handoff
+step, then emit a receipt.
+
+When an orchestration parameter is supplied, Tau enters its special
+ticket/receipt mode. The current local form is:
+
+```bash
+uv run tau handoff-command-loop \
+  --start <tau.agent_handoff.v1.json> \
+  --receipt-dir <receipt-dir> \
+  --agents-root experiments/goal-locked-subagents/agent-command-specs \
+  --command-spec-root experiments/goal-locked-subagents/agent-command-specs \
+  --max-steps 1
+```
+
+In the planned GitHub-backed deployment, the same state machine can be driven by
+local cron or GitHub Actions:
+
+1. A human, WebGPT, or subagent posts a schema-valid handoff or ticket draft.
+2. Tau validates the active goal hash, target ticket, previous subagent, result,
+   rationale, required evidence, stop condition, and `next_agent`.
+3. The runner leases exactly one ticket or local handoff for one bounded turn.
+4. Tau invokes the selected subagent command from the allowlisted agent command
+   spec directory.
+5. The subagent emits the same small JSON contract: goal, context, result,
+   rationale, next agent, required evidence, and stop condition.
+6. Tau writes a receipt and renders GitHub comment/label commands.
+7. Live mutation remains apply-gated; dry-run transport is the default.
+
+Only a trusted human packet may create or accept a new immutable goal version.
+If a non-human actor proposes a goal change, Tau routes to `goal-guardian` or
+`human` instead of mutating the goal.
+
 ## Repository map
 
 ```text
@@ -266,6 +396,8 @@ src/tau_ai/                         provider/model streaming layer
 src/tau_agent/                      portable agent loop, events, tools, sessions
 src/tau_coding/                     CLI app, coding tools, TUI, harness commands
 ui/tau-chat-contract.json           T’au-owned chat UX contract for integration viewers
+Dockerfile                          Tau CLI/harness container image
+docker-compose.yml                  Tau CLI and cron-style orchestrator stack
 experiments/goal-locked-subagents/  goal-locked contract schemas and fixtures
 experiments/loop2-alignment/        Loop2 and Memory/Brave alignment experiments
 docs/                               original T’au architecture and usage docs
@@ -305,6 +437,8 @@ Recent evidence includes:
 - `/tmp/tau-memory-chat-proof-suite-20260627T233356Z/summary.json`
 - `/tmp/tau-live-memory-chat-proof-compliance-20260627T233340Z`
 - `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png`
+- `docs/assets/tau-tui-memory-stage.webp`
+- `docs/assets/tau-react-chat-memory-stage.webp`
 
 Those artifacts prove the named rung only. They do not prove final T’au/Sparta
 Chat readiness, live GitHub ticket mutation, or unrestricted subagent execution.

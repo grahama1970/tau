@@ -1,0 +1,17 @@
+.ask/**/ask-artifacts/
+.ask/**/*.zip
+.codex/
+.git/
+.loop2/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+__pycache__/
+build/
+dist/
+site/
+wheels/
+*.egg-info/
+experiments/loop2-alignment/live-*/
+experiments/loop2-alignment/reliability-stress-*/

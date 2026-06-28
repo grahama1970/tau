@@ -1,0 +1,64 @@
+services:
+  tau:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: grahama1970/tau:local
+    container_name: tau
+    init: true
+    working_dir: /workspace
+    environment:
+      TAU_ARTIFACT_ROOT: /data/artifacts
+      TAU_RECEIPT_DIR: /data/receipts
+      MEMORY_DAEMON_URL: ${MEMORY_DAEMON_URL:-http://host.docker.internal:8601}
+      SCILLM_BASE_URL: ${SCILLM_BASE_URL:-http://host.docker.internal:4001}
+      UX_LAB_URL: ${UX_LAB_URL:-http://host.docker.internal:3002/#tau}
+      BRAVE_RUN_SH: ${BRAVE_RUN_SH:-/external/agent-skills/skills/brave-search/run.sh}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - tau-data:/data
+      - .:/workspace:rw
+      - ${AGENT_SKILLS_ROOT:-/home/graham/workspace/experiments/agent-skills}:/external/agent-skills:ro
+    command: ["--help"]
+    profiles:
+      - cli
+      - all
+
+  tau-cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: grahama1970/tau:local
+    container_name: tau-cron
+    init: true
+    working_dir: /workspace
+    entrypoint: ["/opt/tau/docker/tau-cron.sh"]
+    environment:
+      TAU_ORCHESTRATOR_START: ${TAU_ORCHESTRATOR_START:-}
+      TAU_ORCHESTRATOR_INTERVAL_SECONDS: ${TAU_ORCHESTRATOR_INTERVAL_SECONDS:-300}
+      TAU_ORCHESTRATOR_MAX_STEPS: ${TAU_ORCHESTRATOR_MAX_STEPS:-1}
+      TAU_ACTIVE_GOAL_HASH: ${TAU_ACTIVE_GOAL_HASH:-}
+      TAU_GOAL_GUARDIAN_TICKET_SOURCE: ${TAU_GOAL_GUARDIAN_TICKET_SOURCE:-}
+      TAU_AGENTS_ROOT: ${TAU_AGENTS_ROOT:-/workspace/experiments/goal-locked-subagents/agent-command-specs}
+      TAU_COMMAND_SPEC_ROOT: ${TAU_COMMAND_SPEC_ROOT:-/workspace/experiments/goal-locked-subagents/agent-command-specs}
+      TAU_RECEIPT_DIR: /data/receipts
+      MEMORY_DAEMON_URL: ${MEMORY_DAEMON_URL:-http://host.docker.internal:8601}
+      SCILLM_BASE_URL: ${SCILLM_BASE_URL:-http://host.docker.internal:4001}
+      BRAVE_RUN_SH: ${BRAVE_RUN_SH:-/external/agent-skills/skills/brave-search/run.sh}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - tau-data:/data
+      - .:/workspace:rw
+      - ${AGENT_SKILLS_ROOT:-/home/graham/workspace/experiments/agent-skills}:/external/agent-skills:ro
+    profiles:
+      - orchestrator
+      - all
+
+volumes:
+  tau-data:
+
+networks:
+  default:
+    name: tau-net

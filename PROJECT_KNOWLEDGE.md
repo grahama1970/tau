@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-28 00:05Z / 20:05 EDT by agent
+**Last updated:** 2026-06-28 00:18Z / 20:18 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -13,6 +13,9 @@
 - README now explicitly separates the loop, harness, TUI, and chat surfaces. The loop is bounded; the harness validates receipts and routing; the TUI is the terminal renderer; the chat is the Watch-style human inspection surface for Memory stages, handoff JSON, dry-run GitHub projection, and proof boundaries.
 - README now documents the main fork delta from upstream Tau: Loop2 receipts, minimal JSON contracts, human goal-change bridge, goal-guardian reconciliation, command-backed subagent dispatch, GitHub transport, read-only ticket-source fetch, Memory-first chat routes, external receipt intake, dry-run external GitHub projection, and the T’au-owned UX contract.
 - Kimi's README prose pass was reviewed and selectively merged into the current README: the opening now describes T’au as an experimental long-running agent harness with inspectable transitions, while the newer loop/harness/TUI/chat and T’au-owned UX contract sections were preserved.
+- README now includes evidence-backed screenshots for both current human-facing surfaces: the Textual TUI (`docs/assets/tau-tui-memory-stage.webp`) and the UX Lab React chat integration viewer (`docs/assets/tau-react-chat-memory-stage.webp`). The README explicitly says these are rendering-surface evidence, not final Sparta Chat or live GitHub mutation proof.
+- README now explains the special parameter-driven orchestration mode: normal Tau runs one bounded local turn; when a start handoff/orchestration parameter is supplied, Tau acts as a ticket/receipt router that validates one handoff, invokes one selected subagent command, writes receipts, and can render GitHub comment/label projections for cron or GitHub Actions style runners.
+- Tau now has a repo-local `Dockerfile`, `.dockerignore`, `docker-compose.yml`, and `docker/tau-cron.sh`. The compose stack owns Tau CLI and Tau cron containers while treating Memory, SciLLM, Brave Search, and UX Lab as explicit external services by URL or mounted skill path.
 - Tau now has one-step dispatch receipts for routed handoffs. `handoff-dispatch-agent-command` validates the start handoff, selects `next_agent.name`, loads an opt-in `tau-dispatch-command.json` from that agent registry entry, runs one bounded command, and validates stdout as the next `tau.agent_handoff.v1`.
 - Tau can now use a committed command-spec overlay with `--command-spec-root`. The selected agent is still validated against `/home/graham/workspace/experiments/agent-skills/agents`, but the executable `tau-dispatch-command.json` can live under Tau's `experiments/goal-locked-subagents/agent-command-specs/` tree for reproducible harness experiments.
 - Built-in `goal-guardian` now has a deterministic adapter. It reads the start handoff from stdin, requires `TAU_HANDOFF_ACTIVE_GOAL_HASH`, refuses stale goal hashes, and emits a normal `tau.agent_handoff.v1` only when the active goal hash is preserved.
@@ -74,6 +77,8 @@
 | 2026-06-27 | Compress the T’au header image with Pillow into WebP | The current source PNG `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_58_56 PM.png` was 2,559,239 bytes at 1672x941. `docs/assets/tau-header.webp` is 175,472 bytes at 1600x900, which keeps the README visual lightweight. |
 | 2026-06-27 | Make T’au the owner of the chat UX contract | UX Lab should host/reference T’au like Watch does, not become the canonical source of the T’au chat UX. The contract lives at `ui/tau-chat-contract.json` and marks UX Lab as `integration_viewer`. |
 | 2026-06-27 | Expand README around loop, harness, TUI, chat, and upstream delta | The README previously described the harness direction but did not clearly explain the four surfaces or what changed from upstream Tau. |
+| 2026-06-27 | Add current TUI and React chat screenshots to README | The README should show the real terminal and browser surfaces because the original upstream Tau had limited rendering. The screenshots must remain proof-scoped as rendering evidence only. |
+| 2026-06-27 | Add Tau-owned Docker Compose stack | The project needs a simple Docker entrypoint like Watch. Tau owns the CLI/cron containers; cross-project services remain external and explicit rather than silently vendored into this repo. |
 | 2026-06-27 | Merge Kimi README prose without dropping architecture sections | Kimi's prose improved the top-level explanation, but its draft omitted the newer ownership-boundary details, so only the clearer opening and phrasing were adopted. |
 
 ## Open Questions
@@ -88,6 +93,11 @@
 | PROJECT_KNOWLEDGE.md | Shared project knowledge |
 | README.md | Human-facing Watch-style overview and current harness notes |
 | docs/assets/tau-header.webp | Compressed README header image created with Pillow from the human-provided PNG |
+| docs/assets/tau-tui-memory-stage.webp | README screenshot of the actual Textual TUI rendering Memory-stage and handoff text |
+| docs/assets/tau-react-chat-memory-stage.webp | README screenshot compressed with Pillow from the UX Lab live Tau chat proof |
+| Dockerfile | Tau CLI/harness container image |
+| docker-compose.yml | Tau CLI and cron-style orchestrator compose stack |
+| docker/tau-cron.sh | Container entrypoint that runs one bounded `handoff-command-loop` tick per interval |
 | ui/tau-chat-contract.json | T’au-owned chat UX contract; UX Lab references this as an integration viewer |
 | src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |
 | src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |
@@ -149,6 +159,8 @@
 | 2026-06-27 | `/tmp/tau-memory-chat-proof-suite-20260627T233356Z/summary.json` | Tau Memory chat proof suite in pi-mono; `ok: true`, `scenarioCount: 12`, `liveScenarioCount: 5`, `mockedScenarioCount: 7`. The suite proves route-specific harness behavior and dry-run projection extraction, not final Sparta Chat readiness. |
 | 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png` | Fresh CDP screenshot marker for the Tau UX Lab surface after the external subagent GitHub projection slice. Screenshot confirms the Tau experiment surface renders; interaction proof is in the browser proof-suite artifacts. |
 | 2026-06-27 | `docs/assets/tau-header.webp` | README header image compressed with Pillow from `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_58_56 PM.png`: output 1600x900 WebP, 175,472 bytes; source PNG was 1672x941, 2,559,239 bytes. |
+| 2026-06-27 | `docs/assets/tau-tui-memory-stage.webp` | Textual TUI screenshot generated from the real `TauTuiApp` via Textual screenshot API and converted to WebP; visible content includes Memory-first prompt text, Memory stage text, and `tau.agent_handoff.v1` routing text. |
+| 2026-06-27 | `docs/assets/tau-react-chat-memory-stage.webp` | UX Lab Tau chat screenshot compressed with Pillow from `/tmp/tau-uxlab-live-chat-stage-turn/02-live-thinking-trace.png`; visible content includes `ACCESSING MEMORY...` and Watch-style Tau chat shell. |
 
 ## Infrastructure State
 
