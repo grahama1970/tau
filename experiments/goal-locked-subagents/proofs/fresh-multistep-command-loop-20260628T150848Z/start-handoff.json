@@ -1,0 +1,45 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#1",
+    "current_labels": [
+      "agent-work",
+      "next:goal-guardian",
+      "executor:local"
+    ]
+  },
+  "goal": {
+    "goal_id": "goal-tau-live-github-orchestration-proof",
+    "goal_version": 1,
+    "goal_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "previous_subagent": "webgpt-ticket-author",
+  "context": {
+    "summary": "Fresh live proof for Tau multi-tick orchestration and GitHub issue/comment mutation.",
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/1"
+    ]
+  },
+  "result": {
+    "status": "NEEDS_AGENT",
+    "summary": "Human approved live mutation of grahama1970/tau; Tau should route through goal-guardian and verifier.",
+    "evidence": [
+      "GitHub issue #1 exists in grahama1970/tau",
+      "Repo issues were enabled through gh api for this live proof",
+      "Routing labels exist on grahama1970/tau"
+    ]
+  },
+  "rationale": "A fresh multi-tick loop must prove preserved-goal routing before any stronger Tau readiness claim.",
+  "next_agent": {
+    "name": "goal-guardian",
+    "executor": "local",
+    "reason": "Goal guardian must verify the immutable goal hash before the verifier route runs."
+  },
+  "required_evidence": [
+    "Command-loop receipt with goal-guardian followed by project-or-harness-verifier.",
+    "GitHub transport receipt with applied=true against issue#1.",
+    "Subagent receipt artifacts for each completed handoff."
+  ],
+  "stop_condition": "Verifier routes to human and Tau posts the terminal handoff to issue#1."
+}

@@ -1,0 +1,42 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "unbounded autonomous operation",
+      "fresh live GitHub mutation for this specific run",
+      "final Sparta Chat readiness",
+      "semantic correctness of Memory answers"
+    ],
+    "proves": [
+      "Tau can consume one start tau.agent_handoff.v1 and route through two non-human command-spec agents.",
+      "goal-guardian preserved the active goal hash before the verifier route.",
+      "project-or-harness-verifier emitted a schema-valid terminal handoff to human."
+    ]
+  },
+  "command_exits": [
+    0,
+    0
+  ],
+  "command_loop_receipt": "experiments/goal-locked-subagents/proofs/fresh-multistep-command-loop-20260628T150848Z/command-loop/command-loop-receipt.json",
+  "created_utc": "2026-06-28T15:08:48Z",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_agents": [
+    "experiments/goal-locked-subagents/proofs/fresh-multistep-command-loop-20260628T150848Z/proof-agents/goal-guardian/AGENTS.md",
+    "experiments/goal-locked-subagents/proofs/fresh-multistep-command-loop-20260628T150848Z/proof-agents/project-or-harness-verifier/AGENTS.md"
+  ],
+  "schema": "tau.fresh_multistep_command_loop_proof.v1",
+  "selected_agents": [
+    "goal-guardian",
+    "project-or-harness-verifier"
+  ],
+  "start_handoff": "experiments/goal-locked-subagents/proofs/fresh-multistep-command-loop-20260628T150848Z/start-handoff.json",
+  "status": "WAITING",
+  "step_count": 2,
+  "step_receipts": [
+    "experiments/goal-locked-subagents/proofs/fresh-multistep-command-loop-20260628T150848Z/command-loop/command-loop-step-001.receipt.json",
+    "experiments/goal-locked-subagents/proofs/fresh-multistep-command-loop-20260628T150848Z/command-loop/command-loop-step-002.receipt.json"
+  ],
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human"
+}

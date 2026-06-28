@@ -117,6 +117,19 @@ def test_grounded_query_selects_answer() -> None:
     assert selection["selected_skill"] == "memory.answer"
 
 
+def test_answer_intent_selects_answer_before_entity_clarification() -> None:
+    memory = {
+        "intent": {"action": "ANSWER", "confidence": 0.91},
+        "recall": {"found": True, "should_scan": False, "items": [{}]},
+        "entity_packet": {"entities": [], "unresolved_terms": []},
+    }
+
+    selection = harness.select_skill(memory)
+
+    assert selection["selected_skill"] == "memory.answer"
+    assert "memory_intent_answer" in selection["reasons"]
+
+
 def test_unsupported_memory_intent_action_deflects_before_answer() -> None:
     memory = {
         "intent": {"action": "SUMMARIZE_FILE", "confidence": 0.91},

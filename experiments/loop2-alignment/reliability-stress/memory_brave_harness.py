@@ -232,6 +232,9 @@ def select_skill(
     elif action == "RESEARCH":
         selected = "brave-search"
         reasons.append("memory_intent_research")
+    elif action == "ANSWER":
+        selected = "memory.answer"
+        reasons.append("memory_intent_answer")
     elif require_external:
         selected = "brave-search"
         reasons.append("caller_require_external")
