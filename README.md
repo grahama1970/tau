@@ -49,7 +49,74 @@ longer work:
 - command-backed subagent loops with finite steps
 - GitHub transport that is dry-run by default and apply-gated
 - Memory-first route handling for chat surfaces
+- a T’au-owned UX contract that UX Lab can host as an integration viewer
 - proof artifacts that state what was exercised and what remains unproven
+
+## Loop, harness, TUI, and chat
+
+T’au has four related surfaces. They should not be collapsed into one vague
+"agent" concept.
+
+| Surface | Owned here? | Purpose |
+| --- | --- | --- |
+| **Loop** | Yes | Runs one bounded agent turn or command-backed route, records what happened, and stops at a declared condition. |
+| **Harness** | Yes | Validates receipts, goal hashes, handoff JSON, command specs, GitHub projections, and subagent routing before the loop can advance. |
+| **TUI** | Yes | Terminal frontend for the coding-agent runtime. It is one renderer of the agent loop, not the whole harness. |
+| **Chat** | Contract owned here; browser viewer in UX Lab | Memory-first shared chat surface that renders stages, receipts, handoffs, and proof boundaries for human inspection. |
+
+The loop is intentionally bounded. A subagent does one step, emits a
+schema-valid handoff, names the next agent, and exits. The harness decides
+whether that handoff is valid enough to continue. Long-running behavior comes
+from an orchestrator repeatedly invoking bounded steps, not from an unbounded
+model while-loop.
+
+The current loop/harness direction is:
+
+```text
+human goal
+  -> Memory intent / route selection
+  -> T’au handoff JSON
+  -> receipt expectation
+  -> bounded subagent command or external receipt intake
+  -> dry-run GitHub projection
+  -> next agent or human stop
+```
+
+The TUI remains the local coding interface. The chat is the Watch-style human
+inspection surface for the harness: it shows Memory stages, route products,
+handoff JSON, dry-run GitHub projection, and explicit non-claims.
+
+## What changed from upstream Tau
+
+This fork keeps the original Python teaching architecture, but adds a goal-locked
+agentic harness on top.
+
+Added or materially changed areas include:
+
+- **Loop2 alignment receipts** for bounded loop runs and monitor artifacts.
+- **Minimal model-facing JSON contracts** for generated tickets, subagent
+  receipts, agent handoffs, and human-only goal changes.
+- **Human goal-change bridge** that converts trusted human goal-change packets
+  into normal `goal-guardian` start handoffs without letting non-human agents
+  mutate the immutable goal.
+- **Goal-guardian reconciliation** that classifies open tickets as keep, close,
+  migrate, or regenerate before work continues after a goal change.
+- **Command-backed subagent dispatch** through opt-in `tau-dispatch-command.json`
+  specs, including T’au-owned command-spec overlays for experiments.
+- **Command-loop GitHub transport** that renders issue/comment/label commands
+  by default and requires explicit `--apply` plus preflight checks for live
+  mutation.
+- **Read-only GitHub ticket-source fetch** for goal-guardian reconciliation.
+- **Memory-first chat contract** for CLARIFY, DEFLECT, ANSWER, RESEARCH, and
+  COMPLIANCE routes.
+- **External subagent receipt intake** that accepts a supplied
+  `tau.agent_handoff.v1` receipt only after validating goal, target, evidence,
+  and next-agent continuity.
+- **Dry-run external subagent GitHub projection** that turns an accepted external
+  receipt into deterministic comment and label commands without claiming
+  execution or mutation.
+- **T’au-owned UX contract** at `ui/tau-chat-contract.json`, with UX Lab acting
+  as an integration viewer rather than the source of truth.
 
 ## When to use it
 
@@ -117,9 +184,19 @@ The intended route is:
 intent -> extract entities -> access memory -> answer | clarify | deflect | research | compliance
 ```
 
-The UX Lab T’au chat surface currently lives in the `pi-mono` workspace and is
-used as the browser proving ground for the shared global chat UX. The latest
-bounded slices prove:
+T’au now owns the chat UX contract in this repository:
+
+```text
+ui/tau-chat-contract.json
+```
+
+UX Lab's `#tau` route is the browser integration viewer, similar to how Watch
+has a project-owned operational contract and an external UX Lab surface for
+inspection. UX Lab may render and exercise the T’au contract, but it must not be
+treated as the canonical owner of the T’au chat contract, harness receipt
+schemas, or final Sparta Chat readiness claims.
+
+The latest bounded browser slices prove:
 
 - dynamic Memory stage traces can be rendered from receipt data
 - CLARIFY, DEFLECT, RESEARCH, COMPLIANCE, and selected ANSWER behavior can fail
@@ -190,6 +267,7 @@ the next route. If the JSON does not validate, T’au should refuse to dispatch.
 src/tau_ai/                         provider/model streaming layer
 src/tau_agent/                      portable agent loop, events, tools, sessions
 src/tau_coding/                     CLI app, coding tools, TUI, harness commands
+ui/tau-chat-contract.json           T’au-owned chat UX contract for integration viewers
 experiments/goal-locked-subagents/  goal-locked contract schemas and fixtures
 experiments/loop2-alignment/        Loop2 and Memory/Brave alignment experiments
 docs/                               original T’au architecture and usage docs
@@ -204,6 +282,7 @@ src/tau_coding/generated_ticket.py
 src/tau_coding/human_goal_change.py
 src/tau_coding/handoff_dispatch.py
 src/tau_coding/github_handoff.py
+ui/tau-chat-contract.json
 experiments/goal-locked-subagents/schemas/
 experiments/goal-locked-subagents/agent-command-specs/
 ```

@@ -1,14 +1,17 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-27 23:55Z / 19:55 EDT by agent
+**Last updated:** 2026-06-28 00:02Z / 20:02 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
 
 - Project initialized, knowledge tracking started
-- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.
+- T’au is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. T’au derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.
 - The human-facing README now follows the `watch` skill README pattern: compressed banner image first, short promise, practical "what it does", "when to use it", quickstart, current direction, repository map, and evidence discipline. The header image is stored as `docs/assets/tau-header.webp`, compressed with Pillow from the provided PNG.
-- Tau's current product direction is Memory-first shared chat plus a goal-locked harness. The chat enters through Memory intent/extract/recall before answer, clarify, deflect, research, or compliance behavior. Subagent routing and GitHub ticket projection must remain receipt-backed and fail-closed.
+- T’au's current product direction is Memory-first shared chat plus a goal-locked harness. The chat enters through Memory intent/extract/recall before answer, clarify, deflect, research, or compliance behavior. Subagent routing and GitHub ticket projection must remain receipt-backed and fail-closed.
+- T’au now has a repo-owned chat UX contract at `ui/tau-chat-contract.json`. UX Lab's `#tau` route should act as an integration viewer for that contract, similar to Watch, rather than being treated as the canonical owner of the T’au chat UX.
+- README now explicitly separates the loop, harness, TUI, and chat surfaces. The loop is bounded; the harness validates receipts and routing; the TUI is the terminal renderer; the chat is the Watch-style human inspection surface for Memory stages, handoff JSON, dry-run GitHub projection, and proof boundaries.
+- README now documents the main fork delta from upstream Tau: Loop2 receipts, minimal JSON contracts, human goal-change bridge, goal-guardian reconciliation, command-backed subagent dispatch, GitHub transport, read-only ticket-source fetch, Memory-first chat routes, external receipt intake, dry-run external GitHub projection, and the T’au-owned UX contract.
 - Tau now has one-step dispatch receipts for routed handoffs. `handoff-dispatch-agent-command` validates the start handoff, selects `next_agent.name`, loads an opt-in `tau-dispatch-command.json` from that agent registry entry, runs one bounded command, and validates stdout as the next `tau.agent_handoff.v1`.
 - Tau can now use a committed command-spec overlay with `--command-spec-root`. The selected agent is still validated against `/home/graham/workspace/experiments/agent-skills/agents`, but the executable `tau-dispatch-command.json` can live under Tau's `experiments/goal-locked-subagents/agent-command-specs/` tree for reproducible harness experiments.
 - Built-in `goal-guardian` now has a deterministic adapter. It reads the start handoff from stdin, requires `TAU_HANDOFF_ACTIVE_GOAL_HASH`, refuses stale goal hashes, and emits a normal `tau.agent_handoff.v1` only when the active goal hash is preserved.
@@ -67,7 +70,9 @@
 | 2026-06-27 | Record explicit ticket-source inputs in command-loop receipts | Passing `--goal-guardian-ticket-source` appends the source path to the goal-guardian adapter command, which makes the receipt replayable from command artifacts rather than out-of-band environment setup. |
 | 2026-06-27 | Project command-loop reconciliation through GitHub with source trace | The wrapper command avoids manually locating the reconciliation artifact and records loop, reconciliation, and ticket-source paths next to the dry-run GitHub commands. |
 | 2026-06-27 | Rewrite README using the Watch README shape | Tau needs a human-facing project overview, not only an inherited teaching-project README. The new README starts from the visible product promise, then explains the harness, Memory-first chat direction, and proof boundaries. |
-| 2026-06-27 | Compress the T’au header image with Pillow into WebP | The current source PNG `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_46_10 PM.png` was 2,540,871 bytes at 1672x941. `docs/assets/tau-header.webp` is 168,904 bytes at 1600x900, which keeps the README visual lightweight. |
+| 2026-06-27 | Compress the T’au header image with Pillow into WebP | The current source PNG `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_58_56 PM.png` was 2,559,239 bytes at 1672x941. `docs/assets/tau-header.webp` is 175,472 bytes at 1600x900, which keeps the README visual lightweight. |
+| 2026-06-27 | Make T’au the owner of the chat UX contract | UX Lab should host/reference T’au like Watch does, not become the canonical source of the T’au chat UX. The contract lives at `ui/tau-chat-contract.json` and marks UX Lab as `integration_viewer`. |
+| 2026-06-27 | Expand README around loop, harness, TUI, chat, and upstream delta | The README previously described the harness direction but did not clearly explain the four surfaces or what changed from upstream Tau. |
 
 ## Open Questions
 
@@ -81,6 +86,7 @@
 | PROJECT_KNOWLEDGE.md | Shared project knowledge |
 | README.md | Human-facing Watch-style overview and current harness notes |
 | docs/assets/tau-header.webp | Compressed README header image created with Pillow from the human-provided PNG |
+| ui/tau-chat-contract.json | T’au-owned chat UX contract; UX Lab references this as an integration viewer |
 | src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |
 | src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |
 | src/tau_coding/github_handoff.py | Renders/apply-gates GitHub transport and read-only goal-guardian ticket-source fetch receipts |
@@ -140,7 +146,7 @@
 | 2026-06-27 | `/tmp/tau-live-memory-chat-proof-compliance-20260627T233340Z` | Live UX Lab Tau compliance route proof through the Memory-backed chat adapter; `mocked: false`, `live: true`, external subagent GitHub projection schema `tau.external_subagent_github_projection.v1`, `dryRun: true`, `applied: false`, command count `1`, and preserved goal hash. |
 | 2026-06-27 | `/tmp/tau-memory-chat-proof-suite-20260627T233356Z/summary.json` | Tau Memory chat proof suite in pi-mono; `ok: true`, `scenarioCount: 12`, `liveScenarioCount: 5`, `mockedScenarioCount: 7`. The suite proves route-specific harness behavior and dry-run projection extraction, not final Sparta Chat readiness. |
 | 2026-06-27 | `/tmp/codex-ui-verification/pi-mono/tau-external-subagent-github-projection-ui/20260627T233448Z.png` | Fresh CDP screenshot marker for the Tau UX Lab surface after the external subagent GitHub projection slice. Screenshot confirms the Tau experiment surface renders; interaction proof is in the browser proof-suite artifacts. |
-| 2026-06-27 | `docs/assets/tau-header.webp` | README header image compressed with Pillow from `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_46_10 PM.png`: output 1600x900 WebP, 168,904 bytes; source PNG was 1672x941, 2,540,871 bytes. |
+| 2026-06-27 | `docs/assets/tau-header.webp` | README header image compressed with Pillow from `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_58_56 PM.png`: output 1600x900 WebP, 175,472 bytes; source PNG was 1672x941, 2,559,239 bytes. |
 
 ## Infrastructure State
 

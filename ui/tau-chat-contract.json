@@ -1,0 +1,68 @@
+{
+  "schema": "tau.chat_ux_contract.v1",
+  "project_name": "T’au",
+  "source_of_truth": {
+    "repository": "grahama1970/tau",
+    "path": "ui/tau-chat-contract.json",
+    "owns": [
+      "Memory-first chat route contract",
+      "T’au agent handoff JSON rendering contract",
+      "External subagent receipt intake and dry-run GitHub projection contract",
+      "Proof boundaries for UX Lab integration"
+    ]
+  },
+  "integration_surfaces": [
+    {
+      "host": "ux-lab",
+      "route": "http://127.0.0.1:3002/#tau",
+      "role": "integration_viewer",
+      "must_not_own": [
+        "canonical T’au chat contract",
+        "canonical T’au harness receipt schemas",
+        "final Sparta Chat readiness claims"
+      ]
+    }
+  ],
+  "memory_pipeline": {
+    "entrypoint": "memory.intent",
+    "stages": [
+      "Getting Intent...",
+      "Extracting Entities...",
+      "Accessing Memory..."
+    ],
+    "supported_routes": [
+      "CLARIFY",
+      "DEFLECT",
+      "ANSWER",
+      "RESEARCH",
+      "COMPLIANCE"
+    ],
+    "fail_closed_rules": [
+      "Do not fabricate a Memory product when a route endpoint fails.",
+      "Do not emit a GitHub/subagent handoff when a required Memory product is missing.",
+      "Do not answer from unsupported Memory intent actions."
+    ]
+  },
+  "handoff_contracts": [
+    "tau.agent_handoff.v1",
+    "tau.handoff_github_transport_validation.v1",
+    "tau.handoff_orchestrator_intake.v1",
+    "tau.subagent_receipt_expectation.v1",
+    "tau.subagent_handoff_validation.v1",
+    "tau.external_subagent_receipt_intake.v1",
+    "tau.external_subagent_github_projection.v1"
+  ],
+  "proof_boundaries": {
+    "proves": [
+      "UX Lab can render and exercise the T’au chat contract as an integration viewer.",
+      "Successful browser routes can preserve the T’au handoff JSON contract through dry-run projection.",
+      "Mocked route checks remain labeled mocked and do not upgrade live Memory confidence."
+    ],
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Live GitHub mutation.",
+      "Actual external subagent execution from the browser chat.",
+      "Ownership of the canonical T’au UX contract by UX Lab."
+    ]
+  }
+}
