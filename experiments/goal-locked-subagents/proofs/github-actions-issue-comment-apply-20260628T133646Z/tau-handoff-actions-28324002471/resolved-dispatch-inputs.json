@@ -1,0 +1,10 @@
+{
+  "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "apply_github_transport": true,
+  "comment_body": "/tau handoff-dispatch start=experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json max_steps=1 apply=true",
+  "event_name": "issue_comment",
+  "max_steps": 1,
+  "schema": "tau.github_actions_dispatch_inputs.v1",
+  "source": "issue_comment",
+  "start_handoff_path": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json"
+}

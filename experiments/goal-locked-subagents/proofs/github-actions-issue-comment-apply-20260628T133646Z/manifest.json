@@ -1,0 +1,69 @@
+{
+  "schema": "tau.github_actions_issue_comment_apply_proof.v1",
+  "checked_at": "2026-06-28T13:38:00Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "github": {
+    "repo": "grahama1970/tau",
+    "proof_issue": 9,
+    "proof_issue_url": "https://github.com/grahama1970/tau/issues/9",
+    "proof_issue_comment_url": "https://github.com/grahama1970/tau/issues/9#issuecomment-4826263862",
+    "proof_issue_final_json": "github-issue-9-final.json",
+    "created_issue": 10,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/10",
+    "created_issue_final_json": "github-issue-10-final.json",
+    "run_id": 28324002471,
+    "run_url": "https://github.com/grahama1970/tau/actions/runs/28324002471",
+    "event": "issue_comment",
+    "head_sha": "826b93d6639d5edf8cb6e1e03ee3bc347a6e87ca",
+    "conclusion": "success"
+  },
+  "comment_dispatch": {
+    "body": "/tau handoff-dispatch start=experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json max_steps=1 apply=true",
+    "resolved_inputs": "tau-handoff-actions-28324002471/resolved-dispatch-inputs.json",
+    "resolved_event_name": "issue_comment",
+    "resolved_start_handoff_path": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T132100Z/start-handoff.json",
+    "resolved_max_steps": 1,
+    "resolved_apply_github_transport": true
+  },
+  "command_loop": {
+    "receipt": "tau-handoff-actions-28324002471/command-loop-receipt.json",
+    "step_receipt": "tau-handoff-actions-28324002471/command-loop-step-001.receipt.json",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "command_exit_code": 0,
+    "previous_subagent": "reviewer",
+    "next_agent": "human",
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "github_transport": {
+    "receipt": "tau-handoff-actions-28324002471/github-transport.json",
+    "ok": true,
+    "dry_run": false,
+    "applied": true,
+    "auth_preflight_exit_code": 0,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/10",
+    "created_issue_labels": [
+      "agent-work",
+      "next:human",
+      "executor:human"
+    ]
+  },
+  "proof_boundary": {
+    "proves": [
+      "a real GitHub issue comment containing apply=true triggered the Tau handoff Actions workflow",
+      "the workflow resolver parsed the comment-selected start handoff path and apply flag",
+      "the selected start handoff ran one live non-mocked bounded reviewer command and routed to human",
+      "terminal GitHub transport applied the next-human issue-create projection through github-actions[bot]"
+    ],
+    "does_not_prove": [
+      "multi-step non-human subagent chains beyond one bounded reviewer turn",
+      "cron-driven issue polling",
+      "production Sparta Chat readiness",
+      "fresh browser UI rendering for this workflow-only slice"
+    ]
+  }
+}

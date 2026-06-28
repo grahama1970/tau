@@ -1,0 +1,61 @@
+{
+  "applied": true,
+  "command_results": [
+    {
+      "command": [
+        "gh",
+        "issue",
+        "create",
+        "--repo",
+        "grahama1970/tau",
+        "--title",
+        "Tau handoff: human",
+        "--body-file",
+        "-",
+        "--label",
+        "agent-work,next:human,executor:human"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "https://github.com/grahama1970/tau/issues/10\n"
+    }
+  ],
+  "commands": [
+    [
+      "gh",
+      "issue",
+      "create",
+      "--repo",
+      "grahama1970/tau",
+      "--title",
+      "Tau handoff: human",
+      "--body-file",
+      "-",
+      "--label",
+      "agent-work,next:human,executor:human"
+    ]
+  ],
+  "dry_run": false,
+  "errors": [],
+  "ok": true,
+  "preflight_results": [
+    {
+      "command": [
+        "gh",
+        "auth",
+        "status",
+        "--hostname",
+        "github.com"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "github.com\n  \u2713 Logged in to github.com account github-actions[bot] (GH_TOKEN)\n  - Active account: true\n  - Git operations protocol: https\n[REDACTED gh auth status token line]\n"
+    }
+  ],
+  "receipt_path": "/home/runner/work/tau/tau/artifacts/tau-handoff-actions/28324002471/github-transport.json",
+  "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "new"
+  }
+}
