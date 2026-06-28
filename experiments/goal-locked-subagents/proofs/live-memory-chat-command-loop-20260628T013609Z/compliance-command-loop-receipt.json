@@ -1,0 +1,105 @@
+{
+  "artifacts": [
+    "/tmp/tau-memory-chat-proof-suite-20260628T013609Z/command-loop-from-live-compliance/command-loop-step-001.receipt.json"
+  ],
+  "dispatches": [
+    {
+      "artifacts": [],
+      "command_results": [
+        {
+          "command": [
+            "uv",
+            "run",
+            "tau",
+            "handoff-agent-adapter",
+            "--result-status",
+            "COMPLETED",
+            "--result-summary",
+            "Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.",
+            "--next-agent",
+            "human",
+            "--next-executor",
+            "human",
+            "--next-reason",
+            "Human review is required before another bounded Tau route.",
+            "--required-evidence",
+            "Human posts a schema-valid handoff, goal decision, or stop instruction.",
+            "--stop-condition",
+            "Human route is posted."
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\",\n      \"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\"\n    ],\n    \"summary\": \"Registry command adapter handled route for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"goal_id\": \"goal-tau-chat-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human review is required before another bounded Tau route.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"reviewer completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Human posts a schema-valid handoff, goal decision, or stop instruction.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Human route is posted.\"\n}\n",
+          "timed_out": false,
+          "timeout_s": 30.0
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "loop_step": 1,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Human route is posted.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\",\n      \"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\"\n    ],\n    \"summary\": \"Registry command adapter handled route for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"goal_id\": \"goal-tau-chat-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human review is required before another bounded Tau route.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"reviewer completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Human posts a schema-valid handoff, goal decision, or stop instruction.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Human route is posted.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:human",
+            "executor:human"
+          ],
+          "remove": []
+        },
+        "next_agent": "human",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "new"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "reviewer",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `NEEDS_REVIEW`\n- Summary: Memory action COMPLIANCE completed in Tau Chat. item_count=5 found=true\n- Next agent: `reviewer`\n- Executor: `either`\n- Stop condition: Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json\",\n      \"experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json\",\n      \"experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json\",\n      \"experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json\",\n      \"/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json\"\n    ],\n    \"summary\": \"Tau Chat handled: How does Tau handle a CWE-287 SPARTA evidence case?\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"new\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\n    \"goal_id\": \"goal-tau-chat-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"either\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Compliance evidence needs independent review before stronger claims.\"\n  },\n  \"previous_subagent\": \"webgpt-ticket-author\",\n  \"rationale\": \"Tau has Memory intent/recall evidence but not a final reviewed evidence case.\",\n  \"required_evidence\": [\n    \"Reviewer receipt over the Memory packet and any evidence-case artifact.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/api/memory/intent\",\n      \"/api/memory/recall\"\n    ],\n    \"status\": \"NEEDS_REVIEW\",\n    \"summary\": \"Memory action COMPLIANCE completed in Tau Chat. item_count=5 found=true\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Reviewer posts PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:reviewer",
+            "executor:either"
+          ],
+          "remove": []
+        },
+        "next_agent": "reviewer",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "new"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": "/tmp/tau-memory-chat-proof-suite-20260628T013609Z/command-loop-from-live-compliance",
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.agent_handoff_command_loop_receipt.v1",
+  "status": "WAITING",
+  "step_count": 1,
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human"
+}

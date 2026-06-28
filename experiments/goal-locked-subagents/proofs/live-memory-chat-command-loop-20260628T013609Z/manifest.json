@@ -1,0 +1,66 @@
+{
+  "schema": "tau.live_memory_chat_command_loop_proof_manifest.v1",
+  "source_suite": "/tmp/tau-memory-chat-proof-suite-20260628T013609Z/summary.json",
+  "mocked": false,
+  "live": true,
+  "routes": [
+    {
+      "route": "ANSWER",
+      "start_handoff": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/answer-start-handoff.json",
+      "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/answer-command-loop-receipt.json",
+      "start_next_agent": "reviewer",
+      "receipt_ok": true,
+      "mocked": false,
+      "live": true,
+      "step_count": 1,
+      "selected_agent": "reviewer",
+      "dispatch_status": "COMPLETED",
+      "command_exit": 0,
+      "terminal_agent": "human",
+      "stop_reason": "next_agent_is_human"
+    },
+    {
+      "route": "COMPLIANCE",
+      "start_handoff": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/compliance-start-handoff.json",
+      "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/compliance-command-loop-receipt.json",
+      "start_next_agent": "reviewer",
+      "receipt_ok": true,
+      "mocked": false,
+      "live": true,
+      "step_count": 1,
+      "selected_agent": "reviewer",
+      "dispatch_status": "COMPLETED",
+      "command_exit": 0,
+      "terminal_agent": "human",
+      "stop_reason": "next_agent_is_human"
+    },
+    {
+      "route": "RESEARCH",
+      "start_handoff": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/research-start-handoff.json",
+      "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/research-command-loop-receipt.json",
+      "start_next_agent": "research-auditor",
+      "receipt_ok": true,
+      "mocked": false,
+      "live": true,
+      "step_count": 1,
+      "selected_agent": "research-auditor",
+      "dispatch_status": "COMPLETED",
+      "command_exit": 0,
+      "terminal_agent": "human",
+      "stop_reason": "next_agent_is_human"
+    }
+  ],
+  "claims": {
+    "proves": [
+      "Live Tau Chat Memory-backed ANSWER handoff can enter one bounded Tau command-loop step via reviewer.",
+      "Live Tau Chat Memory-backed COMPLIANCE handoff can enter one bounded Tau command-loop step via reviewer.",
+      "Live Tau Chat Memory-backed RESEARCH handoff can enter one bounded Tau command-loop step via research-auditor."
+    ],
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "Final Sparta Chat readiness.",
+      "Fresh Brave/WebGPT research execution.",
+      "A real external subagent performed semantic review beyond the Tau command adapter."
+    ]
+  }
+}
