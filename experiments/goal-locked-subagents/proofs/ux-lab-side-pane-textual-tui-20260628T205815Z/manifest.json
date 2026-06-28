@@ -1,0 +1,81 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "ux-lab-side-pane-textual-tui-20260628T205815Z",
+  "created_utc": "2026-06-28T20:58:15Z",
+  "surface": "ux-lab:#tau:tui-side-pane",
+  "mocked": true,
+  "live": false,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "source_type": "UX Lab side pane renders the fixture-backed Textual TUI artifact above the live Tau receipt terminal.",
+    "route": "http://127.0.0.1:3002/#tau",
+    "api_route": "http://127.0.0.1:3001/api/tau/tui/textual-proof/screenshot",
+    "source_manifest": "experiments/goal-locked-subagents/proofs/textual-tui-proof-cli-20260628T204400Z/manifest.json",
+    "ux_lab_code": [
+      "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/server/tauRoutes.ts",
+      "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.tsx"
+    ]
+  },
+  "evidence": {
+    "screenshot_endpoint": {
+      "command": "curl -sSI http://127.0.0.1:3001/api/tau/tui/textual-proof/screenshot | head -12",
+      "exit_code": 0,
+      "http_status": "200 OK",
+      "content_type": "image/png",
+      "content_length": 100157
+    },
+    "focused_checks": [
+      {
+        "command": "npx vitest run server/tauRoutes.test.ts src/components/tau/TauChatView.test.ts",
+        "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+        "exit_code": 0,
+        "summary": "2 test files passed; 72 tests passed"
+      },
+      {
+        "command": "npx tsc --noEmit --pretty false",
+        "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+        "exit_code": 0,
+        "summary": "TypeScript check exited 0"
+      }
+    ],
+    "browser_visual": {
+      "schema": "tau.ux_lab_side_pane_textual_tui_visual.v1",
+      "ok": true,
+      "url": "http://127.0.0.1:3002/#tau",
+      "proof_json": "/tmp/tau-side-pane-textual-tui-20260628T2058/proof.json",
+      "screenshot": "/tmp/tau-side-pane-textual-tui-20260628T2058/side-pane.png",
+      "page_screenshot": "/tmp/tau-side-pane-textual-tui-20260628T2058/page.png",
+      "visible_assertions": [
+        "TAU TUI PROOF + RECEIPTS",
+        "Textual TUI artifact from `uv run tau tui-proof`",
+        "mocked=true, live=false",
+        "tau@receipt-stream",
+        "mocked=false live=true status=PASS"
+      ],
+      "image_natural_size": {
+        "width": 1604,
+        "height": 636
+      }
+    },
+    "cdp": {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:3002/#tau --name tau-side-pane-textual-tui-proof",
+      "exit_code": 0,
+      "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+      "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-side-pane-textual-tui-proof/20260628T205756Z.png",
+      "read_json": "/tmp/codex-ui-verification/pi-mono/tau-side-pane-textual-tui-proof/20260628T205756Z.read.json"
+    }
+  },
+  "claims": {
+    "proves": [
+      "The UX Lab Tau side pane visibly shows a Textual TUI artifact, not only a receipt terminal.",
+      "The same pane also preserves the live Tau receipt terminal below the TUI artifact.",
+      "The UI labels the Textual artifact as fixture-backed with mocked=true and live=false."
+    ],
+    "does_not_prove": [
+      "Interactive browser-embedded Textual process.",
+      "Live provider call from the Textual TUI.",
+      "Live Memory backend call from the Textual TUI process.",
+      "Final Sparta Chat readiness."
+    ]
+  }
+}
