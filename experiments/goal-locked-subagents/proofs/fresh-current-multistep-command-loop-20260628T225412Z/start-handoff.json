@@ -1,0 +1,44 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "new",
+    "current_labels": [
+      "agent-work",
+      "next:goal-guardian",
+      "executor:local"
+    ]
+  },
+  "goal": {
+    "goal_id": "goal-tau-chat-hardening",
+    "goal_version": 1,
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "previous_subagent": "webgpt-ticket-author",
+  "context": {
+    "summary": "Fresh current proof that Tau can route through more than one bounded non-human command-spec agent before returning to human.",
+    "artifacts": [
+      "experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-apply-20260628T224349Z/manifest.json"
+    ]
+  },
+  "result": {
+    "status": "NEEDS_AGENT",
+    "summary": "Tau should verify preserved goal routing and then run the project-or-harness verifier.",
+    "evidence": [
+      "Previous same-run watchdog apply transport proof exists.",
+      "This proof intentionally uses dry-run GitHub projection to isolate multi-step non-human routing."
+    ]
+  },
+  "rationale": "A fresh multi-step non-human loop receipt is needed before stronger agentic harness claims.",
+  "next_agent": {
+    "name": "goal-guardian",
+    "executor": "local",
+    "reason": "Goal guardian must verify the immutable goal hash before another non-human verifier route."
+  },
+  "required_evidence": [
+    "Command-loop receipt with goal-guardian followed by project-or-harness-verifier.",
+    "Each selected agent exits 0 and emits tau.agent_handoff.v1.",
+    "Terminal handoff routes to human."
+  ],
+  "stop_condition": "Project-or-harness verifier routes to human or Tau fails closed."
+}

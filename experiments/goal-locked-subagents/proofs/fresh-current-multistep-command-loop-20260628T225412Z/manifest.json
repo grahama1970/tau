@@ -1,0 +1,59 @@
+{
+  "schema": "tau.fresh_current_multistep_command_loop_proof.v1",
+  "created_utc": "2026-06-28T22:54:12Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "status": "WAITING",
+  "start_handoff": "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/start-handoff.json",
+  "command_loop_receipt": "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/command-loop/command-loop-receipt.json",
+  "step_receipts": [
+    "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/command-loop/command-loop-step-001.receipt.json",
+    "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/command-loop/command-loop-step-002.receipt.json"
+  ],
+  "proof_agents": [
+    "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/proof-agents/goal-guardian/AGENTS.md",
+    "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/proof-agents/project-or-harness-verifier/AGENTS.md"
+  ],
+  "agent_registry_root": "experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/proof-agents",
+  "command_spec_root": "experiments/goal-locked-subagents/agent-command-specs",
+  "selected_agents": [
+    "goal-guardian",
+    "project-or-harness-verifier"
+  ],
+  "command_exits": [
+    0,
+    0
+  ],
+  "response_projection_next_agents": [
+    "project-or-harness-verifier",
+    "human"
+  ],
+  "response_projection_ok": [
+    true,
+    true
+  ],
+  "step_count": 2,
+  "terminal_agent": "human",
+  "stop_reason": "next_agent_is_human",
+  "github_transport": {
+    "applied": false,
+    "dry_run": true,
+    "reason": "This proof isolates multi-step non-human command-loop routing; GitHub mutation is covered by project-watchdog-same-run-compliance-apply-20260628T224349Z."
+  },
+  "claims": {
+    "proves": [
+      "Tau can consume one start tau.agent_handoff.v1 and route through two non-human command-spec agents in the current repo state.",
+      "goal-guardian preserved the active goal hash before the verifier route.",
+      "project-or-harness-verifier emitted a schema-valid terminal handoff to human.",
+      "both selected subagent commands exited 0 and both response projections validated."
+    ],
+    "does_not_prove": [
+      "unbounded autonomous operation",
+      "live GitHub mutation for this specific multi-step run",
+      "semantic correctness of Memory answers or COMPLIANCE evidence cases",
+      "production Sparta Chat readiness",
+      "browser UI rendering for this proof slice"
+    ]
+  }
+}
