@@ -1,0 +1,724 @@
+{
+  "schema": "tau.live_memory_chat_browser_proof.v1",
+  "ok": true,
+  "mocked": true,
+  "live": false,
+  "scenario": "clarify",
+  "url": "http://127.0.0.1:3002/?tauSuite=20260628T124652Z#tau",
+  "prompt": "How do I secure it?",
+  "visibleAssertions": {
+    "prompt_visible": true,
+    "clarify_lead_visible": true,
+    "memory_action_visible": true,
+    "clarify_product_visible": true,
+    "clarify_question_visible": true,
+    "handoff_section_visible": true,
+    "handoff_github_projection_json_visible": true,
+    "handoff_github_transport_receipt_visible": true,
+    "handoff_schema_visible": true,
+    "human_next_agent_visible": true,
+    "intent_request_seen": true,
+    "clarify_request_seen": true,
+    "recall_request_absent": true,
+    "answer_request_absent": true,
+    "deflect_request_absent": true,
+    "handoff_json_extracted": true,
+    "handoff_schema_valid": true,
+    "handoff_goal_present": true,
+    "handoff_context_present": true,
+    "handoff_result_present": true,
+    "handoff_next_agent_matches": true,
+    "handoff_stop_condition_present": true,
+    "handoff_github_projection_json_extracted": true,
+    "handoff_github_projection_ok": true,
+    "handoff_github_target_present": true,
+    "handoff_github_agent_work_label": true,
+    "handoff_github_next_label_matches": true,
+    "handoff_github_executor_label_matches": true,
+    "handoff_github_stale_labels_removed": true,
+    "handoff_github_comment_embeds_json": true,
+    "handoff_github_transport_receipt_extracted": true,
+    "handoff_github_transport_receipt_ok": true,
+    "handoff_github_transport_receipt_dry_run": true,
+    "handoff_github_transport_command_count_matches": true,
+    "handoff_github_transport_command_targets_repo": true,
+    "handoff_github_transport_labels_match_projection": true,
+    "handoff_github_transport_validation_rendered": true,
+    "handoff_github_transport_validation_rendered_schema": true,
+    "handoff_github_transport_validation_rendered_dry_run": true,
+    "handoff_orchestrator_intake_extracted": true,
+    "handoff_orchestrator_intake_schema": true,
+    "handoff_orchestrator_intake_accepted": true,
+    "handoff_orchestrator_intake_next_agent_matches": true,
+    "handoff_orchestrator_intake_dry_run": true,
+    "subagent_receipt_expectation_extracted": true,
+    "subagent_receipt_expectation_schema": true,
+    "subagent_receipt_expectation_next_agent_matches": true,
+    "subagent_receipt_expectation_required_handoff_schema": true,
+    "subagent_receipt_expectation_requires_next_agent": true,
+    "subagent_receipt_expectation_goal_matches_handoff": true,
+    "subagent_receipt_expectation_dry_run": true,
+    "subagent_receipt_expectation_persisted": true,
+    "subagent_receipt_expectation_artifact_path_present": true,
+    "candidate_subagent_handoff_extracted": true,
+    "candidate_subagent_handoff_schema": true,
+    "candidate_subagent_handoff_previous_matches_expectation": true,
+    "candidate_subagent_handoff_goal_matches_expectation": true,
+    "candidate_subagent_handoff_declares_noop": true,
+    "subagent_handoff_validation_extracted": true,
+    "subagent_handoff_validation_schema": true,
+    "subagent_handoff_validation_candidate_only": true,
+    "subagent_handoff_validation_previous_matches": true,
+    "subagent_handoff_validation_goal_matches_expectation": true,
+    "external_subagent_receipt_extracted": true,
+    "external_subagent_receipt_schema": true,
+    "external_subagent_receipt_previous_matches_expectation": true,
+    "external_subagent_receipt_goal_matches_expectation": true,
+    "external_subagent_receipt_completed": true,
+    "external_subagent_receipt_intake_extracted": true,
+    "external_subagent_receipt_intake_schema": true,
+    "external_subagent_receipt_intake_accepted": true,
+    "external_subagent_receipt_intake_not_executed": true,
+    "external_subagent_receipt_intake_goal_matches_expectation": true,
+    "external_subagent_github_projection_extracted": true,
+    "external_subagent_github_projection_schema": true,
+    "external_subagent_github_projection_dry_run": true,
+    "external_subagent_github_projection_next_matches_intake": true,
+    "external_subagent_github_projection_goal_matches_intake": true,
+    "external_subagent_github_projection_embeds_receipt": true,
+    "handoff_github_transport_server_validation_ok": true,
+    "handoff_github_transport_server_validation_schema": true,
+    "handoff_github_transport_server_validation_dry_run": true
+  },
+  "handoff": {
+    "schema": "tau.agent_handoff.v1",
+    "github": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "previous_subagent": "webgpt-ticket-author",
+    "context": {
+      "summary": "Tau Chat handled: How do I secure it?",
+      "artifacts": [
+        "experiments/loop2-alignment/reliability-stress-20260626T211653Z-extract-hardening/cwe-287-extract-receipt.json",
+        "experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/harness-peer-message.json",
+        "experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-push-proof.json",
+        "experiments/loop2-alignment/proofs/inter_harness_switchboard/live-switchboard-websocket-ack-proof.json",
+        "experiments/loop2-alignment/proofs/final_goal_audit/tau_goal_audit_20260626T223412Z.json",
+        "experiments/loop2-alignment/reliability-stress-20260626T205339Z/stress-summary.json",
+        "experiments/loop2-alignment/reliability-stress-20260626T205200Z/sparta-chat-contract/summary.json",
+        "experiments/loop2-alignment/reliability-stress-20260626T193829Z/stress-summary.json",
+        "/tmp/tau-command-loop-explicit-ticket-source-proof/summary.json",
+        "/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-receipt.json",
+        "/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-artifacts/command-loop-step-001/goal-guardian-reconciliation-receipt.json",
+        "/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop/command-loop-step-001.receipt.json",
+        "/tmp/tau-command-loop-explicit-ticket-source-proof/ticket-source.json",
+        "/tmp/tau-command-loop-explicit-ticket-source-proof/command-loop-reconciliation-github-transport.json"
+      ]
+    },
+    "result": {
+      "status": "NEEDS_HUMAN",
+      "summary": "Memory action CLARIFY completed in Tau Chat.",
+      "evidence": [
+        "/api/memory/intent",
+        "/api/memory/clarify"
+      ]
+    },
+    "rationale": "A human answer is required before Tau can continue safely.",
+    "next_agent": {
+      "name": "human",
+      "executor": "human",
+      "reason": "Memory requested clarification before further routing."
+    },
+    "required_evidence": [
+      "Human supplies the missing scope or entity."
+    ],
+    "stop_condition": "Human posts a schema-valid clarification or route handoff."
+  },
+  "githubProjection": {
+    "contract": "tau.handoff_github_projection.rendered.v1",
+    "ok": true,
+    "errors": [],
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": [
+        "agent-active",
+        "agent-blocked"
+      ]
+    },
+    "comment": {
+      "body_format": "github-markdown",
+      "body_marker": "<!-- tau-agent-handoff:v1 -->",
+      "body_embeds_handoff_json": true
+    },
+    "nextAgent": "human"
+  },
+  "githubTransportReceipt": {
+    "schema": "tau.handoff_github_transport_receipt.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": [
+        "agent-active",
+        "agent-blocked"
+      ]
+    },
+    "commandCount": 1,
+    "commands": [
+      "gh issue create --repo grahama1970/tau --title \"Tau agent handoff: human\" --body-file - --label agent-work,next:human,executor:human"
+    ],
+    "errors": [],
+    "sourceProjectionContract": "tau.handoff_github_projection.rendered.v1"
+  },
+  "githubTransportValidationRendered": {
+    "schema": "tau.handoff_github_transport_validation.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": [
+        "agent-active",
+        "agent-blocked"
+      ]
+    },
+    "commandCount": 1,
+    "commands": [
+      "gh issue create --repo grahama1970/tau --title \"Tau agent handoff: human\" --body-file - --label agent-work,next:human,executor:human"
+    ],
+    "checks": [
+      "schema",
+      "dry_run_not_applied",
+      "target",
+      "labels",
+      "command_count",
+      "command_repo",
+      "command_target"
+    ]
+  },
+  "handoffOrchestratorIntake": {
+    "schema": "tau.handoff_orchestrator_intake.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "accepted": true,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "nextAgent": "human",
+    "executor": "human",
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": [
+        "agent-active",
+        "agent-blocked"
+      ]
+    },
+    "commandCount": 1,
+    "commands": [
+      "gh issue create --repo grahama1970/tau --title \"Tau agent handoff: human\" --body-file - --label agent-work,next:human,executor:human"
+    ],
+    "routing": {
+      "queue": "github-ticket",
+      "next_agent": "human",
+      "executor": "human",
+      "stop_condition": "human posts a schema-valid Tau receipt before the next route."
+    },
+    "claims": {
+      "proves": [
+        "Tau chat handoff transport validation can be normalized into a non-mutating orchestrator intake receipt.",
+        "Tau can derive next agent and executor from validated labels without inventing routing."
+      ],
+      "does_not_prove": [
+        "Live GitHub mutation.",
+        "Live subagent execution.",
+        "Final Sparta Chat readiness."
+      ]
+    }
+  },
+  "subagentReceiptExpectation": {
+    "schema": "tau.subagent_receipt_expectation.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "nextAgent": "human",
+    "executor": "human",
+    "requiredReceipt": {
+      "schema": "tau.agent_handoff.v1",
+      "previous_subagent": "human",
+      "fields": [
+        "schema",
+        "github.repo",
+        "github.target",
+        "goal.goal_id",
+        "goal.goal_version",
+        "goal.goal_hash",
+        "previous_subagent",
+        "context.summary",
+        "context.artifacts",
+        "result.status",
+        "result.summary",
+        "result.evidence",
+        "rationale",
+        "next_agent.name",
+        "next_agent.reason",
+        "required_evidence",
+        "stop_condition"
+      ],
+      "next_agent_required": true,
+      "evidence_required": true,
+      "goal_preservation_required": true,
+      "stop_condition": "human posts a schema-valid Tau receipt before the next route."
+    },
+    "claims": {
+      "proves": [
+        "Tau can derive the next subagent receipt expectation from accepted dry-run orchestrator intake.",
+        "Tau requires the next subagent to return tau.agent_handoff.v1 with next_agent before the loop can continue."
+      ],
+      "does_not_prove": [
+        "The next subagent actually executed.",
+        "The expected receipt was posted to GitHub.",
+        "Live GitHub mutation."
+      ]
+    },
+    "persisted": true,
+    "artifactPath": "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json",
+    "proofRoot": "/tmp/tau-subagent-receipt-expectations"
+  },
+  "candidateSubagentHandoff": {
+    "schema": "tau.agent_handoff.v1",
+    "github": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "previous_subagent": "human",
+    "context": {
+      "summary": "Dry-run candidate receipt for human; no subagent executed.",
+      "artifacts": [
+        "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json"
+      ]
+    },
+    "result": {
+      "status": "NOOP",
+      "summary": "Candidate receipt shape was generated only to validate the next-subagent handoff contract.",
+      "evidence": [
+        "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json"
+      ]
+    },
+    "rationale": "Tau must prove the receipt contract before dispatching a real subagent.",
+    "next_agent": {
+      "name": "human",
+      "executor": "human",
+      "reason": "Stop after dry-run candidate validation; real subagent execution is a later rung."
+    },
+    "required_evidence": [
+      "Human-approved live subagent execution receipt."
+    ],
+    "stop_condition": "Human approves a real subagent execution step or routes to another dry-run harness rung."
+  },
+  "subagentHandoffValidation": {
+    "schema": "tau.subagent_handoff_validation.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "executed": false,
+    "candidateOnly": true,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "previousSubagent": "human",
+    "nextAgent": "human",
+    "resultStatus": "NOOP",
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "resultEvidenceCount": 1,
+    "requiredEvidenceCount": 1,
+    "expectationArtifactPath": "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json",
+    "checks": [
+      "expectation_schema",
+      "handoff_schema",
+      "target_match",
+      "previous_subagent_match",
+      "goal_preserved",
+      "required_fields",
+      "next_agent_present",
+      "evidence_present"
+    ],
+    "claims": {
+      "proves": [
+        "Tau can validate a candidate next-subagent tau.agent_handoff.v1 against the persisted receipt expectation.",
+        "Tau refuses to advance the loop unless the candidate receipt includes required routing and evidence fields.",
+        "Tau refuses candidate subagent receipts that change the accepted goal metadata."
+      ],
+      "does_not_prove": [
+        "The next subagent actually executed.",
+        "The candidate receipt was posted to GitHub.",
+        "Live GitHub mutation."
+      ]
+    }
+  },
+  "externalSubagentReceipt": {
+    "schema": "tau.agent_handoff.v1",
+    "github": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "previous_subagent": "human",
+    "context": {
+      "summary": "External human receipt fixture for Tau intake validation; no subagent executed in this browser proof.",
+      "artifacts": [
+        "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json"
+      ]
+    },
+    "result": {
+      "status": "COMPLETED",
+      "summary": "Fixture receipt was supplied to prove Tau can ingest an external subagent handoff contract.",
+      "evidence": [
+        "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json"
+      ]
+    },
+    "rationale": "Tau should derive the next route from the accepted external receipt, not from hidden model state.",
+    "next_agent": {
+      "name": "human",
+      "executor": "human",
+      "reason": "Stop after dry-run external receipt intake; human decides whether to authorize real subagent execution."
+    },
+    "required_evidence": [
+      "Human-approved live subagent execution receipt."
+    ],
+    "stop_condition": "Human approves the next live execution step or routes to another dry-run harness rung."
+  },
+  "externalSubagentReceiptIntake": {
+    "schema": "tau.external_subagent_receipt_intake.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "accepted": true,
+    "externalReceipt": true,
+    "executed": false,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "previousSubagent": "human",
+    "nextAgent": "human",
+    "resultStatus": "COMPLETED",
+    "resultEvidenceCount": 1,
+    "requiredEvidenceCount": 1,
+    "externalReceiptId": "human-fixture-receipt",
+    "nextRoute": {
+      "subagent": "human",
+      "executor": "human",
+      "reason": "Stop after dry-run external receipt intake; human decides whether to authorize real subagent execution."
+    },
+    "sourceValidation": {
+      "schema": "tau.subagent_handoff_validation.v1",
+      "ok": true,
+      "dryRun": true,
+      "applied": false,
+      "executed": false,
+      "candidateOnly": true,
+      "target": {
+        "repo": "grahama1970/tau",
+        "target": "new"
+      },
+      "previousSubagent": "human",
+      "nextAgent": "human",
+      "resultStatus": "COMPLETED",
+      "goal": {
+        "goal_id": "goal-tau-chat-hardening",
+        "goal_version": 1,
+        "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "resultEvidenceCount": 1,
+      "requiredEvidenceCount": 1,
+      "expectationArtifactPath": "/tmp/tau-subagent-receipt-expectations/20260628T124718Z/human-subagent-receipt-expectation.json",
+      "checks": [
+        "expectation_schema",
+        "handoff_schema",
+        "target_match",
+        "previous_subagent_match",
+        "goal_preserved",
+        "required_fields",
+        "next_agent_present",
+        "evidence_present"
+      ],
+      "claims": {
+        "proves": [
+          "Tau can validate a candidate next-subagent tau.agent_handoff.v1 against the persisted receipt expectation.",
+          "Tau refuses to advance the loop unless the candidate receipt includes required routing and evidence fields.",
+          "Tau refuses candidate subagent receipts that change the accepted goal metadata."
+        ],
+        "does_not_prove": [
+          "The next subagent actually executed.",
+          "The candidate receipt was posted to GitHub.",
+          "Live GitHub mutation."
+        ]
+      }
+    },
+    "checks": [
+      "expectation_schema",
+      "receipt_schema",
+      "target_match",
+      "previous_subagent_match",
+      "goal_preserved",
+      "required_fields",
+      "next_agent_present",
+      "evidence_present",
+      "external_receipt_accepted"
+    ],
+    "claims": {
+      "proves": [
+        "Tau can ingest an externally supplied tau.agent_handoff.v1 receipt against the persisted expectation.",
+        "Tau preserves the accepted goal metadata while accepting the external receipt into the dry-run harness.",
+        "Tau derives the next route from the accepted external receipt instead of inventing routing."
+      ],
+      "does_not_prove": [
+        "The external subagent actually executed in this browser proof.",
+        "The external receipt was posted to GitHub.",
+        "Live GitHub mutation."
+      ]
+    }
+  },
+  "externalSubagentGithubProjection": {
+    "schema": "tau.external_subagent_github_projection.v1",
+    "ok": true,
+    "dryRun": true,
+    "applied": false,
+    "mutation": "not_applied",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "goal": {
+      "goal_id": "goal-tau-chat-hardening",
+      "goal_version": 1,
+      "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "previousSubagent": "human",
+    "nextAgent": "human",
+    "executor": "human",
+    "resultStatus": "COMPLETED",
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": [
+        "agent-active",
+        "agent-blocked",
+        "next:human"
+      ]
+    },
+    "comment": {
+      "body_format": "github-markdown",
+      "body_marker": "<!-- tau-agent-handoff:v1 -->",
+      "body_embeds_handoff_json": true,
+      "body_length": 1930,
+      "body_preview": "## Tau External Subagent Receipt\n\nResult: `COMPLETED`\nPrevious subagent: `human`\nNext agent: `human`\nExecutor: `human`\n\n### Context\n\nExternal human receipt fixt"
+    },
+    "commandCount": 1,
+    "commands": [
+      "gh issue create --repo grahama1970/tau --title \"Tau external subagent receipt: human to human\" --body-file - --label agent-work,next:human,executor:human"
+    ],
+    "sourceIntake": {
+      "schema": "tau.external_subagent_receipt_intake.v1",
+      "accepted": true,
+      "externalReceipt": true,
+      "executed": false,
+      "externalReceiptId": "human-fixture-receipt"
+    },
+    "checks": [
+      "intake_schema",
+      "intake_accepted",
+      "receipt_schema",
+      "target_match",
+      "goal_preserved",
+      "previous_subagent_match",
+      "next_agent_present",
+      "labels_derived",
+      "comment_embeds_receipt_json",
+      "dry_run_not_applied"
+    ],
+    "claims": {
+      "proves": [
+        "Tau can project an accepted external tau.agent_handoff.v1 receipt into a deterministic GitHub comment and label plan.",
+        "Tau derives next labels from the accepted external receipt instead of inventing routing.",
+        "Tau preserves dryRun=true and applied=false while preparing the GitHub projection."
+      ],
+      "does_not_prove": [
+        "The external subagent actually executed in this browser proof.",
+        "The external receipt was posted to GitHub.",
+        "Live GitHub mutation."
+      ]
+    }
+  },
+  "githubTransportValidation": {
+    "ok": true,
+    "status": 200,
+    "body": {
+      "ok": true,
+      "receipt": {
+        "schema": "tau.handoff_github_transport_validation.v1",
+        "ok": true,
+        "dryRun": true,
+        "applied": false,
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "new"
+        },
+        "goal": {
+          "goal_id": "goal-tau-chat-hardening",
+          "goal_version": 1,
+          "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:human",
+            "executor:human"
+          ],
+          "remove": [
+            "agent-active",
+            "agent-blocked"
+          ]
+        },
+        "commandCount": 1,
+        "commands": [
+          "gh issue create --repo grahama1970/tau --title \"Tau agent handoff: human\" --body-file - --label agent-work,next:human,executor:human"
+        ],
+        "checks": [
+          "schema",
+          "dry_run_not_applied",
+          "target",
+          "labels",
+          "command_count",
+          "command_repo",
+          "command_target"
+        ]
+      }
+    },
+    "error": null
+  },
+  "handoffExtractionError": null,
+  "githubProjectionExtractionError": null,
+  "githubTransportReceiptExtractionError": null,
+  "githubTransportValidationExtractionError": null,
+  "handoffOrchestratorIntakeExtractionError": null,
+  "subagentReceiptExpectationExtractionError": null,
+  "candidateSubagentHandoffExtractionError": null,
+  "subagentHandoffValidationExtractionError": null,
+  "externalSubagentReceiptExtractionError": null,
+  "externalSubagentReceiptIntakeExtractionError": null,
+  "externalSubagentGithubProjectionExtractionError": null,
+  "memoryRequests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/clarify",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify/tau-live-memory-chat.png",
+  "capturedAt": "2026-06-28T12:47:19.253Z"
+}

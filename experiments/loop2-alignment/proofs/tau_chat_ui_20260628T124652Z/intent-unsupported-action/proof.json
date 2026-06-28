@@ -1,0 +1,73 @@
+{
+  "schema": "tau.live_memory_chat_browser_proof.v1",
+  "ok": true,
+  "mocked": true,
+  "live": false,
+  "scenario": "intent-unsupported-action",
+  "url": "http://127.0.0.1:3002/?tauSuite=20260628T124652Z#tau",
+  "prompt": "What should Tau do with this unknown Memory route?",
+  "visibleAssertions": {
+    "prompt_visible": true,
+    "fail_closed_unsupported_intent_visible": true,
+    "unsupported_action_visible": true,
+    "unsupported_reason_visible": true,
+    "route_endpoint_not_called_visible": true,
+    "no_handoff_section_visible": true,
+    "no_next_agent_visible": true,
+    "intent_request_seen": true,
+    "recall_request_absent": true,
+    "answer_request_absent": true,
+    "clarify_request_absent": true,
+    "deflect_request_absent": true,
+    "handoff_json_absent": true,
+    "handoff_absence_reason_recorded": true
+  },
+  "handoff": null,
+  "githubProjection": null,
+  "githubTransportReceipt": null,
+  "githubTransportValidationRendered": null,
+  "handoffOrchestratorIntake": null,
+  "subagentReceiptExpectation": null,
+  "candidateSubagentHandoff": null,
+  "subagentHandoffValidation": null,
+  "externalSubagentReceipt": null,
+  "externalSubagentReceiptIntake": null,
+  "externalSubagentGithubProjection": null,
+  "githubTransportValidation": {
+    "ok": false,
+    "status": null,
+    "body": null,
+    "error": "handoff not expected"
+  },
+  "handoffExtractionError": "handoff JSON object not found",
+  "githubProjectionExtractionError": "github projection JSON object not found",
+  "githubTransportReceiptExtractionError": "github transport receipt JSON object not found",
+  "githubTransportValidationExtractionError": "github transport validation JSON object not found",
+  "handoffOrchestratorIntakeExtractionError": "handoff orchestrator intake JSON object not found",
+  "subagentReceiptExpectationExtractionError": "subagent receipt expectation JSON object not found",
+  "candidateSubagentHandoffExtractionError": "candidate subagent handoff JSON object not found",
+  "subagentHandoffValidationExtractionError": "subagent handoff validation JSON object not found",
+  "externalSubagentReceiptExtractionError": "external subagent receipt JSON object not found",
+  "externalSubagentReceiptIntakeExtractionError": "external subagent receipt intake JSON object not found",
+  "externalSubagentGithubProjectionExtractionError": "external subagent GitHub projection JSON object not found",
+  "memoryRequests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/intent-unsupported-action/tau-live-memory-chat.png",
+  "capturedAt": "2026-06-28T12:47:38.506Z"
+}

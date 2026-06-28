@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-06-28T12:48:32.192695+00:00",
+  "cwd": "/home/graham/workspace/experiments/agent-skills",
+  "root": "/home/graham/workspace/experiments/agent-skills",
+  "output_root": "/tmp/codex-ui-verification/agent-skills",
+  "url": "http://127.0.0.1:3002/#tau",
+  "name": "tau-chat",
+  "screenshot": "/tmp/codex-ui-verification/agent-skills/tau-chat/20260628T124757Z.png",
+  "read_json": "/tmp/codex-ui-verification/agent-skills/tau-chat/20260628T124757Z.read.json"
+}

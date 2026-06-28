@@ -1,0 +1,152 @@
+{
+  "schema": "tau.memory_chat_proof_suite.v1",
+  "ok": true,
+  "mocked": true,
+  "live": true,
+  "scenarioCount": 12,
+  "liveScenarioCount": 5,
+  "mockedScenarioCount": 7,
+  "claims": {
+    "proves": [
+      "Tau chat browser route proofs can be run as one auditable suite.",
+      "Successful route proofs extract or check tau.agent_handoff.v1 JSON according to each route boundary.",
+      "Successful handoff route proofs POST the rendered dry-run GitHub transport receipt to the Tau server validator.",
+      "Successful handoff route proofs extract the rendered tau.handoff_github_transport_validation.v1 JSON.",
+      "Successful handoff route proofs extract the rendered tau.handoff_orchestrator_intake.v1 JSON.",
+      "Successful handoff route proofs extract the rendered tau.subagent_receipt_expectation.v1 JSON.",
+      "Successful handoff route proofs read the persisted tau.subagent_receipt_expectation.v1 artifact from disk.",
+      "Successful handoff route proofs validate a candidate next-subagent tau.agent_handoff.v1 without executing that subagent.",
+      "Successful handoff route proofs preserve the accepted goal hash through expectation, candidate receipt, and validation receipt.",
+      "Successful handoff route proofs ingest an external tau.agent_handoff.v1 receipt fixture without claiming subagent execution.",
+      "Successful handoff route proofs project the accepted external receipt into dry-run GitHub comment and label commands.",
+      "Mocked route proofs are labeled mocked=true/live=false and do not upgrade live Memory confidence."
+    ],
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Live CLARIFY emission from Memory intent.",
+      "Live GitHub mutation or subagent execution from the browser chat."
+    ]
+  },
+  "results": [
+    {
+      "name": "compliance",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "handoffNextAgent": "reviewer",
+      "handoffStatus": "NEEDS_REVIEW",
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/compliance/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/compliance/proof.json"
+    },
+    {
+      "name": "compliance-invalid-recall",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/compliance-invalid-recall/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/compliance-invalid-recall/proof.json"
+    },
+    {
+      "name": "deflect",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "handoffNextAgent": "human",
+      "handoffStatus": "NOOP",
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/deflect/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/deflect/proof.json"
+    },
+    {
+      "name": "answer",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "handoffNextAgent": "reviewer",
+      "handoffStatus": "NEEDS_REVIEW",
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/answer/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/answer/proof.json"
+    },
+    {
+      "name": "research",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "handoffNextAgent": "research-auditor",
+      "handoffStatus": "NEEDS_AGENT",
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/research/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/research/proof.json"
+    },
+    {
+      "name": "clarify",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": "human",
+      "handoffStatus": "NEEDS_HUMAN",
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify/proof.json"
+    },
+    {
+      "name": "clarify-invalid-product",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify-invalid-product/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify-invalid-product/proof.json"
+    },
+    {
+      "name": "deflect-invalid-product",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/deflect-invalid-product/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/deflect-invalid-product/proof.json"
+    },
+    {
+      "name": "answer-invalid-product",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/answer-invalid-product/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/answer-invalid-product/proof.json"
+    },
+    {
+      "name": "clarify-availability",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify-availability/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/clarify-availability/proof.json"
+    },
+    {
+      "name": "intent-unavailable",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/intent-unavailable/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/intent-unavailable/proof.json"
+    },
+    {
+      "name": "intent-unsupported-action",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "handoffNextAgent": null,
+      "handoffStatus": null,
+      "screenshot": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/intent-unsupported-action/tau-live-memory-chat.png",
+      "proofPath": "/tmp/tau-memory-chat-proof-suite-20260628T124652Z/intent-unsupported-action/proof.json"
+    }
+  ]
+}
