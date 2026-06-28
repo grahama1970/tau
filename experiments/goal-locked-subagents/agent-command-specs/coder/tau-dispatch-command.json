@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/home/graham/.local/bin/uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Coder consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human review is required after this bounded watchdog repair proof.",
+    "--required-evidence",
+    "Human reviews the watchdog receipt, Tau command-loop receipt, pushed commit, and issue comment.",
+    "--stop-condition",
+    "Human accepts, redirects, or requests another bounded subagent."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}
