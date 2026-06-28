@@ -9,8 +9,12 @@ def test_tau_handoff_dispatch_workflow_runs_bounded_command_loop() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
     assert "workflow_dispatch:" in text
+    assert "issue_comment:" in text
+    assert "contains(github.event.comment.body, '/tau handoff-dispatch')" in text
     assert "apply_github_transport:" in text
     assert "issues: write" in text
+    assert 'TAU_START_HANDOFF="experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json"' in text
+    assert 'TAU_APPLY_GITHUB_TRANSPORT="false"' in text
     assert "uv run tau handoff-command-loop" in text
     assert "handoff-command-loop-github-transport" in text
     assert "GH_TOKEN: ${{ github.token }}" in text

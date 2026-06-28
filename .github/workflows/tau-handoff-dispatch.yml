@@ -1,6 +1,8 @@
 name: Tau handoff dispatch
 
 on:
+  issue_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       start_handoff_path:
@@ -27,6 +29,9 @@ permissions:
 
 jobs:
   dispatch:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.comment.body, '/tau handoff-dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,6 +55,15 @@ jobs:
           TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
         run: |
           set -euo pipefail
+          if [ -z "${TAU_START_HANDOFF:-}" ]; then
+            TAU_START_HANDOFF="experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json"
+          fi
+          if [ -z "${TAU_MAX_STEPS:-}" ]; then
+            TAU_MAX_STEPS="1"
+          fi
+          if [ -z "${TAU_ACTIVE_GOAL_HASH:-}" ]; then
+            TAU_ACTIVE_GOAL_HASH="sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          fi
           mkdir -p "$TAU_RECEIPT_DIR"
           uv run tau handoff-command-loop \
             --start "$TAU_START_HANDOFF" \
@@ -67,6 +81,9 @@ jobs:
           TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
         run: |
           set -euo pipefail
+          if [ -z "${TAU_APPLY_GITHUB_TRANSPORT:-}" ]; then
+            TAU_APPLY_GITHUB_TRANSPORT="false"
+          fi
           transport_args=(
             handoff-command-loop-github-transport
             "$TAU_RECEIPT_DIR/command-loop-receipt.json"
