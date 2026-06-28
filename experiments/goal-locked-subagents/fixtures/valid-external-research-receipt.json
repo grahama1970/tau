@@ -1,0 +1,13 @@
+{
+  "schema": "tau.external_research_receipt.v1",
+  "method": "brave-search",
+  "query": "latest Chutes pricing",
+  "retrieved_at": "2026-06-28T01:58:00Z",
+  "summary": "Fixture receipt for a bounded authorized research handoff. This is not live web proof.",
+  "sources": [
+    {
+      "title": "Chutes pricing",
+      "url": "https://chutes.ai/pricing"
+    }
+  ]
+}

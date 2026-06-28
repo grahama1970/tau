@@ -51,6 +51,33 @@
       "command_exit": 0,
       "terminal_agent": "human",
       "stop_reason": "next_agent_is_human"
+    },
+    {
+      "route": "RESEARCH_AUTHORIZED_RECEIPT",
+      "start_handoff": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/research-authorized-start-handoff.json",
+      "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/research-authorized-command-loop-receipt.json",
+      "start_next_agent": "research-auditor",
+      "response_result_status": "COMPLETED",
+      "receipt_ok": true,
+      "mocked": false,
+      "live": true,
+      "step_count": 2,
+      "selected_agents": [
+        "research-auditor",
+        "reviewer"
+      ],
+      "dispatch_statuses": [
+        "COMPLETED",
+        "COMPLETED"
+      ],
+      "command_exits": [
+        0,
+        0
+      ],
+      "terminal_agent": "human",
+      "stop_reason": "next_agent_is_human",
+      "external_research_receipt": "experiments/goal-locked-subagents/fixtures/valid-external-research-receipt.json",
+      "external_research_receipt_live": false
     }
   ],
   "claims": {
@@ -58,12 +85,14 @@
       "Live Tau Chat Memory-backed ANSWER handoff can enter one bounded Tau command-loop step via reviewer.",
       "Live Tau Chat Memory-backed COMPLIANCE handoff can enter one bounded Tau command-loop step via reviewer.",
       "Live Tau Chat Memory-backed RESEARCH handoff can enter one bounded Tau command-loop step via research-auditor.",
-      "Unauthorized live Tau Chat RESEARCH handoff is refused before Brave/WebGPT/external research execution."
+      "Unauthorized live Tau Chat RESEARCH handoff is refused before Brave/WebGPT/external research execution.",
+      "Authorized RESEARCH handoff with a schema-valid external research receipt routes research-auditor to reviewer, then human."
     ],
     "does_not_prove": [
       "Live GitHub mutation.",
       "Final Sparta Chat readiness.",
       "Fresh Brave/WebGPT research execution.",
+      "The fixture external research receipt is live Brave Search output.",
       "A real external subagent performed semantic review beyond the Tau command adapter."
     ]
   }

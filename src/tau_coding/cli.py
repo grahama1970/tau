@@ -3546,6 +3546,85 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
         }
 
     method = _research_authorization_method(authorization)
+    receipt_path = _research_authorization_receipt_path(authorization)
+    if not receipt_path:
+        return {
+            "schema": "tau.agent_handoff.v1",
+            "github": github,
+            "goal": goal,
+            "previous_subagent": "research-auditor",
+            "context": {
+                "summary": (
+                    f"Research auditor accepted authorization for {method}, but no external "
+                    "research receipt was attached."
+                ),
+                "artifacts": artifacts,
+            },
+            "result": {
+                "status": "NEEDS_AGENT",
+                "summary": (
+                    f"Fresh research lane {method} is authorized, but no external research "
+                    "receipt has been produced."
+                ),
+                "evidence": [
+                    "context.research_authorization.approved=true",
+                    f"context.research_authorization.method={method}",
+                    "context.research_authorization.receipt_path missing",
+                ],
+            },
+            "rationale": (
+                "Authorization alone is not research evidence; Tau must receive a durable "
+                "external research receipt before routing to review."
+            ),
+            "next_agent": {
+                "name": "human",
+                "executor": "human",
+                "reason": (
+                    f"Human must dispatch the actual {method} research executor or attach "
+                    "a schema-valid external research receipt."
+                ),
+            },
+            "required_evidence": [
+                f"External research receipt for {method} with sources and retrieval timestamp."
+            ],
+            "stop_condition": "Human route is posted.",
+        }
+
+    receipt, receipt_errors = _load_external_research_receipt(receipt_path, method)
+    if receipt_errors:
+        return {
+            "schema": "tau.agent_handoff.v1",
+            "github": github,
+            "goal": goal,
+            "previous_subagent": "research-auditor",
+            "context": {
+                "summary": (
+                    f"Research auditor refused {method} results because the attached external "
+                    "research receipt was invalid."
+                ),
+                "artifacts": [*artifacts, receipt_path],
+            },
+            "result": {
+                "status": "REFUSED",
+                "summary": "Attached external research receipt failed validation.",
+                "evidence": [f"receipt_error:{error}" for error in receipt_errors],
+            },
+            "rationale": (
+                "Tau cannot route fresh research to review unless the external research "
+                "receipt is durable and schema-valid."
+            ),
+            "next_agent": {
+                "name": "human",
+                "executor": "human",
+                "reason": "Human must attach a corrected external research receipt or stop the route.",
+            },
+            "required_evidence": [
+                f"Corrected external research receipt for {method} with non-empty sources."
+            ],
+            "stop_condition": "Human route is posted.",
+        }
+
+    source_count = len(receipt.get("sources", [])) if isinstance(receipt, dict) else 0
     return {
         "schema": "tau.agent_handoff.v1",
         "github": github,
@@ -3553,38 +3632,36 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
         "previous_subagent": "research-auditor",
         "context": {
             "summary": (
-                f"Research auditor accepted authorization for {method}; this bounded adapter "
-                "does not execute the external research call."
+                f"Research auditor accepted a schema-valid {method} receipt with "
+                f"{source_count} source(s)."
             ),
-            "artifacts": artifacts,
+            "artifacts": [*artifacts, receipt_path],
         },
         "result": {
-            "status": "NEEDS_REVIEW",
+            "status": "COMPLETED",
             "summary": (
-                f"Fresh research lane {method} is authorized, but no external research result "
-                "has been produced by this adapter."
+                f"Fresh research lane {method} produced a schema-valid external research receipt."
             ),
             "evidence": [
                 f"context.research_authorization.approved=true",
                 f"context.research_authorization.method={method}",
+                f"context.research_authorization.receipt_path={receipt_path}",
+                f"external_research_receipt.sources={source_count}",
             ],
         },
         "rationale": (
-            "Authorization is present, so the next bounded route may execute or review the "
-            "named external research lane without weakening the Memory-first proof boundary."
+            "A durable external research receipt is attached, so a reviewer can inspect "
+            "the sources without weakening the Memory-first proof boundary."
         ),
         "next_agent": {
-            "name": "human",
-            "executor": "human",
-            "reason": (
-                f"Human must dispatch the actual {method} research executor or attach the "
-                "resulting research receipt."
-            ),
+            "name": "reviewer",
+            "executor": "either",
+            "reason": "Reviewer should inspect the external research receipt before Tau answers.",
         },
         "required_evidence": [
-            f"External research receipt for {method} with sources and retrieval timestamp."
+            f"Reviewer receipt over {receipt_path} and its cited sources."
         ],
-        "stop_condition": "Human route is posted.",
+        "stop_condition": "Reviewer posts a schema-valid receipt.",
     }
 
 
@@ -3698,6 +3775,58 @@ def _research_authorization_method(value: object) -> str:
     if isinstance(method, str) and method.strip():
         return method.strip()
     return "external-research"
+
+
+def _research_authorization_receipt_path(value: object) -> str | None:
+    if not isinstance(value, dict):
+        return None
+    receipt_path = value.get("receipt_path")
+    if isinstance(receipt_path, str) and receipt_path.strip():
+        return receipt_path.strip()
+    return None
+
+
+def _load_external_research_receipt(
+    receipt_path: str,
+    method: str,
+) -> tuple[dict[str, object], list[str]]:
+    path = Path(receipt_path).expanduser()
+    errors: list[str] = []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {}, [f"unreadable:{receipt_path}:{exc}"]
+    if not isinstance(payload, dict):
+        return {}, ["receipt root must be a JSON object"]
+    if payload.get("schema") != "tau.external_research_receipt.v1":
+        errors.append("schema must be tau.external_research_receipt.v1")
+    receipt_method = payload.get("method")
+    if receipt_method != method:
+        errors.append(f"method must equal {method}")
+    query = payload.get("query")
+    if not isinstance(query, str) or not query.strip():
+        errors.append("query must be a non-empty string")
+    retrieved_at = payload.get("retrieved_at")
+    if not isinstance(retrieved_at, str) or not retrieved_at.strip():
+        errors.append("retrieved_at must be a non-empty string")
+    summary = payload.get("summary")
+    if not isinstance(summary, str) or not summary.strip():
+        errors.append("summary must be a non-empty string")
+    sources = payload.get("sources")
+    if not isinstance(sources, list) or not sources:
+        errors.append("sources must be a non-empty list")
+    else:
+        for index, source in enumerate(sources):
+            if not isinstance(source, dict):
+                errors.append(f"sources[{index}] must be an object")
+                continue
+            title = source.get("title")
+            url = source.get("url")
+            if not isinstance(title, str) or not title.strip():
+                errors.append(f"sources[{index}].title must be a non-empty string")
+            if not isinstance(url, str) or not url.strip():
+                errors.append(f"sources[{index}].url must be a non-empty string")
+    return payload, errors
 
 
 def _project_agent_goal_guardian_reconciliation_handoff(
