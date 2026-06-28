@@ -1,0 +1,81 @@
+{
+  "schema": "tau.compliance_memory_browser_clean_manifest.v1",
+  "created_at": "2026-06-28T21:30:00Z",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "Fresh Tau UX Lab COMPLIANCE browser route after route-specific Memory hardening and fail-closed PersonaPlex API cleanup.",
+  "browser_proof": {
+    "proof_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-compliance-memory-browser-clean-20260628T212908Z/browser-compliance/proof.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-compliance-memory-browser-clean-20260628T212908Z/browser-compliance/tau-live-memory-chat.png",
+    "url": "http://127.0.0.1:3002/#tau",
+    "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+    "scenario": "compliance",
+    "errors": [],
+    "memory_requests": [
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:3002/api/memory/health",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/intent",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:3002/api/memory/recall",
+        "status": 200
+      }
+    ],
+    "visible_assertions_subset": {
+      "compliance_lead_visible": true,
+      "memory_action_visible": true,
+      "recall_product_visible": true,
+      "handoff_schema_valid": true,
+      "handoff_github_transport_receipt_dry_run": true,
+      "handoff_orchestrator_intake_accepted": true,
+      "subagent_receipt_expectation_persisted": true,
+      "external_subagent_receipt_intake_accepted": true,
+      "handoff_github_transport_server_validation_ok": true
+    }
+  },
+  "cdp_marker": {
+    "verified_at": "2026-06-28T21:29:31.034864+00:00",
+    "url": "http://127.0.0.1:3002/#tau",
+    "name": "tau-live-compliance-memory-proof-refresh",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-compliance-memory-browser-clean-20260628T212908Z/cdp/tau-live-compliance-memory-proof-refresh.png",
+    "read_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-compliance-memory-browser-clean-20260628T212908Z/cdp/tau-live-compliance-memory-proof-refresh.read.json",
+    "latest_marker": "/home/graham/.codex/ui-verification/latest.json"
+  },
+  "api_cleanup": {
+    "route": "/api/tau/personaplex/embry-receipt",
+    "expected_http_status_when_receipt_missing": 200,
+    "expected_payload": {
+      "ok": false,
+      "receipt.available": false,
+      "receipt.failClosed": true
+    },
+    "reason": "Missing PersonaPlex receipt is an expected fail-closed gate, not a missing endpoint."
+  },
+  "claims": {
+    "proves": [
+      "Tau chat can route a live Memory COMPLIANCE turn through /api/memory/intent and /api/memory/recall in the browser.",
+      "The same browser turn renders tau.agent_handoff.v1, dry-run GitHub transport, orchestrator intake, receipt expectation, and external receipt projection state.",
+      "The current browser interaction has no captured console errors or 404 resource failures after the PersonaPlex gate response cleanup.",
+      "The current CDP marker points to the Tau route after the browser proof refresh."
+    ],
+    "does_not_prove": [
+      "Applied GitHub mutation for this COMPLIANCE handoff; rendered transport remains dryRun=true.",
+      "A real external reviewer/subagent execution for this browser run; external receipt content is fixture/dry-run intake.",
+      "PersonaPlex audio synthesis or published Embry voice identity; the voice gate remains fail-closed without a publish receipt.",
+      "Final Sparta Chat production readiness."
+    ]
+  }
+}
