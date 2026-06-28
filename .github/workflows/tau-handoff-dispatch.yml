@@ -1,0 +1,63 @@
+name: Tau handoff dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_handoff_path:
+        description: Repo-relative tau.agent_handoff.v1 JSON path.
+        required: true
+        default: experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json
+      max_steps:
+        description: Maximum bounded command-loop steps.
+        required: true
+        default: "1"
+      active_goal_hash:
+        description: Active immutable-goal hash expected by the handoff validator.
+        required: true
+        default: sha256:0000000000000000000000000000000000000000000000000000000000000000
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Run bounded Tau handoff loop
+        env:
+          TAU_START_HANDOFF: ${{ inputs.start_handoff_path }}
+          TAU_MAX_STEPS: ${{ inputs.max_steps }}
+          TAU_ACTIVE_GOAL_HASH: ${{ inputs.active_goal_hash }}
+          TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$TAU_RECEIPT_DIR"
+          uv run tau handoff-command-loop \
+            --start "$TAU_START_HANDOFF" \
+            --active-goal-hash "$TAU_ACTIVE_GOAL_HASH" \
+            --receipt-dir "$TAU_RECEIPT_DIR" \
+            --agents-root experiments/goal-locked-subagents/agent-command-specs \
+            --command-spec-root experiments/goal-locked-subagents/agent-command-specs \
+            --max-steps "$TAU_MAX_STEPS" \
+            | tee "$TAU_RECEIPT_DIR/workflow-command-loop.stdout.json"
+
+      - name: Upload Tau handoff receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tau-handoff-actions-${{ github.run_id }}
+          path: artifacts/tau-handoff-actions/${{ github.run_id }}
+          if-no-files-found: error
