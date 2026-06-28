@@ -1,0 +1,344 @@
+{
+  "chat_ui": {
+    "assertions": {
+      "compliance_chat_visible": true,
+      "handoff_visible_in_chat": true,
+      "memory_intent_200_seen": true,
+      "memory_recall_200_seen": true,
+      "prompt_visible_in_chat": true,
+      "receipt_stream_still_present": true,
+      "same_turn_evidence_stage_visible": true,
+      "same_turn_intent_stage_visible": true,
+      "same_turn_next_agent_reviewer_visible": true,
+      "same_turn_recall_stage_visible": true,
+      "same_turn_route_compliance_visible": true,
+      "same_turn_summary_visible": true,
+      "visible_stage_qids_unique": true
+    },
+    "checked_at": "2026-06-28T23:37:45Z",
+    "command": [
+      "node",
+      "scripts/tau-same-message-visible-tui-mirror-proof.mjs"
+    ],
+    "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+    "exit_code": 0,
+    "live": true,
+    "memory_request_count": 5,
+    "mocked": false,
+    "ok": true,
+    "proof_boundary": {
+      "does_not_prove": [
+        "interactive Textual TUI embedding",
+        "PersonaPlex audio synthesis",
+        "applied GitHub mutation for this browser turn",
+        "semantic correctness of the evidence case",
+        "final Sparta Chat readiness"
+      ],
+      "proves": [
+        "the checked-in UX Lab Tau chat UI proof runner executed",
+        "a live browser COMPLIANCE turn rendered the same-message chat/TUI mirror assertions when ok is true"
+      ]
+    },
+    "proof_error": null,
+    "proof_json": "/tmp/tau-skill-chat-ui-proof-20260628T233739Z/proof.json",
+    "proof_out_dir": "/tmp/tau-skill-chat-ui-proof-20260628T233739Z",
+    "proof_schema": "tau.same_message_visible_tui_mirror_browser_proof.v1",
+    "schema": "agent_skills.tau.chat_ui_proof_receipt.v1",
+    "screenshot": "/tmp/tau-skill-chat-ui-proof-20260628T233739Z/same-message-visible-tui-mirror.png",
+    "stderr": ""
+  },
+  "checked_at": "2026-06-28T23:37:45Z",
+  "live": "mixed",
+  "mocked": "mixed",
+  "ok": true,
+  "required_next_for_ui_claims": [],
+  "sanity": {
+    "checked_at": "2026-06-28T23:37:37Z",
+    "commands": [
+      {
+        "command": [
+          "/home/graham/.local/bin/uv",
+          "run",
+          "--project",
+          "/home/graham/workspace/experiments/tau",
+          "pytest",
+          "-q",
+          "tests/test_subagent_receipt.py",
+          "tests/test_agent_harness.py",
+          "tests/test_tui_adapter.py",
+          "tests/test_live_memory_chat_command_loop_proofs.py"
+        ],
+        "cwd": "/home/graham/workspace/experiments/tau",
+        "exit_code": 0,
+        "stderr": "warning: `VIRTUAL_ENV=/home/graham/workspace/experiments/agent-skills/skills/tau/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+        "stdout": ".............................................                            [100%]\n45 passed in 0.78s\n"
+      }
+    ],
+    "json_checks": [
+      {
+        "error": null,
+        "ok": true,
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs/coder/tau-dispatch-command.json"
+      }
+    ],
+    "live": "mixed",
+    "mocked": "mixed",
+    "ok": true,
+    "proof_boundary": {
+      "does_not_prove": [
+        "fresh browser chat UI rendering",
+        "fresh live provider semantics",
+        "production Sparta Chat readiness"
+      ],
+      "proves": [
+        "targeted Tau receipt, harness, TUI adapter, and proof-manifest checks run",
+        "coder command-spec JSON is readable"
+      ]
+    },
+    "schema": "agent_skills.tau.sanity_receipt.v1"
+  },
+  "schema": "agent_skills.tau.e2e_receipt.v1",
+  "status": {
+    "checked_at": "2026-06-28T23:37:38Z",
+    "git": {
+      "head": "a9da237 (HEAD -> main, grahama1970/main) Record Tau skill chat UI proof command",
+      "remote_main": "a9da237189a7815a994e779f71fc208430b20144\trefs/heads/main",
+      "status_short": [
+        "?? .tmp/"
+      ]
+    },
+    "github_open_issues": [],
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "proofs": {
+      "chat_contract": "/home/graham/workspace/experiments/tau/ui/tau-chat-contract.json",
+      "chat_contract_exists": true,
+      "goal_objective_manifests": [
+        {
+          "goal_evidence_key": "route_specific_memory_failclosed",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/manifest.json",
+          "schema": "tau.live_memory_route_failclosed_proof.v1"
+        },
+        {
+          "goal_evidence_key": "answer_browser_route",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T152045Z/manifest.json",
+          "schema": "tau.answer_route_browser_proof_manifest.v1"
+        },
+        {
+          "goal_evidence_key": "research_brave_command_loop",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-research-brave-command-loop-20260628T152651Z/manifest.json",
+          "schema": "tau.fresh_research_brave_command_loop_proof.v1"
+        },
+        {
+          "goal_evidence_key": "compliance_memory_browser",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-compliance-memory-browser-clean-20260628T212908Z/manifest.json",
+          "schema": "tau.compliance_memory_browser_clean_manifest.v1"
+        },
+        {
+          "goal_evidence_key": "same_run_chat_to_command_loop",
+          "live": "mixed",
+          "mocked": "mixed",
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "goal_evidence_key": "watchdog_apply_transport",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-apply-20260628T224349Z/manifest.json",
+          "schema": "tau.project_watchdog_same_run_compliance_apply_transport_proof.v1"
+        },
+        {
+          "goal_evidence_key": "current_multistep_command_loop",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/manifest.json",
+          "schema": "tau.fresh_current_multistep_command_loop_proof.v1"
+        },
+        {
+          "goal_evidence_key": "current_multistep_github_apply",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-current-multistep-github-apply-20260628T225904Z/manifest.json",
+          "schema": "tau.fresh_current_multistep_github_apply_proof.v1"
+        },
+        {
+          "goal_evidence_key": "repeatable_chat_tui_mirror",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "goal_evidence_key": "skill_chat_ui_proof_command",
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        }
+      ],
+      "manifest_count": 12,
+      "manifests": [
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-movie-annotation-receipt-endpoint-20260628T220132Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-answer-route-proof-panel-20260628T221546Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": "mixed",
+          "mocked": "mixed",
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/tau-same-run-compliance-github-apply-20260628T223000Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-20260628T223700Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/project-watchdog-same-run-compliance-apply-20260628T224349Z/manifest.json",
+          "schema": "tau.project_watchdog_same_run_compliance_apply_transport_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-current-multistep-command-loop-20260628T225412Z/manifest.json",
+          "schema": "tau.fresh_current_multistep_command_loop_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-current-multistep-github-apply-20260628T225904Z/manifest.json",
+          "schema": "tau.fresh_current_multistep_github_apply_proof.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-annotation-label-hardening-20260628T230819Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-same-message-visible-tui-mirror-20260628T231859Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        },
+        {
+          "live": true,
+          "mocked": false,
+          "ok": true,
+          "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/manifest.json",
+          "schema": "tau.proof_manifest.v1"
+        }
+      ],
+      "proofs_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs",
+      "schema": "agent_skills.tau.latest_proofs.v1",
+      "total_manifest_count": 48
+    },
+    "schema": "agent_skills.tau.status.v1",
+    "tau_root": "/home/graham/workspace/experiments/tau",
+    "watchdog": {
+      "cron_installed": true,
+      "cron_log": "/home/graham/.local/state/project-watchdog/logs/cron.log",
+      "event_log": "/home/graham/.local/state/project-watchdog/logs/project-watchdog.log",
+      "latest_receipts": [
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T233301Z/receipt.json",
+          "run_id": "project-watchdog-20260628T233301Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T233402Z/receipt.json",
+          "run_id": "project-watchdog-20260628T233402Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T233501Z/receipt.json",
+          "run_id": "project-watchdog-20260628T233501Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T233601Z/receipt.json",
+          "run_id": "project-watchdog-20260628T233601Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        },
+        {
+          "handled_count": null,
+          "ok": true,
+          "path": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T233701Z/receipt.json",
+          "run_id": "project-watchdog-20260628T233701Z",
+          "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+          "status": "NOOP"
+        }
+      ],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "schema": "agent_skills.tau.watchdog_status.v1"
+    }
+  }
+}

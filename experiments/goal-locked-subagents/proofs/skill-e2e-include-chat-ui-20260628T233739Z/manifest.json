@@ -1,0 +1,61 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T23:37:39Z",
+  "name": "skill-e2e-include-chat-ui",
+  "mocked": "mixed",
+  "live": "mixed",
+  "ok": true,
+  "scope": "Tau skill e2e command with explicit live chat UI proof included",
+  "changed_files": [
+    "/home/graham/workspace/experiments/agent-skills/skills/tau/scripts/tau_skill.py"
+  ],
+  "commands": [
+    {
+      "command": "skills/tau/run.sh e2e --include-chat-ui --chat-ui-timeout-s 90",
+      "cwd": "/home/graham/workspace/experiments/agent-skills",
+      "exit_code": 0,
+      "summary": "Ran targeted Tau sanity/status checks and the live UX Lab Tau chat/TUI mirror browser proof."
+    }
+  ],
+  "e2e_receipt": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-e2e-include-chat-ui-20260628T233739Z/e2e-receipt.json",
+    "schema": "agent_skills.tau.e2e_receipt.v1",
+    "ok": true,
+    "mocked": "mixed",
+    "live": "mixed",
+    "sanity_ok": true,
+    "status_ok": true,
+    "chat_ui_ok": true
+  },
+  "browser_proof": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-e2e-include-chat-ui-20260628T233739Z/browser-proof.json",
+    "schema": "tau.same_message_visible_tui_mirror_browser_proof.v1",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-e2e-include-chat-ui-20260628T233739Z/same-message-visible-tui-mirror.png",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "assertion_count": 13,
+    "memory_request_count": 5
+  },
+  "cdp": {
+    "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+    "meta": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-e2e-include-chat-ui-20260628T233739Z/cdp-meta.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-e2e-include-chat-ui-20260628T233739Z/cdp-route.png",
+    "read_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-e2e-include-chat-ui-20260628T233739Z/cdp-read.json"
+  },
+  "claims": {
+    "proves": [
+      "The Tau e2e command can explicitly include a fresh live browser chat/TUI mirror proof.",
+      "The e2e receipt reports sanity_ok=true, status_ok=true, and chat_ui_ok=true.",
+      "The included browser proof exercised a live COMPLIANCE turn through Memory /intent and /recall and rendered tau.agent_handoff.v1 plus the same-turn TUI mirror."
+    ],
+    "does_not_prove": [
+      "Interactive Textual TUI embedding.",
+      "PersonaPlex audio synthesis.",
+      "Applied GitHub mutation for this browser turn.",
+      "Semantic correctness of the evidence case.",
+      "Final Sparta Chat readiness.",
+      "Full UX Lab TypeScript health outside the focused Tau slice."
+    ]
+  }
+}

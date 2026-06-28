@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-06-28T23:38:46.735262+00:00",
+  "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+  "root": "/home/graham/workspace/experiments/pi-mono",
+  "output_root": "/tmp/codex-ui-verification/pi-mono",
+  "url": "http://127.0.0.1:3002/#tau",
+  "name": "tau-e2e-include-chat-ui",
+  "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-e2e-include-chat-ui/20260628T233839Z.png",
+  "read_json": "/tmp/codex-ui-verification/pi-mono/tau-e2e-include-chat-ui/20260628T233839Z.read.json"
+}
