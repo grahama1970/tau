@@ -1,0 +1,59 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T23:26:18Z",
+  "name": "ux-lab-repeatable-same-message-tui-mirror",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "Repeatable UX Lab #tau live same-message chat and visible TUI mirror synchronization proof runner",
+  "changed_files": [
+    "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/scripts/tau-same-message-visible-tui-mirror-proof.mjs"
+  ],
+  "commands": [
+    {
+      "command": "npm run test -- TauChatView.test.ts",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "summary": "1 test file passed; 31 tests passed."
+    },
+    {
+      "command": "node scripts/tau-same-message-visible-tui-mirror-proof.mjs",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "summary": "Live browser proof submitted the COMPLIANCE prompt and asserted chat handoff, visible same-turn route/stages, unique visible stage qids, receipt stream presence, and Memory /intent plus /recall HTTP 200s."
+    }
+  ],
+  "browser_proof": {
+    "schema": "tau.same_message_visible_tui_mirror_browser_proof.v1",
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/browser-proof.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/same-message-visible-tui-mirror.png",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "assertion_count": 13,
+    "memory_request_count": 5
+  },
+  "cdp": {
+    "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+    "meta": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/cdp-meta.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/cdp-route.png",
+    "read_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-repeatable-same-message-tui-mirror-20260628T232614Z/cdp-read.json"
+  },
+  "claims": {
+    "proves": [
+      "The same-message visible TUI mirror proof is now repeatable through a checked-in UX Lab script.",
+      "A live Tau chat COMPLIANCE turn renders tau.agent_handoff.v1 in the chat well.",
+      "The side TUI mirror shows the same-turn Memory route, next agent, and visible stage list for that same browser turn.",
+      "Visible TUI stage qids are unique even when repeated stage names appear during transition.",
+      "The live receipt stream remains present alongside the same-turn mirror."
+    ],
+    "does_not_prove": [
+      "Interactive Textual TUI embedding.",
+      "PersonaPlex audio synthesis.",
+      "Applied GitHub mutation for this browser turn.",
+      "Semantic correctness of the evidence case.",
+      "Final Sparta Chat readiness.",
+      "Full UX Lab TypeScript health outside the focused Tau slice."
+    ]
+  }
+}
