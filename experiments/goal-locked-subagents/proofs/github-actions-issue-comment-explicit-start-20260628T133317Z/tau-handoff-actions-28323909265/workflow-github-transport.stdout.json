@@ -1,0 +1,29 @@
+{
+  "applied": false,
+  "command_results": [],
+  "commands": [
+    [
+      "gh",
+      "issue",
+      "create",
+      "--repo",
+      "grahama1970/tau",
+      "--title",
+      "Tau handoff: human",
+      "--body-file",
+      "-",
+      "--label",
+      "agent-work,next:human,executor:human"
+    ]
+  ],
+  "dry_run": true,
+  "errors": [],
+  "ok": true,
+  "preflight_results": [],
+  "receipt_path": "/home/runner/work/tau/tau/artifacts/tau-handoff-actions/28323909265/github-transport.json",
+  "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "new"
+  }
+}
