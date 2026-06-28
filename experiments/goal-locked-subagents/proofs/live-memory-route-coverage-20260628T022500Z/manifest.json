@@ -1,0 +1,102 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Live GitHub mutation.",
+      "Human acceptance of answers, clarifications, deflections, or compliance evidence.",
+      "PersonaPlex audio synthesis for DEFLECT.",
+      "Reviewer semantic approval of live Brave search sources."
+    ],
+    "proves": [
+      "Required Tau Memory routes have committed live route proof artifacts.",
+      "Each required route has either bounded command-loop reviewer handoff or explicit fail-closed research refusal evidence.",
+      "RESEARCH has both unauthorized refusal evidence and live Brave receipt evidence."
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "required_routes": [
+    "CLARIFY",
+    "DEFLECT",
+    "ANSWER",
+    "COMPLIANCE",
+    "RESEARCH",
+    "RESEARCH_LIVE_BRAVE_RECEIPT"
+  ],
+  "routes": [
+    {
+      "branch_stage": "clarify",
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "live": true,
+      "memory_first": true,
+      "mocked": false,
+      "route": "CLARIFY",
+      "selected_skill": "memory.clarify",
+      "source_manifest": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/manifest.json"
+    },
+    {
+      "branch_stage": "deflect",
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "final_stage": "personaplex",
+      "live": true,
+      "memory_first": true,
+      "mocked": false,
+      "route": "DEFLECT",
+      "selected_skill": "memory.deflect",
+      "source_manifest": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/manifest.json"
+    },
+    {
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "live": true,
+      "mocked": false,
+      "response_result_status": "COMPLETED",
+      "route": "ANSWER",
+      "selected_agent": "reviewer",
+      "source_manifest": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/manifest.json",
+      "stop_reason": "next_agent_is_human"
+    },
+    {
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "live": true,
+      "mocked": false,
+      "response_result_status": "COMPLETED",
+      "route": "COMPLIANCE",
+      "selected_agent": "reviewer",
+      "source_manifest": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/manifest.json",
+      "stop_reason": "next_agent_is_human"
+    },
+    {
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "live": true,
+      "mocked": false,
+      "response_result_status": "REFUSED",
+      "route": "RESEARCH",
+      "selected_agent": "research-auditor",
+      "source_manifest": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/manifest.json",
+      "stop_reason": "next_agent_is_human"
+    },
+    {
+      "command_loop_command_exits": [
+        0,
+        0
+      ],
+      "command_loop_ok": true,
+      "command_loop_selected_agents": [
+        "research-auditor",
+        "reviewer"
+      ],
+      "external_research_receipt_live": true,
+      "live": true,
+      "mocked": false,
+      "route": "RESEARCH_LIVE_BRAVE_RECEIPT",
+      "source_count": 2,
+      "source_manifest": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/manifest.json"
+    }
+  ],
+  "schema": "tau.live_memory_route_coverage_proof.v1"
+}

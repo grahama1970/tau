@@ -17,6 +17,10 @@ LIVE_CLARIFY_DEFLECT_PROOF_DIR = (
     Path(__file__).resolve().parents[1]
     / "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z"
 )
+LIVE_ROUTE_COVERAGE_PROOF_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "experiments/goal-locked-subagents/proofs/live-memory-route-coverage-20260628T022500Z"
+)
 
 
 def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> None:
@@ -171,3 +175,52 @@ def test_live_clarify_deflect_memory_routes_have_command_loop_proofs() -> None:
         assert command_loop["dispatches"][0]["command_results"][0]["exit_code"] == 0
         assert command_loop["terminal_agent"] == "human"
         assert command_loop["stop_reason"] == "next_agent_is_human"
+
+
+def test_live_memory_route_coverage_manifest_matches_source_manifests() -> None:
+    manifest = json.loads((LIVE_ROUTE_COVERAGE_PROOF_DIR / "manifest.json").read_text())
+
+    assert manifest["schema"] == "tau.live_memory_route_coverage_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["required_routes"] == [
+        "CLARIFY",
+        "DEFLECT",
+        "ANSWER",
+        "COMPLIANCE",
+        "RESEARCH",
+        "RESEARCH_LIVE_BRAVE_RECEIPT",
+    ]
+    routes = {route["route"]: route for route in manifest["routes"]}
+    assert set(routes) == set(manifest["required_routes"])
+
+    for name in ("CLARIFY", "DEFLECT", "ANSWER", "COMPLIANCE", "RESEARCH"):
+        assert routes[name]["mocked"] is False
+        assert routes[name]["live"] is True
+        assert routes[name]["command_loop_ok"] is True
+
+    assert routes["CLARIFY"]["selected_skill"] == "memory.clarify"
+    assert routes["CLARIFY"]["branch_stage"] == "clarify"
+    assert routes["DEFLECT"]["selected_skill"] == "memory.deflect"
+    assert routes["DEFLECT"]["branch_stage"] == "deflect"
+    assert routes["DEFLECT"]["final_stage"] == "personaplex"
+    assert routes["ANSWER"]["response_result_status"] == "COMPLETED"
+    assert routes["COMPLIANCE"]["response_result_status"] == "COMPLETED"
+    assert routes["RESEARCH"]["response_result_status"] == "REFUSED"
+    assert routes["RESEARCH"]["selected_agent"] == "research-auditor"
+
+    live_research = routes["RESEARCH_LIVE_BRAVE_RECEIPT"]
+    assert live_research["mocked"] is False
+    assert live_research["live"] is True
+    assert live_research["external_research_receipt_live"] is True
+    assert live_research["source_count"] >= 1
+    assert live_research["command_loop_ok"] is True
+    assert live_research["command_loop_selected_agents"] == ["research-auditor", "reviewer"]
+    assert live_research["command_loop_command_exits"] == [0, 0]
+
+    for route in manifest["routes"]:
+        source_manifest = Path(__file__).resolve().parents[1] / route["source_manifest"]
+        assert source_manifest.exists()
+        source = json.loads(source_manifest.read_text())
+        assert source["mocked"] is False
+        assert source["live"] is True
