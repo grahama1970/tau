@@ -1,0 +1,73 @@
+{
+  "schema": "tau.fresh_compliance_ui_handoff_command_loop_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_at": "2026-06-28T14:26:00Z",
+  "scope": "Fresh UX Lab Tau COMPLIANCE chat turn emitted tau.agent_handoff.v1 and Tau consumed that handoff through one bounded command-loop step.",
+  "does_not_prove": [
+    "final Sparta Chat readiness",
+    "applied GitHub mutation for this specific handoff",
+    "independent human acceptance",
+    "multi-step autonomous production operation"
+  ],
+  "ui_browser_proof": {
+    "path": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/ui-browser-proof.json",
+    "source_path": "/tmp/tau-live-memory-chat-proof-compliance-20260628T142500Z/proof.json",
+    "screenshot": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/tau-live-memory-chat.png",
+    "url": "http://127.0.0.1:4302/?tauFreshCompliance=20260628T1425#tau",
+    "scenario": "compliance",
+    "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+    "memory_request_count": 4,
+    "visible_assertion_count": 78,
+    "handoff_schema": "tau.agent_handoff.v1",
+    "handoff_previous_subagent": "webgpt-ticket-author",
+    "handoff_next_agent": "reviewer",
+    "handoff_result_status": "NEEDS_REVIEW",
+    "github_transport_dry_run": true,
+    "github_transport_applied": false
+  },
+  "cdp_render_marker": {
+    "url": "http://127.0.0.1:4302/?tauFreshCompliance=20260628T1425#tau",
+    "name": "tau-fresh-compliance-handoff-command-loop",
+    "screenshot": "/tmp/codex-ui-verification/tau/tau-fresh-compliance-handoff-command-loop/20260628T143009Z.png",
+    "read_json": "/tmp/codex-ui-verification/tau/tau-fresh-compliance-handoff-command-loop/20260628T143009Z.read.json",
+    "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+    "scope": "Fresh CDP render marker for the Tau route and special orchestrated-loop panel; the interacted chat turn evidence is the ui_browser_proof screenshot."
+  },
+  "command_loop": {
+    "start_handoff": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/start-handoff.json",
+    "stdout": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/command-loop.stdout.json",
+    "receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/command-loop/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/command-loop/command-loop-step-001.receipt.json",
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "runner": "agent-registry-command-loop",
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "selected_agent_command_exit_code": 0,
+    "selected_agent_timed_out": false,
+    "status": "WAITING",
+    "stop_reason": "next_agent_is_human",
+    "terminal_agent": "human"
+  },
+  "commands": [
+    {
+      "command": "TAU_CHAT_URL='http://127.0.0.1:4302/?tauFreshCompliance=20260628T1425#tau' TAU_CHAT_SCENARIO=compliance TAU_CHAT_PROOF_DIR=/tmp/tau-live-memory-chat-proof-compliance-20260628T142500Z node packages/ux-lab/scripts/tau-live-memory-chat-proof.mjs",
+      "cwd": "/home/graham/workspace/experiments/pi-mono",
+      "exit_code": 0
+    },
+    {
+      "command": "uv run tau handoff-command-loop --start experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/start-handoff.json --receipt-dir experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/command-loop --agents-root /home/graham/workspace/experiments/agent-skills/agents --command-spec-root experiments/goal-locked-subagents/agent-command-specs --active-goal-hash sha256:0000000000000000000000000000000000000000000000000000000000000000 --max-steps 1",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url 'http://127.0.0.1:4302/?tauFreshCompliance=20260628T1425#tau' --name tau-fresh-compliance-handoff-command-loop",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    }
+  ]
+}
