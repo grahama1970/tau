@@ -1,0 +1,112 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "ux-lab-personaplex-embry-failclosed-20260628T201300Z",
+  "created_at": "2026-06-28T20:13:00Z",
+  "surface": "ux-lab:#tau",
+  "url": "http://127.0.0.1:3002/#tau",
+  "mocked": false,
+  "live": true,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "ux_lab_repo": "/home/graham/workspace/experiments/pi-mono",
+    "files_touched_in_ux_lab": [
+      "packages/ux-lab/server/tauRoutes.ts",
+      "packages/ux-lab/server/tauRoutes.test.ts",
+      "packages/ux-lab/src/components/tau/TauChatView.tsx",
+      "packages/ux-lab/src/components/tau/TauChatView.test.ts"
+    ],
+    "source_type": "fail-closed PersonaPlex Embry publish receipt gate",
+    "required_receipt_schema": "personaplex.publish_receipt.v1",
+    "required_receipt_status": "CACHE_REPLAY_PASS",
+    "expected_publish_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205025Z/persona-voice/personaplex-publish-receipt.json",
+    "metadata_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205025Z/persona-voice/embry-memory-receipt.json"
+  },
+  "what_changed": [
+    "UX Lab API now exposes /api/tau/personaplex/embry-receipt as a fail-closed gate over a required PersonaPlex Embry publish receipt.",
+    "The endpoint returns a structured tau.personaplex_embry_receipt_gate.v1 unavailable state with HTTP 404 when the required publish receipt is absent.",
+    "The gate preserves metadata from the existing Tau Embry Memory receipt, including REQUESTED_NO_PERSONAPLEX_RECEIPT, without enabling audio.",
+    "The Tau #tau chat capability area now renders the data-backed Embry Voice gate and reports FAIL-CLOSED until a real personaplex.publish_receipt.v1 with CACHE_REPLAY_PASS is attached.",
+    "The xterm pane label was corrected from a misleading TUI/TTY claim to Tau receipt terminal, with explicit text that it is not an interactive Textual TUI."
+  ],
+  "evidence": {
+    "server_tests": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run server/tauRoutes.test.ts",
+      "exit_code": 0,
+      "files": 1,
+      "tests": 42
+    },
+    "focused_ui_tests": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run src/components/tau/TauChatView.test.ts src/components/tau/tauAgentHandoff.test.ts src/components/tau/tauPeerStatus.test.ts",
+      "exit_code": 0,
+      "files": 3,
+      "tests": 41
+    },
+    "typecheck": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx tsc --noEmit --pretty false",
+      "exit_code": 0
+    },
+    "live_api_probe": {
+      "url": "http://127.0.0.1:3002/api/tau/personaplex/embry-receipt",
+      "http_status": 404,
+      "ok": false,
+      "receipt_schema": "tau.personaplex_embry_receipt_gate.v1",
+      "available": false,
+      "fail_closed": true,
+      "persona": "embry",
+      "voice_engine": "personaplex",
+      "required_schema": "personaplex.publish_receipt.v1",
+      "required_status": "CACHE_REPLAY_PASS",
+      "metadata_voice_status": "REQUESTED_NO_PERSONAPLEX_RECEIPT"
+    },
+    "browser_proof": {
+      "receipt": "/tmp/tau-personaplex-embry-failclosed-20260628T2010/proof.json",
+      "screenshot": "/tmp/tau-personaplex-embry-failclosed-20260628T2010/embry-failclosed.png",
+      "focused_screenshot": "/tmp/tau-personaplex-embry-failclosed-20260628T2010/embry-failclosed-gate-focused.png",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "visible_status": "FAIL-CLOSED",
+      "visible_assertions": [
+        "Embry Voice",
+        "FAIL-CLOSED",
+        "Audio activation is disabled until a personaplex.publish_receipt.v1 with CACHE_REPLAY_PASS is attached.",
+        "personaplex-publish-receipt.json"
+      ]
+    },
+    "receipt_terminal_label_correction": {
+      "receipt": "/tmp/tau-receipt-terminal-label-proof-20260628T2017/proof.json",
+      "screenshot": "/tmp/tau-receipt-terminal-label-proof-20260628T2017/receipt-terminal-label.png",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "visible_assertions": [
+        "TAU RECEIPT TERMINAL",
+        "not an interactive Textual TUI"
+      ]
+    },
+    "cdp_verification": {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url 'http://127.0.0.1:3002/#tau' --name tau-receipt-terminal-not-tui",
+      "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+      "screenshot": "/tmp/codex-ui-verification/agent-skills/tau-receipt-terminal-not-tui/20260628T201722Z.png",
+      "read_json": "/tmp/codex-ui-verification/agent-skills/tau-receipt-terminal-not-tui/20260628T201722Z.read.json"
+    }
+  },
+  "claims": {
+    "proves": [
+      "The live Tau #tau surface exposes Embry PersonaPlex as a receipt-gated capability instead of a static UI label.",
+      "The UX Lab API fails closed when the required PersonaPlex Embry publish receipt is absent.",
+      "The rendered browser view visibly disables Embry audio activation and names the missing personaplex.publish_receipt.v1 / CACHE_REPLAY_PASS requirement.",
+      "The receipt-stream xterm pane is no longer labeled as the interactive TUI in the visible browser UI."
+    ],
+    "does_not_prove": [
+      "PersonaPlex audio synthesis.",
+      "A published Embry voice identity.",
+      "CACHE_REPLAY_PASS for any Embry prompt.",
+      "Real-time voice input or output in Tau Chat.",
+      "Final Sparta Chat production readiness.",
+      "Unbounded autonomous subagent operation."
+    ]
+  },
+  "next_stop_condition": "Do not enable Embry voice controls beyond metadata mode until a real personaplex.publish_receipt.v1 with CACHE_REPLAY_PASS is attached and inspected."
+}
