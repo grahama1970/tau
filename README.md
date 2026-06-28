@@ -28,7 +28,7 @@ another agent or human can inspect, replay, or reject.
 
 ## What it does
 
-T’au provides two layers:
+T’au provides two layers plus one opt-in orchestration mode:
 
 1. **Coding-agent runtime** - an installable `tau` command with provider
    configuration, a Textual TUI, session history, slash commands, local tools,
@@ -36,9 +36,16 @@ T’au provides two layers:
 2. **Agentic harness** - goal-locked receipt contracts, bounded
    subagent dispatch, Memory-first chat routing, and dry-run GitHub ticket/comment
    projections.
+3. **Special orchestrated subagent mode** - activated only when a
+   `tau.agent_handoff.v1` start packet is passed through `--start` or
+   `TAU_ORCHESTRATOR_START`. This mode treats Tau as a ticket/receipt router:
+   one handoff in, one bounded subagent command, one receipt out, then stop or
+   wait for the next cron/GitHub tick.
 
 The coding runtime stays small and teachable. The harness adds the control plane
-needed for longer work:
+needed for longer work. The special mode is deliberately separate from ordinary
+chat and CLI use so a normal Tau turn cannot silently become an autonomous
+agent loop.
 
 - `tau.agent_handoff.v1` JSON for routing between subagents and humans
 - `tau.generated_ticket.v1` JSON for ChatGPT Pro / WebGPT ticket drafts
@@ -73,8 +80,8 @@ does one local turn. When a `tau.agent_handoff.v1` start handoff is supplied via
 `--start` or `TAU_ORCHESTRATOR_START`, T’au enters the orchestrated subagent loop:
 validate the handoff, select `next_agent.name`, run one bounded command spec,
 validate the emitted handoff, write receipts, and stop at `human` or a
-fail-closed condition. Cron can repeat those bounded ticks, but no subagent owns
-an unbounded while-loop.
+fail-closed condition. Cron or GitHub ticket polling can repeat those bounded
+ticks, but no subagent owns an unbounded while-loop.
 
 The current loop/harness direction is:
 
@@ -263,6 +270,29 @@ TAU_ORCHESTRATOR_START=/workspace/.loop2/start-handoff.json \
 TAU_ORCHESTRATOR_ONCE=1 \
 docker compose --profile orchestrator run --rm tau-cron
 ```
+
+The committed Docker smoke fixture exercises that same special mode without
+launching the scheduler forever:
+
+```bash
+rm -rf .tmp/docker-cron-smoke && mkdir -p .tmp/docker-cron-smoke/receipts
+
+TAU_ORCHESTRATOR_START=/workspace/experiments/goal-locked-subagents/fixtures/docker-cron-start-handoff.json \
+TAU_ACTIVE_GOAL_HASH=sha256:active-goal \
+TAU_ORCHESTRATOR_ONCE=1 \
+TAU_RECEIPT_DIR=/workspace/.tmp/docker-cron-smoke/receipts \
+docker compose --profile orchestrator run --rm --build \
+  -e TAU_ORCHESTRATOR_START \
+  -e TAU_ACTIVE_GOAL_HASH \
+  -e TAU_ORCHESTRATOR_ONCE \
+  -e TAU_RECEIPT_DIR \
+  tau-cron
+```
+
+The current local proof artifact is
+`.tmp/docker-cron-smoke/receipts/20260628T012315Z/command-loop-receipt.json`.
+It records `mocked:false`, `live:true`, `ok:true`, `step_count:1`,
+`terminal_agent:"human"`, and `dispatches[0].selected_agent:"reviewer"`.
 
 `tau-cron` does not run an unbounded subagent. It wakes up, invokes one bounded
 `handoff-command-loop` tick, writes receipts under `/data/receipts`, sleeps, and

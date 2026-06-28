@@ -19,6 +19,6 @@
     "--stop-condition",
     "Human route is posted."
   ],
-  "cwd": "/home/graham/workspace/experiments/tau",
+  "cwd": ".",
   "timeout_s": 30
 }

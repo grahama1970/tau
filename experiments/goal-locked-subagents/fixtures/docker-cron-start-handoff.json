@@ -1,0 +1,36 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "new"
+  },
+  "goal": {
+    "goal_id": "goal-tau-docker-cron-smoke",
+    "goal_version": 1,
+    "goal_hash": "sha256:active-goal"
+  },
+  "previous_subagent": "webgpt-ticket-author",
+  "context": {
+    "summary": "Docker Compose tau-cron one-tick smoke start handoff.",
+    "artifacts": [
+      "experiments/goal-locked-subagents/fixtures/docker-cron-start-handoff.json"
+    ]
+  },
+  "result": {
+    "status": "NEEDS_REVIEW",
+    "summary": "Mounted start handoff is ready for one reviewer command-loop tick.",
+    "evidence": [
+      "docker compose tau-cron one-tick smoke"
+    ]
+  },
+  "rationale": "The reviewer command-spec overlay should consume this handoff and route to human.",
+  "next_agent": {
+    "name": "reviewer",
+    "executor": "either",
+    "reason": "Validate the mounted Docker cron start handoff path."
+  },
+  "required_evidence": [
+    "tau-cron writes a command-loop receipt with selected_agent reviewer and terminal_agent human."
+  ],
+  "stop_condition": "Reviewer command-loop response routes to human."
+}
