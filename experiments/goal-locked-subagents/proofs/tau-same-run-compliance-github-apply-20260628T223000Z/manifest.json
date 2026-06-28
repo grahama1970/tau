@@ -1,0 +1,92 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T22:30:00Z",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "scope": "Apply-gated GitHub transport for the fresh same-run Tau COMPLIANCE command-loop terminal handoff",
+  "source_proof": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/manifest.json",
+  "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/command-loop-receipt.json",
+  "commands": [
+    {
+      "command": "uv run tau handoff-command-loop-github-transport experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/command-loop-receipt.json --receipt /tmp/tau-same-run-compliance-20260628T222531Z-github-apply/dry-run-transport.json",
+      "exit_code": 0,
+      "summary": "Rendered dry-run GitHub issue create command targeting grahama1970/tau with labels agent-work,next:human,executor:human."
+    },
+    {
+      "command": "uv run tau handoff-command-loop-github-transport experiments/goal-locked-subagents/proofs/tau-same-run-compliance-20260628T222531Z/command-loop/command-loop-receipt.json --receipt /tmp/tau-same-run-compliance-20260628T222531Z-github-apply/apply-transport.json --apply",
+      "exit_code": 0,
+      "summary": "Applied GitHub transport and created https://github.com/grahama1970/tau/issues/17."
+    },
+    {
+      "command": "gh issue comment 17 --repo grahama1970/tau --body-file /tmp/tau-same-run-compliance-20260628T222531Z-github-apply/issue-17-proof-comment.md",
+      "exit_code": 0,
+      "summary": "Posted proof-disposition comment to the proof-only issue."
+    },
+    {
+      "command": "gh issue edit 17 --repo grahama1970/tau --remove-label next:human --add-label agent-done",
+      "exit_code": 0,
+      "summary": "Removed the active next:human queue label and added agent-done."
+    },
+    {
+      "command": "gh issue close 17 --repo grahama1970/tau --comment 'Closing proof-only Tau transport issue after evidence capture.'",
+      "exit_code": 0,
+      "summary": "Closed the proof-only issue after evidence capture."
+    }
+  ],
+  "artifacts": {
+    "dry_run_transport": "github/dry-run-transport.json",
+    "apply_transport": "github/apply-transport.json",
+    "issue_created": "github/issue-17-created.json",
+    "issue_final": "github/issue-17-final.json",
+    "proof_comment": "github/issue-17-proof-comment.md"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "issue": 17,
+    "url": "https://github.com/grahama1970/tau/issues/17",
+    "created_state": {
+      "state": "OPEN",
+      "labels": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ]
+    },
+    "final_state": {
+      "state": "CLOSED",
+      "labels": [
+        "agent-work",
+        "agent-done",
+        "executor:human"
+      ],
+      "comment_count": 2
+    }
+  },
+  "transport": {
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": false,
+    "applied": true,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    },
+    "command_exit_code": 0,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/17"
+  },
+  "claims": {
+    "proves": [
+      "The terminal next:human handoff from the fresh same-run COMPLIANCE command-loop receipt can be applied to GitHub as a real issue in grahama1970/tau.",
+      "The applied issue carried the expected queue labels agent-work,next:human,executor:human at creation.",
+      "The proof-only issue was commented, relabeled to remove next:human, and closed after evidence capture."
+    ],
+    "does_not_prove": [
+      "Autonomous multi-step issue handling after creation.",
+      "Semantic correctness of the COMPLIANCE evidence case.",
+      "Production Sparta Chat readiness.",
+      "GitHub Actions or cron handling this exact issue after creation.",
+      "A human-approved final route after the next:human stop."
+    ]
+  }
+}
