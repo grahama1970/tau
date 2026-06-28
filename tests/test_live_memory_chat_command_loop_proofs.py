@@ -21,6 +21,13 @@ LIVE_ROUTE_COVERAGE_PROOF_DIR = (
     Path(__file__).resolve().parents[1]
     / "experiments/goal-locked-subagents/proofs/live-memory-route-coverage-20260628T022500Z"
 )
+SUBAGENT_RECEIPT_COVERAGE_PROOF_DIR = (
+    Path(__file__).resolve().parents[1]
+    / (
+        "experiments/goal-locked-subagents/proofs/"
+        "subagent-receipt-backed-route-coverage-20260628T023000Z"
+    )
+)
 
 
 def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> None:
@@ -224,3 +231,52 @@ def test_live_memory_route_coverage_manifest_matches_source_manifests() -> None:
         source = json.loads(source_manifest.read_text())
         assert source["mocked"] is False
         assert source["live"] is True
+
+
+def test_subagent_receipt_backed_route_coverage_matches_source_handoffs() -> None:
+    manifest = json.loads((SUBAGENT_RECEIPT_COVERAGE_PROOF_DIR / "manifest.json").read_text())
+
+    assert manifest["schema"] == "tau.subagent_receipt_backed_route_coverage_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["receipt_count"] == 7
+    routes = {receipt["route"]: receipt for receipt in manifest["receipts"]}
+    assert set(routes) == {
+        "ANSWER_REVIEWER",
+        "COMPLIANCE_REVIEWER",
+        "RESEARCH_REFUSAL_AUDITOR",
+        "CLARIFY_REVIEWER",
+        "DEFLECT_REVIEWER",
+        "LIVE_BRAVE_RESEARCH_AUDITOR",
+        "LIVE_BRAVE_REVIEWER",
+    }
+
+    for row in manifest["receipts"]:
+        assert row["converter_exit"] == 0
+        assert row["schema"] == "tau.subagent_receipt.v1"
+        assert row["mocked"] is False
+        assert row["live"] is True
+        receipt = json.loads(
+            (Path(__file__).resolve().parents[1] / row["subagent_receipt"]).read_text()
+        )
+        handoff = json.loads((Path(__file__).resolve().parents[1] / row["handoff"]).read_text())
+        source_loop = json.loads(
+            (Path(__file__).resolve().parents[1] / row["source_command_loop_receipt"]).read_text()
+        )
+        source_dispatch = source_loop["dispatches"][row["source_dispatch_index"]]
+        source_stdout = source_dispatch["command_results"][0]["stdout"]
+
+        assert json.loads(source_stdout) == handoff
+        assert receipt["schema"] == "tau.subagent_receipt.v1"
+        assert receipt["context"]["subagent"] == row["subagent"]
+        assert receipt["context"]["actor_type"] == "tau"
+        assert receipt["goal"]["immutable_goal_preserved"] is True
+        assert receipt["result"]["status"] == row["result_status"]
+        assert receipt["result"]["mocked"] is False
+        assert receipt["result"]["live"] is True
+        assert receipt["next"]["subagent"] == row["next_subagent"]
+        assert receipt["next"]["executor"] == row["next_executor"]
+
+    assert routes["RESEARCH_REFUSAL_AUDITOR"]["result_status"] == "REFUSED"
+    assert routes["LIVE_BRAVE_RESEARCH_AUDITOR"]["next_subagent"] == "reviewer"
+    assert routes["LIVE_BRAVE_REVIEWER"]["next_subagent"] == "human"

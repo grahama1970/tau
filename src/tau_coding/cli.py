@@ -881,6 +881,15 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
+    if prompt_option is None and command == "subagent-receipt-from-handoff":
+        try:
+            options = _parse_subagent_receipt_from_handoff_cli_args(positional_args[1:])
+            payload = project_agent_subagent_receipt_from_handoff_command(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -1927,6 +1936,50 @@ def _parse_external_research_receipt_cli_args(
     method = options["method"]
     if not isinstance(method, str) or not method.strip():
         raise RuntimeError("--method requires a non-empty value")
+    return options
+
+
+def _parse_subagent_receipt_from_handoff_cli_args(args: list[str]) -> dict[str, str | Path | None]:
+    options: dict[str, str | Path | None] = {
+        "run_id": None,
+        "subagent": None,
+        "actor_type": "tau",
+        "ticket": None,
+        "output": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--run-id", "--subagent", "--actor-type", "--ticket", "--output"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--output":
+                options["output"] = Path(value)
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in {"--run-id", "--subagent", "--actor-type", "--ticket", "--output"}
+        ):
+            key, _, value = arg.partition("=")
+            if key == "--output":
+                options["output"] = Path(value)
+            else:
+                options[key.removeprefix("--").replace("-", "_")] = value
+        else:
+            raise RuntimeError(f"Unknown subagent-receipt-from-handoff option: {arg}")
+        index += 1
+    run_id = options["run_id"]
+    subagent = options["subagent"]
+    actor_type = options["actor_type"]
+    if not isinstance(run_id, str) or not run_id.strip():
+        raise RuntimeError("--run-id requires a non-empty value")
+    if not isinstance(subagent, str) or not subagent.strip():
+        raise RuntimeError("--subagent requires a non-empty value")
+    if not isinstance(actor_type, str) or not actor_type.strip():
+        raise RuntimeError("--actor-type requires a non-empty value")
     return options
 
 
@@ -3817,6 +3870,110 @@ def project_agent_external_research_receipt_command(
     return receipt
 
 
+def project_agent_subagent_receipt_from_handoff_command(
+    *,
+    run_id: str,
+    subagent: str,
+    actor_type: str | None,
+    ticket: str | None,
+    output: Path | None,
+) -> dict[str, object]:
+    """Convert a completed Tau handoff response into a subagent receipt artifact."""
+
+    handoff = _read_stdin_handoff()
+    if handoff.get("schema") != "tau.agent_handoff.v1":
+        raise RuntimeError("stdin handoff schema must be tau.agent_handoff.v1")
+    goal = _required_mapping(handoff, "goal", "stdin handoff")
+    context = _required_mapping(handoff, "context", "stdin handoff")
+    result = _required_mapping(handoff, "result", "stdin handoff")
+    next_agent = _required_mapping(handoff, "next_agent", "stdin handoff")
+    status = result.get("status")
+    allowed_statuses = {
+        "PASS",
+        "COMPLETED",
+        "NEEDS_CHANGES",
+        "BLOCKED",
+        "INSUFFICIENT_EVIDENCE",
+        "REFUSED",
+    }
+    if status not in allowed_statuses:
+        raise RuntimeError(f"handoff result.status {status!r} cannot become subagent receipt")
+    goal_id = goal.get("goal_id")
+    goal_version = goal.get("goal_version")
+    goal_hash = goal.get("goal_hash")
+    if not isinstance(goal_id, str) or not goal_id.strip():
+        raise RuntimeError("handoff goal.goal_id must be non-empty")
+    if not isinstance(goal_version, int) or goal_version < 1:
+        raise RuntimeError("handoff goal.goal_version must be a positive integer")
+    if not isinstance(goal_hash, str) or not goal_hash.strip():
+        raise RuntimeError("handoff goal.goal_hash must be non-empty")
+    rationale = handoff.get("rationale")
+    stop_condition = handoff.get("stop_condition")
+    if not isinstance(rationale, str) or not rationale.strip():
+        raise RuntimeError("handoff rationale must be non-empty")
+    if not isinstance(stop_condition, str) or not stop_condition.strip():
+        raise RuntimeError("handoff stop_condition must be non-empty")
+    next_name = next_agent.get("name")
+    next_reason = next_agent.get("reason")
+    next_executor = next_agent.get("executor")
+    if not isinstance(next_name, str) or not next_name.strip():
+        raise RuntimeError("handoff next_agent.name must be non-empty")
+    if not isinstance(next_reason, str) or not next_reason.strip():
+        raise RuntimeError("handoff next_agent.reason must be non-empty")
+    if next_executor not in {"local", "github-actions", "either", "human"}:
+        raise RuntimeError(
+            "handoff next_agent.executor must be local, github-actions, either, or human"
+        )
+    artifacts = context.get("artifacts") if isinstance(context.get("artifacts"), list) else []
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), list) else []
+    commands_run = (
+        result.get("commands_run") if isinstance(result.get("commands_run"), list) else []
+    )
+    github = handoff.get("github") if isinstance(handoff.get("github"), dict) else {}
+    resolved_ticket = ticket or str(github.get("target") or "")
+    receipt = {
+        "schema": "tau.subagent_receipt.v1",
+        "goal": {
+            "goal_id": goal_id,
+            "goal_version": goal_version,
+            "goal_hash": goal_hash,
+            "immutable_goal_preserved": True,
+        },
+        "context": {
+            "run_id": run_id.strip(),
+            "ticket": resolved_ticket,
+            "subagent": subagent.strip(),
+            "actor_type": (actor_type or "tau").strip(),
+            "artifacts_read": artifacts,
+            "assumptions": [],
+            "unknowns": [],
+        },
+        "result": {
+            "status": status,
+            "summary": str(result.get("summary") or ""),
+            "artifacts": artifacts,
+            "commands_run": commands_run,
+            "mocked": False,
+            "live": True,
+        },
+        "rationale": rationale,
+        "evidence": evidence,
+        "next": {
+            "subagent": next_name,
+            "reason": next_reason,
+            "executor": next_executor,
+        },
+        "stop_condition": stop_condition,
+    }
+    receipt_errors = _validate_subagent_receipt_payload(receipt)
+    if receipt_errors:
+        raise RuntimeError("; ".join(receipt_errors))
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return receipt
+
+
 def project_agent_handoff_goal_guardian_adapter_command(
     *,
     next_agent: str | None,
@@ -3999,6 +4156,81 @@ def _parse_external_research_source(value: str) -> dict[str, str]:
     if not url:
         raise RuntimeError("--source url must be non-empty")
     return {"title": title, "url": url}
+
+
+def _validate_subagent_receipt_payload(payload: object) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(payload, dict):
+        return ["receipt root must be a JSON object"]
+    if payload.get("schema") != "tau.subagent_receipt.v1":
+        errors.append("schema must be tau.subagent_receipt.v1")
+    goal = payload.get("goal")
+    context = payload.get("context")
+    result = payload.get("result")
+    next_route = payload.get("next")
+    if not isinstance(goal, dict):
+        errors.append("goal must be an object")
+    else:
+        for key in ("goal_id", "goal_hash"):
+            value = goal.get(key)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"goal.{key} must be a non-empty string")
+        if not isinstance(goal.get("goal_version"), int) or goal.get("goal_version") < 1:
+            errors.append("goal.goal_version must be a positive integer")
+        if not isinstance(goal.get("immutable_goal_preserved"), bool):
+            errors.append("goal.immutable_goal_preserved must be boolean")
+    if not isinstance(context, dict):
+        errors.append("context must be an object")
+    else:
+        for key in ("run_id", "subagent", "actor_type"):
+            value = context.get(key)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"context.{key} must be a non-empty string")
+        if context.get("actor_type") not in {
+            "human",
+            "webgpt",
+            "subagent",
+            "github-actions",
+            "local-cron",
+            "tau",
+        }:
+            errors.append("context.actor_type must be a supported actor type")
+    if not isinstance(result, dict):
+        errors.append("result must be an object")
+    else:
+        if result.get("status") not in {
+            "PASS",
+            "COMPLETED",
+            "NEEDS_CHANGES",
+            "BLOCKED",
+            "INSUFFICIENT_EVIDENCE",
+            "REFUSED",
+        }:
+            errors.append("result.status must be a supported status")
+        summary = result.get("summary")
+        if not isinstance(summary, str) or not summary.strip():
+            errors.append("result.summary must be a non-empty string")
+        for key in ("mocked", "live"):
+            if not isinstance(result.get(key), bool):
+                errors.append(f"result.{key} must be boolean")
+    rationale = payload.get("rationale")
+    if not isinstance(rationale, str) or not rationale.strip():
+        errors.append("rationale must be a non-empty string")
+    if not isinstance(payload.get("evidence"), list):
+        errors.append("evidence must be a list")
+    if not isinstance(next_route, dict):
+        errors.append("next must be an object")
+    else:
+        for key in ("subagent", "reason"):
+            value = next_route.get(key)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"next.{key} must be a non-empty string")
+        if next_route.get("executor") not in {"local", "github-actions", "either", "human"}:
+            errors.append("next.executor must be local, github-actions, either, or human")
+    stop_condition = payload.get("stop_condition")
+    if not isinstance(stop_condition, str) or not stop_condition.strip():
+        errors.append("stop_condition must be a non-empty string")
+    return errors
 
 
 def _brave_search_sources(query: str, *, count: str | None) -> list[dict[str, str]]:

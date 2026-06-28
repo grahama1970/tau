@@ -1,0 +1,133 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "Final Sparta Chat readiness.",
+      "Human acceptance of route outputs.",
+      "Independent semantic review beyond Tau adapter-generated receipts."
+    ],
+    "proves": [
+      "Committed live Tau route handoffs can be converted into tau.subagent_receipt.v1 artifacts.",
+      "ANSWER, COMPLIANCE, CLARIFY, DEFLECT, unauthorized RESEARCH, and live Brave RESEARCH have receipt-backed route evidence.",
+      "Receipt-backed route evidence preserves next-subagent routing for human or reviewer handoff."
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "receipt_count": 7,
+  "receipts": [
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/answer_reviewer-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/answer_reviewer-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "human",
+      "next_subagent": "human",
+      "result_status": "COMPLETED",
+      "route": "ANSWER_REVIEWER",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/answer-command-loop-receipt.json",
+      "source_dispatch_index": 0,
+      "subagent": "reviewer",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/answer_reviewer-subagent-receipt.json"
+    },
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/compliance_reviewer-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/compliance_reviewer-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "human",
+      "next_subagent": "human",
+      "result_status": "COMPLETED",
+      "route": "COMPLIANCE_REVIEWER",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/compliance-command-loop-receipt.json",
+      "source_dispatch_index": 0,
+      "subagent": "reviewer",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/compliance_reviewer-subagent-receipt.json"
+    },
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/research_refusal_auditor-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/research_refusal_auditor-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "human",
+      "next_subagent": "human",
+      "result_status": "REFUSED",
+      "route": "RESEARCH_REFUSAL_AUDITOR",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z/research-command-loop-receipt.json",
+      "source_dispatch_index": 0,
+      "subagent": "research-auditor",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/research_refusal_auditor-subagent-receipt.json"
+    },
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/clarify_reviewer-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/clarify_reviewer-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "human",
+      "next_subagent": "human",
+      "result_status": "COMPLETED",
+      "route": "CLARIFY_REVIEWER",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-command-loop/command-loop-receipt.json",
+      "source_dispatch_index": 0,
+      "subagent": "reviewer",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/clarify_reviewer-subagent-receipt.json"
+    },
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/deflect_reviewer-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/deflect_reviewer-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "human",
+      "next_subagent": "human",
+      "result_status": "COMPLETED",
+      "route": "DEFLECT_REVIEWER",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/deflect-command-loop/command-loop-receipt.json",
+      "source_dispatch_index": 0,
+      "subagent": "reviewer",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/deflect_reviewer-subagent-receipt.json"
+    },
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/live_brave_research_auditor-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/live_brave_research_auditor-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "either",
+      "next_subagent": "reviewer",
+      "result_status": "COMPLETED",
+      "route": "LIVE_BRAVE_RESEARCH_AUDITOR",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/command-loop/command-loop-receipt.json",
+      "source_dispatch_index": 0,
+      "subagent": "research-auditor",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/live_brave_research_auditor-subagent-receipt.json"
+    },
+    {
+      "converter_exit": 0,
+      "converter_stdout": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/live_brave_reviewer-converter-stdout.json",
+      "handoff": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/live_brave_reviewer-handoff.json",
+      "live": true,
+      "mocked": false,
+      "next_executor": "human",
+      "next_subagent": "human",
+      "result_status": "COMPLETED",
+      "route": "LIVE_BRAVE_REVIEWER",
+      "schema": "tau.subagent_receipt.v1",
+      "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z/command-loop/command-loop-receipt.json",
+      "source_dispatch_index": 1,
+      "subagent": "reviewer",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/subagent-receipt-backed-route-coverage-20260628T023000Z/live_brave_reviewer-subagent-receipt.json"
+    }
+  ],
+  "schema": "tau.subagent_receipt_backed_route_coverage_proof.v1"
+}

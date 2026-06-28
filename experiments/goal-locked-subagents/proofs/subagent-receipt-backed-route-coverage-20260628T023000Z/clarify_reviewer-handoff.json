@@ -1,0 +1,36 @@
+{
+  "context": {
+    "artifacts": [
+      "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-harness-receipt.json"
+    ],
+    "summary": "Registry command adapter handled route for reviewer."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "new"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "goal_id": "goal-tau-chat-hardening",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "human",
+    "name": "human",
+    "reason": "Human review is required before another bounded Tau route."
+  },
+  "previous_subagent": "reviewer",
+  "rationale": "reviewer completed one bounded adapter turn; routing follows the configured next agent.",
+  "required_evidence": [
+    "Human posts a schema-valid handoff, goal decision, or stop instruction."
+  ],
+  "result": {
+    "evidence": [
+      "tau handoff-agent-adapter emitted this schema-valid response from stdin"
+    ],
+    "status": "COMPLETED",
+    "summary": "Reviewer consumed the Tau handoff JSON contract through the Tau-owned command-spec overlay."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Human route is posted."
+}

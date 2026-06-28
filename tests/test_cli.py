@@ -959,6 +959,79 @@ def test_cli_handoff_agent_adapter_emits_tau_handoff(monkeypatch: pytest.MonkeyP
     assert payload["next_agent"]["name"] == "human"
 
 
+def test_cli_subagent_receipt_from_handoff_writes_schema_receipt(tmp_path: Path) -> None:
+    start = _valid_cli_handoff_payload()
+    output_path = tmp_path / "subagent-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "subagent-receipt-from-handoff",
+            "--run-id",
+            "route-answer-reviewer-001",
+            "--subagent",
+            "reviewer",
+            "--actor-type",
+            "tau",
+            "--output",
+            str(output_path),
+        ],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload == written
+    assert payload["schema"] == "tau.subagent_receipt.v1"
+    assert payload["goal"] == {
+        "goal_id": "goal-cli-handoff",
+        "goal_version": 1,
+        "goal_hash": "sha256:active-goal",
+        "immutable_goal_preserved": True,
+    }
+    assert payload["context"]["run_id"] == "route-answer-reviewer-001"
+    assert payload["context"]["subagent"] == "reviewer"
+    assert payload["context"]["actor_type"] == "tau"
+    assert payload["context"]["ticket"] == "issue#123"
+    assert payload["result"]["status"] == "COMPLETED"
+    assert payload["result"]["mocked"] is False
+    assert payload["result"]["live"] is True
+    assert payload["evidence"] == ["/tmp/tau/tests.out"]
+    assert payload["next"] == {
+        "subagent": "reviewer",
+        "executor": "either",
+        "reason": "Reviewer should inspect evidence before routing onward.",
+    }
+
+
+def test_cli_subagent_receipt_from_handoff_refuses_unsupported_status(
+    tmp_path: Path,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    result_payload = start["result"]
+    assert isinstance(result_payload, dict)
+    result_payload["status"] = "NEEDS_REVIEW"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "subagent-receipt-from-handoff",
+            "--run-id",
+            "route-answer-reviewer-001",
+            "--subagent",
+            "reviewer",
+            "--output",
+            str(tmp_path / "subagent-receipt.json"),
+        ],
+        input=json.dumps(start),
+    )
+
+    assert result.exit_code != 0
+    assert "cannot become subagent" in result.output
+    assert "receipt" in result.output
+
+
 def test_cli_handoff_research_auditor_adapter_refuses_without_authorization(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
