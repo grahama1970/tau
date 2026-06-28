@@ -1,0 +1,5 @@
+/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/receipt.json
+/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/tau-command-loop/command-loop-receipt.json
+/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/tau-command-loop/command-loop-step-001.receipt.json
+/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/tau-github-transport.json
+/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/tau-handoff-dispatch-inputs.json

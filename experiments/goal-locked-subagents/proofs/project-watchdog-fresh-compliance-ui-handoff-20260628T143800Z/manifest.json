@@ -1,0 +1,100 @@
+{
+  "schema": "tau.project_watchdog_fresh_compliance_ui_handoff_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_at": "2026-06-28T14:38:00Z",
+  "scope": "Installed project-watchdog cron consumed a live grahama1970/tau GitHub issue that pointed at the fresh COMPLIANCE UI start handoff, ran one bounded Tau handoff command-loop tick, selected reviewer, wrote receipts, commented evidence, and closed the issue.",
+  "does_not_prove": [
+    "final Sparta Chat readiness",
+    "unbounded autonomous operation",
+    "semantic correctness of the compliance answer",
+    "human acceptance of the terminal human route",
+    "GitHub transport apply for this watchdog issue, because apply_transport=false"
+  ],
+  "source_ui_handoff_proof": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/manifest.json",
+  "github_issue": {
+    "created_body": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/issue-body.md",
+    "created_stdout": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/github-issue-create.stdout.txt",
+    "final": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/github-issue-15-final.json",
+    "number": 15,
+    "url": "https://github.com/grahama1970/tau/issues/15",
+    "title": "Tau watchdog proof: fresh compliance UI handoff",
+    "created_labels": [
+      "agent-work",
+      "executor:local",
+      "next:reviewer"
+    ],
+    "final_labels": [
+      "agent-work",
+      "agent-done"
+    ],
+    "final_state": "CLOSED",
+    "closed_at": "2026-06-28T14:38:07Z",
+    "comment_count": 2
+  },
+  "watchdog": {
+    "run_id": "project-watchdog-20260628T143801Z",
+    "receipt": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/watchdog-receipt.json",
+    "source_receipt": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/receipt.json",
+    "schema": "agent_skills.project_watchdog.tick_receipt.v1",
+    "ok": true,
+    "status": "COMPLETED",
+    "handled_count": 1,
+    "lease_comment_seen": true,
+    "evidence_comment_seen": true
+  },
+  "watchdog_inputs": {
+    "action": "tau_handoff_dispatch",
+    "start": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/start-handoff.json",
+    "max_steps": 1,
+    "active_goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "apply_transport": false,
+    "issue": "issue#15"
+  },
+  "command_loop": {
+    "receipt": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/command-loop-step-001.receipt.json",
+    "source_receipt": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/tau-command-loop/command-loop-receipt.json",
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "selected_agent_command_exit_code": 0,
+    "selected_agent_timed_out": false,
+    "status": "WAITING",
+    "stop_reason": "next_agent_is_human",
+    "terminal_agent": "human"
+  },
+  "github_transport": {
+    "receipt": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/github-transport.json",
+    "source_receipt": "/home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/tau-github-transport.json",
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": true,
+    "applied": false,
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "new"
+    }
+  },
+  "commands": [
+    {
+      "command": "gh issue create --repo grahama1970/tau --title \"Tau watchdog proof: fresh compliance UI handoff\" --body-file experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/issue-body.md --label agent-work,executor:local,next:reviewer",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "poll gh issue view 15 --repo grahama1970/tau until project-watchdog-20260628T143801Z evidence appeared",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "cp /home/graham/.local/state/project-watchdog/receipts/project-watchdog-20260628T143801Z/{receipt.json,tau-command-loop/command-loop-receipt.json,tau-command-loop/command-loop-step-001.receipt.json,tau-github-transport.json} <proof-dir>",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    }
+  ]
+}
