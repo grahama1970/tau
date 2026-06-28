@@ -15,9 +15,14 @@ on:
         description: Active immutable-goal hash expected by the handoff validator.
         required: true
         default: sha256:0000000000000000000000000000000000000000000000000000000000000000
+      apply_github_transport:
+        description: Set to true to apply the terminal GitHub transport after the bounded loop.
+        required: true
+        default: "false"
 
 permissions:
   contents: read
+  issues: write
   actions: read
 
 jobs:
@@ -54,6 +59,24 @@ jobs:
             --command-spec-root experiments/goal-locked-subagents/agent-command-specs \
             --max-steps "$TAU_MAX_STEPS" \
             | tee "$TAU_RECEIPT_DIR/workflow-command-loop.stdout.json"
+
+      - name: Render or apply terminal GitHub transport
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAU_APPLY_GITHUB_TRANSPORT: ${{ inputs.apply_github_transport }}
+          TAU_RECEIPT_DIR: artifacts/tau-handoff-actions/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          transport_args=(
+            handoff-command-loop-github-transport
+            "$TAU_RECEIPT_DIR/command-loop-receipt.json"
+            --receipt "$TAU_RECEIPT_DIR/github-transport.json"
+          )
+          if [ "$TAU_APPLY_GITHUB_TRANSPORT" = "true" ]; then
+            transport_args+=(--apply)
+          fi
+          uv run tau "${transport_args[@]}" \
+            | tee "$TAU_RECEIPT_DIR/workflow-github-transport.stdout.json"
 
       - name: Upload Tau handoff receipts
         uses: actions/upload-artifact@v4
