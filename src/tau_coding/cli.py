@@ -103,6 +103,11 @@ from tau_coding.session_export import (
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.tui import run_tui_app
+from tau_coding.tui.proof import (
+    DEFAULT_TUI_PROOF_PROMPT,
+    DEFAULT_TUI_PROOF_RUN_ID,
+    render_textual_tui_memory_stage_proof,
+)
 
 app = typer.Typer(
     name="tau",
@@ -564,6 +569,22 @@ def main(
                 root_dir=loop2_sanity_root,
                 repo=cwd or Path.cwd(),
                 loop2_src=loop2_src,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "tui-proof":
+        try:
+            options = _parse_tui_proof_cli_args(positional_args[1:])
+            ok = tui_proof_command(
+                output_dir=options["output_dir"],
+                prompt=str(options["prompt"]),
+                run_id=str(options["run_id"]),
+                route=str(options["route"]),
+                next_agent=str(options["next_agent"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1044,6 +1065,70 @@ def _parse_loop2_scillm_doctor_receipt_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau loop2-check-scillm-doctor <receipt.json>")
     return Path(args[0])
+
+
+def _parse_tui_proof_cli_args(args: list[str]) -> dict[str, str | Path]:
+    output_dir = Path(".tmp/tui-proof")
+    prompt = DEFAULT_TUI_PROOF_PROMPT
+    run_id = DEFAULT_TUI_PROOF_RUN_ID
+    route = "COMPLIANCE"
+    next_agent = "reviewer"
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau tui-proof [--out-dir DIR]")
+            output_dir = Path(args[index])
+        elif arg.startswith("--out-dir="):
+            output_dir = Path(arg.partition("=")[2])
+        elif arg == "--prompt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau tui-proof [--prompt TEXT]")
+            prompt = args[index]
+        elif arg.startswith("--prompt="):
+            prompt = arg.partition("=")[2]
+        elif arg == "--run-id":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau tui-proof [--run-id RUN_ID]")
+            run_id = args[index]
+        elif arg.startswith("--run-id="):
+            run_id = arg.partition("=")[2]
+        elif arg == "--route":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau tui-proof [--route ROUTE]")
+            route = args[index]
+        elif arg.startswith("--route="):
+            route = arg.partition("=")[2]
+        elif arg == "--next-agent":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau tui-proof [--next-agent AGENT]")
+            next_agent = args[index]
+        elif arg.startswith("--next-agent="):
+            next_agent = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown tui-proof option: {arg}")
+        index += 1
+    if not prompt.strip():
+        raise RuntimeError("--prompt must not be empty")
+    if not run_id.strip():
+        raise RuntimeError("--run-id must not be empty")
+    if not route.strip():
+        raise RuntimeError("--route must not be empty")
+    if not next_agent.strip():
+        raise RuntimeError("--next-agent must not be empty")
+    return {
+        "output_dir": output_dir,
+        "prompt": prompt,
+        "run_id": run_id,
+        "route": route,
+        "next_agent": next_agent,
+    }
 
 
 def _parse_human_goal_change_bridge_cli_args(
@@ -4529,6 +4614,27 @@ def loop2_sanity_command(
     """Create and check one fixture Tau Loop2 receipt run."""
 
     payload = run_loop2_sanity(root_dir=root_dir, repo=repo, loop2_src=loop2_src)
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    return bool(payload.get("ok"))
+
+
+def tui_proof_command(
+    *,
+    output_dir: Path,
+    prompt: str,
+    run_id: str,
+    route: str,
+    next_agent: str,
+) -> bool:
+    """Render a fixture-backed Textual TUI Memory-stage proof."""
+
+    payload = render_textual_tui_memory_stage_proof(
+        output_dir=output_dir,
+        prompt=prompt,
+        run_id=run_id,
+        route=route,
+        next_agent=next_agent,
+    )
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     return bool(payload.get("ok"))
 

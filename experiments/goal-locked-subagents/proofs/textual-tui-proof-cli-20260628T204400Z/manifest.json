@@ -1,0 +1,76 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "textual-tui-proof-cli-20260628T204400Z",
+  "created_at": "2026-06-28T20:44:00Z",
+  "surface": "tau:textual-tui",
+  "mocked": true,
+  "live": false,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "files_touched": [
+      "src/tau_coding/tui/proof.py",
+      "src/tau_coding/cli.py",
+      "tests/test_tui_proof.py"
+    ],
+    "entrypoint": "uv run tau tui-proof",
+    "source_type": "repeatable real TauTuiApp Textual rendering proof with fixture session and structured Tau Memory events",
+    "fixture_prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+    "shared_run_id": "loop2-tau-stress-math_add-1782507220-da39d0"
+  },
+  "what_changed": [
+    "Added tau_coding.tui.proof.render_textual_tui_memory_stage_proof as a repeatable proof generator for the real Textual TUI renderer.",
+    "Added `tau tui-proof` to write a proof.json receipt plus tau-textual-tui-memory-stage.svg screenshot.",
+    "The command is intentionally fixture-backed and marks the receipt mocked=true/live=false so it cannot be mistaken for live provider or live Memory proof."
+  ],
+  "evidence": {
+    "focused_tests": {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run pytest tests/test_tui_proof.py tests/test_tui_adapter.py::test_tui_adapter_updates_hidden_thinking_status_from_pipeline_stage tests/test_tui_app.py::test_tui_app_updates_hidden_thinking_label_from_pipeline_stage -q",
+      "exit_code": 0,
+      "tests": 4
+    },
+    "lint": {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run ruff check src/tau_coding/tui/proof.py src/tau_coding/cli.py tests/test_tui_proof.py",
+      "exit_code": 0
+    },
+    "mypy": {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run mypy src/tau_coding/tui/proof.py",
+      "exit_code": 0
+    },
+    "cli_proof": {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run tau tui-proof --out-dir /tmp/tau-tui-proof-cli-20260628T2044 --run-id loop2-tau-stress-math_add-1782507220-da39d0 --prompt 'How does Tau handle a CWE-287 SPARTA evidence case?' --next-agent reviewer --route COMPLIANCE",
+      "exit_code": 0,
+      "receipt": "/tmp/tau-tui-proof-cli-20260628T2044/proof.json",
+      "screenshot_svg": "/tmp/tau-tui-proof-cli-20260628T2044/tau-textual-tui-memory-stage.svg",
+      "screenshot_png": "/tmp/tau-tui-proof-cli-20260628T2044/tau-textual-tui-memory-stage.png",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "visible_assertions": [
+        "Accessing Memory...",
+        "memory recall started"
+      ],
+      "text_assertions": [
+        "How does Tau handle a CWE-287 SPARTA evidence case?",
+        "tau.agent_handoff.v1",
+        "next_agent=reviewer",
+        "loop2-tau-stress-math_add-1782507220-da39d0"
+      ]
+    }
+  },
+  "claims": {
+    "proves": [
+      "Tau now has a repeatable CLI command for producing a real Textual TUI Memory-stage render receipt.",
+      "The generated Textual TUI screenshot visibly shows the Memory-stage label Accessing Memory.",
+      "The proof generator preserves explicit mocked/live boundaries in machine-readable output."
+    ],
+    "does_not_prove": [
+      "A live provider call from the Textual TUI.",
+      "A live Memory backend call from the Textual TUI process.",
+      "An interactive Textual TUI embedded in UX Lab #tau.",
+      "Same-message end-to-end synchronization between the live React chat and a running Textual TUI process.",
+      "Production Sparta Chat readiness."
+    ]
+  },
+  "next_stop_condition": "Use `tau tui-proof` as the repeatable TUI side of a future same-run chat/TUI synchronization proof, or replace it with a PTY-backed live Textual process when that integration is implemented."
+}
