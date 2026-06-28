@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-harness-receipt.json"
+    ],
+    "summary": "Tau live Memory route selected memory.clarify for: What does it mean?"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "new"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "goal_id": "goal-tau-chat-hardening",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "either",
+    "name": "reviewer",
+    "reason": "Reviewer should inspect the Memory clarify packet before human-facing clarification is promoted."
+  },
+  "previous_subagent": "webgpt-ticket-author",
+  "rationale": "Tau must preserve route-specific Memory evidence before producing user-facing chat output.",
+  "required_evidence": [
+    "Reviewer receipt over the live Memory clarify harness receipt."
+  ],
+  "result": {
+    "evidence": [
+      "memory_first=true",
+      "selected_skill=memory.clarify",
+      "branch_status=PASS",
+      "branch_schema=tau.loop2_memory_clarify_branch.v1",
+      "branch_endpoint=/clarify",
+      "current_stage=clarify"
+    ],
+    "status": "NEEDS_CLARIFICATION",
+    "summary": "Live Memory CLARIFY route completed. branch_status=PASS fail_closed=False"
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Reviewer posts a schema-valid receipt."
+}

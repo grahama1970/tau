@@ -1,0 +1,653 @@
+{
+  "branch": {
+    "endpoint": "/deflect",
+    "payload": {
+      "classifier_flags": {},
+      "created_at": "2026-06-28T02:17:45.138159Z",
+      "deflection_type": "off_topic",
+      "degraded": false,
+      "fallback_used": false,
+      "final_response": "That request is outside the memory route scope. Ask a memory, compliance, routing, or project evidence question.",
+      "final_response_origin": "scillm",
+      "intent_action": "NO_MATCH",
+      "ok": true,
+      "persona_id": "embry",
+      "query": "tell me today's weather in Tokyo",
+      "reason": "intent action is off-topic/no-match",
+      "schema": "memory.deflect.v1",
+      "scillm": {
+        "actual_model": "gpt-5.5",
+        "caller_skill": "memory",
+        "elapsed_ms": 2041.14,
+        "endpoint": "POST /v1/chat/completions",
+        "fallback_used": false,
+        "final_response_origin": "scillm",
+        "finish_reason": "stop",
+        "matches_scillm_assistant_message": true,
+        "reasoning_effort": "high",
+        "request_summary": {
+          "max_tokens": 220,
+          "message_count": 2,
+          "reasoning_effort": "high",
+          "temperature": 0.1
+        },
+        "requested_model": "gpt-5.5",
+        "response_id": "chatcmpl-codex-6bcaf6b3",
+        "source_packet_hash": "sha256:159dcfd7492e1dd3bcfc6db53103bc513bd12e61e18191568dbde5b43606752f",
+        "source_packet_included": true,
+        "status_code": 200,
+        "task": "deflect",
+        "url": "http://localhost:4001/v1/chat/completions"
+      },
+      "session_id": null,
+      "should_deflect": true,
+      "user_id": null
+    },
+    "ran": true,
+    "schema": "tau.loop2_memory_deflect_branch.v1",
+    "status": "PASS"
+  },
+  "branch_status": "PASS",
+  "brave": {
+    "payload": {},
+    "query": "tell me today's weather in Tokyo",
+    "ran": false,
+    "reason": "not_selected",
+    "result_count": 0,
+    "schema": "tau.loop2_brave_search.v1",
+    "status": "NOT_SELECTED"
+  },
+  "brave_required": false,
+  "brave_required_reasons": [],
+  "claims": {
+    "does_not_prove": [
+      "full DAG scheduling",
+      "semantic quality of downstream Tau repair output",
+      "production Tau CLI integration",
+      "full compliance adjudication beyond deterministic create-evidence-case integration",
+      "PersonaPlex audio synthesis unless persona_voice includes a real receipt"
+    ],
+    "proves": [
+      "Tau experiment harness preserves Memory intent/extract-entities/recall packets",
+      "Memory intent drives deterministic skill selection before branch execution",
+      "The selected branch writes an explicit branch receipt"
+    ]
+  },
+  "created_utc": "2026-06-28T02:17:47.180393+00:00",
+  "current_stage": {
+    "label": "Preparing Persona Voice...",
+    "schema": "tau.loop2_pipeline_stage.v1",
+    "source": "personaplex",
+    "stage": "personaplex",
+    "status": "REQUESTED_NO_PERSONAPLEX_RECEIPT"
+  },
+  "fail_closed": false,
+  "live": true,
+  "memory": {
+    "entity_packet": {
+      "entities": [],
+      "extract_entities_status": "PASS",
+      "frameworks": [],
+      "query_plan_extracted_entities": [],
+      "schema": "tau.loop2_memory_entity_packet.v1",
+      "source": "extract_entities",
+      "unresolved_terms": [],
+      "valid_entities": []
+    },
+    "extract_entities": {
+      "endpoint": "/extract-entities",
+      "payload": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": true,
+          "needs_retry": false,
+          "primary_entity_id": null,
+          "reason": "no_security_entities",
+          "safe_to_answer": false,
+          "suggested_action": "clarify_or_repair"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 1,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 1,
+          "validated_context": 0
+        },
+        "grounding_ok": false,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [
+            {
+              "id": "domain:tokyo",
+              "mention": "Tokyo",
+              "metadata": {
+                "exists": true,
+                "grounded": true,
+                "name": "Tokyo",
+                "type": "domain_term"
+              },
+              "node_kind": "domain_term",
+              "proof_role": "query_context",
+              "span": [
+                27,
+                32
+              ],
+              "status": "extracted"
+            }
+          ],
+          "suppressed": [],
+          "unsupported": [
+            {
+              "id": "unsupported:today_weather",
+              "mention": "today weather",
+              "metadata": {
+                "exists": false,
+                "grounded": false,
+                "name": "today weather",
+                "reason": "out_of_domain",
+                "type": "noun_phrase"
+              },
+              "node_kind": "unsupported_term",
+              "proof_role": "none",
+              "span": [
+                0,
+                0
+              ],
+              "status": "unsupported"
+            }
+          ],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [
+            {
+              "evidence": {
+                "mention": "today weather",
+                "normalized_text": "today weather",
+                "reason": "out_of_domain",
+                "span": [
+                  0,
+                  0
+                ]
+              },
+              "id": "assert:unsupported_today_weather_unsupported",
+              "object": "sparta_controls",
+              "predicate": "is_not_grounded_to",
+              "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+              "status": "failed",
+              "subject": "unsupported:today_weather"
+            }
+          ],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "tell me today's weather in Tokyo"
+        },
+        "query_text": "tell me today's weather in Tokyo",
+        "view": "agent"
+      },
+      "ran": true,
+      "schema": "tau.loop2_memory_extract_entities_stage.v1",
+      "status": "PASS"
+    },
+    "intent": {
+      "action": "NO_MATCH",
+      "allowed_tools": [],
+      "candidate_intents": [],
+      "classifier_source": "deterministic_weather_off_topic",
+      "confidence": 0.91,
+      "content_type": "deflection",
+      "depth": 0,
+      "disallowed_tools": [],
+      "entities": [],
+      "entity_context": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": true,
+          "needs_retry": false,
+          "primary_entity_id": null,
+          "reason": "no_security_entities",
+          "safe_to_answer": false,
+          "suggested_action": "clarify_or_repair"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 1,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 1,
+          "validated_context": 0
+        },
+        "executed_by": "intent_always_on",
+        "grounding_ok": false,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [
+            {
+              "id": "domain:tokyo",
+              "mention": "Tokyo",
+              "metadata": {
+                "exists": true,
+                "grounded": true,
+                "name": "Tokyo",
+                "type": "domain_term"
+              },
+              "node_kind": "domain_term",
+              "proof_role": "query_context",
+              "span": [
+                27,
+                32
+              ],
+              "status": "extracted"
+            }
+          ],
+          "suppressed": [],
+          "unsupported": [
+            {
+              "id": "unsupported:today_weather",
+              "mention": "today weather",
+              "metadata": {
+                "exists": false,
+                "grounded": false,
+                "name": "today weather",
+                "reason": "out_of_domain",
+                "type": "noun_phrase"
+              },
+              "node_kind": "unsupported_term",
+              "proof_role": "none",
+              "span": [
+                0,
+                0
+              ],
+              "status": "unsupported"
+            }
+          ],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [
+            {
+              "evidence": {
+                "mention": "today weather",
+                "normalized_text": "today weather",
+                "reason": "out_of_domain",
+                "span": [
+                  0,
+                  0
+                ]
+              },
+              "id": "assert:unsupported_today_weather_unsupported",
+              "object": "sparta_controls",
+              "predicate": "is_not_grounded_to",
+              "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+              "status": "failed",
+              "subject": "unsupported:today_weather"
+            }
+          ],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "tell me today's weather in Tokyo"
+        },
+        "query_text": "tell me today's weather in Tokyo",
+        "route": "/extract-entities",
+        "view": "agent"
+      },
+      "evidence_case": null,
+      "expand_hops": 1,
+      "frameworks": [],
+      "grounding": null,
+      "invalid_terms": [],
+      "k": 0,
+      "keywords": [],
+      "lanes": [],
+      "matched_persona_aliases": [],
+      "perspective": null,
+      "planner_only": false,
+      "query_plan": null,
+      "query_type": "out_of_scope",
+      "question_domains": [
+        "unsupported_current_facts"
+      ],
+      "question_kind": "current_weather_request",
+      "reason": "current_weather_requires_external_weather_tool_not_memory",
+      "recall_profile": null,
+      "recall_profile_confidence": 0.0,
+      "recall_profile_source": null,
+      "recall_profile_spec": null,
+      "recommended_skills": [],
+      "render_style_id": "deflection_notice",
+      "required_artifacts": [],
+      "reranker_mode": "off",
+      "response_mode": "deflection",
+      "rewritten_query": "tell me today's weather in Tokyo",
+      "scene_action_id": null,
+      "scope": "tau-loop2-harness",
+      "skill_chain": [],
+      "slots": {
+        "arango_data_requested": false,
+        "document_name": null,
+        "page": null,
+        "page_image_requested": false,
+        "payload_reference": false,
+        "proof_requested": false,
+        "qdrant_similarity_requested": false,
+        "requested_artifacts": [],
+        "similarity_scope": null,
+        "table_requested": false
+      },
+      "suggestions": [
+        "Ask a memory, compliance, routing, or project evidence question."
+      ],
+      "target_node_id": null,
+      "tier1": [],
+      "tool_calls": [],
+      "top_intents": [],
+      "ui_action": null,
+      "valid_entities": []
+    },
+    "recall": {
+      "confidence": 9.589,
+      "errors": [],
+      "found": true,
+      "items": [
+        {
+          "_id": "sparta_controls/ctrl__DE-0009.02",
+          "_key": "ctrl__DE-0009.02",
+          "_source": "sparta_controls",
+          "control_id": "DE-0009.02",
+          "control_type": "technique",
+          "description": "Space weather and its associated hazards imposed on spacecraft are a well-studied field of their own. However, it is also important to note the potential for threat actors to take advantage of heightened periods of solar activity to conduct electromagnetic interference (EMI) operations as they may be falsely attributed to natural events.",
+          "domain": "",
+          "name": "Space Weather",
+          "parent_id": "ST0006",
+          "scores": {
+            "bm25": 20.27308464050293,
+            "dense": 0.16577566,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "SPARTA",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/S0467",
+          "_key": "S0467",
+          "_source": "sparta_controls",
+          "control_id": "S0467",
+          "control_type": "malware",
+          "description": "[TajMahal](https://attack.mitre.org/software/S0467) is a multifunctional spying framework that has been in use since at least 2014. [TajMahal](https://attack.mitre.org/software/S0467) is comprised of two separate packages, named Tokyo and Yokohama, and can deploy up to 80 plugins.(Citation: Kaspersky TajMahal April 2019)",
+          "domain": "land",
+          "name": "TajMahal",
+          "parent_id": null,
+          "scores": {
+            "bm25": 10.779953002929688,
+            "dense": 0.1687488,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "ATT_CK_Enterprise",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__DE-0009",
+          "_key": "ctrl__DE-0009",
+          "_source": "sparta_controls",
+          "control_id": "DE-0009",
+          "control_type": "technique",
+          "description": "This technique deals with the more physical aspects of CCD that may be utilized by threat actors. There are numerous ways a threat actor may utilize the physical operating environment to their advantage, including powering down and laying dormant within debris fields as well as launching EMI attacks during space-weather events.",
+          "domain": "",
+          "name": "Camouflage, Concealment, and Decoys (CCD)",
+          "parent_id": "ST0006",
+          "scores": {
+            "bm25": 9.185851097106934,
+            "dense": 0.045985714,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "SPARTA",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__IA-2(6)",
+          "_key": "ctrl__IA-2(6)",
+          "_source": "sparta_controls",
+          "control_id": "IA-2(6)",
+          "control_type": "control",
+          "description": "The purpose of requiring a device that is separate from the system to which the user is attempting to gain access for one of the factors during multi-factor authentication is to reduce the likelihood of compromising authenticators or credentials stored on the system. Adversaries may be able to compromise such authenticators or credentials and subsequently impersonate authorized users. Implementing one of the factors on a separate device (e.g., a hardware token), provides a greater strength of me",
+          "domain": "",
+          "name": "Identification and Authentication (organizational Users) | Access to Accounts ,  Separate Device",
+          "parent_id": "Identification and Authentication",
+          "scores": {
+            "bm25": 7.797658920288086,
+            "dense": 0.062373318,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NIST",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__CM0081",
+          "_key": "ctrl__CM0081",
+          "_source": "sparta_controls",
+          "control_id": "CM0081",
+          "control_type": "countermeasure",
+          "description": "A jammer or spoofer can be used to disrupt sensors on an incoming kinetic ASAT weapon so that it cannot steer itself effectively in the terminal phase of flight. When used in conjunction with maneuver, this could allow a satellite to effectively \u201cdodge\u201d a kinetic attack. Similar systems could also be used to deceive SDA sensors by altering the reflected radar signal to change the location, velocity, and number of satellites detected, much like digital radio frequency memory (DRFM) jammers used on many military aircraft today. A spacebased jammer can also be used to disrupt an adversary\u2019s ability to communicate.*\n\n*https://csis-website-prod.s3.amazonaws.com/s3fs-public/publication/210225_Harrison_Defense_Space.pdf?N2KWelzCz3hE3AaUUptSGMprDtBlBSQGate with an ASAT weapon.",
+          "domain": "",
+          "name": "Defensive Jamming and Spoofing",
+          "parent_id": null,
+          "scores": {
+            "bm25": 7.219030857086182,
+            "dense": 0.06324173,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "SPARTA",
+          "type": "control_metadata"
+        }
+      ],
+      "meta": {
+        "k": 5,
+        "memory_first": true,
+        "q": "tell me today's weather in Tokyo",
+        "runtime_pressure": {
+          "active_workloads": [],
+          "checked_at": 1782613065,
+          "level": "normal",
+          "recommended_action": "No active persisted runtime pressure detected.",
+          "slow_query_risk": false,
+          "sources": []
+        },
+        "scope": "tau-loop2-harness",
+        "supplemental_count": 70,
+        "supplemental_promoted": 70,
+        "threshold": 0.3,
+        "took_ms": 15226,
+        "used_dense": true,
+        "used_reranker": false
+      },
+      "should_scan": false
+    },
+    "schema": "tau.loop2_memory_route.v1"
+  },
+  "memory_first": true,
+  "mocked": false,
+  "persona_voice": {
+    "claims": {
+      "does_not_prove": [
+        "PersonaPlex audio synthesis",
+        "published PersonaPlex voice identity",
+        "live full-duplex PersonaPlex readiness"
+      ],
+      "proves": [
+        "Tau receipt preserves persona and voice routing metadata for TUI consumers"
+      ]
+    },
+    "live_full_duplex": false,
+    "persona_id": "embry",
+    "personaplex_receipt": null,
+    "personaplex_skill": "/home/graham/workspace/experiments/agent-skills/skills/personaplex/SKILL.md",
+    "publication_status": "UNVERIFIED",
+    "schema": "tau.sparta_chat_persona_voice.v1",
+    "text_persona_source": "memory_branch_payload",
+    "voice_engine": "personaplex",
+    "voice_requested": true,
+    "voice_status": "REQUESTED_NO_PERSONAPLEX_RECEIPT"
+  },
+  "query": "tell me today's weather in Tokyo",
+  "schema": "tau.loop2_memory_skill_selector_harness.v1",
+  "scope": "tau-loop2-harness",
+  "selected_skill": "memory.deflect",
+  "selector": {
+    "candidate_skills": [
+      "memory.answer",
+      "memory.clarify",
+      "memory.deflect",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "external_search_allowed": false,
+    "intent_action": "NO_MATCH",
+    "intent_confidence": 0.91,
+    "reasons": [
+      "memory_intent_no_match"
+    ],
+    "rejected_skills": [
+      "memory.answer",
+      "memory.clarify",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "schema": "tau.loop2_skill_selection.v1",
+    "selected_skill": "memory.deflect",
+    "stop_condition": "selected branch writes branch receipt with returncode/status"
+  },
+  "stage_trace": [
+    {
+      "label": "Getting Intent...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.intent",
+      "stage": "intent",
+      "status": "PASS"
+    },
+    {
+      "label": "Extracting Entities...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.extract_entities",
+      "stage": "extract_entities",
+      "status": "PASS"
+    },
+    {
+      "label": "Accessing Memory...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.recall",
+      "stage": "recall",
+      "status": "PASS"
+    },
+    {
+      "label": "Deflecting...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.deflect",
+      "stage": "deflect",
+      "status": "PASS"
+    },
+    {
+      "label": "Preparing Persona Voice...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "personaplex",
+      "stage": "personaplex",
+      "status": "REQUESTED_NO_PERSONAPLEX_RECEIPT"
+    }
+  ]
+}

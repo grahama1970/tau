@@ -13,6 +13,10 @@ LIVE_BRAVE_RECEIPT_PROOF_DIR = (
     Path(__file__).resolve().parents[1]
     / "experiments/goal-locked-subagents/proofs/live-brave-research-receipt-20260628T023500Z"
 )
+LIVE_CLARIFY_DEFLECT_PROOF_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z"
+)
 
 
 def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> None:
@@ -123,3 +127,47 @@ def test_live_brave_receipt_proof_routes_through_research_auditor() -> None:
     assert command_loop["stop_reason"] == "next_agent_is_human"
     assert manifest["command_loop_selected_agents"] == ["research-auditor", "reviewer"]
     assert manifest["command_loop_command_exits"] == [0, 0]
+
+
+def test_live_clarify_deflect_memory_routes_have_command_loop_proofs() -> None:
+    manifest = json.loads((LIVE_CLARIFY_DEFLECT_PROOF_DIR / "manifest.json").read_text())
+
+    assert manifest["schema"] == "tau.live_clarify_deflect_memory_routes_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    routes = {route["route"]: route for route in manifest["routes"]}
+    assert set(routes) == {"CLARIFY", "DEFLECT"}
+
+    clarify = routes["CLARIFY"]
+    assert clarify["selected_skill"] == "memory.clarify"
+    assert clarify["branch_stage"] == "clarify"
+    assert clarify["final_stage"] == "clarify"
+    assert clarify["stage_trace_stages"] == ["intent", "extract_entities", "recall", "clarify"]
+
+    deflect = routes["DEFLECT"]
+    assert deflect["selected_skill"] == "memory.deflect"
+    assert deflect["branch_stage"] == "deflect"
+    assert "deflect" in deflect["stage_trace_stages"]
+    assert deflect["final_stage"] == "personaplex"
+
+    for route in routes.values():
+        harness = json.loads(
+            (Path(__file__).resolve().parents[1] / route["harness_receipt"]).read_text()
+        )
+        command_loop = json.loads(
+            (Path(__file__).resolve().parents[1] / route["command_loop_receipt"]).read_text()
+        )
+        assert route["mocked"] is False
+        assert route["live"] is True
+        assert route["memory_first"] is True
+        assert route["branch_status"] == "PASS"
+        assert route["fail_closed"] is False
+        assert harness["selected_skill"] == route["selected_skill"]
+        assert command_loop["ok"] is True
+        assert command_loop["mocked"] is False
+        assert command_loop["live"] is True
+        assert command_loop["step_count"] == 1
+        assert command_loop["dispatches"][0]["selected_agent"] == "reviewer"
+        assert command_loop["dispatches"][0]["command_results"][0]["exit_code"] == 0
+        assert command_loop["terminal_agent"] == "human"
+        assert command_loop["stop_reason"] == "next_agent_is_human"

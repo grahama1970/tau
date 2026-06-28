@@ -1,0 +1,74 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Live GitHub mutation.",
+      "PersonaPlex audio synthesis for DEFLECT.",
+      "Human acceptance of the clarification or deflection copy.",
+      "That DEFLECT final UI stage stops at deflect; this proof records PersonaPlex metadata as the final stage when Memory returns a persona."
+    ],
+    "proves": [
+      "Live Memory-first harness can select and execute memory.clarify with a route-specific branch stage.",
+      "Live Memory-first harness can select and execute memory.deflect with a route-specific branch stage.",
+      "CLARIFY and DEFLECT route handoffs can enter a bounded Tau command-loop reviewer step."
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "routes": [
+    {
+      "branch_stage": "clarify",
+      "branch_status": "PASS",
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-command-loop/command-loop-receipt.json",
+      "command_loop_step_count": 1,
+      "fail_closed": false,
+      "final_stage": "clarify",
+      "harness_receipt": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-harness-receipt.json",
+      "live": true,
+      "memory_first": true,
+      "mocked": false,
+      "route": "CLARIFY",
+      "selected_agent": "reviewer",
+      "selected_skill": "memory.clarify",
+      "stage_trace_stages": [
+        "intent",
+        "extract_entities",
+        "recall",
+        "clarify"
+      ],
+      "start_handoff": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-start-handoff.json",
+      "stop_reason": "next_agent_is_human",
+      "terminal_agent": "human"
+    },
+    {
+      "branch_stage": "deflect",
+      "branch_status": "PASS",
+      "command_exit": 0,
+      "command_loop_ok": true,
+      "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/deflect-command-loop/command-loop-receipt.json",
+      "command_loop_step_count": 1,
+      "fail_closed": false,
+      "final_stage": "personaplex",
+      "harness_receipt": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/deflect-harness-receipt.json",
+      "live": true,
+      "memory_first": true,
+      "mocked": false,
+      "route": "DEFLECT",
+      "selected_agent": "reviewer",
+      "selected_skill": "memory.deflect",
+      "stage_trace_stages": [
+        "intent",
+        "extract_entities",
+        "recall",
+        "deflect",
+        "personaplex"
+      ],
+      "start_handoff": "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/deflect-start-handoff.json",
+      "stop_reason": "next_agent_is_human",
+      "terminal_agent": "human"
+    }
+  ],
+  "schema": "tau.live_clarify_deflect_memory_routes_proof.v1"
+}
