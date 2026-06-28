@@ -1,0 +1,106 @@
+{
+  "schema": "tau.same_message_visible_tui_mirror_browser_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "url": "http://127.0.0.1:3002/#tau",
+  "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+  "screenshot": "/tmp/tau-same-message-visible-tui-mirror-20260628T2318/same-message-visible-tui-mirror.png",
+  "assertions": {
+    "prompt_visible_in_chat": true,
+    "compliance_chat_visible": true,
+    "handoff_visible_in_chat": true,
+    "same_turn_summary_visible": true,
+    "same_turn_route_compliance_visible": true,
+    "same_turn_next_agent_reviewer_visible": true,
+    "same_turn_intent_stage_visible": true,
+    "same_turn_recall_stage_visible": true,
+    "same_turn_evidence_stage_visible": true,
+    "visible_stage_qids_unique": true,
+    "receipt_stream_still_present": true,
+    "memory_intent_200_seen": true,
+    "memory_recall_200_seen": true
+  },
+  "memoryRequests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/upsert",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/recall",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "sampledText": {
+    "sameTurnSummary": "run idevidence-case-mqyeui4i-7scd2zcarouteCOMPLIANCEnext agentreviewerGetting Intent...RUNNINGGetting Intent...PASSExtracting Entities...PASSAccessing Memory...RUNNINGAccessing Memory...PASSCreating Evidence Case...SKIPPED",
+    "currentStage": "[pass] receipt_written",
+    "receiptStream": "tau.tui_receipt_stream_view.v1 loop2-tau-stress-math_add-1782507220-da39d0 events=25 PASS",
+    "visibleStages": [
+      {
+        "qid": "tau:tui-mirror:visible-stage:0:intent",
+        "text": "Getting Intent...RUNNING",
+        "visible": true
+      },
+      {
+        "qid": "tau:tui-mirror:visible-stage:1:intent",
+        "text": "Getting Intent...PASS",
+        "visible": true
+      },
+      {
+        "qid": "tau:tui-mirror:visible-stage:2:extract_entities",
+        "text": "Extracting Entities...PASS",
+        "visible": true
+      },
+      {
+        "qid": "tau:tui-mirror:visible-stage:3:recall",
+        "text": "Accessing Memory...RUNNING",
+        "visible": true
+      },
+      {
+        "qid": "tau:tui-mirror:visible-stage:4:recall",
+        "text": "Accessing Memory...PASS",
+        "visible": true
+      },
+      {
+        "qid": "tau:tui-mirror:visible-stage:5:evidence_case",
+        "text": "Creating Evidence Case...SKIPPED",
+        "visible": true
+      }
+    ],
+    "duplicateQids": []
+  },
+  "claims": {
+    "proves": [
+      "A live Tau chat COMPLIANCE turn renders tau.agent_handoff.v1 in the chat well.",
+      "The side TUI mirror shows the same-turn Memory route, next agent, and visible stage list for that same browser turn.",
+      "The visible TUI stage qids are unique for repeated stage names.",
+      "The receipt stream remains present alongside the same-turn mirror."
+    ],
+    "does_not_prove": [
+      "Interactive Textual TUI embedding.",
+      "PersonaPlex audio synthesis.",
+      "Applied GitHub mutation for this browser turn.",
+      "Semantic correctness of the evidence case.",
+      "Final Sparta Chat readiness."
+    ]
+  },
+  "capturedAt": "2026-06-28T23:18:59.068Z"
+}
