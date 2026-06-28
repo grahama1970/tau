@@ -1,4 +1,8 @@
 import json
+import os
+import subprocess
+import sys
+import textwrap
 from pathlib import Path
 
 from tau_coding.subagent_receipt import (
@@ -40,6 +44,43 @@ def test_valid_subagent_receipt_routes_to_next_subagent() -> None:
     assert result.ok is True
     assert result.errors == ()
     assert result.next_subagent == "reviewer"
+
+
+def test_headless_subagent_receipt_import_does_not_require_textual() -> None:
+    root = Path(__file__).resolve().parents[1]
+    code = textwrap.dedent(
+        """
+        import importlib.abc
+        import sys
+
+        class BlockTextual(importlib.abc.MetaPathFinder):
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == "textual" or fullname.startswith("textual."):
+                    raise ModuleNotFoundError("No module named 'textual'", name="textual")
+                return None
+
+        sys.meta_path.insert(0, BlockTextual())
+
+        from tau_coding.subagent_receipt import validate_subagent_receipt_file
+        from tau_agent.harness import AgentHarness, AgentHarnessConfig
+        from tau_agent.loop import run_agent_loop
+
+        print("HEADLESS_TAU_IMPORT_PASS")
+        """
+    )
+    env = {**os.environ, "PYTHONPATH": str(root / "src")}
+
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "HEADLESS_TAU_IMPORT_PASS"
 
 
 def test_subagent_receipt_requires_common_envelope_fields() -> None:

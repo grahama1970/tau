@@ -106,14 +106,6 @@ from tau_coding.provider_config import (
     upsert_provider,
     upsert_saved_provider,
 )
-from tau_coding.rendering import (
-    EventRenderer,
-    FinalTextRenderer,
-    JsonEventRenderer,
-    PrintOutputMode,
-    TranscriptRenderer,
-    create_event_renderer,
-)
 from tau_coding.resources import ResourceDiagnostic, ResourceError, TauResourcePaths
 from tau_coding.session import (
     CodingSession,
@@ -171,6 +163,32 @@ from tau_coding.tools import (
     create_write_tool,
     create_write_tool_definition,
 )
+
+try:
+    from tau_coding.rendering import (
+        EventRenderer,
+        FinalTextRenderer,
+        JsonEventRenderer,
+        PrintOutputMode,
+        TranscriptRenderer,
+        create_event_renderer,
+    )
+except ModuleNotFoundError as exc:
+    if exc.name != "textual":
+        raise
+
+    _rendering_import_error = exc
+    EventRenderer = None  # type: ignore[assignment]
+    FinalTextRenderer = None  # type: ignore[assignment]
+    JsonEventRenderer = None  # type: ignore[assignment]
+    PrintOutputMode = None  # type: ignore[assignment]
+    TranscriptRenderer = None  # type: ignore[assignment]
+
+    def create_event_renderer(*args: object, **kwargs: object) -> object:
+        del args, kwargs
+        raise RuntimeError(
+            "Tau rendering requires the optional textual dependency"
+        ) from _rendering_import_error
 
 __version__ = "0.1.0"
 
