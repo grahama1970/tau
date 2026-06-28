@@ -3810,6 +3810,18 @@ async def test_tui_app_updates_hidden_thinking_label_from_pipeline_stage() -> No
         assert "Thinking… Press Ctrl+T to show thinking tokens." not in transcript_text()
         assert "internal memory routing" not in transcript_text()
 
+        event = ToolExecutionUpdateEvent(
+            tool_call_id="memory-1",
+            message="memory recall started",
+            data={"memory_stage": "recall"},
+        )
+        app.adapter.apply(event)
+        await app._apply_streaming_transcript_event(event)
+        await pilot.pause()
+
+        assert "Accessing Memory..." in transcript_text()
+        assert "internal memory routing" not in transcript_text()
+
 
 @pytest.mark.anyio
 async def test_tui_prompt_ctrl_c_clears_text() -> None:

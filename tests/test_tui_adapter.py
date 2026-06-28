@@ -126,6 +126,15 @@ def test_tui_adapter_updates_hidden_thinking_status_from_pipeline_stage() -> Non
 
     adapter.apply(
         ToolExecutionUpdateEvent(
+            tool_call_id="memory-1",
+            message="memory recall started",
+            data={"memory_stage": "recall"},
+        )
+    )
+    assert state.thinking_placeholder_text == "Accessing Memory..."
+
+    adapter.apply(
+        ToolExecutionUpdateEvent(
             tool_call_id="figure-1",
             message="figure started",
             data={"stage": "figure"},
