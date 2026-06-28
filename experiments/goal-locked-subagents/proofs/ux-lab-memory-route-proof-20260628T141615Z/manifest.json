@@ -1,0 +1,88 @@
+{
+  "schema": "tau.ux_lab_memory_route_proof_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_utc": "2026-06-28T14:16:15Z",
+  "proof_scope": "UX Lab Tau chat integration viewer renders the fresh live Memory route fail-closed proof manifest without broadening its claims.",
+  "tau_backend_proof": {
+    "manifest": "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/manifest.json",
+    "schema": "tau.live_memory_route_failclosed_proof.v1",
+    "route_count": 5,
+    "mocked": false,
+    "live": true,
+    "notable_boundaries": [
+      "RESEARCH_BRAVE_DISABLED records branch_status=FAILED and fail_closed=true.",
+      "ANSWER_SELECTOR_ATTEMPT routed to memory.clarify, not memory.answer.",
+      "ANSWER_DIRECT_PRODUCT proves direct memory.answer.v1 product validation only."
+    ]
+  },
+  "ux_lab_change": {
+    "repository": "grahama1970/pi-mono",
+    "branch": "persona/tim-blazytko-1774553751276",
+    "commit": "6afd4c7c3",
+    "commit_message": "Render Tau Memory route proof in chat",
+    "changed_files": [
+      "packages/ux-lab/server/tauRoutes.ts",
+      "packages/ux-lab/server/tauRoutes.test.ts",
+      "packages/ux-lab/src/components/tau/TauChatView.tsx",
+      ".codex/ui-verification/latest.json"
+    ]
+  },
+  "commands": [
+    {
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "command": "npm run test -- server/tauRoutes.test.ts src/components/tau/TauChatView.test.ts",
+      "exit_code": 0,
+      "result": "2 test files passed; 57 tests passed"
+    },
+    {
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "command": "npx tsc --noEmit --pretty false",
+      "exit_code": 0,
+      "result": "TypeScript completed with no output"
+    },
+    {
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "command": "curl -sS http://127.0.0.1:4301/api/tau/memory/routes/failclosed-proof | jq '{ok, schema:.receipt.schema, live:.receipt.live, mocked:.receipt.mocked, routeCount:.receipt.routeCount, routes:.receipt.routes | map({route, branchStatus, failClosed, selectedSkill, memoryProductSchema})}'",
+      "exit_code": 0,
+      "result": "ok=true; schema=tau.memory_route_failclosed_view.v1; live=true; mocked=false; routeCount=5; RESEARCH_BRAVE_DISABLED branchStatus=FAILED and failClosed=true"
+    },
+    {
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:4302/#tau --name tau-memory-route-proof",
+      "exit_code": 0,
+      "result": "CDP hook wrote fresh screenshot/read artifacts under /tmp/codex-ui-verification/pi-mono/tau-memory-route-proof/"
+    }
+  ],
+  "ui_artifacts": {
+    "marker": "/home/graham/workspace/experiments/pi-mono/.codex/ui-verification/latest.json",
+    "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-memory-route-proof/20260628T141606Z.png",
+    "scrolled_screenshot": "/tmp/codex-ui-verification/pi-mono/tau-memory-route-proof/20260628T141606Z.memory-route-panel.png",
+    "read_json": "/tmp/codex-ui-verification/pi-mono/tau-memory-route-proof/20260628T141606Z.read.json",
+    "visible_evidence": [
+      "Fresh Memory Route Proof",
+      "LIVE RECEIPT",
+      "MOCKED false",
+      "LIVE true",
+      "ROUTES 5",
+      "RESEARCH_BRAVE_DISABLED FAILED",
+      "fail-closed branch",
+      "Selector-selected ANSWER route for the natural-language answer probes."
+    ]
+  },
+  "claims": {
+    "proves": [
+      "UX Lab can load and normalize the fresh Tau Memory route fail-closed proof through a server endpoint.",
+      "The Tau chat integration viewer visibly renders route_count=5, live=true, mocked=false, and the RESEARCH fail-closed branch.",
+      "The rendered panel preserves the backend proof's non-claim that selector-selected ANSWER was not proven by the natural-language probes."
+    ],
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Live Brave search execution for this run.",
+      "Selector-selected ANSWER route for natural-language answer probes.",
+      "A new live COMPLIANCE browser turn after this UI panel change.",
+      "Unbounded autonomous subagent operation."
+    ]
+  }
+}
