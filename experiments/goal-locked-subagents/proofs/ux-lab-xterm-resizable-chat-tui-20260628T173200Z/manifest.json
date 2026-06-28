@@ -1,0 +1,109 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "ux-lab-xterm-resizable-chat-tui-20260628T173200Z",
+  "created_at": "2026-06-28T17:32:00Z",
+  "surface": "ux-lab:#tau",
+  "url": "http://127.0.0.1:3002/#tau",
+  "mocked": false,
+  "live": true,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "ux_lab_repo": "/home/graham/workspace/experiments/pi-mono",
+    "files_touched_in_ux_lab": [
+      "packages/ux-lab/src/components/tau/TauChatView.tsx",
+      "packages/ux-lab/src/components/tau/TauChatView.test.ts",
+      "packages/ux-lab/src/components/shared-chat/SharedChatShell.tsx",
+      "packages/ux-lab/package.json",
+      "package-lock.json",
+      "packages/ux-lab/pnpm-lock.yaml"
+    ],
+    "dependency_additions_for_this_slice": [
+      "@xterm/xterm@6.0.0",
+      "@xterm/addon-fit@0.11.0"
+    ],
+    "dirty_worktree_note": "The UX Lab workspace was already broadly dirty. The source changes for this slice are in the Tau chat view and shared chat shell; package metadata also contains unrelated pre-existing dependency drift and must not be staged wholesale without review."
+  },
+  "what_changed": [
+    "Tau UX Lab route now renders a collapsible proof rail next to a side-by-side xterm TUI mirror and Watch-style chat pane.",
+    "The TUI mirror uses @xterm/xterm and @xterm/addon-fit instead of a styled card list.",
+    "The proof rail and TUI/chat split panes are horizontally resizable and persist widths in localStorage.",
+    "The chat and TUI mirror read the same streaming turn state, so a single message updates both the chat process trace and terminal-style mirror.",
+    "Tau-specific chat mode labels replace generic Compliance/Persona labels with Evidence and Embry voice, while retaining Lucide Shield and Mic icons."
+  ],
+  "evidence": {
+    "focused_tests": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run src/components/tau/TauChatView.test.ts src/components/tau/tauAgentHandoff.test.ts src/components/tau/tauPeerStatus.test.ts",
+      "exit_code": 0,
+      "files": 3,
+      "tests": 40
+    },
+    "typecheck": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx tsc --noEmit --pretty false",
+      "exit_code": 0
+    },
+    "cdp_verification": {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url 'http://127.0.0.1:3002/#tau' --name tau-chat-xterm-resizable-panes",
+      "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+      "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-chat-xterm-resizable-panes/20260628T172925Z.png",
+      "read_json": "/tmp/codex-ui-verification/pi-mono/tau-chat-xterm-resizable-panes/20260628T172925Z.read.json"
+    },
+    "drag_proof": {
+      "receipt": "/tmp/tau-resizable-panes-proof-20260628T1732/proof.json",
+      "screenshot": "/tmp/tau-resizable-panes-proof-20260628T1732/resized-panes.png",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "handles": [
+        "tau:chat:proof-rail-resize",
+        "tau:chat:tui-chat-resize"
+      ],
+      "widths": {
+        "before": {
+          "proofWidth": 720,
+          "tuiWidth": 280,
+          "chatWidth": 395
+        },
+        "afterProofDrag": {
+          "proofWidth": 580,
+          "tuiWidth": 280,
+          "chatWidth": 535
+        },
+        "afterTuiGrow": {
+          "proofWidth": 580,
+          "tuiWidth": 410,
+          "chatWidth": 405
+        },
+        "afterTuiShrink": {
+          "proofWidth": 580,
+          "tuiWidth": 240,
+          "chatWidth": 575
+        }
+      }
+    },
+    "prior_same_message_browser_proof": {
+      "receipt": "/tmp/tau-chat-tui-same-message-20260628T1546/proof.json",
+      "screenshot": "/tmp/tau-chat-tui-same-message-20260628T1546/same-message-research.png",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "observed_current_stage": "Searching Web..."
+    }
+  },
+  "claims": {
+    "proves": [
+      "The live UX Lab #tau route renders the Tau proof rail, xterm-backed TUI mirror, and Watch-style chat side by side.",
+      "The proof rail and TUI/chat panes can be resized by dragging the live handles.",
+      "Focused Tau UX Lab tests and TypeScript checks passed after the xterm/resizable-pane slice.",
+      "The chat and TUI mirror share the same in-browser Tau turn state for the exercised message path."
+    ],
+    "does_not_prove": [
+      "The xterm pane is connected to a real Tau PTY process.",
+      "Final Sparta Chat production readiness.",
+      "Fresh live GitHub mutation from this exact UI run.",
+      "Unbounded autonomous subagent operation.",
+      "That unrelated dirty dependency changes in pi-mono are safe to commit."
+    ]
+  },
+  "next_stop_condition": "Before claiming production readiness, connect the xterm pane to a real Tau process or receipt stream, isolate the UX Lab dependency metadata, and run a fresh same-message browser proof after any further UI edits."
+}
