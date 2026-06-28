@@ -10,12 +10,11 @@
 
 > Turn agent work into receipt-backed, goal-locked loops.
 
-T’au started as a small Python coding-agent harness inspired by Pi. This fork is
-being hardened into an experimental agentic harness for long-running work:
-Memory-first chat, bounded subagents, explicit handoffs, human-controlled goal
-changes, and GitHub tickets as the durable transport.
+T’au is an experimental harness for long-running agent work. It is small enough
+to understand, opinionated enough to keep a human in the loop, and structured
+enough that every meaningful transition leaves a trace.
 
-The important idea is simple:
+The idea is simple:
 
 ```text
 agents may work and recommend the next step
@@ -23,28 +22,27 @@ T’au validates the receipt and routes the next step
 only the human may change the immutable goal
 ```
 
-T’au is not trying to hide orchestration inside model reasoning. Every meaningful
-transition should leave a local receipt, a schema-valid JSON block, or a
-GitHub-shaped projection that another agent or human can inspect.
+T’au does not hide orchestration inside model reasoning. Every handoff produces
+a local receipt, a schema-valid JSON block, or a GitHub-shaped projection that
+another agent or human can inspect, replay, or reject.
 
 ## What it does
 
-T’au currently provides two layers:
+T’au provides two layers:
 
 1. **Coding-agent runtime** - an installable `tau` command with provider
    configuration, a Textual TUI, session history, slash commands, local tools,
    and print-mode execution.
-2. **Agentic harness experiments** - goal-locked receipt contracts, bounded
+2. **Agentic harness** - goal-locked receipt contracts, bounded
    subagent dispatch, Memory-first chat routing, and dry-run GitHub ticket/comment
    projections.
 
-The coding runtime keeps the original teaching goal: make a coding agent small
-enough to understand. The harness experiments add the control plane needed for
-longer work:
+The coding runtime stays small and teachable. The harness adds the control plane
+needed for longer work:
 
-- minimal `tau.agent_handoff.v1` JSON for subagents and humans
-- minimal `tau.generated_ticket.v1` JSON for ChatGPT Pro/WebGPT ticket drafts
-- human-only `tau.human_goal_change.v1` packets
+- `tau.agent_handoff.v1` JSON for routing between subagents and humans
+- `tau.generated_ticket.v1` JSON for ChatGPT Pro / WebGPT ticket drafts
+- `tau.human_goal_change.v1` packets that only a human can send
 - deterministic goal-guardian reconciliation receipts
 - command-backed subagent loops with finite steps
 - GitHub transport that is dry-run by default and apply-gated
@@ -118,7 +116,7 @@ Added or materially changed areas include:
 - **T’au-owned UX contract** at `ui/tau-chat-contract.json`, with UX Lab acting
   as an integration viewer rather than the source of truth.
 
-## When to use it
+## When to reach for it
 
 Use T’au when an agent task needs durable state and explicit routing instead of a
 single chat response.
@@ -127,7 +125,7 @@ single chat response.
 | --- | --- |
 | Long-running implementation work | Each bounded step emits a receipt and names the next agent. |
 | Human course correction | Human goal changes are explicit packets routed through `goal-guardian`. |
-| ChatGPT Pro/WebGPT collaboration | WebGPT can draft tickets; T’au validates and projects them. |
+| ChatGPT Pro / WebGPT collaboration | WebGPT can draft tickets; T’au validates and projects them. |
 | GitHub-backed task queues | T’au derives labels such as `next:<agent>` and `executor:<executor>`. |
 | Memory-first chat | User turns enter through Memory intent before routing to answer, clarify, deflect, research, or compliance paths. |
 | Reliability hardening | Local tests, live browser runs, and proof summaries are kept separate from mocked wiring tests. |
@@ -177,7 +175,7 @@ commands.
 
 ## Memory-first chat direction
 
-T’au chat should begin with the `$memory` pipeline, not with ad hoc product logic.
+T’au chat begins with the `$memory` pipeline, not with ad hoc product logic.
 The intended route is:
 
 ```text
@@ -259,7 +257,7 @@ schema              -> parser and validator selection
 ```
 
 Agents do not get to invent missing labels, mutate the immutable goal, or skip
-the next route. If the JSON does not validate, T’au should refuse to dispatch.
+the next route. If the JSON does not validate, T’au refuses to dispatch.
 
 ## Repository map
 
@@ -289,7 +287,7 @@ experiments/goal-locked-subagents/agent-command-specs/
 
 ## Evidence discipline
 
-T’au reports should distinguish mocked wiring from live behavior.
+T’au reports distinguish mocked wiring from live behavior.
 
 Use this language when reporting a rung:
 

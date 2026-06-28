@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-06-28 00:02Z / 20:02 EDT by agent
+**Last updated:** 2026-06-28 00:05Z / 20:05 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -12,6 +12,7 @@
 - T’au now has a repo-owned chat UX contract at `ui/tau-chat-contract.json`. UX Lab's `#tau` route should act as an integration viewer for that contract, similar to Watch, rather than being treated as the canonical owner of the T’au chat UX.
 - README now explicitly separates the loop, harness, TUI, and chat surfaces. The loop is bounded; the harness validates receipts and routing; the TUI is the terminal renderer; the chat is the Watch-style human inspection surface for Memory stages, handoff JSON, dry-run GitHub projection, and proof boundaries.
 - README now documents the main fork delta from upstream Tau: Loop2 receipts, minimal JSON contracts, human goal-change bridge, goal-guardian reconciliation, command-backed subagent dispatch, GitHub transport, read-only ticket-source fetch, Memory-first chat routes, external receipt intake, dry-run external GitHub projection, and the T’au-owned UX contract.
+- Kimi's README prose pass was reviewed and selectively merged into the current README: the opening now describes T’au as an experimental long-running agent harness with inspectable transitions, while the newer loop/harness/TUI/chat and T’au-owned UX contract sections were preserved.
 - Tau now has one-step dispatch receipts for routed handoffs. `handoff-dispatch-agent-command` validates the start handoff, selects `next_agent.name`, loads an opt-in `tau-dispatch-command.json` from that agent registry entry, runs one bounded command, and validates stdout as the next `tau.agent_handoff.v1`.
 - Tau can now use a committed command-spec overlay with `--command-spec-root`. The selected agent is still validated against `/home/graham/workspace/experiments/agent-skills/agents`, but the executable `tau-dispatch-command.json` can live under Tau's `experiments/goal-locked-subagents/agent-command-specs/` tree for reproducible harness experiments.
 - Built-in `goal-guardian` now has a deterministic adapter. It reads the start handoff from stdin, requires `TAU_HANDOFF_ACTIVE_GOAL_HASH`, refuses stale goal hashes, and emits a normal `tau.agent_handoff.v1` only when the active goal hash is preserved.
@@ -73,6 +74,7 @@
 | 2026-06-27 | Compress the T’au header image with Pillow into WebP | The current source PNG `/home/graham/Downloads/ChatGPT Image Jun 27, 2026, 07_58_56 PM.png` was 2,559,239 bytes at 1672x941. `docs/assets/tau-header.webp` is 175,472 bytes at 1600x900, which keeps the README visual lightweight. |
 | 2026-06-27 | Make T’au the owner of the chat UX contract | UX Lab should host/reference T’au like Watch does, not become the canonical source of the T’au chat UX. The contract lives at `ui/tau-chat-contract.json` and marks UX Lab as `integration_viewer`. |
 | 2026-06-27 | Expand README around loop, harness, TUI, chat, and upstream delta | The README previously described the harness direction but did not clearly explain the four surfaces or what changed from upstream Tau. |
+| 2026-06-27 | Merge Kimi README prose without dropping architecture sections | Kimi's prose improved the top-level explanation, but its draft omitted the newer ownership-boundary details, so only the clearer opening and phrasing were adopted. |
 
 ## Open Questions
 
