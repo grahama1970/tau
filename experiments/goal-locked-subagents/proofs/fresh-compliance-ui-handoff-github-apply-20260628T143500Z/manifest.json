@@ -1,0 +1,75 @@
+{
+  "schema": "tau.fresh_compliance_ui_handoff_github_apply_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_at": "2026-06-28T14:35:00Z",
+  "scope": "Applied GitHub transport for the terminal handoff produced by the fresh COMPLIANCE UI handoff command-loop proof.",
+  "source_command_loop_manifest": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/manifest.json",
+  "source_command_loop_receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/command-loop/command-loop-receipt.json",
+  "does_not_prove": [
+    "final Sparta Chat readiness",
+    "multi-step autonomous production operation",
+    "human acceptance of the terminal route",
+    "semantic correctness of the underlying compliance answer"
+  ],
+  "github_transport": {
+    "receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-github-apply-20260628T143500Z/github-transport-apply.json",
+    "stdout": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-github-apply-20260628T143500Z/github-transport-apply.stdout.json",
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": false,
+    "applied": true,
+    "preflight_command": "gh auth status --hostname github.com",
+    "preflight_exit_code": 0,
+    "command": "gh issue create --repo grahama1970/tau --title \"Tau handoff: human\" --body-file - --label agent-work,next:human,executor:human",
+    "command_exit_code": 0,
+    "created_issue_url": "https://github.com/grahama1970/tau/issues/14"
+  },
+  "github_issue": {
+    "created": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-github-apply-20260628T143500Z/github-issue-14-created.json",
+    "final": "experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-github-apply-20260628T143500Z/github-issue-14-final.json",
+    "number": 14,
+    "url": "https://github.com/grahama1970/tau/issues/14",
+    "title": "Tau handoff: human",
+    "created_state": "OPEN",
+    "final_state": "CLOSED",
+    "labels": [
+      "agent-work",
+      "next:human",
+      "executor:human"
+    ],
+    "body_embedded_handoff": true,
+    "body_embedded_schema": "tau.agent_handoff.v1",
+    "body_next_agent": "human",
+    "cleanup_comment_count": 2,
+    "cleanup_reason": "Proof-only next:human issue was closed after evidence capture so it does not remain as an active queue item."
+  },
+  "commands": [
+    {
+      "command": "uv run tau handoff-command-loop-github-transport experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-command-loop-20260628T142600Z/command-loop/command-loop-receipt.json --receipt experiments/goal-locked-subagents/proofs/fresh-compliance-ui-handoff-github-apply-20260628T143500Z/github-transport-apply.json --apply",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "gh issue view 14 --repo grahama1970/tau --json number,title,state,labels,url,body,createdAt,author",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "gh issue comment 14 --repo grahama1970/tau --body <proof cleanup comment>",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "gh issue close 14 --repo grahama1970/tau --comment <proof cleanup close comment>",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    },
+    {
+      "command": "gh issue view 14 --repo grahama1970/tau --json number,title,state,labels,url,body,comments,closedAt",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0
+    }
+  ]
+}
