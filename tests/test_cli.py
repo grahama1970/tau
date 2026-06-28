@@ -1031,6 +1031,63 @@ def test_cli_handoff_research_auditor_adapter_accepts_explicit_authorization(
     assert "External research receipt for brave-search" in payload["required_evidence"][0]
 
 
+def test_cli_external_research_receipt_writes_schema_valid_receipt(tmp_path: Path) -> None:
+    output_path = tmp_path / "receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "external-research-receipt",
+            "--query",
+            "latest Chutes pricing",
+            "--method",
+            "brave-search",
+            "--retrieved-at",
+            "2026-06-28T02:20:00Z",
+            "--summary",
+            "One explicit source was attached.",
+            "--source",
+            "Chutes pricing|https://chutes.ai/pricing",
+            "--output",
+            str(output_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload == written
+    assert payload == {
+        "method": "brave-search",
+        "query": "latest Chutes pricing",
+        "retrieved_at": "2026-06-28T02:20:00Z",
+        "schema": "tau.external_research_receipt.v1",
+        "sources": [
+            {
+                "title": "Chutes pricing",
+                "url": "https://chutes.ai/pricing",
+            }
+        ],
+        "summary": "One explicit source was attached.",
+    }
+
+
+def test_cli_external_research_receipt_refuses_malformed_source() -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "external-research-receipt",
+            "--query",
+            "latest Chutes pricing",
+            "--source",
+            "https://chutes.ai/pricing",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "--source must use title|url format" in result.output
+
+
 def test_cli_handoff_research_auditor_adapter_refuses_invalid_research_receipt(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -1067,6 +1124,60 @@ def test_cli_handoff_research_auditor_adapter_refuses_invalid_research_receipt(
     assert "receipt was invalid" in payload["context"]["summary"]
     assert any("query must be a non-empty string" in item for item in payload["result"]["evidence"])
     assert payload["next_agent"]["name"] == "human"
+
+
+def test_cli_handoff_research_auditor_adapter_accepts_cli_produced_receipt(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "receipt.json"
+    receipt_result = CliRunner().invoke(
+        app,
+        [
+            "external-research-receipt",
+            "--query",
+            "latest Chutes pricing",
+            "--method",
+            "brave-search",
+            "--retrieved-at",
+            "2026-06-28T02:20:00Z",
+            "--source",
+            "Chutes pricing|https://chutes.ai/pricing",
+            "--output",
+            str(receipt_path),
+        ],
+    )
+    assert receipt_result.exit_code == 0
+
+    start = _valid_cli_handoff_payload()
+    start["next_agent"] = {
+        "name": "research-auditor",
+        "executor": "either",
+        "reason": "Fresh research is required before Tau may answer.",
+    }
+    context = start["context"]
+    assert isinstance(context, dict)
+    context["research_authorization"] = {
+        "approved": True,
+        "method": "brave-search",
+        "receipt_path": str(receipt_path),
+    }
+    monkeypatch.setenv("TAU_HANDOFF_SELECTED_AGENT", "research-auditor")
+
+    result = CliRunner().invoke(
+        app,
+        ["handoff-research-auditor-adapter"],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["result"]["status"] == "COMPLETED"
+    assert payload["next_agent"]["name"] == "reviewer"
+    assert (
+        f"context.research_authorization.receipt_path={receipt_path}"
+        in payload["result"]["evidence"]
+    )
 
 
 def test_cli_handoff_research_auditor_adapter_routes_valid_receipt_to_reviewer(
@@ -1117,7 +1228,10 @@ def test_cli_handoff_research_auditor_adapter_routes_valid_receipt_to_reviewer(
     assert result.exit_code == 0
     assert payload["result"]["status"] == "COMPLETED"
     assert "schema-valid external research receipt" in payload["result"]["summary"]
-    assert f"context.research_authorization.receipt_path={receipt_path}" in payload["result"]["evidence"]
+    assert (
+        f"context.research_authorization.receipt_path={receipt_path}"
+        in payload["result"]["evidence"]
+    )
     assert "external_research_receipt.sources=1" in payload["result"]["evidence"]
     assert payload["next_agent"] == {
         "name": "reviewer",

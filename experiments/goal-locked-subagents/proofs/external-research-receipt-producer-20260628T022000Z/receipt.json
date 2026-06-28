@@ -1,0 +1,13 @@
+{
+  "method": "brave-search",
+  "query": "latest Chutes pricing",
+  "retrieved_at": "2026-06-28T02:20:00Z",
+  "schema": "tau.external_research_receipt.v1",
+  "sources": [
+    {
+      "title": "Chutes pricing",
+      "url": "https://chutes.ai/pricing"
+    }
+  ],
+  "summary": "Producer proof receipt from explicit source evidence. This is not live Brave Search output."
+}

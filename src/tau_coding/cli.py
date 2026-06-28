@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 from contextlib import redirect_stdout
+from datetime import UTC, datetime
 from os import environ
 from pathlib import Path
 from typing import Annotated
@@ -864,6 +865,15 @@ def main(
     if prompt_option is None and command == "handoff-research-auditor-adapter":
         try:
             payload = project_agent_handoff_research_auditor_adapter_command()
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if prompt_option is None and command == "external-research-receipt":
+        try:
+            options = _parse_external_research_receipt_cli_args(positional_args[1:])
+            payload = project_agent_external_research_receipt_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -1836,6 +1846,78 @@ def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, 
         else:
             raise RuntimeError(f"Unknown handoff-goal-guardian-adapter option: {arg}")
         index += 1
+    return options
+
+
+def _parse_external_research_receipt_cli_args(
+    args: list[str],
+) -> dict[str, str | Path | list[str] | None]:
+    options: dict[str, str | Path | list[str] | None] = {
+        "query": None,
+        "method": "brave-search",
+        "summary": None,
+        "sources": [],
+        "output": None,
+        "retrieved_at": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--query",
+            "--method",
+            "--summary",
+            "--source",
+            "--output",
+            "--retrieved-at",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--source":
+                sources = options["sources"]
+                if not isinstance(sources, list):
+                    raise RuntimeError("internal source parser error")
+                sources.append(value)
+            elif arg == "--output":
+                options["output"] = Path(value)
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--query",
+                "--method",
+                "--summary",
+                "--source",
+                "--output",
+                "--retrieved-at",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            if key == "--source":
+                sources = options["sources"]
+                if not isinstance(sources, list):
+                    raise RuntimeError("internal source parser error")
+                sources.append(value)
+            elif key == "--output":
+                options["output"] = Path(value)
+            else:
+                options[key.removeprefix("--").replace("-", "_")] = value
+        else:
+            raise RuntimeError(f"Unknown external-research-receipt option: {arg}")
+        index += 1
+
+    query = options["query"]
+    if not isinstance(query, str) or not query.strip():
+        raise RuntimeError("--query requires a non-empty value")
+    sources = options["sources"]
+    if not isinstance(sources, list) or not sources:
+        raise RuntimeError("at least one --source title|url value is required")
+    method = options["method"]
+    if not isinstance(method, str) or not method.strip():
+        raise RuntimeError("--method requires a non-empty value")
     return options
 
 
@@ -3524,7 +3606,10 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
                     "Fresh external research was not authorized; no Brave/WebGPT call was made."
                 ),
                 "evidence": [
-                    "research-auditor checked context.research_authorization.approved and found no approval"
+                    (
+                        "research-auditor checked context.research_authorization.approved "
+                        "and found no approval"
+                    )
                 ],
             },
             "rationale": (
@@ -3540,7 +3625,10 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
                 ),
             },
             "required_evidence": [
-                "Human posts a handoff with context.research_authorization.approved=true and a named research method."
+                (
+                    "Human posts a handoff with context.research_authorization.approved=true "
+                    "and a named research method."
+                )
             ],
             "stop_condition": "Human route is posted.",
         }
@@ -3616,7 +3704,9 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
             "next_agent": {
                 "name": "human",
                 "executor": "human",
-                "reason": "Human must attach a corrected external research receipt or stop the route.",
+                "reason": (
+                    "Human must attach a corrected external research receipt or stop the route."
+                ),
             },
             "required_evidence": [
                 f"Corrected external research receipt for {method} with non-empty sources."
@@ -3643,7 +3733,7 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
                 f"Fresh research lane {method} produced a schema-valid external research receipt."
             ),
             "evidence": [
-                f"context.research_authorization.approved=true",
+                "context.research_authorization.approved=true",
                 f"context.research_authorization.method={method}",
                 f"context.research_authorization.receipt_path={receipt_path}",
                 f"external_research_receipt.sources={source_count}",
@@ -3663,6 +3753,51 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
         ],
         "stop_condition": "Reviewer posts a schema-valid receipt.",
     }
+
+
+def project_agent_external_research_receipt_command(
+    *,
+    query: str,
+    method: str,
+    summary: str | None,
+    sources: list[str],
+    output: Path | None,
+    retrieved_at: str | None,
+) -> dict[str, object]:
+    """Create a durable external research receipt from explicit source evidence."""
+
+    normalized_query = query.strip()
+    normalized_method = method.strip()
+    if not normalized_query:
+        raise RuntimeError("--query requires a non-empty value")
+    if not normalized_method:
+        raise RuntimeError("--method requires a non-empty value")
+    parsed_sources = [_parse_external_research_source(source) for source in sources]
+    if not parsed_sources:
+        raise RuntimeError("at least one --source title|url value is required")
+    receipt = {
+        "schema": "tau.external_research_receipt.v1",
+        "method": normalized_method,
+        "query": normalized_query,
+        "retrieved_at": (
+            retrieved_at.strip()
+            if isinstance(retrieved_at, str) and retrieved_at.strip()
+            else datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        ),
+        "summary": (
+            summary.strip()
+            if isinstance(summary, str) and summary.strip()
+            else f"{len(parsed_sources)} explicit source(s) were attached for review."
+        ),
+        "sources": parsed_sources,
+    }
+    _, errors = _validate_external_research_receipt_payload(receipt, normalized_method)
+    if errors:
+        raise RuntimeError("; ".join(errors))
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return receipt
 
 
 def project_agent_handoff_goal_guardian_adapter_command(
@@ -3791,11 +3926,18 @@ def _load_external_research_receipt(
     method: str,
 ) -> tuple[dict[str, object], list[str]]:
     path = Path(receipt_path).expanduser()
-    errors: list[str] = []
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         return {}, [f"unreadable:{receipt_path}:{exc}"]
+    return _validate_external_research_receipt_payload(payload, method)
+
+
+def _validate_external_research_receipt_payload(
+    payload: object,
+    method: str,
+) -> tuple[dict[str, object], list[str]]:
+    errors: list[str] = []
     if not isinstance(payload, dict):
         return {}, ["receipt root must be a JSON object"]
     if payload.get("schema") != "tau.external_research_receipt.v1":
@@ -3827,6 +3969,19 @@ def _load_external_research_receipt(
             if not isinstance(url, str) or not url.strip():
                 errors.append(f"sources[{index}].url must be a non-empty string")
     return payload, errors
+
+
+def _parse_external_research_source(value: str) -> dict[str, str]:
+    title, separator, url = value.partition("|")
+    if not separator:
+        raise RuntimeError("--source must use title|url format")
+    title = title.strip()
+    url = url.strip()
+    if not title:
+        raise RuntimeError("--source title must be non-empty")
+    if not url:
+        raise RuntimeError("--source url must be non-empty")
+    return {"title": title, "url": url}
 
 
 def _project_agent_goal_guardian_reconciliation_handoff(

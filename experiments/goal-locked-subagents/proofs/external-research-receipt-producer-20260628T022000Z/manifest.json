@@ -1,0 +1,25 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Live Brave Search execution.",
+      "Live WebGPT execution.",
+      "Semantic correctness of the cited source."
+    ],
+    "proves": [
+      "Tau CLI can produce tau.external_research_receipt.v1 from explicit source evidence.",
+      "The produced stdout JSON and written receipt file match exactly."
+    ]
+  },
+  "command": "uv run tau external-research-receipt --query \"latest Chutes pricing\" --method brave-search --retrieved-at 2026-06-28T02:20:00Z --summary \"Producer proof receipt from explicit source evidence. This is not live Brave Search output.\" --source \"Chutes pricing|https://chutes.ai/pricing\" --output experiments/goal-locked-subagents/proofs/external-research-receipt-producer-20260628T022000Z/receipt.json",
+  "exit_code": 0,
+  "external_research_receipt_live": false,
+  "live": true,
+  "method": "brave-search",
+  "mocked": false,
+  "receipt": "experiments/goal-locked-subagents/proofs/external-research-receipt-producer-20260628T022000Z/receipt.json",
+  "receipt_schema": "tau.external_research_receipt.v1",
+  "schema": "tau.external_research_receipt_producer_proof.v1",
+  "source_count": 1,
+  "stdout_json": "experiments/goal-locked-subagents/proofs/external-research-receipt-producer-20260628T022000Z/stdout.json",
+  "stdout_matches_receipt": true
+}

@@ -1,10 +1,13 @@
 import json
 from pathlib import Path
 
-
 PROOF_DIR = (
     Path(__file__).resolve().parents[1]
     / "experiments/goal-locked-subagents/proofs/live-memory-chat-command-loop-20260628T013609Z"
+)
+RESEARCH_RECEIPT_PRODUCER_PROOF_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "experiments/goal-locked-subagents/proofs/external-research-receipt-producer-20260628T022000Z"
 )
 
 
@@ -31,7 +34,9 @@ def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> 
     }
 
     for route in manifest["routes"]:
-        start = json.loads((PROOF_DIR / Path(route["start_handoff"]).name).read_text(encoding="utf-8"))
+        start = json.loads(
+            (PROOF_DIR / Path(route["start_handoff"]).name).read_text(encoding="utf-8")
+        )
         receipt = json.loads(
             (PROOF_DIR / Path(route["command_loop_receipt"]).name).read_text(encoding="utf-8")
         )
@@ -63,3 +68,26 @@ def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> 
             assert route["selected_agent"] == dispatch["selected_agent"]
             assert route["command_exit"] == dispatch["command_results"][0]["exit_code"]
             assert receipt["step_count"] == 1
+
+
+def test_external_research_receipt_producer_proof_matches_written_receipt() -> None:
+    manifest = json.loads(
+        (RESEARCH_RECEIPT_PRODUCER_PROOF_DIR / "manifest.json").read_text(encoding="utf-8")
+    )
+    stdout_payload = json.loads(
+        (RESEARCH_RECEIPT_PRODUCER_PROOF_DIR / "stdout.json").read_text(encoding="utf-8")
+    )
+    receipt = json.loads(
+        (RESEARCH_RECEIPT_PRODUCER_PROOF_DIR / "receipt.json").read_text(encoding="utf-8")
+    )
+
+    assert manifest["schema"] == "tau.external_research_receipt_producer_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["external_research_receipt_live"] is False
+    assert manifest["exit_code"] == 0
+    assert manifest["stdout_matches_receipt"] is True
+    assert stdout_payload == receipt
+    assert receipt["schema"] == "tau.external_research_receipt.v1"
+    assert receipt["method"] == "brave-search"
+    assert len(receipt["sources"]) == 1
