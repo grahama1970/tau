@@ -1,0 +1,95 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "ux-lab-real-tui-receipt-stream-20260628T200200Z",
+  "created_at": "2026-06-28T20:02:00Z",
+  "surface": "ux-lab:#tau",
+  "url": "http://127.0.0.1:3002/#tau",
+  "mocked": false,
+  "live": true,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "ux_lab_repo": "/home/graham/workspace/experiments/pi-mono",
+    "files_touched_in_ux_lab": [
+      "packages/ux-lab/server/tauRoutes.ts",
+      "packages/ux-lab/server/tauRoutes.test.ts",
+      "packages/ux-lab/src/components/tau/TauChatView.tsx",
+      "packages/ux-lab/src/components/tau/TauChatView.test.ts"
+    ],
+    "source_type": "read-only Tau Loop2 receipt stream",
+    "source_run_dir": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0",
+    "source_events": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/events.jsonl",
+    "source_final_receipt": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/reliability-stress-20260626T205339Z/math_add/.loop2/runs/loop2-tau-stress-math_add-1782507220-da39d0/final-receipt.json"
+  },
+  "what_changed": [
+    "UX Lab API now exposes /api/tau/tui/receipt-stream as a fail-closed normalized view over real Tau Loop2 receipt artifacts.",
+    "The endpoint requires events.jsonl and final-receipt.json, checks loop2 schemas, checks matching run_id values, and requires mocked=false plus live=true.",
+    "The Tau #tau xterm pane now prefers receipt-stream terminal lines when the endpoint is available and falls back to the same-turn chat mirror if unavailable.",
+    "The xterm footer now reports receipt-stream versus chat-mirror source state and preserves the PersonaPlex fail-closed boundary."
+  ],
+  "evidence": {
+    "server_tests": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run server/tauRoutes.test.ts",
+      "exit_code": 0,
+      "files": 1,
+      "tests": 40
+    },
+    "focused_ui_tests": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run src/components/tau/TauChatView.test.ts src/components/tau/tauAgentHandoff.test.ts src/components/tau/tauPeerStatus.test.ts",
+      "exit_code": 0,
+      "files": 3,
+      "tests": 41
+    },
+    "typecheck": {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx tsc --noEmit --pretty false",
+      "exit_code": 0
+    },
+    "live_api_probe": {
+      "url": "http://127.0.0.1:3002/api/tau/tui/receipt-stream",
+      "ok": true,
+      "schema": "tau.tui_receipt_stream_view.v1",
+      "mocked": false,
+      "live": true,
+      "run_id": "loop2-tau-stress-math_add-1782507220-da39d0",
+      "event_count": 25,
+      "status": "PASS",
+      "latest_event_type": "receipt_written",
+      "transport_run_id": "otr-dbe45bcef515",
+      "stream_event_count": 13
+    },
+    "browser_proof": {
+      "receipt": "/tmp/tau-xterm-real-receipt-stream-20260628T2002/proof.json",
+      "screenshot": "/tmp/tau-xterm-real-receipt-stream-20260628T2002/real-receipt-stream.png",
+      "ok": true,
+      "mocked": false,
+      "live": true,
+      "visible_assertions": [
+        "receipt-stream",
+        "mocked=false live=true status=PASS",
+        "event stream tail:",
+        "receipt_written"
+      ]
+    },
+    "cdp_verification": {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url 'http://127.0.0.1:3002/#tau' --name tau-xterm-real-receipt-stream",
+      "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+      "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-xterm-real-receipt-stream/20260628T200108Z.png",
+      "read_json": "/tmp/codex-ui-verification/pi-mono/tau-xterm-real-receipt-stream/20260628T200108Z.read.json"
+    }
+  },
+  "claims": {
+    "proves": [
+      "The live Tau #tau xterm pane can render from real Tau Loop2 receipt artifacts instead of only synthetic in-browser chat state.",
+      "The receipt stream endpoint fails closed unless real events and a live non-mocked final receipt are present.",
+      "The rendered browser view visibly reports receipt-stream source state and shows event-tail lines from the Tau run."
+    ],
+    "does_not_prove": [
+      "An interactive PTY attached to a running Tau process.",
+      "Final Sparta Chat production readiness.",
+      "PersonaPlex or Embry audio activation.",
+      "Fresh live GitHub mutation from this exact UI run.",
+      "Unbounded autonomous subagent operation."
+    ]
+  },
+  "next_stop_condition": "For the PersonaPlex slice, require a real personaplex.publish_receipt.v1 or explicit fail-closed unavailable state before enabling Embry voice beyond metadata."
+}
