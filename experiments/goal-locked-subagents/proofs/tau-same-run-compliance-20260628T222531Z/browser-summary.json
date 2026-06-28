@@ -1,0 +1,13 @@
+{
+  "run_id": "tau-same-run-compliance-20260628T222531Z",
+  "browser": {
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "scenario": "compliance",
+    "next_agent": "reviewer",
+    "memory_request_count": 5,
+    "screenshot": "/tmp/tau-same-run-compliance-20260628T222531Z/browser/tau-live-memory-chat.png"
+  },
+  "assertions": null
+}

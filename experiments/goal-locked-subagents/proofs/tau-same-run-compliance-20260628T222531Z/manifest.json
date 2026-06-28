@@ -1,0 +1,122 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T22:25:31Z",
+  "ok": true,
+  "mocked": "mixed",
+  "live": "mixed",
+  "run_id": "tau-same-run-compliance-20260628T222531Z",
+  "scope": "Fresh same-run Tau COMPLIANCE chat to handoff-command-loop proof, with matching fixture-backed Textual TUI render",
+  "commands": [
+    {
+      "command": "TAU_CHAT_SCENARIO=compliance TAU_CHAT_PROOF_DIR=/tmp/tau-same-run-compliance-20260628T222531Z/browser TAU_CHAT_URL=http://127.0.0.1:3002/?tauSameRun=tau-same-run-compliance-20260628T222531Z#tau node scripts/tau-live-memory-chat-proof.mjs",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "mocked": false,
+      "live": true,
+      "summary": "Live browser proof wrote tau.live_memory_chat_browser_proof.v1 with scenario=compliance, Memory /intent HTTP 200, Memory /recall HTTP 200, tau.agent_handoff.v1 next_agent reviewer, dry-run GitHub transport, and orchestrator intake accepted."
+    },
+    {
+      "command": "TAU_UI_HANDOFF_PROOF=/tmp/tau-same-run-compliance-20260628T222531Z/browser/proof.json TAU_UI_HANDOFF_COMMAND_LOOP_PROOF_DIR=/tmp/tau-same-run-compliance-20260628T222531Z/command-loop node scripts/tau-ui-handoff-command-loop-proof.mjs",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "mocked": false,
+      "live": true,
+      "summary": "Tau consumed the exact browser-emitted handoff, selected reviewer, command exit was 0, and stopped at human after one bounded command-loop tick."
+    },
+    {
+      "command": "uv run tau tui-proof --out-dir /tmp/tau-same-run-compliance-20260628T222531Z/tui --run-id tau-same-run-compliance-20260628T222531Z --prompt 'How does Tau handle a CWE-287 SPARTA evidence case?' --next-agent reviewer --route COMPLIANCE",
+      "cwd": "/home/graham/workspace/experiments/tau",
+      "exit_code": 0,
+      "mocked": true,
+      "live": false,
+      "summary": "Fixture-backed Textual TUI proof wrote tau.textual_tui_render_proof.v1 and a matching PNG showing Accessing Memory state for the same run id and prompt."
+    }
+  ],
+  "artifacts": {
+    "browser_proof": "browser/proof.json",
+    "browser_screenshot": "browser/tau-live-memory-chat.png",
+    "browser_summary": "browser-summary.json",
+    "command_loop_summary": "command-loop/summary.json",
+    "command_loop_receipt": "command-loop/command-loop-receipt.json",
+    "command_loop_step_receipt": "command-loop/command-loop-step-001.receipt.json",
+    "start_handoff": "command-loop/start-handoff.json",
+    "tui_proof": "tui/proof.json",
+    "tui_screenshot_svg": "tui/tau-textual-tui-memory-stage.svg",
+    "tui_screenshot_png": "tui/tau-textual-tui-memory-stage.png"
+  },
+  "browser_summary": {
+    "schema": "tau.live_memory_chat_browser_proof.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "scenario": "compliance",
+    "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+    "url": "http://127.0.0.1:3002/?tauSameRun=tau-same-run-compliance-20260628T222531Z#tau",
+    "memory_request_count": 5,
+    "memory_requests": [
+      "GET /api/memory/health 200",
+      "GET /api/memory/health 200",
+      "POST /api/memory/upsert 200",
+      "POST /api/memory/intent 200",
+      "POST /api/memory/recall 200"
+    ],
+    "handoff_schema": "tau.agent_handoff.v1",
+    "handoff_next_agent": "reviewer",
+    "handoff_status": "NEEDS_REVIEW",
+    "github_transport_dry_run": true,
+    "github_transport_applied": false,
+    "orchestrator_intake_accepted": true
+  },
+  "command_loop_summary": {
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "step_count": 1,
+    "status": "WAITING",
+    "selected_agents": [
+      "reviewer"
+    ],
+    "command_exits": [
+      0
+    ],
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "tui_summary": {
+    "schema": "tau.textual_tui_render_proof.v1",
+    "ok": true,
+    "mocked": true,
+    "live": false,
+    "run_id": "tau-same-run-compliance-20260628T222531Z",
+    "route": "COMPLIANCE",
+    "next_agent": "reviewer",
+    "visible_assertions": {
+      "accessing_memory": true,
+      "handoff_schema": true,
+      "hidden_reasoning_absent": true,
+      "next_agent": true,
+      "prompt": true,
+      "run_id": true
+    }
+  },
+  "visual_inspection": {
+    "browser_screenshot": "Visible chat turn shows the user prompt, agent /create-evidence-case response, Memory action COMPLIANCE, confidence 0.95, and the live Tau route shell. The screenshot does not visibly show the full handoff JSON section because the chat pane is scrolled at the response body.",
+    "tui_screenshot": "Visible Textual TUI render shows Accessing Memory..., intent classified, entities extracted, memory recall started, and fixture-model metadata for the same run id."
+  },
+  "claims": {
+    "proves": [
+      "A fresh UX Lab Tau chat COMPLIANCE turn called live Memory endpoints and emitted a tau.agent_handoff.v1 routed to reviewer.",
+      "The exact browser-emitted handoff was consumed by Tau handoff-command-loop, which ran one bounded reviewer adapter command with exit 0 and stopped at human.",
+      "A matching fixture-backed Textual TUI render can display the same run id, prompt, route, next agent, and Memory stage labels."
+    ],
+    "does_not_prove": [
+      "Applied GitHub mutation for this same-run COMPLIANCE handoff; browser transport was dry-run.",
+      "Production Sparta Chat readiness.",
+      "Semantic correctness of the generated compliance evidence case.",
+      "Live external reviewer execution beyond the bounded local reviewer adapter command.",
+      "Interactive browser-embedded Textual TUI or live provider/Memory calls from the Textual TUI process.",
+      "Natural live Memory action=ANSWER emission."
+    ]
+  }
+}

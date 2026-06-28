@@ -1,0 +1,27 @@
+{
+  "run_id": "tau-same-run-compliance-20260628T222531Z",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "commandExitCode": 0,
+  "browserProof": {
+    "schema": "tau.live_memory_chat_browser_proof.v1",
+    "scenario": "compliance",
+    "screenshot": "/tmp/tau-same-run-compliance-20260628T222531Z/browser/tau-live-memory-chat.png",
+    "mocked": false,
+    "live": true
+  },
+  "commandLoop": {
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "status": "WAITING",
+    "mocked": false,
+    "live": true,
+    "stepCount": 1,
+    "selectedAgent": "reviewer",
+    "terminalAgent": "human",
+    "stopReason": "next_agent_is_human",
+    "firstCommandExitCode": 0
+  },
+  "commandLoopValidation": null
+}

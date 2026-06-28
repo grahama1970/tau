@@ -1,0 +1,27 @@
+{
+  "does_not_prove": [
+    "live provider call",
+    "live Memory backend call from the TUI process",
+    "interactive PTY embedded in UX Lab #tau",
+    "production Sparta Chat readiness"
+  ],
+  "exercised": "real TauTuiApp Textual rendering with fixture session and structured Tau Memory events",
+  "live": false,
+  "mocked": true,
+  "next_agent": "reviewer",
+  "ok": true,
+  "prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+  "route": "COMPLIANCE",
+  "run_id": "tau-same-run-compliance-20260628T222531Z",
+  "schema": "tau.textual_tui_render_proof.v1",
+  "screenshot_svg": "/tmp/tau-same-run-compliance-20260628T222531Z/tui/tau-textual-tui-memory-stage.svg",
+  "visible_assertions": {
+    "accessing_memory": true,
+    "handoff_schema": true,
+    "hidden_reasoning_absent": true,
+    "next_agent": true,
+    "prompt": true,
+    "run_id": true
+  },
+  "screenshot_png": "/tmp/tau-same-run-compliance-20260628T222531Z/tui/tau-textual-tui-memory-stage.png"
+}
