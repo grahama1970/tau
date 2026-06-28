@@ -1,0 +1,69 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T23:08:19Z",
+  "name": "ux-lab-annotation-label-hardening",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "UX Lab #tau Watch-style annotation modal label/control hardening",
+  "changed_files": [
+    "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.tsx",
+    "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.test.ts"
+  ],
+  "commands": [
+    {
+      "command": "npm run test -- TauChatView.test.ts",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "summary": "1 test file passed; 31 tests passed."
+    },
+    {
+      "command": "npx tsc -b",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 2,
+      "summary": "Full project TypeScript gate failed on broad pre-existing shared-chat and cross-surface type drift; not used as closure proof for this bounded Tau modal patch."
+    },
+    {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:3002/#tau --name tau-annotation-modal-label-hardening",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "summary": "Fresh CDP route screenshot and read_json generated."
+    }
+  ],
+  "browser_proof": {
+    "schema": "tau.annotation_modal_label_hardening_browser_proof.v1",
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-annotation-label-hardening-20260628T230819Z/browser-proof.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-annotation-label-hardening-20260628T230819Z/tau-annotation-modal-label-hardening.png",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "metrics": {
+      "modal_visible": true,
+      "actor_contained": true,
+      "label_z_index": "90",
+      "label_overflow": "hidden",
+      "label_text_overflow": "ellipsis",
+      "label_white_space": "nowrap"
+    }
+  },
+  "cdp": {
+    "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+    "meta": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-annotation-label-hardening-20260628T230819Z/cdp-meta.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-annotation-label-hardening-20260628T230819Z/cdp-route.png",
+    "read_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/ux-lab-annotation-label-hardening-20260628T230819Z/cdp-read.json"
+  },
+  "claims": {
+    "proves": [
+      "Tau annotation modal renders with stacked character and actor controls in a live browser.",
+      "Tau bbox labels are front-most, width-bounded, and ellipsis-truncated in a live browser.",
+      "The focused Tau component test encodes the label z-index and truncation helper contract."
+    ],
+    "does_not_prove": [
+      "Watch production annotation persistence.",
+      "Movie-library identity correctness.",
+      "Model or VLM character recognition correctness.",
+      "Interactive Textual TUI embedding in UX Lab.",
+      "Final Sparta Chat readiness."
+    ]
+  }
+}

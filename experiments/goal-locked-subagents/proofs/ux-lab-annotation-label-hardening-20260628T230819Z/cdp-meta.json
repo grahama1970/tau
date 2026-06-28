@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-06-28T23:08:19.296130+00:00",
+  "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+  "root": "/home/graham/workspace/experiments/pi-mono",
+  "output_root": "/tmp/codex-ui-verification/pi-mono",
+  "url": "http://127.0.0.1:3002/#tau",
+  "name": "tau-annotation-modal-label-hardening",
+  "screenshot": "/tmp/codex-ui-verification/pi-mono/tau-annotation-modal-label-hardening/20260628T230812Z.png",
+  "read_json": "/tmp/codex-ui-verification/pi-mono/tau-annotation-modal-label-hardening/20260628T230812Z.read.json"
+}

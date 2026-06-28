@@ -1,0 +1,62 @@
+{
+  "schema": "tau.annotation_modal_label_hardening_browser_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "url": "http://127.0.0.1:3002/#tau",
+  "screenshot": "/tmp/tau-annotation-modal-label-hardening-20260628T2310/tau-annotation-modal-label-hardening.png",
+  "errors": [],
+  "metrics": {
+    "modalVisible": true,
+    "frame": {
+      "x": 99,
+      "y": 308.078125,
+      "width": 800.859375,
+      "height": 450.46875,
+      "right": 899.859375,
+      "bottom": 758.546875
+    },
+    "actor": {
+      "x": 913.859375,
+      "y": 325.078125,
+      "width": 427.125,
+      "height": 38,
+      "right": 1340.984375,
+      "bottom": 363.078125
+    },
+    "actorParent": {
+      "x": 913.859375,
+      "y": 305.078125,
+      "width": 427.125,
+      "height": 58,
+      "right": 1340.984375,
+      "bottom": 363.078125
+    },
+    "actorContained": true,
+    "label": {
+      "x": 435.515625,
+      "y": 438.546875,
+      "width": 280,
+      "height": 23,
+      "right": 715.515625,
+      "bottom": 461.546875
+    },
+    "labelText": "Willie · Billy Bob Thornton with an intentionally long actor label for truncation proof",
+    "labelZIndex": "90",
+    "labelMaxWidth": "min(280px, 58% - 8px)",
+    "labelOverflow": "hidden",
+    "labelTextOverflow": "ellipsis",
+    "labelWhiteSpace": "nowrap"
+  },
+  "claims": {
+    "proves": [
+      "Tau annotation modal renders with stacked character/actor controls and bounded front-most bbox label in a live browser."
+    ],
+    "does_not_prove": [
+      "Watch production annotation persistence",
+      "model identity correctness",
+      "interactive Textual TUI embedding",
+      "final Sparta Chat readiness"
+    ]
+  }
+}
