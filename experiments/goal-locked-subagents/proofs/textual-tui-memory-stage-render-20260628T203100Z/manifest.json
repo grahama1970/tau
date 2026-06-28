@@ -1,0 +1,65 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "run_id": "textual-tui-memory-stage-render-20260628T203100Z",
+  "created_at": "2026-06-28T20:31:00Z",
+  "surface": "tau:textual-tui",
+  "mocked": true,
+  "live": false,
+  "status": "evidence-recorded",
+  "implementation_scope": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "entrypoint": "tau_coding.tui.app.TauTuiApp",
+    "source_type": "real Textual TUI app with fixture session and structured Tau Memory events",
+    "fixture_prompt": "How does Tau handle a CWE-287 SPARTA evidence case?",
+    "shared_run_id": "loop2-tau-stress-math_add-1782507220-da39d0"
+  },
+  "what_changed": [
+    "No production code changed for this proof.",
+    "The proof directly exercised the real TauTuiApp Textual renderer with structured Memory pipeline events.",
+    "The visual evidence separates this real Textual TUI proof from the UX Lab xterm receipt terminal, which is not an interactive Textual TUI."
+  ],
+  "evidence": {
+    "targeted_tests": {
+      "command": "cd /home/graham/workspace/experiments/tau && uv run pytest tests/test_tui_adapter.py::test_tui_adapter_updates_hidden_thinking_status_from_pipeline_stage tests/test_tui_app.py::test_tui_app_updates_hidden_thinking_label_from_pipeline_stage -q",
+      "exit_code": 0,
+      "tests": 2
+    },
+    "textual_render_proof": {
+      "receipt": "/tmp/tau-real-textual-tui-memory-stage-20260628T2031/proof.json",
+      "screenshot_svg": "/tmp/tau-real-textual-tui-memory-stage-20260628T2031/tau-textual-tui-memory-stage.svg",
+      "screenshot_png": "/tmp/tau-real-textual-tui-memory-stage-20260628T2031/tau-textual-tui-memory-stage.png",
+      "ok": true,
+      "mocked": true,
+      "live": false,
+      "visible_assertions": [
+        "Accessing Memory...",
+        "run_id=loop2-tau-stress-math_add-1782507220-da39d0"
+      ],
+      "text_assertions": [
+        "How does Tau handle a CWE-287 SPARTA evidence case?",
+        "tau.agent_handoff.v1",
+        "next_agent=reviewer",
+        "hidden reasoning text absent"
+      ]
+    },
+    "handoff_context_screenshot": {
+      "screenshot_png": "/tmp/tau-real-textual-tui-memory-stage-20260628T2028/tau-textual-tui-memory-stage.png",
+      "notes": "Earlier capture from the same proof construction visibly shows the prompt and compact handoff text. It did not show Accessing Memory, so it is supporting context rather than the primary stage proof."
+    }
+  },
+  "claims": {
+    "proves": [
+      "The real Tau Textual TUI can render a Memory pipeline stage label such as Accessing Memory from structured Tau event data.",
+      "The real Tau Textual TUI can display the shared Loop2 run id alongside the Memory-stage transcript state.",
+      "The Textual TUI proof is distinct from the UX Lab xterm receipt terminal proof."
+    ],
+    "does_not_prove": [
+      "A live provider call from the Textual TUI.",
+      "A live Memory backend call from the Textual TUI process.",
+      "An interactive Textual TUI embedded in UX Lab #tau.",
+      "Same-message end-to-end synchronization between the live React chat and a running Textual TUI process.",
+      "Production Sparta Chat readiness."
+    ]
+  },
+  "next_stop_condition": "To prove same-message TUI/chat synchronization, drive the Textual TUI and React chat from the same fresh run id or attach UX Lab to a real PTY-backed Tau TUI process."
+}
