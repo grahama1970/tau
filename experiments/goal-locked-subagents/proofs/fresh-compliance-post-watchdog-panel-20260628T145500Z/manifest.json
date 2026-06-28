@@ -1,0 +1,95 @@
+{
+  "schema": "tau.fresh_compliance_post_watchdog_panel_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_utc": "2026-06-28T14:59:00Z",
+  "scope": "Fresh post-watchdog-panel Tau COMPLIANCE browser turn, same-run command-loop dispatch, and apply-gated terminal GitHub transport.",
+  "source": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "tau_head_before_manifest": "c7cb662161862d72e3abffaef9fc3c9ece31f5e8",
+    "pi_mono_repo": "/home/graham/workspace/experiments/pi-mono",
+    "pi_mono_commit": "79f45fec623f8d0b07167df2a06a0c5d2490242e",
+    "url": "http://127.0.0.1:4302/?tauFresh=20260628T145500Z#tau"
+  },
+  "browser_proof": {
+    "path": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/browser-compliance/proof.json",
+    "screenshot": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/browser-compliance/tau-live-memory-chat.png",
+    "schema": "tau.live_memory_chat_browser_proof.v1",
+    "scenario": "compliance",
+    "mocked": false,
+    "live": true,
+    "memory_requests": [
+      "/api/memory/intent",
+      "/api/memory/recall"
+    ],
+    "handoff_schema": "tau.agent_handoff.v1",
+    "previous_subagent": "webgpt-ticket-author",
+    "next_agent": "reviewer",
+    "result_status": "NEEDS_REVIEW",
+    "visible_evidence": [
+      "CREATING EVIDENCE CASE (4/4)",
+      "action COMPLIANCE",
+      "CWE-287",
+      "Tau handoff JSON contract",
+      "next agent reviewer"
+    ]
+  },
+  "command_loop": {
+    "summary": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/command-loop-proof/summary.json",
+    "start_handoff": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/command-loop-proof/start-handoff.json",
+    "receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/command-loop-proof/command-loop/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/command-loop-proof/command-loop/command-loop-step-001.receipt.json",
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "selected_agent_command_exit_code": 0,
+    "status": "WAITING",
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "github_transport": {
+    "dry_run_receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/github-transport-dry-run.json",
+    "apply_receipt": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/github-transport-apply.json",
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "dry_run_ok": true,
+    "apply_ok": true,
+    "applied": true,
+    "created_issue": {
+      "number": 16,
+      "url": "https://github.com/grahama1970/tau/issues/16",
+      "final": "experiments/goal-locked-subagents/proofs/fresh-compliance-post-watchdog-panel-20260628T145500Z/github-issue-16-final.json",
+      "final_state": "CLOSED",
+      "final_labels": [
+        "agent-work",
+        "agent-done",
+        "executor:human"
+      ],
+      "comment_count": 1,
+      "closed_at": "2026-06-28T14:58:30Z"
+    },
+    "secret_scan": {
+      "command": "rg scan for GitHub token markers in proof directory",
+      "matches": 0
+    }
+  },
+  "claims": {
+    "proves": [
+      "After the watchdog receipt-chain panel commit, the Tau UX Lab chat still runs a fresh live Memory-first COMPLIANCE browser turn.",
+      "That fresh browser turn emitted tau.agent_handoff.v1 from webgpt-ticket-author to reviewer with the active goal hash preserved.",
+      "Tau handoff-command-loop consumed the same fresh handoff, selected reviewer, ran one bounded command with exit 0, and stopped at human.",
+      "The command-loop terminal handoff rendered and applied GitHub issue creation for the terminal next-human route, creating issue #16, which was then closed and labeled agent-done."
+    ],
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Unbounded autonomous subagent operation.",
+      "Semantic correctness of the compliance answer.",
+      "Human acceptance of the terminal human route.",
+      "Live Brave search execution.",
+      "A multi-step non-human subagent chain beyond reviewer to human."
+    ]
+  }
+}
