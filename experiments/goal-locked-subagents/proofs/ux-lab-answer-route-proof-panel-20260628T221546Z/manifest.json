@@ -1,0 +1,75 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T22:15:46Z",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "scope": "UX Lab #tau Fresh ANSWER Browser Proof panel rendering and API normalization",
+  "source_repo": {
+    "name": "grahama1970/pi-mono",
+    "branch": "persona/tim-blazytko-1774553751276",
+    "commit": "36ae4a63d",
+    "commit_subject": "Show Tau answer route proof panel"
+  },
+  "tau_repo": {
+    "name": "grahama1970/tau",
+    "branch": "main"
+  },
+  "changed_files": [
+    "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/server/tauRoutes.ts",
+    "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/server/tauRoutes.test.ts",
+    "/home/graham/workspace/experiments/pi-mono/packages/ux-lab/src/components/tau/TauChatView.tsx"
+  ],
+  "commands": [
+    {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run server/tauRoutes.test.ts src/components/tau/TauChatView.test.ts",
+      "exit_code": 0,
+      "summary": "2 files passed; 83 tests passed."
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx tsc --noEmit --pretty false",
+      "exit_code": 0,
+      "summary": "TypeScript check exited 0."
+    },
+    {
+      "command": "curl http://127.0.0.1:3001/api/tau/memory/routes/answer-browser-proof",
+      "exit_code": 0,
+      "summary": "API returned HTTP 200 with schema tau.answer_route_browser_proof_view.v1, mocked=false, live=true, hasAnswer200=true, memoryRequestCount=4, and prior fail-closed /answer 502 preserved."
+    },
+    {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:3002/#tau --name tau-answer-route-proof-panel",
+      "exit_code": 0,
+      "summary": "Fresh CDP screenshot and read JSON captured for UX Lab #tau."
+    }
+  ],
+  "artifacts": {
+    "browser_proof": "browser/proof.json",
+    "browser_screenshot": "browser/answer-route-proof-panel.png",
+    "cdp_screenshot": "cdp/tau-answer-route-proof-panel.png",
+    "cdp_read_json": "cdp/tau-answer-route-proof-panel.read.json",
+    "source_answer_route_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T152045Z/manifest.json"
+  },
+  "browser_proof_summary": {
+    "proof_json": "browser/proof.json",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "url": "http://127.0.0.1:3002/#tau",
+    "missing": [],
+    "errors": []
+  },
+  "claims": {
+    "proves": [
+      "UX Lab #tau renders a distinct Fresh ANSWER Browser Proof panel backed by Tau's fresh-answer-browser-route manifest.",
+      "The API normalizer fails closed unless the source manifest is ok, mocked=false, live=true, contains /api/memory/intent HTTP 200, contains /api/memory/answer HTTP 200, and contains required visible answer assertions.",
+      "The visible panel preserves the prior fail-closed /api/memory/answer 502 run separately from the successful ANSWER-route proof."
+    ],
+    "does_not_prove": [
+      "Natural live Memory action=ANSWER emission; the source proof uses QUERY plus response_mode=memory_grounded_answer.",
+      "Applied GitHub mutation for the ANSWER-route handoff.",
+      "Real external subagent execution from the ANSWER-route handoff.",
+      "Production Sparta Chat readiness.",
+      "An interactive browser-embedded Textual TUI."
+    ]
+  }
+}

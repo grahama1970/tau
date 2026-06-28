@@ -1,0 +1,24 @@
+{
+  "schema": "tau.answer_route_proof_panel_browser_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "url": "http://127.0.0.1:3002/#tau",
+  "textExcerpt": "Fresh ANSWER Browser Proof\n\nThis separate receipt covers the newer browser turn that called Memory `/answer`; it does not rewrite the older route-coverage limitation above.\n\nANSWER PROOF\nMOCKED\nfalse\nLIVE\ntrue\nMEMORY CALLS\n4\n/ANSWER\nHTTP 200\n\nTau UX Lab chat ANSWER route via Memory intent response_mode=memory_grounded_answer\n\nPROMPT\nWhat is the current project status?\n/INTENT\nHTTP 200\nVISIBLE CAN_ANSWER\ntrue\nPRIOR FAILURE\n/answer 502 fail-closed\nDOES NOT PROVE\nNatural live Memory action=ANSWER emission; this proof uses QUERY plus response_mode=memory_grounded_answer.\nApplied GitHub mutation for the ANSWER handoff; transport is dryRun=true.\nA real external subagent execution from the ANSWER route; receipt intake is dry-run/fixture-backed.\nProduction Sparta Chat readiness.\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/fresh-answer-browser-route-20260628T152045Z/manifest.json",
+  "missing": [],
+  "errors": [],
+  "screenshotPath": "/tmp/tau-answer-route-proof-panel-20260628T2216/answer-route-proof-panel.png",
+  "claims": {
+    "proves": [
+      "UX Lab #tau visibly renders the fresh ANSWER browser proof panel.",
+      "The panel shows /answer HTTP 200, visible can_answer, and prior /answer 502 fail-closed evidence.",
+      "The panel preserves the non-claim that natural action=ANSWER emission is not proven."
+    ],
+    "does_not_prove": [
+      "A new live Memory /answer call was executed by this browser verification.",
+      "Applied GitHub mutation for the ANSWER handoff.",
+      "Real external subagent execution.",
+      "Final Sparta Chat readiness."
+    ]
+  }
+}
