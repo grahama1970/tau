@@ -281,15 +281,26 @@ def brave_required(
 
 def call_memory_answer(query: str, *, scope: str) -> dict[str, Any]:
     payload, call_status = memory_post_result("/answer", {"q": query, "scope": scope, "k": 5})
-    status = "PASS" if payload.get("can_answer") is True else "NEEDS_MORE_EVIDENCE"
     if call_status == "FAILED":
         status = "FAILED"
+        validation_errors: list[str] = []
+    else:
+        validation_errors = validate_memory_product(
+            payload,
+            expected_schema="memory.answer.v1",
+            required_bool_fields=("can_answer",),
+        )
+        if validation_errors:
+            status = "FAILED"
+        else:
+            status = "PASS" if payload.get("can_answer") is True else "NEEDS_MORE_EVIDENCE"
     return {
         "schema": "tau.loop2_memory_answer_branch.v1",
         "ran": True,
         "endpoint": "/answer",
         "payload": payload,
         "status": status,
+        "validation_errors": validation_errors,
     }
 
 
@@ -303,12 +314,22 @@ def call_memory_clarify(
     if evidence_case is not None:
         request["evidence_case"] = evidence_case
     payload, call_status = memory_post_result("/clarify", request)
+    validation_errors = (
+        []
+        if call_status == "FAILED"
+        else validate_memory_product(
+            payload,
+            expected_schema="memory.clarify.v1",
+            required_bool_fields=("needs_clarification",),
+        )
+    )
     return {
         "schema": "tau.loop2_memory_clarify_branch.v1",
         "ran": True,
         "endpoint": "/clarify",
         "payload": payload,
-        "status": call_status,
+        "status": "FAILED" if validation_errors else call_status,
+        "validation_errors": validation_errors,
     }
 
 
@@ -317,13 +338,40 @@ def call_memory_deflect(query: str, *, intent_action: str) -> dict[str, Any]:
         "/deflect",
         {"q": query, "intent_action": intent_action},
     )
+    validation_errors = (
+        []
+        if call_status == "FAILED"
+        else validate_memory_product(
+            payload,
+            expected_schema="memory.deflect.v1",
+            required_bool_fields=("should_deflect",),
+        )
+    )
     return {
         "schema": "tau.loop2_memory_deflect_branch.v1",
         "ran": True,
         "endpoint": "/deflect",
         "payload": payload,
-        "status": call_status,
+        "status": "FAILED" if validation_errors else call_status,
+        "validation_errors": validation_errors,
     }
+
+
+def validate_memory_product(
+    payload: dict[str, Any],
+    *,
+    expected_schema: str,
+    required_bool_fields: tuple[str, ...],
+) -> list[str]:
+    """Return fail-closed validation errors for first-class Memory products."""
+
+    errors: list[str] = []
+    if payload.get("schema") != expected_schema:
+        errors.append(f"expected schema {expected_schema}, got {payload.get('schema')!r}")
+    for field in required_bool_fields:
+        if not isinstance(payload.get(field), bool):
+            errors.append(f"expected boolean field {field}")
+    return errors
 
 
 def run_create_evidence_case(query: str, *, category: str = "compliance") -> dict[str, Any]:
@@ -542,18 +590,30 @@ def run_brave_web(query: str, *, count: int = 5) -> dict[str, Any]:
     )
     payload: dict[str, Any]
     if process.returncode == 0:
-        payload = json.loads(process.stdout)
+        try:
+            payload = json.loads(process.stdout)
+        except json.JSONDecodeError as exc:
+            payload = {
+                "query": query,
+                "results": [],
+                "parse_error": str(exc),
+                "stdout_tail": process.stdout[-2000:],
+            }
+            returncode = 1
+        else:
+            returncode = process.returncode
     else:
         payload = {
             "query": query,
             "results": [],
             "error": process.stderr.strip() or process.stdout.strip(),
         }
+        returncode = process.returncode
     return {
         "schema": "tau.loop2_brave_search.v1",
         "ran": True,
-        "returncode": process.returncode,
-        "status": "PASS" if process.returncode == 0 else "FAILED",
+        "returncode": returncode,
+        "status": "PASS" if returncode == 0 else "FAILED",
         "query": query,
         "result_count": len(payload.get("results") or []),
         "payload": payload,

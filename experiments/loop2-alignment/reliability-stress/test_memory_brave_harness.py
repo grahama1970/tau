@@ -282,6 +282,22 @@ def test_answer_branch_fails_closed_when_memory_cannot_answer(
     assert harness.branch_failed_closed(result) is True
 
 
+def test_answer_branch_fails_closed_on_invalid_memory_product(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_memory_post(path: str, payload: dict[str, object]) -> dict[str, object]:
+        assert path == "/answer"
+        return {"schema": "memory.answer.v1", "final_response": "unsupported"}
+
+    monkeypatch.setattr(harness, "memory_post", fake_memory_post)
+
+    result = harness.call_memory_answer("unsupported claim", scope="tau")
+
+    assert result["status"] == "FAILED"
+    assert "expected boolean field can_answer" in result["validation_errors"]
+    assert harness.branch_failed_closed(result) is True
+
+
 def test_clarify_branch_can_include_evidence_case(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[tuple[str, dict[str, object]]] = []
 
@@ -302,6 +318,20 @@ def test_clarify_branch_can_include_evidence_case(monkeypatch: pytest.MonkeyPatc
     assert result["status"] == "PASS"
 
 
+def test_clarify_branch_fails_closed_on_wrong_schema(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_memory_post(path: str, payload: dict[str, object]) -> dict[str, object]:
+        assert path == "/clarify"
+        return {"schema": "memory.answer.v1", "needs_clarification": True}
+
+    monkeypatch.setattr(harness, "memory_post", fake_memory_post)
+
+    result = harness.call_memory_clarify("ambiguous", scope="tau")
+
+    assert result["status"] == "FAILED"
+    assert "expected schema memory.clarify.v1" in result["validation_errors"][0]
+    assert harness.branch_failed_closed(result) is True
+
+
 def test_clarify_branch_fails_closed_on_memory_error(monkeypatch: pytest.MonkeyPatch) -> None:
     request = httpx.Request("POST", "http://127.0.0.1:8601/clarify")
     response = httpx.Response(503, request=request, text="unavailable")
@@ -319,6 +349,21 @@ def test_clarify_branch_fails_closed_on_memory_error(monkeypatch: pytest.MonkeyP
     assert harness.branch_failed_closed(result) is True
 
 
+def test_clarify_branch_accepts_no_clarification_product(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_memory_post(path: str, payload: dict[str, object]) -> dict[str, object]:
+        assert path == "/clarify"
+        return {"schema": "memory.clarify.v1", "needs_clarification": False}
+
+    monkeypatch.setattr(harness, "memory_post", fake_memory_post)
+
+    result = harness.call_memory_clarify("specific enough", scope="tau")
+
+    assert result["status"] == "PASS"
+    assert result["validation_errors"] == []
+
+
 def test_deflect_branch_calls_memory_deflect(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[tuple[str, dict[str, object]]] = []
 
@@ -332,6 +377,22 @@ def test_deflect_branch_calls_memory_deflect(monkeypatch: pytest.MonkeyPatch) ->
 
     assert calls == [("/deflect", {"q": "weather", "intent_action": "NO_MATCH"})]
     assert result["status"] == "PASS"
+
+
+def test_deflect_branch_fails_closed_on_invalid_memory_product(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_memory_post(path: str, payload: dict[str, object]) -> dict[str, object]:
+        assert path == "/deflect"
+        return {"schema": "memory.deflect.v1", "final_response": "not routed"}
+
+    monkeypatch.setattr(harness, "memory_post", fake_memory_post)
+
+    result = harness.call_memory_deflect("weather", intent_action="NO_MATCH")
+
+    assert result["status"] == "FAILED"
+    assert "expected boolean field should_deflect" in result["validation_errors"]
+    assert harness.branch_failed_closed(result) is True
 
 
 def test_deflect_branch_records_http_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -372,6 +433,23 @@ def test_research_branch_fails_closed_when_brave_required_but_disabled() -> None
     assert result["ran"] is False
     assert result["status"] == "FAILED"
     assert result["reason"] == "required_but_disabled"
+    assert harness.branch_failed_closed(result) is True
+
+
+def test_research_branch_fails_closed_on_malformed_brave_json(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(args=args, returncode=0, stdout="not-json", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = harness.run_brave_web("latest Tau docs")
+
+    assert result["schema"] == "tau.loop2_brave_search.v1"
+    assert result["status"] == "FAILED"
+    assert result["returncode"] == 1
+    assert result["payload"]["parse_error"]
     assert harness.branch_failed_closed(result) is True
 
 

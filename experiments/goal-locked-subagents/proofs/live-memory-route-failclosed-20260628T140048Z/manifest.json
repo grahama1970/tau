@@ -1,0 +1,137 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Browser chat rendering for this fresh run.",
+      "Final Sparta Chat readiness.",
+      "Live Brave search execution for this run.",
+      "Selector-selected ANSWER route for the natural-language answer probes."
+    ],
+    "proves": [
+      "CLARIFY and DEFLECT live route products still pass through Memory-first harness receipts.",
+      "ANSWER adapter accepts a live memory.answer.v1 product only after schema/field validation.",
+      "RESEARCH route with Brave disabled fails closed with branch_status=FAILED and fail_closed=true.",
+      "The selector does not force an answer when live Memory intent/extract evidence is ambiguous."
+    ]
+  },
+  "created_utc": "2026-06-28T14:00:48Z",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": "Fresh live Memory service route products plus fail-closed RESEARCH-disabled branch after adapter hardening.",
+  "route_count": 5,
+  "routes": [
+    {
+      "branch_schema": "tau.loop2_memory_clarify_branch.v1",
+      "branch_status": "PASS",
+      "current_stage": {
+        "label": "Clarifying...",
+        "schema": "tau.loop2_pipeline_stage.v1",
+        "source": "memory.clarify",
+        "stage": "clarify",
+        "status": "PASS"
+      },
+      "fail_closed": false,
+      "intent_action": "QUERY",
+      "live": true,
+      "memory_product_schema": "memory.clarify.v1",
+      "mocked": false,
+      "query": "What does it mean?",
+      "receipt": "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/clarify-harness-receipt.json",
+      "route": "CLARIFY",
+      "selected_skill": "memory.clarify",
+      "selection_reasons": [
+        "unresolved_or_missing_entities"
+      ],
+      "validation_errors": []
+    },
+    {
+      "branch_schema": "tau.loop2_memory_deflect_branch.v1",
+      "branch_status": "PASS",
+      "current_stage": {
+        "label": "Preparing Persona Voice...",
+        "schema": "tau.loop2_pipeline_stage.v1",
+        "source": "personaplex",
+        "stage": "personaplex",
+        "status": "REQUESTED_NO_PERSONAPLEX_RECEIPT"
+      },
+      "fail_closed": false,
+      "intent_action": "NO_MATCH",
+      "live": true,
+      "memory_product_schema": "memory.deflect.v1",
+      "mocked": false,
+      "query": "tell me today's weather in Tokyo",
+      "receipt": "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/deflect-harness-receipt.json",
+      "route": "DEFLECT",
+      "selected_skill": "memory.deflect",
+      "selection_reasons": [
+        "memory_intent_no_match"
+      ],
+      "validation_errors": []
+    },
+    {
+      "branch_schema": "tau.loop2_memory_clarify_branch.v1",
+      "branch_status": "PASS",
+      "current_stage": {
+        "label": "Clarifying...",
+        "schema": "tau.loop2_pipeline_stage.v1",
+        "source": "memory.clarify",
+        "stage": "clarify",
+        "status": "PASS"
+      },
+      "fail_closed": false,
+      "intent_action": "QUERY",
+      "live": true,
+      "memory_product_schema": "memory.clarify.v1",
+      "mocked": false,
+      "query": "What is Tau project knowledge?",
+      "receipt": "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/answer-harness-receipt.json",
+      "route": "ANSWER_SELECTOR_ATTEMPT",
+      "selected_skill": "memory.clarify",
+      "selection_reasons": [
+        "unresolved_or_missing_entities"
+      ],
+      "validation_errors": []
+    },
+    {
+      "branch_schema": "tau.loop2_memory_answer_branch.v1",
+      "branch_status": "PASS",
+      "current_stage": null,
+      "fail_closed": false,
+      "intent_action": null,
+      "live": true,
+      "memory_product_schema": "memory.answer.v1",
+      "mocked": false,
+      "query": "What does memory know about Tau project watchdog apply transport proof?",
+      "receipt": "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/answer-direct-memory-product.json",
+      "route": "ANSWER_DIRECT_PRODUCT",
+      "selected_skill": null,
+      "selection_reasons": null,
+      "validation_errors": []
+    },
+    {
+      "branch_schema": "tau.loop2_brave_search.v1",
+      "branch_status": "FAILED",
+      "current_stage": {
+        "label": "Searching Web...",
+        "schema": "tau.loop2_pipeline_stage.v1",
+        "source": "brave-search",
+        "stage": "brave_search",
+        "status": "FAILED"
+      },
+      "fail_closed": true,
+      "intent_action": "RESEARCH",
+      "live": true,
+      "memory_product_schema": null,
+      "mocked": false,
+      "query": "Find current Tau harness research sources",
+      "receipt": "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/research-disabled-harness-receipt.json",
+      "route": "RESEARCH_BRAVE_DISABLED",
+      "selected_skill": "brave-search",
+      "selection_reasons": [
+        "memory_intent_research"
+      ],
+      "validation_errors": null
+    }
+  ],
+  "schema": "tau.live_memory_route_failclosed_proof.v1"
+}

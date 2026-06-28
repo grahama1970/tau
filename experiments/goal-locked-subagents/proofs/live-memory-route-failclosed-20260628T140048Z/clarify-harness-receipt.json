@@ -1,0 +1,670 @@
+{
+  "branch": {
+    "endpoint": "/clarify",
+    "payload": {
+      "clarify_questions": [],
+      "confidence": 7.078,
+      "diagnostics": {
+        "zero_bridges": true
+      },
+      "evidence": {
+        "richness_score": 0.0
+      },
+      "fallback_used": false,
+      "final_response": "No clarification is required for this request.",
+      "final_response_origin": "deterministic",
+      "intent": {
+        "action": "QUERY",
+        "bridges": [],
+        "confidence": 0.8,
+        "entities": [],
+        "tier1": []
+      },
+      "needs_clarification": false,
+      "recall": {
+        "confidence": 7.078,
+        "errors": [],
+        "found": true,
+        "items": [
+          {
+            "_id": "sparta_controls/ctrl__PM-16(1)",
+            "_key": "ctrl__PM-16(1)",
+            "_source": "sparta_controls",
+            "control_id": "PM-16(1)",
+            "control_type": "nist_control",
+            "description": "To maximize the effectiveness of monitoring, it is important to know what threat observables and indicators the sensors need to be searching for. By using well-established frameworks, services, and automated tools, organizations improve their ability to rapidly share and feed the relevant threat detection signatures into monitoring tools.\n\nEmploy automated mechanisms to maximize the effectiveness of sharing threat intelligence information.",
+            "domain": "",
+            "name": "Threat Awareness Program | Automated Means for Sharing Threat Intelligence",
+            "parent_id": "Program Management",
+            "scores": {
+              "bm25": 11.797205924987793,
+              "dense": 0.1619567,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "NIST",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/ctrl__CWE-104",
+            "_key": "ctrl__CWE-104",
+            "_source": "sparta_controls",
+            "control_id": "CWE-104",
+            "control_type": "cwe_weakness",
+            "description": "If a form bean does not extend an ActionForm subclass of the Validator framework, it can expose the application to other weaknesses related to insufficient input validation.",
+            "domain": "",
+            "name": "Struts: Form Bean Does Not Extend Validation Class",
+            "parent_id": "CWE-573",
+            "scores": {
+              "bm25": 11.67937183380127,
+              "dense": 0.046199944,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "CWE",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/ctrl__CWE-664",
+            "_key": "ctrl__CWE-664",
+            "_source": "sparta_controls",
+            "control_id": "CWE-664",
+            "control_type": "cwe_weakness",
+            "description": "The product does not maintain or incorrectly maintains control over a resource throughout its lifetime of creation, use, and release.",
+            "domain": "",
+            "name": "Improper Control of a Resource Through its Lifetime",
+            "parent_id": null,
+            "scores": {
+              "bm25": 11.133458137512207,
+              "dense": 0.1237106,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "CWE",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/ctrl__CWE-356",
+            "_key": "ctrl__CWE-356",
+            "_source": "sparta_controls",
+            "control_id": "CWE-356",
+            "control_type": "cwe_weakness",
+            "description": "The product's user interface does not warn the user before undertaking an unsafe action on behalf of that user. This makes it easier for attackers to trick users into inflicting damage to their system.",
+            "domain": "",
+            "name": "Product UI does not Warn User of Unsafe Actions",
+            "parent_id": "CWE-221",
+            "scores": {
+              "bm25": 10.964706420898438,
+              "dense": 0.07714555,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "CWE",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/ctrl__CWE-446",
+            "_key": "ctrl__CWE-446",
+            "_source": "sparta_controls",
+            "control_id": "CWE-446",
+            "control_type": "weakness",
+            "description": "When the user interface does not properly reflect what the user asks of it, then it can lead the user into a false sense of security. For example, the user might check a box to enable a security option to enable encrypted communications, but the product does not actually enable the encryption. Alternately, the user might provide a \"restrict ALL\" access control rule, but the product only implements \"restrict SOME\".",
+            "domain": "",
+            "name": "CWE-446",
+            "parent_id": "",
+            "scores": {
+              "bm25": 10.712754249572754,
+              "dense": 0.123728365,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "CWE",
+            "type": "control_metadata"
+          }
+        ],
+        "meta": {
+          "k": 5,
+          "memory_first": true,
+          "q": "What does it mean?",
+          "runtime_pressure": {
+            "active_workloads": [],
+            "checked_at": 1782655312,
+            "level": "normal",
+            "recommended_action": "No active persisted runtime pressure detected.",
+            "slow_query_risk": false,
+            "sources": []
+          },
+          "scope": "tau-loop2-harness",
+          "supplemental_count": 47,
+          "supplemental_promoted": 47,
+          "threshold": 0.3,
+          "took_ms": 24769,
+          "used_dense": true,
+          "used_reranker": false
+        },
+        "should_scan": false
+      },
+      "schema": "memory.clarify.v1",
+      "taxonomy": {
+        "bridges": [],
+        "merged_bridges": []
+      }
+    },
+    "ran": true,
+    "schema": "tau.loop2_memory_clarify_branch.v1",
+    "status": "PASS",
+    "validation_errors": []
+  },
+  "branch_status": "PASS",
+  "brave": {
+    "payload": {},
+    "query": "What does it mean?",
+    "ran": false,
+    "reason": "not_selected",
+    "result_count": 0,
+    "schema": "tau.loop2_brave_search.v1",
+    "status": "NOT_SELECTED"
+  },
+  "brave_required": false,
+  "brave_required_reasons": [],
+  "claims": {
+    "does_not_prove": [
+      "full DAG scheduling",
+      "semantic quality of downstream Tau repair output",
+      "production Tau CLI integration",
+      "full compliance adjudication beyond deterministic create-evidence-case integration",
+      "PersonaPlex audio synthesis unless persona_voice includes a real receipt"
+    ],
+    "proves": [
+      "Tau experiment harness preserves Memory intent/extract-entities/recall packets",
+      "Memory intent drives deterministic skill selection before branch execution",
+      "The selected branch writes an explicit branch receipt"
+    ]
+  },
+  "created_utc": "2026-06-28T14:01:52.366586+00:00",
+  "current_stage": {
+    "label": "Clarifying...",
+    "schema": "tau.loop2_pipeline_stage.v1",
+    "source": "memory.clarify",
+    "stage": "clarify",
+    "status": "PASS"
+  },
+  "fail_closed": false,
+  "live": true,
+  "memory": {
+    "entity_packet": {
+      "entities": [],
+      "extract_entities_status": "PASS",
+      "frameworks": [],
+      "query_plan_extracted_entities": [],
+      "schema": "tau.loop2_memory_entity_packet.v1",
+      "source": "extract_entities",
+      "unresolved_terms": [],
+      "valid_entities": []
+    },
+    "extract_entities": {
+      "endpoint": "/extract-entities",
+      "payload": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": false,
+          "needs_retry": true,
+          "primary_entity_id": null,
+          "reason": "no_entities_found",
+          "safe_to_answer": false,
+          "suggested_action": "retry_with_more_context"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 0,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 0,
+          "validated_context": 0
+        },
+        "grounding_ok": true,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [],
+          "suppressed": [],
+          "unsupported": [],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "What does it mean?"
+        },
+        "query_text": "What does it mean?",
+        "view": "agent"
+      },
+      "ran": true,
+      "schema": "tau.loop2_memory_extract_entities_stage.v1",
+      "status": "PASS"
+    },
+    "intent": {
+      "action": "QUERY",
+      "allowed_tools": [],
+      "candidate_intents": [],
+      "classifier_source": "deterministic_problem_query",
+      "confidence": 0.8,
+      "content_type": "markdown",
+      "depth": 1,
+      "disallowed_tools": [],
+      "entities": [],
+      "entity_context": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": false,
+          "needs_retry": true,
+          "primary_entity_id": null,
+          "reason": "no_entities_found",
+          "safe_to_answer": false,
+          "suggested_action": "retry_with_more_context"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 0,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 0,
+          "validated_context": 0
+        },
+        "executed_by": "intent_always_on",
+        "grounding_ok": true,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [],
+          "suppressed": [],
+          "unsupported": [],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "What does it mean?"
+        },
+        "query_text": "What does it mean?",
+        "route": "/extract-entities",
+        "view": "agent"
+      },
+      "evidence_case": null,
+      "expand_hops": 1,
+      "frameworks": [],
+      "grounding": {
+        "evidence_source": "no_config",
+        "target_resolved": true
+      },
+      "invalid_terms": [],
+      "k": 12,
+      "keywords": [
+        "mean"
+      ],
+      "lanes": [
+        "bm25",
+        "dense"
+      ],
+      "matched_persona_aliases": [],
+      "perspective": null,
+      "planner_only": false,
+      "query_plan": null,
+      "query_type": "knowledge",
+      "question_domains": [],
+      "question_kind": null,
+      "reason": null,
+      "recall_profile": "general_memory_recall",
+      "recall_profile_confidence": 0.5,
+      "recall_profile_source": "fallback",
+      "recall_profile_spec": {
+        "clarify_policy": "default",
+        "collections": null,
+        "depth": 1,
+        "description": "Default metadata profile for broad memory recall.",
+        "hard_filters": null,
+        "k": 12,
+        "min_grounding": 0.7,
+        "name": "general_memory_recall",
+        "required_artifacts": [],
+        "reranker_mode": "off",
+        "weights": {
+          "bm25": 0.35,
+          "freshness": 0.1,
+          "graph_multihop": 0.2,
+          "semantic": 0.35
+        }
+      },
+      "recommended_skills": [],
+      "render_style_id": "plain_answer",
+      "required_artifacts": [],
+      "reranker_mode": "off",
+      "response_mode": null,
+      "rewritten_query": "What does it mean?",
+      "scene_action_id": null,
+      "scope": "brandon_bailey",
+      "skill_chain": [],
+      "slots": {
+        "arango_data_requested": false,
+        "document_name": null,
+        "page": null,
+        "page_image_requested": false,
+        "payload_reference": false,
+        "proof_requested": false,
+        "qdrant_similarity_requested": false,
+        "requested_artifacts": [],
+        "similarity_scope": null,
+        "table_requested": false
+      },
+      "suggestions": [],
+      "target_node_id": null,
+      "tier1": [],
+      "tool_calls": [],
+      "top_intents": [],
+      "ui_action": null,
+      "valid_entities": []
+    },
+    "recall": {
+      "confidence": 7.078,
+      "errors": [],
+      "found": true,
+      "items": [
+        {
+          "_id": "sparta_controls/ctrl__PM-16(1)",
+          "_key": "ctrl__PM-16(1)",
+          "_source": "sparta_controls",
+          "control_id": "PM-16(1)",
+          "control_type": "nist_control",
+          "description": "To maximize the effectiveness of monitoring, it is important to know what threat observables and indicators the sensors need to be searching for. By using well-established frameworks, services, and automated tools, organizations improve their ability to rapidly share and feed the relevant threat detection signatures into monitoring tools.\n\nEmploy automated mechanisms to maximize the effectiveness of sharing threat intelligence information.",
+          "domain": "",
+          "name": "Threat Awareness Program | Automated Means for Sharing Threat Intelligence",
+          "parent_id": "Program Management",
+          "scores": {
+            "bm25": 11.797205924987793,
+            "dense": 0.1619567,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NIST",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__CWE-104",
+          "_key": "ctrl__CWE-104",
+          "_source": "sparta_controls",
+          "control_id": "CWE-104",
+          "control_type": "cwe_weakness",
+          "description": "If a form bean does not extend an ActionForm subclass of the Validator framework, it can expose the application to other weaknesses related to insufficient input validation.",
+          "domain": "",
+          "name": "Struts: Form Bean Does Not Extend Validation Class",
+          "parent_id": "CWE-573",
+          "scores": {
+            "bm25": 11.67937183380127,
+            "dense": 0.046199944,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "CWE",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__CWE-664",
+          "_key": "ctrl__CWE-664",
+          "_source": "sparta_controls",
+          "control_id": "CWE-664",
+          "control_type": "cwe_weakness",
+          "description": "The product does not maintain or incorrectly maintains control over a resource throughout its lifetime of creation, use, and release.",
+          "domain": "",
+          "name": "Improper Control of a Resource Through its Lifetime",
+          "parent_id": null,
+          "scores": {
+            "bm25": 11.133458137512207,
+            "dense": 0.1237106,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "CWE",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__CWE-356",
+          "_key": "ctrl__CWE-356",
+          "_source": "sparta_controls",
+          "control_id": "CWE-356",
+          "control_type": "cwe_weakness",
+          "description": "The product's user interface does not warn the user before undertaking an unsafe action on behalf of that user. This makes it easier for attackers to trick users into inflicting damage to their system.",
+          "domain": "",
+          "name": "Product UI does not Warn User of Unsafe Actions",
+          "parent_id": "CWE-221",
+          "scores": {
+            "bm25": 10.964706420898438,
+            "dense": 0.07714555,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "CWE",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/ctrl__CWE-446",
+          "_key": "ctrl__CWE-446",
+          "_source": "sparta_controls",
+          "control_id": "CWE-446",
+          "control_type": "weakness",
+          "description": "When the user interface does not properly reflect what the user asks of it, then it can lead the user into a false sense of security. For example, the user might check a box to enable a security option to enable encrypted communications, but the product does not actually enable the encryption. Alternately, the user might provide a \"restrict ALL\" access control rule, but the product only implements \"restrict SOME\".",
+          "domain": "",
+          "name": "CWE-446",
+          "parent_id": "",
+          "scores": {
+            "bm25": 10.712754249572754,
+            "dense": 0.123728365,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "CWE",
+          "type": "control_metadata"
+        }
+      ],
+      "meta": {
+        "k": 5,
+        "memory_first": true,
+        "q": "What does it mean?",
+        "runtime_pressure": {
+          "active_workloads": [],
+          "checked_at": 1782655287,
+          "level": "normal",
+          "recommended_action": "No active persisted runtime pressure detected.",
+          "slow_query_risk": false,
+          "sources": []
+        },
+        "scope": "tau-loop2-harness",
+        "supplemental_count": 27,
+        "supplemental_promoted": 27,
+        "threshold": 0.3,
+        "took_ms": 16517,
+        "used_dense": true,
+        "used_reranker": false
+      },
+      "should_scan": false
+    },
+    "schema": "tau.loop2_memory_route.v1"
+  },
+  "memory_first": true,
+  "mocked": false,
+  "persona_voice": {
+    "claims": {
+      "does_not_prove": [
+        "PersonaPlex audio synthesis",
+        "published PersonaPlex voice identity",
+        "live full-duplex PersonaPlex readiness"
+      ],
+      "proves": [
+        "Tau receipt preserves persona and voice routing metadata for TUI consumers"
+      ]
+    },
+    "live_full_duplex": false,
+    "persona_id": null,
+    "personaplex_receipt": null,
+    "personaplex_skill": "/home/graham/workspace/experiments/agent-skills/skills/personaplex/SKILL.md",
+    "publication_status": "NOT_APPLICABLE",
+    "schema": "tau.sparta_chat_persona_voice.v1",
+    "text_persona_source": "requested",
+    "voice_engine": "personaplex",
+    "voice_requested": false,
+    "voice_status": "NOT_REQUESTED"
+  },
+  "query": "What does it mean?",
+  "schema": "tau.loop2_memory_skill_selector_harness.v1",
+  "scope": "tau-loop2-harness",
+  "selected_skill": "memory.clarify",
+  "selector": {
+    "candidate_skills": [
+      "memory.answer",
+      "memory.clarify",
+      "memory.deflect",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "external_search_allowed": false,
+    "intent_action": "QUERY",
+    "intent_confidence": 0.8,
+    "reasons": [
+      "unresolved_or_missing_entities"
+    ],
+    "rejected_skills": [
+      "memory.answer",
+      "memory.deflect",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "schema": "tau.loop2_skill_selection.v1",
+    "selected_skill": "memory.clarify",
+    "stop_condition": "selected branch writes branch receipt with returncode/status"
+  },
+  "stage_trace": [
+    {
+      "label": "Getting Intent...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.intent",
+      "stage": "intent",
+      "status": "PASS"
+    },
+    {
+      "label": "Extracting Entities...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.extract_entities",
+      "stage": "extract_entities",
+      "status": "PASS"
+    },
+    {
+      "label": "Accessing Memory...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.recall",
+      "stage": "recall",
+      "status": "PASS"
+    },
+    {
+      "label": "Clarifying...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.clarify",
+      "stage": "clarify",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,698 @@
+{
+  "branch": {
+    "payload": {},
+    "query": "Find current Tau harness research sources",
+    "ran": false,
+    "reason": "required_but_disabled",
+    "result_count": 0,
+    "schema": "tau.loop2_brave_search.v1",
+    "status": "FAILED"
+  },
+  "branch_status": "FAILED",
+  "brave": {
+    "payload": {},
+    "query": "Find current Tau harness research sources",
+    "ran": false,
+    "reason": "required_but_disabled",
+    "result_count": 0,
+    "schema": "tau.loop2_brave_search.v1",
+    "status": "FAILED"
+  },
+  "brave_required": true,
+  "brave_required_reasons": [
+    "memory_intent_research"
+  ],
+  "claims": {
+    "does_not_prove": [
+      "full DAG scheduling",
+      "semantic quality of downstream Tau repair output",
+      "production Tau CLI integration",
+      "full compliance adjudication beyond deterministic create-evidence-case integration",
+      "PersonaPlex audio synthesis unless persona_voice includes a real receipt"
+    ],
+    "proves": [
+      "Tau experiment harness preserves Memory intent/extract-entities/recall packets",
+      "Memory intent drives deterministic skill selection before branch execution",
+      "The selected branch writes an explicit branch receipt"
+    ]
+  },
+  "created_utc": "2026-06-28T14:01:14.787921+00:00",
+  "current_stage": {
+    "label": "Searching Web...",
+    "schema": "tau.loop2_pipeline_stage.v1",
+    "source": "brave-search",
+    "stage": "brave_search",
+    "status": "FAILED"
+  },
+  "fail_closed": true,
+  "live": true,
+  "memory": {
+    "entity_packet": {
+      "entities": [],
+      "extract_entities_status": "PASS",
+      "frameworks": [],
+      "query_plan_extracted_entities": [],
+      "schema": "tau.loop2_memory_entity_packet.v1",
+      "source": "extract_entities",
+      "unresolved_terms": [],
+      "valid_entities": []
+    },
+    "extract_entities": {
+      "endpoint": "/extract-entities",
+      "payload": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": true,
+          "needs_retry": false,
+          "primary_entity_id": null,
+          "reason": "no_security_entities",
+          "safe_to_answer": false,
+          "suggested_action": "clarify_or_repair"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 0,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 1,
+          "validated_context": 0
+        },
+        "grounding_ok": false,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [],
+          "suppressed": [],
+          "unsupported": [
+            {
+              "id": "unsupported:current_tau_harness_research_sources",
+              "mention": "current Tau harness research sources",
+              "metadata": {
+                "exists": false,
+                "grounded": false,
+                "name": "current Tau harness research sources",
+                "reason": "out_of_domain",
+                "type": "noun_phrase"
+              },
+              "node_kind": "unsupported_term",
+              "proof_role": "none",
+              "span": [
+                5,
+                41
+              ],
+              "status": "unsupported"
+            }
+          ],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [
+            {
+              "evidence": {
+                "mention": "current Tau harness research sources",
+                "normalized_text": "current tau harness research source",
+                "reason": "out_of_domain",
+                "span": [
+                  5,
+                  41
+                ]
+              },
+              "id": "assert:unsupported_current_tau_harness_research_sources_unsupported",
+              "object": "sparta_controls",
+              "predicate": "is_not_grounded_to",
+              "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+              "status": "failed",
+              "subject": "unsupported:current_tau_harness_research_sources"
+            }
+          ],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "Find current Tau harness research sources"
+        },
+        "query_text": "Find current Tau harness research sources",
+        "view": "agent"
+      },
+      "ran": true,
+      "schema": "tau.loop2_memory_extract_entities_stage.v1",
+      "status": "PASS"
+    },
+    "intent": {
+      "action": "RESEARCH",
+      "allowed_tools": [
+        "arxiv",
+        "brave-search"
+      ],
+      "candidate_intents": [],
+      "classifier_source": "deterministic_research",
+      "confidence": 0.9,
+      "content_type": "markdown",
+      "depth": 1,
+      "disallowed_tools": [],
+      "entities": [],
+      "entity_context": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": true,
+          "needs_retry": false,
+          "primary_entity_id": null,
+          "reason": "no_security_entities",
+          "safe_to_answer": false,
+          "suggested_action": "clarify_or_repair"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 0,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 1,
+          "validated_context": 0
+        },
+        "executed_by": "intent_always_on",
+        "grounding_ok": false,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [],
+          "suppressed": [],
+          "unsupported": [
+            {
+              "id": "unsupported:current_tau_harness_research_sources",
+              "mention": "current Tau harness research sources",
+              "metadata": {
+                "exists": false,
+                "grounded": false,
+                "name": "current Tau harness research sources",
+                "reason": "out_of_domain",
+                "type": "noun_phrase"
+              },
+              "node_kind": "unsupported_term",
+              "proof_role": "none",
+              "span": [
+                5,
+                41
+              ],
+              "status": "unsupported"
+            }
+          ],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [
+            {
+              "evidence": {
+                "mention": "current Tau harness research sources",
+                "normalized_text": "current tau harness research source",
+                "reason": "out_of_domain",
+                "span": [
+                  5,
+                  41
+                ]
+              },
+              "id": "assert:unsupported_current_tau_harness_research_sources_unsupported",
+              "object": "sparta_controls",
+              "predicate": "is_not_grounded_to",
+              "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+              "status": "failed",
+              "subject": "unsupported:current_tau_harness_research_sources"
+            }
+          ],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "Find current Tau harness research sources"
+        },
+        "query_text": "Find current Tau harness research sources",
+        "route": "/extract-entities",
+        "view": "agent"
+      },
+      "evidence_case": null,
+      "expand_hops": 1,
+      "frameworks": [],
+      "grounding": null,
+      "invalid_terms": [],
+      "k": 8,
+      "keywords": [
+        "find",
+        "current",
+        "tau",
+        "harness",
+        "research",
+        "sources"
+      ],
+      "lanes": [
+        "bm25",
+        "dense"
+      ],
+      "matched_persona_aliases": [],
+      "perspective": null,
+      "planner_only": false,
+      "query_plan": {
+        "extracted_entities": [],
+        "max_hops": null,
+        "start_node": null,
+        "steps": [
+          {
+            "endpoint": "skill:brave-search",
+            "params": {
+              "blocking": true,
+              "count": 5,
+              "domain": "current_facts_research",
+              "mode": "web",
+              "query": "Find current Tau harness research sources",
+              "step_id": "current_facts"
+            }
+          }
+        ],
+        "strategy": "current_facts_research"
+      },
+      "query_type": "knowledge",
+      "question_domains": [],
+      "question_kind": null,
+      "reason": null,
+      "recall_profile": "research_question",
+      "recall_profile_confidence": 0.9,
+      "recall_profile_source": "deterministic_research",
+      "recall_profile_spec": {
+        "clarify_policy": "default",
+        "collections": [
+          "dogpile_research",
+          "project_knowledge",
+          "lessons"
+        ],
+        "depth": 1,
+        "description": "Fresh research, web, paper, source-finding, or literature-review questions.",
+        "hard_filters": null,
+        "k": 8,
+        "min_grounding": 0.5,
+        "name": "research_question",
+        "required_artifacts": [
+          "research_sources"
+        ],
+        "reranker_mode": "cache",
+        "weights": {
+          "bm25": 0.1,
+          "freshness": 0.3,
+          "research_snapshot": 0.4,
+          "semantic": 0.2
+        }
+      },
+      "recommended_skills": [
+        "brave-search"
+      ],
+      "render_style_id": "plain_answer",
+      "required_artifacts": [
+        "research_sources"
+      ],
+      "reranker_mode": "cache",
+      "response_mode": null,
+      "rewritten_query": "Find current Tau harness research sources",
+      "scene_action_id": null,
+      "scope": "brandon_bailey",
+      "skill_chain": [
+        "brave-search"
+      ],
+      "slots": {
+        "arango_data_requested": false,
+        "document_name": null,
+        "page": null,
+        "page_image_requested": false,
+        "payload_reference": false,
+        "proof_requested": false,
+        "qdrant_similarity_requested": false,
+        "requested_artifacts": [],
+        "similarity_scope": null,
+        "table_requested": false
+      },
+      "suggestions": [],
+      "target_node_id": null,
+      "tier1": [],
+      "tool_calls": [
+        {
+          "arguments": {
+            "count": 5,
+            "mode": "web",
+            "query": "Find current Tau harness research sources"
+          },
+          "blocking": true,
+          "depends_on": [],
+          "domain": "current_facts_research",
+          "endpoint": null,
+          "function": "web_search",
+          "id": "current_facts",
+          "required_for_answer": true,
+          "skill": "brave-search",
+          "type": "skill",
+          "when": null
+        }
+      ],
+      "top_intents": [],
+      "ui_action": null,
+      "valid_entities": []
+    },
+    "recall": {
+      "confidence": 12.991,
+      "errors": [],
+      "found": true,
+      "items": [
+        {
+          "_id": "sparta_controls/ctrl__T1153",
+          "_key": "ctrl__T1153",
+          "_source": "sparta_controls",
+          "control_id": "T1153",
+          "control_type": "attack_technique",
+          "description": "**This technique has been deprecated and should no longer be used.**\n\nThe <code>source</code> command loads functions into the current shell or executes files in the current context. This built-in command can be run in two different ways <code>source /path/to/filename [arguments]</code> or <code>.**This technique has been deprecated and should no longer be used.** /path/to/filename [arguments]</code>. Take note of the space after the \".\". Without a space, a new shell is created that runs the program instead of running the program within the current context. This is often used to make certain features or functions available to a shell or to update a specific shell's environment.(Citation: Source Manual)\n\nAdversaries can abuse this functionality to execute programs. The file executed with this technique does not need to be marked executable beforehand.",
+          "domain": "",
+          "name": "Source",
+          "parent_id": null,
+          "scores": {
+            "bm25": 15.560108184814453,
+            "dense": 0.17270638,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "ATT_CK_Enterprise",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/SA-5_5",
+          "_key": "SA-5_5",
+          "_source": "sparta_controls",
+          "control_id": "SA-5.5",
+          "control_type": "control",
+          "description": "[Deprecated] Source Code. This NIST control has been withdrawn or deprecated in the current framework revision.",
+          "domain": "both",
+          "name": "Source Code",
+          "parent_id": "sa-5",
+          "scores": {
+            "bm25": 15.53036117553711,
+            "dense": 0.18760026,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NIST",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/AU-8_2",
+          "_key": "AU-8_2",
+          "_source": "sparta_controls",
+          "control_id": "AU-8.2",
+          "control_type": "control",
+          "description": "[Deprecated] Secondary Authoritative Time Source. This NIST control has been withdrawn or deprecated in the current framework revision.",
+          "domain": "both",
+          "name": "Secondary Authoritative Time Source",
+          "parent_id": "au-8",
+          "scores": {
+            "bm25": 13.95155143737793,
+            "dense": 0.25388932,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NIST",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/SC-15_4",
+          "_key": "SC-15_4",
+          "_source": "sparta_controls",
+          "control_id": "SC-15.4",
+          "control_type": "control",
+          "description": "Provide an explicit indication of current participants in {{ insert: param, sc-15.04_odp }}.",
+          "domain": "both",
+          "name": "Explicitly Indicate Current Participants",
+          "parent_id": "sc-15",
+          "scores": {
+            "bm25": 13.477716445922852,
+            "dense": 0.26227477,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NIST",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/SA-22_1",
+          "_key": "SA-22_1",
+          "_source": "sparta_controls",
+          "control_id": "SA-22.1",
+          "control_type": "control",
+          "description": "[Deprecated] Alternative Sources for Continued Support. This NIST control has been withdrawn or deprecated in the current framework revision.",
+          "domain": "both",
+          "name": "Alternative Sources for Continued Support",
+          "parent_id": "sa-22",
+          "scores": {
+            "bm25": 13.373321533203125,
+            "dense": 0.2432979,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NIST",
+          "type": "control_metadata"
+        }
+      ],
+      "meta": {
+        "k": 5,
+        "memory_first": true,
+        "q": "Find current Tau harness research sources",
+        "runtime_pressure": {
+          "active_workloads": [],
+          "checked_at": 1782655274,
+          "level": "normal",
+          "recommended_action": "No active persisted runtime pressure detected.",
+          "slow_query_risk": false,
+          "sources": []
+        },
+        "scope": "tau-loop2-harness",
+        "supplemental_count": 76,
+        "supplemental_promoted": 76,
+        "threshold": 0.3,
+        "took_ms": 3396,
+        "used_dense": true,
+        "used_reranker": false
+      },
+      "should_scan": false,
+      "skill_route": {
+        "bonds": [],
+        "capabilities": [
+          {
+            "best_provider": "dogpile",
+            "capability": "deep-research",
+            "providers": [
+              "dogpile"
+            ]
+          }
+        ],
+        "compositions": [],
+        "skills": [
+          {
+            "composability_score": 0.12,
+            "has_run_sh": true,
+            "name": "discover-contacts",
+            "provides": [
+              "discover-contacts"
+            ]
+          },
+          {
+            "composability_score": 0.157,
+            "has_run_sh": true,
+            "name": "dogpile",
+            "provides": [
+              "deep-research",
+              "web-search"
+            ]
+          },
+          {
+            "composability_score": 0.157,
+            "has_run_sh": true,
+            "name": "dogpile",
+            "provides": [
+              "deep-research",
+              "web-search"
+            ]
+          },
+          {
+            "composability_score": 0.157,
+            "has_run_sh": true,
+            "name": "dogpile",
+            "provides": [
+              "deep-research",
+              "web-search"
+            ]
+          }
+        ],
+        "suggested_chain": null
+      }
+    },
+    "schema": "tau.loop2_memory_route.v1"
+  },
+  "memory_first": true,
+  "mocked": false,
+  "persona_voice": {
+    "claims": {
+      "does_not_prove": [
+        "PersonaPlex audio synthesis",
+        "published PersonaPlex voice identity",
+        "live full-duplex PersonaPlex readiness"
+      ],
+      "proves": [
+        "Tau receipt preserves persona and voice routing metadata for TUI consumers"
+      ]
+    },
+    "live_full_duplex": false,
+    "persona_id": null,
+    "personaplex_receipt": null,
+    "personaplex_skill": "/home/graham/workspace/experiments/agent-skills/skills/personaplex/SKILL.md",
+    "publication_status": "NOT_APPLICABLE",
+    "schema": "tau.sparta_chat_persona_voice.v1",
+    "text_persona_source": "requested",
+    "voice_engine": "personaplex",
+    "voice_requested": false,
+    "voice_status": "NOT_REQUESTED"
+  },
+  "query": "Find current Tau harness research sources",
+  "schema": "tau.loop2_memory_skill_selector_harness.v1",
+  "scope": "tau-loop2-harness",
+  "selected_skill": "brave-search",
+  "selector": {
+    "candidate_skills": [
+      "memory.answer",
+      "memory.clarify",
+      "memory.deflect",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "external_search_allowed": true,
+    "intent_action": "RESEARCH",
+    "intent_confidence": 0.9,
+    "reasons": [
+      "memory_intent_research"
+    ],
+    "rejected_skills": [
+      "memory.answer",
+      "memory.clarify",
+      "memory.deflect",
+      "create-evidence-case"
+    ],
+    "schema": "tau.loop2_skill_selection.v1",
+    "selected_skill": "brave-search",
+    "stop_condition": "selected branch writes branch receipt with returncode/status"
+  },
+  "stage_trace": [
+    {
+      "label": "Getting Intent...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.intent",
+      "stage": "intent",
+      "status": "PASS"
+    },
+    {
+      "label": "Extracting Entities...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.extract_entities",
+      "stage": "extract_entities",
+      "status": "PASS"
+    },
+    {
+      "label": "Accessing Memory...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.recall",
+      "stage": "recall",
+      "status": "PASS"
+    },
+    {
+      "label": "Searching Web...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "brave-search",
+      "stage": "brave_search",
+      "status": "FAILED"
+    }
+  ]
+}

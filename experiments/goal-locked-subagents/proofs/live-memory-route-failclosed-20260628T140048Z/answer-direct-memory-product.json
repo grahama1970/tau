@@ -1,0 +1,109 @@
+{
+  "branch": {
+    "endpoint": "/answer",
+    "payload": {
+      "answer_type": "memory_recall",
+      "can_answer": true,
+      "confidence": 11.709,
+      "degraded": false,
+      "fallback_used": false,
+      "final_response": "Memory indicates that transport proof relates to protecting and accounting for system media during transport.\n\nSystem media includes both digital media (such as flash drives, diskettes, magnetic tapes, removable hard drives, CDs, and DVDs) and non-digital media (such as microfilm and paper). Controlled areas require physical or procedural protections for information and systems.\n\nFor media transport, protections may include cryptography and locked containers. Cryptographic mechanisms can provide confidentiality and integrity depending on implementation. Transport activities include releasing media, ensuring it enters the correct transport process, and the actual transport. Accountability includes restricting transport to authorized personnel, tracking transport activity, and maintaining records to prevent or detect loss, destruction, or tampering.\n\nSources in memory: ctrl__MP-5, capec__545, ctrl__IA-12(6), M0815, ctrl__T1505.002.",
+      "final_response_origin": "scillm",
+      "intent_action": null,
+      "non_claims": [
+        "Deterministic memory logic owns can_answer, answer_type, source_answer, recall, and sources.",
+        "SciLLM writes final_response only from the supplied source packet and must not add unsupported facts."
+      ],
+      "ok": true,
+      "query": "What does memory know about Tau project watchdog apply transport proof?",
+      "recall": {
+        "answer_candidate_count": 5,
+        "collections": null,
+        "filtered_route_readiness_count": 0,
+        "found": true,
+        "item_count": 5,
+        "scope": "tau-loop2-harness",
+        "threshold": 0.3
+      },
+      "schema": "memory.answer.v1",
+      "scillm": {
+        "actual_model": "gpt-5.5",
+        "caller_skill": "memory",
+        "elapsed_ms": 9003.46,
+        "endpoint": "POST /v1/chat/completions",
+        "fallback_used": false,
+        "final_response_origin": "scillm",
+        "finish_reason": "stop",
+        "matches_scillm_assistant_message": true,
+        "reasoning_effort": "high",
+        "request_summary": {
+          "max_tokens": 220,
+          "message_count": 2,
+          "reasoning_effort": "high",
+          "temperature": 0.1
+        },
+        "requested_model": "gpt-5.5",
+        "response_id": "chatcmpl-codex-1814e6f5",
+        "source_packet_hash": "sha256:a4cce2e1d6a4383877f78e0b925154ac75242c0427a10e1211f417388d3944c8",
+        "source_packet_included": true,
+        "status_code": 200,
+        "task": "answer",
+        "url": "http://localhost:4001/v1/chat/completions"
+      },
+      "source_answer": "System media includes digital and non-digital media. Digital media includes flash drives, diskettes, magnetic tapes, external or removable hard disk drives (e.g., solid state and  magnetic), compact discs, and digital versatile discs. Non-digital media includes microfilm and paper. Controlled areas are spaces for which organizations provide physical or procedural controls to meet requirements established for protecting information and systems. Controls to protect media during transport include cryptography and locked containers. Cryptographic mechanisms can provide confidentiality and integrity protections depending on the mechanisms implemented. Activities associated with media transport include releasing media for transport, ensuring that media enters the appropriate transport processes, and the actual transport. Authorized transport and courier personnel may include individuals external to the organization. Maintaining accountability of media during transport includes restricting transport activities to authorized personnel and tracking and/or obtaining records of transport activities as the media moves through the transportation system to prevent and detect loss, destruction, or tampering. Organizations establish documentation requirements for activities associated with the transport of system media in accordance with organizational assessments of risk. Organizations maintain the flexibility to define record-keeping methods for the different types of media transport as part of a system of transport-related records.",
+      "sources": [
+        {
+          "key": "ctrl__MP-5",
+          "score": null,
+          "source": "sparta_controls",
+          "title": null
+        },
+        {
+          "key": "capec__545",
+          "score": null,
+          "source": "sparta_controls",
+          "title": null
+        },
+        {
+          "key": "ctrl__IA-12(6)",
+          "score": null,
+          "source": "sparta_controls",
+          "title": null
+        },
+        {
+          "key": "M0815",
+          "score": null,
+          "source": "sparta_controls",
+          "title": null
+        },
+        {
+          "key": "ctrl__T1505.002",
+          "score": null,
+          "source": "sparta_controls",
+          "title": null
+        }
+      ]
+    },
+    "ran": true,
+    "schema": "tau.loop2_memory_answer_branch.v1",
+    "status": "PASS",
+    "validation_errors": []
+  },
+  "branch_status": "PASS",
+  "claims": {
+    "does_not_prove": [
+      "Tau selector chose memory.answer for this query",
+      "browser chat rendered the answer route"
+    ],
+    "proves": [
+      "Tau answer adapter validates the live memory.answer.v1 product shape before accepting branch output"
+    ]
+  },
+  "created_utc": "2026-06-28T14:03:20.769658+00:00",
+  "fail_closed": false,
+  "live": true,
+  "mocked": false,
+  "query": "What does memory know about Tau project watchdog apply transport proof?",
+  "route": "ANSWER_DIRECT_PRODUCT",
+  "schema": "tau.live_memory_answer_direct_product.v1"
+}

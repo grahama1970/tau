@@ -28,6 +28,10 @@ SUBAGENT_RECEIPT_COVERAGE_PROOF_DIR = (
         "subagent-receipt-backed-route-coverage-20260628T023000Z"
     )
 )
+LIVE_ROUTE_FAILCLOSED_PROOF_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z"
+)
 
 
 def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> None:
@@ -280,3 +284,48 @@ def test_subagent_receipt_backed_route_coverage_matches_source_handoffs() -> Non
     assert routes["RESEARCH_REFUSAL_AUDITOR"]["result_status"] == "REFUSED"
     assert routes["LIVE_BRAVE_RESEARCH_AUDITOR"]["next_subagent"] == "reviewer"
     assert routes["LIVE_BRAVE_REVIEWER"]["next_subagent"] == "human"
+
+
+def test_live_memory_route_failclosed_manifest_matches_receipts() -> None:
+    manifest = json.loads((LIVE_ROUTE_FAILCLOSED_PROOF_DIR / "manifest.json").read_text())
+
+    assert manifest["schema"] == "tau.live_memory_route_failclosed_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["ok"] is True
+    assert manifest["route_count"] == 5
+
+    routes = {route["route"]: route for route in manifest["routes"]}
+    assert set(routes) == {
+        "CLARIFY",
+        "DEFLECT",
+        "ANSWER_SELECTOR_ATTEMPT",
+        "ANSWER_DIRECT_PRODUCT",
+        "RESEARCH_BRAVE_DISABLED",
+    }
+
+    assert routes["CLARIFY"]["selected_skill"] == "memory.clarify"
+    assert routes["CLARIFY"]["memory_product_schema"] == "memory.clarify.v1"
+    assert routes["CLARIFY"]["validation_errors"] == []
+    assert routes["DEFLECT"]["selected_skill"] == "memory.deflect"
+    assert routes["DEFLECT"]["memory_product_schema"] == "memory.deflect.v1"
+    assert routes["DEFLECT"]["validation_errors"] == []
+    assert routes["ANSWER_DIRECT_PRODUCT"]["memory_product_schema"] == "memory.answer.v1"
+    assert routes["ANSWER_DIRECT_PRODUCT"]["branch_status"] == "PASS"
+    assert routes["ANSWER_DIRECT_PRODUCT"]["fail_closed"] is False
+    assert routes["RESEARCH_BRAVE_DISABLED"]["selected_skill"] == "brave-search"
+    assert routes["RESEARCH_BRAVE_DISABLED"]["branch_status"] == "FAILED"
+    assert routes["RESEARCH_BRAVE_DISABLED"]["fail_closed"] is True
+
+    for route in manifest["routes"]:
+        receipt = json.loads((Path(__file__).resolve().parents[1] / route["receipt"]).read_text())
+        if route["route"] == "ANSWER_DIRECT_PRODUCT":
+            assert receipt["schema"] == "tau.live_memory_answer_direct_product.v1"
+            assert receipt["branch"]["payload"]["schema"] == "memory.answer.v1"
+            continue
+        assert receipt["schema"] == "tau.loop2_memory_skill_selector_harness.v1"
+        assert receipt["mocked"] is False
+        assert receipt["live"] is True
+        assert receipt["selected_skill"] == route["selected_skill"]
+        assert receipt["branch_status"] == route["branch_status"]
+        assert receipt["fail_closed"] == route["fail_closed"]

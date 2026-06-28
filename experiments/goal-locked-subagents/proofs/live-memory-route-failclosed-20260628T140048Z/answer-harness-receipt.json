@@ -1,0 +1,746 @@
+{
+  "branch": {
+    "endpoint": "/clarify",
+    "payload": {
+      "clarify_questions": [],
+      "confidence": 9.679,
+      "diagnostics": {
+        "zero_bridges": true
+      },
+      "evidence": {
+        "richness_score": 0.0
+      },
+      "fallback_used": false,
+      "final_response": "No clarification is required for this request.",
+      "final_response_origin": "deterministic",
+      "intent": {
+        "action": "QUERY",
+        "bridges": [],
+        "confidence": 0.8,
+        "entities": [],
+        "tier1": []
+      },
+      "needs_clarification": false,
+      "recall": {
+        "confidence": 9.679,
+        "errors": [],
+        "found": true,
+        "items": [
+          {
+            "_id": "sparta_controls/ctrl__T0873",
+            "_key": "ctrl__T0873",
+            "_source": "sparta_controls",
+            "control_id": "T0873",
+            "control_type": "technique",
+            "description": "Adversaries may attempt to infect project files with malicious code. These project files may consist of objects, program organization units, variables such as tags, documentation, and other configurations needed for PLC programs to function. (Citation: Beckhoff) Using built in functions of the engineering software, adversaries may be able to download an infected program to a PLC in the operating environment enabling further [Execution](https://attack.mitre.org/tactics/TA0104) and [Persistence](https://attack.mitre.org/tactics/TA0110) techniques. (Citation: PLCdev) Adversaries may export their own code into project files with conditions to execute at specific intervals. (Citation: Nicolas Falliere, Liam O Murchu, Eric Chien February 2011) Malicious programs allow adversaries control of all aspects of the process enabled by the PLC. Once the project file is downloaded to a PLC the workstation device may be disconnected with the infected project file still executing. (Citation: PLCdev)",
+            "domain": "",
+            "name": "Project File Infection",
+            "parent_id": "",
+            "scores": {
+              "bm25": 16.55050277709961,
+              "dense": 0.28409636,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "attack",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/CVE-2026-27111",
+            "_key": "CVE-2026-27111",
+            "_source": "sparta_controls",
+            "control_id": "CVE-2026-27111",
+            "control_type": "control",
+            "description": "Kargo manages and automates the promotion of software artifacts. From v1.9.0 to v1.9.2, Kargo's authorization model includes a promote verb -- a non-standard Kubernetes \"dolphin verb\" -- that gates the ability to advance Freight through a promotion pipeline. This verb exists to separate the ability to manage promotion-related resources from the ability to trigger promotions, enabling fine-grained access control over what is often a sensitive operation. The promote verb is correctly enforced in Kargo's legacy gRPC API. However, three endpoints in the newer REST API omit this check, relying only on standard Kubernetes RBAC for the underlying resource operations (patch on freights/status or create on promotions). This permits users who hold those standard permissions -- but who were deliberately not granted promote -- to bypass the intended authorization boundary. The affected endpoints are /v1beta1/projects/{project}/freight/{freight}/approve, /v1beta1/projects/{project}/stages/{stage}/promotions, and /v1beta1/projects/{project}/stages/{stage}/promotions/downstream. This vulnerability is fixed in v1.9.3.",
+            "domain": "land",
+            "name": "CVE-2026-27111",
+            "parent_id": null,
+            "scores": {
+              "bm25": 10.397700309753418,
+              "dense": 0.18618464,
+              "graph": 0.0,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "NVD",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/CVE-2025-68621",
+            "_key": "CVE-2025-68621",
+            "_source": "sparta_controls",
+            "control_id": "CVE-2025-68621",
+            "control_type": "control",
+            "description": "Trilium Notes is an open-source, cross-platform hierarchical note taking application with focus on building large personal knowledge bases.  Prior to 0.101.0, a critical timing attack vulnerability in Trilium's sync authentication endpoint allows unauthenticated remote attackers to recover HMAC authentication hashes byte-by-byte through statistical timing analysis. This enables complete authentication bypass without password knowledge, granting full read/write access to victim's knowledge base. This vulnerability is fixed in 0.101.0.",
+            "domain": "land",
+            "name": "CVE-2025-68621",
+            "parent_id": null,
+            "scores": {
+              "bm25": 8.552876472473145,
+              "dense": 0.30621243,
+              "graph": 0.0,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "NVD",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/capec__85",
+            "_key": "capec__85",
+            "_source": "sparta_controls",
+            "control_id": "CAPEC-85",
+            "control_type": "attack_pattern",
+            "description": "This attack utilizes the frequent client-server roundtrips in Ajax conversation to scan a system. While Ajax does not open up new vulnerabilities per se, it does optimize them from an attacker point of view. A common first step for an attacker is to footprint the target environment to understand what attacks will work. Since footprinting relies on enumeration, the conversational pattern of rapid, multiple requests and responses that are typical in Ajax applications enable an attacker to look for many vulnerabilities, well-known ports, network locations and so on. The knowledge gained through Ajax fingerprinting can be used to support other attacks, such as XSS.",
+            "domain": "",
+            "name": "AJAX Footprinting",
+            "parent_id": null,
+            "scores": {
+              "bm25": 8.393696784973145,
+              "dense": 0.16119802,
+              "graph": 0.3887417987987634,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "CAPEC",
+            "type": "control_metadata"
+          },
+          {
+            "_id": "sparta_controls/MID_079",
+            "_key": "MID_079",
+            "_source": "sparta_controls",
+            "control_id": "MID-079",
+            "control_type": "emb3d_mitigation",
+            "description": "All network protocol functionality, including function codes, should be documented and available to the owners/operators of a device. The presence of undocumented functionality prevents device operators from adequately taking precautions and monitoring network behavior based on a device's potential threat landscape. Without proper documentation, device users have no knowledge of what function codes are going over their network, leaving them exposed to potential threats and preventing them from implementing security features on their network, such as a message-level firewalls.\n\nDocumentation should include (i) describing the full set of function codes or message types that the device produces or accepts, (ii) functions that affect device management or can cause configuration changes, and (iii) authentication and encryption modes and mechanisms it is capable of. Any functions that are not meant for use in a production environment should be removed. The device operator should have full knowledge of any network-accessible function that can affect the behavior or performance of the device.",
+            "domain": "",
+            "name": "Remove Undocumented Network Functionality",
+            "parent_id": null,
+            "scores": {
+              "bm25": 8.319499969482422,
+              "dense": 0.0,
+              "graph": 0.0,
+              "weight": 0.9
+            },
+            "source": "sparta_controls",
+            "source_framework": "EMB3D",
+            "type": "control_metadata"
+          }
+        ],
+        "meta": {
+          "k": 5,
+          "memory_first": true,
+          "q": "What is Tau project knowledge?",
+          "runtime_pressure": {
+            "active_workloads": [],
+            "checked_at": 1782655299,
+            "level": "normal",
+            "recommended_action": "No active persisted runtime pressure detected.",
+            "slow_query_risk": false,
+            "sources": []
+          },
+          "scope": "tau-loop2-harness",
+          "supplemental_count": 59,
+          "supplemental_promoted": 59,
+          "threshold": 0.3,
+          "took_ms": 12771,
+          "used_dense": true,
+          "used_reranker": false
+        },
+        "should_scan": false
+      },
+      "schema": "memory.clarify.v1",
+      "taxonomy": {
+        "bridges": [],
+        "merged_bridges": []
+      }
+    },
+    "ran": true,
+    "schema": "tau.loop2_memory_clarify_branch.v1",
+    "status": "PASS",
+    "validation_errors": []
+  },
+  "branch_status": "PASS",
+  "brave": {
+    "payload": {},
+    "query": "What is Tau project knowledge?",
+    "ran": false,
+    "reason": "not_selected",
+    "result_count": 0,
+    "schema": "tau.loop2_brave_search.v1",
+    "status": "NOT_SELECTED"
+  },
+  "brave_required": false,
+  "brave_required_reasons": [],
+  "claims": {
+    "does_not_prove": [
+      "full DAG scheduling",
+      "semantic quality of downstream Tau repair output",
+      "production Tau CLI integration",
+      "full compliance adjudication beyond deterministic create-evidence-case integration",
+      "PersonaPlex audio synthesis unless persona_voice includes a real receipt"
+    ],
+    "proves": [
+      "Tau experiment harness preserves Memory intent/extract-entities/recall packets",
+      "Memory intent drives deterministic skill selection before branch execution",
+      "The selected branch writes an explicit branch receipt"
+    ]
+  },
+  "created_utc": "2026-06-28T14:01:39.319913+00:00",
+  "current_stage": {
+    "label": "Clarifying...",
+    "schema": "tau.loop2_pipeline_stage.v1",
+    "source": "memory.clarify",
+    "stage": "clarify",
+    "status": "PASS"
+  },
+  "fail_closed": false,
+  "live": true,
+  "memory": {
+    "entity_packet": {
+      "entities": [],
+      "extract_entities_status": "PASS",
+      "frameworks": [],
+      "query_plan_extracted_entities": [],
+      "schema": "tau.loop2_memory_entity_packet.v1",
+      "source": "extract_entities",
+      "unresolved_terms": [],
+      "valid_entities": []
+    },
+    "extract_entities": {
+      "endpoint": "/extract-entities",
+      "payload": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": true,
+          "needs_retry": false,
+          "primary_entity_id": null,
+          "reason": "no_security_entities",
+          "safe_to_answer": false,
+          "suggested_action": "clarify_or_repair"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 0,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 1,
+          "validated_context": 0
+        },
+        "grounding_ok": false,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [],
+          "suppressed": [],
+          "unsupported": [
+            {
+              "id": "unsupported:tau_project_knowledge",
+              "mention": "Tau project knowledge",
+              "metadata": {
+                "exists": false,
+                "grounded": false,
+                "name": "Tau project knowledge",
+                "reason": "out_of_domain",
+                "type": "noun_phrase"
+              },
+              "node_kind": "unsupported_term",
+              "proof_role": "none",
+              "span": [
+                8,
+                29
+              ],
+              "status": "unsupported"
+            }
+          ],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [
+            {
+              "evidence": {
+                "mention": "Tau project knowledge",
+                "normalized_text": "tau project knowledge",
+                "reason": "out_of_domain",
+                "span": [
+                  8,
+                  29
+                ]
+              },
+              "id": "assert:unsupported_tau_project_knowledge_unsupported",
+              "object": "sparta_controls",
+              "predicate": "is_not_grounded_to",
+              "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+              "status": "failed",
+              "subject": "unsupported:tau_project_knowledge"
+            }
+          ],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "What is Tau project knowledge?"
+        },
+        "query_text": "What is Tau project knowledge?",
+        "view": "agent"
+      },
+      "ran": true,
+      "schema": "tau.loop2_memory_extract_entities_stage.v1",
+      "status": "PASS"
+    },
+    "intent": {
+      "action": "QUERY",
+      "allowed_tools": [],
+      "candidate_intents": [],
+      "classifier_source": "deterministic_problem_query",
+      "confidence": 0.8,
+      "content_type": "markdown",
+      "depth": 1,
+      "disallowed_tools": [],
+      "entities": [],
+      "entity_context": {
+        "agent_contract": {
+          "authoritative_paths": [
+            "proof_packet.assertions",
+            "nodes.anchors",
+            "nodes.validated_context",
+            "nodes.suppressed"
+          ],
+          "ignore_for_grounding": [
+            "display_summary",
+            "candidate_nodes",
+            "guess_nodes",
+            "rationale.summary"
+          ],
+          "llm_generated_fields_are_never_authoritative": true,
+          "use_for_grounding": [
+            "proof_packet.assertions"
+          ]
+        },
+        "agent_decision": {
+          "grounding_source": "proof_packet.assertions",
+          "needs_clarification": true,
+          "needs_retry": false,
+          "primary_entity_id": null,
+          "reason": "no_security_entities",
+          "safe_to_answer": false,
+          "suggested_action": "clarify_or_repair"
+        },
+        "candidate_nodes": {
+          "controls": [],
+          "not_usable_for": [
+            "grounding",
+            "proof",
+            "approval",
+            "answer_authority",
+            "evidence_gate"
+          ],
+          "proof_role": "none",
+          "qras": [],
+          "requires_user_confirmation": true,
+          "status": "candidate_only",
+          "usable_for": [
+            "suggestions",
+            "related_results",
+            "did_you_mean"
+          ]
+        },
+        "counts": {
+          "anchors": 0,
+          "candidate_controls": 0,
+          "candidate_qras": 0,
+          "context_terms": 0,
+          "media_timecodes": 0,
+          "suppressed": 0,
+          "unsupported": 1,
+          "validated_context": 0
+        },
+        "executed_by": "intent_always_on",
+        "grounding_ok": false,
+        "media_timecodes": [],
+        "nodes": {
+          "anchors": [],
+          "context_terms": [],
+          "suppressed": [],
+          "unsupported": [
+            {
+              "id": "unsupported:tau_project_knowledge",
+              "mention": "Tau project knowledge",
+              "metadata": {
+                "exists": false,
+                "grounded": false,
+                "name": "Tau project knowledge",
+                "reason": "out_of_domain",
+                "type": "noun_phrase"
+              },
+              "node_kind": "unsupported_term",
+              "proof_role": "none",
+              "span": [
+                8,
+                29
+              ],
+              "status": "unsupported"
+            }
+          ],
+          "validated_context": []
+        },
+        "ok": true,
+        "proof_packet": {
+          "assertions": [
+            {
+              "evidence": {
+                "mention": "Tau project knowledge",
+                "normalized_text": "tau project knowledge",
+                "reason": "out_of_domain",
+                "span": [
+                  8,
+                  29
+                ]
+              },
+              "id": "assert:unsupported_tau_project_knowledge_unsupported",
+              "object": "sparta_controls",
+              "predicate": "is_not_grounded_to",
+              "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+              "status": "failed",
+              "subject": "unsupported:tau_project_knowledge"
+            }
+          ],
+          "authoritative": true,
+          "generated_by": "deterministic_extractor",
+          "llm_used": false,
+          "primary_entity_id": null,
+          "query_text": "What is Tau project knowledge?"
+        },
+        "query_text": "What is Tau project knowledge?",
+        "route": "/extract-entities",
+        "view": "agent"
+      },
+      "evidence_case": null,
+      "expand_hops": 1,
+      "frameworks": [],
+      "grounding": {
+        "evidence_source": "no_config",
+        "target_resolved": true
+      },
+      "invalid_terms": [],
+      "k": 12,
+      "keywords": [
+        "tau",
+        "project",
+        "knowledge"
+      ],
+      "lanes": [
+        "bm25",
+        "dense"
+      ],
+      "matched_persona_aliases": [],
+      "perspective": null,
+      "planner_only": false,
+      "query_plan": null,
+      "query_type": "knowledge",
+      "question_domains": [],
+      "question_kind": null,
+      "reason": null,
+      "recall_profile": "general_memory_recall",
+      "recall_profile_confidence": 0.5,
+      "recall_profile_source": "fallback",
+      "recall_profile_spec": {
+        "clarify_policy": "default",
+        "collections": null,
+        "depth": 1,
+        "description": "Default metadata profile for broad memory recall.",
+        "hard_filters": null,
+        "k": 12,
+        "min_grounding": 0.7,
+        "name": "general_memory_recall",
+        "required_artifacts": [],
+        "reranker_mode": "off",
+        "weights": {
+          "bm25": 0.35,
+          "freshness": 0.1,
+          "graph_multihop": 0.2,
+          "semantic": 0.35
+        }
+      },
+      "recommended_skills": [],
+      "render_style_id": "plain_answer",
+      "required_artifacts": [],
+      "reranker_mode": "off",
+      "response_mode": null,
+      "rewritten_query": "What is Tau project knowledge?",
+      "scene_action_id": null,
+      "scope": "brandon_bailey",
+      "skill_chain": [],
+      "slots": {
+        "arango_data_requested": false,
+        "document_name": null,
+        "page": null,
+        "page_image_requested": false,
+        "payload_reference": false,
+        "proof_requested": false,
+        "qdrant_similarity_requested": false,
+        "requested_artifacts": [],
+        "similarity_scope": null,
+        "table_requested": false
+      },
+      "suggestions": [],
+      "target_node_id": null,
+      "tier1": [],
+      "tool_calls": [],
+      "top_intents": [],
+      "ui_action": null,
+      "valid_entities": []
+    },
+    "recall": {
+      "confidence": 9.679,
+      "errors": [],
+      "found": true,
+      "items": [
+        {
+          "_id": "sparta_controls/ctrl__T0873",
+          "_key": "ctrl__T0873",
+          "_source": "sparta_controls",
+          "control_id": "T0873",
+          "control_type": "technique",
+          "description": "Adversaries may attempt to infect project files with malicious code. These project files may consist of objects, program organization units, variables such as tags, documentation, and other configurations needed for PLC programs to function. (Citation: Beckhoff) Using built in functions of the engineering software, adversaries may be able to download an infected program to a PLC in the operating environment enabling further [Execution](https://attack.mitre.org/tactics/TA0104) and [Persistence](https://attack.mitre.org/tactics/TA0110) techniques. (Citation: PLCdev) Adversaries may export their own code into project files with conditions to execute at specific intervals. (Citation: Nicolas Falliere, Liam O Murchu, Eric Chien February 2011) Malicious programs allow adversaries control of all aspects of the process enabled by the PLC. Once the project file is downloaded to a PLC the workstation device may be disconnected with the infected project file still executing. (Citation: PLCdev)",
+          "domain": "",
+          "name": "Project File Infection",
+          "parent_id": "",
+          "scores": {
+            "bm25": 16.55050277709961,
+            "dense": 0.28409636,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "attack",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/CVE-2026-27111",
+          "_key": "CVE-2026-27111",
+          "_source": "sparta_controls",
+          "control_id": "CVE-2026-27111",
+          "control_type": "control",
+          "description": "Kargo manages and automates the promotion of software artifacts. From v1.9.0 to v1.9.2, Kargo's authorization model includes a promote verb -- a non-standard Kubernetes \"dolphin verb\" -- that gates the ability to advance Freight through a promotion pipeline. This verb exists to separate the ability to manage promotion-related resources from the ability to trigger promotions, enabling fine-grained access control over what is often a sensitive operation. The promote verb is correctly enforced in Kargo's legacy gRPC API. However, three endpoints in the newer REST API omit this check, relying only on standard Kubernetes RBAC for the underlying resource operations (patch on freights/status or create on promotions). This permits users who hold those standard permissions -- but who were deliberately not granted promote -- to bypass the intended authorization boundary. The affected endpoints are /v1beta1/projects/{project}/freight/{freight}/approve, /v1beta1/projects/{project}/stages/{stage}/promotions, and /v1beta1/projects/{project}/stages/{stage}/promotions/downstream. This vulnerability is fixed in v1.9.3.",
+          "domain": "land",
+          "name": "CVE-2026-27111",
+          "parent_id": null,
+          "scores": {
+            "bm25": 10.397700309753418,
+            "dense": 0.18618464,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NVD",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/CVE-2025-68621",
+          "_key": "CVE-2025-68621",
+          "_source": "sparta_controls",
+          "control_id": "CVE-2025-68621",
+          "control_type": "control",
+          "description": "Trilium Notes is an open-source, cross-platform hierarchical note taking application with focus on building large personal knowledge bases.  Prior to 0.101.0, a critical timing attack vulnerability in Trilium's sync authentication endpoint allows unauthenticated remote attackers to recover HMAC authentication hashes byte-by-byte through statistical timing analysis. This enables complete authentication bypass without password knowledge, granting full read/write access to victim's knowledge base. This vulnerability is fixed in 0.101.0.",
+          "domain": "land",
+          "name": "CVE-2025-68621",
+          "parent_id": null,
+          "scores": {
+            "bm25": 8.552876472473145,
+            "dense": 0.30621243,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "NVD",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/capec__85",
+          "_key": "capec__85",
+          "_source": "sparta_controls",
+          "control_id": "CAPEC-85",
+          "control_type": "attack_pattern",
+          "description": "This attack utilizes the frequent client-server roundtrips in Ajax conversation to scan a system. While Ajax does not open up new vulnerabilities per se, it does optimize them from an attacker point of view. A common first step for an attacker is to footprint the target environment to understand what attacks will work. Since footprinting relies on enumeration, the conversational pattern of rapid, multiple requests and responses that are typical in Ajax applications enable an attacker to look for many vulnerabilities, well-known ports, network locations and so on. The knowledge gained through Ajax fingerprinting can be used to support other attacks, such as XSS.",
+          "domain": "",
+          "name": "AJAX Footprinting",
+          "parent_id": null,
+          "scores": {
+            "bm25": 8.393696784973145,
+            "dense": 0.16119802,
+            "graph": 0.3887417987987634,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "CAPEC",
+          "type": "control_metadata"
+        },
+        {
+          "_id": "sparta_controls/MID_079",
+          "_key": "MID_079",
+          "_source": "sparta_controls",
+          "control_id": "MID-079",
+          "control_type": "emb3d_mitigation",
+          "description": "All network protocol functionality, including function codes, should be documented and available to the owners/operators of a device. The presence of undocumented functionality prevents device operators from adequately taking precautions and monitoring network behavior based on a device's potential threat landscape. Without proper documentation, device users have no knowledge of what function codes are going over their network, leaving them exposed to potential threats and preventing them from implementing security features on their network, such as a message-level firewalls.\n\nDocumentation should include (i) describing the full set of function codes or message types that the device produces or accepts, (ii) functions that affect device management or can cause configuration changes, and (iii) authentication and encryption modes and mechanisms it is capable of. Any functions that are not meant for use in a production environment should be removed. The device operator should have full knowledge of any network-accessible function that can affect the behavior or performance of the device.",
+          "domain": "",
+          "name": "Remove Undocumented Network Functionality",
+          "parent_id": null,
+          "scores": {
+            "bm25": 8.319499969482422,
+            "dense": 0.0,
+            "graph": 0.0,
+            "weight": 0.9
+          },
+          "source": "sparta_controls",
+          "source_framework": "EMB3D",
+          "type": "control_metadata"
+        }
+      ],
+      "meta": {
+        "k": 5,
+        "memory_first": true,
+        "q": "What is Tau project knowledge?",
+        "runtime_pressure": {
+          "active_workloads": [],
+          "checked_at": 1782655286,
+          "level": "normal",
+          "recommended_action": "No active persisted runtime pressure detected.",
+          "slow_query_risk": false,
+          "sources": []
+        },
+        "scope": "tau-loop2-harness",
+        "supplemental_count": 59,
+        "supplemental_promoted": 59,
+        "threshold": 0.3,
+        "took_ms": 15143,
+        "used_dense": true,
+        "used_reranker": false
+      },
+      "should_scan": false
+    },
+    "schema": "tau.loop2_memory_route.v1"
+  },
+  "memory_first": true,
+  "mocked": false,
+  "persona_voice": {
+    "claims": {
+      "does_not_prove": [
+        "PersonaPlex audio synthesis",
+        "published PersonaPlex voice identity",
+        "live full-duplex PersonaPlex readiness"
+      ],
+      "proves": [
+        "Tau receipt preserves persona and voice routing metadata for TUI consumers"
+      ]
+    },
+    "live_full_duplex": false,
+    "persona_id": null,
+    "personaplex_receipt": null,
+    "personaplex_skill": "/home/graham/workspace/experiments/agent-skills/skills/personaplex/SKILL.md",
+    "publication_status": "NOT_APPLICABLE",
+    "schema": "tau.sparta_chat_persona_voice.v1",
+    "text_persona_source": "requested",
+    "voice_engine": "personaplex",
+    "voice_requested": false,
+    "voice_status": "NOT_REQUESTED"
+  },
+  "query": "What is Tau project knowledge?",
+  "schema": "tau.loop2_memory_skill_selector_harness.v1",
+  "scope": "tau-loop2-harness",
+  "selected_skill": "memory.clarify",
+  "selector": {
+    "candidate_skills": [
+      "memory.answer",
+      "memory.clarify",
+      "memory.deflect",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "external_search_allowed": false,
+    "intent_action": "QUERY",
+    "intent_confidence": 0.8,
+    "reasons": [
+      "unresolved_or_missing_entities"
+    ],
+    "rejected_skills": [
+      "memory.answer",
+      "memory.deflect",
+      "brave-search",
+      "create-evidence-case"
+    ],
+    "schema": "tau.loop2_skill_selection.v1",
+    "selected_skill": "memory.clarify",
+    "stop_condition": "selected branch writes branch receipt with returncode/status"
+  },
+  "stage_trace": [
+    {
+      "label": "Getting Intent...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.intent",
+      "stage": "intent",
+      "status": "PASS"
+    },
+    {
+      "label": "Extracting Entities...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.extract_entities",
+      "stage": "extract_entities",
+      "status": "PASS"
+    },
+    {
+      "label": "Accessing Memory...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.recall",
+      "stage": "recall",
+      "status": "PASS"
+    },
+    {
+      "label": "Clarifying...",
+      "schema": "tau.loop2_pipeline_stage.v1",
+      "source": "memory.clarify",
+      "stage": "clarify",
+      "status": "PASS"
+    }
+  ]
+}
