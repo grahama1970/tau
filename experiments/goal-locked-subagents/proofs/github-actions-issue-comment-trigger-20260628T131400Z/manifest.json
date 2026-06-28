@@ -1,0 +1,77 @@
+{
+  "schema": "tau.github_actions_issue_comment_trigger_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_at": "2026-06-28T13:14:00Z",
+  "trigger": {
+    "event": "issue_comment",
+    "issue_number": 6,
+    "issue_url": "https://github.com/grahama1970/tau/issues/6",
+    "comment_command": "/tau handoff-dispatch",
+    "guard": "contains(github.event.comment.body, '/tau handoff-dispatch')"
+  },
+  "workflow": {
+    "name": "Tau handoff dispatch",
+    "file": ".github/workflows/tau-handoff-dispatch.yml",
+    "run_id": 28323407804,
+    "url": "https://github.com/grahama1970/tau/actions/runs/28323407804",
+    "head_branch": "main",
+    "head_sha": "ff827e5150d64d656095b9bd654475b892e352f2",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "observed_receipts": {
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/artifacts/tau-handoff-actions-28323407804/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/artifacts/tau-handoff-actions-28323407804/command-loop-step-001.receipt.json",
+    "github_transport_receipt": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/artifacts/tau-handoff-actions-28323407804/github-transport.json",
+    "workflow_stdout": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/artifacts/tau-handoff-actions-28323407804/workflow-command-loop.stdout.json",
+    "transport_stdout": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/artifacts/tau-handoff-actions-28323407804/workflow-github-transport.stdout.json",
+    "run_metadata": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/run.json",
+    "run_log": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/logs/run.log",
+    "final_issue_state": "experiments/goal-locked-subagents/proofs/github-actions-issue-comment-trigger-20260628T131400Z/github-issue-6-final.json"
+  },
+  "command_loop_summary": {
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "status": "WAITING",
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human",
+    "next_agent": "human"
+  },
+  "github_transport_summary": {
+    "schema": "tau.github_command_loop_terminal_transport_receipt.v1",
+    "ok": true,
+    "dry_run": true,
+    "applied": false,
+    "command_count": 1,
+    "command_results_count": 0
+  },
+  "disposition": {
+    "issue_number": 6,
+    "issue_url": "https://github.com/grahama1970/tau/issues/6",
+    "final_state": "CLOSED",
+    "final_labels": [
+      "agent-work",
+      "agent-done"
+    ],
+    "comment_count": 3
+  },
+  "claims": {
+    "proves": [
+      "A real GitHub issue comment containing /tau handoff-dispatch triggers the Tau handoff dispatch workflow.",
+      "The issue-comment triggered workflow runs one bounded Tau handoff-command-loop tick and uploads receipt artifacts.",
+      "The issue-comment triggered path defaults terminal GitHub transport to dry-run, with applied=false and zero mutation command results."
+    ],
+    "does_not_prove": [
+      "Automatic routing from arbitrary GitHub issue bodies without the explicit trigger comment.",
+      "Actions-side GitHub mutation from the issue-comment path.",
+      "Unbounded autonomous subagent operation.",
+      "Production Sparta Chat readiness."
+    ]
+  }
+}
