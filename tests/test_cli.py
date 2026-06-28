@@ -958,6 +958,78 @@ def test_cli_handoff_agent_adapter_emits_tau_handoff(monkeypatch: pytest.MonkeyP
     assert payload["next_agent"]["name"] == "human"
 
 
+def test_cli_handoff_research_auditor_adapter_refuses_without_authorization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    start["next_agent"] = {
+        "name": "research-auditor",
+        "executor": "either",
+        "reason": "Fresh research is required before Tau may answer.",
+    }
+    monkeypatch.setenv("TAU_HANDOFF_SELECTED_AGENT", "research-auditor")
+
+    result = CliRunner().invoke(
+        app,
+        ["handoff-research-auditor-adapter"],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff.v1"
+    assert payload["previous_subagent"] == "research-auditor"
+    assert payload["result"]["status"] == "REFUSED"
+    assert "no Brave/WebGPT call was made" in payload["result"]["summary"]
+    assert "context.research_authorization.approved=true" in payload["required_evidence"][0]
+    assert payload["next_agent"] == {
+        "name": "human",
+        "executor": "human",
+        "reason": (
+            "Human must approve a schema-valid fresh research route before Tau calls "
+            "Brave Search, WebGPT, or another external research lane."
+        ),
+    }
+
+
+def test_cli_handoff_research_auditor_adapter_accepts_explicit_authorization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    start = _valid_cli_handoff_payload()
+    start["next_agent"] = {
+        "name": "research-auditor",
+        "executor": "either",
+        "reason": "Fresh research is required before Tau may answer.",
+    }
+    context = start["context"]
+    assert isinstance(context, dict)
+    context["research_authorization"] = {
+        "approved": True,
+        "method": "brave-search",
+        "reason": "Human explicitly requested fresh source retrieval.",
+    }
+    monkeypatch.setenv("TAU_HANDOFF_SELECTED_AGENT", "research-auditor")
+
+    result = CliRunner().invoke(
+        app,
+        ["handoff-research-auditor-adapter"],
+        input=json.dumps(start),
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.agent_handoff.v1"
+    assert payload["previous_subagent"] == "research-auditor"
+    assert payload["result"]["status"] == "NEEDS_REVIEW"
+    assert "brave-search is authorized" in payload["result"]["summary"]
+    assert payload["result"]["evidence"] == [
+        "context.research_authorization.approved=true",
+        "context.research_authorization.method=brave-search",
+    ]
+    assert payload["next_agent"]["name"] == "human"
+    assert "External research receipt for brave-search" in payload["required_evidence"][0]
+
+
 def test_cli_handoff_goal_guardian_adapter_emits_preserved_goal_handoff(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

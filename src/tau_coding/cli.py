@@ -861,6 +861,14 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
+    if prompt_option is None and command == "handoff-research-auditor-adapter":
+        try:
+            payload = project_agent_handoff_research_auditor_adapter_command()
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
     if prompt_option is None:
         try:
             anyio.run(
@@ -3482,6 +3490,104 @@ def project_agent_handoff_adapter_command(
     }
 
 
+def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object]:
+    """Emit a research-auditor handoff that refuses unapproved external research."""
+
+    start_payload = _read_stdin_handoff()
+    github = _required_mapping(start_payload, "github", "stdin handoff")
+    goal = _required_mapping(start_payload, "goal", "stdin handoff")
+    context = _required_mapping(start_payload, "context", "stdin handoff")
+    authorization = context.get("research_authorization")
+    artifacts = context.get("artifacts") if isinstance(context.get("artifacts"), list) else []
+    previous_subagent = environ.get("TAU_HANDOFF_SELECTED_AGENT") or "research-auditor"
+    if previous_subagent != "research-auditor":
+        raise RuntimeError(
+            "handoff-research-auditor-adapter may only run for selected agent research-auditor"
+        )
+
+    if not _research_authorized(authorization):
+        return {
+            "schema": "tau.agent_handoff.v1",
+            "github": github,
+            "goal": goal,
+            "previous_subagent": "research-auditor",
+            "context": {
+                "summary": (
+                    "Research auditor refused fresh external research because the handoff "
+                    "did not include context.research_authorization.approved=true."
+                ),
+                "artifacts": artifacts,
+            },
+            "result": {
+                "status": "REFUSED",
+                "summary": (
+                    "Fresh external research was not authorized; no Brave/WebGPT call was made."
+                ),
+                "evidence": [
+                    "research-auditor checked context.research_authorization.approved and found no approval"
+                ],
+            },
+            "rationale": (
+                "Tau must not perform fresh web research from a RESEARCH intent unless the "
+                "handoff explicitly authorizes the external research lane."
+            ),
+            "next_agent": {
+                "name": "human",
+                "executor": "human",
+                "reason": (
+                    "Human must approve a schema-valid fresh research route before Tau calls "
+                    "Brave Search, WebGPT, or another external research lane."
+                ),
+            },
+            "required_evidence": [
+                "Human posts a handoff with context.research_authorization.approved=true and a named research method."
+            ],
+            "stop_condition": "Human route is posted.",
+        }
+
+    method = _research_authorization_method(authorization)
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": github,
+        "goal": goal,
+        "previous_subagent": "research-auditor",
+        "context": {
+            "summary": (
+                f"Research auditor accepted authorization for {method}; this bounded adapter "
+                "does not execute the external research call."
+            ),
+            "artifacts": artifacts,
+        },
+        "result": {
+            "status": "NEEDS_REVIEW",
+            "summary": (
+                f"Fresh research lane {method} is authorized, but no external research result "
+                "has been produced by this adapter."
+            ),
+            "evidence": [
+                f"context.research_authorization.approved=true",
+                f"context.research_authorization.method={method}",
+            ],
+        },
+        "rationale": (
+            "Authorization is present, so the next bounded route may execute or review the "
+            "named external research lane without weakening the Memory-first proof boundary."
+        ),
+        "next_agent": {
+            "name": "human",
+            "executor": "human",
+            "reason": (
+                f"Human must dispatch the actual {method} research executor or attach the "
+                "resulting research receipt."
+            ),
+        },
+        "required_evidence": [
+            f"External research receipt for {method} with sources and retrieval timestamp."
+        ],
+        "stop_condition": "Human route is posted.",
+    }
+
+
 def project_agent_handoff_goal_guardian_adapter_command(
     *,
     next_agent: str | None,
@@ -3562,6 +3668,36 @@ def project_agent_handoff_goal_guardian_adapter_command(
         "required_evidence": [resolved_required_evidence],
         "stop_condition": resolved_stop_condition,
     }
+
+
+def _read_stdin_handoff() -> dict[str, object]:
+    try:
+        start_payload = json.loads(sys.stdin.read())
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"stdin handoff JSON is unreadable: {exc}") from exc
+    if not isinstance(start_payload, dict):
+        raise RuntimeError("stdin handoff JSON root must be an object")
+    return start_payload
+
+
+def _required_mapping(payload: dict[str, object], key: str, label: str) -> dict[str, object]:
+    value = payload.get(key)
+    if not isinstance(value, dict):
+        raise RuntimeError(f"{label} missing {key} object")
+    return value
+
+
+def _research_authorized(value: object) -> bool:
+    return isinstance(value, dict) and value.get("approved") is True
+
+
+def _research_authorization_method(value: object) -> str:
+    if not isinstance(value, dict):
+        return "unknown"
+    method = value.get("method")
+    if isinstance(method, str) and method.strip():
+        return method.strip()
+    return "external-research"
 
 
 def _project_agent_goal_guardian_reconciliation_handoff(

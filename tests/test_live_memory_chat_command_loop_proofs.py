@@ -20,6 +20,13 @@ def test_live_memory_chat_command_loop_proof_manifest_matches_raw_receipts() -> 
         "COMPLIANCE",
         "RESEARCH",
     ]
+    assert {
+        route["route"]: route["response_result_status"] for route in manifest["routes"]
+    } == {
+        "ANSWER": "COMPLETED",
+        "COMPLIANCE": "COMPLETED",
+        "RESEARCH": "REFUSED",
+    }
 
     for route in manifest["routes"]:
         start = json.loads((PROOF_DIR / f"{route['route'].lower()}-start-handoff.json").read_text(encoding="utf-8"))

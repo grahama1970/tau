@@ -324,11 +324,7 @@ def test_committed_research_auditor_overlay_command_spec_loads() -> None:
         command_spec_root=root / "experiments/goal-locked-subagents/agent-command-specs",
     )
 
-    assert spec["command"][:4] == ["uv", "run", "tau", "handoff-agent-adapter"]
-    assert "--result-summary" in spec["command"]
-    assert any("Research auditor consumed" in part for part in spec["command"])
-    assert "--next-agent" in spec["command"]
-    assert "human" in spec["command"]
+    assert spec["command"] == ["uv", "run", "tau", "handoff-research-auditor-adapter"]
     assert spec["cwd"] == Path(".")
     assert spec["timeout_s"] == 30.0
 
