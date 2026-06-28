@@ -1,0 +1,107 @@
+{
+  "schema": "tau.ux_lab_watchdog_receipt_chain_panel_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_utc": "2026-06-28T14:49:00Z",
+  "source": {
+    "tau_repo": "/home/graham/workspace/experiments/tau",
+    "tau_head": "5320c8543cf74c84d6ea0fec1cc32d6da64fd0ee",
+    "pi_mono_repo": "/home/graham/workspace/experiments/pi-mono",
+    "pi_mono_branch": "persona/tim-blazytko-1774553751276",
+    "pi_mono_commit": "79f45fec623f8d0b07167df2a06a0c5d2490242e",
+    "ux_lab_url": "http://127.0.0.1:4302/#tau",
+    "ux_lab_api": "http://127.0.0.1:4301/api/tau/watchdog/receipt-chain"
+  },
+  "rendered_receipt": {
+    "schema": "tau.watchdog_receipt_chain_view.v1",
+    "run_id": "project-watchdog-20260628T143801Z",
+    "issue": {
+      "number": 15,
+      "url": "https://github.com/grahama1970/tau/issues/15",
+      "title": "Tau watchdog proof: fresh compliance UI handoff",
+      "final_state": "CLOSED",
+      "final_labels": [
+        "agent-work",
+        "agent-done"
+      ],
+      "comment_count": 2
+    },
+    "watchdog": {
+      "status": "COMPLETED",
+      "handled_count": 1,
+      "lease_comment_seen": true,
+      "evidence_comment_seen": true
+    },
+    "command_loop": {
+      "status": "WAITING",
+      "step_count": 1,
+      "selected_agent": "reviewer",
+      "selected_agent_command_exit_code": 0,
+      "terminal_agent": "human"
+    },
+    "github_transport": {
+      "dry_run": true,
+      "applied": false
+    }
+  },
+  "commands": [
+    {
+      "command": "npm run test -- server/tauRoutes.test.ts src/components/tau/TauChatView.test.ts",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "2 files passed, 60 tests passed"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "no diagnostics emitted"
+    },
+    {
+      "command": "curl -sS http://127.0.0.1:4301/api/tau/watchdog/receipt-chain | tee /tmp/tau-watchdog-receipt-chain-api.json | jq '{ok, error, schema:.receipt.schema, live:.receipt.live, mocked:.receipt.mocked, runId:.receipt.runId, issue:.receipt.issue, selectedAgent:.receipt.commandLoop.selectedAgent, terminalAgent:.receipt.commandLoop.terminalAgent, dryRun:.receipt.githubTransport.dryRun, applied:.receipt.githubTransport.applied}'",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "ok true, live true, mocked false, selectedAgent reviewer, terminalAgent human, dryRun true, applied false"
+    },
+    {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url 'http://127.0.0.1:4302/#tau' --name tau-watchdog-receipt-chain-panel-live",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "wrote CDP screenshot and read_json marker"
+    },
+    {
+      "command": "node playwright targeted screenshot for [data-qid=\"tau:chat:watchdog-receipt-chain\"]",
+      "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+      "exit_code": 0,
+      "result": "captured panel screenshot with Watchdog Receipt Chain, CRON RECEIPT, issue #15 CLOSED, reviewer, human, dry-run, applied=false"
+    }
+  ],
+  "artifacts": {
+    "api_response": "/tmp/tau-watchdog-receipt-chain-api.json",
+    "cdp_screenshot": "/tmp/codex-ui-verification/pi-mono/tau-watchdog-receipt-chain-panel-live/20260628T144833Z.png",
+    "cdp_read_json": "/tmp/codex-ui-verification/pi-mono/tau-watchdog-receipt-chain-panel-live/20260628T144833Z.read.json",
+    "panel_screenshot": "/tmp/codex-ui-verification/pi-mono/tau-watchdog-receipt-chain-panel-live/20260628T144903Z.panel.png",
+    "panel_text_json": "/tmp/codex-ui-verification/pi-mono/tau-watchdog-receipt-chain-panel-live/20260628T144903Z.panel.json",
+    "source_watchdog_manifest": "experiments/goal-locked-subagents/proofs/project-watchdog-fresh-compliance-ui-handoff-20260628T143800Z/manifest.json"
+  },
+  "claims": {
+    "proves": [
+      "UX Lab #tau can load the Tau-owned watchdog proof manifest through a live local API route and render the receipt chain in the Tau chat integration viewer.",
+      "The visible panel shows the installed project-watchdog cron run id, closed GitHub issue #15, selected non-human reviewer route, terminal human route, and dry-run terminal GitHub transport boundary.",
+      "The API route fails closed through manifest and artifact validation before returning tau.watchdog_receipt_chain_view.v1."
+    ],
+    "does_not_prove": [
+      "Final Sparta Chat readiness.",
+      "Browser chat rendering for a new fresh compliance turn after this panel change.",
+      "Live Brave search execution.",
+      "Unbounded autonomous subagent operation.",
+      "Semantic correctness of the compliance answer.",
+      "Human acceptance of the terminal human route."
+    ]
+  },
+  "residual_risk": [
+    "The pi-mono pre-commit hook failed on unrelated existing lint diagnostics outside the three Tau files; the scoped Tau tests and TypeScript command passed before commit.",
+    "The first CDP screenshot captured the top of the Tau page; a second targeted Playwright screenshot was required to visually inspect the watchdog panel."
+  ]
+}
