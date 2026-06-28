@@ -1,0 +1,42 @@
+{
+  "schema": "tau.ui_handoff_cron_once_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "captured_at": "2026-06-28T13:00:48Z",
+  "input": {
+    "start_handoff": "experiments/goal-locked-subagents/proofs/ui-handoff-command-loop-20260628T125900Z/start-handoff.json",
+    "orchestrator_once": true,
+    "max_steps": 1
+  },
+  "artifacts": {
+    "cron_stdout": "experiments/goal-locked-subagents/proofs/ui-handoff-cron-once-20260628T130000Z/cron.stdout.txt",
+    "cron_stderr": "experiments/goal-locked-subagents/proofs/ui-handoff-cron-once-20260628T130000Z/cron.stderr.txt",
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/ui-handoff-cron-once-20260628T130000Z/receipts/20260628T125950Z/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/ui-handoff-cron-once-20260628T130000Z/receipts/20260628T125950Z/command-loop-step-001.receipt.json"
+  },
+  "observed": {
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "status": "WAITING",
+    "step_count": 1,
+    "selected_agent": "reviewer",
+    "command_exit_code": 0,
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human"
+  },
+  "claims": {
+    "proves": [
+      "Tau cron one-shot mode can consume the fresh UI-derived start handoff.",
+      "Tau cron invoked one bounded handoff-command-loop tick with the configured active goal hash.",
+      "The cron-invoked command loop selected reviewer, command exit 0, and stopped at human."
+    ],
+    "does_not_prove": [
+      "GitHub Actions scheduling.",
+      "Unbounded autonomous operation.",
+      "Final Sparta Chat readiness."
+    ]
+  }
+}
