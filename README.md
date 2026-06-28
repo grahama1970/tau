@@ -256,6 +256,14 @@ TAU_ACTIVE_GOAL_HASH='sha256:...' \
 docker compose --profile orchestrator up tau-cron
 ```
 
+For a deterministic one-tick smoke, set `TAU_ORCHESTRATOR_ONCE=1`:
+
+```bash
+TAU_ORCHESTRATOR_START=/workspace/.loop2/start-handoff.json \
+TAU_ORCHESTRATOR_ONCE=1 \
+docker compose --profile orchestrator run --rm tau-cron
+```
+
 `tau-cron` does not run an unbounded subagent. It wakes up, invokes one bounded
 `handoff-command-loop` tick, writes receipts under `/data/receipts`, sleeps, and
 repeats. If the handoff is malformed, the goal hash is stale, a required route

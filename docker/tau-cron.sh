@@ -9,6 +9,7 @@ receipt_root="${TAU_RECEIPT_DIR:-/data/receipts}"
 max_steps="${TAU_ORCHESTRATOR_MAX_STEPS:-1}"
 active_goal_hash="${TAU_ACTIVE_GOAL_HASH:-}"
 ticket_source="${TAU_GOAL_GUARDIAN_TICKET_SOURCE:-}"
+run_once="${TAU_ORCHESTRATOR_ONCE:-0}"
 
 write_preflight_failure() {
   local reason="$1"
@@ -86,6 +87,11 @@ while true; do
   echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] ${cmd[*]}"
   if ! "${cmd[@]}"; then
     echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Tau bounded loop exited non-zero; next tick remains scheduled." >&2
+  fi
+
+  if [[ "${run_once}" == "1" || "${run_once}" == "true" || "${run_once}" == "TRUE" ]]; then
+    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] TAU_ORCHESTRATOR_ONCE=${run_once}; exiting after one bounded tick."
+    exit 0
   fi
 
   sleep "${interval}"
