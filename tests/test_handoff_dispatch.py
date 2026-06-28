@@ -315,6 +315,24 @@ def test_committed_reviewer_overlay_command_spec_loads() -> None:
     assert spec["timeout_s"] == 30.0
 
 
+def test_committed_research_auditor_overlay_command_spec_loads() -> None:
+    root = Path(__file__).resolve().parents[1]
+
+    spec = load_agent_dispatch_command_spec(
+        root / "missing-agent-registry-root",
+        "research-auditor",
+        command_spec_root=root / "experiments/goal-locked-subagents/agent-command-specs",
+    )
+
+    assert spec["command"][:4] == ["uv", "run", "tau", "handoff-agent-adapter"]
+    assert "--result-summary" in spec["command"]
+    assert any("Research auditor consumed" in part for part in spec["command"])
+    assert "--next-agent" in spec["command"]
+    assert "human" in spec["command"]
+    assert spec["cwd"] == Path(".")
+    assert spec["timeout_s"] == 30.0
+
+
 def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Path) -> None:
     agent_dir = tmp_path / "reviewer"
     agent_dir.mkdir()

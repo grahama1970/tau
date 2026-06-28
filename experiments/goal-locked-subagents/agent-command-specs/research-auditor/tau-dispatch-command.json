@@ -1,0 +1,24 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Research auditor consumed the Tau research handoff JSON contract through the Tau-owned command-spec overlay.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human review is required before Tau can claim or publish fresh external research.",
+    "--required-evidence",
+    "Human posts a schema-valid route, approves a Brave/WebGPT research step, or stops the loop.",
+    "--stop-condition",
+    "Human route is posted."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}
