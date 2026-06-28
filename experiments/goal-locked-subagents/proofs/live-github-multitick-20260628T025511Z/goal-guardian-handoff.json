@@ -1,0 +1,42 @@
+{
+  "context": {
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/1"
+    ],
+    "summary": "Goal guardian verified that the handoff preserved the active goal hash."
+  },
+  "github": {
+    "current_labels": [
+      "agent-work",
+      "next:goal-guardian",
+      "executor:local"
+    ],
+    "repo": "grahama1970/tau",
+    "target": "issue#1"
+  },
+  "goal": {
+    "goal_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "goal_id": "goal-tau-live-github-orchestration-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "project-or-harness-verifier",
+    "reason": "The preserved-goal handoff should be checked by the project-or-harness verifier."
+  },
+  "previous_subagent": "goal-guardian",
+  "rationale": "Goal preservation passed, so the next bounded agent can continue without a human goal amendment.",
+  "required_evidence": [
+    "Verifier posts a schema-valid handoff receipt."
+  ],
+  "result": {
+    "evidence": [
+      "TAU_HANDOFF_ACTIVE_GOAL_HASH matched handoff.goal.goal_hash"
+    ],
+    "status": "PASS",
+    "summary": "Active goal hash was preserved."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Verifier handoff is posted or Tau fails closed."
+}
+

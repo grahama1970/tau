@@ -1,0 +1,42 @@
+{
+  "context": {
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/1"
+    ],
+    "summary": "Registry command adapter handled route for project-or-harness-verifier."
+  },
+  "github": {
+    "current_labels": [
+      "agent-work",
+      "next:goal-guardian",
+      "executor:local"
+    ],
+    "repo": "grahama1970/tau",
+    "target": "issue#1"
+  },
+  "goal": {
+    "goal_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "goal_id": "goal-tau-live-github-orchestration-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "human",
+    "name": "human",
+    "reason": "Human review is required before another bounded subagent route."
+  },
+  "previous_subagent": "project-or-harness-verifier",
+  "rationale": "project-or-harness-verifier completed one bounded adapter turn; routing follows the configured next agent.",
+  "required_evidence": [
+    "Human posts a schema-valid handoff, goal decision, or stop instruction."
+  ],
+  "result": {
+    "evidence": [
+      "tau handoff-agent-adapter emitted this schema-valid response from stdin"
+    ],
+    "status": "COMPLETED",
+    "summary": "Project-or-harness verifier consumed the Tau handoff through the Tau-owned command-spec overlay."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Human route is posted."
+}
+

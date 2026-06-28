@@ -1,0 +1,102 @@
+{
+  "schema": "tau.live_github_multitick_orchestration_proof.v1",
+  "mocked": false,
+  "live": true,
+  "run_id": "live-github-multitick-20260628T025511Z",
+  "repository": "grahama1970/tau",
+  "issue": {
+    "number": 1,
+    "url": "https://github.com/grahama1970/tau/issues/1",
+    "state": "OPEN",
+    "labels": [
+      "agent-work",
+      "next:human",
+      "executor:human"
+    ],
+    "comment_count": 1
+  },
+  "command_loop": {
+    "ok": true,
+    "status": "WAITING",
+    "step_count": 2,
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human",
+    "selected_agents": [
+      "goal-guardian",
+      "project-or-harness-verifier"
+    ],
+    "command_exit_codes": [
+      0,
+      0
+    ]
+  },
+  "github_transport": {
+    "ok": true,
+    "applied": true,
+    "dry_run": false,
+    "command_count": 2,
+    "comment_url": "https://github.com/grahama1970/tau/issues/1#issuecomment-4824417464\n",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#1"
+    }
+  },
+  "subagent_receipts": {
+    "schema": "tau.live_github_multitick_subagent_receipts.v1",
+    "mocked": false,
+    "live": true,
+    "receipt_count": 2,
+    "receipts": [
+      {
+        "schema": "tau.subagent_receipt.v1",
+        "subagent": "goal-guardian",
+        "status": "PASS",
+        "next": "project-or-harness-verifier",
+        "ticket": "issue#1",
+        "run_id": "live-github-multitick-20260628T025511Z-step-001"
+      },
+      {
+        "schema": "tau.subagent_receipt.v1",
+        "subagent": "project-or-harness-verifier",
+        "status": "COMPLETED",
+        "next": "human",
+        "ticket": "issue#1",
+        "run_id": "live-github-multitick-20260628T025511Z-step-002"
+      }
+    ]
+  },
+  "ui_binding": {
+    "status": "PENDING",
+    "reason": "UX Lab #tau currently reads Loop2 monitor run ids; this fresh handoff-command-loop proof is not exposed through that monitor API yet."
+  },
+  "independent_semantic_review": {
+    "status": "PENDING",
+    "reason": "This run used bounded Tau command adapters and local receipts; no external semantic reviewer has reviewed the live proof yet."
+  },
+  "production_sparta_chat_readiness": {
+    "status": "PENDING",
+    "reason": "Live GitHub mutation and two-tick command-loop proof are necessary evidence, not sufficient production readiness."
+  },
+  "claims": {
+    "proves": [
+      "grahama1970/tau Issues are enabled and issue#1 was created for live proof.",
+      "Tau handoff-command-loop ran two live bounded subagent commands against issue#1.",
+      "Tau GitHub transport applied a real issue comment and label edit to issue#1.",
+      "Two emitted handoffs were converted into tau.subagent_receipt.v1 artifacts."
+    ],
+    "does_not_prove": [
+      "Production Sparta Chat readiness.",
+      "Independent external semantic review.",
+      "Browser chat driven by this same fresh run id.",
+      "Unbounded autonomous operation.",
+      "GitHub Actions or cron scheduling for this run."
+    ]
+  },
+  "artifacts": {
+    "start_handoff": "experiments/goal-locked-subagents/proofs/live-github-multitick-20260628T025511Z/start-handoff.json",
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/live-github-multitick-20260628T025511Z/command-loop/command-loop-receipt.json",
+    "github_transport_receipt": "experiments/goal-locked-subagents/proofs/live-github-multitick-20260628T025511Z/github-transport-receipt.json",
+    "subagent_receipts_summary": "experiments/goal-locked-subagents/proofs/live-github-multitick-20260628T025511Z/subagent-receipts-summary.json",
+    "github_issue_after": "experiments/goal-locked-subagents/proofs/live-github-multitick-20260628T025511Z/github-issue-after.json"
+  }
+}

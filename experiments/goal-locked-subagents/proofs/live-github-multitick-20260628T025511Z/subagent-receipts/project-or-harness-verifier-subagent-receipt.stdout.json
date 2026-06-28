@@ -1,0 +1,40 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "https://github.com/grahama1970/tau/issues/1"
+    ],
+    "assumptions": [],
+    "run_id": "live-github-multitick-20260628T025511Z-step-002",
+    "subagent": "project-or-harness-verifier",
+    "ticket": "issue#1",
+    "unknowns": []
+  },
+  "evidence": [
+    "tau handoff-agent-adapter emitted this schema-valid response from stdin"
+  ],
+  "goal": {
+    "goal_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "goal_id": "goal-tau-live-github-orchestration-proof",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human review is required before another bounded subagent route.",
+    "subagent": "human"
+  },
+  "rationale": "project-or-harness-verifier completed one bounded adapter turn; routing follows the configured next agent.",
+  "result": {
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/1"
+    ],
+    "commands_run": [],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Project-or-harness verifier consumed the Tau handoff through the Tau-owned command-spec overlay."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Human route is posted."
+}

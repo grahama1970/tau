@@ -1,0 +1,24 @@
+{
+  "schema": "tau.live_github_multitick_subagent_receipts.v1",
+  "mocked": false,
+  "live": true,
+  "receipt_count": 2,
+  "receipts": [
+    {
+      "schema": "tau.subagent_receipt.v1",
+      "subagent": "goal-guardian",
+      "status": "PASS",
+      "next": "project-or-harness-verifier",
+      "ticket": "issue#1",
+      "run_id": "live-github-multitick-20260628T025511Z-step-001"
+    },
+    {
+      "schema": "tau.subagent_receipt.v1",
+      "subagent": "project-or-harness-verifier",
+      "status": "COMPLETED",
+      "next": "human",
+      "ticket": "issue#1",
+      "run_id": "live-github-multitick-20260628T025511Z-step-002"
+    }
+  ]
+}
