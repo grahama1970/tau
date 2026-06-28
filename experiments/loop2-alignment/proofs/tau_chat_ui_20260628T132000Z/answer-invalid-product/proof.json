@@ -1,0 +1,73 @@
+{
+  "schema": "tau.live_memory_chat_browser_proof.v1",
+  "ok": true,
+  "mocked": true,
+  "live": false,
+  "scenario": "answer-invalid-product",
+  "url": "http://127.0.0.1:3002/?tauSuite=20260628T132000Z#tau",
+  "prompt": "What is the current project status?",
+  "visibleAssertions": {
+    "prompt_visible": true,
+    "fail_closed_lead_visible": true,
+    "invalid_answer_reason_visible": true,
+    "no_handoff_section_visible": true,
+    "no_reviewer_next_agent_visible": true,
+    "intent_request_seen": true,
+    "answer_request_seen": true,
+    "handoff_json_absent": true,
+    "handoff_absence_reason_recorded": true
+  },
+  "handoff": null,
+  "githubProjection": null,
+  "githubTransportReceipt": null,
+  "githubTransportValidationRendered": null,
+  "handoffOrchestratorIntake": null,
+  "subagentReceiptExpectation": null,
+  "candidateSubagentHandoff": null,
+  "subagentHandoffValidation": null,
+  "externalSubagentReceipt": null,
+  "externalSubagentReceiptIntake": null,
+  "externalSubagentGithubProjection": null,
+  "githubTransportValidation": {
+    "ok": false,
+    "status": null,
+    "body": null,
+    "error": "handoff not expected"
+  },
+  "handoffExtractionError": "handoff JSON object not found",
+  "githubProjectionExtractionError": "github projection JSON object not found",
+  "githubTransportReceiptExtractionError": "github transport receipt JSON object not found",
+  "githubTransportValidationExtractionError": "github transport validation JSON object not found",
+  "handoffOrchestratorIntakeExtractionError": "handoff orchestrator intake JSON object not found",
+  "subagentReceiptExpectationExtractionError": "subagent receipt expectation JSON object not found",
+  "candidateSubagentHandoffExtractionError": "candidate subagent handoff JSON object not found",
+  "subagentHandoffValidationExtractionError": "subagent handoff validation JSON object not found",
+  "externalSubagentReceiptExtractionError": "external subagent receipt JSON object not found",
+  "externalSubagentReceiptIntakeExtractionError": "external subagent receipt intake JSON object not found",
+  "externalSubagentGithubProjectionExtractionError": "external subagent GitHub projection JSON object not found",
+  "memoryRequests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/answer",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "screenshot": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/answer-invalid-product/tau-live-memory-chat.png",
+  "capturedAt": "2026-06-28T13:18:36.334Z"
+}

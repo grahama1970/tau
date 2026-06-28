@@ -1,0 +1,155 @@
+{
+  "schema": "tau.live_memory_chat_browser_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "scenario": "clarify-availability",
+  "url": "http://127.0.0.1:3002/?tauSuite=20260628T132000Z#tau",
+  "prompt": "CLARIFY availability probe",
+  "clarifyAvailable": false,
+  "candidatePrompts": [
+    "How do I secure it?",
+    "Assess compliance for this system",
+    "What control applies?",
+    "Can you explain this?",
+    "Which one should I use?",
+    "What is the relationship?",
+    "Use that evidence case",
+    "Is it compliant?"
+  ],
+  "intentResults": [
+    {
+      "q": "How do I secure it?",
+      "status": 200,
+      "action": "QUERY",
+      "confidence": 0.85,
+      "response_mode": "memory_grounded_answer",
+      "content_type": "markdown",
+      "recall_profile": "procedural_memory"
+    },
+    {
+      "q": "Assess compliance for this system",
+      "status": 200,
+      "action": "NO_MATCH",
+      "confidence": 0.7,
+      "response_mode": null,
+      "content_type": "deflection",
+      "recall_profile": null
+    },
+    {
+      "q": "What control applies?",
+      "status": 200,
+      "action": "NO_MATCH",
+      "confidence": 0.7,
+      "response_mode": null,
+      "content_type": "deflection",
+      "recall_profile": null
+    },
+    {
+      "q": "Can you explain this?",
+      "status": 200,
+      "action": "NO_MATCH",
+      "confidence": 0.7,
+      "response_mode": null,
+      "content_type": "deflection",
+      "recall_profile": null
+    },
+    {
+      "q": "Which one should I use?",
+      "status": 200,
+      "action": "NO_MATCH",
+      "confidence": 0.7,
+      "response_mode": null,
+      "content_type": "deflection",
+      "recall_profile": null
+    },
+    {
+      "q": "What is the relationship?",
+      "status": 200,
+      "action": "QUERY",
+      "confidence": 0.8,
+      "response_mode": null,
+      "content_type": "markdown",
+      "recall_profile": "general_memory_recall"
+    },
+    {
+      "q": "Use that evidence case",
+      "status": 200,
+      "action": "NO_MATCH",
+      "confidence": 0.7,
+      "response_mode": null,
+      "content_type": "deflection",
+      "recall_profile": null
+    },
+    {
+      "q": "Is it compliant?",
+      "status": 200,
+      "action": "NO_MATCH",
+      "confidence": 0.7,
+      "response_mode": null,
+      "content_type": "deflection",
+      "recall_profile": null
+    }
+  ],
+  "visibleAssertions": {
+    "intent_probe_count": true,
+    "intent_requests_all_200": true,
+    "clarify_not_emitted": true,
+    "observed_non_clarify_actions": true
+  },
+  "memoryRequests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3002/api/memory/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3002/api/memory/intent",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "screenshot": "/home/graham/workspace/experiments/tau/experiments/loop2-alignment/proofs/tau_chat_ui_20260628T132000Z/clarify-availability/tau-live-memory-chat.png",
+  "capturedAt": "2026-06-28T13:18:39.946Z"
+}
