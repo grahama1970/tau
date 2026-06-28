@@ -1,0 +1,69 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "created_utc": "2026-06-28T22:01:32Z",
+  "proof_scope": "UX Lab Tau movie annotation modal writes a Tau-owned annotation receipt through POST /api/tau/annotations.",
+  "source": {
+    "repo": "grahama1970/pi-mono",
+    "branch": "persona/tim-blazytko-1774553751276",
+    "commit": "c6c6a1420",
+    "files": [
+      "packages/ux-lab/server/tauRoutes.ts",
+      "packages/ux-lab/server/tauRoutes.test.ts",
+      "packages/ux-lab/src/components/tau/TauChatView.tsx",
+      "packages/ux-lab/src/components/tau/TauChatView.test.ts"
+    ]
+  },
+  "commands": [
+    {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx vitest run server/tauRoutes.test.ts src/components/tau/TauChatView.test.ts",
+      "exit_code": 0,
+      "summary": "2 files passed; 80 tests passed."
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/pi-mono/packages/ux-lab && npx tsc --noEmit --pretty false",
+      "exit_code": 0,
+      "summary": "TypeScript check exited 0."
+    },
+    {
+      "command": "curl -X POST http://127.0.0.1:3001/api/tau/annotations ...",
+      "exit_code": 0,
+      "summary": "HTTP 200; wrote /tmp/tau-annotation-receipts/tau-annotation-20260628T220005513Z-42c18dce.json."
+    },
+    {
+      "command": "node --input-type=module <browser workflow>",
+      "exit_code": 0,
+      "summary": "Browser opened http://127.0.0.1:3002/#tau, drew a bbox, clicked Write receipt, rendered receiptEndpointAttached=true, and verified the returned receipt path exists."
+    },
+    {
+      "command": "~/.codex/hooks/verify-ui-cdp.sh --url http://127.0.0.1:3002/#tau --name tau-annotation-receipt-endpoint",
+      "exit_code": 0,
+      "summary": "Generated fresh CDP screenshot/read artifacts and updated /home/graham/.codex/ui-verification/latest.json."
+    }
+  ],
+  "artifacts": {
+    "browser_proof": "browser/proof.json",
+    "browser_screenshot": "browser/tau-annotation-endpoint.png",
+    "cdp_screenshot": "cdp/tau-annotation-receipt-endpoint.png",
+    "cdp_read_json": "cdp/tau-annotation-receipt-endpoint.read.json",
+    "latest_ui_marker": "/home/graham/.codex/ui-verification/latest.json",
+    "live_receipt_path": "/tmp/tau-annotation-receipts/tau-annotation-20260628T220053373Z-8bfd708e.json"
+  },
+  "claims": {
+    "proves": [
+      "The Tau annotation modal can submit a browser-created annotation draft to /api/tau/annotations.",
+      "The endpoint returns a receipt path and the browser renders receiptEndpointAttached=true.",
+      "The returned receipt path exists on disk with schema tau.watch_annotation_receipt.v1.",
+      "Invalid empty annotation boxes fail closed with HTTP 400 in route tests."
+    ],
+    "does_not_prove": [
+      "Watch production annotation persistence.",
+      "Movie-library identity correctness.",
+      "Model/VLM character recognition correctness.",
+      "Final Sparta Chat readiness.",
+      "A production TUI implementation beyond the existing receipt terminal proof."
+    ]
+  }
+}

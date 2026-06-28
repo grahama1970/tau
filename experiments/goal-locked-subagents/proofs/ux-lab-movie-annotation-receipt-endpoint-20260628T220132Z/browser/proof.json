@@ -1,0 +1,46 @@
+{
+  "schema": "tau.ux_lab_annotation_endpoint_browser_proof.v1",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "url": "http://127.0.0.1:3002/#tau",
+  "statusText": "Tau annotation receipt written: /tmp/tau-annotation-receipts/tau-annotation-20260628T220053373Z-8bfd708e.json",
+  "preview": {
+    "schema": "tau.watch_annotation_receipt_preview.v1",
+    "persisted": "tau_endpoint_receipt",
+    "receiptEndpointAttached": true,
+    "receiptPath": "/tmp/tau-annotation-receipts/tau-annotation-20260628T220053373Z-8bfd708e.json",
+    "receiptRunId": "tau-annotation-20260628T220053373Z-8bfd708e",
+    "segmentId": "seg-001",
+    "playheadSeconds": 120,
+    "boxCount": 1,
+    "claims": {
+      "proves": [
+        "Tau annotation UI submitted a segment draft to the Tau annotation receipt endpoint."
+      ],
+      "does_not_prove": [
+        "Watch production annotation persistence",
+        "movie-library persistence",
+        "model identity correctness"
+      ]
+    }
+  },
+  "receiptPath": "/tmp/tau-annotation-receipts/tau-annotation-20260628T220053373Z-8bfd708e.json",
+  "receiptExists": true,
+  "receiptSchema": "tau.watch_annotation_receipt.v1",
+  "receiptBoxCount": 1,
+  "screenshotPath": "/tmp/tau-annotation-endpoint-proof-20260628T2200/tau-annotation-endpoint.png",
+  "errors": [],
+  "claims": {
+    "proves": [
+      "The Tau annotation modal can submit a browser-created annotation draft to /api/tau/annotations.",
+      "The endpoint returns a receipt path and the browser renders receiptEndpointAttached=true.",
+      "The returned receipt path exists on disk with schema tau.watch_annotation_receipt.v1."
+    ],
+    "does_not_prove": [
+      "Watch production annotation persistence",
+      "movie-library identity correctness",
+      "final Sparta Chat readiness"
+    ]
+  }
+}
