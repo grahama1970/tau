@@ -1,0 +1,48 @@
+{
+  "assertions": {
+    "compliance_chat_visible": true,
+    "handoff_visible_in_chat": true,
+    "memory_intent_200_seen": true,
+    "memory_recall_200_seen": true,
+    "prompt_visible_in_chat": true,
+    "receipt_stream_still_present": true,
+    "same_turn_evidence_stage_visible": true,
+    "same_turn_intent_stage_visible": true,
+    "same_turn_next_agent_reviewer_visible": true,
+    "same_turn_recall_stage_visible": true,
+    "same_turn_route_compliance_visible": true,
+    "same_turn_summary_visible": true,
+    "visible_stage_qids_unique": true
+  },
+  "checked_at": "2026-06-28T23:32:47Z",
+  "command": [
+    "node",
+    "scripts/tau-same-message-visible-tui-mirror-proof.mjs"
+  ],
+  "cwd": "/home/graham/workspace/experiments/pi-mono/packages/ux-lab",
+  "exit_code": 0,
+  "live": true,
+  "memory_request_count": 5,
+  "mocked": false,
+  "ok": true,
+  "proof_boundary": {
+    "does_not_prove": [
+      "interactive Textual TUI embedding",
+      "PersonaPlex audio synthesis",
+      "applied GitHub mutation for this browser turn",
+      "semantic correctness of the evidence case",
+      "final Sparta Chat readiness"
+    ],
+    "proves": [
+      "the checked-in UX Lab Tau chat UI proof runner executed",
+      "a live browser COMPLIANCE turn rendered the same-message chat/TUI mirror assertions when ok is true"
+    ]
+  },
+  "proof_error": null,
+  "proof_json": "/tmp/tau-skill-chat-ui-proof-20260628T2333-record/proof.json",
+  "proof_out_dir": "/tmp/tau-skill-chat-ui-proof-20260628T2333-record",
+  "proof_schema": "tau.same_message_visible_tui_mirror_browser_proof.v1",
+  "schema": "agent_skills.tau.chat_ui_proof_receipt.v1",
+  "screenshot": "/tmp/tau-skill-chat-ui-proof-20260628T2333-record/same-message-visible-tui-mirror.png",
+  "stderr": ""
+}

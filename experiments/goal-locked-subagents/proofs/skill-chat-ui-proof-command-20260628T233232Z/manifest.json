@@ -1,0 +1,57 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "created_at": "2026-06-28T23:32:32Z",
+  "name": "skill-chat-ui-proof-command",
+  "mocked": false,
+  "live": true,
+  "ok": true,
+  "scope": "Tau skill wrapper command for repeatable UX Lab same-message chat/TUI mirror proof",
+  "changed_files": [
+    "/home/graham/workspace/experiments/agent-skills/skills/tau/scripts/tau_skill.py"
+  ],
+  "commands": [
+    {
+      "command": "skills/tau/run.sh chat-ui-proof --out-dir /tmp/tau-skill-chat-ui-proof-20260628T2333-record",
+      "cwd": "/home/graham/workspace/experiments/agent-skills",
+      "exit_code": 0,
+      "summary": "The Tau skill wrapper invoked the checked-in UX Lab Playwright proof and emitted agent_skills.tau.chat_ui_proof_receipt.v1."
+    }
+  ],
+  "skill_command_receipt": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/skill-command-receipt.json",
+    "schema": "agent_skills.tau.chat_ui_proof_receipt.v1",
+    "ok": true,
+    "mocked": false,
+    "live": true
+  },
+  "browser_proof": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/browser-proof.json",
+    "schema": "tau.same_message_visible_tui_mirror_browser_proof.v1",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/same-message-visible-tui-mirror.png",
+    "ok": true,
+    "mocked": false,
+    "live": true,
+    "assertion_count": 13,
+    "memory_request_count": 5
+  },
+  "cdp": {
+    "latest_marker": "/home/graham/.codex/ui-verification/latest.json",
+    "meta": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/cdp-meta.json",
+    "screenshot": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/cdp-route.png",
+    "read_json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/skill-chat-ui-proof-command-20260628T233232Z/cdp-read.json"
+  },
+  "claims": {
+    "proves": [
+      "The Tau operator skill has a repeatable chat-ui-proof command.",
+      "The command invokes the checked-in UX Lab Tau same-message chat/TUI mirror proof runner.",
+      "A live browser COMPLIANCE turn rendered tau.agent_handoff.v1, same-turn Memory route/stages, next agent reviewer, unique visible stage qids, and the receipt stream."
+    ],
+    "does_not_prove": [
+      "Interactive Textual TUI embedding.",
+      "PersonaPlex audio synthesis.",
+      "Applied GitHub mutation for this browser turn.",
+      "Semantic correctness of the evidence case.",
+      "Final Sparta Chat readiness."
+    ]
+  }
+}
