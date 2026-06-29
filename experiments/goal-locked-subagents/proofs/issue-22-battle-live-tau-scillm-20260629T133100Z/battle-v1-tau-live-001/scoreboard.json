@@ -1,0 +1,48 @@
+{
+  "asc": 1,
+  "async": {
+    "blue_worker_count": 1,
+    "overlap_evidence": {
+      "evidence": "worker async_timing intervals overlap when red.start < blue.finish and blue.start < red.finish",
+      "overlap_count": 1,
+      "overlap_detected": true,
+      "pairs": [
+        {
+          "blue_worker": "blue-0-defense-parameterized-like",
+          "red_worker": "red-0-exploit-sqli-admin-or"
+        }
+      ]
+    },
+    "red_worker_count": 1
+  },
+  "battle_id": "battle-003",
+  "blue_score": 3.6,
+  "context": {
+    "enabled": true,
+    "memory_promotion_count": 1,
+    "memory_promotion_status": "PASS",
+    "memory_store_status": "PASS",
+    "receipt": "context/context-receipt.json",
+    "status": "PASS"
+  },
+  "fdsr": 0.0,
+  "operational": {
+    "docker_only": true,
+    "four_party": true,
+    "red_blue_async": true,
+    "scorekeeper_objective_replay": true
+  },
+  "receipts": {
+    "arena": "arena-receipt.json",
+    "blue": "blue/team-receipt.json",
+    "context": "context/context-receipt.json",
+    "judge": "scorekeeper/scorekeeper-receipt.json",
+    "red": "red/team-receipt.json"
+  },
+  "red_score": 1.5,
+  "schema": "battle.scoreboard.v1",
+  "status": "PASS",
+  "tdsr": 1.0,
+  "verdict": "BLUE_SUCCESS",
+  "winner": "blue"
+}

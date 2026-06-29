@@ -1,0 +1,34 @@
+{
+  "async": true,
+  "battle_id": "battle-003",
+  "budget": {
+    "max_attempts": 1,
+    "max_commands_per_worker": 1,
+    "max_workers": 1
+  },
+  "created_at": "2026-06-29T13:29:27Z",
+  "model": "gpt-5.5",
+  "next_agent": "battle-scorekeeper",
+  "overlap_evidence": {
+    "evidence": "worker async_timing intervals overlap when red.start < blue.finish and blue.start < red.finish",
+    "overlap_count": 1,
+    "overlap_detected": true,
+    "pairs": [
+      {
+        "blue_worker": "blue-0-defense-parameterized-like",
+        "red_worker": "red-0-exploit-sqli-admin-or"
+      }
+    ]
+  },
+  "persona": "coder",
+  "run_id": "battle-v1-operational-5693a1e871d1",
+  "schema": "battle.team_receipt.v1",
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "tau_live_subagent_receipt": "tau-live/blue/tau-subagent-receipt.json",
+  "team": "blue",
+  "worker_count": 1,
+  "worker_receipts": [
+    "blue/workers/blue-0-defense-parameterized-like/worker-receipt.json"
+  ]
+}

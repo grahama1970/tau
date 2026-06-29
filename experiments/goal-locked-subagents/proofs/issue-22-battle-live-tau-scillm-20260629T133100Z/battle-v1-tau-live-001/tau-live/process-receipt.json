@@ -1,0 +1,30 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "python",
+    "-m",
+    "tau_coding.battle_live_handoff",
+    "--out-dir",
+    "/tmp/battle-v1-tau-live-001/tau-live",
+    "--battle-id",
+    "battle-003",
+    "--run-id",
+    "battle-v1-operational-5693a1e871d1",
+    "--scenario-id",
+    "arena-hidden-sqli-xss-race-001",
+    "--red-persona",
+    "brandon-bailey",
+    "--blue-persona",
+    "coder",
+    "--model",
+    "gpt-5.5"
+  ],
+  "duration_seconds": 19.831684,
+  "exit_code": 0,
+  "schema": "battle.tau_live_bridge_process.v1",
+  "stderr": "",
+  "stdout": "{\n  \"battle_id\": \"battle-003\",\n  \"claims\": {\n    \"does_not_prove\": [\n      \"Battle Docker scorekeeper PASS unless Battle consumes this manifest.\",\n      \"Unbounded Battle swarm execution.\",\n      \"Scillm delegate/batch/tool execution; this rung uses chat completions.\"\n    ],\n    \"proves\": [\n      \"Tau consumed one Battle Red handoff and one Battle Blue handoff.\",\n      \"Tau attempted Scillm chat-completions calls for both Battle personas.\",\n      \"Tau wrote tau.subagent_receipt.v1 artifacts for both teams.\"\n    ]\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"model\": \"gpt-5.5\",\n  \"run_id\": \"battle-v1-operational-5693a1e871d1\",\n  \"scenario_id\": \"arena-hidden-sqli-xss-race-001\",\n  \"schema\": \"tau.battle_live_handoff_proof.v1\",\n  \"scillm_base_url\": \"http://localhost:4001\",\n  \"status\": \"PASS\",\n  \"surface\": \"scillm.chat_completions\",\n  \"teams\": [\n    {\n      \"error\": null,\n      \"handoff\": \"/tmp/battle-v1-tau-live-001/tau-live/red/handoff.json\",\n      \"http_status\": 200,\n      \"model\": \"gpt-5.5\",\n      \"persona\": \"brandon-bailey\",\n      \"scillm_call\": \"/tmp/battle-v1-tau-live-001/tau-live/red/scillm-call-receipt.json\",\n      \"status\": \"PASS\",\n      \"subagent_receipt\": \"/tmp/battle-v1-tau-live-001/tau-live/red/tau-subagent-receipt.json\",\n      \"surface\": \"scillm.chat_completions\",\n      \"team\": \"red\",\n      \"validation\": \"/tmp/battle-v1-tau-live-001/tau-live/red/validation.json\",\n      \"validation_ok\": true\n    },\n    {\n      \"error\": null,\n      \"handoff\": \"/tmp/battle-v1-tau-live-001/tau-live/blue/handoff.json\",\n      \"http_status\": 200,\n      \"model\": \"gpt-5.5\",\n      \"persona\": \"coder\",\n      \"scillm_call\": \"/tmp/battle-v1-tau-live-001/tau-live/blue/scillm-call-receipt.json\",\n      \"status\": \"PASS\",\n      \"subagent_receipt\": \"/tmp/battle-v1-tau-live-001/tau-live/blue/tau-subagent-receipt.json\",\n      \"surface\": \"scillm.chat_completions\",\n      \"team\": \"blue\",\n      \"validation\": \"/tmp/battle-v1-tau-live-001/tau-live/blue/validation.json\",\n      \"validation_ok\": true\n    }\n  ]\n}\n"
+}

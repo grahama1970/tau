@@ -1,0 +1,129 @@
+{
+  "artifacts": [
+    "arena/arena-hidden-vulnerability-oracle.stderr.txt",
+    "arena/arena-hidden-vulnerability-oracle.stdout.txt",
+    "arena-receipt.json",
+    "battle-plan.json",
+    "blue/team-receipt.json",
+    "blue/workers/blue-0-defense-parameterized-like/blue-patch-and-regression.stderr.txt",
+    "blue/workers/blue-0-defense-parameterized-like/blue-patch-and-regression.stdout.txt",
+    "blue/workers/blue-0-defense-parameterized-like/worker-receipt.json",
+    "blue/workers/blue-0-defense-parameterized-like/workspace/__pycache__/app.cpython-312.pyc",
+    "blue/workers/blue-0-defense-parameterized-like/workspace/app.py",
+    "blue/workers/blue-0-defense-parameterized-like/workspace/exploit_check.py",
+    "blue/workers/blue-0-defense-parameterized-like/workspace/tests/__pycache__/test_app.cpython-312.pyc",
+    "blue/workers/blue-0-defense-parameterized-like/workspace/tests/test_app.py",
+    "context/code-context-receipt.json",
+    "context/context-receipt.json",
+    "context/fast-scan-receipt.json",
+    "context/fast-scan.stderr.txt",
+    "context/fast-scan.stdout.txt",
+    "context/memory-promotion-receipt.json",
+    "context/memory-recall-receipt.json",
+    "context/treesitter.stderr.txt",
+    "context/treesitter.stdout.json",
+    "context/warm-pond-receipt.json",
+    "docker-image-receipt.json",
+    "graph/battle-v1-force-graph.json",
+    "hidden-ground-truth.json",
+    "monitor-index.json",
+    "red/team-receipt.json",
+    "red/workers/red-0-exploit-sqli-admin-or/red-exploit-probe.stderr.txt",
+    "red/workers/red-0-exploit-sqli-admin-or/red-exploit-probe.stdout.txt",
+    "red/workers/red-0-exploit-sqli-admin-or/worker-receipt.json",
+    "red/workers/red-0-exploit-sqli-admin-or/workspace/__pycache__/app.cpython-312.pyc",
+    "red/workers/red-0-exploit-sqli-admin-or/workspace/app.py",
+    "red/workers/red-0-exploit-sqli-admin-or/workspace/exploit_check.py",
+    "red/workers/red-0-exploit-sqli-admin-or/workspace/tests/test_app.py",
+    "run-receipt.json",
+    "scoreboard.json",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/attempt-receipt.json",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-apply-defense.stderr.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-apply-defense.stdout.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-exploit-after-patch.stderr.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-exploit-after-patch.stdout.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-exploit-before-patch.stderr.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-exploit-before-patch.stdout.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-regression-after-patch.stderr.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/scorekeeper-regression-after-patch.stdout.txt",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/workspace/__pycache__/app.cpython-312.pyc",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/workspace/app.py",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/workspace/exploit_check.py",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/workspace/tests/__pycache__/test_app.cpython-312.pyc",
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/workspace/tests/test_app.py",
+    "scorekeeper/scorekeeper-receipt.json",
+    "subagent-ledger.sqlite",
+    "tau-live/blue/handoff.json",
+    "tau-live/blue/scillm-call-receipt.json",
+    "tau-live/blue/tau-subagent-receipt.json",
+    "tau-live/blue/validation.json",
+    "tau-live/manifest.json",
+    "tau-live/process-receipt.json",
+    "tau-live/red/handoff.json",
+    "tau-live/red/scillm-call-receipt.json",
+    "tau-live/red/tau-subagent-receipt.json",
+    "tau-live/red/validation.json",
+    "workspace/patches/app.py",
+    "workspace/target/__pycache__/app.cpython-312.pyc",
+    "workspace/target/app.py",
+    "workspace/target/exploit_check.py",
+    "workspace/target/tests/test_app.py"
+  ],
+  "battle_id": "battle-003",
+  "campaign": "Battle v1 Operational",
+  "graph": "graph/battle-v1-force-graph.json",
+  "players": [
+    {
+      "persona": "Arena Team",
+      "receipt": "arena-receipt.json",
+      "role": "target-builder",
+      "team": "arena"
+    },
+    {
+      "persona": "brandon-bailey",
+      "receipt": "red/team-receipt.json",
+      "role": "async-exploit-workers",
+      "team": "red"
+    },
+    {
+      "persona": "coder",
+      "receipt": "blue/team-receipt.json",
+      "role": "async-defense-workers",
+      "team": "blue"
+    },
+    {
+      "persona": "Scorekeeper",
+      "receipt": "scorekeeper/scorekeeper-receipt.json",
+      "role": "objective-docker-replay",
+      "team": "judge"
+    }
+  ],
+  "scenario": "arena-hidden-sqli-xss-race-001",
+  "schema": "battle.monitor_index.v1",
+  "scoreboard": "scoreboard.json",
+  "status": "PASS",
+  "timeline": [
+    {
+      "stage": "prepare",
+      "status": "PASS"
+    },
+    {
+      "stage": "red",
+      "status": "PASS"
+    },
+    {
+      "stage": "blue",
+      "status": "PASS"
+    },
+    {
+      "stage": "judge",
+      "status": "PASS"
+    },
+    {
+      "stage": "score",
+      "status": "PASS"
+    }
+  ],
+  "title": "Battle-003 Arena hidden vulnerability race",
+  "verdict": "BLUE_SUCCESS"
+}

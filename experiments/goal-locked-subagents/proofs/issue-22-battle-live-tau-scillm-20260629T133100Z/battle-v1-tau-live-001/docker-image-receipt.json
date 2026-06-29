@@ -1,0 +1,6 @@
+{
+  "image": "python:3.12-slim",
+  "schema": "battle.docker_image_receipt.v1",
+  "source": "local_image",
+  "status": "PASS"
+}

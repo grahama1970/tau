@@ -1,0 +1,83 @@
+{
+  "schema": "tau.issue_22_battle_live_tau_scillm_proof.v1",
+  "issue": {
+    "repo": "grahama1970/tau",
+    "number": 22,
+    "title": "Add Battle live Tau/scillm handoff proof rung"
+  },
+  "mocked": false,
+  "live": true,
+  "commands": [
+    {
+      "command": "cd /home/graham/workspace/experiments/agent-skills/skills/battle && ./run.sh battle-v1-operational battle-003 --out /tmp/battle-v1-tau-live-001 --red-workers 1 --blue-workers 1 --max-attempts 1 --require-memory --tau-live",
+      "exit_code": 0,
+      "stdout": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001.stdout.json",
+      "stderr": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001.stderr.txt"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/agent-skills/skills/battle && python3 sanity/battle_v1_operational_acceptance.py /tmp/battle-v1-tau-live-001 --allow-first-recall-empty --min-red-workers 1 --min-blue-workers 1",
+      "exit_code": 0,
+      "stdout": "BATTLE_V1_OPERATIONAL_ACCEPTANCE_PASS"
+    }
+  ],
+  "artifacts": {
+    "battle_run_receipt": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/run-receipt.json",
+    "battle_scoreboard": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/scoreboard.json",
+    "battle_scorekeeper_receipt": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/scorekeeper/scorekeeper-receipt.json",
+    "battle_red_team_receipt": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/red/team-receipt.json",
+    "battle_blue_team_receipt": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/blue/team-receipt.json",
+    "tau_live_manifest": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/tau-live/manifest.json",
+    "tau_red_subagent_receipt": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/tau-live/red/tau-subagent-receipt.json",
+    "tau_blue_subagent_receipt": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/tau-live/blue/tau-subagent-receipt.json",
+    "tau_red_scillm_call": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/tau-live/red/scillm-call-receipt.json",
+    "tau_blue_scillm_call": "experiments/goal-locked-subagents/proofs/issue-22-battle-live-tau-scillm-20260629T133100Z/battle-v1-tau-live-001/tau-live/blue/scillm-call-receipt.json"
+  },
+  "battle_result": {
+    "status": "PASS",
+    "verdict": "BLUE_SUCCESS",
+    "docker_only": true,
+    "red_blue_async": true,
+    "live_tau_handoff": true,
+    "tau_live_status": "PASS",
+    "models_used": [
+      "gpt-5.5"
+    ],
+    "tau_live_surface": "scillm.chat_completions"
+  },
+  "tau_live_result": {
+    "schema": "tau.battle_live_handoff_proof.v1",
+    "status": "PASS",
+    "mocked": false,
+    "live": true,
+    "model": "gpt-5.5",
+    "surface": "scillm.chat_completions",
+    "process_exit_code": 0,
+    "red": {
+      "status": "PASS",
+      "http_status": 200,
+      "validation_ok": true,
+      "next_subagent": "battle-scorekeeper"
+    },
+    "blue": {
+      "status": "PASS",
+      "http_status": 200,
+      "validation_ok": true,
+      "next_subagent": "battle-scorekeeper"
+    }
+  },
+  "claims": {
+    "proves": [
+      "Battle exposes an opt-in --tau-live path for battle-v1-operational.",
+      "Tau consumed one Battle Red handoff and one Battle Blue handoff.",
+      "Tau called Scillm chat completions with model gpt-5.5 for both Battle personas.",
+      "Tau wrote schema-valid tau.subagent_receipt.v1 artifacts for Red and Blue.",
+      "Battle consumed the Tau live manifest and completed the bounded Docker-only scorekeeper proof."
+    ],
+    "does_not_prove": [
+      "Unbounded Battle swarm scheduling.",
+      "Scillm delegate, batch, or tool execution inside Battle.",
+      "QEMU, AFL, or high-throughput mutation campaigns.",
+      "Autonomous GitHub issue monitoring beyond this issue proof."
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "duration_seconds": 13.067447,
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "persona": "brandon-bailey",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "persona": "brandon-bailey",
+      "proof": "battle-live-handoff",
+      "team": "red"
+    },
+    "temperature": 0
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "annotations": null,
+          "audio": null,
+          "content": "BLOCKED: Red Battle subagent for battle-003 could not execute Tau/Scillm or write `red/tau-subagent-receipt.json` from this channel; local executor should run one bounded red action-selection turn and emit the required Tau receipt.",
+          "function_call": null,
+          "refusal": null,
+          "role": "assistant",
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1782739760,
+    "id": "chatcmpl-codex-79875d3f",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "persona": "brandon-bailey",
+      "proof": "battle-live-handoff",
+      "team": "red"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": "<redacted>",
+      "completion_tokens_details": "<redacted>",
+      "prompt_tokens": "<redacted>",
+      "prompt_tokens_details": "<redacted>",
+      "total_tokens": "<redacted>"
+    }
+  },
+  "response_content": "BLOCKED: Red Battle subagent for battle-003 could not execute Tau/Scillm or write `red/tau-subagent-receipt.json` from this channel; local executor should run one bounded red action-selection turn and emit the required Tau receipt.",
+  "schema": "tau.battle_scillm_call_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "PASS",
+  "team": "red"
+}

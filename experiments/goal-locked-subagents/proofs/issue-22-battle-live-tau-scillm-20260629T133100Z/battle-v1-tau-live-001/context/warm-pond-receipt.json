@@ -1,0 +1,157 @@
+{
+  "battle_id": "battle-003",
+  "blue_persona": "coder",
+  "code_symbols": [
+    "build_db",
+    "search_users",
+    "render_search",
+    "main",
+    "do_GET",
+    "log_message"
+  ],
+  "combination_count": 8,
+  "combinations": [
+    {
+      "affinity": 1.0,
+      "defense": "defense-parameterized-like",
+      "exploit": "exploit-sqli-admin-or",
+      "families": [
+        "sql_injection"
+      ],
+      "id": "exploit-sqli-admin-or__defense-parameterized-like",
+      "reason": "same-family direct countermeasure"
+    },
+    {
+      "affinity": 0.73,
+      "defense": "defense-html-escape-query",
+      "exploit": "exploit-sqli-admin-or",
+      "families": [
+        "reflected_xss",
+        "sql_injection"
+      ],
+      "id": "exploit-sqli-admin-or__defense-html-escape-query",
+      "reason": "cross-family exploit/defense chain"
+    },
+    {
+      "affinity": 1.0,
+      "defense": "defense-parameterized-like",
+      "exploit": "exploit-sqli-like-wildcard",
+      "families": [
+        "sql_injection"
+      ],
+      "id": "exploit-sqli-like-wildcard__defense-parameterized-like",
+      "reason": "same-family direct countermeasure"
+    },
+    {
+      "affinity": 0.73,
+      "defense": "defense-html-escape-query",
+      "exploit": "exploit-sqli-like-wildcard",
+      "families": [
+        "reflected_xss",
+        "sql_injection"
+      ],
+      "id": "exploit-sqli-like-wildcard__defense-html-escape-query",
+      "reason": "cross-family exploit/defense chain"
+    },
+    {
+      "affinity": 0.73,
+      "defense": "defense-parameterized-like",
+      "exploit": "exploit-xss-script-reflection",
+      "families": [
+        "reflected_xss",
+        "sql_injection"
+      ],
+      "id": "exploit-xss-script-reflection__defense-parameterized-like",
+      "reason": "cross-family exploit/defense chain"
+    },
+    {
+      "affinity": 1.0,
+      "defense": "defense-html-escape-query",
+      "exploit": "exploit-xss-script-reflection",
+      "families": [
+        "reflected_xss"
+      ],
+      "id": "exploit-xss-script-reflection__defense-html-escape-query",
+      "reason": "same-family direct countermeasure"
+    },
+    {
+      "affinity": 0.73,
+      "defense": "defense-parameterized-like",
+      "exploit": "exploit-xss-attribute-breakout",
+      "families": [
+        "reflected_xss",
+        "sql_injection"
+      ],
+      "id": "exploit-xss-attribute-breakout__defense-parameterized-like",
+      "reason": "cross-family exploit/defense chain"
+    },
+    {
+      "affinity": 1.0,
+      "defense": "defense-html-escape-query",
+      "exploit": "exploit-xss-attribute-breakout",
+      "families": [
+        "reflected_xss"
+      ],
+      "id": "exploit-xss-attribute-breakout__defense-html-escape-query",
+      "reason": "same-family direct countermeasure"
+    }
+  ],
+  "created_at": "2026-06-29T13:29:06Z",
+  "defense_candidate_count": 2,
+  "defense_candidates": [
+    {
+      "family": "sql_injection",
+      "id": "defense-parameterized-like",
+      "strategy": "replace interpolated SQL with parameterized LIKE query",
+      "symbol": "search_users"
+    },
+    {
+      "family": "reflected_xss",
+      "id": "defense-html-escape-query",
+      "strategy": "HTML-escape query before rendering attributes or text",
+      "symbol": "render_search"
+    }
+  ],
+  "exploit_candidate_count": 4,
+  "exploit_candidates": [
+    {
+      "family": "sql_injection",
+      "id": "exploit-sqli-admin-or",
+      "payload": "nomatch%' OR role='admin' --",
+      "source": "docker_scan_hidden_oracle_memory_seed",
+      "symbol": "search_users"
+    },
+    {
+      "family": "sql_injection",
+      "id": "exploit-sqli-like-wildcard",
+      "payload": "%' OR '1'='1' --",
+      "source": "warm_pond_mutation",
+      "symbol": "search_users"
+    },
+    {
+      "family": "reflected_xss",
+      "id": "exploit-xss-script-reflection",
+      "payload": "<script>alert(1)</script>",
+      "source": "docker_scan_hidden_oracle_memory_seed",
+      "symbol": "render_search"
+    },
+    {
+      "family": "reflected_xss",
+      "id": "exploit-xss-attribute-breakout",
+      "payload": "\" autofocus onfocus=alert(1) x=\"",
+      "source": "warm_pond_mutation",
+      "symbol": "render_search"
+    }
+  ],
+  "hidden_cwes": [
+    "CWE-89",
+    "CWE-79"
+  ],
+  "memory_recall_found": true,
+  "red_persona": "brandon-bailey",
+  "run_id": "battle-v1-operational-5693a1e871d1",
+  "scenario_id": "arena-hidden-sqli-xss-race-001",
+  "schema": "battle.warm_pond_receipt.v1",
+  "selection_rule": "highest affinity, deterministic id tiebreaker, Docker replay before memory promotion",
+  "status": "PASS"
+}

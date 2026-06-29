@@ -1,0 +1,39 @@
+{
+  "context": {
+    "artifacts": [],
+    "battle": {
+      "battle_id": "battle-003",
+      "persona": "brandon-bailey",
+      "run_id": "battle-v1-operational-5693a1e871d1",
+      "scenario_id": "arena-hidden-sqli-xss-race-001",
+      "team": "red"
+    },
+    "summary": "Battle red persona handoff for battle-003."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#22"
+  },
+  "goal": {
+    "goal_hash": "sha256:298f80a6b9ad6385857922a9afaa91449d3375fe93c1831d3ec1ec40cd953b8b",
+    "goal_id": "goal-battle-battle-003-tau-live",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "battle-red",
+    "reason": "Run one bounded Battle persona action through Tau/Scillm."
+  },
+  "previous_subagent": "battle-orchestrator",
+  "rationale": "Battle needs Red and Blue Tau receipts before scorekeeper proof.",
+  "required_evidence": [
+    "red/tau-subagent-receipt.json"
+  ],
+  "result": {
+    "evidence": [],
+    "status": "READY",
+    "summary": "Battle requested one bounded Tau/Scillm action-selection turn."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Tau writes a tau.subagent_receipt.v1 or a structured BLOCKED receipt."
+}

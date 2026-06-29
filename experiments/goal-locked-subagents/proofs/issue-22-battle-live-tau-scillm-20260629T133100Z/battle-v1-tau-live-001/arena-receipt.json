@@ -1,0 +1,46 @@
+{
+  "battle_id": "battle-003",
+  "commands_run": [
+    {
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges",
+        "--user",
+        "1000:1000",
+        "-v",
+        "/tmp/battle-v1-tau-live-001/workspace/target:/workspace:rw",
+        "-w",
+        "/workspace",
+        "python:3.12-slim",
+        "python",
+        "exploit_check.py",
+        "--expect-vulnerable"
+      ],
+      "exit_code": 0,
+      "stderr_path": "/tmp/battle-v1-tau-live-001/arena/arena-hidden-vulnerability-oracle.stderr.txt",
+      "stdout_path": "/tmp/battle-v1-tau-live-001/arena/arena-hidden-vulnerability-oracle.stdout.txt"
+    }
+  ],
+  "created_at": "2026-06-29T13:29:06Z",
+  "docker_image": "python:3.12-slim",
+  "hidden_vulnerability_count": 2,
+  "hidden_vulnerability_ids": [
+    "hidden-sqli-001",
+    "hidden-xss-001"
+  ],
+  "host_boundary": "control_plane_only",
+  "persona": "arena-team",
+  "role": "create_target_and_hidden_ground_truth",
+  "run_id": "battle-v1-operational-5693a1e871d1",
+  "schema": "battle.arena_receipt.v1",
+  "status": "PASS",
+  "target_container_network": "none",
+  "team": "arena"
+}

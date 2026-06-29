@@ -1,0 +1,70 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "duration_seconds": 6.128866,
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "persona": "coder",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "persona": "coder",
+      "proof": "battle-live-handoff",
+      "team": "blue"
+    },
+    "temperature": 0
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "annotations": null,
+          "audio": null,
+          "content": "Blue battle action: accept Tau handoff for `battle-003` targeting `grahama1970/tau#22`; perform one bounded defensive Tau/Scillm action-selection turn and emit required receipt `blue/tau-subagent-receipt.json` or a structured BLOCKED receipt if unable.",
+          "function_call": null,
+          "refusal": null,
+          "role": "assistant",
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1782739766,
+    "id": "chatcmpl-codex-7b9fa322",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "persona": "coder",
+      "proof": "battle-live-handoff",
+      "team": "blue"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": "<redacted>",
+      "completion_tokens_details": "<redacted>",
+      "prompt_tokens": "<redacted>",
+      "prompt_tokens_details": "<redacted>",
+      "total_tokens": "<redacted>"
+    }
+  },
+  "response_content": "Blue battle action: accept Tau handoff for `battle-003` targeting `grahama1970/tau#22`; perform one bounded defensive Tau/Scillm action-selection turn and emit required receipt `blue/tau-subagent-receipt.json` or a structured BLOCKED receipt if unable.",
+  "schema": "tau.battle_scillm_call_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "PASS",
+  "team": "blue"
+}

@@ -1,0 +1,65 @@
+{
+  "artifacts": [
+    "context/memory-recall-receipt.json",
+    "context/code-context-receipt.json",
+    "context/fast-scan-receipt.json",
+    "context/warm-pond-receipt.json",
+    "context/memory-promotion-receipt.json",
+    "red/team-receipt.json",
+    "blue/team-receipt.json",
+    "scorekeeper/scorekeeper-receipt.json"
+  ],
+  "async": {
+    "blue_worker_count": 1,
+    "overlap_evidence": {
+      "evidence": "worker async_timing intervals overlap when red.start < blue.finish and blue.start < red.finish",
+      "overlap_count": 1,
+      "overlap_detected": true,
+      "pairs": [
+        {
+          "blue_worker": "blue-0-defense-parameterized-like",
+          "red_worker": "red-0-exploit-sqli-admin-or"
+        }
+      ]
+    },
+    "red_worker_count": 1,
+    "status": "PASS"
+  },
+  "battle_id": "battle-003",
+  "code_context": "context/code-context-receipt.json",
+  "fast_scan": "context/fast-scan-receipt.json",
+  "memory": {
+    "negative_evidence_count": 0,
+    "promotion_count": 1,
+    "promotion_status": "PASS",
+    "recall_found": true,
+    "recall_status": "PASS",
+    "winner_count": 1
+  },
+  "memory_promotion": "context/memory-promotion-receipt.json",
+  "memory_recall": "context/memory-recall-receipt.json",
+  "run_id": "battle-v1-operational-5693a1e871d1",
+  "scan": {
+    "families": [
+      "reflected_xss",
+      "sql_injection"
+    ],
+    "finding_count": 2,
+    "status": "PASS"
+  },
+  "schema": "battle.context_receipt.v1",
+  "status": "PASS",
+  "warm_pond": "context/warm-pond-receipt.json",
+  "warm_pond_candidates": {
+    "combination_count": 8,
+    "defense_candidate_count": 2,
+    "exploit_candidate_count": 4,
+    "status": "PASS"
+  },
+  "warm_pond_execution_summary": {
+    "failed_attempt_count": 0,
+    "passed_attempt_count": 1,
+    "selected_attempt_count": 1,
+    "status": "PASS"
+  }
+}
