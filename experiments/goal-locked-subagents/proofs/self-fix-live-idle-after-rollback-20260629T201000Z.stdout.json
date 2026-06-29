@@ -1,0 +1,52 @@
+{
+  "apply_github": true,
+  "artifacts": {
+    "dispatch_receipt": null,
+    "dispatch_receipt_dir": null,
+    "open_issues": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-idle-after-rollback-20260629T201000Z/open-issues.json"
+  },
+  "candidate_issues": [],
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous operation."
+    ],
+    "proves": [
+      "Tau can poll the live GitHub issue queue through gh.",
+      "Tau can apply the configured one-ticket eligibility rule.",
+      "Tau writes a deterministic idle receipt when no eligible issue exists."
+    ]
+  },
+  "dispatch_requested": true,
+  "eligible_issue_count": 0,
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "list",
+      "--repo",
+      "grahama1970/tau",
+      "--state",
+      "open",
+      "--limit",
+      "30",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.37864,
+    "exit_code": 0,
+    "issue_count": 0,
+    "ok": true,
+    "stderr": ""
+  },
+  "issue_limit": 30,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "open_issue_count": 0,
+  "repair_requested": true,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_poll_receipt.v1",
+  "selected_issue": null,
+  "skipped_issues": [],
+  "status": "IDLE"
+}

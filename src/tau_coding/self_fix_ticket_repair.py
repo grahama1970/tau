@@ -139,6 +139,11 @@ def run_ticket_repair(
     )
     receipt["commands"].extend(commit["commands"])
     if not commit["ok"]:
+        receipt["rollback"] = _rollback_failed_commit_or_push(
+            resolved_repo,
+            target_file=Path(request["target_file"]),
+            checkpoint_head=_loop_checkpoint_head(loop_receipt),
+        )
         receipt["error"] = "commit_or_push_failed"
         return _write_and_return(resolved_receipt_dir, receipt)
     receipt["commit"] = commit
@@ -235,6 +240,68 @@ def _commit_and_push_repair(
         "commit": commit["stdout"].strip() if commit["exit_code"] == 0 else None,
         "commands": commands,
     }
+
+
+def _loop_checkpoint_head(loop_receipt: dict[str, Any]) -> str | None:
+    checkpoint = loop_receipt.get("checkpoint")
+    if not isinstance(checkpoint, dict):
+        return None
+    head = checkpoint.get("head")
+    return head if isinstance(head, str) and head else None
+
+
+def _rollback_failed_commit_or_push(
+    repo_root: Path,
+    *,
+    target_file: Path,
+    checkpoint_head: str | None,
+) -> dict[str, Any]:
+    rollback: dict[str, Any] = {
+        "attempted": False,
+        "restored": False,
+        "checkpoint_head": checkpoint_head,
+        "target_file": str(target_file),
+        "commands": [],
+    }
+    if not checkpoint_head:
+        rollback["reason"] = "checkpoint_head_missing"
+        return rollback
+
+    rollback["attempted"] = True
+    current_head = _run(["git", "rev-parse", "HEAD"], cwd=repo_root, timeout=30)
+    rollback["commands"].append(current_head)
+    if not current_head["ok"]:
+        rollback["error"] = "current_head_unavailable"
+        return rollback
+
+    if current_head["stdout"].strip() != checkpoint_head:
+        restore = _run(["git", "reset", "--hard", checkpoint_head], cwd=repo_root, timeout=60)
+    else:
+        restore = _run(
+            [
+                "git",
+                "restore",
+                "--source",
+                checkpoint_head,
+                "--staged",
+                "--worktree",
+                "--",
+                str(target_file),
+            ],
+            cwd=repo_root,
+            timeout=60,
+        )
+    rollback["commands"].append(restore)
+    status = _run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo_root, timeout=30)
+    rollback["commands"].append(status)
+    rollback["restored"] = bool(
+        restore["ok"]
+        and status["ok"]
+        and str(target_file) not in status["stdout"]
+    )
+    if not rollback["restored"]:
+        rollback["error"] = "tracked_target_not_restored"
+    return rollback
 
 
 def _remote_for_repo(repo_root: Path, repo: str) -> str:
