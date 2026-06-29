@@ -1,0 +1,46 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-results.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/handoff.json"
+    ],
+    "assumptions": [
+      "Scillm output is advisory; deterministic checks are proof."
+    ],
+    "run_id": "loop",
+    "subagent": "reviewer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/scillm-call-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-results.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/handoff.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:482df87a9a7dcf1f873a24eb78f6af5d4a98359e676e68b39679325c0de8be3e",
+    "goal_id": "goal-tau-coder-reviewer-loop-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human can inspect the proof and commit/push decision.",
+    "subagent": "human"
+  },
+  "rationale": "This receipt records one bounded Tau self-fix subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-results.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/handoff.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "PASS",
+    "summary": "Reviewer accepted the coder change after deterministic checks passed."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Human accepts proof and commits/pushes the repair."
+}

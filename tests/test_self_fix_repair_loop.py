@@ -1,3 +1,4 @@
+import json
 import subprocess
 from pathlib import Path
 
@@ -30,13 +31,17 @@ def test_coder_reviewer_loop_changes_target_when_checks_pass(
         lambda explicit: {"api_key": "test-key", "source": "test"},
     )
     monkeypatch.setattr(
-        "tau_coding.self_fix_repair_loop._call_scillm",
+        "tau_coding.self_fix_repair_loop.call_scillm_streaming",
         lambda **kwargs: {
             "schema": "tau.self_fix_scillm_call_receipt.v1",
             "role": kwargs["role"],
             "status": "PASS",
             "mocked": False,
             "live": True,
+            "stream": True,
+            "events_path": str(kwargs["events_path"]),
+            "stream_event_count": 1,
+            "stream_done_seen": True,
             "http_status": 200,
             "content_excerpt": "ok",
         },
@@ -55,6 +60,16 @@ def test_coder_reviewer_loop_changes_target_when_checks_pass(
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert "battle-scorekeeper" in target.read_text(encoding="utf-8")
+    coder_call = json.loads(
+        (tmp_path / "proof" / "cycle-001" / "coder" / "scillm-call-receipt.json").read_text()
+    )
+    reviewer_call = json.loads(
+        (tmp_path / "proof" / "cycle-001" / "reviewer" / "scillm-call-receipt.json").read_text()
+    )
+    assert coder_call["stream"] is True
+    assert reviewer_call["stream"] is True
+    assert coder_call["events_path"].endswith("coder/scillm-events.jsonl")
+    assert reviewer_call["events_path"].endswith("reviewer/scillm-events.jsonl")
     assert (tmp_path / "proof" / "cycle-001" / "coder" / "tau-subagent-receipt.json").exists()
     assert (tmp_path / "proof" / "cycle-001" / "reviewer" / "tau-subagent-receipt.json").exists()
 
@@ -85,13 +100,17 @@ def test_coder_reviewer_loop_restores_target_when_checks_fail(
         lambda explicit: {"api_key": "test-key", "source": "test"},
     )
     monkeypatch.setattr(
-        "tau_coding.self_fix_repair_loop._call_scillm",
+        "tau_coding.self_fix_repair_loop.call_scillm_streaming",
         lambda **kwargs: {
             "schema": "tau.self_fix_scillm_call_receipt.v1",
             "role": kwargs["role"],
             "status": "PASS",
             "mocked": False,
             "live": True,
+            "stream": True,
+            "events_path": str(kwargs["events_path"]),
+            "stream_event_count": 1,
+            "stream_done_seen": True,
             "http_status": 200,
             "content_excerpt": "ok",
         },

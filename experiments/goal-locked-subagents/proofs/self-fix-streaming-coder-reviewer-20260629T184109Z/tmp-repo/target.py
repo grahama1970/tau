@@ -1,0 +1,1 @@
+ROUTES = {'reviewer', 'battle-scorekeeper'}

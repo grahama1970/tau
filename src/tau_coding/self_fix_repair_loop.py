@@ -20,10 +20,10 @@ from typing import Any
 import httpx
 
 from tau_coding.generated_ticket import project_agent_handoff
+from tau_coding.self_fix_scillm import call_scillm_streaming
 from tau_coding.subagent_receipt import validate_subagent_receipt
 
 SCHEMA = "tau.self_fix_coder_reviewer_loop_receipt.v1"
-SCILLM_CALL_SCHEMA = "tau.self_fix_scillm_call_receipt.v1"
 
 
 def write_coder_reviewer_repair_loop(
@@ -148,7 +148,8 @@ def write_coder_reviewer_repair_loop(
             coder_dir.mkdir(parents=True, exist_ok=True)
             reviewer_dir.mkdir(parents=True, exist_ok=True)
 
-            coder_call = _call_scillm(
+            coder_events = coder_dir / "scillm-events.jsonl"
+            coder_call = call_scillm_streaming(
                 role="coder",
                 model=model,
                 scillm_base_url=scillm_base_url,
@@ -162,6 +163,7 @@ def write_coder_reviewer_repair_loop(
                     "replace_text": replace_text,
                     "handoff": current_handoff,
                 },
+                events_path=coder_events,
             )
             _write_json(coder_dir / "scillm-call-receipt.json", coder_call)
             if coder_call.get("status") != "PASS":
@@ -214,7 +216,8 @@ def write_coder_reviewer_repair_loop(
                 verification_commands,
                 out_dir=reviewer_dir,
             )
-            reviewer_call = _call_scillm(
+            reviewer_events = reviewer_dir / "scillm-events.jsonl"
+            reviewer_call = call_scillm_streaming(
                 role="reviewer",
                 model=model,
                 scillm_base_url=scillm_base_url,
@@ -228,6 +231,7 @@ def write_coder_reviewer_repair_loop(
                     "verification": verification,
                     "handoff": coder_handoff,
                 },
+                events_path=reviewer_events,
             )
             _write_json(reviewer_dir / "scillm-call-receipt.json", reviewer_call)
             checks_passed = all(item["exit_code"] == 0 for item in verification)
@@ -342,7 +346,7 @@ def write_coder_reviewer_repair_loop(
         receipt["claims"]["proves"] = [
             "Tau ran Memory /intent and /recall before the repair loop.",
             "Tau called Scillm for a bounded coder turn.",
-            "Coder changed a real Tau repository file.",
+            "Coder changed a real git-tracked file.",
             "Tau called Scillm for a bounded reviewer turn.",
             "Reviewer PASS required deterministic verification commands to exit 0.",
             "Tau wrote per-turn handoff and subagent receipt artifacts.",
@@ -518,112 +522,6 @@ def _read_scillm_key_from_docker() -> str | None:
         if key.returncode == 0 and key.stdout.strip():
             return key.stdout.strip()
     return None
-
-
-def _call_scillm(
-    *,
-    role: str,
-    model: str,
-    scillm_base_url: str,
-    timeout_s: float,
-    api_key: str | None,
-    api_key_source: str | None,
-    payload: dict[str, Any],
-) -> dict[str, Any]:
-    started = time.monotonic()
-    request = {
-        "model": model,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    f"You are Tau's bounded {role} subagent. Return concise review notes. "
-                    "Do not claim proof unless deterministic artifacts are supplied."
-                ),
-            },
-            {"role": "user", "content": json.dumps(payload, sort_keys=True)},
-        ],
-        "temperature": 0,
-        "scillm_metadata": {
-            "caller": "tau",
-            "proof": "self-fix-coder-reviewer-loop",
-            "role": role,
-        },
-    }
-    receipt: dict[str, Any] = {
-        "schema": SCILLM_CALL_SCHEMA,
-        "role": role,
-        "model": model,
-        "scillm_base_url": scillm_base_url,
-        "api_key_source": api_key_source,
-        "request": {**request, "messages": "<redacted-request-messages>"},
-        "status": "BLOCKED",
-        "mocked": False,
-        "live": True,
-    }
-    if not api_key:
-        receipt["error"] = "scillm_api_key_unavailable"
-        receipt["duration_seconds"] = round(time.monotonic() - started, 6)
-        return receipt
-    try:
-        response = httpx.post(
-            f"{scillm_base_url.rstrip('/')}/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "X-Caller-Skill": "tau",
-            },
-            json=request,
-            timeout=timeout_s,
-        )
-    except httpx.HTTPError as exc:
-        receipt["error"] = str(exc)
-        receipt["duration_seconds"] = round(time.monotonic() - started, 6)
-        return receipt
-    receipt["http_status"] = response.status_code
-    receipt["duration_seconds"] = round(time.monotonic() - started, 6)
-    try:
-        body = response.json()
-    except json.JSONDecodeError:
-        receipt["error"] = "non_json_response"
-        receipt["response_excerpt"] = response.text[:1000]
-        return receipt
-    receipt["response"] = _redact_scillm_response(body)
-    if response.status_code >= 400:
-        receipt["error"] = f"http_{response.status_code}"
-        return receipt
-    content = _extract_message_content(body)
-    if not content:
-        receipt["error"] = "missing_message_content"
-        return receipt
-    receipt["status"] = "PASS"
-    receipt["content_excerpt"] = content[:1200]
-    return receipt
-
-
-def _redact_scillm_response(body: object) -> object:
-    if not isinstance(body, dict):
-        return body
-    redacted = dict(body)
-    if "usage" in redacted:
-        redacted["usage"] = body.get("usage")
-    return redacted
-
-
-def _extract_message_content(body: object) -> str:
-    if not isinstance(body, dict):
-        return ""
-    choices = body.get("choices")
-    if not isinstance(choices, list) or not choices:
-        return ""
-    first = choices[0]
-    if not isinstance(first, dict):
-        return ""
-    message = first.get("message")
-    if not isinstance(message, dict):
-        return ""
-    content = message.get("content")
-    return content if isinstance(content, str) else ""
 
 
 def _apply_patch_text(target: Path, *, find_text: str, replace_text: str) -> bool:

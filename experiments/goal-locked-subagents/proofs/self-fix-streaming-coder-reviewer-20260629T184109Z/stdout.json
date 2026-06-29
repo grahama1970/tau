@@ -1,0 +1,106 @@
+{
+  "artifacts": {
+    "cycle-001/coder/handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/handoff.json",
+    "cycle-001/coder/scillm-call-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/scillm-call-receipt.json",
+    "cycle-001/coder/scillm-events.jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/scillm-events.jsonl",
+    "cycle-001/coder/tau-subagent-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/tau-subagent-receipt.json",
+    "cycle-001/reviewer/handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/handoff.json",
+    "cycle-001/reviewer/scillm-call-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/scillm-call-receipt.json",
+    "cycle-001/reviewer/scillm-events.jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/scillm-events.jsonl",
+    "cycle-001/reviewer/tau-subagent-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/tau-subagent-receipt.json",
+    "cycle-001/reviewer/verification-01.stderr.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-01.stderr.txt",
+    "cycle-001/reviewer/verification-01.stdout.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-01.stdout.txt",
+    "cycle-001/reviewer/verification-results.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-results.json",
+    "memory-intent.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/memory-intent.json",
+    "memory-recall.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/memory-recall.json",
+    "start-handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/start-handoff.json"
+  },
+  "checkpoint": {
+    "head": "24d25812ab4dc875a59541dd6dce69ab7cb77553",
+    "rollback_strategy": "restore target file preimage on failed proof",
+    "target_clean_at_start": true,
+    "target_file": "target.py",
+    "target_sha256": "050641b107bf8cb6af873fda76d62d9080cbfebc41b296167d30a6f825face16"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous repair.",
+      "GitHub issue monitoring or label mutation.",
+      "Reviewer semantic correctness beyond the recorded live Scillm call and deterministic checks.",
+      "Rollback for unrelated dirty working-tree files."
+    ],
+    "proves": [
+      "Tau ran Memory /intent and /recall before the repair loop.",
+      "Tau called Scillm for a bounded coder turn.",
+      "Coder changed a real git-tracked file.",
+      "Tau called Scillm for a bounded reviewer turn.",
+      "Reviewer PASS required deterministic verification commands to exit 0.",
+      "Tau wrote per-turn handoff and subagent receipt artifacts."
+    ]
+  },
+  "created_at": "2026-06-29T18:41:10.155555+00:00",
+  "cycles": [
+    {
+      "coder": {
+        "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/handoff.json",
+        "patched": true,
+        "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/scillm-call-receipt.json",
+        "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/coder/tau-subagent-receipt.json"
+      },
+      "cycle": 1,
+      "reviewer": {
+        "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/handoff.json",
+        "passed": true,
+        "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/scillm-call-receipt.json",
+        "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/tau-subagent-receipt.json",
+        "verification": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/cycle-001/reviewer/verification-results.json"
+      }
+    }
+  ],
+  "errors": [],
+  "git": {
+    "changed_files": [
+      " M target.py",
+      "?? __pycache__/"
+    ],
+    "checkpoint_head": "24d25812ab4dc875a59541dd6dce69ab7cb77553",
+    "target_diff": "diff --git a/target.py b/target.py\nindex 27f66da..72d6326 100644\n--- a/target.py\n+++ b/target.py\n@@ -1 +1 @@\n-ROUTES = {'reviewer'}\n+ROUTES = {'reviewer', 'battle-scorekeeper'}\n"
+  },
+  "live": true,
+  "memory_first": {
+    "artifacts": {
+      "intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/memory-intent.json",
+      "recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/loop/memory-recall.json"
+    },
+    "intent_call": {
+      "duration_seconds": 0.177379,
+      "ok": true,
+      "path": "/intent",
+      "status_code": 200
+    },
+    "live": true,
+    "memory_base_url": "http://127.0.0.1:8601",
+    "mocked": false,
+    "ok": true,
+    "recall_call": {
+      "duration_seconds": 0.430526,
+      "ok": true,
+      "path": "/recall",
+      "status_code": 200
+    },
+    "recall_count": 5
+  },
+  "mocked": false,
+  "model": "gpt-5.5",
+  "ok": true,
+  "repo_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/tmp-repo",
+  "rollback": {
+    "attempted": false,
+    "restored": false
+  },
+  "run_id": "loop",
+  "schema": "tau.self_fix_coder_reviewer_loop_receipt.v1",
+  "status": "PASS",
+  "target_changed": true,
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T184109Z/tmp-repo/target.py"
+}

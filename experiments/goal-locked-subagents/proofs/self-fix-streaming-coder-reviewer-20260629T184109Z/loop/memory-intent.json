@@ -1,0 +1,168 @@
+{
+  "action": "NO_MATCH",
+  "allowed_tools": [],
+  "candidate_intents": [],
+  "classifier_source": "intent_mapper",
+  "confidence": 0.7,
+  "content_type": "deflection",
+  "depth": 1,
+  "disallowed_tools": [],
+  "entities": [],
+  "entity_context": {
+    "agent_contract": {
+      "authoritative_paths": [
+        "proof_packet.assertions",
+        "nodes.anchors",
+        "nodes.validated_context",
+        "nodes.suppressed"
+      ],
+      "ignore_for_grounding": [
+        "display_summary",
+        "candidate_nodes",
+        "guess_nodes",
+        "rationale.summary"
+      ],
+      "llm_generated_fields_are_never_authoritative": true,
+      "use_for_grounding": [
+        "proof_packet.assertions"
+      ]
+    },
+    "agent_decision": {
+      "grounding_source": "proof_packet.assertions",
+      "needs_clarification": true,
+      "needs_retry": false,
+      "primary_entity_id": null,
+      "reason": "no_security_entities",
+      "safe_to_answer": false,
+      "suggested_action": "clarify_or_repair"
+    },
+    "candidate_nodes": {
+      "controls": [],
+      "not_usable_for": [
+        "grounding",
+        "proof",
+        "approval",
+        "answer_authority",
+        "evidence_gate"
+      ],
+      "proof_role": "none",
+      "qras": [],
+      "requires_user_confirmation": true,
+      "status": "candidate_only",
+      "usable_for": [
+        "suggestions",
+        "related_results",
+        "did_you_mean"
+      ]
+    },
+    "counts": {
+      "anchors": 0,
+      "candidate_controls": 0,
+      "candidate_qras": 0,
+      "context_terms": 0,
+      "media_timecodes": 0,
+      "suppressed": 0,
+      "unsupported": 1,
+      "validated_context": 0
+    },
+    "executed_by": "intent_always_on",
+    "grounding_ok": false,
+    "media_timecodes": [],
+    "nodes": {
+      "anchors": [],
+      "context_terms": [],
+      "suppressed": [],
+      "unsupported": [
+        {
+          "id": "unsupported:battle_scorekeeper_route",
+          "mention": "battle scorekeeper route",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "battle scorekeeper route",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        }
+      ],
+      "validated_context": []
+    },
+    "ok": true,
+    "proof_packet": {
+      "assertions": [
+        {
+          "evidence": {
+            "mention": "battle scorekeeper route",
+            "normalized_text": "battle scorekeeper route",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_battle_scorekeeper_route_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:battle_scorekeeper_route"
+        }
+      ],
+      "authoritative": true,
+      "generated_by": "deterministic_extractor",
+      "llm_used": false,
+      "primary_entity_id": null,
+      "query_text": "Streaming proof: add battle-scorekeeper route to the temporary target."
+    },
+    "query_text": "Streaming proof: add battle-scorekeeper route to the temporary target.",
+    "route": "/extract-entities",
+    "view": "agent"
+  },
+  "evidence_case": null,
+  "expand_hops": 1,
+  "frameworks": [],
+  "grounding": null,
+  "invalid_terms": [],
+  "k": 12,
+  "keywords": [],
+  "lanes": [
+    "bm25",
+    "dense"
+  ],
+  "matched_persona_aliases": [],
+  "perspective": null,
+  "planner_only": false,
+  "query_plan": null,
+  "query_type": "knowledge",
+  "question_domains": [],
+  "question_kind": null,
+  "reason": "Query appears to be outside SPARTA scope",
+  "recall_profile": null,
+  "recall_profile_confidence": 0.0,
+  "recall_profile_source": null,
+  "recall_profile_spec": null,
+  "recommended_skills": [],
+  "render_style_id": "deflection_notice",
+  "required_artifacts": [],
+  "reranker_mode": "off",
+  "response_mode": null,
+  "rewritten_query": "Streaming proof: add battle-scorekeeper route to the temporary target.",
+  "scene_action_id": null,
+  "scope": "sparta",
+  "skill_chain": [],
+  "slots": {},
+  "suggestions": [],
+  "target_node_id": null,
+  "tier1": [],
+  "tool_calls": [],
+  "top_intents": [],
+  "ui_action": null,
+  "valid_entities": []
+}

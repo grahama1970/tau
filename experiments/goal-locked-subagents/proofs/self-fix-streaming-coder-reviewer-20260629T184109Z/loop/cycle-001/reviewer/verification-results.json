@@ -1,0 +1,9 @@
+[
+  {
+    "command": "python -m py_compile target.py",
+    "duration_seconds": 0.040665,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  }
+]
