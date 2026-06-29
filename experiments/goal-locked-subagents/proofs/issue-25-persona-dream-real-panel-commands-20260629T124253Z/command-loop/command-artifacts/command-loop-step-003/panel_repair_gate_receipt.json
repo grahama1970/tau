@@ -1,0 +1,36 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "no full panel repair loop ran",
+      "no provider-ready packet is claimed",
+      "no Kling or paid provider call occurred"
+    ],
+    "proves": [
+      "repair-gate command consumed the reviewer route",
+      "repair-gate command wrote a terminal receipt with provider_eligibility=false"
+    ]
+  },
+  "created_at": "2026-06-29T12:42:55Z",
+  "kling_api_call_performed": false,
+  "live_call_performed": false,
+  "paid_call_performed": false,
+  "panel_id": "panel_001",
+  "provider_eligibility": false,
+  "provider_packet_status": "DRY_RUN_NOT_LIVE_SUBMITTABLE",
+  "public_upload_performed": false,
+  "remaining_blockers": [
+    "live WebGPT/VLM visual PASS receipt is missing",
+    "real panel-creator generation receipt is missing",
+    "loop final receipt for a panel repair attempt is missing"
+  ],
+  "role": "persona-dream-panel-repair-gate",
+  "schema": "tau.persona_dream.panel_repair_gate_receipt.v1",
+  "source_artifacts": [
+    "https://github.com/grahama1970/tau/issues/25",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-25-persona-dream-real-panel-commands-20260629T124253Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-25-persona-dream-real-panel-commands-20260629T124253Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json"
+  ],
+  "status": "BLOCKED_PENDING_INDEPENDENT_VERIFICATION"
+}

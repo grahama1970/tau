@@ -2,22 +2,11 @@
   "command": [
     "uv",
     "run",
-    "tau",
-    "handoff-agent-adapter",
-    "--result-status",
-    "COMPLETED",
-    "--result-summary",
-    "Panel Creator command spec consumed the persona-dream one-panel route and delegated to read-only panel review. This command-spec proof does not generate image media or call a provider.",
-    "--next-agent",
-    "panel-reviewer",
-    "--next-executor",
-    "local",
-    "--next-reason",
-    "Panel Reviewer must independently inspect creator output or fail closed when required panel artifacts are absent.",
-    "--required-evidence",
-    "Panel Reviewer posts a schema-valid visual review handoff with WebGPT/vision source evidence, or an explicit missing-evidence blocker.",
-    "--stop-condition",
-    "Panel Reviewer emits PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE as a tau.agent_handoff.v1 response."
+    "python",
+    "-m",
+    "tau_coding.persona_dream_panel_agent",
+    "--role",
+    "panel-creator"
   ],
   "cwd": ".",
   "timeout_s": 30

@@ -1,0 +1,39 @@
+{
+  "context": {
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/25",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-25-persona-dream-real-panel-commands-20260629T124253Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png"
+    ],
+    "summary": "Panel Creator locked a one-panel local reference artifact for review."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#25"
+  },
+  "goal": {
+    "goal_hash": "sha256:2525252525252525252525252525252525252525252525252525252525252525",
+    "goal_id": "goal-tau-persona-dream-real-panel-commands",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "panel-reviewer",
+    "reason": "Panel Reviewer must inspect or fail closed on the creator receipt."
+  },
+  "previous_subagent": "panel-creator",
+  "rationale": "A concrete local panel artifact and creator receipt now exist, so the next bounded step is independent panel review.",
+  "required_evidence": [
+    "Panel Reviewer writes panel_reviewer_receipt.json or visual_review_receipt evidence."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-25-persona-dream-real-panel-commands-20260629T124253Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31"
+    ],
+    "status": "COMPLETED",
+    "summary": "Panel Creator wrote a local panel_creator_receipt with image artifact path and hash; no public upload, Kling call, paid call, or new generation occurred."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Panel Reviewer emits a Tau handoff with receipt paths."
+}

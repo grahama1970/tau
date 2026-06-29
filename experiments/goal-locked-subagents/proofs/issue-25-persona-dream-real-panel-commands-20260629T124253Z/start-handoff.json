@@ -1,0 +1,42 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#25"
+  },
+  "goal": {
+    "goal_id": "goal-tau-persona-dream-real-panel-commands",
+    "goal_version": 1,
+    "goal_hash": "sha256:2525252525252525252525252525252525252525252525252525252525252525"
+  },
+  "previous_subagent": "human",
+  "context": {
+    "summary": "Issue #25 proof start: run Tau persona-dream panel command specs that write receipt artifacts for one local panel reference.",
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/25"
+    ],
+    "persona_dream_panel": {
+      "panel_id": "panel_001",
+      "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+      "visual_review_receipt": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json"
+    }
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "Human requested real Tau persona-dream panel commands with receipts and no public upload/Kling call.",
+    "evidence": [
+      "https://github.com/grahama1970/tau/issues/25"
+    ]
+  },
+  "rationale": "The first selected subagent must be panel-creator so Tau can prove role commands write concrete one-panel receipt artifacts.",
+  "next_agent": {
+    "name": "panel-creator",
+    "executor": "local",
+    "reason": "Run the persona-dream panel creator command first."
+  },
+  "required_evidence": [
+    "Tau command-loop receipt with selected agents, command exits, mocked/live boundaries, and per-role receipt artifacts."
+  ],
+  "stop_condition": "Tau reaches human with receipt-backed first blocker or fails closed with exact command/spec error."
+}

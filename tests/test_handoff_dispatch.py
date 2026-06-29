@@ -361,7 +361,7 @@ def test_committed_persona_dream_panel_overlay_specs_run_fail_closed_chain() -> 
     final_stdout = result.dispatches[-1]["command_results"][0]["stdout"]
     final_payload = json.loads(final_stdout)
     assert final_payload["result"]["status"] == "BLOCKED"
-    assert "provider_eligibility remains false" in final_payload["result"]["summary"]
+    assert "provider_eligibility=false" in final_payload["result"]["summary"]
     assert final_payload["next_agent"]["name"] == "human"
 
 
