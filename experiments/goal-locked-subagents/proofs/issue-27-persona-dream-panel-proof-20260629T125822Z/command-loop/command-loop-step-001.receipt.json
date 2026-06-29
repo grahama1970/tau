@@ -1,0 +1,80 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/request.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/response.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "tau_coding.persona_dream_panel_agent",
+        "--role",
+        "panel-creator"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png\"\n    ],\n    \"summary\": \"Panel Creator locked a one-panel local reference artifact for review.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#27\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000027\",\n    \"goal_id\": \"goal-tau-issue-27-persona-dream-panel-proof\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-reviewer\",\n    \"reason\": \"Panel Reviewer must inspect or fail closed on the creator receipt.\"\n  },\n  \"previous_subagent\": \"panel-creator\",\n  \"rationale\": \"A concrete local panel artifact and creator receipt now exist, so the next bounded step is independent panel review.\",\n  \"required_evidence\": [\n    \"Panel Reviewer writes panel_reviewer_receipt.json or visual_review_receipt evidence.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Panel Creator wrote a local panel_creator_receipt with image artifact path and hash; no public upload, Kling call, paid call, or new generation occurred.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Panel Reviewer emits a Tau handoff with receipt paths.\"\n}\n",
+      "timed_out": false,
+      "timeout_s": 30.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 1,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Panel Creator wrote a local panel_creator_receipt with image artifact path and hash; no public upload, Kling call, paid call, or new generation occurred.\n- Next agent: `panel-reviewer`\n- Executor: `local`\n- Stop condition: Panel Reviewer emits a Tau handoff with receipt paths.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png\"\n    ],\n    \"summary\": \"Panel Creator locked a one-panel local reference artifact for review.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#27\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000027\",\n    \"goal_id\": \"goal-tau-issue-27-persona-dream-panel-proof\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-reviewer\",\n    \"reason\": \"Panel Reviewer must inspect or fail closed on the creator receipt.\"\n  },\n  \"previous_subagent\": \"panel-creator\",\n  \"rationale\": \"A concrete local panel artifact and creator receipt now exist, so the next bounded step is independent panel review.\",\n  \"required_evidence\": [\n    \"Panel Reviewer writes panel_reviewer_receipt.json or visual_review_receipt evidence.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json\",\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png sha256:4e7dfb8fcb858fd282b927980324fe7bcfd32aa35254dd9af0530889b5317c31\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Panel Creator wrote a local panel_creator_receipt with image artifact path and hash; no public upload, Kling call, paid call, or new generation occurred.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Panel Reviewer emits a Tau handoff with receipt paths.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:panel-reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "panel-reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#27"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "panel-creator",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Human requested the local one-panel persona-dream proof command.\n- Next agent: `panel-creator`\n- Executor: `local`\n- Stop condition: The local proof command writes manifest.json with first_blocker or dry-run Kling request.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\"\n    ],\n    \"persona_dream_panel\": {\n      \"image_path\": \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png\",\n      \"panel_id\": \"panel_001\",\n      \"run_root\": \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\",\n      \"visual_review_receipt\": \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json\"\n    },\n    \"summary\": \"Run one bounded persona-dream panel proof through Tau command-loop.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#27\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000027\",\n    \"goal_id\": \"goal-tau-issue-27-persona-dream-panel-proof\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-creator\",\n    \"reason\": \"Panel Creator must write a local creator receipt before review.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The first bounded step is a local panel creator command with receipt output.\",\n  \"required_evidence\": [\n    \"Panel creator, reviewer, and repair-gate receipts or the first failed receipt.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Human requested the local one-panel persona-dream proof command.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"The local proof command writes manifest.json with first_blocker or dry-run Kling request.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:panel-creator",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "panel-creator",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#27"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

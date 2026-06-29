@@ -1,0 +1,68 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No new image generation was performed.",
+      "No Kling or paid provider call was performed.",
+      "No public asset upload was performed.",
+      "No provider-ready persona-dream panel packet is claimed."
+    ],
+    "proves": [
+      "Tau can run the local persona-dream panel creator/reviewer/repair-gate loop through command specs.",
+      "The loop writes concrete per-role receipts and stops at a human-visible first blocker.",
+      "The command path preserves mocked=false/live=true for the Tau command-loop runner."
+    ]
+  },
+  "command_exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-loop-receipt.json",
+  "commands": [
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_cli.py -q -k 'persona_dream_panel_proof or handoff_command_loop_reaches_human or handoff_dispatch_agent_command'",
+      "exit_code": 0,
+      "result": "7 passed, 110 deselected in 4.13s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_handoff_dispatch.py -q",
+      "exit_code": 0,
+      "result": "21 passed in 2.01s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/agent-skills && uv run pytest skills/persona-dream/tests/test_write_panel_source_receipt.py skills/persona-dream/tests/test_provider_media_publication_work_order.py -q",
+      "exit_code": 0,
+      "result": "5 passed in 0.05s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run tau persona-dream-panel-proof --out-dir experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z --agents-root /home/graham/workspace/experiments/agent-skills/agents --command-spec-root experiments/goal-locked-subagents/agent-command-specs --active-goal-hash sha256:0000000000000000000000000000000000000000000000000000000000000027 --github-target issue#27",
+      "exit_code": 0,
+      "result": "selected panel-creator, panel-reviewer, persona-dream-panel-repair-gate; command exits 0/0/0; first_blocker=panel-reviewer INSUFFICIENT_EVIDENCE"
+    }
+  ],
+  "created_at": "2026-06-29T12:58:24Z",
+  "dry_run_one_scene_kling_request": null,
+  "first_blocker": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/receipts/visual_review_receipt.json"
+    ],
+    "previous_subagent": "panel-reviewer",
+    "status": "INSUFFICIENT_EVIDENCE",
+    "summary": "Panel Reviewer wrote a read-only receipt and failed closed because the available visual review source is not a live PASS verdict."
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": "Local Tau command-loop proof for one persona-dream panel. It runs real Tau command specs and stops at either a dry-run one-scene Kling request artifact or the first explicit creator/reviewer/repair-gate blocker.",
+  "schema": "tau.persona_dream_panel_proof.v1",
+  "selected_agents": [
+    "panel-creator",
+    "panel-reviewer",
+    "persona-dream-panel-repair-gate"
+  ],
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-27-persona-dream-panel-proof-20260629T125822Z/start-handoff.json",
+  "status": "WAITING",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human"
+}

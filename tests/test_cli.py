@@ -1870,6 +1870,52 @@ def test_cli_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
     assert (receipt_dir / "command-loop-receipt.json").exists()
 
 
+def test_cli_persona_dream_panel_proof_writes_first_blocker(tmp_path: Path) -> None:
+    out_dir = tmp_path / "persona-proof"
+    agents_root = tmp_path / "agents"
+    agents_root.mkdir()
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "persona-dream-panel-proof",
+            "--out-dir",
+            str(out_dir),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            "experiments/goal-locked-subagents/agent-command-specs",
+            "--active-goal-hash",
+            "sha256:test-persona-dream-panel-proof",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    loop = json.loads(
+        (out_dir / "command-loop" / "command-loop-receipt.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert payload == manifest
+    assert manifest["schema"] == "tau.persona_dream_panel_proof.v1"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["selected_agents"] == [
+        "panel-creator",
+        "panel-reviewer",
+        "persona-dream-panel-repair-gate",
+    ]
+    assert manifest["first_blocker"]["previous_subagent"] == "panel-reviewer"
+    assert manifest["first_blocker"]["status"] == "INSUFFICIENT_EVIDENCE"
+    assert manifest["dry_run_one_scene_kling_request"] is None
+    assert loop["mocked"] is False
+    assert loop["live"] is True
+    assert loop["status"] == "WAITING"
+    assert loop["terminal_agent"] == "human"
+
+
 def test_cli_handoff_command_loop_github_transport_dry_run(tmp_path: Path) -> None:
     loop_receipt = {
         "schema": "tau.agent_handoff_command_loop_receipt.v1",

@@ -88,6 +88,12 @@ from tau_coding.provider_config import (
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.resources import TauResourcePaths
+from tau_coding.persona_dream_panel_proof import (
+    DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
+    DEFAULT_COMMAND_SPEC_ROOT as DEFAULT_PERSONA_DREAM_PANEL_COMMAND_SPEC_ROOT,
+    DEFAULT_GOAL_HASH as DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
+    write_persona_dream_panel_proof,
+)
 from tau_coding.session import (
     CodingSession,
     CodingSessionConfig,
@@ -872,6 +878,16 @@ def main(
         try:
             summary_path = _parse_scillm_subagent_gate_cli_args(positional_args[1:])
             ok = project_agent_scillm_subagent_gate_command(summary_path)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "persona-dream-panel-proof":
+        try:
+            options = _parse_persona_dream_panel_proof_cli_args(positional_args[1:])
+            ok = project_agent_persona_dream_panel_proof_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
@@ -1931,6 +1947,60 @@ def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
     if summary_path is None:
         raise RuntimeError("scillm-subagent-gate requires --summary <summary.json>")
     return summary_path
+
+
+def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path | str]:
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    options: dict[str, Path | str] = {
+        "out_dir": Path("experiments/goal-locked-subagents/proofs")
+        / f"persona-dream-panel-proof-{stamp}",
+        "agents_root": DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
+        "command_spec_root": DEFAULT_PERSONA_DREAM_PANEL_COMMAND_SPEC_ROOT,
+        "active_goal_hash": DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
+        "github_target": "issue#27",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out-dir requires a value")
+            options["out_dir"] = Path(args[index])
+        elif arg.startswith("--out-dir="):
+            options["out_dir"] = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            options["agents_root"] = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            options["agents_root"] = Path(arg.partition("=")[2])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            options["command_spec_root"] = Path(args[index])
+        elif arg.startswith("--command-spec-root="):
+            options["command_spec_root"] = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            options["active_goal_hash"] = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            options["active_goal_hash"] = arg.partition("=")[2]
+        elif arg == "--github-target":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--github-target requires a value")
+            options["github_target"] = args[index]
+        elif arg.startswith("--github-target="):
+            options["github_target"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown persona-dream-panel-proof option: {arg}")
+        index += 1
+    return options
 
 
 def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
@@ -3677,6 +3747,30 @@ def project_agent_scillm_subagent_gate_command(summary_path: Path) -> bool:
     result = validate_scillm_subagent_loop_summary(summary_path)
     typer.echo(json.dumps(result.as_dict(), indent=2, sort_keys=True))
     return result.ok
+
+
+def project_agent_persona_dream_panel_proof_command(
+    *,
+    out_dir: Path,
+    agents_root: Path,
+    command_spec_root: Path,
+    active_goal_hash: str,
+    github_target: str,
+) -> bool:
+    """Run the local one-panel persona-dream command-loop proof."""
+
+    manifest = write_persona_dream_panel_proof(
+        out_dir,
+        agents_root=agents_root,
+        command_spec_root=command_spec_root,
+        active_goal_hash=active_goal_hash,
+        github_target=github_target,
+    )
+    typer.echo(json.dumps(manifest, indent=2, sort_keys=True))
+    return bool(manifest.get("ok")) and (
+        manifest.get("first_blocker") is not None
+        or manifest.get("dry_run_one_scene_kling_request") is not None
+    )
 
 
 def project_agent_handoff_adapter_command(
