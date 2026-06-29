@@ -2419,7 +2419,9 @@ def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
     return summary_path
 
 
-def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path | str | bool | None]:
+def _parse_persona_dream_panel_proof_cli_args(
+    args: list[str],
+) -> dict[str, Path | str | bool | None]:
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     options: dict[str, Path | str] = {
         "out_dir": Path("experiments/goal-locked-subagents/proofs")

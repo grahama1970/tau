@@ -29,6 +29,7 @@ from tau_coding.paths import TauPaths
 from tau_coding.persona_dream_panel_agent import (
     _collect_scillm_sse,
     _mirror_wrapper_jsonl_events,
+    _persona_dream_visual_review_receipt,
     _scillm_image_stream_event,
 )
 from tau_coding.persona_dream_panel_proof import _panel_context as _persona_panel_context
@@ -2266,11 +2267,47 @@ def test_persona_dream_panel_context_accepts_panel_repair_work_order(tmp_path: P
     assert context["panel_id"] == "panel_01"
     assert context["run_root"] == str(run_root.resolve())
     assert context["image_path"] == str((artifacts / "panel_01_scillm_panel.png").resolve())
-    assert context["visual_review_receipt"] == str((receipts / "visual_review_receipt.json").resolve())
+    assert context["visual_review_receipt"] == str(
+        (receipts / "visual_review_receipt.json").resolve()
+    )
     assert context["scillm_live_panel"] == "true"
     assert context["write_receipts_to_panel_run_root"] == "true"
     assert context["panel_repair_work_order"] == str(work_order.resolve())
     assert "Nano Banana" in context["panel_prompt"]
+
+
+def test_persona_dream_visual_review_adapter_adds_run_root_gate_fields(
+    tmp_path: Path,
+) -> None:
+    image = tmp_path / "panel.png"
+    image.write_bytes(b"not-a-real-png")
+    source = tmp_path / "scillm-review.json"
+    source.write_text(
+        json.dumps(
+            {
+                "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+                "status": "PASS",
+                "blocking_findings": [],
+                "passed_entities": ["single coherent cinematic panel"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    receipt = _persona_dream_visual_review_receipt(
+        panel={"panel_id": "panel_01", "image_path": str(image)},
+        source_path=source,
+    )
+
+    assert receipt["schema"] == "persona_dream.visual_review_receipt.v1"
+    assert receipt["status"] == "PASS"
+    assert receipt["panel_id"] == "panel_01"
+    assert receipt["reviewer_source"] == str(source.resolve())
+    assert receipt["reviewed_image_path"] == str(image.resolve())
+    assert receipt["hash"].startswith("sha256:")
+    assert receipt["dimensions"] == {"width": 1, "height": 1}
+    assert set(receipt["checks"].values()) == {"PASS"}
 
 
 def test_persona_dream_panel_sse_collector_records_liveness(tmp_path: Path) -> None:

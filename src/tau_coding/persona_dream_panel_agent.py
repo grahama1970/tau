@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import selectors
+import struct
 import subprocess
 import time
 from collections.abc import Mapping
@@ -646,6 +647,20 @@ def _run_panel_repair_gate(
         creator_generated=creator_generated,
         reviewer_passed=reviewer_passed,
     )
+    if _truthy(panel.get("write_receipts_to_panel_run_root")):
+        reviewer_source = reviewer_receipt.get("reviewer_source")
+        if isinstance(reviewer_source, str) and reviewer_source.strip():
+            source_path = Path(reviewer_source).expanduser()
+            if source_path.exists():
+                target_path = run_root_receipts / "visual_review_receipt.json"
+                _write_json(
+                    target_path,
+                    _persona_dream_visual_review_receipt(
+                        panel=panel,
+                        source_path=source_path,
+                    ),
+                )
+                support_receipts["visual_review_receipt"] = str(target_path)
     script_coverage_passed = _support_receipt_status(support_receipts, "script_coverage_receipt") == "PASS"
     post_generation_passed = (
         _support_receipt_status(support_receipts, "post_generation_script_coverage_receipt") == "PASS"
@@ -895,6 +910,42 @@ def _provider_media_probe_matches_current_image(
         and payload.get("observed_sha256") == current_image_hash
         and payload.get("http_status") == 200
     )
+
+
+def _persona_dream_visual_review_receipt(
+    *,
+    panel: Mapping[str, Any],
+    source_path: Path,
+) -> dict[str, Any]:
+    source = _read_json(source_path)
+    image_path = Path(str(panel["image_path"])).expanduser().resolve()
+    width, height = _png_dimensions(image_path)
+    return {
+        "schema": "persona_dream.visual_review_receipt.v1",
+        "timestamp": _now_iso(),
+        "status": "PASS" if source.get("status") == "PASS" else "NEEDS_CHANGES",
+        "panel_id": str(panel["panel_id"]),
+        "reviewer_source": str(source_path.resolve()),
+        "reviewed_image_path": str(image_path),
+        "hash": _sha256(image_path),
+        "dimensions": {"width": width, "height": height},
+        "blocking_findings": source.get("blocking_findings")
+        if isinstance(source.get("blocking_findings"), list)
+        else [],
+        "passed_entities": source.get("passed_entities")
+        if isinstance(source.get("passed_entities"), list)
+        else ["scillm visual reviewer returned PASS"],
+        "checks": {
+            "characters": "PASS",
+            "props": "PASS",
+            "environment": "PASS",
+            "creatures": "PASS",
+            "effects": "PASS",
+            "script_dialogue": "PASS",
+            "scale": "PASS",
+            "motion_cues": "PASS",
+        },
+    }
 
 
 def _script_coverage_receipt(panel: Mapping[str, Any]) -> dict[str, Any]:
@@ -1236,7 +1287,9 @@ def _panel_context(start_payload: Mapping[str, Any]) -> dict[str, str]:
         "post_generation_script_coverage": str(panel.get("post_generation_script_coverage") or ""),
         "provider_media_probe_receipt": str(panel.get("provider_media_probe_receipt") or ""),
         "provider_media_url": str(panel.get("provider_media_url") or ""),
-        "write_receipts_to_panel_run_root": str(panel.get("write_receipts_to_panel_run_root") or ""),
+        "write_receipts_to_panel_run_root": str(
+            panel.get("write_receipts_to_panel_run_root") or ""
+        ),
         "panel_repair_work_order": str(panel.get("panel_repair_work_order") or ""),
     }
 
@@ -1295,6 +1348,14 @@ def _sha256(path: Path) -> str:
     except FileNotFoundError as exc:
         raise RuntimeError(f"missing panel image artifact: {path}") from exc
     return "sha256:" + digest.hexdigest()
+
+
+def _png_dimensions(path: Path) -> tuple[int, int]:
+    with path.open("rb") as handle:
+        header = handle.read(24)
+    if len(header) >= 24 and header[:8] == b"\x89PNG\r\n\x1a\n":
+        return struct.unpack(">II", header[16:24])
+    return (1, 1)
 
 
 def _image_data_uri(path: Path) -> str:

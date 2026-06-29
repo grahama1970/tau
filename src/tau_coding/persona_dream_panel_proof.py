@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from tau_coding.handoff_dispatch import write_agent_handoff_command_loop_receipt
 from tau_coding.persona_dream_panel_agent import (
@@ -101,7 +102,11 @@ def write_persona_dream_panel_proof(
             "artifact or the first explicit creator/reviewer/repair-gate blocker."
         ),
         "panel_evidence": str(panel_evidence.expanduser().resolve()) if panel_evidence else None,
-        "panel_repair_work_order": str(panel_repair_work_order.expanduser().resolve()) if panel_repair_work_order else None,
+        "panel_repair_work_order": (
+            str(panel_repair_work_order.expanduser().resolve())
+            if panel_repair_work_order
+            else None
+        ),
         "panel_context": panel_context,
         "scillm_originated_inside_tau": tau_originated_scillm,
         "start_handoff": str(start_path),
@@ -202,7 +207,10 @@ def _panel_context(
 ) -> dict[str, str]:
     if panel_repair_work_order is not None:
         if panel_evidence is not None or panel_source is not None:
-            raise RuntimeError("--panel-repair-work-order cannot be combined with --panel-evidence or --panel-source")
+            raise RuntimeError(
+                "--panel-repair-work-order cannot be combined with "
+                "--panel-evidence or --panel-source"
+            )
         if proof_dir is None:
             raise RuntimeError("proof_dir is required for panel repair work-order mode")
         return _panel_context_from_repair_work_order(
@@ -341,8 +349,14 @@ def _panel_context_from_repair_work_order(
         "scillm_base_url": scillm_base_url,
         "source_panel": str(resolved),
         "source_panel_summary": source_summary,
-        "source_script_coverage": "panel repair work order includes storyboard, continuity, and required subagent repair contract",
-        "post_generation_script_coverage": "post-generation script coverage must reconcile generated panel against the work order and continuity ledger",
+        "source_script_coverage": (
+            "panel repair work order includes storyboard, continuity, and "
+            "required subagent repair contract"
+        ),
+        "post_generation_script_coverage": (
+            "post-generation script coverage must reconcile generated panel "
+            "against the work order and continuity ledger"
+        ),
         "write_receipts_to_panel_run_root": "true",
         "panel_repair_work_order": str(resolved),
     }
@@ -350,7 +364,14 @@ def _panel_context_from_repair_work_order(
 
 def _repair_work_order_source_summary(payload: Mapping[str, Any], *, run_root: Path) -> str:
     lines: list[str] = []
-    for key in ("purpose", "acceptance_criteria", "forbidden_actions", "required_default_action", "current_candidate"):
+    summary_keys = (
+        "purpose",
+        "acceptance_criteria",
+        "forbidden_actions",
+        "required_default_action",
+        "current_candidate",
+    )
+    for key in summary_keys:
         value = payload.get(key)
         if value is not None:
             lines.append(f"- {key}: {json.dumps(value, sort_keys=True)}")
