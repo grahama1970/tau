@@ -1,6 +1,7 @@
 """Command-line entry point for Tau."""
 
 import asyncio
+import hashlib
 import io
 import json
 import os
@@ -11,6 +12,7 @@ from contextlib import redirect_stdout
 from datetime import UTC, datetime
 from os import environ
 from pathlib import Path
+from shutil import which
 from typing import Annotated
 
 import anyio
@@ -108,6 +110,7 @@ from tau_coding.session_export import (
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
+from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.tui import run_tui_app
 from tau_coding.tui.proof import (
@@ -868,6 +871,22 @@ def main(
                 goal_guardian_ticket_source=goal_guardian_ticket_source,
                 max_steps=max_steps,
             )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "self-fix":
+        try:
+            if len(positional_args) > 1 and positional_args[1] == "coder-reviewer-loop":
+                options = _parse_self_fix_coder_reviewer_loop_cli_args(positional_args[2:])
+                payload = write_coder_reviewer_repair_loop(**options)
+                typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+                ok = bool(payload.get("ok"))
+            else:
+                options = _parse_self_fix_cli_args(positional_args[1:])
+                ok = project_agent_self_fix_tick_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
@@ -1927,6 +1946,271 @@ def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | No
             raise RuntimeError(f"Unknown handoff-agent-adapter option: {arg}")
         index += 1
     return options
+
+
+def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
+    if not args or args[0] != "tick":
+        raise RuntimeError(
+            "Usage: tau self-fix tick --repo <owner/repo> --issue <number> "
+            "or tau self-fix coder-reviewer-loop --request <text> --target-file <path> "
+            "--find-text <text> --replace-text <text> --verification-command <cmd>"
+        )
+    repo: str | None = None
+    issue: int | None = None
+    receipt_dir: Path | None = None
+    agents_root = Path("/home/graham/workspace/experiments/agent-skills/agents")
+    command_spec_root: Path | None = None
+    active_goal_hash: str | None = None
+    memory_base_url = "http://127.0.0.1:8601"
+    max_steps = 3
+    required_labels = [
+        "agent-work",
+        "agent:coder",
+        "tau-harness",
+        "route:backend_python_or_skill_runtime",
+    ]
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--repo":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo requires a value")
+            repo = args[index]
+        elif arg.startswith("--repo="):
+            repo = arg.partition("=")[2]
+        elif arg == "--issue":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--issue requires a value")
+            issue = _parse_positive_int(args[index], "--issue")
+        elif arg.startswith("--issue="):
+            issue = _parse_positive_int(arg.partition("=")[2], "--issue")
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            command_spec_root = Path(args[index])
+        elif arg.startswith("--command-spec-root="):
+            command_spec_root = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--memory-base-url":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--memory-base-url requires a value")
+            memory_base_url = args[index]
+        elif arg.startswith("--memory-base-url="):
+            memory_base_url = arg.partition("=")[2]
+        elif arg == "--max-steps":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-steps requires a value")
+            max_steps = _parse_positive_int(args[index], "--max-steps")
+        elif arg.startswith("--max-steps="):
+            max_steps = _parse_positive_int(arg.partition("=")[2], "--max-steps")
+        elif arg == "--required-label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--required-label requires a value")
+            required_labels.append(args[index])
+        elif arg.startswith("--required-label="):
+            required_labels.append(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown self-fix tick option: {arg}")
+        index += 1
+    if not repo:
+        raise RuntimeError("self-fix tick requires --repo <owner/repo>")
+    if issue is None:
+        raise RuntimeError("self-fix tick requires --issue <number>")
+    if receipt_dir is None:
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        receipt_dir = Path("experiments/goal-locked-subagents/proofs") / (
+            f"self-fix-issue-{issue}-{stamp}"
+        )
+    return {
+        "repo": repo,
+        "issue": issue,
+        "receipt_dir": receipt_dir,
+        "agents_root": agents_root,
+        "command_spec_root": command_spec_root,
+        "active_goal_hash": active_goal_hash,
+        "memory_base_url": memory_base_url.rstrip("/"),
+        "max_steps": max_steps,
+        "required_labels": tuple(label for label in required_labels if label),
+    }
+
+
+def _parse_self_fix_coder_reviewer_loop_cli_args(args: list[str]) -> dict[str, object]:
+    request: str | None = None
+    target_file: Path | None = None
+    find_text: str | None = None
+    replace_text: str | None = None
+    verification_commands: list[str] = []
+    receipt_dir: Path | None = None
+    repo_root = Path.cwd()
+    memory_base_url = "http://127.0.0.1:8601"
+    scillm_base_url = "http://127.0.0.1:4001"
+    model = "gpt-5.5"
+    max_review_cycles = 3
+    github_repo = "grahama1970/tau"
+    github_target = "local-proof"
+    active_goal_hash: str | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--request",
+            "--target-file",
+            "--find-text",
+            "--replace-text",
+            "--verification-command",
+            "--receipt-dir",
+            "--repo-root",
+            "--memory-base-url",
+            "--scillm-base-url",
+            "--model",
+            "--max-review-cycles",
+            "--github-repo",
+            "--github-target",
+            "--active-goal-hash",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--request":
+                request = value
+            elif arg == "--target-file":
+                target_file = Path(value)
+            elif arg == "--find-text":
+                find_text = value
+            elif arg == "--replace-text":
+                replace_text = value
+            elif arg == "--verification-command":
+                verification_commands.append(value)
+            elif arg == "--receipt-dir":
+                receipt_dir = Path(value)
+            elif arg == "--repo-root":
+                repo_root = Path(value)
+            elif arg == "--memory-base-url":
+                memory_base_url = value
+            elif arg == "--scillm-base-url":
+                scillm_base_url = value
+            elif arg == "--model":
+                model = value
+            elif arg == "--max-review-cycles":
+                max_review_cycles = _parse_positive_int(value, "--max-review-cycles")
+            elif arg == "--github-repo":
+                github_repo = value
+            elif arg == "--github-target":
+                github_target = value
+            elif arg == "--active-goal-hash":
+                active_goal_hash = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--request",
+                "--target-file",
+                "--find-text",
+                "--replace-text",
+                "--verification-command",
+                "--receipt-dir",
+                "--repo-root",
+                "--memory-base-url",
+                "--scillm-base-url",
+                "--model",
+                "--max-review-cycles",
+                "--github-repo",
+                "--github-target",
+                "--active-goal-hash",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            if key == "--request":
+                request = value
+            elif key == "--target-file":
+                target_file = Path(value)
+            elif key == "--find-text":
+                find_text = value
+            elif key == "--replace-text":
+                replace_text = value
+            elif key == "--verification-command":
+                verification_commands.append(value)
+            elif key == "--receipt-dir":
+                receipt_dir = Path(value)
+            elif key == "--repo-root":
+                repo_root = Path(value)
+            elif key == "--memory-base-url":
+                memory_base_url = value
+            elif key == "--scillm-base-url":
+                scillm_base_url = value
+            elif key == "--model":
+                model = value
+            elif key == "--max-review-cycles":
+                max_review_cycles = _parse_positive_int(value, "--max-review-cycles")
+            elif key == "--github-repo":
+                github_repo = value
+            elif key == "--github-target":
+                github_target = value
+            elif key == "--active-goal-hash":
+                active_goal_hash = value
+        else:
+            raise RuntimeError(f"Unknown self-fix coder-reviewer-loop option: {arg}")
+        index += 1
+
+    if not isinstance(request, str) or not request.strip():
+        raise RuntimeError("self-fix coder-reviewer-loop requires --request <text>")
+    if target_file is None:
+        raise RuntimeError("self-fix coder-reviewer-loop requires --target-file <path>")
+    if find_text is None:
+        raise RuntimeError("self-fix coder-reviewer-loop requires --find-text <text>")
+    if replace_text is None:
+        raise RuntimeError("self-fix coder-reviewer-loop requires --replace-text <text>")
+    if not verification_commands:
+        raise RuntimeError(
+            "self-fix coder-reviewer-loop requires at least one --verification-command <cmd>"
+        )
+    if receipt_dir is None:
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        receipt_dir = Path("experiments/goal-locked-subagents/proofs") / (
+            f"self-fix-coder-reviewer-loop-{stamp}"
+        )
+    return {
+        "repo_root": repo_root,
+        "out_dir": receipt_dir,
+        "request": request,
+        "target_file": target_file,
+        "find_text": find_text,
+        "replace_text": replace_text,
+        "verification_commands": verification_commands,
+        "memory_base_url": memory_base_url.rstrip("/"),
+        "scillm_base_url": scillm_base_url.rstrip("/"),
+        "model": model,
+        "max_review_cycles": max_review_cycles,
+        "github_repo": github_repo,
+        "github_target": github_target,
+        "active_goal_hash": active_goal_hash,
+    }
 
 
 def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
@@ -3773,6 +4057,458 @@ def project_agent_persona_dream_panel_proof_command(
     )
 
 
+def _fetch_github_issue(*, repo: str, issue: int) -> tuple[dict[str, object], dict[str, object]]:
+    gh_path = which("gh")
+    if gh_path is None:
+        raise RuntimeError("self-fix tick requires the gh CLI on PATH")
+    command = [
+        gh_path,
+        "issue",
+        "view",
+        str(issue),
+        "--repo",
+        repo,
+        "--json",
+        "number,title,body,state,labels,comments,url,createdAt,updatedAt,author",
+    ]
+    started_at = datetime.now(UTC)
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=45, check=False)
+    duration_seconds = (datetime.now(UTC) - started_at).total_seconds()
+    fetch = {
+        "command": command,
+        "exit_code": completed.returncode,
+        "duration_seconds": duration_seconds,
+        "stderr": completed.stderr.strip(),
+    }
+    if completed.returncode != 0:
+        fetch["ok"] = False
+        raise RuntimeError(f"gh issue view failed for {repo}#{issue}: {completed.stderr.strip()}")
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        fetch["ok"] = False
+        raise RuntimeError(f"gh issue view returned invalid JSON for {repo}#{issue}: {exc}") from exc
+    if not isinstance(payload, dict):
+        fetch["ok"] = False
+        raise RuntimeError(f"gh issue view returned non-object JSON for {repo}#{issue}")
+    fetch["ok"] = True
+    return payload, fetch
+
+
+def _issue_labels(issue_payload: dict[str, object]) -> set[str]:
+    labels = issue_payload.get("labels")
+    if not isinstance(labels, list):
+        return set()
+    names: set[str] = set()
+    for label in labels:
+        if isinstance(label, dict):
+            name = label.get("name")
+            if isinstance(name, str) and name.strip():
+                names.add(name.strip())
+        elif isinstance(label, str) and label.strip():
+            names.add(label.strip())
+    return names
+
+
+def _issue_text(issue_payload: dict[str, object]) -> str:
+    lines = [
+        f"title: {issue_payload.get('title', '')}",
+        f"state: {issue_payload.get('state', '')}",
+        "",
+        str(issue_payload.get("body") or ""),
+    ]
+    comments = issue_payload.get("comments")
+    if isinstance(comments, list) and comments:
+        lines.append("")
+        lines.append("recent_comments:")
+        for comment in comments[-3:]:
+            if not isinstance(comment, dict):
+                continue
+            author = comment.get("author")
+            author_login = ""
+            if isinstance(author, dict) and isinstance(author.get("login"), str):
+                author_login = author["login"]
+            body = str(comment.get("body") or "")
+            lines.append(f"- {author_login}: {body[:1200]}")
+    return "\n".join(lines).strip()
+
+
+def _self_fix_eligibility(
+    issue_labels: set[str],
+    required_labels: tuple[str, ...],
+) -> dict[str, object]:
+    required = {label for label in required_labels if label}
+    matched = sorted(issue_labels & required)
+    eligible = bool(matched)
+    return {
+        "eligible": eligible,
+        "policy": "any_required_label_match",
+        "required_labels_any": sorted(required),
+        "matched_labels": matched,
+        "issue_labels": sorted(issue_labels),
+        "reason": (
+            "issue has at least one configured self-fix routing label"
+            if eligible
+            else "issue has no configured self-fix routing labels"
+        ),
+    }
+
+
+def _memory_post_json(
+    *,
+    client: httpx.Client,
+    path: str,
+    payload: dict[str, object],
+) -> tuple[dict[str, object], dict[str, object]]:
+    started_at = datetime.now(UTC)
+    try:
+        response = client.post(path, json=payload)
+    except httpx.HTTPError as exc:
+        duration_seconds = (datetime.now(UTC) - started_at).total_seconds()
+        return (
+            {},
+            {
+                "ok": False,
+                "path": path,
+                "error": str(exc),
+                "duration_seconds": duration_seconds,
+            },
+        )
+    duration_seconds = (datetime.now(UTC) - started_at).total_seconds()
+    call = {
+        "ok": response.status_code < 400,
+        "path": path,
+        "status_code": response.status_code,
+        "duration_seconds": duration_seconds,
+    }
+    try:
+        body = response.json()
+    except json.JSONDecodeError:
+        body = {"raw": response.text}
+        call["ok"] = False
+        call["error"] = "response was not JSON"
+    if not isinstance(body, dict):
+        body = {"value": body}
+    return body, call
+
+
+def _self_fix_memory_preflight(
+    *,
+    memory_base_url: str,
+    query: str,
+    receipt_dir: Path,
+) -> dict[str, object]:
+    resolved_receipt_dir = receipt_dir.expanduser().resolve()
+    query_excerpt = query[:4000]
+    with httpx.Client(base_url=memory_base_url, timeout=15.0) as client:
+        intent_payload, intent_call = _memory_post_json(
+            client=client,
+            path="/intent",
+            payload={
+                "q": query_excerpt,
+                "scope": "tau",
+                "app": "tau",
+                "fast": True,
+            },
+        )
+        recall_payload, recall_call = _memory_post_json(
+            client=client,
+            path="/recall",
+            payload={
+                "q": query_excerpt,
+                "scope": "tau",
+                "k": 5,
+            },
+        )
+    _write_json_object(resolved_receipt_dir / "memory-intent.json", intent_payload)
+    _write_json_object(resolved_receipt_dir / "memory-recall.json", recall_payload)
+    recall_items = recall_payload.get("items")
+    if not isinstance(recall_items, list):
+        recall_items = recall_payload.get("results")
+    recall_count = len(recall_items) if isinstance(recall_items, list) else 0
+    action = intent_payload.get("action") or intent_payload.get("intent")
+    return {
+        "ok": bool(intent_call["ok"] and recall_call["ok"]),
+        "mocked": False,
+        "live": True,
+        "memory_base_url": memory_base_url,
+        "intent_call": intent_call,
+        "recall_call": recall_call,
+        "intent_action": action if isinstance(action, str) else None,
+        "recall_count": recall_count,
+        "artifacts": {
+            "intent": str(resolved_receipt_dir / "memory-intent.json"),
+            "recall": str(resolved_receipt_dir / "memory-recall.json"),
+        },
+    }
+
+
+def _self_fix_goal_hash(*, repo: str, issue: int, issue_text: str) -> str:
+    digest = hashlib.sha256(f"{repo}#{issue}\n{issue_text}".encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"
+
+
+def _self_fix_goal_helper_packet(
+    *,
+    repo: str,
+    issue: int,
+    issue_payload: dict[str, object],
+    goal_hash: str,
+    memory_preflight: dict[str, object],
+    eligible: object,
+) -> dict[str, object]:
+    return {
+        "schema": "tau.goal_helper.v1",
+        "mocked": False,
+        "live": True,
+        "created_at": datetime.now(UTC).isoformat(),
+        "source": {
+            "repo": repo,
+            "issue": issue,
+            "url": issue_payload.get("url"),
+            "title": issue_payload.get("title"),
+        },
+        "goal": {
+            "goal_id": f"goal-tau-self-fix-issue-{issue}",
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+            "immutable_goal": (
+                "Run one bounded Tau self-fix intake tick for the selected GitHub issue "
+                "without mutating code or GitHub state in this slice."
+            ),
+        },
+        "primary_proof": "tau self-fix tick writes self-fix-receipt.json for the live issue.",
+        "completion_criteria": [
+            "Live GitHub issue is fetched through gh.",
+            "Memory /intent and /recall are called before subagent dispatch.",
+            "A tau.agent_handoff.v1 start handoff is written.",
+            "The bounded command-loop writes a command-loop receipt.",
+            "The final self-fix receipt lists explicit non-claims.",
+        ],
+        "allowed_scope": [
+            "Issue intake.",
+            "Memory-first preflight.",
+            "Goal-helper packet generation.",
+            "Start handoff generation.",
+            "Bounded local coder/reviewer command-loop dispatch.",
+        ],
+        "forbidden_drift": [
+            "Do not edit application code as part of this intake proof.",
+            "Do not mutate GitHub labels or comments in this slice.",
+            "Do not claim autonomous repair, cron, GitHub Actions, rollback, or Scillm quality unless separately proven.",
+        ],
+        "retry_budget": {
+            "max_live_attempts_before_escalation": 2,
+            "escalation": "Use WebGPT/create-architecture or ask the human if the live proof cannot be produced.",
+        },
+        "stop_condition": (
+            "Stop after one command-loop receipt, a human route, or a fail-closed receipt; "
+            "do not continue into code mutation in this slice."
+        ),
+        "eligible_for_dispatch": bool(eligible),
+        "memory_first": {
+            "ok": memory_preflight.get("ok"),
+            "intent_artifact": memory_preflight.get("artifacts", {}).get("intent")
+            if isinstance(memory_preflight.get("artifacts"), dict)
+            else None,
+            "recall_artifact": memory_preflight.get("artifacts", {}).get("recall")
+            if isinstance(memory_preflight.get("artifacts"), dict)
+            else None,
+        },
+    }
+
+
+def _self_fix_start_handoff(
+    *,
+    repo: str,
+    issue: int,
+    issue_payload: dict[str, object],
+    goal_hash: str,
+    memory_preflight: dict[str, object],
+    goal_helper_path: Path,
+) -> dict[str, object]:
+    title = str(issue_payload.get("title") or f"Issue #{issue}")
+    url = issue_payload.get("url")
+    artifacts = [
+        str(goal_helper_path.expanduser().resolve()),
+    ]
+    memory_artifacts = memory_preflight.get("artifacts")
+    if isinstance(memory_artifacts, dict):
+        for value in memory_artifacts.values():
+            if isinstance(value, str):
+                artifacts.append(value)
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": {
+            "repo": repo,
+            "target": f"issue#{issue}",
+            "url": url,
+        },
+        "goal": {
+            "goal_id": f"goal-tau-self-fix-issue-{issue}",
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "previous_subagent": "human",
+        "context": {
+            "summary": (
+                f"Live GitHub issue #{issue} was selected for a bounded Tau self-fix "
+                f"intake tick: {title}"
+            ),
+            "artifacts": artifacts,
+        },
+        "result": {
+            "status": "REQUESTED",
+            "summary": "Human requested Tau to start the coder/reviewer self-fix loop for this issue.",
+            "evidence": [
+                str(goal_helper_path.expanduser().resolve()),
+            ],
+        },
+        "rationale": (
+            "The issue has a self-fix routing label and Memory-first preflight has produced "
+            "artifacts, so the next bounded actor should be coder."
+        ),
+        "next_agent": {
+            "name": "coder",
+            "executor": "local",
+            "reason": "Coder should perform the first bounded implementation analysis for the issue.",
+        },
+        "required_evidence": [
+            "Coder emits a schema-valid tau.agent_handoff.v1 handoff.",
+            "Reviewer emits a schema-valid tau.agent_handoff.v1 handoff.",
+            "Any code mutation in a later slice starts from a checkpoint commit and records rollback status.",
+        ],
+        "stop_condition": (
+            "Stop when reviewer routes to human/PASS, the command-loop hits max steps, "
+            "or any dispatch fails closed."
+        ),
+    }
+
+
+def project_agent_self_fix_tick_command(
+    *,
+    repo: str,
+    issue: int,
+    receipt_dir: Path,
+    agents_root: Path,
+    command_spec_root: Path | None,
+    active_goal_hash: str | None,
+    memory_base_url: str,
+    max_steps: int,
+    required_labels: tuple[str, ...],
+) -> bool:
+    """Run one bounded self-fix issue-intake tick without mutating code or GitHub."""
+
+    resolved_receipt_dir = receipt_dir.expanduser().resolve()
+    resolved_receipt_dir.mkdir(parents=True, exist_ok=True)
+    issue_payload, issue_fetch = _fetch_github_issue(repo=repo, issue=issue)
+    _write_json_object(resolved_receipt_dir / "issue.json", issue_payload)
+    issue_text = _issue_text(issue_payload)
+    issue_labels = _issue_labels(issue_payload)
+    eligibility = _self_fix_eligibility(issue_labels, required_labels)
+    memory_preflight = _self_fix_memory_preflight(
+        memory_base_url=memory_base_url,
+        query=issue_text,
+        receipt_dir=resolved_receipt_dir,
+    )
+    goal_hash = active_goal_hash or _self_fix_goal_hash(repo=repo, issue=issue, issue_text=issue_text)
+    goal_helper = _self_fix_goal_helper_packet(
+        repo=repo,
+        issue=issue,
+        issue_payload=issue_payload,
+        goal_hash=goal_hash,
+        memory_preflight=memory_preflight,
+        eligible=eligibility["eligible"],
+    )
+    _write_json_object(resolved_receipt_dir / "goal-helper.json", goal_helper)
+    start_handoff = _self_fix_start_handoff(
+        repo=repo,
+        issue=issue,
+        issue_payload=issue_payload,
+        goal_hash=goal_hash,
+        memory_preflight=memory_preflight,
+        goal_helper_path=resolved_receipt_dir / "goal-helper.json",
+    )
+    _write_json_object(resolved_receipt_dir / "start-handoff.json", start_handoff)
+
+    loop_payload: dict[str, object] | None = None
+    loop_ok = False
+    if eligibility["eligible"] and memory_preflight["ok"]:
+        loop = write_agent_handoff_command_loop_receipt(
+            start_handoff,
+            resolved_receipt_dir / "command-loop",
+            agent_registry_root=agents_root,
+            command_spec_root=command_spec_root,
+            active_goal_hash=goal_hash,
+            max_steps=max_steps,
+        )
+        loop_payload = loop.as_dict()
+        loop_ok = loop.ok
+    else:
+        loop_payload = {
+            "schema": "tau.self_fix_loop_skipped.v1",
+            "ok": False,
+            "reason": "eligibility_or_memory_preflight_failed",
+        }
+
+    receipt = {
+        "schema": "tau.self_fix_tick_receipt.v1",
+        "ok": bool(eligibility["eligible"] and memory_preflight["ok"] and loop_ok),
+        "mocked": False,
+        "live": True,
+        "scope": (
+            "One bounded Tau self-fix intake tick: GitHub issue fetch, Memory-first "
+            "preflight, goal-helper/start handoff generation, and command-loop dispatch."
+        ),
+        "repo": repo,
+        "issue": {
+            "number": issue,
+            "url": issue_payload.get("url"),
+            "title": issue_payload.get("title"),
+            "state": issue_payload.get("state"),
+            "labels": sorted(issue_labels),
+        },
+        "issue_fetch": issue_fetch,
+        "eligibility": eligibility,
+        "memory_preflight": memory_preflight,
+        "goal_hash": goal_hash,
+        "artifacts": {
+            "issue": str(resolved_receipt_dir / "issue.json"),
+            "memory_intent": str(resolved_receipt_dir / "memory-intent.json"),
+            "memory_recall": str(resolved_receipt_dir / "memory-recall.json"),
+            "goal_helper": str(resolved_receipt_dir / "goal-helper.json"),
+            "start_handoff": str(resolved_receipt_dir / "start-handoff.json"),
+            "command_loop_receipt": str(
+                resolved_receipt_dir / "command-loop" / "command-loop-receipt.json"
+            ),
+        },
+        "command_loop": loop_payload,
+        "checkpoint": {
+            "required_before_mutation": True,
+            "mutation_attempted": False,
+            "status": "not_applicable_for_intake_slice",
+        },
+        "claims": {
+            "proves": [
+                "Tau can fetch the selected GitHub issue through gh.",
+                "Tau can run Memory-first intent/recall before dispatch.",
+                "Tau can generate a goal-helper packet and start handoff from the issue.",
+                "Tau can invoke the existing command-loop for eligible issues.",
+            ],
+            "does_not_prove": [
+                "Autonomous code mutation.",
+                "Scillm-backed coder/reviewer semantic quality unless command specs call Scillm.",
+                "GitHub Actions event wiring.",
+                "Cron recovery.",
+                "Rollback after a real failed code mutation.",
+            ],
+        },
+    }
+    _write_json_object(resolved_receipt_dir / "self-fix-receipt.json", receipt)
+    typer.echo(json.dumps(receipt, indent=2, sort_keys=True))
+    return bool(receipt["ok"])
+
+
 def project_agent_handoff_adapter_command(
     *,
     result_status: str | None,
@@ -4733,6 +5469,12 @@ def _load_json_object(path: Path, *, label: str) -> dict[str, object]:
 
 
 def _write_json_receipt(path: Path, payload: dict[str, object]) -> None:
+    resolved = path.expanduser().resolve()
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_json_object(path: Path, payload: object) -> None:
     resolved = path.expanduser().resolve()
     resolved.parent.mkdir(parents=True, exist_ok=True)
     resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
