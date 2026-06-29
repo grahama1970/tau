@@ -1,0 +1,123 @@
+{
+  "battle_context": {
+    "artifact_count": 8,
+    "bundle_path": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/battle-context-bundle.json",
+    "research_broker_passed_lane_count": 5,
+    "research_broker_status": "PASS",
+    "run_receipt_status": "PASS",
+    "schema": "tau.battle_context_bundle.v1",
+    "tau_live_manifest_status": "PASS",
+    "teams": {
+      "blue": {
+        "persona": "coder",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        },
+        "worker_id": "blue-0-defense-parameterized-like"
+      },
+      "red": {
+        "persona": "brandon-bailey",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        },
+        "worker_id": "red-0-exploit-sqli-admin-or"
+      }
+    },
+    "warm_pond_research_weighted_candidate_count": 6,
+    "warm_pond_status": "PASS"
+  },
+  "battle_id": "battle-003",
+  "claims": {
+    "does_not_prove": [
+      "Battle Docker scorekeeper PASS unless Battle consumes this manifest.",
+      "Unbounded Battle swarm execution.",
+      "Scillm delegate/batch/tool execution; this rung uses chat completions."
+    ],
+    "proves": [
+      "Tau consumed one Battle Red handoff and one Battle Blue handoff.",
+      "Tau attempted Scillm chat-completions calls for both Battle personas.",
+      "Tau wrote tau.subagent_receipt.v1 artifacts for both teams."
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "run_id": "battle-v1-operational-fdba56a215d2",
+  "scenario_id": "arena-hidden-sqli-xss-race-001",
+  "scheduling": {
+    "completion_order": [
+      {
+        "completed_at_seconds": 7.783124,
+        "persona": "brandon-bailey",
+        "team": "red"
+      },
+      {
+        "completed_at_seconds": 8.270994,
+        "persona": "coder",
+        "team": "blue"
+      }
+    ],
+    "mode": "asyncio.as_completed",
+    "team_count": 2
+  },
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "teams": [
+    {
+      "completed_at_seconds": 7.783124,
+      "duration_seconds": 7.782271,
+      "error": null,
+      "events": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/scillm-events.jsonl",
+      "handoff": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/handoff.json",
+      "http_status": 200,
+      "model": "gpt-5.5",
+      "persona": "brandon-bailey",
+      "scillm_call": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/scillm-call-receipt.json",
+      "started_at_seconds": 0.0,
+      "status": "PASS",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/validation.json",
+      "validation_ok": true
+    },
+    {
+      "completed_at_seconds": 8.270994,
+      "duration_seconds": 8.235005,
+      "error": null,
+      "events": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/blue/scillm-events.jsonl",
+      "handoff": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/blue/handoff.json",
+      "http_status": 200,
+      "model": "gpt-5.5",
+      "persona": "coder",
+      "scillm_call": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/blue/scillm-call-receipt.json",
+      "started_at_seconds": 0.0,
+      "status": "PASS",
+      "subagent_receipt": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/blue/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "blue",
+      "validation": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/blue/validation.json",
+      "validation_ok": true
+    }
+  ]
+}

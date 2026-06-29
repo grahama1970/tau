@@ -1,0 +1,52 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/handoff.json",
+      "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/scillm-call-receipt.json"
+    ],
+    "assumptions": [
+      "Battle owns Docker execution and scorekeeping; Tau owns this handoff receipt."
+    ],
+    "battle": {
+      "battle_id": "battle-003",
+      "persona": "brandon-bailey",
+      "scenario_id": "arena-hidden-sqli-xss-race-001",
+      "team": "red"
+    },
+    "run_id": "battle-v1-operational-fdba56a215d2",
+    "subagent": "battle-red",
+    "unknowns": []
+  },
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/handoff.json",
+    "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/scillm-call-receipt.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:298f80a6b9ad6385857922a9afaa91449d3375fe93c1831d3ec1ec40cd953b8b",
+    "goal_id": "goal-battle-battle-003-tau-live",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Scillm handoff receipt is ready for Battle scorekeeper.",
+    "subagent": "battle-scorekeeper"
+  },
+  "rationale": "Battle requested one bounded Tau/Scillm handoff receipt before Docker scorekeeping.",
+  "result": {
+    "artifacts": [
+      "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/handoff.json",
+      "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/tau-live/red/scillm-call-receipt.json"
+    ],
+    "commands_run": [],
+    "live": true,
+    "mocked": false,
+    "model": "gpt-5.5",
+    "status": "PASS",
+    "summary": "Battle red persona brandon-bailey produced a live Scillm response.",
+    "surface": "scillm.chat_completions"
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Battle scorekeeper consumes Red/Blue receipts."
+}

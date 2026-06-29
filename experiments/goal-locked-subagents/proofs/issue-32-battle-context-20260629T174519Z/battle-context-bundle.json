@@ -1,0 +1,69 @@
+{
+  "schema": "tau.battle_context_bundle.v1",
+  "bundle_path": "experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/battle-context-bundle.json",
+  "artifacts": {
+    "run_receipt": "/tmp/battle-v1-research-dispatch-001/run-receipt.json",
+    "tau_live_manifest": "/tmp/battle-v1-research-dispatch-001/tau-live/manifest.json",
+    "fast_scan": "/tmp/battle-v1-research-dispatch-001/context/fast-scan-receipt.json",
+    "research_broker": "/tmp/battle-v1-research-dispatch-001/context/research-broker-receipt.json",
+    "warm_pond": "/tmp/battle-v1-research-dispatch-001/context/warm-pond-receipt.json",
+    "red_worker": "/tmp/battle-v1-research-dispatch-001/red/workers/red-0-exploit-sqli-admin-or/worker-receipt.json",
+    "blue_worker": "/tmp/battle-v1-research-dispatch-001/blue/workers/blue-0-defense-parameterized-like/worker-receipt.json"
+  },
+  "summary": {
+    "run_receipt": {
+      "status": "PASS",
+      "battle_id": "battle-003",
+      "run_id": "battle-v1-operational-fdba56a215d2"
+    },
+    "tau_live_manifest": {
+      "status": "PASS",
+      "mocked": false,
+      "live": true
+    },
+    "research_broker": {
+      "status": "PASS",
+      "passed_lane_count": 5,
+      "lane_count": 5
+    },
+    "warm_pond": {
+      "status": "PASS",
+      "research_weighted_candidate_count": 6,
+      "research_weighted_combination_count": 8
+    },
+    "teams": {
+      "red": {
+        "persona": "brandon-bailey",
+        "worker_id": "red-0-exploit-sqli-admin-or",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        }
+      },
+      "blue": {
+        "persona": "coder",
+        "worker_id": "blue-0-defense-parameterized-like",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        }
+      }
+    }
+  }
+}

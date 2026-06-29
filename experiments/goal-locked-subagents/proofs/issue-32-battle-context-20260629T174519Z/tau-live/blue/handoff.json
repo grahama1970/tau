@@ -1,0 +1,75 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/battle-context-bundle.json",
+      "/tmp/battle-v1-research-dispatch-001/run-receipt.json",
+      "/tmp/battle-v1-research-dispatch-001/tau-live/manifest.json",
+      "/tmp/battle-v1-research-dispatch-001/context/fast-scan-receipt.json",
+      "/tmp/battle-v1-research-dispatch-001/context/research-broker-receipt.json",
+      "/tmp/battle-v1-research-dispatch-001/context/warm-pond-receipt.json",
+      "/tmp/battle-v1-research-dispatch-001/red/workers/red-0-exploit-sqli-admin-or/worker-receipt.json",
+      "/tmp/battle-v1-research-dispatch-001/blue/workers/blue-0-defense-parameterized-like/worker-receipt.json"
+    ],
+    "battle": {
+      "battle_id": "battle-003",
+      "persona": "coder",
+      "run_id": "battle-v1-operational-fdba56a215d2",
+      "scenario_id": "arena-hidden-sqli-xss-race-001",
+      "team": "blue"
+    },
+    "battle_context": {
+      "artifact_count": 8,
+      "bundle_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174519Z/battle-context-bundle.json",
+      "research_broker_passed_lane_count": 5,
+      "research_broker_status": "PASS",
+      "run_receipt_status": "PASS",
+      "tau_live_manifest_status": "PASS",
+      "team": "blue",
+      "team_summary": {
+        "persona": "coder",
+        "research_dispatch": {
+          "dispatch_reason": "research-weighted same-family countermeasure",
+          "first_research_lane": "github_blue",
+          "research_boost": 0.2,
+          "research_sources": [
+            "brave",
+            "dogpile_blue",
+            "dogpile_red",
+            "github_blue",
+            "github_red"
+          ]
+        },
+        "worker_id": "blue-0-defense-parameterized-like"
+      },
+      "warm_pond_research_weighted_candidate_count": 6,
+      "warm_pond_status": "PASS"
+    },
+    "summary": "Battle blue persona handoff for battle-003. Battle artifact context is attached with 8 artifact reference(s)."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#22"
+  },
+  "goal": {
+    "goal_hash": "sha256:298f80a6b9ad6385857922a9afaa91449d3375fe93c1831d3ec1ec40cd953b8b",
+    "goal_id": "goal-battle-battle-003-tau-live",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "battle-blue",
+    "reason": "Run one bounded Battle persona action through Tau/Scillm."
+  },
+  "previous_subagent": "battle-orchestrator",
+  "rationale": "Battle needs Red and Blue Tau receipts before scorekeeper proof.",
+  "required_evidence": [
+    "blue/tau-subagent-receipt.json"
+  ],
+  "result": {
+    "evidence": [],
+    "status": "READY",
+    "summary": "Battle requested one bounded Tau/Scillm action-selection turn."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Tau writes a tau.subagent_receipt.v1 or a structured BLOCKED receipt."
+}
