@@ -1,0 +1,19 @@
+{
+  "panel": {
+    "image_generation_receipt": "",
+    "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel/panel_001.png",
+    "panel_id": "panel_001",
+    "panel_prompt": "Single photorealistic cinematic panel: one Tau project agent reviews persona-dream receipt contracts on a desk, one generated panel image on a monitor, paper evidence cards, tea steam, subtle surreal sky-eye outside the window. No text overlays, no captions, no logos, no UI chrome.",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel",
+    "scillm_base_url": "http://127.0.0.1:4001",
+    "scillm_image_auth": "codex-oauth",
+    "scillm_image_model": "gpt-image-2",
+    "scillm_image_quality": "medium",
+    "scillm_image_timeout_s": "",
+    "scillm_live_panel": "true",
+    "scillm_vlm_model": "gpt-5.5",
+    "scillm_vlm_timeout_s": "",
+    "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel/visual_review_receipt.json"
+  },
+  "role": "panel-reviewer"
+}

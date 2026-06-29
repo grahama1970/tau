@@ -1,0 +1,1 @@
+Single photorealistic cinematic panel: one Tau project agent reviews persona-dream receipt contracts on a desk, one generated panel image on a monitor, paper evidence cards, tea steam, subtle surreal sky-eye outside the window. No text overlays, no captions, no logos, no UI chrome.

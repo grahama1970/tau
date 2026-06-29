@@ -1,0 +1,66 @@
+{
+  "active_loop": {
+    "blocker": "missing_artifact",
+    "default_repair": "Regenerate the blocked one-scene Kling review packet with paid_call_authorized=false and stable source_artifacts.",
+    "external_action_required": false,
+    "loop": "kling_packet_loop",
+    "path": "receipts/kling_scene_packet.json",
+    "phase": "kling_scene_packet",
+    "validator": "validate-run-root --direction backward"
+  },
+  "direction": "backward",
+  "exercised": "serial while-loop controller pass, run-root validation, first-blocker loop mapping, fail-closed stop selection, local receipt installation handlers when applicable",
+  "generated_at": "2026-06-29T18:12:05Z",
+  "iterations": [
+    {
+      "active_loop": {
+        "blocker": "missing_artifact",
+        "default_repair": "Regenerate the blocked one-scene Kling review packet with paid_call_authorized=false and stable source_artifacts.",
+        "external_action_required": false,
+        "loop": "kling_packet_loop",
+        "path": "receipts/kling_scene_packet.json",
+        "phase": "kling_scene_packet",
+        "validator": "validate-run-root --direction backward"
+      },
+      "first_blocker": {
+        "path": "receipts/kling_scene_packet.json",
+        "phase": "kling_scene_packet",
+        "reason": "missing_artifact"
+      },
+      "iteration": 1,
+      "phase_count": 12,
+      "repair_action": {
+        "external_action_required": false,
+        "live": "no",
+        "mocked": "no",
+        "outputs": {
+          "kling_scene_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/kling_scene_packet.json",
+          "panel_repair_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_repair_gate_receipt.json",
+          "panel_source_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_source_receipt.json",
+          "provider_media_lock_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_lock_receipt.json"
+        },
+        "panel_repair_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_repair_gate_receipt.json",
+        "panel_source_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_source_receipt.json",
+        "phase": "kling_scene_packet",
+        "status": "INSTALLED_ONE_SCENE_KLING_REVIEW_PACKET",
+        "unverified": "provider media hosting, provider fetch, paid-call approval, Kling submission"
+      },
+      "status": "BLOCKED",
+      "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command."
+    }
+  ],
+  "live": "no",
+  "mocked": "no",
+  "next_action": "Regenerate the blocked one-scene Kling review packet with paid_call_authorized=false and stable source_artifacts.",
+  "policy": {
+    "implicit_local_repair_allowed": false,
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z",
+  "schema": "persona_dream.pipeline_loop_run.v1",
+  "status": "BLOCKED",
+  "stop_reason": "max_iterations_reached",
+  "unverified": "external publication, live panel subagent generation/review, paid Kling submission"
+}

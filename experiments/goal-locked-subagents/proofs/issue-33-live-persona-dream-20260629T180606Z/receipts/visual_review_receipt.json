@@ -1,0 +1,7 @@
+{
+  "panel_id": "panel_001",
+  "schema": "persona_dream.visual_review_gate_receipt.v1",
+  "source_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "source_receipt_status": "PASS",
+  "status": "PASS"
+}

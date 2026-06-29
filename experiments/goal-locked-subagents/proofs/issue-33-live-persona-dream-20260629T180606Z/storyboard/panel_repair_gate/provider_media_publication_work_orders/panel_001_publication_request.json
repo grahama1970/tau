@@ -1,0 +1,72 @@
+{
+  "authorization_required": [
+    "public_upload_of_panel_image",
+    "git_commit_and_push_or_equivalent_public_asset_publish"
+  ],
+  "created_at": "2026-06-29T18:12:21Z",
+  "created_by": "project_agent",
+  "current_state": {
+    "current_provider_media_urls": [
+      "https://raw.githubusercontent.com/grahama1970/tau/main/provider-media/not-published/panel_001.png"
+    ],
+    "probe_blockers": [
+      "No provider-accessible public image URL has been authorized or probed."
+    ],
+    "probe_status": "BLOCKED_PROVIDER_MEDIA_URLS",
+    "provider_eligibility": false,
+    "provider_media_status": "FAIL",
+    "provider_packet_status": "DRY_RUN_NOT_LIVE_SUBMITTABLE"
+  },
+  "default_repair_sequence_after_authorization": [
+    "Copy the exact locked image to skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png.",
+    "Commit and push that asset, or publish the exact same bytes to an equivalent stable public URL.",
+    "Run ./run.sh validate-provider-media-url --url https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png --expected-sha256 sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa --output <run-root>/storyboard/panel_repair_gate/final_provider_eligibility_work_orders/panel_01_run_20260628T204331Z/provider_media_url_probe_receipt.json --json.",
+    "Patch panel_repair_gate_receipt.json provider_media_urls and provider_media_probe_receipt only if the URL probe returns PASS_PROVIDER_MEDIA_URL_PROBE.",
+    "Rerun validate-panel-repair-gate --require-provider-eligible, write-panel-source, validate-panel-source, validate-run-root --direction backward."
+  ],
+  "exercised": "local receipt parse, locked media hash, publication plan generation",
+  "fallback_if_verification_fails": [
+    "Do not patch provider_eligibility or provider_packet_status.",
+    "Keep provider_media_status FAIL and retain the failed probe receipt.",
+    "Record the failed URL/probe blocker in the Panel 01 report."
+  ],
+  "forbidden_actions": [
+    "direct_kling_submit",
+    "paid_provider_call",
+    "nano_banana_final_panel_generation",
+    "gemini_final_panel_generation",
+    "provider_readiness_without_live_url_probe",
+    "hash_or_receipt_rewrite_without_matching_public_fetch"
+  ],
+  "live": "no",
+  "locked_media": {
+    "bytes": 2182458,
+    "local_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel/panel_001.png",
+    "sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa"
+  },
+  "mocked": "no",
+  "panel_id": "panel_001",
+  "proposed_publication": {
+    "method": "git_raw_asset_after_authorized_commit_push",
+    "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+    "rollback_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/storyboard/panel_repair_gate/provider_media_publication_work_orders/rollback",
+    "target_repo_path": "skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png"
+  },
+  "purpose": "Publish the accepted local Panel 01 candidate to a provider-accessible URL, then prove fetched bytes match the locked hash before any Kling submission.",
+  "run_id": "issue-33-live-persona-dream-20260629T180606Z",
+  "schema": "persona_dream.provider_media_publication_work_order.v1",
+  "source_paths": {
+    "panel_image": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel/panel_001.png",
+    "panel_repair_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_repair_gate_receipt.json",
+    "provider_media_probe_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_probe_receipt.json",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z"
+  },
+  "status": "WORK_ORDER_READY_PUBLIC_UPLOAD_AUTH_REQUIRED",
+  "unverified": "public upload authorization, public URL fetch, Kling provider fetch behavior, paid-call approval, Kling submission",
+  "verification_commands": [
+    "./run.sh validate-provider-media-url --url https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png --expected-sha256 sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa --json",
+    "./run.sh validate-panel-repair-gate <panel_repair_gate_receipt> --require-provider-eligible",
+    "./run.sh validate-panel-source <panel_source_receipt> --run-root <run_root> --json",
+    "./run.sh validate-run-root <run_root> --direction backward --json"
+  ]
+}

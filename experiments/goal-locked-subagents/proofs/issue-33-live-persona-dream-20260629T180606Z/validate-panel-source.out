@@ -1,0 +1,15 @@
+{
+  "exercised": "local receipt schema, image existence, image hash, subagent producer receipt presence, Nano Banana exclusion fields",
+  "first_blocker": {
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_source_receipt.json",
+    "phase": "panel_source_receipt",
+    "reason": "panel_source_not_pass:BLOCKED:repair_gate_status_not_final_reviewed:BLOCKED_PROVIDER_MEDIA_URLS;script_coverage_status_not_pass:FAIL;post_generation_script_coverage_status_not_pass:FAIL;provider_media_status_not_pass:FAIL;provider_eligibility_not_true"
+  },
+  "live": "no",
+  "mocked": "no",
+  "receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/panel_source_receipt.json",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z",
+  "schema": "persona_dream.panel_source_validation.v1",
+  "status": "BLOCKED",
+  "unverified": "visual semantics, live image generation, panel-reviewer VLM verdict, provider media hosting, Kling submission"
+}

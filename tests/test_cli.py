@@ -1915,6 +1915,28 @@ def test_cli_persona_dream_panel_proof_writes_first_blocker(tmp_path: Path) -> N
     ]
     assert manifest["first_blocker"]["previous_subagent"] == "panel-reviewer"
     assert manifest["first_blocker"]["status"] == "INSUFFICIENT_EVIDENCE"
+    repair_receipt = json.loads(
+        (
+            out_dir
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-003"
+            / "panel_repair_gate_receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    run_root_repair_receipt = json.loads(
+        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    panel_source_receipt = json.loads(
+        (out_dir / "receipts" / "panel_source_receipt.json").read_text(encoding="utf-8")
+    )
+    assert repair_receipt["schema"] == "persona_dream.panel_repair_gate_receipt.v1"
+    assert run_root_repair_receipt == repair_receipt
+    assert panel_source_receipt["schema"] == "persona_dream.panel_source_receipt.v1"
+    assert panel_source_receipt["status"] == "BLOCKED"
+    assert "provider_eligibility_not_true" in panel_source_receipt["blockers"]
     assert manifest["dry_run_one_scene_kling_request"] is None
     assert loop["mocked"] is False
     assert loop["live"] is True
@@ -2004,6 +2026,22 @@ def test_cli_persona_dream_panel_proof_uses_supplied_panel_evidence(tmp_path: Pa
     assert creator_receipt["generated_image_path"] == str(image.resolve())
     assert reviewer_receipt["panel_id"] == "panel_custom"
     assert reviewer_receipt["reviewer_source"] == str(visual_review.resolve())
+    repair_receipt = json.loads(
+        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    panel_source_receipt = json.loads(
+        (out_dir / "receipts" / "panel_source_receipt.json").read_text(encoding="utf-8")
+    )
+    assert repair_receipt["schema"] == "persona_dream.panel_repair_gate_receipt.v1"
+    assert repair_receipt["generated_image_path"] == str(image.resolve())
+    assert repair_receipt["media_hashes"]["panel_custom"].startswith("sha256:")
+    assert repair_receipt["provider_eligibility"] is False
+    assert panel_source_receipt["producer"]["receipt"] == str(
+        out_dir / "receipts" / "panel_repair_gate_receipt.json"
+    )
+    assert panel_source_receipt["image_path"] == str(image.resolve())
     assert manifest["first_blocker"]["previous_subagent"] == "panel-reviewer"
     assert manifest["first_blocker"]["status"] == "INSUFFICIENT_EVIDENCE"
 

@@ -1,0 +1,62 @@
+{
+  "active_loop": {
+    "blocker": "missing_artifact",
+    "default_repair": "Write a publication work order that names the exact locked media, required public-upload authorization, forbidden actions, rollback path, and verification commands.",
+    "external_action_required": false,
+    "loop": "provider_media_loop",
+    "path": "receipts/provider_media_publication_work_order.json | storyboard/panel_repair_gate/provider_media_publication_work_orders/*publication_request.json",
+    "phase": "provider_media_publication_work_order",
+    "validator": "validate-provider-media-publication-work-order"
+  },
+  "direction": "backward",
+  "exercised": "serial while-loop controller pass, run-root validation, first-blocker loop mapping, fail-closed stop selection, local receipt installation handlers when applicable",
+  "generated_at": "2026-06-29T18:12:21Z",
+  "iterations": [
+    {
+      "active_loop": {
+        "blocker": "missing_artifact",
+        "default_repair": "Write a publication work order that names the exact locked media, required public-upload authorization, forbidden actions, rollback path, and verification commands.",
+        "external_action_required": false,
+        "loop": "provider_media_loop",
+        "path": "receipts/provider_media_publication_work_order.json | storyboard/panel_repair_gate/provider_media_publication_work_orders/*publication_request.json",
+        "phase": "provider_media_publication_work_order",
+        "validator": "validate-provider-media-publication-work-order"
+      },
+      "first_blocker": {
+        "path": "receipts/provider_media_publication_work_order.json | storyboard/panel_repair_gate/provider_media_publication_work_orders/*publication_request.json",
+        "phase": "provider_media_publication_work_order",
+        "reason": "missing_artifact"
+      },
+      "iteration": 1,
+      "phase_count": 12,
+      "repair_action": {
+        "authorization_required": [
+          "public_upload_of_panel_image",
+          "git_commit_and_push_or_equivalent_public_asset_publish"
+        ],
+        "external_action_required": false,
+        "output": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/storyboard/panel_repair_gate/provider_media_publication_work_orders/panel_001_publication_request.json",
+        "panel_id": "panel_001",
+        "phase": "provider_media_publication_work_order",
+        "proposed_url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png",
+        "status": "WROTE_PROVIDER_MEDIA_PUBLICATION_WORK_ORDER"
+      },
+      "status": "BLOCKED",
+      "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command."
+    }
+  ],
+  "live": "no",
+  "mocked": "no",
+  "next_action": "Write a publication work order that names the exact locked media, required public-upload authorization, forbidden actions, rollback path, and verification commands.",
+  "policy": {
+    "implicit_local_repair_allowed": false,
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z",
+  "schema": "persona_dream.pipeline_loop_run.v1",
+  "status": "BLOCKED",
+  "stop_reason": "max_iterations_reached",
+  "unverified": "external publication, live panel subagent generation/review, paid Kling submission"
+}

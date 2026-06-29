@@ -591,10 +591,11 @@ def _run_panel_repair_gate(
         remaining_blockers.append("live WebGPT/VLM visual PASS receipt is missing")
     if not creator_generated:
         remaining_blockers.append("real panel-creator generation receipt is missing")
-    provider_eligibility = creator_generated and reviewer_passed
-    provider_packet_status = "DRY_RUN_NOT_LIVE_SUBMITTABLE" if provider_eligibility else "BLOCKED_PROVIDER_GATE"
+    panel_review_ready = creator_generated and reviewer_passed
+    provider_eligibility = False
+    provider_packet_status = "DRY_RUN_NOT_LIVE_SUBMITTABLE" if panel_review_ready else "BLOCKED_PROVIDER_GATE"
     one_scene_request_path = artifact_dir / "one_scene_kling_request.json"
-    if provider_eligibility:
+    if panel_review_ready:
         _write_json(
             one_scene_request_path,
             {
@@ -627,16 +628,47 @@ def _run_panel_repair_gate(
         )
     else:
         remaining_blockers.append("loop final receipt for a panel repair attempt is missing")
-    receipt = {
-        "schema": "tau.persona_dream.panel_repair_gate_receipt.v1",
+    if panel_review_ready:
+        remaining_blockers.append("provider-accessible public image URL is missing")
+        remaining_blockers.append("provider media URL probe receipt is missing")
+    receipt_path = artifact_dir / "panel_repair_gate_receipt.json"
+    run_root_receipts = _proof_run_root(artifact_dir) / "receipts"
+    run_root_repair_receipt_path = run_root_receipts / "panel_repair_gate_receipt.json"
+    run_root_panel_source_path = run_root_receipts / "panel_source_receipt.json"
+    support_receipts = _write_persona_dream_support_receipts(
+        run_root_receipts,
+        panel=panel,
+        creator_receipt=creator_receipt,
+        reviewer_receipt=reviewer_receipt,
+        creator_generated=creator_generated,
+        reviewer_passed=reviewer_passed,
+    )
+    receipt = _persona_dream_repair_gate_receipt(
+        panel=panel,
+        creator_receipt=creator_receipt,
+        reviewer_receipt=reviewer_receipt,
+        creator_generated=creator_generated,
+        reviewer_passed=reviewer_passed,
+        panel_review_ready=panel_review_ready,
+        provider_packet_status=provider_packet_status,
+        remaining_blockers=remaining_blockers,
+        artifacts=artifacts,
+        support_receipts=support_receipts,
+        one_scene_request_path=one_scene_request_path if panel_review_ready else None,
+    )
+    tau_receipt = {
+        "schema": "tau.persona_dream.panel_repair_gate_adapter_receipt.v1",
         "created_at": _now_iso(),
         "role": "persona-dream-panel-repair-gate",
         "panel_id": panel["panel_id"],
-        "status": "DRY_RUN_KLING_REQUEST_READY" if provider_eligibility else "BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
-        "provider_eligibility": provider_eligibility,
+        "status": "DRY_RUN_KLING_REQUEST_READY" if panel_review_ready else "BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
+        "provider_eligibility": False,
         "provider_packet_status": provider_packet_status,
         "remaining_blockers": remaining_blockers,
-        "dry_run_one_scene_kling_request": str(one_scene_request_path) if provider_eligibility else None,
+        "dry_run_one_scene_kling_request": str(one_scene_request_path) if panel_review_ready else None,
+        "persona_dream_panel_repair_gate_receipt": str(receipt_path),
+        "persona_dream_panel_source_receipt": str(run_root_panel_source_path),
+        "run_root_panel_repair_gate_receipt": str(run_root_repair_receipt_path),
         "source_artifacts": artifacts,
         "live_call_performed": False,
         "paid_call_performed": False,
@@ -654,29 +686,42 @@ def _run_panel_repair_gate(
             ],
         },
     }
-    receipt_path = artifact_dir / "panel_repair_gate_receipt.json"
     _write_json(receipt_path, receipt)
+    _write_json(artifact_dir / "tau_panel_repair_gate_adapter_receipt.json", tau_receipt)
+    _write_json(run_root_repair_receipt_path, receipt)
+    panel_source_receipt = _persona_dream_panel_source_receipt(
+        receipt,
+        repair_receipt_path=run_root_repair_receipt_path,
+    )
+    _write_json(run_root_panel_source_path, panel_source_receipt)
     _write_json(artifact_dir / "request.json", {"role": "persona-dream-panel-repair-gate", "panel": dict(panel)})
     response_path = artifact_dir / "response.json"
+    evidence_paths = [
+        str(receipt_path),
+        str(run_root_repair_receipt_path),
+        str(run_root_panel_source_path),
+    ]
+    if panel_review_ready:
+        evidence_paths.append(str(one_scene_request_path))
 
     handoff = _handoff(
         start_payload,
         previous_subagent="persona-dream-panel-repair-gate",
-        result_status="COMPLETED" if provider_eligibility else "BLOCKED",
+        result_status="COMPLETED" if panel_review_ready else "BLOCKED",
         result_summary=(
             "Persona Dream Panel Repair Gate wrote a dry-run one-scene Kling request; "
-            "no public upload, Kling call, paid call, or live provider-ready claim occurred."
-            if provider_eligibility
+            "persona-dream-compatible receipts were emitted, but provider media remains blocked."
+            if panel_review_ready
             else "Persona Dream Panel Repair Gate wrote a terminal blocker receipt with "
-            "provider_eligibility=false; no public upload, Kling call, paid call, or "
-            "provider-ready claim occurred."
+            "persona-dream-compatible repair/source receipts; no public upload, Kling call, paid call, "
+            "or provider-ready claim occurred."
         ),
-        evidence=[str(receipt_path)] + ([str(one_scene_request_path)] if provider_eligibility else []),
-        context_summary="Repair gate consolidated persona-dream panel evidence and blocked provider readiness.",
-        artifacts=[str(receipt_path)],
+        evidence=evidence_paths,
+        context_summary="Repair gate consolidated persona-dream panel evidence and emitted fail-closed persona-dream receipts.",
+        artifacts=evidence_paths,
         rationale=(
             "The bounded one-panel command chain has produced receipts and reached the "
-            "first real blocker: independent live visual/generation evidence is absent."
+            "first real blocker in the persona-dream serial pipeline."
         ),
         next_agent="human",
         next_executor="human",
@@ -695,6 +740,238 @@ def _run_panel_repair_gate(
     )
     _write_json(response_path, handoff)
     return handoff
+
+
+def _proof_run_root(artifact_dir: Path) -> Path:
+    parts = artifact_dir.resolve().parts
+    if len(parts) >= 3 and parts[-3:] and artifact_dir.parent.name == "command-artifacts":
+        return artifact_dir.parents[2]
+    for parent in artifact_dir.resolve().parents:
+        if parent.name == "command-loop":
+            return parent.parent
+    return artifact_dir
+
+
+def _write_persona_dream_support_receipts(
+    receipts_dir: Path,
+    *,
+    panel: Mapping[str, Any],
+    creator_receipt: Mapping[str, Any],
+    reviewer_receipt: Mapping[str, Any],
+    creator_generated: bool,
+    reviewer_passed: bool,
+) -> dict[str, str]:
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    panel_id = str(panel["panel_id"])
+    support_specs = {
+        "requirement_matrix": {
+            "schema": "persona_dream.requirement_matrix_receipt.v1",
+            "status": "PASS" if panel_id else "FAIL",
+            "panel_id": panel_id,
+            "requirements": ["single panel image exists", "visual review receipt exists"],
+        },
+        "script_coverage_receipt": {
+            "schema": "persona_dream.script_coverage_receipt.v1",
+            "status": "FAIL",
+            "panel_id": panel_id,
+            "blockers": ["Tau proof does not include full persona-dream script coverage."],
+        },
+        "post_generation_script_coverage_receipt": {
+            "schema": "persona_dream.post_generation_script_coverage_receipt.v1",
+            "status": "FAIL",
+            "panel_id": panel_id,
+            "blockers": ["Tau proof does not include post-generation script repair coverage."],
+        },
+        "reference_receipt": {
+            "schema": "persona_dream.reference_evidence_receipt.v1",
+            "status": "PASS" if Path(str(panel.get("image_path"))).expanduser().exists() else "FAIL",
+            "panel_id": panel_id,
+            "image_path": str(Path(str(panel.get("image_path"))).expanduser().resolve()),
+        },
+        "generation_receipt": {
+            "schema": "persona_dream.generation_receipt.v1",
+            "status": "PASS" if creator_generated else "FAIL",
+            "panel_id": panel_id,
+            "source_receipt_status": creator_receipt.get("status"),
+            "source_receipt": creator_receipt.get("image_generation_receipt"),
+        },
+        "visual_review_receipt": {
+            "schema": "persona_dream.visual_review_gate_receipt.v1",
+            "status": "PASS" if reviewer_passed else "FAIL",
+            "panel_id": panel_id,
+            "source_receipt_status": reviewer_receipt.get("status"),
+            "source_receipt": reviewer_receipt.get("reviewer_source"),
+        },
+        "no_overlay_receipt": {
+            "schema": "persona_dream.no_overlay_receipt.v1",
+            "status": "PASS" if reviewer_passed else "FAIL",
+            "panel_id": panel_id,
+            "blockers": [] if reviewer_passed else ["Visual review did not pass."],
+        },
+        "callback_or_polling_plan": {
+            "schema": "persona_dream.callback_or_polling_plan.v1",
+            "status": "DRY_RUN_ONLY",
+            "panel_id": panel_id,
+            "callback_url": None,
+            "polling_plan": "No live provider task exists; do not poll.",
+        },
+        "cost_estimate": {
+            "schema": "persona_dream.provider_cost_estimate.v1",
+            "status": "DRY_RUN_ONLY",
+            "panel_id": panel_id,
+            "estimated_cost_usd": 0,
+            "paid_call_authorized": False,
+        },
+        "provider_media_probe_receipt": {
+            "schema": "persona_dream.provider_media_url_probe_receipt.v1",
+            "status": "BLOCKED_PROVIDER_MEDIA_URLS",
+            "panel_id": panel_id,
+            "blockers": ["No provider-accessible public image URL has been authorized or probed."],
+        },
+    }
+    paths: dict[str, str] = {}
+    for name, payload in support_specs.items():
+        path = receipts_dir / f"{name}.json"
+        _write_json(path, payload)
+        paths[name] = str(path)
+    return paths
+
+
+def _persona_dream_repair_gate_receipt(
+    *,
+    panel: Mapping[str, Any],
+    creator_receipt: Mapping[str, Any],
+    reviewer_receipt: Mapping[str, Any],
+    creator_generated: bool,
+    reviewer_passed: bool,
+    panel_review_ready: bool,
+    provider_packet_status: str,
+    remaining_blockers: list[str],
+    artifacts: list[str],
+    support_receipts: Mapping[str, str],
+    one_scene_request_path: Path | None,
+) -> dict[str, Any]:
+    image_path = Path(str(creator_receipt.get("generated_image_path") or panel["image_path"])).expanduser().resolve()
+    image_hash = str(creator_receipt.get("sha256") or (_sha256(image_path) if image_path.exists() else "sha256:" + "0" * 64))
+    status = "BLOCKED_PROVIDER_MEDIA_URLS" if panel_review_ready else "BLOCKED_PENDING_INDEPENDENT_VERIFICATION"
+    return {
+        "schema": "persona_dream.panel_repair_gate_receipt.v1",
+        "created_at": _now_iso(),
+        "run_id": _run_id_from_panel(panel),
+        "panel_id": str(panel["panel_id"]),
+        "status": status,
+        "script_coverage_status": "FAIL",
+        "post_generation_script_coverage_status": "FAIL",
+        "reference_evidence_status": "PASS" if image_path.exists() else "FAIL",
+        "visual_review_status": "PASS" if reviewer_passed else "FAIL",
+        "no_overlay_status": "PASS" if reviewer_passed else "FAIL",
+        "provider_media_status": "FAIL",
+        "requirement_matrix": support_receipts["requirement_matrix"],
+        "script_coverage_receipt": support_receipts["script_coverage_receipt"],
+        "post_generation_script_coverage_receipt": support_receipts["post_generation_script_coverage_receipt"],
+        "reference_receipt": support_receipts["reference_receipt"],
+        "generation_receipt": support_receipts["generation_receipt"],
+        "visual_review_receipt": str(reviewer_receipt.get("reviewer_source") or support_receipts["visual_review_receipt"]),
+        "no_overlay_receipt": support_receipts["no_overlay_receipt"],
+        "generated_image_path": str(image_path),
+        "media_hashes": {str(panel["panel_id"]): image_hash},
+        "provider_media_sha256": image_hash,
+        "provider_eligibility": False,
+        "provider_mode": "std",
+        "provider_resolution": "720p",
+        "external_task_id": f"persona-dream-{panel['panel_id']}",
+        "callback_or_polling_plan": support_receipts["callback_or_polling_plan"],
+        "voice_id_status": "SILENT_SCENE",
+        "provider_voice_ids": {},
+        "cost_estimate": support_receipts["cost_estimate"],
+        "provider_media_urls": [_non_submittable_provider_url(panel)],
+        "provider_media_probe_receipt": support_receipts["provider_media_probe_receipt"],
+        "provider_packet_status": provider_packet_status,
+        "visual_style_status": "PASS_PHOTOREAL_CINEMATIC" if reviewer_passed else "UNKNOWN",
+        "remaining_blockers": remaining_blockers,
+        "dry_run_one_scene_kling_request": str(one_scene_request_path) if one_scene_request_path else None,
+        "source_artifacts": artifacts,
+        "live_call_performed": False,
+        "paid_call_performed": False,
+        "public_upload_performed": False,
+        "kling_api_call_performed": False,
+        "nano_banana_fallback_used": False,
+        "gemini_fallback_used": False,
+        "claims": {
+            "proves": [
+                "Tau emitted a persona-dream-compatible repair gate receipt.",
+                "The receipt preserves the local generated image path and sha256.",
+            ],
+            "does_not_prove": [
+                "provider media URL accessibility",
+                "provider eligibility",
+                "Kling readiness",
+                "public upload",
+            ],
+        },
+    }
+
+
+def _persona_dream_panel_source_receipt(
+    repair_receipt: Mapping[str, Any],
+    *,
+    repair_receipt_path: Path,
+) -> dict[str, Any]:
+    image_path = Path(str(repair_receipt.get("generated_image_path"))).expanduser().resolve()
+    actual_hash = _sha256(image_path) if image_path.exists() else None
+    claimed_hash = str(repair_receipt.get("provider_media_sha256") or "")
+    blockers: list[str] = []
+    if repair_receipt.get("status") != "PASS_PANEL_REVIEWED":
+        blockers.append(f"repair_gate_status_not_final_reviewed:{repair_receipt.get('status')}")
+    for subgate in (
+        "script_coverage_status",
+        "post_generation_script_coverage_status",
+        "reference_evidence_status",
+        "visual_review_status",
+        "no_overlay_status",
+        "provider_media_status",
+    ):
+        if repair_receipt.get(subgate) != "PASS":
+            blockers.append(f"{subgate}_not_pass:{repair_receipt.get(subgate)}")
+    if repair_receipt.get("visual_style_status") != "PASS_PHOTOREAL_CINEMATIC":
+        blockers.append(f"visual_style_not_photoreal:{repair_receipt.get('visual_style_status')}")
+    if repair_receipt.get("provider_eligibility") is not True:
+        blockers.append("provider_eligibility_not_true")
+    if not image_path.exists():
+        blockers.append(f"generated_image_path_not_found:{image_path}")
+    if not claimed_hash.startswith("sha256:"):
+        blockers.append("claimed_media_hash_missing")
+    elif actual_hash and actual_hash != claimed_hash:
+        blockers.append(f"claimed_media_hash_mismatch:{actual_hash}")
+    return {
+        "schema": "persona_dream.panel_source_receipt.v1",
+        "run_id": str(repair_receipt.get("run_id") or "unknown"),
+        "panel_id": str(repair_receipt.get("panel_id") or "unknown"),
+        "status": "PASS_PANEL_SOURCE" if not blockers else "BLOCKED",
+        "image_path": str(image_path),
+        "sha256": actual_hash or claimed_hash or "sha256:" + ("0" * 64),
+        "producer": {
+            "kind": "subagent",
+            "name": "persona-dream-panel-repair-gate",
+            "receipt": str(repair_receipt_path),
+        },
+        "photoreal_status": repair_receipt.get("visual_style_status")
+        if repair_receipt.get("visual_style_status") == "PASS_PHOTOREAL_CINEMATIC"
+        else "UNKNOWN",
+        "nano_banana_fallback_used": False,
+        "final_panel_eligible": not blockers,
+        "blockers": blockers,
+    }
+
+
+def _run_id_from_panel(panel: Mapping[str, Any]) -> str:
+    run_root = Path(str(panel.get("run_root") or "tau-persona-dream-panel")).expanduser()
+    return run_root.name or "tau-persona-dream-panel"
+
+
+def _non_submittable_provider_url(panel: Mapping[str, Any]) -> str:
+    panel_id = str(panel.get("panel_id") or "panel_001")
+    return f"https://raw.githubusercontent.com/grahama1970/tau/main/provider-media/not-published/{panel_id}.png"
 
 
 def _find_artifact_path(artifacts: list[str], suffix: str) -> Path:

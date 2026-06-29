@@ -1,0 +1,66 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "blocking_findings": [],
+  "created_at": "2026-06-29T18:11:25Z",
+  "duration_seconds": 0.07019,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_events.jsonl",
+  "http_status": 200,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/scillm-panel/panel_001.png",
+  "live": true,
+  "live_call_performed": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "parsed_response": {
+    "blocking_findings": [],
+    "passed_entities": [
+      "single indoor office/study setting",
+      "adult man with glasses",
+      "desk with photos, notebook, papers, coffee cup",
+      "large monitor showing rainy park path",
+      "window with dramatic cloudy sky",
+      "surreal eye in clouds",
+      "cinematic lighting and mood",
+      "consistent perspective and scene continuity"
+    ],
+    "status": "PASS",
+    "summary": "Coherent single cinematic panel: a man at a desk studies photos and notes while a monitor shows a foggy park scene and a surreal eye appears in the clouds outside the window. The composition is unified, visually consistent, and suitable for a dry-run one-scene Kling request."
+  },
+  "passed_entities": [
+    "single indoor office/study setting",
+    "adult man with glasses",
+    "desk with photos, notebook, papers, coffee cup",
+    "large monitor showing rainy park path",
+    "window with dramatic cloudy sky",
+    "surreal eye in clouds",
+    "cinematic lighting and mood",
+    "consistent perspective and scene continuity"
+  ],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "request": {
+    "messages": "<redacted-image-url-request>",
+    "model": "gpt-5.5",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "persona-dream-panel-review",
+      "role": "panel-reviewer"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15.0,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response_content": "{\n  \"status\": \"PASS\",\n  \"summary\": \"Coherent single cinematic panel: a man at a desk studies photos and notes while a monitor shows a foggy park scene and a surreal eye appears in the clouds outside the window. The composition is unified, visually consistent, and suitable for a dry-run one-scene Kling request.\",\n  \"blocking_findings\": [],\n  \"passed_entities\": [\n    \"single indoor office/study setting\",\n    \"adult man with glasses\",\n    \"desk with photos, notebook, papers, coffee cup\",\n    \"large monitor showing rainy park path\",\n    \"window with dramatic cloudy sky\",\n    \"surreal eye in clouds\",\n    \"cinematic lighting and mood\",\n    \"consistent perspective and scene continuity\"\n  ]\n}",
+  "role": "panel-reviewer",
+  "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 158,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done",
+  "summary": "Coherent single cinematic panel: a man at a desk studies photos and notes while a monitor shows a foggy park scene and a surreal eye appears in the clouds outside the window. The composition is unified, visually consistent, and suitable for a dry-run one-scene Kling request.",
+  "surface": "scillm.chat_completions.image_url"
+}
