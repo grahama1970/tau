@@ -1,0 +1,143 @@
+{
+  "artifacts": {
+    "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/command-loop/command-loop-receipt.json",
+    "goal_helper": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/goal-helper.json",
+    "issue": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/issue.json",
+    "memory_intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/memory-intent.json",
+    "memory_recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/memory-recall.json",
+    "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/start-handoff.json",
+    "ticket_repair_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/ticket-repair/ticket-repair-receipt.json"
+  },
+  "checkpoint": {
+    "mutation_attempted": true,
+    "required_before_mutation": true,
+    "status": "handled_by_ticket_repair"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous repair.",
+      "Scillm-backed coder/reviewer semantic quality unless command specs call Scillm.",
+      "GitHub Actions event wiring.",
+      "Cron recovery.",
+      "Rollback after a real failed code mutation."
+    ],
+    "proves": [
+      "Tau can fetch the selected GitHub issue through gh.",
+      "Tau can run Memory-first intent/recall before dispatch.",
+      "Tau can generate a goal-helper packet and start handoff from the issue.",
+      "Tau can route a repair-contract issue into the streaming coder/reviewer repair path."
+    ]
+  },
+  "command_loop": {
+    "ok": false,
+    "reason": "repair_request_contract_selected",
+    "schema": "tau.self_fix_command_loop_bypassed_for_repair.v1"
+  },
+  "eligibility": {
+    "eligible": true,
+    "issue_labels": [
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "type:bug"
+    ],
+    "matched_labels": [
+      "agent:coder",
+      "route:backend_python_or_skill_runtime"
+    ],
+    "policy": "any_required_label_match",
+    "reason": "issue has at least one configured self-fix routing label",
+    "required_labels_any": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "tau-harness"
+    ]
+  },
+  "goal_hash": "sha256:543b542da02fa81d41dc55158d9009c4a144f4cf5c6bdd1fae84a3f58538e067",
+  "issue": {
+    "labels": [
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "type:bug"
+    ],
+    "number": 39,
+    "state": "OPEN",
+    "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+    "url": "https://github.com/grahama1970/tau/issues/39"
+  },
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "view",
+      "39",
+      "--repo",
+      "grahama1970/tau",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.557927,
+    "exit_code": 0,
+    "ok": true,
+    "stderr": ""
+  },
+  "live": true,
+  "memory_preflight": {
+    "artifacts": {
+      "intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/memory-intent.json",
+      "recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/memory-recall.json"
+    },
+    "intent_action": "QUERY",
+    "intent_call": {
+      "duration_seconds": 4.938154,
+      "ok": true,
+      "path": "/intent",
+      "status_code": 200
+    },
+    "live": true,
+    "memory_base_url": "http://127.0.0.1:8601",
+    "mocked": false,
+    "ok": true,
+    "recall_call": {
+      "duration_seconds": 1.994355,
+      "ok": true,
+      "path": "/recall",
+      "status_code": 200
+    },
+    "recall_count": 5
+  },
+  "mocked": false,
+  "ok": false,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_tick_receipt.v1",
+  "scope": "One bounded Tau self-fix intake tick: GitHub issue fetch, Memory-first preflight, goal-helper/start handoff generation, and command-loop dispatch.",
+  "ticket_repair": {
+    "apply_github": true,
+    "artifacts": {
+      "ticket_repair_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192659Z/receipts/20260629T192659Z/issue-39/ticket-repair/ticket-repair-receipt.json"
+    },
+    "claims": {
+      "does_not_prove": [
+        "Unbounded autonomous issue processing.",
+        "GitHub Actions event wiring.",
+        "Semantic reviewer correctness beyond Scillm stream plus deterministic checks."
+      ],
+      "proves": []
+    },
+    "commands": [],
+    "created_at": "2026-06-29T19:27:07Z",
+    "error": "repair_request_contract_missing",
+    "issue": {
+      "number": 39,
+      "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+      "url": "https://github.com/grahama1970/tau/issues/39"
+    },
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "repair_request": null,
+    "repo": "grahama1970/tau",
+    "schema": "tau.self_fix_ticket_repair_receipt.v1",
+    "status": "BLOCKED"
+  }
+}

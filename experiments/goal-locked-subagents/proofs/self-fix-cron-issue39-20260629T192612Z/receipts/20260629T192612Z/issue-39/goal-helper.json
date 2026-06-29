@@ -1,0 +1,49 @@
+{
+  "allowed_scope": [
+    "Issue intake.",
+    "Memory-first preflight.",
+    "Goal-helper packet generation.",
+    "Start handoff generation.",
+    "Bounded local coder/reviewer command-loop dispatch."
+  ],
+  "completion_criteria": [
+    "Live GitHub issue is fetched through gh.",
+    "Memory /intent and /recall are called before subagent dispatch.",
+    "A tau.agent_handoff.v1 start handoff is written.",
+    "The bounded command-loop writes a command-loop receipt.",
+    "The final self-fix receipt lists explicit non-claims."
+  ],
+  "created_at": "2026-06-29T19:26:15.533021+00:00",
+  "eligible_for_dispatch": true,
+  "forbidden_drift": [
+    "Do not edit application code as part of this intake proof.",
+    "Do not mutate GitHub labels or comments in this slice.",
+    "Do not claim autonomous repair, cron, GitHub Actions, rollback, or Scillm quality unless separately proven."
+  ],
+  "goal": {
+    "goal_hash": "sha256:543b542da02fa81d41dc55158d9009c4a144f4cf5c6bdd1fae84a3f58538e067",
+    "goal_id": "goal-tau-self-fix-issue-39",
+    "goal_version": 1,
+    "immutable_goal": "Run one bounded Tau self-fix intake tick for the selected GitHub issue without mutating code or GitHub state in this slice."
+  },
+  "live": true,
+  "memory_first": {
+    "intent_artifact": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192612Z/receipts/20260629T192612Z/issue-39/memory-intent.json",
+    "ok": false,
+    "recall_artifact": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192612Z/receipts/20260629T192612Z/issue-39/memory-recall.json"
+  },
+  "mocked": false,
+  "primary_proof": "tau self-fix tick writes self-fix-receipt.json for the live issue.",
+  "retry_budget": {
+    "escalation": "Use WebGPT/create-architecture or ask the human if the live proof cannot be produced.",
+    "max_live_attempts_before_escalation": 2
+  },
+  "schema": "tau.goal_helper.v1",
+  "source": {
+    "issue": 39,
+    "repo": "grahama1970/tau",
+    "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+    "url": "https://github.com/grahama1970/tau/issues/39"
+  },
+  "stop_condition": "Stop after one command-loop receipt, a human route, or a fail-closed receipt; do not continue into code mutation in this slice."
+}

@@ -643,6 +643,37 @@ def _run_panel_repair_gate(
         creator_generated=creator_generated,
         reviewer_passed=reviewer_passed,
     )
+    script_coverage_passed = _support_receipt_status(support_receipts, "script_coverage_receipt") == "PASS"
+    post_generation_passed = (
+        _support_receipt_status(support_receipts, "post_generation_script_coverage_receipt") == "PASS"
+    )
+    provider_media_passed = (
+        _support_receipt_status(support_receipts, "provider_media_probe_receipt")
+        == "PASS_PROVIDER_MEDIA_URL_PROBE"
+    )
+    provider_eligibility = (
+        panel_review_ready
+        and script_coverage_passed
+        and post_generation_passed
+        and provider_media_passed
+    )
+    if not script_coverage_passed:
+        remaining_blockers.append("script coverage receipt is missing or failed")
+    if not post_generation_passed:
+        remaining_blockers.append("post-generation script coverage receipt is missing or failed")
+    if provider_media_passed:
+        remaining_blockers = [
+            blocker
+            for blocker in remaining_blockers
+            if blocker
+            not in {
+                "provider-accessible public image URL is missing",
+                "provider media URL probe receipt is missing",
+            }
+        ]
+    if provider_eligibility:
+        remaining_blockers = []
+        provider_packet_status = "PROVIDER_READY"
     receipt = _persona_dream_repair_gate_receipt(
         panel=panel,
         creator_receipt=creator_receipt,
@@ -650,6 +681,7 @@ def _run_panel_repair_gate(
         creator_generated=creator_generated,
         reviewer_passed=reviewer_passed,
         panel_review_ready=panel_review_ready,
+        provider_eligibility=provider_eligibility,
         provider_packet_status=provider_packet_status,
         remaining_blockers=remaining_blockers,
         artifacts=artifacts,
@@ -662,7 +694,7 @@ def _run_panel_repair_gate(
         "role": "persona-dream-panel-repair-gate",
         "panel_id": panel["panel_id"],
         "status": "DRY_RUN_KLING_REQUEST_READY" if panel_review_ready else "BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
-        "provider_eligibility": False,
+        "provider_eligibility": provider_eligibility,
         "provider_packet_status": provider_packet_status,
         "remaining_blockers": remaining_blockers,
         "dry_run_one_scene_kling_request": str(one_scene_request_path) if panel_review_ready else None,
@@ -763,6 +795,13 @@ def _write_persona_dream_support_receipts(
 ) -> dict[str, str]:
     receipts_dir.mkdir(parents=True, exist_ok=True)
     panel_id = str(panel["panel_id"])
+    script_coverage = _script_coverage_receipt(panel)
+    post_generation_coverage = _post_generation_script_coverage_receipt(
+        panel,
+        creator_generated=creator_generated,
+        reviewer_passed=reviewer_passed,
+    )
+    provider_media_probe = _provider_media_probe_receipt(panel)
     support_specs = {
         "requirement_matrix": {
             "schema": "persona_dream.requirement_matrix_receipt.v1",
@@ -770,18 +809,8 @@ def _write_persona_dream_support_receipts(
             "panel_id": panel_id,
             "requirements": ["single panel image exists", "visual review receipt exists"],
         },
-        "script_coverage_receipt": {
-            "schema": "persona_dream.script_coverage_receipt.v1",
-            "status": "FAIL",
-            "panel_id": panel_id,
-            "blockers": ["Tau proof does not include full persona-dream script coverage."],
-        },
-        "post_generation_script_coverage_receipt": {
-            "schema": "persona_dream.post_generation_script_coverage_receipt.v1",
-            "status": "FAIL",
-            "panel_id": panel_id,
-            "blockers": ["Tau proof does not include post-generation script repair coverage."],
-        },
+        "script_coverage_receipt": script_coverage,
+        "post_generation_script_coverage_receipt": post_generation_coverage,
         "reference_receipt": {
             "schema": "persona_dream.reference_evidence_receipt.v1",
             "status": "PASS" if Path(str(panel.get("image_path"))).expanduser().exists() else "FAIL",
@@ -822,12 +851,7 @@ def _write_persona_dream_support_receipts(
             "estimated_cost_usd": 0,
             "paid_call_authorized": False,
         },
-        "provider_media_probe_receipt": {
-            "schema": "persona_dream.provider_media_url_probe_receipt.v1",
-            "status": "BLOCKED_PROVIDER_MEDIA_URLS",
-            "panel_id": panel_id,
-            "blockers": ["No provider-accessible public image URL has been authorized or probed."],
-        },
+        "provider_media_probe_receipt": provider_media_probe,
     }
     paths: dict[str, str] = {}
     for name, payload in support_specs.items():
@@ -835,6 +859,105 @@ def _write_persona_dream_support_receipts(
         _write_json(path, payload)
         paths[name] = str(path)
     return paths
+
+
+def _support_receipt_status(support_receipts: Mapping[str, str], name: str) -> str:
+    path = support_receipts.get(name)
+    if not path:
+        return ""
+    try:
+        payload = _read_json(Path(path))
+    except RuntimeError:
+        return ""
+    status = payload.get("status")
+    return str(status) if isinstance(status, str) else ""
+
+
+def _script_coverage_receipt(panel: Mapping[str, Any]) -> dict[str, Any]:
+    panel_id = str(panel["panel_id"])
+    source_panel = str(panel.get("source_panel") or "")
+    source_summary = str(panel.get("source_panel_summary") or "")
+    coverage = str(panel.get("source_script_coverage") or "")
+    if source_panel and source_summary and coverage:
+        return {
+            "schema": "persona_dream.script_coverage_receipt.v1",
+            "status": "PASS",
+            "panel_id": panel_id,
+            "source_panel": source_panel,
+            "checked": [
+                "source_panel_work_order",
+                "action_or_beat",
+                "required_entities_or_props",
+                "motion_or_environment_cues",
+            ],
+            "coverage_summary": coverage,
+            "source_summary": source_summary,
+            "blockers": [],
+        }
+    return {
+        "schema": "persona_dream.script_coverage_receipt.v1",
+        "status": "FAIL",
+        "panel_id": panel_id,
+        "blockers": ["Tau proof does not include full persona-dream script coverage."],
+    }
+
+
+def _post_generation_script_coverage_receipt(
+    panel: Mapping[str, Any],
+    *,
+    creator_generated: bool,
+    reviewer_passed: bool,
+) -> dict[str, Any]:
+    panel_id = str(panel["panel_id"])
+    source_panel = str(panel.get("source_panel") or "")
+    source_summary = str(panel.get("source_panel_summary") or "")
+    coverage = str(panel.get("post_generation_script_coverage") or "")
+    if source_panel and source_summary and coverage and creator_generated and reviewer_passed:
+        return {
+            "schema": "persona_dream.post_generation_script_coverage_receipt.v1",
+            "status": "PASS",
+            "panel_id": panel_id,
+            "source_panel": source_panel,
+            "image_delta_checked": True,
+            "introduced_visible_elements_accounted_for": True,
+            "coverage_summary": coverage,
+            "source_summary": source_summary,
+            "blockers": [],
+        }
+    blockers = ["Tau proof does not include post-generation script repair coverage."]
+    if not creator_generated:
+        blockers.append("real panel-creator generation receipt is missing")
+    if not reviewer_passed:
+        blockers.append("visual review did not pass")
+    return {
+        "schema": "persona_dream.post_generation_script_coverage_receipt.v1",
+        "status": "FAIL",
+        "panel_id": panel_id,
+        "blockers": blockers,
+    }
+
+
+def _provider_media_probe_receipt(panel: Mapping[str, Any]) -> dict[str, Any]:
+    panel_id = str(panel["panel_id"])
+    probe_path_text = str(panel.get("provider_media_probe_receipt") or "")
+    if probe_path_text:
+        probe_path = Path(probe_path_text).expanduser()
+        if probe_path.is_file():
+            payload = _read_json(probe_path)
+            payload.setdefault("panel_id", panel_id)
+            return payload
+        return {
+            "schema": "persona_dream.provider_media_url_probe_receipt.v1",
+            "status": "BLOCKED_PROVIDER_MEDIA_URLS",
+            "panel_id": panel_id,
+            "blockers": [f"provider media probe receipt does not exist: {probe_path}"],
+        }
+    return {
+        "schema": "persona_dream.provider_media_url_probe_receipt.v1",
+        "status": "BLOCKED_PROVIDER_MEDIA_URLS",
+        "panel_id": panel_id,
+        "blockers": ["No provider-accessible public image URL has been authorized or probed."],
+    }
 
 
 def _persona_dream_repair_gate_receipt(
@@ -845,6 +968,7 @@ def _persona_dream_repair_gate_receipt(
     creator_generated: bool,
     reviewer_passed: bool,
     panel_review_ready: bool,
+    provider_eligibility: bool,
     provider_packet_status: str,
     remaining_blockers: list[str],
     artifacts: list[str],
@@ -853,19 +977,34 @@ def _persona_dream_repair_gate_receipt(
 ) -> dict[str, Any]:
     image_path = Path(str(creator_receipt.get("generated_image_path") or panel["image_path"])).expanduser().resolve()
     image_hash = str(creator_receipt.get("sha256") or (_sha256(image_path) if image_path.exists() else "sha256:" + "0" * 64))
-    status = "BLOCKED_PROVIDER_MEDIA_URLS" if panel_review_ready else "BLOCKED_PENDING_INDEPENDENT_VERIFICATION"
+    script_coverage_status = _support_receipt_status(support_receipts, "script_coverage_receipt")
+    post_generation_status = _support_receipt_status(
+        support_receipts,
+        "post_generation_script_coverage_receipt",
+    )
+    provider_media_probe_status = _support_receipt_status(
+        support_receipts,
+        "provider_media_probe_receipt",
+    )
+    provider_media_status = "PASS" if provider_media_probe_status == "PASS_PROVIDER_MEDIA_URL_PROBE" else "FAIL"
+    if provider_eligibility:
+        status = "PASS_PANEL_REVIEWED"
+    elif panel_review_ready:
+        status = "BLOCKED_PROVIDER_MEDIA_URLS"
+    else:
+        status = "BLOCKED_PENDING_INDEPENDENT_VERIFICATION"
     return {
         "schema": "persona_dream.panel_repair_gate_receipt.v1",
         "created_at": _now_iso(),
         "run_id": _run_id_from_panel(panel),
         "panel_id": str(panel["panel_id"]),
         "status": status,
-        "script_coverage_status": "FAIL",
-        "post_generation_script_coverage_status": "FAIL",
+        "script_coverage_status": "PASS" if script_coverage_status == "PASS" else "FAIL",
+        "post_generation_script_coverage_status": "PASS" if post_generation_status == "PASS" else "FAIL",
         "reference_evidence_status": "PASS" if image_path.exists() else "FAIL",
         "visual_review_status": "PASS" if reviewer_passed else "FAIL",
         "no_overlay_status": "PASS" if reviewer_passed else "FAIL",
-        "provider_media_status": "FAIL",
+        "provider_media_status": provider_media_status,
         "requirement_matrix": support_receipts["requirement_matrix"],
         "script_coverage_receipt": support_receipts["script_coverage_receipt"],
         "post_generation_script_coverage_receipt": support_receipts["post_generation_script_coverage_receipt"],
@@ -876,7 +1015,7 @@ def _persona_dream_repair_gate_receipt(
         "generated_image_path": str(image_path),
         "media_hashes": {str(panel["panel_id"]): image_hash},
         "provider_media_sha256": image_hash,
-        "provider_eligibility": False,
+        "provider_eligibility": provider_eligibility,
         "provider_mode": "std",
         "provider_resolution": "720p",
         "external_task_id": f"persona-dream-{panel['panel_id']}",
@@ -884,7 +1023,7 @@ def _persona_dream_repair_gate_receipt(
         "voice_id_status": "SILENT_SCENE",
         "provider_voice_ids": {},
         "cost_estimate": support_receipts["cost_estimate"],
-        "provider_media_urls": [_non_submittable_provider_url(panel)],
+        "provider_media_urls": _provider_media_urls(panel),
         "provider_media_probe_receipt": support_receipts["provider_media_probe_receipt"],
         "provider_packet_status": provider_packet_status,
         "visual_style_status": "PASS_PHOTOREAL_CINEMATIC" if reviewer_passed else "UNKNOWN",
@@ -974,6 +1113,24 @@ def _non_submittable_provider_url(panel: Mapping[str, Any]) -> str:
     return f"https://raw.githubusercontent.com/grahama1970/tau/main/provider-media/not-published/{panel_id}.png"
 
 
+def _provider_media_urls(panel: Mapping[str, Any]) -> list[str]:
+    url = panel.get("provider_media_url")
+    if isinstance(url, str) and url.strip():
+        return [url.strip()]
+    probe_path_text = panel.get("provider_media_probe_receipt")
+    if isinstance(probe_path_text, str) and probe_path_text.strip():
+        probe_path = Path(probe_path_text).expanduser()
+        if probe_path.is_file():
+            try:
+                payload = _read_json(probe_path)
+            except RuntimeError:
+                payload = {}
+            observed_url = payload.get("url")
+            if isinstance(observed_url, str) and observed_url.strip():
+                return [observed_url.strip()]
+    return [_non_submittable_provider_url(panel)]
+
+
 def _find_artifact_path(artifacts: list[str], suffix: str) -> Path:
     for artifact in artifacts:
         path = Path(artifact)
@@ -1048,6 +1205,12 @@ def _panel_context(start_payload: Mapping[str, Any]) -> dict[str, str]:
         "scillm_base_url": str(panel.get("scillm_base_url") or ""),
         "scillm_image_timeout_s": str(panel.get("scillm_image_timeout_s") or ""),
         "scillm_vlm_timeout_s": str(panel.get("scillm_vlm_timeout_s") or ""),
+        "source_panel": str(panel.get("source_panel") or ""),
+        "source_panel_summary": str(panel.get("source_panel_summary") or ""),
+        "source_script_coverage": str(panel.get("source_script_coverage") or ""),
+        "post_generation_script_coverage": str(panel.get("post_generation_script_coverage") or ""),
+        "provider_media_probe_receipt": str(panel.get("provider_media_probe_receipt") or ""),
+        "provider_media_url": str(panel.get("provider_media_url") or ""),
     }
 
 

@@ -1,0 +1,194 @@
+{
+  "confidence": 0.8,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_key": "5d0d521134d6ec49",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Current Understanding (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 1.0,
+        "dense": 0.4857747,
+        "freshness": 0.9817905189441212,
+        "graph": 0.0
+      },
+      "section": "Current Understanding",
+      "section_slug": "current-understanding",
+      "solution": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6500ad5b6398c1f1",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Key Files (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.6,
+        "dense": 0.51106375,
+        "freshness": 0.9817905189441212,
+        "graph": 0.0
+      },
+      "section": "Key Files",
+      "section_slug": "key-files",
+      "solution": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:key-files"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6147631fbe310e2b",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Recent Decisions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.8,
+        "dense": 0.39537072,
+        "freshness": 0.9817905189441212,
+        "graph": 0.0
+      },
+      "section": "Recent Decisions",
+      "section_slug": "recent-decisions",
+      "solution": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:recent-decisions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "d2ab664248780d4c",
+      "_source": "project_knowledge",
+      "decisions": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "doc_type": "aggregate",
+      "key_files": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "open_questions": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.4,
+        "dense": 0.39471895,
+        "freshness": 0.9817905189441212,
+        "graph": 0.0
+      },
+      "tags": [
+        "project_knowledge",
+        "project:tau"
+      ],
+      "understanding": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "9cf6139faffa4260",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Infrastructure State (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.2,
+        "dense": 0.36010233,
+        "freshness": 0.9817905189441212,
+        "graph": 0.0
+      },
+      "section": "Infrastructure State",
+      "section_slug": "infrastructure-state",
+      "solution": "<!-- Auto-populated from /project-state --quick -->",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:infrastructure-state"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    }
+  ],
+  "meta": {
+    "k": 5,
+    "memory_first": true,
+    "q": "title: Tau persona-dream proof must generate source-derived panel script coverage\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\nsrc/tau_coding/persona_dream_panel_agent.py src/tau_coding/persona_dream_panel_proof.py tests/test_cli.py\n\n## Current state\n\nAfter Tau issue #33, the canonical proof root /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z emits persona-dream-compatible receipt schemas, and public media publication/probe now passes, but the serial persona-dream pipeline still blocks at panel_source_receipt. The Tau proof's panel prompt is generic Tau-agent desk imagery, not the upstream persona-dream panel 01 work order. Evidence: command-loop/command-artifacts/command-loop-step-001/panel_image.prompt.md says 'one Tau project agent reviews persona-dream receipt contracts on a desk'. The VLM review passes that generic image, but receipts/script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include full persona-dream script coverage' and receipts/post_generation_script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include post-generation script repair coverage'. Running persona-dream ./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z --direction backward --json --max-iterations 1 exits 1: provider media probe application cannot promote panel_repair_gate because PASS_PANEL_REVIEWED requires all subgates and provider fields to pass.\n\n## Requested outcome\n\nTau persona-dream live panel proof should accept or derive a real persona-dream panel work order/storyboard panel input, generate the panel from that source-derived prompt, run or emit deterministic script_coverage_receipt and post_generation_script_coverage_receipt based on that source, and only emit provider-eligible PASS_PANEL_REVIEWED when the generated image, script coverage, post-generation coverage, visual review, no-overlay, reference, and provider-media probe all pass. If Tau cannot run those subgates, it must stop with a first_blocker naming missing script coverage instead of emitting a generic desk-panel proof that downstream persona-dream can never promote.\n\n## Required proof\n\nRequired proof: live Tau persona-dream-panel-proof from a real source panel work order, mocked=false/live=true/scillm_originated_inside_tau=true; generated prompt includes the source panel action/required entities rather than generic Tau desk imagery; script_coverage_receipt and post_generation_script_coverage_receipt are non-placeholder and validate against persona-dream expectations; persona-dream validate-panel-repair-gate --require-provider-eligible passes after a real public probe; write-panel-source produces PASS_PANEL_SOURCE; pipeline-loop-status advances past panel_source_receipt without calling Kling.\n\n## Route\n\nbackend_python_or_skill_runtime\n\n## Requested repair agent\n\ncoder\n\n## Non-goals\n\nNo unrelated refactors or scope expansion.\n\n## Ticket type details\n\n- **Observed failure:** After Tau issue #33, the canonical proof root /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z emits persona-dream-compatible receipt schemas, and public media publication/probe now passes, but the serial persona-dream pipeline still blocks at panel_source_receipt. The Tau proof's panel prompt is generic Tau-agent desk imagery, not the upstream persona-dream panel 01 work order. Evidence: command-loop/command-artifacts/command-loop-step-001/panel_image.prompt.md says 'one Tau project agent reviews persona-dream receipt contracts on a desk'. The VLM review passes that generic image, but receipts/script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include full persona-dream script coverage' and receipts/post_generation_script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include post-generation sc",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782761227,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 955,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_route": {
+    "bonds": [],
+    "capabilities": [],
+    "compositions": [],
+    "skills": [
+      {
+        "composability_score": 0.122,
+        "has_run_sh": true,
+        "name": "review-persona",
+        "provides": [
+          "review-persona"
+        ]
+      },
+      {
+        "composability_score": 0.081,
+        "has_run_sh": true,
+        "name": "monitor-personas",
+        "provides": [
+          "monitor-personas"
+        ]
+      },
+      {
+        "composability_score": 0.122,
+        "has_run_sh": true,
+        "name": "review-persona",
+        "provides": [
+          "review-persona"
+        ]
+      },
+      {
+        "composability_score": 0.0,
+        "has_run_sh": true,
+        "name": "review-persona",
+        "provides": []
+      },
+      {
+        "composability_score": 0.099,
+        "has_run_sh": true,
+        "name": "train-persona",
+        "provides": [
+          "train-persona"
+        ]
+      }
+    ],
+    "suggested_chain": null
+  }
+}

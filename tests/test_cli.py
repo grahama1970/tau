@@ -1,4 +1,5 @@
 import json
+import hashlib
 import subprocess
 import sys
 from pathlib import Path
@@ -2044,6 +2045,144 @@ def test_cli_persona_dream_panel_proof_uses_supplied_panel_evidence(tmp_path: Pa
     assert panel_source_receipt["image_path"] == str(image.resolve())
     assert manifest["first_blocker"]["previous_subagent"] == "panel-reviewer"
     assert manifest["first_blocker"]["status"] == "INSUFFICIENT_EVIDENCE"
+
+
+def test_cli_persona_dream_panel_proof_accepts_source_panel_metadata(tmp_path: Path) -> None:
+    out_dir = tmp_path / "persona-proof"
+    agents_root = tmp_path / "agents"
+    agents_root.mkdir()
+    run_root = tmp_path / "run-root"
+    image = run_root / "artifacts" / "panel_source.png"
+    generation_receipt = run_root / "receipts" / "generation_receipt.json"
+    visual_review = run_root / "receipts" / "visual_review_receipt.json"
+    provider_probe = run_root / "receipts" / "provider_media_probe_receipt.json"
+    evidence = tmp_path / "panel-evidence.json"
+    source = tmp_path / "panel-source.json"
+    image.parent.mkdir(parents=True)
+    visual_review.parent.mkdir(parents=True)
+    image.write_bytes(b"source-derived panel bytes")
+    image_hash = "sha256:" + hashlib.sha256(image.read_bytes()).hexdigest()
+    generation_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.persona_dream.scillm_image_generation_call.v1",
+                "ok": True,
+                "width": 1536,
+                "height": 1024,
+                "sha256": image_hash,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    visual_review.write_text(
+        json.dumps(
+            {
+                "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+                "status": "PASS",
+                "live_call_performed": True,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    provider_probe.write_text(
+        json.dumps(
+            {
+                "schema": "persona_dream.provider_media_url_probe_receipt.v1",
+                "status": "PASS_PROVIDER_MEDIA_URL_PROBE",
+                "url": "https://assets.example.test/persona-dream/panel_source.png",
+                "expected_sha256": image_hash,
+                "observed_sha256": image_hash,
+                "http_status": 200,
+                "mocked": "no",
+                "live": "yes",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    evidence.write_text(
+        json.dumps(
+            {
+                "panel_id": "panel_source",
+                "run_root": str(run_root),
+                "image_path": "artifacts/panel_source.png",
+                "visual_review_receipt": "receipts/visual_review_receipt.json",
+                "image_generation_receipt": "receipts/generation_receipt.json",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    source.write_text(
+        json.dumps(
+            {
+                "panel_id": "panel_source",
+                "action": "Embry examines SPARTA evidence cards while tea steam crosses the laptop glow.",
+                "required_visible_entities": ["Embry", "SPARTA laptop", "evidence cards"],
+                "required_props": ["tea cup", "paper evidence cards"],
+                "required_dynamic_behaviors": ["tea steam curls through screen light"],
+                "provider_media_probe_receipt": str(provider_probe),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "persona-dream-panel-proof",
+            "--out-dir",
+            str(out_dir),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            "experiments/goal-locked-subagents/agent-command-specs",
+            "--active-goal-hash",
+            "sha256:test-persona-dream-panel-proof",
+            "--panel-evidence",
+            str(evidence),
+            "--panel-source",
+            str(source),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    prompt = manifest["panel_context"]["panel_prompt"]
+    script_coverage = json.loads(
+        (out_dir / "receipts" / "script_coverage_receipt.json").read_text(encoding="utf-8")
+    )
+    post_generation = json.loads(
+        (out_dir / "receipts" / "post_generation_script_coverage_receipt.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    repair_gate = json.loads(
+        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(encoding="utf-8")
+    )
+    panel_source = json.loads(
+        (out_dir / "receipts" / "panel_source_receipt.json").read_text(encoding="utf-8")
+    )
+
+    assert manifest["first_blocker"] is None
+    assert "Embry examines SPARTA evidence cards" in prompt
+    assert "tea steam curls through screen light" in prompt
+    assert script_coverage["status"] == "PASS"
+    assert script_coverage["source_panel"] == str(source.resolve())
+    assert post_generation["status"] == "PASS"
+    assert repair_gate["status"] == "PASS_PANEL_REVIEWED"
+    assert repair_gate["script_coverage_status"] == "PASS"
+    assert repair_gate["post_generation_script_coverage_status"] == "PASS"
+    assert repair_gate["provider_media_status"] == "PASS"
+    assert repair_gate["provider_eligibility"] is True
+    assert repair_gate["provider_media_urls"] == [
+        "https://assets.example.test/persona-dream/panel_source.png"
+    ]
+    assert panel_source["status"] == "PASS_PANEL_SOURCE"
+    assert panel_source["final_panel_eligible"] is True
 
 
 def test_persona_dream_panel_live_context_is_tau_owned(tmp_path: Path) -> None:

@@ -1,0 +1,27 @@
+{
+  "apply_github": true,
+  "artifacts": {},
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous issue processing.",
+      "GitHub Actions event wiring.",
+      "Semantic reviewer correctness beyond Scillm stream plus deterministic checks."
+    ],
+    "proves": []
+  },
+  "commands": [],
+  "created_at": "2026-06-29T19:27:07Z",
+  "error": "repair_request_contract_missing",
+  "issue": {
+    "number": 39,
+    "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+    "url": "https://github.com/grahama1970/tau/issues/39"
+  },
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "repair_request": null,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_ticket_repair_receipt.v1",
+  "status": "BLOCKED"
+}

@@ -1,0 +1,117 @@
+{
+  "apply_github": true,
+  "artifacts": {
+    "dispatch_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192612Z/receipts/20260629T192612Z/issue-39/self-fix-receipt.json",
+    "dispatch_receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192612Z/receipts/20260629T192612Z/issue-39",
+    "open_issues": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-issue39-20260629T192612Z/receipts/20260629T192612Z/open-issues.json"
+  },
+  "candidate_issues": [
+    {
+      "eligibility": {
+        "eligible": true,
+        "issue_labels": [
+          "agent:coder",
+          "route:backend_python_or_skill_runtime",
+          "type:bug"
+        ],
+        "matched_labels": [
+          "agent:coder",
+          "route:backend_python_or_skill_runtime"
+        ],
+        "policy": "any_required_label_match",
+        "reason": "issue has at least one configured self-fix routing label",
+        "required_labels_any": [
+          "agent-work",
+          "agent:coder",
+          "route:backend_python_or_skill_runtime",
+          "tau-harness"
+        ]
+      },
+      "labels": [
+        "agent:coder",
+        "route:backend_python_or_skill_runtime",
+        "type:bug"
+      ],
+      "number": 39,
+      "state": "OPEN",
+      "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+      "updated_at": "2026-06-29T19:25:31Z",
+      "url": "https://github.com/grahama1970/tau/issues/39"
+    }
+  ],
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous operation."
+    ],
+    "proves": [
+      "Tau can poll the live GitHub issue queue through gh.",
+      "Tau can apply the configured one-ticket eligibility rule.",
+      "Tau dispatches exactly one selected eligible issue.",
+      "Tau can route the selected issue into the contract-backed repair path."
+    ]
+  },
+  "dispatch_requested": true,
+  "eligible_issue_count": 1,
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "list",
+      "--repo",
+      "grahama1970/tau",
+      "--state",
+      "open",
+      "--limit",
+      "30",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.418693,
+    "exit_code": 0,
+    "issue_count": 1,
+    "ok": true,
+    "stderr": ""
+  },
+  "issue_limit": 30,
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "open_issue_count": 1,
+  "repair_requested": true,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_poll_receipt.v1",
+  "selected_issue": {
+    "eligibility": {
+      "eligible": true,
+      "issue_labels": [
+        "agent:coder",
+        "route:backend_python_or_skill_runtime",
+        "type:bug"
+      ],
+      "matched_labels": [
+        "agent:coder",
+        "route:backend_python_or_skill_runtime"
+      ],
+      "policy": "any_required_label_match",
+      "reason": "issue has at least one configured self-fix routing label",
+      "required_labels_any": [
+        "agent-work",
+        "agent:coder",
+        "route:backend_python_or_skill_runtime",
+        "tau-harness"
+      ]
+    },
+    "labels": [
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "type:bug"
+    ],
+    "number": 39,
+    "state": "OPEN",
+    "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+    "updated_at": "2026-06-29T19:25:31Z",
+    "url": "https://github.com/grahama1970/tau/issues/39"
+  },
+  "skipped_issues": [],
+  "status": "DISPATCHED"
+}

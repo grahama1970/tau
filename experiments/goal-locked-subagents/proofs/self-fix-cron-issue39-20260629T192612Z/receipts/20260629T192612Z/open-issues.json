@@ -1,0 +1,38 @@
+[
+  {
+    "author": {
+      "id": "U_kgDOCRK7qw",
+      "is_bot": false,
+      "login": "grahama1970",
+      "name": "Graham"
+    },
+    "body": "## Type\n\nbug\n\n## Target\n\nsrc/tau_coding/persona_dream_panel_agent.py src/tau_coding/persona_dream_panel_proof.py tests/test_cli.py\n\n## Current state\n\nAfter Tau issue #33, the canonical proof root /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z emits persona-dream-compatible receipt schemas, and public media publication/probe now passes, but the serial persona-dream pipeline still blocks at panel_source_receipt. The Tau proof's panel prompt is generic Tau-agent desk imagery, not the upstream persona-dream panel 01 work order. Evidence: command-loop/command-artifacts/command-loop-step-001/panel_image.prompt.md says 'one Tau project agent reviews persona-dream receipt contracts on a desk'. The VLM review passes that generic image, but receipts/script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include full persona-dream script coverage' and receipts/post_generation_script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include post-generation script repair coverage'. Running persona-dream ./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z --direction backward --json --max-iterations 1 exits 1: provider media probe application cannot promote panel_repair_gate because PASS_PANEL_REVIEWED requires all subgates and provider fields to pass.\n\n## Requested outcome\n\nTau persona-dream live panel proof should accept or derive a real persona-dream panel work order/storyboard panel input, generate the panel from that source-derived prompt, run or emit deterministic script_coverage_receipt and post_generation_script_coverage_receipt based on that source, and only emit provider-eligible PASS_PANEL_REVIEWED when the generated image, script coverage, post-generation coverage, visual review, no-overlay, reference, and provider-media probe all pass. If Tau cannot run those subgates, it must stop with a first_blocker naming missing script coverage instead of emitting a generic desk-panel proof that downstream persona-dream can never promote.\n\n## Required proof\n\nRequired proof: live Tau persona-dream-panel-proof from a real source panel work order, mocked=false/live=true/scillm_originated_inside_tau=true; generated prompt includes the source panel action/required entities rather than generic Tau desk imagery; script_coverage_receipt and post_generation_script_coverage_receipt are non-placeholder and validate against persona-dream expectations; persona-dream validate-panel-repair-gate --require-provider-eligible passes after a real public probe; write-panel-source produces PASS_PANEL_SOURCE; pipeline-loop-status advances past panel_source_receipt without calling Kling.\n\n## Route\n\nbackend_python_or_skill_runtime\n\n## Requested repair agent\n\ncoder\n\n## Non-goals\n\nNo unrelated refactors or scope expansion.\n\n## Ticket type details\n\n- **Observed failure:** After Tau issue #33, the canonical proof root /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z emits persona-dream-compatible receipt schemas, and public media publication/probe now passes, but the serial persona-dream pipeline still blocks at panel_source_receipt. The Tau proof's panel prompt is generic Tau-agent desk imagery, not the upstream persona-dream panel 01 work order. Evidence: command-loop/command-artifacts/command-loop-step-001/panel_image.prompt.md says 'one Tau project agent reviews persona-dream receipt contracts on a desk'. The VLM review passes that generic image, but receipts/script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include full persona-dream script coverage' and receipts/post_generation_script_coverage_receipt.json is FAIL with blocker 'Tau proof does not include post-generation script repair coverage'. Running persona-dream ./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z --direction backward --json --max-iterations 1 exits 1: provider media probe application cannot promote panel_repair_gate because PASS_PANEL_REVIEWED requires all subgates and provider fields to pass.\n- **Expected behavior:** Tau persona-dream live panel proof should accept or derive a real persona-dream panel work order/storyboard panel input, generate the panel from that source-derived prompt, run or emit deterministic script_coverage_receipt and post_generation_script_coverage_receipt based on that source, and only emit provider-eligible PASS_PANEL_REVIEWED when the generated image, script coverage, post-generation coverage, visual review, no-overlay, reference, and provider-media probe all pass. If Tau cannot run those subgates, it must stop with a first_blocker naming missing script coverage instead of emitting a generic desk-panel proof that downstream persona-dream can never promote.\n- **Reproduction or artifact:** Use proof root /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z after public media probe PASS. Inspect command-loop/command-artifacts/command-loop-step-001/panel_image.prompt.md, receipts/script_coverage_receipt.json, receipts/post_generation_script_coverage_receipt.json, and run persona-dream ./run.sh pipeline-loop-run /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z --direction backward --json --max-iterations 1.\n\n<!-- ticket-skill\ntype: bug\ntarget: src/tau_coding/persona_dream_panel_agent.py src/tau_coding/persona_dream_panel_proof.py tests/test_cli.py\nroute: backend_python_or_skill_runtime\nagent: coder\n-->\n\nThis ticket must be resolved under `best-practices-github-ticket`. Closure requires deterministic proof; WebGPT review or CI green alone is not closure proof.\n",
+    "comments": [],
+    "createdAt": "2026-06-29T19:25:31Z",
+    "labels": [
+      {
+        "color": "d73a4a",
+        "description": "Defect or regression",
+        "id": "LA_kwDOTG11HM8AAAACpRFAJA",
+        "name": "type:bug"
+      },
+      {
+        "color": "1d76db",
+        "description": "Python CLIs, runtime, harness, and skill integration route",
+        "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+        "name": "route:backend_python_or_skill_runtime"
+      },
+      {
+        "color": "5319e7",
+        "description": "Requested repair agent: coder",
+        "id": "LA_kwDOTG11HM8AAAACpVklOg",
+        "name": "agent:coder"
+      }
+    ],
+    "number": 39,
+    "state": "OPEN",
+    "title": "Tau persona-dream proof must generate source-derived panel script coverage",
+    "updatedAt": "2026-06-29T19:25:31Z",
+    "url": "https://github.com/grahama1970/tau/issues/39"
+  }
+]

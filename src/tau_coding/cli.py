@@ -2429,6 +2429,7 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
         "active_goal_hash": DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
         "github_target": "issue#27",
         "panel_evidence": None,
+        "panel_source": None,
         "scillm_live_panel": False,
         "panel_prompt": None,
         "scillm_image_model": "gpt-image-2",
@@ -2482,6 +2483,13 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
             options["panel_evidence"] = Path(args[index])
         elif arg.startswith("--panel-evidence="):
             options["panel_evidence"] = Path(arg.partition("=")[2])
+        elif arg == "--panel-source":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--panel-source requires a value")
+            options["panel_source"] = Path(args[index])
+        elif arg.startswith("--panel-source="):
+            options["panel_source"] = Path(arg.partition("=")[2])
         elif arg == "--scillm-live-panel":
             options["scillm_live_panel"] = True
         elif arg == "--panel-prompt":
@@ -4286,6 +4294,7 @@ def project_agent_persona_dream_panel_proof_command(
     active_goal_hash: str,
     github_target: str,
     panel_evidence: Path | None,
+    panel_source: Path | None,
     scillm_live_panel: bool,
     panel_prompt: str | None,
     scillm_image_model: str,
@@ -4303,6 +4312,7 @@ def project_agent_persona_dream_panel_proof_command(
         active_goal_hash=active_goal_hash,
         github_target=github_target,
         panel_evidence=panel_evidence,
+        panel_source=panel_source,
         scillm_live_panel=scillm_live_panel,
         panel_prompt=panel_prompt,
         scillm_image_model=scillm_image_model,

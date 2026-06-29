@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from tau_coding.handoff_dispatch import write_agent_handoff_command_loop_receipt
 from tau_coding.persona_dream_panel_agent import (
@@ -29,6 +29,7 @@ def write_persona_dream_panel_proof(
     active_goal_hash: str = DEFAULT_GOAL_HASH,
     github_target: str = "issue#27",
     panel_evidence: Path | None = None,
+    panel_source: Path | None = None,
     scillm_live_panel: bool = False,
     panel_prompt: str | None = None,
     scillm_image_model: str = "gpt-image-2",
@@ -44,6 +45,7 @@ def write_persona_dream_panel_proof(
     panel_context = _panel_context(
         panel_evidence,
         proof_dir=proof_dir,
+        panel_source=panel_source,
         scillm_live_panel=scillm_live_panel,
         panel_prompt=panel_prompt,
         scillm_image_model=scillm_image_model,
@@ -182,6 +184,7 @@ def _panel_context(
     panel_evidence: Path | None,
     *,
     proof_dir: Path | None = None,
+    panel_source: Path | None = None,
     scillm_live_panel: bool = False,
     panel_prompt: str | None = None,
     scillm_image_model: str = "gpt-image-2",
@@ -190,6 +193,7 @@ def _panel_context(
     scillm_vlm_model: str = "gpt-5.5",
     scillm_base_url: str = "http://127.0.0.1:4001",
 ) -> dict[str, str]:
+    source_context = _source_panel_context(panel_source)
     if scillm_live_panel:
         if panel_evidence is not None:
             raise RuntimeError("--scillm-live-panel and --panel-evidence are mutually exclusive")
@@ -208,14 +212,14 @@ def _panel_context(
             "scillm_image_quality": scillm_image_quality,
             "scillm_vlm_model": scillm_vlm_model,
             "scillm_base_url": scillm_base_url,
-        }
+        } | source_context
     if panel_evidence is None:
         return {
             "panel_id": "panel_001",
             "run_root": str(DEFAULT_FIXTURE_ROOT.resolve()),
             "image_path": str(DEFAULT_IMAGE.resolve()),
             "visual_review_receipt": str(DEFAULT_VISUAL_REVIEW.resolve()),
-        }
+        } | source_context
 
     evidence_path = panel_evidence.expanduser().resolve()
     payload = json.loads(evidence_path.read_text(encoding="utf-8"))
@@ -244,7 +248,94 @@ def _panel_context(
     )
     if image_generation_receipt:
         panel_context["image_generation_receipt"] = image_generation_receipt
-    return panel_context
+    for key in (
+        "panel_prompt",
+        "source_panel",
+        "source_panel_summary",
+        "source_script_coverage",
+        "post_generation_script_coverage",
+        "provider_media_probe_receipt",
+        "provider_media_url",
+    ):
+        value = panel.get(key)
+        if isinstance(value, str) and value.strip():
+            panel_context[key] = _resolve_optional_artifact(value, base=Path(run_root)) if key.endswith("_receipt") else value
+    return panel_context | source_context
+
+
+def _source_panel_context(panel_source: Path | None) -> dict[str, str]:
+    if panel_source is None:
+        return {}
+    source_path = panel_source.expanduser().resolve()
+    payload = json.loads(source_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"panel source must be a JSON object: {source_path}")
+    panel = payload.get("persona_dream_panel", payload)
+    if not isinstance(panel, dict):
+        raise RuntimeError(f"panel source persona_dream_panel must be an object: {source_path}")
+    panel_id = str(panel.get("panel_id") or panel.get("id") or panel.get("panel") or "panel_001")
+    source_summary = _source_summary(panel)
+    context = {
+        "panel_id": panel_id,
+        "source_panel": str(source_path),
+        "source_panel_summary": source_summary,
+        "source_script_coverage": "source panel includes script/beat/entity requirements",
+        "post_generation_script_coverage": "post-generation script coverage must reconcile generated image with source panel requirements",
+    }
+    prompt = panel.get("panel_prompt")
+    if isinstance(prompt, str) and prompt.strip():
+        context["panel_prompt"] = prompt.strip()
+    elif source_summary:
+        context["panel_prompt"] = (
+            "Generate one photorealistic cinematic persona-dream storyboard panel from "
+            "this source work order. Preserve the named action, required entities, "
+            "props, environment, motion cues, and script beat. No text overlays, "
+            f"captions, logos, or UI chrome.\n\nSource panel {panel_id}:\n{source_summary}"
+        )
+    for key in ("provider_media_probe_receipt", "provider_media_url"):
+        value = panel.get(key)
+        if isinstance(value, str) and value.strip():
+            context[key] = _resolve_optional_artifact(value, base=source_path.parent) if key.endswith("_receipt") else value
+    return context
+
+
+def _source_summary(payload: Mapping[str, Any]) -> str:
+    lines: list[str] = []
+    for key in (
+        "title",
+        "action",
+        "beat",
+        "description",
+        "script",
+        "dialogue",
+        "shot",
+        "camera",
+        "required_visible_entities",
+        "required_entities",
+        "required_props",
+        "required_environment",
+        "required_dynamic_behaviors",
+        "motion_cues",
+    ):
+        value = payload.get(key)
+        if value is None:
+            continue
+        if isinstance(value, list):
+            rendered = ", ".join(str(item) for item in value if str(item).strip())
+        elif isinstance(value, dict):
+            rendered = json.dumps(value, sort_keys=True)
+        else:
+            rendered = str(value)
+        if rendered.strip():
+            lines.append(f"- {key}: {rendered.strip()}")
+    return "\n".join(lines)
+
+
+def _resolve_optional_artifact(value: str, *, base: Path) -> str:
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = base / path
+    return str(path.resolve())
 
 
 def _required_text(payload: dict[str, Any], key: str) -> str:
