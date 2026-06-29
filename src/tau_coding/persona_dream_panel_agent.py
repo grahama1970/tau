@@ -259,15 +259,20 @@ def _handoff(
     required_evidence: str,
     stop_condition: str,
 ) -> dict[str, Any]:
+    context = _required_mapping(start_payload, "context")
+    next_context: dict[str, Any] = {
+        "summary": context_summary,
+        "artifacts": _artifact_list(start_payload) + artifacts,
+    }
+    persona_dream_panel = context.get("persona_dream_panel")
+    if isinstance(persona_dream_panel, Mapping):
+        next_context["persona_dream_panel"] = dict(persona_dream_panel)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": _required_mapping(start_payload, "github"),
         "goal": _required_mapping(start_payload, "goal"),
         "previous_subagent": previous_subagent,
-        "context": {
-            "summary": context_summary,
-            "artifacts": _artifact_list(start_payload) + artifacts,
-        },
+        "context": next_context,
         "result": {
             "status": result_status,
             "summary": result_summary,

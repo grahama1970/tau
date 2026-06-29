@@ -28,12 +28,19 @@ def write_persona_dream_panel_proof(
     command_spec_root: Path = DEFAULT_COMMAND_SPEC_ROOT,
     active_goal_hash: str = DEFAULT_GOAL_HASH,
     github_target: str = "issue#27",
+    panel_evidence: Path | None = None,
 ) -> dict[str, Any]:
     """Run the local persona-dream panel command loop and write a proof manifest."""
 
     proof_dir = out_dir.expanduser().resolve()
     proof_dir.mkdir(parents=True, exist_ok=True)
-    start_payload = _start_handoff(active_goal_hash=active_goal_hash, github_target=github_target)
+    panel_context = _panel_context(panel_evidence)
+    start_payload = _start_handoff(
+        active_goal_hash=active_goal_hash,
+        github_target=github_target,
+        panel_context=panel_context,
+        panel_evidence=panel_evidence,
+    )
     start_path = proof_dir / "start-handoff.json"
     _write_json(start_path, start_payload)
 
@@ -70,6 +77,8 @@ def write_persona_dream_panel_proof(
             "Tau command specs and stops at either a dry-run one-scene Kling request "
             "artifact or the first explicit creator/reviewer/repair-gate blocker."
         ),
+        "panel_evidence": str(panel_evidence.expanduser().resolve()) if panel_evidence else None,
+        "panel_context": panel_context,
         "start_handoff": str(start_path),
         "command_loop_receipt": str(proof_dir / "command-loop" / "command-loop-receipt.json"),
         "selected_agents": selected_agents,
@@ -98,7 +107,16 @@ def write_persona_dream_panel_proof(
     return manifest
 
 
-def _start_handoff(*, active_goal_hash: str, github_target: str) -> dict[str, Any]:
+def _start_handoff(
+    *,
+    active_goal_hash: str,
+    github_target: str,
+    panel_context: dict[str, str],
+    panel_evidence: Path | None,
+) -> dict[str, Any]:
+    context_artifacts = [panel_context["run_root"]]
+    if panel_evidence is not None:
+        context_artifacts.append(str(panel_evidence.expanduser().resolve()))
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {"repo": "grahama1970/tau", "target": github_target},
@@ -110,18 +128,13 @@ def _start_handoff(*, active_goal_hash: str, github_target: str) -> dict[str, An
         "previous_subagent": "human",
         "context": {
             "summary": "Run one bounded persona-dream panel proof through Tau command-loop.",
-            "artifacts": [str(DEFAULT_FIXTURE_ROOT.resolve())],
-            "persona_dream_panel": {
-                "panel_id": "panel_001",
-                "run_root": str(DEFAULT_FIXTURE_ROOT.resolve()),
-                "image_path": str(DEFAULT_IMAGE.resolve()),
-                "visual_review_receipt": str(DEFAULT_VISUAL_REVIEW.resolve()),
-            },
+            "artifacts": context_artifacts,
+            "persona_dream_panel": panel_context,
         },
         "result": {
             "status": "COMPLETED",
             "summary": "Human requested the local one-panel persona-dream proof command.",
-            "evidence": [str(DEFAULT_FIXTURE_ROOT.resolve())],
+            "evidence": context_artifacts,
         },
         "rationale": "The first bounded step is a local panel creator command with receipt output.",
         "next_agent": {
@@ -134,6 +147,52 @@ def _start_handoff(*, active_goal_hash: str, github_target: str) -> dict[str, An
         ],
         "stop_condition": "The local proof command writes manifest.json with first_blocker or dry-run Kling request.",
     }
+
+
+def _panel_context(panel_evidence: Path | None) -> dict[str, str]:
+    if panel_evidence is None:
+        return {
+            "panel_id": "panel_001",
+            "run_root": str(DEFAULT_FIXTURE_ROOT.resolve()),
+            "image_path": str(DEFAULT_IMAGE.resolve()),
+            "visual_review_receipt": str(DEFAULT_VISUAL_REVIEW.resolve()),
+        }
+
+    evidence_path = panel_evidence.expanduser().resolve()
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"panel evidence root must be an object: {evidence_path}")
+    panel = payload.get("persona_dream_panel", payload)
+    if not isinstance(panel, dict):
+        raise RuntimeError(f"panel evidence persona_dream_panel must be an object: {evidence_path}")
+
+    base = evidence_path.parent
+    run_root = _required_path_text(panel, "run_root", base=base)
+    return {
+        "panel_id": _required_text(panel, "panel_id"),
+        "run_root": run_root,
+        "image_path": _required_path_text(panel, "image_path", base=Path(run_root)),
+        "visual_review_receipt": _required_path_text(
+            panel,
+            "visual_review_receipt",
+            base=Path(run_root),
+        ),
+    }
+
+
+def _required_text(payload: dict[str, Any], key: str) -> str:
+    value = payload.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeError(f"panel evidence requires non-empty string field: {key}")
+    return value
+
+
+def _required_path_text(payload: dict[str, Any], key: str, *, base: Path) -> str:
+    value = _required_text(payload, key)
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = base / path
+    return str(path.resolve())
 
 
 def _command_response_payloads(loop_payload: dict[str, Any]) -> list[dict[str, Any]]:

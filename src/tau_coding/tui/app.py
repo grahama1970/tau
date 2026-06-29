@@ -1,6 +1,8 @@
 """Minimal Textual app for Tau coding sessions."""
 
 import asyncio
+import os
+import sys
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import suppress
 from dataclasses import dataclass
@@ -52,7 +54,7 @@ from tau_agent.messages import AgentMessage
 from tau_agent.tools import AgentTool
 from tau_ai import ProviderErrorEvent, ProviderEvent
 from tau_ai.provider import CancellationToken
-from tau_coding.commands import CommandRegistry, create_default_command_registry
+from tau_coding.commands import CommandRegistry, CommandResult, create_default_command_registry
 from tau_coding.credentials import FileCredentialStore, OAuthCredential
 from tau_coding.oauth import OAuthAuthInfo, OAuthPrompt, login_openai_codex
 from tau_coding.provider_catalog import (
@@ -80,6 +82,7 @@ from tau_coding.session import (
     parse_terminal_command,
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
+from tau_coding.system_prompt import ProjectContextFile
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.tui.adapter import TuiEventAdapter
 from tau_coding.tui.autocomplete import (
@@ -98,6 +101,7 @@ from tau_coding.tui.config import (
     load_tui_settings,
     save_tui_settings,
 )
+from tau_coding.tui.pty_proof import pty_input_received_line, pty_ready_line
 from tau_coding.tui.state import TuiState, format_terminal_command_result_block
 from tau_coding.tui.widgets import (
     CompactSessionInfo,
@@ -1784,6 +1788,8 @@ class TauTuiApp(App[None]):
         self._activity_timer: Timer | None = None
         self._active_notification_keys: set[tuple[str, str]] = set()
         self._supports_pyperclip: bool | None = None
+        self._pty_proof_enabled = os.environ.get("TAU_TUI_PTY_PROOF") == "1"
+        self._pty_proof_run_id = os.environ.get("TAU_TUI_PTY_RUN_ID", "tau-real-tui")
 
     def copy_to_clipboard(self, text: str) -> None:
         """Copy text using pyperclip when available, then Textual's fallback."""
@@ -1812,6 +1818,8 @@ class TauTuiApp(App[None]):
         with Horizontal(id="workspace"):
             yield SessionSidebar(id="sidebar")
             with Vertical(id="main-pane"):
+                if self._pty_proof_enabled:
+                    yield Static(pty_ready_line(self._pty_proof_run_id), id="pty-proof-ready")
                 yield TranscriptView(
                     id="transcript",
                     min_width=1,
@@ -1876,6 +1884,11 @@ class TauTuiApp(App[None]):
         """Update prompt autocomplete when the prompt text changes."""
         if event.text_area.id != "prompt":
             return
+        if self._pty_proof_enabled and "TAU_TUI_PTY_BROWSER_INPUT" in event.text_area.text:
+            with suppress(NoMatches):
+                self.query_one("#pty-proof-ready", Static).update(
+                    pty_input_received_line(self._pty_proof_run_id, event.text_area.text)
+                )
         self._sync_prompt_shell_mode(event.text_area.text)
         self._completion_state = self._build_completion_state(event.text_area.text)
         self._refresh_completions()
@@ -3738,3 +3751,77 @@ async def run_tui_app(
             if close_session is not None:
                 await close_session()
         await provider.aclose()
+
+
+class _PtyProofRealAppSessionState:
+    thinking_level = "medium"
+    loop_monitor_status = None
+
+
+class _PtyProofRealAppSession:
+    """Minimal session for PTY proof mode that still runs ``TauTuiApp``."""
+
+    def __init__(self, *, cwd: Path) -> None:
+        self.cwd = cwd
+        self.provider_name = "pty-proof"
+        self.model = "real-tau-tui-app"
+        self.available_models = ("real-tau-tui-app",)
+        self.available_model_choices = (
+            ModelChoice(provider_name="pty-proof", model="real-tau-tui-app"),
+        )
+        self.scoped_model_choices: tuple[ModelChoice, ...] = ()
+        self.available_providers = ("pty-proof",)
+        self.tools: tuple[AgentTool, ...] = ()
+        self.skills: tuple[object, ...] = ()
+        self.prompt_templates: tuple[object, ...] = ()
+        self.context_files = (
+            ProjectContextFile(path=str(cwd / "AGENTS.md"), content="PTY proof mode."),
+        )
+        self.context_token_estimate = 0
+        self.auto_compact_token_threshold = 200000
+        self.context_window_tokens = 216384
+        self.thinking_level = "medium"
+        self.available_thinking_levels = ("off", "minimal", "low", "medium", "high")
+        self.resource_diagnostics: tuple[object, ...] = ()
+        self.session_manager = None
+        self.state = _PtyProofRealAppSessionState()
+        self.messages: tuple[AgentMessage, ...] = ()
+
+    def handle_command(self, text: str) -> CommandResult:
+        del text
+        return CommandResult(handled=False)
+
+    def queue_update_event(self) -> QueueUpdateEvent:
+        return QueueUpdateEvent(steering=(), follow_up=())
+
+    async def prompt(
+        self,
+        text: str,
+        *,
+        streaming_behavior: str | None = None,
+    ) -> AsyncIterator[AgentEvent]:
+        del text, streaming_behavior
+        if False:
+            yield AgentStartEvent()
+
+
+def run_pty_proof_real_app() -> None:
+    """Run the real ``TauTuiApp`` class in deterministic PTY proof mode."""
+
+    os.environ.setdefault("TAU_TUI_PTY_PROOF", "1")
+    cwd = Path.cwd()
+    app = TauTuiApp(cast(CodingSession, _PtyProofRealAppSession(cwd=cwd)))
+    app.run()
+
+
+def main() -> None:
+    """Run module entrypoints for ``python -m tau_coding.tui.app``."""
+
+    if "--pty-proof-real-app" in sys.argv[1:]:
+        run_pty_proof_real_app()
+        return
+    raise SystemExit("Usage: python -m tau_coding.tui.app --pty-proof-real-app")
+
+
+if __name__ == "__main__":
+    main()

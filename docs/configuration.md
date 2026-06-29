@@ -97,6 +97,98 @@ For example, Hugging Face organization billing can be configured with:
 }
 ```
 
+## Research and Hard-Stop Escalation Settings
+
+Tau's long-running harness must not hard-code one research service. The human
+chooses the escalation path in configuration, while Tau keeps Memory-first
+routing and proof discipline fixed.
+
+The intended settings file is:
+
+```text
+~/.tau/research.json
+```
+
+Example:
+
+```json
+{
+  "schema": "tau.research_escalation.v1",
+  "default_service": "webgpt",
+  "memory_first": {
+    "required": true,
+    "base_url": "http://127.0.0.1:8601",
+    "intent_required": true,
+    "recall_before_external_research": true,
+    "clarify_stops_before_research": true,
+    "deflect_stops_before_research": true
+  },
+  "services": {
+    "webgpt": {
+      "enabled": true,
+      "project": "tau",
+      "mode": "create-architecture"
+    },
+    "llm_provider": {
+      "enabled": true,
+      "provider": "openai-codex",
+      "model": "gpt-5.5",
+      "timeout_seconds": 180
+    },
+    "brave_search": {
+      "enabled": false,
+      "scope": "external-docs-only"
+    },
+    "manual_human": {
+      "enabled": true
+    }
+  },
+  "hard_stop": {
+    "max_focused_attempts": 2,
+    "max_minutes_without_primary_proof": 20,
+    "help_bundle_required": true,
+    "project_knowledge_update_required": true
+  },
+  "self_fix": {
+    "enabled": true,
+    "eligible_repos": ["grahama1970/tau"],
+    "required_labels_any": [
+      "agent-work",
+      "agent:coder",
+      "tau-harness",
+      "route:backend_python_or_skill_runtime"
+    ],
+    "rollback_policy": "require-clean-checkpoint",
+    "pre_fix_checkpoint_required": true,
+    "revert_on_failed_proof": true,
+    "revert_on_reviewer_regression": true,
+    "stop_if_human_changes_cannot_be_isolated": true
+  }
+}
+```
+
+Required behavior:
+
+1. Tau writes a help bundle before any external research call.
+2. Tau calls Memory `/intent` first for the blocker question.
+3. If Memory returns `CLARIFY`, Tau stops and asks the clarifying question.
+4. If Memory returns `DEFLECT` or `NO_MATCH`, Tau stops before research.
+5. If Memory has relevant recall, Tau includes the recall packet in the help
+   bundle.
+6. Only when the Memory route calls for research does Tau invoke the configured
+   service.
+7. WebGPT, Brave Search, and LLM-provider responses are design input only; the
+   resumed Tau run still needs deterministic local proof.
+8. After the session, Tau updates `PROJECT_KNOWLEDGE.md` and syncs or records
+   the intended sync to Memory.
+9. For self-fix work, Tau creates a pre-fix git checkpoint before mutation and
+   reverts its own failed fix when proof fails or reviewer identifies a
+   regression.
+
+This config is separate from `providers.json`: provider settings define model
+reachability, while `research.json` defines the human-approved escalation policy
+for hard stops and architecture research.
+
 Useful commands:
 
 ```bash

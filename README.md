@@ -435,6 +435,129 @@ Only a trusted human packet may create or accept a new immutable goal version.
 If a non-human actor proposes a goal change, Tau routes to `goal-guardian` or
 `human` instead of mutating the goal.
 
+## Self-fix mode
+
+T'au must be able to repair T'au itself, but only through the same harness
+controls used for other work. Self-fix is not unconstrained self-modification.
+It is an issue-backed, Memory-first, reviewer-gated repair loop:
+
+```text
+cron / watchdog tick
+  -> read eligible grahama1970/tau issues
+  -> acquire a lease
+  -> Memory /intent and /recall before code inspection
+  -> build or validate a goal-helper packet
+  -> run coder through the Tau harness with Scillm as the LLM caller
+  -> run reviewer through the Tau harness with Scillm as the LLM caller
+  -> loop coder/reviewer until reviewer PASS, BLOCKED, or retry budget is exhausted
+  -> post receipts, comments, labels, and project-knowledge updates
+```
+
+Eligibility must be explicit. Tau should not auto-run on every GitHub issue.
+The first allowed selectors are trusted labels or comments such as
+`agent-work`, `agent:coder`, `tau-harness`, `route:backend_python_or_skill_runtime`,
+or a future trusted `/tau self-fix` command. The issue body remains the durable
+task source, and Tau must record the issue URL in every repair receipt.
+
+Human-only gates still apply. Tau may not change the immutable goal, broaden
+scope, perform destructive operations, push releases, or claim final human
+acceptance without an explicit trusted human packet. When the reviewer cannot
+produce a PASS backed by deterministic local proof, Tau must stop and route to
+`human` or the configured hard-stop research service.
+
+Self-fix also requires rollback discipline built into Tau, not left to a model's
+memory. Before Tau applies a fix to its own worktree, it must create a durable
+pre-fix checkpoint:
+
+```text
+git status --short
+git diff --stat
+git commit -m "checkpoint: before tau self-fix <issue>"
+```
+
+If the fix proof fails, reviewer finds a regression, or the retry budget is
+exhausted, Tau must revert its own failed fix back to the pre-fix checkpoint and
+write a rollback receipt. The revert must preserve unrelated human changes. If
+the worktree is dirty with human-owned changes that Tau cannot safely isolate,
+Tau must stop before mutation and ask the human for a branch/stash/commit
+decision. Failed code must not be left in place merely because a model proposed
+it.
+
+The intended built-in command shape is:
+
+```bash
+uv run tau self-fix tick \
+  --repo grahama1970/tau \
+  --issue <number> \
+  --goal-helper <tau.goal_helper.v1.json> \
+  --research-config <tau.research_escalation.v1.json> \
+  --rollback-policy require-clean-checkpoint
+```
+
+`tau self-fix tick` must refuse to mutate when it cannot create an isolated
+checkpoint, and it must write receipts for checkpoint, fix attempt, proof,
+reviewer verdict, and rollback or pass.
+
+## Goal-helper hard stop
+
+T'au's orchestrated harness must treat goal-helper behavior as a built-in
+control, not as optional operator advice. Before a long-running loop, overnight
+run, cron-dispatched issue, or repeated repair attempt continues, the active
+work must have a proof-driven goal packet that names:
+
+- the user-visible outcome,
+- one primary live proof command or artifact,
+- completion criteria,
+- allowed scope,
+- forbidden drift,
+- a retry budget, normally two focused attempts per blocker,
+- a fail-closed stop condition, and
+- the exact blocker report or escalation bundle to write if proof still fails.
+
+If the same live Tau, Memory, browser, harness, subagent, GitHub, compliance, or
+runtime proof is still failing after two focused attempts or about twenty
+minutes, Tau must stop the local loop. It must write a help bundle with the
+objective, primary proof command, files touched, commands run, failing output,
+artifact paths, current hypothesis, and one narrow question.
+
+That hard-stop path is Memory-first:
+
+```text
+hard stop
+  -> write help bundle
+  -> memory /intent
+  -> memory /recall or /clarify or /deflect according to the intent product
+  -> configured research/escalation service only when Memory routes to research
+```
+
+The human must be able to choose the research/escalation service in Tau
+configuration. WebGPT is one option, not the only option. A Tau installation may
+route hard-stop research to WebGPT, a configured LLM provider/model, Brave
+Search for external docs, or a disabled/manual-human mode. The selected service
+must receive the same help bundle and must return an artifact that Tau records
+as design input, not closure proof.
+
+Every Tau session that touches the loop, harness, TUI, chat, Memory routing,
+GitHub orchestration, or subagent behavior must end with a project-knowledge
+update. The update should summarize the real proof surface, artifact paths,
+mocked/live boundary, decisions, and open blockers. If project-knowledge sync to
+Memory is unavailable, Tau must record that as a non-closure blocker instead of
+silently losing the lesson.
+
+The intended runtime gate is:
+
+```bash
+uv run tau handoff-command-loop \
+  --start <tau.agent_handoff.v1.json> \
+  --goal-helper <tau.goal_helper.v1.json> \
+  --research-config <tau.research_escalation.v1.json> \
+  --max-steps <n>
+```
+
+Until that gate exists in code, this is a hard project requirement: no Tau
+agent should claim a long-running harness, TUI, chat, Memory, or subagent goal
+is complete without the primary proof named by the goal-helper packet.
+
 ## Repository map
 
 ```text
@@ -492,10 +615,18 @@ Chat readiness, live GitHub ticket mutation, or unrestricted subagent execution.
 ## WebGPT escalation
 
 T’au can use WebGPT between phases, when architecture is uncertain, when the
-agent is drifting, or when a complex harness decision needs external review.
-The project-local browser binding lives under `.ask/`, but the current T’au
-convention is direct `$webgpt` for phase and architecture review. WebGPT output
-is design input; deterministic local artifacts remain the proof source.
+agent is drifting, or when a complex harness decision needs external review, but
+WebGPT is not hard-coded as the only research path. Tau's hard-stop escalation
+must read the human-selected research service from configuration. The
+project-local browser binding lives under `.ask/`, but a local installation may
+choose direct `$webgpt`, a configured LLM provider/model, Brave Search for
+external documentation, or manual-human escalation.
+
+When the hard-stop rule fires, the escalation request must be complete enough
+for an outside reviewer to answer without guessing: objective, current proof
+command, modified files, command history, exact failure, proof artifacts,
+hypothesis, and one narrow question. The reviewer answer is not closure proof;
+Tau must reconcile it into code plus deterministic local artifacts.
 
 ## Upstream
 

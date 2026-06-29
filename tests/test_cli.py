@@ -1916,6 +1916,92 @@ def test_cli_persona_dream_panel_proof_writes_first_blocker(tmp_path: Path) -> N
     assert loop["terminal_agent"] == "human"
 
 
+def test_cli_persona_dream_panel_proof_uses_supplied_panel_evidence(tmp_path: Path) -> None:
+    out_dir = tmp_path / "persona-proof"
+    agents_root = tmp_path / "agents"
+    agents_root.mkdir()
+    run_root = tmp_path / "run-root"
+    image = run_root / "artifacts" / "panel_custom.png"
+    visual_review = run_root / "receipts" / "visual_review_receipt.json"
+    evidence = tmp_path / "panel-evidence.json"
+    image.parent.mkdir(parents=True)
+    visual_review.parent.mkdir(parents=True)
+    image.write_bytes(b"custom panel bytes")
+    visual_review.write_text(
+        json.dumps(
+            {
+                "schema": "persona_dream.visual_review_receipt.v1",
+                "status": "NEEDS_CHANGES",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    evidence.write_text(
+        json.dumps(
+            {
+                "panel_id": "panel_custom",
+                "run_root": str(run_root),
+                "image_path": "artifacts/panel_custom.png",
+                "visual_review_receipt": "receipts/visual_review_receipt.json",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "persona-dream-panel-proof",
+            "--out-dir",
+            str(out_dir),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            "experiments/goal-locked-subagents/agent-command-specs",
+            "--active-goal-hash",
+            "sha256:test-persona-dream-panel-proof",
+            "--panel-evidence",
+            str(evidence),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    creator_receipt = json.loads(
+        (
+            out_dir
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-001"
+            / "panel_creator_receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    reviewer_receipt = json.loads(
+        (
+            out_dir
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-002"
+            / "panel_reviewer_receipt.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert manifest["panel_evidence"] == str(evidence.resolve())
+    assert manifest["panel_context"] == {
+        "panel_id": "panel_custom",
+        "run_root": str(run_root.resolve()),
+        "image_path": str(image.resolve()),
+        "visual_review_receipt": str(visual_review.resolve()),
+    }
+    assert creator_receipt["panel_id"] == "panel_custom"
+    assert creator_receipt["generated_image_path"] == str(image.resolve())
+    assert reviewer_receipt["panel_id"] == "panel_custom"
+    assert reviewer_receipt["reviewer_source"] == str(visual_review.resolve())
+    assert manifest["first_blocker"]["previous_subagent"] == "panel-reviewer"
+    assert manifest["first_blocker"]["status"] == "INSUFFICIENT_EVIDENCE"
+
+
 def test_cli_handoff_command_loop_github_transport_dry_run(tmp_path: Path) -> None:
     loop_receipt = {
         "schema": "tau.agent_handoff_command_loop_receipt.v1",

@@ -2233,7 +2233,7 @@ def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
     return summary_path
 
 
-def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path | str]:
+def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path | str | None]:
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     options: dict[str, Path | str] = {
         "out_dir": Path("experiments/goal-locked-subagents/proofs")
@@ -2242,6 +2242,7 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
         "command_spec_root": DEFAULT_PERSONA_DREAM_PANEL_COMMAND_SPEC_ROOT,
         "active_goal_hash": DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
         "github_target": "issue#27",
+        "panel_evidence": None,
     }
     index = 0
     while index < len(args):
@@ -2281,6 +2282,13 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
             options["github_target"] = args[index]
         elif arg.startswith("--github-target="):
             options["github_target"] = arg.partition("=")[2]
+        elif arg == "--panel-evidence":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--panel-evidence requires a value")
+            options["panel_evidence"] = Path(args[index])
+        elif arg.startswith("--panel-evidence="):
+            options["panel_evidence"] = Path(arg.partition("=")[2])
         else:
             raise RuntimeError(f"Unknown persona-dream-panel-proof option: {arg}")
         index += 1
@@ -4040,6 +4048,7 @@ def project_agent_persona_dream_panel_proof_command(
     command_spec_root: Path,
     active_goal_hash: str,
     github_target: str,
+    panel_evidence: Path | None,
 ) -> bool:
     """Run the local one-panel persona-dream command-loop proof."""
 
@@ -4049,6 +4058,7 @@ def project_agent_persona_dream_panel_proof_command(
         command_spec_root=command_spec_root,
         active_goal_hash=active_goal_hash,
         github_target=github_target,
+        panel_evidence=panel_evidence,
     )
     typer.echo(json.dumps(manifest, indent=2, sort_keys=True))
     return bool(manifest.get("ok")) and (

@@ -1,5 +1,7 @@
 """Persistent coding-session wrapper built on AgentHarness."""
 
+from __future__ import annotations
+
 import asyncio
 import fnmatch
 import shutil
