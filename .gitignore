@@ -15,6 +15,7 @@ experiments/loop2-alignment/live-*/repo/
 experiments/loop2-alignment/live-*/*/repo/
 experiments/loop2-alignment/live-*/
 experiments/loop2-alignment/reliability-stress-*/
+.tmp/
 
 # Local oracle/review run logs
 .ask/**/ask-artifacts/
