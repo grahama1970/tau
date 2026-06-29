@@ -1,0 +1,16 @@
+{
+  "blockers": [],
+  "content_length": 1970572,
+  "created_at": "2026-06-29T19:55:00Z",
+  "exercised": "public HTTP(S) GET and sha256 comparison against the newly generated Tau image committed in grahama1970/tau main",
+  "expected_sha256": "sha256:00833ecfe90e5953249a15cab3a34d3d1bd7b3705da6caeb18f314509df786d0",
+  "http_status": 200,
+  "live": "yes",
+  "mocked": "no",
+  "observed_sha256": "sha256:00833ecfe90e5953249a15cab3a34d3d1bd7b3705da6caeb18f314509df786d0",
+  "panel_id": "panel_001",
+  "schema": "persona_dream.provider_media_url_probe_receipt.v1",
+  "status": "PASS_PROVIDER_MEDIA_URL_PROBE",
+  "unverified": "Kling provider fetch behavior, provider task submission, paid-call authorization",
+  "url": "https://raw.githubusercontent.com/grahama1970/tau/main/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/scillm-panel/panel_001.png"
+}

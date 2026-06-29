@@ -1,0 +1,11 @@
+{
+  "blockers": [],
+  "coverage_summary": "post-generation script coverage must reconcile generated image with source panel requirements",
+  "image_delta_checked": true,
+  "introduced_visible_elements_accounted_for": true,
+  "panel_id": "panel_001",
+  "schema": "persona_dream.post_generation_script_coverage_receipt.v1",
+  "source_panel": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/source-panel-fresh-provider-probe.json",
+  "source_summary": "- action: Embry examines SPARTA evidence cards while tea steam crosses the laptop glow and the distant sky-eye watches the workflow.\n- required_visible_entities: Embry, SPARTA evidence cards, laptop or command workstation, tea steam, surreal sky-eye\n- required_props: paper evidence cards, tea cup, generated panel reference\n- required_environment: quiet command workspace, window or horizon with surreal sky-eye\n- required_dynamic_behaviors: tea steam crosses the screen glow, evidence cards remain readable as physical paper props, sky-eye remains outside the workspace rather than a text overlay",
+  "status": "PASS"
+}
