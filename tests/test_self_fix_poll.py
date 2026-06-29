@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from tau_coding.cli import project_agent_self_fix_poll_command
+from tau_coding.self_fix_ticket_repair import extract_repair_request
 
 
 def test_self_fix_poll_writes_idle_receipt_for_empty_queue(
@@ -83,6 +84,31 @@ def test_self_fix_poll_selects_first_eligible_issue_without_dispatch(
     assert receipt["selected_issue"]["eligibility"]["matched_labels"] == [
         "agent-work",
         "agent:coder",
+    ]
+
+
+def test_extract_repair_request_from_issue_body() -> None:
+    body = """
+## Required repair
+
+```json
+{
+  "schema": "tau.self_fix_repair_request.v1",
+  "request": "Change the probe value.",
+  "target_file": "tests/fixtures/self_fix_ticket_probe.py",
+  "find_text": "STATUS = 'bug'",
+  "replace_text": "STATUS = 'fixed'",
+  "verification_commands": ["python -m py_compile tests/fixtures/self_fix_ticket_probe.py"]
+}
+```
+"""
+
+    request = extract_repair_request(body)
+
+    assert request is not None
+    assert request["target_file"] == "tests/fixtures/self_fix_ticket_probe.py"
+    assert request["verification_commands"] == [
+        "python -m py_compile tests/fixtures/self_fix_ticket_probe.py"
     ]
 
 

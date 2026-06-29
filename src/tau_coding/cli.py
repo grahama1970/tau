@@ -111,6 +111,7 @@ from tau_coding.session_export import (
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
+from tau_coding.self_fix_ticket_repair import run_ticket_repair
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.tui import run_tui_app
 from tau_coding.tui.proof import (
@@ -1968,7 +1969,12 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
     command_spec_root: Path | None = None
     active_goal_hash: str | None = None
     memory_base_url = "http://127.0.0.1:8601"
+    scillm_base_url = "http://127.0.0.1:4001"
+    model = "gpt-5.5"
+    repo_root = Path.cwd()
     max_steps = 3
+    repair = False
+    apply_github = False
     required_labels = [
         "agent-work",
         "agent:coder",
@@ -2027,6 +2033,27 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
             memory_base_url = args[index]
         elif arg.startswith("--memory-base-url="):
             memory_base_url = arg.partition("=")[2]
+        elif arg == "--scillm-base-url":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-base-url requires a value")
+            scillm_base_url = args[index]
+        elif arg.startswith("--scillm-base-url="):
+            scillm_base_url = arg.partition("=")[2]
+        elif arg == "--model":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--model requires a value")
+            model = args[index]
+        elif arg.startswith("--model="):
+            model = arg.partition("=")[2]
+        elif arg == "--repo-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo-root requires a value")
+            repo_root = Path(args[index])
+        elif arg.startswith("--repo-root="):
+            repo_root = Path(arg.partition("=")[2])
         elif arg == "--max-steps":
             index += 1
             if index >= len(args):
@@ -2041,6 +2068,10 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
             required_labels.append(args[index])
         elif arg.startswith("--required-label="):
             required_labels.append(arg.partition("=")[2])
+        elif arg == "--repair":
+            repair = True
+        elif arg == "--apply-github":
+            apply_github = True
         else:
             raise RuntimeError(f"Unknown self-fix tick option: {arg}")
         index += 1
@@ -2061,8 +2092,13 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
         "command_spec_root": command_spec_root,
         "active_goal_hash": active_goal_hash,
         "memory_base_url": memory_base_url.rstrip("/"),
+        "scillm_base_url": scillm_base_url.rstrip("/"),
+        "model": model,
+        "repo_root": repo_root,
         "max_steps": max_steps,
         "required_labels": tuple(label for label in required_labels if label),
+        "repair": repair,
+        "apply_github": apply_github,
     }
 
 
@@ -2073,9 +2109,14 @@ def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
     command_spec_root: Path | None = None
     active_goal_hash: str | None = None
     memory_base_url = "http://127.0.0.1:8601"
+    scillm_base_url = "http://127.0.0.1:4001"
+    model = "gpt-5.5"
+    repo_root = Path.cwd()
     max_steps = 3
     issue_limit = 30
     dispatch = False
+    repair = False
+    apply_github = False
     required_labels = [
         "agent-work",
         "agent:coder",
@@ -2127,6 +2168,27 @@ def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
             memory_base_url = args[index]
         elif arg.startswith("--memory-base-url="):
             memory_base_url = arg.partition("=")[2]
+        elif arg == "--scillm-base-url":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-base-url requires a value")
+            scillm_base_url = args[index]
+        elif arg.startswith("--scillm-base-url="):
+            scillm_base_url = arg.partition("=")[2]
+        elif arg == "--model":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--model requires a value")
+            model = args[index]
+        elif arg.startswith("--model="):
+            model = arg.partition("=")[2]
+        elif arg == "--repo-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo-root requires a value")
+            repo_root = Path(args[index])
+        elif arg.startswith("--repo-root="):
+            repo_root = Path(arg.partition("=")[2])
         elif arg == "--max-steps":
             index += 1
             if index >= len(args):
@@ -2143,6 +2205,10 @@ def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
             issue_limit = _parse_positive_int(arg.partition("=")[2], "--issue-limit")
         elif arg == "--dispatch":
             dispatch = True
+        elif arg == "--repair":
+            repair = True
+        elif arg == "--apply-github":
+            apply_github = True
         elif arg == "--required-label":
             index += 1
             if index >= len(args):
@@ -2167,10 +2233,15 @@ def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
         "command_spec_root": command_spec_root,
         "active_goal_hash": active_goal_hash,
         "memory_base_url": memory_base_url.rstrip("/"),
+        "scillm_base_url": scillm_base_url.rstrip("/"),
+        "model": model,
+        "repo_root": repo_root,
         "max_steps": max_steps,
         "required_labels": tuple(label for label in required_labels if label),
         "issue_limit": issue_limit,
         "dispatch": dispatch,
+        "repair": repair,
+        "apply_github": apply_github,
         "_self_fix_mode": "poll",
     }
 
@@ -4645,10 +4716,15 @@ def project_agent_self_fix_tick_command(
     command_spec_root: Path | None,
     active_goal_hash: str | None,
     memory_base_url: str,
-    max_steps: int,
-    required_labels: tuple[str, ...],
+    scillm_base_url: str = "http://127.0.0.1:4001",
+    model: str = "gpt-5.5",
+    repo_root: Path | None = None,
+    max_steps: int = 3,
+    required_labels: tuple[str, ...] = (),
+    repair: bool = False,
+    apply_github: bool = False,
 ) -> bool:
-    """Run one bounded self-fix issue-intake tick without mutating code or GitHub."""
+    """Run one bounded self-fix issue tick."""
 
     resolved_receipt_dir = receipt_dir.expanduser().resolve()
     resolved_receipt_dir.mkdir(parents=True, exist_ok=True)
@@ -4683,8 +4759,27 @@ def project_agent_self_fix_tick_command(
     _write_json_object(resolved_receipt_dir / "start-handoff.json", start_handoff)
 
     loop_payload: dict[str, object] | None = None
+    repair_payload: dict[str, object] | None = None
     loop_ok = False
-    if eligibility["eligible"] and memory_preflight["ok"]:
+    if eligibility["eligible"] and memory_preflight["ok"] and repair:
+        repair_payload = run_ticket_repair(
+            repo=repo,
+            issue_payload=issue_payload,
+            repo_root=repo_root or Path.cwd(),
+            receipt_dir=resolved_receipt_dir / "ticket-repair",
+            memory_base_url=memory_base_url,
+            scillm_base_url=scillm_base_url,
+            model=model,
+            active_goal_hash=goal_hash,
+            apply_github=apply_github,
+        )
+        loop_payload = {
+            "schema": "tau.self_fix_command_loop_bypassed_for_repair.v1",
+            "ok": bool(repair_payload.get("ok")),
+            "reason": "repair_request_contract_selected",
+        }
+        loop_ok = bool(repair_payload.get("ok"))
+    elif eligibility["eligible"] and memory_preflight["ok"]:
         loop = write_agent_handoff_command_loop_receipt(
             start_handoff,
             resolved_receipt_dir / "command-loop",
@@ -4732,12 +4827,18 @@ def project_agent_self_fix_tick_command(
             "command_loop_receipt": str(
                 resolved_receipt_dir / "command-loop" / "command-loop-receipt.json"
             ),
+            "ticket_repair_receipt": str(
+                resolved_receipt_dir / "ticket-repair" / "ticket-repair-receipt.json"
+            )
+            if repair
+            else None,
         },
         "command_loop": loop_payload,
+        "ticket_repair": repair_payload,
         "checkpoint": {
             "required_before_mutation": True,
-            "mutation_attempted": False,
-            "status": "not_applicable_for_intake_slice",
+            "mutation_attempted": bool(repair),
+            "status": "handled_by_ticket_repair" if repair else "not_applicable_for_intake_slice",
         },
         "claims": {
             "proves": [
@@ -4768,10 +4869,15 @@ def project_agent_self_fix_poll_command(
     command_spec_root: Path | None,
     active_goal_hash: str | None,
     memory_base_url: str,
-    max_steps: int,
-    required_labels: tuple[str, ...],
-    issue_limit: int,
-    dispatch: bool,
+    scillm_base_url: str = "http://127.0.0.1:4001",
+    model: str = "gpt-5.5",
+    repo_root: Path | None = None,
+    max_steps: int = 3,
+    required_labels: tuple[str, ...] = (),
+    issue_limit: int = 30,
+    dispatch: bool = False,
+    repair: bool = False,
+    apply_github: bool = False,
 ) -> bool:
     """Poll live GitHub issues and optionally dispatch exactly one eligible issue."""
 
@@ -4809,8 +4915,13 @@ def project_agent_self_fix_poll_command(
             command_spec_root=command_spec_root,
             active_goal_hash=active_goal_hash,
             memory_base_url=memory_base_url,
+            scillm_base_url=scillm_base_url,
+            model=model,
+            repo_root=repo_root,
             max_steps=max_steps,
             required_labels=required_labels,
+            repair=repair,
+            apply_github=apply_github,
         )
 
     status = "IDLE" if selected is None else ("DISPATCHED" if dispatch else "READY")
@@ -4823,6 +4934,8 @@ def project_agent_self_fix_poll_command(
         "repo": repo,
         "issue_limit": issue_limit,
         "dispatch_requested": dispatch,
+        "repair_requested": repair,
+        "apply_github": apply_github,
         "issue_fetch": issue_fetch,
         "open_issue_count": len(issues),
         "eligible_issue_count": len(candidates),
