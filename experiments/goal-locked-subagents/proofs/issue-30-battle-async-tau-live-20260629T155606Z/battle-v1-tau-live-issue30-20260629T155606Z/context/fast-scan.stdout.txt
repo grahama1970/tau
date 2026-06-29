@@ -1,0 +1,23 @@
+{
+  "schema": "battle.fast_scan_output.v1",
+  "target_file": "app.py",
+  "finding_count": 2,
+  "findings": [
+    {
+      "id": "scan-sqli-string-format",
+      "family": "sql_injection",
+      "cwe": "CWE-89",
+      "symbol": "search_users",
+      "evidence": "SQL query appears to be constructed from string interpolation before execute.",
+      "entry_point": "/search?q=<term>"
+    },
+    {
+      "id": "scan-reflected-query-html",
+      "family": "reflected_xss",
+      "cwe": "CWE-79",
+      "symbol": "render_search",
+      "evidence": "Raw query appears in rendered HTML without escaping.",
+      "entry_point": "/search?q=<term>"
+    }
+  ]
+}

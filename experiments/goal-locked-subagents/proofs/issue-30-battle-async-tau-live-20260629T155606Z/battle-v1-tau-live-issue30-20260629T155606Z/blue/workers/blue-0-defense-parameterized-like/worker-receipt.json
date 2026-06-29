@@ -1,0 +1,64 @@
+{
+  "async_timing": {
+    "duration_seconds": 0.955744,
+    "finished_at": "2026-06-29T15:56:17Z",
+    "finished_at_seconds": 0.958231,
+    "started_at": "2026-06-29T15:56:16Z",
+    "started_at_seconds": 0.002487
+  },
+  "battle_id": "battle-003",
+  "budget": {
+    "max_commands": 1,
+    "timeout_seconds": 60
+  },
+  "combination_id": "exploit-sqli-admin-or__defense-parameterized-like",
+  "commands_run": [
+    {
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges",
+        "--user",
+        "1000:1000",
+        "-v",
+        "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/blue/workers/blue-0-defense-parameterized-like/workspace:/workspace:rw",
+        "-w",
+        "/workspace",
+        "-v",
+        "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/workspace/patches:/patches:ro",
+        "python:3.12-slim",
+        "python",
+        "-c",
+        "import shutil, subprocess, sys, time\ntime.sleep(0.25)\nshutil.copyfile('/patches/app.py', '/workspace/app.py')\ncmd = ['python', '-m', 'unittest', 'discover', '-s', 'tests', '-q']\nraise SystemExit(subprocess.run(cmd).returncode)\n"
+      ],
+      "exit_code": 0,
+      "stderr_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/blue/workers/blue-0-defense-parameterized-like/blue-patch-and-regression.stderr.txt",
+      "stdout_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/blue/workers/blue-0-defense-parameterized-like/blue-patch-and-regression.stdout.txt"
+    }
+  ],
+  "created_at": "2026-06-29T15:56:17Z",
+  "defense": {
+    "family": "sql_injection",
+    "id": "defense-parameterized-like",
+    "strategy": "replace interpolated SQL with parameterized LIKE query",
+    "symbol": "search_users"
+  },
+  "model": "tau-local-deterministic-provider",
+  "outcome": {
+    "patch_applied_and_regression_passed": true
+  },
+  "persona": "coder",
+  "receipt_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/blue/workers/blue-0-defense-parameterized-like/worker-receipt.json",
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "schema": "battle.worker_receipt.v1",
+  "status": "PASS",
+  "surface": "docker_patch_regression_worker",
+  "team": "blue",
+  "worker_id": "blue-0-defense-parameterized-like"
+}

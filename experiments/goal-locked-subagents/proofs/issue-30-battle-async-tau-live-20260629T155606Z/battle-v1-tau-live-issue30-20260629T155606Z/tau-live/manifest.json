@@ -1,0 +1,107 @@
+{
+  "battle_id": "battle-003",
+  "claims": {
+    "does_not_prove": [
+      "Battle Docker scorekeeper PASS unless Battle consumes this manifest.",
+      "Unbounded Battle swarm execution.",
+      "Scillm delegate/batch/tool execution; this rung uses chat completions."
+    ],
+    "proves": [
+      "Tau consumed one Battle Red handoff and one Battle Blue handoff.",
+      "Tau attempted Scillm chat-completions calls for both Battle personas.",
+      "Tau wrote tau.subagent_receipt.v1 artifacts for both teams."
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "process": {
+    "command": [
+      "uv",
+      "run",
+      "--project",
+      "/home/graham/workspace/experiments/tau",
+      "python",
+      "-m",
+      "tau_coding.battle_live_handoff",
+      "--out-dir",
+      "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live",
+      "--battle-id",
+      "battle-003",
+      "--run-id",
+      "battle-v1-operational-56e91cdd855e",
+      "--scenario-id",
+      "arena-hidden-sqli-xss-race-001",
+      "--red-persona",
+      "brandon-bailey",
+      "--blue-persona",
+      "coder",
+      "--model",
+      "gpt-5.5"
+    ],
+    "duration_seconds": 8.437911,
+    "exit_code": 0,
+    "schema": "battle.tau_live_bridge_process.v1",
+    "stderr": "",
+    "stdout": "{\n  \"battle_id\": \"battle-003\",\n  \"claims\": {\n    \"does_not_prove\": [\n      \"Battle Docker scorekeeper PASS unless Battle consumes this manifest.\",\n      \"Unbounded Battle swarm execution.\",\n      \"Scillm delegate/batch/tool execution; this rung uses chat completions.\"\n    ],\n    \"proves\": [\n      \"Tau consumed one Battle Red handoff and one Battle Blue handoff.\",\n      \"Tau attempted Scillm chat-completions calls for both Battle personas.\",\n      \"Tau wrote tau.subagent_receipt.v1 artifacts for both teams.\"\n    ]\n  },\n  \"live\": true,\n  \"mocked\": false,\n  \"model\": \"gpt-5.5\",\n  \"run_id\": \"battle-v1-operational-56e91cdd855e\",\n  \"scenario_id\": \"arena-hidden-sqli-xss-race-001\",\n  \"scheduling\": {\n    \"completion_order\": [\n      {\n        \"completed_at_seconds\": 6.907742,\n        \"persona\": \"brandon-bailey\",\n        \"team\": \"red\"\n      },\n      {\n        \"completed_at_seconds\": 7.838826,\n        \"persona\": \"coder\",\n        \"team\": \"blue\"\n      }\n    ],\n    \"mode\": \"asyncio.as_completed\",\n    \"team_count\": 2\n  },\n  \"schema\": \"tau.battle_live_handoff_proof.v1\",\n  \"scillm_base_url\": \"http://localhost:4001\",\n  \"status\": \"PASS\",\n  \"surface\": \"scillm.chat_completions\",\n  \"teams\": [\n    {\n      \"completed_at_seconds\": 6.907742,\n      \"duration_seconds\": 6.906967,\n      \"error\": null,\n      \"handoff\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/handoff.json\",\n      \"http_status\": 200,\n      \"model\": \"gpt-5.5\",\n      \"persona\": \"brandon-bailey\",\n      \"scillm_call\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/scillm-call-receipt.json\",\n      \"started_at_seconds\": 0.0,\n      \"status\": \"PASS\",\n      \"subagent_receipt\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/tau-subagent-receipt.json\",\n      \"surface\": \"scillm.chat_completions\",\n      \"team\": \"red\",\n      \"validation\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/validation.json\",\n      \"validation_ok\": true\n    },\n    {\n      \"completed_at_seconds\": 7.838826,\n      \"duration_seconds\": 7.803133,\n      \"error\": null,\n      \"handoff\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/handoff.json\",\n      \"http_status\": 200,\n      \"model\": \"gpt-5.5\",\n      \"persona\": \"coder\",\n      \"scillm_call\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/scillm-call-receipt.json\",\n      \"started_at_seconds\": 0.0,\n      \"status\": \"PASS\",\n      \"subagent_receipt\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/tau-subagent-receipt.json\",\n      \"surface\": \"scillm.chat_completions\",\n      \"team\": \"blue\",\n      \"validation\": \"/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/validation.json\",\n      \"validation_ok\": true\n    }\n  ]\n}\n",
+    "timeout_expired": false
+  },
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "scenario_id": "arena-hidden-sqli-xss-race-001",
+  "scheduling": {
+    "completion_order": [
+      {
+        "completed_at_seconds": 6.907742,
+        "persona": "brandon-bailey",
+        "team": "red"
+      },
+      {
+        "completed_at_seconds": 7.838826,
+        "persona": "coder",
+        "team": "blue"
+      }
+    ],
+    "mode": "asyncio.as_completed",
+    "team_count": 2
+  },
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "status": "PASS",
+  "surface": "scillm.chat_completions",
+  "teams": [
+    {
+      "completed_at_seconds": 6.907742,
+      "duration_seconds": 6.906967,
+      "error": null,
+      "handoff": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/handoff.json",
+      "http_status": 200,
+      "model": "gpt-5.5",
+      "persona": "brandon-bailey",
+      "scillm_call": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/scillm-call-receipt.json",
+      "started_at_seconds": 0.0,
+      "status": "PASS",
+      "subagent_receipt": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/validation.json",
+      "validation_ok": true
+    },
+    {
+      "completed_at_seconds": 7.838826,
+      "duration_seconds": 7.803133,
+      "error": null,
+      "handoff": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/handoff.json",
+      "http_status": 200,
+      "model": "gpt-5.5",
+      "persona": "coder",
+      "scillm_call": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/scillm-call-receipt.json",
+      "started_at_seconds": 0.0,
+      "status": "PASS",
+      "subagent_receipt": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "blue",
+      "validation": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/validation.json",
+      "validation_ok": true
+    }
+  ]
+}

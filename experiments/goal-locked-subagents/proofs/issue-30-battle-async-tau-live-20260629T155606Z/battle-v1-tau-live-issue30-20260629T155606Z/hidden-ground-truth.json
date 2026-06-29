@@ -1,0 +1,25 @@
+{
+  "arena_team": "Arena Team",
+  "battle_id": "battle-003",
+  "hidden_vulnerabilities": [
+    {
+      "cwe": "CWE-89",
+      "entry_point": "/search?q=<term>",
+      "id": "hidden-sqli-001",
+      "name": "SQL injection in search_users",
+      "oracle": "SQLi payload returns admin user before patch and does not after patch"
+    },
+    {
+      "cwe": "CWE-79",
+      "entry_point": "/search?q=<term>",
+      "id": "hidden-xss-001",
+      "name": "Reflected XSS in render_search",
+      "oracle": "Script payload is reflected before patch and escaped after patch"
+    }
+  ],
+  "not_visible_to": [
+    "red",
+    "blue"
+  ],
+  "schema": "battle.hidden_ground_truth.v1"
+}

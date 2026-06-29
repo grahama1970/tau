@@ -1,0 +1,61 @@
+{
+  "battle_id": "battle-003",
+  "collection": "battle_mutation_memory",
+  "found": true,
+  "http_status": 200,
+  "item_count": 4,
+  "memory_base_url": "http://127.0.0.1:8601",
+  "meta": {
+    "collections_filter": [
+      "battle_mutation_memory"
+    ],
+    "k": 8,
+    "memory_first": true,
+    "q": "Battle warm pond promoted SQL injection reflected XSS parameterized HTML escape mutations for arena-hidden-sqli-xss-race-001",
+    "recall_profile": "procedural_memory",
+    "recall_profile_source": "explicit",
+    "required_artifacts": [
+      "lesson"
+    ],
+    "reranker_mode": "off",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782748567,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "",
+    "threshold": 0.0,
+    "took_ms": 150,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "query": {
+    "collections": [
+      "battle_mutation_memory"
+    ],
+    "k": 8,
+    "q": "Battle warm pond promoted SQL injection reflected XSS parameterized HTML escape mutations for arena-hidden-sqli-xss-race-001",
+    "recall_profile": "procedural_memory",
+    "recall_profile_source": "battle_v1_operational",
+    "tags": [
+      "battle",
+      "warm_pond",
+      "mutation"
+    ],
+    "threshold": 0.0
+  },
+  "recall_found": true,
+  "required": true,
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "schema": "battle.memory_recall_receipt.v1",
+  "status": "PASS",
+  "top_keys": [
+    "17aae4f58019dba32b038a2c",
+    "b9d5eb0ed87096a6e2c12312",
+    "947bd3c7a12709372ab47003",
+    "4aa31acf261a69e3e176e73a"
+  ]
+}

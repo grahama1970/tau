@@ -1,0 +1,119 @@
+{
+  "battle_id": "battle-003",
+  "links": [
+    {
+      "label": "hidden target",
+      "source": "team:arena",
+      "target": "scorekeeper"
+    },
+    {
+      "label": "exploit evidence",
+      "source": "team:red",
+      "target": "scorekeeper"
+    },
+    {
+      "label": "patch evidence",
+      "source": "team:blue",
+      "target": "scorekeeper"
+    },
+    {
+      "label": "seeded",
+      "source": "signal:memory-recall",
+      "target": "team:red"
+    },
+    {
+      "label": "seeded",
+      "source": "signal:memory-recall",
+      "target": "team:blue"
+    },
+    {
+      "label": "promotes",
+      "source": "scorekeeper",
+      "target": "signal:memory-promotion"
+    },
+    {
+      "label": "overlaps",
+      "source": "team:red",
+      "target": "signal:async-overlap"
+    },
+    {
+      "label": "overlaps",
+      "source": "team:blue",
+      "target": "signal:async-overlap"
+    },
+    {
+      "label": "probe",
+      "source": "team:red",
+      "target": "attempt:exploit-sqli-admin-or__defense-parameterized-like"
+    },
+    {
+      "label": "defend",
+      "source": "team:blue",
+      "target": "attempt:exploit-sqli-admin-or__defense-parameterized-like"
+    },
+    {
+      "label": "replay",
+      "source": "attempt:exploit-sqli-admin-or__defense-parameterized-like",
+      "target": "scorekeeper"
+    },
+    {
+      "label": "promoted",
+      "source": "attempt:exploit-sqli-admin-or__defense-parameterized-like",
+      "target": "signal:memory-promotion"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "team:arena",
+      "kind": "team",
+      "label": "Arena Team",
+      "status": "PASS"
+    },
+    {
+      "id": "team:red",
+      "kind": "team",
+      "label": "brandon-bailey",
+      "status": "PASS"
+    },
+    {
+      "id": "team:blue",
+      "kind": "team",
+      "label": "coder",
+      "status": "PASS"
+    },
+    {
+      "id": "scorekeeper",
+      "kind": "signal",
+      "label": "Scorekeeper",
+      "status": "PASS"
+    },
+    {
+      "id": "signal:memory-recall",
+      "kind": "signal",
+      "label": "memory recall",
+      "status": "PASS"
+    },
+    {
+      "id": "signal:memory-promotion",
+      "kind": "signal",
+      "label": "memory promotion",
+      "status": "PASS"
+    },
+    {
+      "id": "signal:async-overlap",
+      "kind": "signal",
+      "label": "async overlap",
+      "status": "PASS"
+    },
+    {
+      "detail": "Docker scorekeeper replayed exploit before patch, patch, exploit after patch, and regression.",
+      "id": "attempt:exploit-sqli-admin-or__defense-parameterized-like",
+      "kind": "attempt",
+      "label": "exploit-sqli-admin-or__defense-parameterized-like",
+      "status": "PASS"
+    }
+  ],
+  "scenario": "arena-hidden-sqli-xss-race-001",
+  "schema": "battle.force_graph.v1",
+  "status": "PASS"
+}

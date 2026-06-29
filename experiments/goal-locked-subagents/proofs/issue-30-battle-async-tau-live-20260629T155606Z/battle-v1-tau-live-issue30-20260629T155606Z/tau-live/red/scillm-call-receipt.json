@@ -1,0 +1,71 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "duration_seconds": 6.906967,
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "persona": "brandon-bailey",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "persona": "brandon-bailey",
+      "proof": "battle-live-handoff",
+      "team": "red"
+    },
+    "temperature": 0
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "annotations": null,
+          "audio": null,
+          "content": "Action summary: Proceed with one bounded Red Tau/Scillm action-selection turn for `battle-003` targeting `grahama1970/tau` `issue#22`, producing required evidence as `red/tau-subagent-receipt.json`; no Docker proof claimed.",
+          "function_call": null,
+          "refusal": null,
+          "role": "assistant",
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1782748575,
+    "id": "chatcmpl-codex-f563682a",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "persona": "brandon-bailey",
+      "proof": "battle-live-handoff",
+      "team": "red"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": "<redacted>",
+      "completion_tokens_details": "<redacted>",
+      "prompt_tokens": "<redacted>",
+      "prompt_tokens_details": "<redacted>",
+      "total_tokens": "<redacted>"
+    }
+  },
+  "response_content": "Action summary: Proceed with one bounded Red Tau/Scillm action-selection turn for `battle-003` targeting `grahama1970/tau` `issue#22`, producing required evidence as `red/tau-subagent-receipt.json`; no Docker proof claimed.",
+  "schema": "tau.battle_scillm_call_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "started_at_seconds": 0.0,
+  "status": "PASS",
+  "team": "red"
+}

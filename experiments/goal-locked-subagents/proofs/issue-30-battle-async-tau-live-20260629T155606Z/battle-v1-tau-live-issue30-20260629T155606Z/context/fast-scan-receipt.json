@@ -1,0 +1,59 @@
+{
+  "battle_id": "battle-003",
+  "command": {
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "none",
+      "--cap-drop",
+      "ALL",
+      "--security-opt",
+      "no-new-privileges",
+      "--user",
+      "1000:1000",
+      "-v",
+      "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/workspace/target:/workspace:rw",
+      "-w",
+      "/workspace",
+      "python:3.12-slim",
+      "python",
+      "-c",
+      "\nimport json\nfrom pathlib import Path\n\nsource = Path(\"app.py\").read_text(encoding=\"utf-8\")\nfindings = []\nif \"f\\\"SELECT\" in source or \"f'SELECT\" in source or \"execute(sql)\" in source:\n    findings.append({\n        \"id\": \"scan-sqli-string-format\",\n        \"family\": \"sql_injection\",\n        \"cwe\": \"CWE-89\",\n        \"symbol\": \"search_users\",\n        \"evidence\": \"SQL query appears to be constructed from string interpolation before execute.\",\n        \"entry_point\": \"/search?q=<term>\",\n    })\nif \"value=\\\"{query}\\\"\" in source or \"Results for {query}\" in source:\n    findings.append({\n        \"id\": \"scan-reflected-query-html\",\n        \"family\": \"reflected_xss\",\n        \"cwe\": \"CWE-79\",\n        \"symbol\": \"render_search\",\n        \"evidence\": \"Raw query appears in rendered HTML without escaping.\",\n        \"entry_point\": \"/search?q=<term>\",\n    })\nprint(json.dumps({\n    \"schema\": \"battle.fast_scan_output.v1\",\n    \"target_file\": \"app.py\",\n    \"finding_count\": len(findings),\n    \"findings\": findings,\n}, indent=2))\n"
+    ],
+    "exit_code": 0,
+    "stderr_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/context/fast-scan.stderr.txt",
+    "stdout_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/context/fast-scan.stdout.txt"
+  },
+  "families": [
+    "reflected_xss",
+    "sql_injection"
+  ],
+  "finding_count": 2,
+  "findings": [
+    {
+      "cwe": "CWE-89",
+      "entry_point": "/search?q=<term>",
+      "evidence": "SQL query appears to be constructed from string interpolation before execute.",
+      "family": "sql_injection",
+      "id": "scan-sqli-string-format",
+      "symbol": "search_users"
+    },
+    {
+      "cwe": "CWE-79",
+      "entry_point": "/search?q=<term>",
+      "evidence": "Raw query appears in rendered HTML without escaping.",
+      "family": "reflected_xss",
+      "id": "scan-reflected-query-html",
+      "symbol": "render_search"
+    }
+  ],
+  "live": "docker_no_network",
+  "mocked": false,
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "scenario_id": "arena-hidden-sqli-xss-race-001",
+  "schema": "battle.fast_scan_receipt.v1",
+  "status": "PASS",
+  "surface": "docker_static_source_scan"
+}

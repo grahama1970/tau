@@ -1,0 +1,24 @@
+{
+  "battle_id": "battle-003",
+  "collection": "battle_mutation_memory",
+  "document_count": 1,
+  "document_keys": [
+    "4aa31acf261a69e3e176e73a"
+  ],
+  "http_status": 200,
+  "memory_base_url": "http://127.0.0.1:8601",
+  "negative_evidence_count": 0,
+  "required": true,
+  "response": {
+    "collection": "battle_mutation_memory",
+    "errors": [],
+    "inserted": 0,
+    "total": 1,
+    "updated": 1,
+    "writeahead_path": "artifacts/memory_upsert_writeahead/upsert_battle_mutation_memory_20260629T155619011909Z_13_135650701477568.jsonl"
+  },
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "schema": "battle.memory_promotion_receipt.v1",
+  "status": "PASS",
+  "winner_count": 1
+}

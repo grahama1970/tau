@@ -1,0 +1,26 @@
+{
+  "arena_receipt": "arena-receipt.json",
+  "arena_team_is_judge": false,
+  "attempt_count": 1,
+  "attempt_receipts": [
+    "scorekeeper/replays/exploit-sqli-admin-or__defense-parameterized-like/attempt-receipt.json"
+  ],
+  "battle_id": "battle-003",
+  "blue_team_receipt": "blue/team-receipt.json",
+  "created_at": "2026-06-29T15:56:18Z",
+  "docker_only": true,
+  "exploit_blocked_after_patch": true,
+  "exploit_confirmed_before_patch": true,
+  "failed_attempt_count": 0,
+  "functionality_preserved": true,
+  "objective_replay": true,
+  "passed_attempt_count": 1,
+  "red_team_receipt": "red/team-receipt.json",
+  "regression_tests_pass": true,
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "schema": "battle.scorekeeper_receipt.v1",
+  "status": "PASS",
+  "target_container_network": "none",
+  "verdict": "BLUE_SUCCESS",
+  "winner": "blue"
+}

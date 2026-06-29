@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "run_receipt": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z/run-receipt.json",
+    "run_root": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z",
+    "tau_blue_subagent_receipt": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/tau-subagent-receipt.json",
+    "tau_blue_validation": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/validation.json",
+    "tau_live_manifest": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/manifest.json",
+    "tau_red_subagent_receipt": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/tau-subagent-receipt.json",
+    "tau_red_validation": "experiments/goal-locked-subagents/proofs/issue-30-battle-async-tau-live-20260629T155606Z/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/validation.json"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded Battle swarm scheduling.",
+      "Scillm delegate, batch, or tool execution.",
+      "QEMU/AFL campaigns.",
+      "Autonomous GitHub issue monitoring."
+    ],
+    "proves": [
+      "Battle tau-live path ran Red and Blue Tau handoffs with scheduling.mode asyncio.as_completed.",
+      "Fresh Red and Blue Scillm calls returned HTTP 200 and PASS status.",
+      "Fresh Red and Blue tau.subagent_receipt.v1 artifacts validated.",
+      "Battle v1 operational acceptance passed for one Red and one Blue worker."
+    ]
+  },
+  "commands": [
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_battle_live_handoff.py tests/test_subagent_receipt.py -q",
+      "exit_code": 0,
+      "result": "9 passed in 0.62s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/agent-skills/skills/battle && ./run.sh battle-v1-operational battle-003 --out /tmp/battle-v1-tau-live-issue30-20260629T155606Z --red-workers 1 --blue-workers 1 --max-attempts 1 --require-memory --tau-live",
+      "exit_code": 0,
+      "result": "run-receipt status PASS; live_tau_handoff true"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/agent-skills/skills/battle && python3 sanity/battle_v1_operational_acceptance.py /tmp/battle-v1-tau-live-issue30-20260629T155606Z --allow-first-recall-empty --min-red-workers 1 --min-blue-workers 1",
+      "exit_code": 0,
+      "result": "BATTLE_V1_OPERATIONAL_ACCEPTANCE_PASS"
+    }
+  ],
+  "diagnosis": "Current HEAD contains the async fix in src/tau_coding/battle_live_handoff.py; this run proves the ticket acceptance criteria against fresh artifacts.",
+  "issue": "https://github.com/grahama1970/tau/issues/30",
+  "live": true,
+  "mocked": false,
+  "observed": {
+    "run_live": "docker_four_party_operational",
+    "run_live_tau_handoff": true,
+    "run_mocked": false,
+    "run_red_blue_async": true,
+    "run_status": "PASS",
+    "run_verdict": "BLUE_SUCCESS",
+    "scheduling": {
+      "completion_order": [
+        {
+          "completed_at_seconds": 6.907742,
+          "persona": "brandon-bailey",
+          "team": "red"
+        },
+        {
+          "completed_at_seconds": 7.838826,
+          "persona": "coder",
+          "team": "blue"
+        }
+      ],
+      "mode": "asyncio.as_completed",
+      "team_count": 2
+    },
+    "tau_live": true,
+    "tau_mocked": false,
+    "tau_status": "PASS",
+    "teams": [
+      {
+        "http_status": 200,
+        "status": "PASS",
+        "subagent_receipt": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/red/tau-subagent-receipt.json",
+        "team": "red",
+        "validation_ok": true
+      },
+      {
+        "http_status": 200,
+        "status": "PASS",
+        "subagent_receipt": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/tau-live/blue/tau-subagent-receipt.json",
+        "team": "blue",
+        "validation_ok": true
+      }
+    ]
+  },
+  "ok": true,
+  "schema": "tau.issue_30_battle_async_tau_live_proof.v1"
+}

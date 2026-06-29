@@ -1,0 +1,124 @@
+{
+  "battle_id": "battle-003",
+  "call_names": [
+    "ThreadingHTTPServer",
+    "build_db",
+    "conn.close",
+    "conn.execute",
+    "conn.executemany",
+    "encode",
+    "fetchall",
+    "get",
+    "join",
+    "len",
+    "main",
+    "parse_qs",
+    "render_search",
+    "search_users",
+    "self.end_headers",
+    "self.send_header",
+    "self.send_response",
+    "self.wfile.write",
+    "server.serve_forever",
+    "sqlite3.connect",
+    "str",
+    "urlparse"
+  ],
+  "classes": [
+    {
+      "end_lineno": 65,
+      "lineno": 48,
+      "name": "SearchHandler"
+    }
+  ],
+  "functions": [
+    {
+      "args": [],
+      "end_lineno": 21,
+      "lineno": 10,
+      "name": "build_db"
+    },
+    {
+      "args": [
+        "query"
+      ],
+      "end_lineno": 30,
+      "lineno": 24,
+      "name": "search_users"
+    },
+    {
+      "args": [
+        "query"
+      ],
+      "end_lineno": 45,
+      "lineno": 33,
+      "name": "render_search"
+    },
+    {
+      "args": [],
+      "end_lineno": 70,
+      "lineno": 68,
+      "name": "main"
+    },
+    {
+      "args": [
+        "self"
+      ],
+      "end_lineno": 62,
+      "lineno": 49,
+      "name": "do_GET"
+    },
+    {
+      "args": [
+        "self",
+        "format"
+      ],
+      "end_lineno": 65,
+      "lineno": 64,
+      "name": "log_message"
+    }
+  ],
+  "imports": [
+    "__future__",
+    "http.server",
+    "sqlite3",
+    "urllib.parse"
+  ],
+  "run_id": "battle-v1-operational-56e91cdd855e",
+  "schema": "battle.code_context_receipt.v1",
+  "source": "python_ast_with_optional_treesitter_diagnostic",
+  "status": "PASS",
+  "string_literal_count": 20,
+  "string_literals_sample": [
+    "Arena Team target app with secretly planted search vulnerabilities.",
+    "__main__",
+    ":memory:",
+    "CREATE TABLE users (username TEXT, role TEXT)",
+    "INSERT INTO users VALUES (?, ?)",
+    "SELECT username FROM users WHERE username LIKE '%",
+    "%'",
+    "<!doctype html>\n<html>\n  <body>\n    <h1>Search</h1>\n    <form action=\"/search\"><input name=\"q\" value=\""
+  ],
+  "symbol_count": 7,
+  "target_file": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/workspace/target/app.py",
+  "treesitter": {
+    "command": [
+      "/home/graham/workspace/experiments/agent-skills/skills/treesitter/run.sh",
+      "symbols",
+      "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/workspace/target/app.py",
+      "--json"
+    ],
+    "exit_code": 1,
+    "reason": "treesitter_command_failed",
+    "status": "BLOCKED",
+    "stderr_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/context/treesitter.stderr.txt",
+    "stdout_path": "/tmp/battle-v1-tau-live-issue30-20260629T155606Z/context/treesitter.stdout.json"
+  },
+  "vulnerability_terms": [
+    "execute",
+    "LIKE",
+    "query",
+    "parse_qs",
+    "render_search"
+  ]
+}
