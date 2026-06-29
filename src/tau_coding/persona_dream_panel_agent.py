@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
+import subprocess
 import time
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
+
+import httpx
 
 
 PERSONA_DREAM_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills/persona-dream")
 DEFAULT_FIXTURE_ROOT = PERSONA_DREAM_ROOT / "fixtures/one_scene_kling_dry_run"
 DEFAULT_IMAGE = DEFAULT_FIXTURE_ROOT / "artifacts/panel_001_reference.png"
 DEFAULT_VISUAL_REVIEW = DEFAULT_FIXTURE_ROOT / "receipts/visual_review_receipt.json"
+SCILLM_SKILL_RUN = Path("/home/graham/workspace/experiments/agent-skills/skills/scillm/run.sh")
 
 
 def run_persona_dream_panel_agent(role: str) -> dict[str, Any]:
@@ -42,28 +47,89 @@ def _run_panel_creator(
     panel: Mapping[str, Any],
     artifact_dir: Path,
 ) -> dict[str, Any]:
-    image_path = Path(str(panel["image_path"])).resolve()
+    if _truthy(panel.get("scillm_live_panel")):
+        generation = _generate_panel_image_with_scillm(panel, artifact_dir)
+        if generation.get("ok") is not True:
+            receipt_path = artifact_dir / "panel_creator_receipt.json"
+            receipt = {
+                "schema": "tau.persona_dream.panel_creator_receipt.v1",
+                "created_at": _now_iso(),
+                "role": "panel-creator",
+                "panel_id": panel["panel_id"],
+                "status": "BLOCKED_SCILLM_IMAGE_GENERATION",
+                "image_generation_receipt": generation.get("receipt_path"),
+                "live_call_performed": True,
+                "paid_call_performed": None,
+                "public_upload_performed": False,
+                "kling_api_call_performed": False,
+                "blocking_findings": [
+                    "Scillm image generation did not produce an ok image receipt."
+                ],
+                "claims": {
+                    "proves": [
+                        "panel-creator command consumed a Tau handoff",
+                        "panel-creator initiated the Scillm image wrapper inside Tau",
+                        "panel-creator wrote an explicit blocker receipt instead of crashing",
+                    ],
+                    "does_not_prove": [
+                        "Scillm image generation success",
+                        "panel-reviewer execution",
+                        "provider-ready panel packet",
+                    ],
+                },
+            }
+            _write_json(receipt_path, receipt)
+            _write_json(artifact_dir / "request.json", {"role": "panel-creator", "panel": dict(panel)})
+            handoff = _handoff(
+                start_payload,
+                previous_subagent="panel-creator",
+                result_status="BLOCKED",
+                result_summary="Panel Creator initiated Scillm image generation inside Tau and failed closed before review.",
+                evidence=[str(receipt_path), str(generation.get("receipt_path"))],
+                context_summary="Panel Creator reached the first live Scillm image-generation blocker.",
+                artifacts=[str(receipt_path), str(generation.get("receipt_path"))],
+                rationale="Reviewer cannot run until a generated panel image exists.",
+                next_agent="human",
+                next_executor="human",
+                next_reason="Human or operator must restore image provider capacity or switch image auth/provider.",
+                required_evidence="A Scillm image generation receipt with ok=true, sha256, width, and height.",
+                stop_condition="Human supplies provider capacity or reruns with a working Scillm image auth mode.",
+            )
+            _write_json(artifact_dir / "response.json", handoff)
+            return handoff
+        image_path = Path(str(generation["path"])).resolve()
+        generation_receipt_path = str(generation["receipt_path"])
+        generation_receipt = generation
+    else:
+        image_path = Path(str(panel["image_path"])).resolve()
+        generation_receipt_path = str(panel.get("image_generation_receipt") or "")
+        generation_receipt = _read_json(Path(generation_receipt_path)) if generation_receipt_path else {}
     image_hash = _sha256(image_path)
+    generated_by_scillm = generation_receipt.get("ok") is True
     receipt = {
         "schema": "tau.persona_dream.panel_creator_receipt.v1",
         "created_at": _now_iso(),
         "role": "panel-creator",
         "panel_id": panel["panel_id"],
-        "status": "DRY_RUN_REFERENCE_LOCKED",
+        "status": "SCILLM_IMAGE_GENERATED" if generated_by_scillm else "DRY_RUN_REFERENCE_LOCKED",
         "generated_image_path": str(image_path),
+        "image_generation_receipt": generation_receipt_path or None,
         "sha256": image_hash,
-        "source": "persona-dream one-scene local reference fixture",
-        "live_call_performed": False,
-        "paid_call_performed": False,
+        "source": "scillm image generation receipt" if generated_by_scillm else "persona-dream one-scene local reference fixture",
+        "live_call_performed": bool(generated_by_scillm),
+        "paid_call_performed": None if generated_by_scillm else False,
         "public_upload_performed": False,
         "kling_api_call_performed": False,
         "claims": {
             "proves": [
                 "panel-creator command consumed a Tau handoff",
                 "panel-creator command wrote a concrete receipt with a local image artifact path and hash",
+                "panel-creator initiated the Scillm image wrapper inside Tau"
+                if generated_by_scillm
+                else "panel-creator did not initiate a live Scillm image call",
             ],
             "does_not_prove": [
-                "no new image generation was performed",
+                "no public upload or Kling call occurred",
                 "no provider-ready panel is claimed",
             ],
         },
@@ -79,7 +145,7 @@ def _run_panel_creator(
         result_status="COMPLETED",
         result_summary=(
             "Panel Creator wrote a local panel_creator_receipt with image artifact path "
-            "and hash; no public upload, Kling call, paid call, or new generation occurred."
+            "and hash; no public upload or Kling call occurred."
         ),
         evidence=[
             str(receipt_path),
@@ -108,9 +174,14 @@ def _run_panel_reviewer(
     panel: Mapping[str, Any],
     artifact_dir: Path,
 ) -> dict[str, Any]:
-    visual_review_path = Path(str(panel["visual_review_receipt"])).resolve()
-    visual_review = _read_json(visual_review_path)
+    if _truthy(panel.get("scillm_live_panel")):
+        visual_review = _review_panel_image_with_scillm(panel, artifact_dir)
+        visual_review_path = Path(str(visual_review["receipt_path"])).resolve()
+    else:
+        visual_review_path = Path(str(panel["visual_review_receipt"])).resolve()
+        visual_review = _read_json(visual_review_path)
     status = str(visual_review.get("status") or visual_review.get("verdict") or "UNKNOWN")
+    live_review_performed = bool(visual_review.get("live_call_performed"))
     receipt = {
         "schema": "tau.persona_dream.panel_reviewer_receipt.v1",
         "created_at": _now_iso(),
@@ -121,12 +192,12 @@ def _run_panel_reviewer(
         "reviewer_source_status": status,
         "reviewer_readonly": True,
         "blocking_findings": [
-            "No live WebGPT/VLM review was performed in this Tau command-loop proof."
+            "No live Scillm VLM review PASS was produced in this Tau command-loop proof."
         ]
         if status != "PASS"
         else [],
         "passed_entities": [],
-        "live_call_performed": False,
+        "live_call_performed": live_review_performed,
         "paid_call_performed": False,
         "public_upload_performed": False,
         "kling_api_call_performed": False,
@@ -134,9 +205,11 @@ def _run_panel_reviewer(
             "proves": [
                 "panel-reviewer command consumed the creator route",
                 "panel-reviewer command wrote a read-only receipt tied to a concrete review source",
+                "panel-reviewer initiated a Scillm VLM image_url review inside Tau"
+                if live_review_performed
+                else "panel-reviewer did not initiate a live Scillm VLM call",
             ],
             "does_not_prove": [
-                "no new WebGPT or VLM visual review was performed",
                 "no visual PASS is claimed when source status is not PASS",
             ],
         },
@@ -151,7 +224,9 @@ def _run_panel_reviewer(
         previous_subagent="panel-reviewer",
         result_status=receipt["status"],
         result_summary=(
-            "Panel Reviewer wrote a read-only receipt and failed closed because the "
+            "Panel Reviewer wrote a read-only receipt from a live Scillm VLM review."
+            if live_review_performed
+            else "Panel Reviewer wrote a read-only receipt and failed closed because the "
             "available visual review source is not a live PASS verdict."
         ),
         evidence=[str(receipt_path), str(visual_review_path)],
@@ -171,25 +246,310 @@ def _run_panel_reviewer(
     return handoff
 
 
+def _generate_panel_image_with_scillm(
+    panel: Mapping[str, Any],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    prompt_file = artifact_dir / "panel_image.prompt.md"
+    image_path = Path(str(panel["image_path"])).expanduser()
+    if not image_path.is_absolute():
+        image_path = artifact_dir / image_path
+    image_path = image_path.resolve()
+    receipt_path = artifact_dir / "scillm_image_generation_receipt.json"
+    events_path = artifact_dir / "scillm_image_generation_events.jsonl"
+    prompt = str(panel.get("panel_prompt") or _default_panel_prompt(panel)).strip()
+    prompt_file.write_text(prompt + "\n", encoding="utf-8")
+    auth = _resolve_scillm_api_key()
+    cmd = [
+        "bash",
+        str(SCILLM_SKILL_RUN),
+        "generate-image",
+        "--auth",
+        str(panel.get("scillm_image_auth") or "openai-api-key"),
+        "--prompt-file",
+        str(prompt_file),
+        "--out",
+        str(image_path),
+        "--receipt",
+        str(receipt_path),
+        "--events-out",
+        str(events_path),
+        "--model",
+        str(panel.get("scillm_image_model") or "gpt-image-2"),
+        "--quality",
+        str(panel.get("scillm_image_quality") or "high"),
+        "--caller-skill",
+        "tau-persona-dream-panel-creator",
+        "--json",
+    ]
+    if str(panel.get("scillm_image_auth") or "openai-api-key") == "openai-api-key":
+        cmd[-1:-1] = ["--master-key", str(auth["api_key"] or "")]
+    started = time.monotonic()
+    events_path.parent.mkdir(parents=True, exist_ok=True)
+    _append_event(
+        events_path,
+        {
+            "type": "image_started",
+            "created_at": _now_iso(),
+            "role": "panel-creator",
+            "surface": "scillm.generate-image-wrapper",
+            "model": str(panel.get("scillm_image_model") or "gpt-image-2"),
+        },
+    )
+    proc = subprocess.Popen(
+        cmd,
+        cwd=Path.cwd(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    timeout_s = float(panel.get("scillm_image_timeout_s") or 900)
+    heartbeat_s = float(panel.get("scillm_stream_heartbeat_s") or 15)
+    next_heartbeat_at = 0.0
+    while proc.poll() is None:
+        elapsed = time.monotonic() - started
+        if elapsed > timeout_s:
+            proc.kill()
+            _append_event(
+                events_path,
+                {
+                    "type": "image_timeout",
+                    "created_at": _now_iso(),
+                    "elapsed_seconds": round(elapsed, 6),
+                    "timeout_s": timeout_s,
+                },
+            )
+            break
+        if elapsed >= next_heartbeat_at:
+            _append_event(
+                events_path,
+                {
+                    "type": "heartbeat",
+                    "created_at": _now_iso(),
+                    "elapsed_seconds": round(elapsed, 6),
+                    "role": "panel-creator",
+                },
+            )
+            next_heartbeat_at = elapsed + max(0.1, heartbeat_s)
+        time.sleep(0.25)
+    stdout, stderr = proc.communicate()
+    returncode = proc.returncode if proc.returncode is not None else 1
+    wrapper = {
+        "schema": "tau.persona_dream.scillm_image_generation_call.v1",
+        "created_at": _now_iso(),
+        "role": "panel-creator",
+        "mocked": False,
+        "live": True,
+        "surface": "scillm.generate-image-wrapper",
+        "api_key_source": auth["source"],
+        "command": _redact_command(cmd),
+        "exit_code": returncode,
+        "duration_seconds": round(time.monotonic() - started, 6),
+        "stdout_tail": stdout[-4000:],
+        "stderr_tail": stderr[-4000:],
+        "prompt_file": str(prompt_file),
+        "events_path": str(events_path),
+        "path": str(image_path),
+        "receipt_path": str(receipt_path),
+        "ok": False,
+    }
+    receipt: dict[str, Any] = {}
+    if receipt_path.is_file():
+        receipt = _read_json(receipt_path)
+        wrapper.update(receipt)
+        wrapper["receipt_path"] = str(receipt_path)
+    wrapper["ok"] = (
+        returncode == 0
+        and image_path.is_file()
+        and image_path.stat().st_size > 0
+        and receipt.get("ok") is True
+        and bool(receipt.get("sha256"))
+        and receipt.get("width") is not None
+        and receipt.get("height") is not None
+    )
+    _append_event(
+        events_path,
+        {
+            "type": "image_completed" if wrapper["ok"] else "image_failed",
+            "created_at": _now_iso(),
+            "ok": wrapper["ok"],
+            "exit_code": returncode,
+            "receipt_path": str(receipt_path),
+            "image_path": str(image_path),
+        },
+    )
+    _write_json(receipt_path, wrapper)
+    return wrapper
+
+
+def _review_panel_image_with_scillm(
+    panel: Mapping[str, Any],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    image_path = Path(str(panel["image_path"])).resolve()
+    prompt = (
+        "Review this generated persona-dream panel for basic one-scene eligibility. "
+        "Return JSON only with keys status, summary, blocking_findings, passed_entities. "
+        "Use status PASS if the image is a coherent single cinematic panel suitable "
+        "for a dry-run one-scene Kling request; otherwise use NEEDS_CHANGES."
+    )
+    payload = {
+        "model": str(panel.get("scillm_vlm_model") or "gpt-5.5"),
+        "stream": True,
+        "stream_heartbeat_s": float(panel.get("scillm_stream_heartbeat_s") or 15),
+        "stream_progress_events": True,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": _image_data_uri(image_path)},
+                    },
+                ],
+            }
+        ],
+        "temperature": 0,
+        "response_format": {"type": "json_object"},
+        "scillm_metadata": {
+            "caller": "tau",
+            "proof": "persona-dream-panel-review",
+            "role": "panel-reviewer",
+        },
+    }
+    auth = _resolve_scillm_api_key()
+    receipt_path = artifact_dir / "visual_review_receipt.json"
+    events_path = artifact_dir / "panel_reviewer_events.jsonl"
+    started = time.monotonic()
+    receipt: dict[str, Any] = {
+        "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+        "created_at": _now_iso(),
+        "role": "panel-reviewer",
+        "mocked": False,
+        "live": True,
+        "surface": "scillm.chat_completions.image_url",
+        "model": payload["model"],
+        "image_path": str(image_path),
+        "api_key_source": auth["source"],
+        "request": {**payload, "messages": "<redacted-image-url-request>"},
+        "status": "BLOCKED",
+        "live_call_performed": False,
+        "events_path": str(events_path),
+        "stream": True,
+        "receipt_path": str(receipt_path),
+    }
+    if not auth["api_key"]:
+        receipt["error"] = "scillm_api_key_unavailable"
+        _write_json(receipt_path, receipt)
+        return receipt
+    try:
+        with httpx.Client(
+            base_url=str(panel.get("scillm_base_url") or "http://127.0.0.1:4001").rstrip("/"),
+            timeout=float(panel.get("scillm_vlm_timeout_s") or 180),
+        ) as client:
+            with client.stream(
+                "POST",
+                "/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {auth['api_key']}",
+                    "X-Caller-Skill": "tau-persona-dream-panel-reviewer",
+                    "Accept": "text/event-stream",
+                },
+                json=payload,
+            ) as response:
+                receipt["http_status"] = response.status_code
+                receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+                receipt["live_call_performed"] = True
+                if response.status_code != 200:
+                    receipt["error"] = f"scillm_http_status_{response.status_code}"
+                    receipt["response_text"] = response.read().decode("utf-8", errors="replace")[:1000]
+                    _write_json(receipt_path, receipt)
+                    return receipt
+                stream_result = _collect_scillm_sse(response.iter_lines(), events_path)
+    except httpx.HTTPError as exc:
+        receipt["error"] = f"scillm_http_error: {exc}"
+        receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+        _write_json(receipt_path, receipt)
+        return receipt
+
+    receipt["stream_event_count"] = stream_result["event_count"]
+    receipt["stream_done_seen"] = stream_result["done_seen"]
+    receipt["stream_heartbeat_count"] = stream_result["heartbeat_count"]
+    receipt["stream_last_event_type"] = stream_result["last_event_type"]
+    content = stream_result["content"]
+    receipt["response_content"] = content
+    parsed = _parse_review_content(content)
+    receipt.update(parsed)
+    if receipt.get("status") not in {"PASS", "NEEDS_CHANGES"}:
+        receipt["status"] = "NEEDS_CHANGES"
+        receipt.setdefault("blocking_findings", ["VLM response did not provide PASS status."])
+    _write_json(receipt_path, receipt)
+    return receipt
+
+
 def _run_panel_repair_gate(
     start_payload: Mapping[str, Any],
     panel: Mapping[str, Any],
     artifact_dir: Path,
 ) -> dict[str, Any]:
+    artifacts = _artifact_list(start_payload)
+    creator_receipt = _read_json(_find_artifact_path(artifacts, "panel_creator_receipt.json"))
+    reviewer_receipt = _read_json(_find_artifact_path(artifacts, "panel_reviewer_receipt.json"))
+    creator_generated = creator_receipt.get("status") == "SCILLM_IMAGE_GENERATED"
+    reviewer_passed = reviewer_receipt.get("status") == "PASS"
+    remaining_blockers: list[str] = []
+    if not reviewer_passed:
+        remaining_blockers.append("live WebGPT/VLM visual PASS receipt is missing")
+    if not creator_generated:
+        remaining_blockers.append("real panel-creator generation receipt is missing")
+    provider_eligibility = creator_generated and reviewer_passed
+    provider_packet_status = "DRY_RUN_NOT_LIVE_SUBMITTABLE" if provider_eligibility else "BLOCKED_PROVIDER_GATE"
+    one_scene_request_path = artifact_dir / "one_scene_kling_request.json"
+    if provider_eligibility:
+        _write_json(
+            one_scene_request_path,
+            {
+                "schema": "persona_dream.kling_one_scene_request.v1",
+                "created_at": _now_iso(),
+                "submit_live": False,
+                "provider": "kling",
+                "mode": "std",
+                "resolution": "720p",
+                "duration_seconds": 5,
+                "external_task_id": f"persona-dream-{panel['panel_id']}",
+                "image_reference": {
+                    "local_path": str(Path(str(panel["image_path"])).resolve()),
+                    "sha256": creator_receipt.get("sha256"),
+                    "public_url": None,
+                },
+                "prompt": (
+                    "Animate the accepted photorealistic persona-dream storyboard panel "
+                    "as one quiet cinematic shot. Preserve character identities, scale, "
+                    "tea steam, evidence cards, laptop glow, distant creatures, and sky-eye."
+                ),
+                "negative_prompt": "No text overlays, no captions, no logo, no style change, no missing characters.",
+                "voice_list": [],
+                "callback_url": None,
+                "live_submit_blockers": [
+                    "provider-accessible public image URL is missing",
+                    "explicit human approval for Kling live call is missing",
+                ],
+            },
+        )
+    else:
+        remaining_blockers.append("loop final receipt for a panel repair attempt is missing")
     receipt = {
         "schema": "tau.persona_dream.panel_repair_gate_receipt.v1",
         "created_at": _now_iso(),
         "role": "persona-dream-panel-repair-gate",
         "panel_id": panel["panel_id"],
-        "status": "BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
-        "provider_eligibility": False,
-        "provider_packet_status": "DRY_RUN_NOT_LIVE_SUBMITTABLE",
-        "remaining_blockers": [
-            "live WebGPT/VLM visual PASS receipt is missing",
-            "real panel-creator generation receipt is missing",
-            "loop final receipt for a panel repair attempt is missing",
-        ],
-        "source_artifacts": _artifact_list(start_payload),
+        "status": "DRY_RUN_KLING_REQUEST_READY" if provider_eligibility else "BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
+        "provider_eligibility": provider_eligibility,
+        "provider_packet_status": provider_packet_status,
+        "remaining_blockers": remaining_blockers,
+        "dry_run_one_scene_kling_request": str(one_scene_request_path) if provider_eligibility else None,
+        "source_artifacts": artifacts,
         "live_call_performed": False,
         "paid_call_performed": False,
         "public_upload_performed": False,
@@ -197,7 +557,7 @@ def _run_panel_repair_gate(
         "claims": {
             "proves": [
                 "repair-gate command consumed the reviewer route",
-                "repair-gate command wrote a terminal receipt with provider_eligibility=false",
+                "repair-gate command wrote a terminal receipt from creator/reviewer evidence",
             ],
             "does_not_prove": [
                 "no full panel repair loop ran",
@@ -214,13 +574,16 @@ def _run_panel_repair_gate(
     handoff = _handoff(
         start_payload,
         previous_subagent="persona-dream-panel-repair-gate",
-        result_status="BLOCKED",
+        result_status="COMPLETED" if provider_eligibility else "BLOCKED",
         result_summary=(
-            "Persona Dream Panel Repair Gate wrote a terminal blocker receipt with "
+            "Persona Dream Panel Repair Gate wrote a dry-run one-scene Kling request; "
+            "no public upload, Kling call, paid call, or live provider-ready claim occurred."
+            if provider_eligibility
+            else "Persona Dream Panel Repair Gate wrote a terminal blocker receipt with "
             "provider_eligibility=false; no public upload, Kling call, paid call, or "
             "provider-ready claim occurred."
         ),
-        evidence=[str(receipt_path)],
+        evidence=[str(receipt_path)] + ([str(one_scene_request_path)] if provider_eligibility else []),
         context_summary="Repair gate consolidated persona-dream panel evidence and blocked provider readiness.",
         artifacts=[str(receipt_path)],
         rationale=(
@@ -230,7 +593,10 @@ def _run_panel_repair_gate(
         next_agent="human",
         next_executor="human",
         next_reason=(
-            "Human or outer Persona-Dream harness must supply a live one-panel work order "
+            "Human or outer Persona-Dream harness must supply a public media URL and "
+            "explicit Kling approval before live submission."
+            if provider_eligibility
+            else "Human or outer Persona-Dream harness must supply a live one-panel work order "
             "with creator, reviewer, and loop receipts before further automation."
         ),
         required_evidence=(
@@ -241,6 +607,14 @@ def _run_panel_repair_gate(
     )
     _write_json(response_path, handoff)
     return handoff
+
+
+def _find_artifact_path(artifacts: list[str], suffix: str) -> Path:
+    for artifact in artifacts:
+        path = Path(artifact)
+        if path.name == suffix:
+            return path
+    return Path("")
 
 
 def _handoff(
@@ -299,6 +673,16 @@ def _panel_context(start_payload: Mapping[str, Any]) -> dict[str, str]:
         "run_root": str(panel.get("run_root") or DEFAULT_FIXTURE_ROOT),
         "image_path": str(panel.get("image_path") or DEFAULT_IMAGE),
         "visual_review_receipt": str(panel.get("visual_review_receipt") or DEFAULT_VISUAL_REVIEW),
+        "image_generation_receipt": str(panel.get("image_generation_receipt") or ""),
+        "panel_prompt": str(panel.get("panel_prompt") or ""),
+        "scillm_live_panel": str(panel.get("scillm_live_panel") or ""),
+        "scillm_image_model": str(panel.get("scillm_image_model") or ""),
+        "scillm_image_auth": str(panel.get("scillm_image_auth") or ""),
+        "scillm_image_quality": str(panel.get("scillm_image_quality") or ""),
+        "scillm_vlm_model": str(panel.get("scillm_vlm_model") or ""),
+        "scillm_base_url": str(panel.get("scillm_base_url") or ""),
+        "scillm_image_timeout_s": str(panel.get("scillm_image_timeout_s") or ""),
+        "scillm_vlm_timeout_s": str(panel.get("scillm_vlm_timeout_s") or ""),
     }
 
 
@@ -356,6 +740,217 @@ def _sha256(path: Path) -> str:
     except FileNotFoundError as exc:
         raise RuntimeError(f"missing panel image artifact: {path}") from exc
     return "sha256:" + digest.hexdigest()
+
+
+def _image_data_uri(path: Path) -> str:
+    suffix = path.suffix.lower()
+    media_type = "image/jpeg" if suffix in {".jpg", ".jpeg"} else "image/png"
+    return f"data:{media_type};base64,{base64.b64encode(path.read_bytes()).decode('ascii')}"
+
+
+def _default_panel_prompt(panel: Mapping[str, Any]) -> str:
+    return (
+        "Create a single photorealistic cinematic storyboard panel for a persona-dream "
+        "one-scene dry-run. The image should show a quiet evidence workshop: one "
+        "focused character at a desk, a laptop glow, paper evidence cards, tea steam, "
+        "and a subtle surreal sky-eye motif outside the window. No text overlays, no "
+        "logos, no captions, no UI chrome. Keep the composition suitable as a still "
+        f"reference image for panel id {panel.get('panel_id') or 'panel_001'}."
+    )
+
+
+def _resolve_scillm_api_key() -> dict[str, str | None]:
+    for name in ("SCILLM_API_KEY", "SCILLM_MASTER_KEY", "LITELLM_MASTER_KEY", "MASTER_KEY"):
+        value = os.environ.get(name)
+        if value:
+            return {"api_key": value, "source": f"env:{name}"}
+    docker_key = _scillm_key_from_docker()
+    if docker_key:
+        return {"api_key": docker_key, "source": "docker:scillm-proxy:SCILLM_MASTER_KEY"}
+    return {"api_key": "sk-dev-proxy-123", "source": "default-dev-proxy-key"}
+
+
+def _scillm_key_from_docker() -> str | None:
+    try:
+        ps = subprocess.run(
+            ["docker", "ps", "--filter", "name=scillm-proxy", "--format", "{{.Names}}"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    names = [line.strip() for line in ps.stdout.splitlines() if line.strip()]
+    container = next((name for name in names if "scillm-proxy" in name), None)
+    if container is None:
+        return None
+    try:
+        key = subprocess.run(
+            ["docker", "exec", container, "printenv", "SCILLM_MASTER_KEY"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return key.stdout.strip() or None
+
+
+def _extract_content(response: Mapping[str, Any]) -> str:
+    choices = response.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return ""
+    first = choices[0]
+    if not isinstance(first, Mapping):
+        return ""
+    message = first.get("message")
+    if not isinstance(message, Mapping):
+        return ""
+    content = message.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, Mapping) and isinstance(item.get("text"), str):
+                parts.append(item["text"])
+        return "\n".join(parts)
+    return ""
+
+
+def _parse_review_content(content: str) -> dict[str, Any]:
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+        return {
+            "status": "NEEDS_CHANGES",
+            "summary": content[:1000] if content else "empty VLM response content",
+            "blocking_findings": ["VLM response was not JSON."],
+            "passed_entities": [],
+        }
+    if not isinstance(parsed, dict):
+        return {
+            "status": "NEEDS_CHANGES",
+            "summary": "VLM response JSON root was not an object.",
+            "blocking_findings": ["VLM response JSON root was not an object."],
+            "passed_entities": [],
+        }
+    status = str(parsed.get("status") or "NEEDS_CHANGES").upper()
+    if status not in {"PASS", "NEEDS_CHANGES"}:
+        status = "NEEDS_CHANGES"
+    findings = parsed.get("blocking_findings")
+    entities = parsed.get("passed_entities")
+    return {
+        "status": status,
+        "summary": str(parsed.get("summary") or parsed.get("rationale") or "Scillm VLM review completed."),
+        "blocking_findings": [str(item) for item in findings] if isinstance(findings, list) else [],
+        "passed_entities": [str(item) for item in entities] if isinstance(entities, list) else [],
+        "parsed_response": parsed,
+    }
+
+
+def _redact_response(response: Mapping[str, Any]) -> dict[str, Any]:
+    redacted = dict(response)
+    if isinstance(redacted.get("usage"), Mapping):
+        redacted["usage"] = dict(redacted["usage"])
+    return redacted
+
+
+def _collect_scillm_sse(lines: Any, events_path: Path) -> dict[str, Any]:
+    content_parts: list[str] = []
+    event_count = 0
+    heartbeat_count = 0
+    done_seen = False
+    current_event = "message"
+    last_event_type = ""
+    for raw_line in lines:
+        line = raw_line.decode("utf-8", errors="replace") if isinstance(raw_line, bytes) else str(raw_line)
+        if not line:
+            continue
+        if line.startswith(":"):
+            heartbeat_count += 1
+            last_event_type = "heartbeat"
+            _append_event(
+                events_path,
+                {
+                    "type": "heartbeat",
+                    "created_at": _now_iso(),
+                    "raw": line[:1000],
+                },
+            )
+            continue
+        if line.startswith("event:"):
+            current_event = line.removeprefix("event:").strip() or "message"
+            continue
+        if not line.startswith("data:"):
+            continue
+        data_text = line.removeprefix("data:").strip()
+        if data_text == "[DONE]":
+            done_seen = True
+            last_event_type = "done"
+            _append_event(events_path, {"type": "done", "created_at": _now_iso()})
+            continue
+        try:
+            payload = json.loads(data_text)
+        except json.JSONDecodeError:
+            payload = {"raw": data_text}
+        event_count += 1
+        event_type = current_event
+        if isinstance(payload, dict) and isinstance(payload.get("type"), str):
+            event_type = str(payload["type"])
+        elif isinstance(payload, dict) and isinstance(payload.get("choices"), list):
+            event_type = "chunk"
+        last_event_type = event_type
+        _append_event(
+            events_path,
+            {
+                "type": event_type,
+                "created_at": _now_iso(),
+                "data": payload,
+            },
+        )
+        if isinstance(payload, dict):
+            for choice in payload.get("choices", []) if isinstance(payload.get("choices"), list) else []:
+                if not isinstance(choice, Mapping):
+                    continue
+                delta = choice.get("delta")
+                if isinstance(delta, Mapping):
+                    text = delta.get("content")
+                    if isinstance(text, str):
+                        content_parts.append(text)
+                message = choice.get("message")
+                if isinstance(message, Mapping):
+                    text = message.get("content")
+                    if isinstance(text, str):
+                        content_parts.append(text)
+        current_event = "message"
+    return {
+        "content": "".join(content_parts),
+        "event_count": event_count,
+        "heartbeat_count": heartbeat_count,
+        "done_seen": done_seen,
+        "last_event_type": last_event_type,
+    }
+
+
+def _append_event(path: Path, event: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(dict(event), sort_keys=True) + "\n")
+
+
+def _redact_command(command: list[str]) -> list[str]:
+    redacted = list(command)
+    for index, item in enumerate(redacted[:-1]):
+        if item in {"--master-key", "--api-key"}:
+            redacted[index + 1] = "<redacted>"
+    return redacted
+
+
+def _truthy(value: object) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:

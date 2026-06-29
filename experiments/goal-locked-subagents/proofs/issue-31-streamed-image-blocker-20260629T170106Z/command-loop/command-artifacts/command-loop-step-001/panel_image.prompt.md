@@ -1,0 +1,1 @@
+Generate one single photorealistic cinematic persona-dream proof panel for Tau issue 31: a focused project agent at a desk reviewing evidence receipts, one laptop glow, paper proof cards, tea steam, subtle surreal sky-eye motif outside the window, no text, no logos, no captions, no UI chrome.

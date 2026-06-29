@@ -1,0 +1,28 @@
+{
+  "blocking_findings": [
+    "No live Scillm VLM review PASS was produced in this Tau command-loop proof."
+  ],
+  "claims": {
+    "does_not_prove": [
+      "no visual PASS is claimed when source status is not PASS"
+    ],
+    "proves": [
+      "panel-reviewer command consumed the creator route",
+      "panel-reviewer command wrote a read-only receipt tied to a concrete review source",
+      "panel-reviewer initiated a Scillm VLM image_url review inside Tau"
+    ]
+  },
+  "created_at": "2026-06-29T17:03:26Z",
+  "kling_api_call_performed": false,
+  "live_call_performed": true,
+  "paid_call_performed": false,
+  "panel_id": "panel_001",
+  "passed_entities": [],
+  "public_upload_performed": false,
+  "reviewer_readonly": true,
+  "reviewer_source": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170312Z/visual_review_receipt.json",
+  "reviewer_source_status": "NEEDS_CHANGES",
+  "role": "panel-reviewer",
+  "schema": "tau.persona_dream.panel_reviewer_receipt.v1",
+  "status": "INSUFFICIENT_EVIDENCE"
+}

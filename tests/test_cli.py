@@ -25,6 +25,8 @@ from tau_coding import (
 )
 from tau_coding.cli import app, run_print_mode
 from tau_coding.paths import TauPaths
+from tau_coding.persona_dream_panel_agent import _collect_scillm_sse
+from tau_coding.persona_dream_panel_proof import _panel_context as _persona_panel_context
 from tau_coding.provider_config import (
     OpenAICompatibleProviderConfig,
     ProviderSettings,
@@ -2000,6 +2002,57 @@ def test_cli_persona_dream_panel_proof_uses_supplied_panel_evidence(tmp_path: Pa
     assert reviewer_receipt["reviewer_source"] == str(visual_review.resolve())
     assert manifest["first_blocker"]["previous_subagent"] == "panel-reviewer"
     assert manifest["first_blocker"]["status"] == "INSUFFICIENT_EVIDENCE"
+
+
+def test_persona_dream_panel_live_context_is_tau_owned(tmp_path: Path) -> None:
+    context = _persona_panel_context(
+        None,
+        proof_dir=tmp_path,
+        scillm_live_panel=True,
+        panel_prompt="Generate one bounded test panel.",
+        scillm_image_model="gpt-image-2",
+        scillm_image_auth="codex-oauth",
+        scillm_image_quality="medium",
+        scillm_vlm_model="gpt-5.5",
+        scillm_base_url="http://127.0.0.1:4001",
+    )
+
+    assert context["scillm_live_panel"] == "true"
+    assert context["panel_prompt"] == "Generate one bounded test panel."
+    assert context["image_path"] == str((tmp_path / "scillm-panel" / "panel_001.png").resolve())
+    assert context["visual_review_receipt"] == str(
+        (tmp_path / "scillm-panel" / "visual_review_receipt.json").resolve()
+    )
+    assert context["scillm_image_model"] == "gpt-image-2"
+    assert context["scillm_image_auth"] == "codex-oauth"
+    assert context["scillm_vlm_model"] == "gpt-5.5"
+
+
+def test_persona_dream_panel_sse_collector_records_liveness(tmp_path: Path) -> None:
+    events_path = tmp_path / "events.jsonl"
+    result = _collect_scillm_sse(
+        [
+            'event: started',
+            'data: {"model":"gpt-5.5","elapsed_ms":1}',
+            ': heartbeat {"model":"gpt-5.5"}',
+            'data: {"choices":[{"delta":{"content":"{\\"status\\":\\"PASS\\"}"}}]}',
+            "data: [DONE]",
+        ],
+        events_path,
+    )
+
+    events = [
+        json.loads(line)
+        for line in events_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert result == {
+        "content": '{"status":"PASS"}',
+        "event_count": 2,
+        "heartbeat_count": 1,
+        "done_seen": True,
+        "last_event_type": "done",
+    }
+    assert [event["type"] for event in events] == ["started", "heartbeat", "chunk", "done"]
 
 
 def test_cli_handoff_command_loop_github_transport_dry_run(tmp_path: Path) -> None:

@@ -9,5 +9,5 @@
     "panel-reviewer"
   ],
   "cwd": ".",
-  "timeout_s": 30
+  "timeout_s": 240
 }

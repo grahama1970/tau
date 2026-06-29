@@ -1,0 +1,49 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel/panel_001.png",
+      "panel_id": "panel_001",
+      "panel_prompt": "Generate one single photorealistic cinematic persona-dream proof panel for Tau issue 31: a focused project agent at a desk reviewing evidence receipts, one laptop glow, paper proof cards, tea steam, subtle surreal sky-eye motif outside the window, no text, no logos, no captions, no UI chrome.",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel",
+      "scillm_base_url": "http://127.0.0.1:4001",
+      "scillm_image_auth": "openai-api-key",
+      "scillm_image_model": "gpt-image-2",
+      "scillm_image_quality": "medium",
+      "scillm_live_panel": "true",
+      "scillm_vlm_model": "gpt-5.5",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel/visual_review_receipt.json"
+    },
+    "summary": "Run one bounded persona-dream panel proof through Tau command-loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#31"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue31persona000000000000000000000000000000000000000000000000",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "panel-creator",
+    "reason": "Panel Creator must write a local creator receipt before review."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a local panel creator command with receipt output.",
+  "required_evidence": [
+    "Panel creator, reviewer, and repair-gate receipts or the first failed receipt."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested the local one-panel persona-dream proof command."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "The local proof command writes manifest.json with first_blocker or dry-run Kling request."
+}

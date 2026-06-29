@@ -2233,7 +2233,7 @@ def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
     return summary_path
 
 
-def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path | str | None]:
+def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path | str | bool | None]:
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     options: dict[str, Path | str] = {
         "out_dir": Path("experiments/goal-locked-subagents/proofs")
@@ -2243,6 +2243,13 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
         "active_goal_hash": DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
         "github_target": "issue#27",
         "panel_evidence": None,
+        "scillm_live_panel": False,
+        "panel_prompt": None,
+        "scillm_image_model": "gpt-image-2",
+        "scillm_image_auth": "openai-api-key",
+        "scillm_image_quality": "high",
+        "scillm_vlm_model": "gpt-5.5",
+        "scillm_base_url": "http://127.0.0.1:4001",
     }
     index = 0
     while index < len(args):
@@ -2289,6 +2296,50 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
             options["panel_evidence"] = Path(args[index])
         elif arg.startswith("--panel-evidence="):
             options["panel_evidence"] = Path(arg.partition("=")[2])
+        elif arg == "--scillm-live-panel":
+            options["scillm_live_panel"] = True
+        elif arg == "--panel-prompt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--panel-prompt requires a value")
+            options["panel_prompt"] = args[index]
+        elif arg.startswith("--panel-prompt="):
+            options["panel_prompt"] = arg.partition("=")[2]
+        elif arg == "--scillm-image-model":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-image-model requires a value")
+            options["scillm_image_model"] = args[index]
+        elif arg.startswith("--scillm-image-model="):
+            options["scillm_image_model"] = arg.partition("=")[2]
+        elif arg == "--scillm-image-auth":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-image-auth requires a value")
+            options["scillm_image_auth"] = args[index]
+        elif arg.startswith("--scillm-image-auth="):
+            options["scillm_image_auth"] = arg.partition("=")[2]
+        elif arg == "--scillm-image-quality":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-image-quality requires a value")
+            options["scillm_image_quality"] = args[index]
+        elif arg.startswith("--scillm-image-quality="):
+            options["scillm_image_quality"] = arg.partition("=")[2]
+        elif arg == "--scillm-vlm-model":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-vlm-model requires a value")
+            options["scillm_vlm_model"] = args[index]
+        elif arg.startswith("--scillm-vlm-model="):
+            options["scillm_vlm_model"] = arg.partition("=")[2]
+        elif arg == "--scillm-base-url":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scillm-base-url requires a value")
+            options["scillm_base_url"] = args[index]
+        elif arg.startswith("--scillm-base-url="):
+            options["scillm_base_url"] = arg.partition("=")[2]
         else:
             raise RuntimeError(f"Unknown persona-dream-panel-proof option: {arg}")
         index += 1
@@ -4049,6 +4100,13 @@ def project_agent_persona_dream_panel_proof_command(
     active_goal_hash: str,
     github_target: str,
     panel_evidence: Path | None,
+    scillm_live_panel: bool,
+    panel_prompt: str | None,
+    scillm_image_model: str,
+    scillm_image_auth: str,
+    scillm_image_quality: str,
+    scillm_vlm_model: str,
+    scillm_base_url: str,
 ) -> bool:
     """Run the local one-panel persona-dream command-loop proof."""
 
@@ -4059,6 +4117,13 @@ def project_agent_persona_dream_panel_proof_command(
         active_goal_hash=active_goal_hash,
         github_target=github_target,
         panel_evidence=panel_evidence,
+        scillm_live_panel=scillm_live_panel,
+        panel_prompt=panel_prompt,
+        scillm_image_model=scillm_image_model,
+        scillm_image_auth=scillm_image_auth,
+        scillm_image_quality=scillm_image_quality,
+        scillm_vlm_model=scillm_vlm_model,
+        scillm_base_url=scillm_base_url,
     )
     typer.echo(json.dumps(manifest, indent=2, sort_keys=True))
     return bool(manifest.get("ok")) and (

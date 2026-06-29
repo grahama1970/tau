@@ -1,0 +1,52 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/command-loop/command-artifacts/command-loop-step-001/scillm_image_generation_receipt.json"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel/panel_001.png",
+      "panel_id": "panel_001",
+      "panel_prompt": "Generate one single photorealistic cinematic persona-dream proof panel for Tau issue 31: a focused project agent at a desk reviewing evidence receipts, one laptop glow, paper proof cards, tea steam, subtle surreal sky-eye motif outside the window, no text, no logos, no captions, no UI chrome.",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel",
+      "scillm_base_url": "http://127.0.0.1:4001",
+      "scillm_image_auth": "openai-api-key",
+      "scillm_image_model": "gpt-image-2",
+      "scillm_image_quality": "medium",
+      "scillm_live_panel": "true",
+      "scillm_vlm_model": "gpt-5.5",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/scillm-panel/visual_review_receipt.json"
+    },
+    "summary": "Panel Creator reached the first live Scillm image-generation blocker."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#31"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue31persona000000000000000000000000000000000000000000000000",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "human",
+    "name": "human",
+    "reason": "Human or operator must restore image provider capacity or switch image auth/provider."
+  },
+  "previous_subagent": "panel-creator",
+  "rationale": "Reviewer cannot run until a generated panel image exists.",
+  "required_evidence": [
+    "A Scillm image generation receipt with ok=true, sha256, width, and height."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-image-blocker-20260629T170106Z/command-loop/command-artifacts/command-loop-step-001/scillm_image_generation_receipt.json"
+    ],
+    "status": "BLOCKED",
+    "summary": "Panel Creator initiated Scillm image generation inside Tau and failed closed before review."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Human supplies provider capacity or reruns with a working Scillm image auth mode."
+}

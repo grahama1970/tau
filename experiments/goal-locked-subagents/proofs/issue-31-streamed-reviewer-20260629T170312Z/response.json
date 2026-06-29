@@ -1,0 +1,50 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170312Z/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170312Z/visual_review_receipt.json"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run/artifacts/panel_001_reference.png",
+      "panel_id": "panel_001",
+      "run_root": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/fixtures/one_scene_kling_dry_run",
+      "scillm_base_url": "http://127.0.0.1:4001",
+      "scillm_live_panel": "true",
+      "scillm_stream_heartbeat_s": "1",
+      "scillm_vlm_model": "gpt-5.5",
+      "scillm_vlm_timeout_s": "180",
+      "visual_review_receipt": "/tmp/not-used.json"
+    },
+    "summary": "Panel Reviewer consumed the creator artifact and review source."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#31"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue31persona000000000000000000000000000000000000000000000000",
+    "goal_id": "goal-tau-issue-31",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "persona-dream-panel-repair-gate",
+    "reason": "Repair gate must consolidate creator/reviewer evidence and fail closed."
+  },
+  "previous_subagent": "panel-reviewer",
+  "rationale": "The repair gate owns terminal panel eligibility and must consume this reviewer evidence before any provider readiness claim.",
+  "required_evidence": [
+    "Repair gate writes panel_repair_gate_receipt.json with provider_eligibility=false unless every subgate passes."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170312Z/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170312Z/visual_review_receipt.json"
+    ],
+    "status": "INSUFFICIENT_EVIDENCE",
+    "summary": "Panel Reviewer wrote a read-only receipt from a live Scillm VLM review."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Repair gate emits a terminal Tau handoff with receipt paths."
+}

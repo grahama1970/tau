@@ -29,12 +29,29 @@ def write_persona_dream_panel_proof(
     active_goal_hash: str = DEFAULT_GOAL_HASH,
     github_target: str = "issue#27",
     panel_evidence: Path | None = None,
+    scillm_live_panel: bool = False,
+    panel_prompt: str | None = None,
+    scillm_image_model: str = "gpt-image-2",
+    scillm_image_auth: str = "openai-api-key",
+    scillm_image_quality: str = "high",
+    scillm_vlm_model: str = "gpt-5.5",
+    scillm_base_url: str = "http://127.0.0.1:4001",
 ) -> dict[str, Any]:
     """Run the local persona-dream panel command loop and write a proof manifest."""
 
     proof_dir = out_dir.expanduser().resolve()
     proof_dir.mkdir(parents=True, exist_ok=True)
-    panel_context = _panel_context(panel_evidence)
+    panel_context = _panel_context(
+        panel_evidence,
+        proof_dir=proof_dir,
+        scillm_live_panel=scillm_live_panel,
+        panel_prompt=panel_prompt,
+        scillm_image_model=scillm_image_model,
+        scillm_image_auth=scillm_image_auth,
+        scillm_image_quality=scillm_image_quality,
+        scillm_vlm_model=scillm_vlm_model,
+        scillm_base_url=scillm_base_url,
+    )
     start_payload = _start_handoff(
         active_goal_hash=active_goal_hash,
         github_target=github_target,
@@ -67,6 +84,8 @@ def write_persona_dream_panel_proof(
         for result in dispatch.get("command_results", [])
         if isinstance(result, dict)
     ]
+    tau_originated_scillm = panel_context.get("scillm_live_panel") == "true"
+    consumed_generation_receipt = bool(panel_context.get("image_generation_receipt")) or tau_originated_scillm
     manifest = {
         "schema": PERSONA_DREAM_PANEL_PROOF_SCHEMA,
         "created_at": _now_iso(),
@@ -79,6 +98,7 @@ def write_persona_dream_panel_proof(
         ),
         "panel_evidence": str(panel_evidence.expanduser().resolve()) if panel_evidence else None,
         "panel_context": panel_context,
+        "scillm_originated_inside_tau": tau_originated_scillm,
         "start_handoff": str(start_path),
         "command_loop_receipt": str(proof_dir / "command-loop" / "command-loop-receipt.json"),
         "selected_agents": selected_agents,
@@ -94,9 +114,18 @@ def write_persona_dream_panel_proof(
                 "Tau can run the local persona-dream panel creator/reviewer/repair-gate loop through command specs.",
                 "The loop writes concrete per-role receipts and stops at a human-visible first blocker.",
                 "The command path preserves mocked=false/live=true for the Tau command-loop runner.",
+                "Tau panel-creator and panel-reviewer are configured to initiate Scillm calls inside the command loop."
+                if tau_originated_scillm
+                else "Tau fixture mode does not initiate Scillm calls inside the command loop.",
             ],
             "does_not_prove": [
-                "No new image generation was performed.",
+                (
+                    "Tau live Scillm calls completed only if the role receipts show live_call_performed=true."
+                    if tau_originated_scillm
+                    else "Tau consumed a Scillm image generation receipt, but panel generation was not initiated inside this Tau command."
+                    if consumed_generation_receipt
+                    else "No new image generation was performed."
+                ),
                 "No Kling or paid provider call was performed.",
                 "No public asset upload was performed.",
                 "No provider-ready persona-dream panel packet is claimed.",
@@ -149,7 +178,37 @@ def _start_handoff(
     }
 
 
-def _panel_context(panel_evidence: Path | None) -> dict[str, str]:
+def _panel_context(
+    panel_evidence: Path | None,
+    *,
+    proof_dir: Path | None = None,
+    scillm_live_panel: bool = False,
+    panel_prompt: str | None = None,
+    scillm_image_model: str = "gpt-image-2",
+    scillm_image_auth: str = "openai-api-key",
+    scillm_image_quality: str = "high",
+    scillm_vlm_model: str = "gpt-5.5",
+    scillm_base_url: str = "http://127.0.0.1:4001",
+) -> dict[str, str]:
+    if scillm_live_panel:
+        if panel_evidence is not None:
+            raise RuntimeError("--scillm-live-panel and --panel-evidence are mutually exclusive")
+        if proof_dir is None:
+            raise RuntimeError("proof_dir is required for scillm live panel mode")
+        run_root = proof_dir / "scillm-panel"
+        return {
+            "panel_id": "panel_001",
+            "run_root": str(run_root.resolve()),
+            "image_path": str((run_root / "panel_001.png").resolve()),
+            "visual_review_receipt": str((run_root / "visual_review_receipt.json").resolve()),
+            "panel_prompt": panel_prompt or "",
+            "scillm_live_panel": "true",
+            "scillm_image_model": scillm_image_model,
+            "scillm_image_auth": scillm_image_auth,
+            "scillm_image_quality": scillm_image_quality,
+            "scillm_vlm_model": scillm_vlm_model,
+            "scillm_base_url": scillm_base_url,
+        }
     if panel_evidence is None:
         return {
             "panel_id": "panel_001",
@@ -168,7 +227,7 @@ def _panel_context(panel_evidence: Path | None) -> dict[str, str]:
 
     base = evidence_path.parent
     run_root = _required_path_text(panel, "run_root", base=base)
-    return {
+    panel_context = {
         "panel_id": _required_text(panel, "panel_id"),
         "run_root": run_root,
         "image_path": _required_path_text(panel, "image_path", base=Path(run_root)),
@@ -178,6 +237,14 @@ def _panel_context(panel_evidence: Path | None) -> dict[str, str]:
             base=Path(run_root),
         ),
     }
+    image_generation_receipt = _optional_path_text(
+        panel,
+        "image_generation_receipt",
+        base=Path(run_root),
+    )
+    if image_generation_receipt:
+        panel_context["image_generation_receipt"] = image_generation_receipt
+    return panel_context
 
 
 def _required_text(payload: dict[str, Any], key: str) -> str:
@@ -189,6 +256,18 @@ def _required_text(payload: dict[str, Any], key: str) -> str:
 
 def _required_path_text(payload: dict[str, Any], key: str, *, base: Path) -> str:
     value = _required_text(payload, key)
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = base / path
+    return str(path.resolve())
+
+
+def _optional_path_text(payload: dict[str, Any], key: str, *, base: Path) -> str:
+    value = payload.get(key)
+    if value is None:
+        return ""
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeError(f"panel evidence field must be a non-empty string when provided: {key}")
     path = Path(value).expanduser()
     if not path.is_absolute():
         path = base / path
