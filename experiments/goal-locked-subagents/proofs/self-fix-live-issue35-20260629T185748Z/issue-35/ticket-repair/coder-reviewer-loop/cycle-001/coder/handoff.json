@@ -1,0 +1,38 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json"
+    ],
+    "summary": "Coder cycle 1 applied the requested target-file repair."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#35"
+  },
+  "goal": {
+    "goal_hash": "sha256:07cfe25064d3fa065dfd78e741e0c5b5d24420b4ba218b782c604005c483a57e",
+    "goal_id": "goal-tau-coder-reviewer-loop-coder-reviewer-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "reviewer",
+    "reason": "Reviewer must inspect the code change and run deterministic checks."
+  },
+  "previous_subagent": "coder",
+  "rationale": "The target file now needs independent reviewer verification.",
+  "required_evidence": [
+    "Reviewer Scillm call receipt.",
+    "Verification command results."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/tests/fixtures/self_fix_ticket_probe.py"
+    ],
+    "status": "COMPLETED",
+    "summary": "Coder changed tests/fixtures/self_fix_ticket_probe.py by replacing the configured text."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Reviewer returns PASS, NEEDS_CHANGES, or BLOCKED."
+}

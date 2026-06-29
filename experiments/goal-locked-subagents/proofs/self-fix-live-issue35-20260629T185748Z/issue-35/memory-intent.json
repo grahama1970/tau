@@ -1,0 +1,383 @@
+{
+  "action": "QUERY",
+  "allowed_tools": [],
+  "candidate_intents": [],
+  "classifier_source": "deterministic_problem_query",
+  "confidence": 0.85,
+  "content_type": "markdown",
+  "depth": 1,
+  "disallowed_tools": [],
+  "entities": [],
+  "entity_context": {
+    "agent_contract": {
+      "authoritative_paths": [
+        "proof_packet.assertions",
+        "nodes.anchors",
+        "nodes.validated_context",
+        "nodes.suppressed"
+      ],
+      "ignore_for_grounding": [
+        "display_summary",
+        "candidate_nodes",
+        "guess_nodes",
+        "rationale.summary"
+      ],
+      "llm_generated_fields_are_never_authoritative": true,
+      "use_for_grounding": [
+        "proof_packet.assertions"
+      ]
+    },
+    "agent_decision": {
+      "grounding_source": "proof_packet.assertions",
+      "needs_clarification": true,
+      "needs_retry": true,
+      "primary_entity_id": null,
+      "reason": "fabricated_id",
+      "safe_to_answer": false,
+      "suggested_action": "clarify_or_repair"
+    },
+    "candidate_nodes": {
+      "controls": [],
+      "not_usable_for": [
+        "grounding",
+        "proof",
+        "approval",
+        "answer_authority",
+        "evidence_gate"
+      ],
+      "proof_role": "none",
+      "qras": [],
+      "requires_user_confirmation": true,
+      "status": "candidate_only",
+      "usable_for": [
+        "suggestions",
+        "related_results",
+        "did_you_mean"
+      ]
+    },
+    "counts": {
+      "anchors": 0,
+      "candidate_controls": 0,
+      "candidate_qras": 0,
+      "context_terms": 2,
+      "media_timecodes": 0,
+      "suppressed": 0,
+      "unsupported": 3,
+      "validated_context": 0
+    },
+    "executed_by": "intent_always_on",
+    "grounding_ok": false,
+    "media_timecodes": [],
+    "nodes": {
+      "anchors": [],
+      "context_terms": [
+        {
+          "id": "domain:title",
+          "mention": "title",
+          "metadata": {
+            "exists": true,
+            "grounded": true,
+            "name": "title",
+            "type": "domain_term"
+          },
+          "node_kind": "domain_term",
+          "proof_role": "query_context",
+          "span": [
+            0,
+            5
+          ],
+          "status": "extracted"
+        },
+        {
+          "id": "domain:ticket",
+          "mention": "ticket",
+          "metadata": {
+            "exists": true,
+            "grounded": true,
+            "name": "ticket",
+            "type": "domain_term"
+          },
+          "node_kind": "domain_term",
+          "proof_role": "query_context",
+          "span": [
+            126,
+            132
+          ],
+          "status": "extracted"
+        }
+      ],
+      "suppressed": [],
+      "unsupported": [
+        {
+          "id": "unsupported:proof_fixture_state",
+          "mention": "proof fixture state",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "proof fixture state",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:controlled_tau_self_fix_proof_fixture",
+          "mention": "controlled Tau self fix proof fixture",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "controlled Tau self fix proof fixture",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:status_bug",
+          "mention": "STATUS bug",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "STATUS bug",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        }
+      ],
+      "validated_context": []
+    },
+    "ok": true,
+    "proof_packet": {
+      "assertions": [
+        {
+          "evidence": {
+            "mention": "proof fixture state",
+            "normalized_text": "proof fixture state",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_proof_fixture_state_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:proof_fixture_state"
+        },
+        {
+          "evidence": {
+            "mention": "controlled Tau self fix proof fixture",
+            "normalized_text": "controlled tau self fix proof fixture",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_controlled_tau_self_fix_proof_fixture_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:controlled_tau_self_fix_proof_fixture"
+        },
+        {
+          "evidence": {
+            "mention": "STATUS bug",
+            "normalized_text": "status bug",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_status_bug_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:status_bug"
+        }
+      ],
+      "authoritative": true,
+      "generated_by": "deterministic_extractor",
+      "llm_used": false,
+      "primary_entity_id": null,
+      "query_text": "title: Controlled Tau self-fix poll should repair proof fixture\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\ntests/fixtures/self_fix_ticket_probe.py\n\n## Current state\n\nThe controlled Tau self-fix proof fixture still says `STATUS = \"bug\"`.\n\n## Requested outcome\n\nTau should process this ticket through `tau self-fix poll --dispatch --repair --apply-github`, run Memory-first intake, run the streaming Scillm-backed coder/reviewer loop, change the fixture to `STATUS = \"fixed\"`, commit and push the scoped repair, attach proof, and close the issue.\n\n## Required proof\n\n- Live GitHub issue selected by Tau poll.\n- Memory `/intent` and `/recall` receipts.\n- Coder and reviewer Scillm receipts with `stream:true`.\n- Deterministic verification command exits `0`.\n- Commit is pushed to `grahama1970/tau`.\n- Proof comment is attached before close.\n\n## Non-goals\n\nNo unrelated code changes.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair the controlled Tau self-fix ticket probe fixture.\",\n  \"target_file\": \"tests/fixtures/self_fix_ticket_probe.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\n    \"python -m py_compile tests/fixtures/self_fix_ticket_probe.py\"\n  ],\n  \"commit_message\": \"Resolve controlled self-fix ticket probe\"\n}\n```\n\n<!-- ticket-skill\ntype: bug\ntarget: tests/fixtures/self_fix_ticket_probe.py\nroute: backend_python_or_skill_runtime\nagent: coder\n-->"
+    },
+    "query_text": "title: Controlled Tau self-fix poll should repair proof fixture\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\ntests/fixtures/self_fix_ticket_probe.py\n\n## Current state\n\nThe controlled Tau self-fix proof fixture still says `STATUS = \"bug\"`.\n\n## Requested outcome\n\nTau should process this ticket through `tau self-fix poll --dispatch --repair --apply-github`, run Memory-first intake, run the streaming Scillm-backed coder/reviewer loop, change the fixture to `STATUS = \"fixed\"`, commit and push the scoped repair, attach proof, and close the issue.\n\n## Required proof\n\n- Live GitHub issue selected by Tau poll.\n- Memory `/intent` and `/recall` receipts.\n- Coder and reviewer Scillm receipts with `stream:true`.\n- Deterministic verification command exits `0`.\n- Commit is pushed to `grahama1970/tau`.\n- Proof comment is attached before close.\n\n## Non-goals\n\nNo unrelated code changes.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair the controlled Tau self-fix ticket probe fixture.\",\n  \"target_file\": \"tests/fixtures/self_fix_ticket_probe.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\n    \"python -m py_compile tests/fixtures/self_fix_ticket_probe.py\"\n  ],\n  \"commit_message\": \"Resolve controlled self-fix ticket probe\"\n}\n```\n\n<!-- ticket-skill\ntype: bug\ntarget: tests/fixtures/self_fix_ticket_probe.py\nroute: backend_python_or_skill_runtime\nagent: coder\n-->",
+    "route": "/extract-entities",
+    "view": "agent"
+  },
+  "evidence_case": null,
+  "expand_hops": 1,
+  "frameworks": [],
+  "grounding": null,
+  "invalid_terms": [],
+  "k": 8,
+  "keywords": [],
+  "lanes": [
+    "bm25",
+    "dense"
+  ],
+  "matched_persona_aliases": [],
+  "perspective": null,
+  "planner_only": false,
+  "query_plan": {
+    "extracted_entities": [],
+    "max_hops": 1,
+    "start_node": "-->",
+    "steps": [
+      {
+        "endpoint": "/list",
+        "params": {
+          "collection": "sparta_controls",
+          "filters": {
+            "control_id": "-->"
+          },
+          "limit": 1
+        }
+      },
+      {
+        "endpoint": "/recall",
+        "params": {
+          "collections": [
+            "sparta_relationships"
+          ],
+          "k": 10,
+          "q": "-->"
+        }
+      }
+    ],
+    "strategy": "graph_traversal"
+  },
+  "query_type": "knowledge",
+  "question_domains": [
+    "procedural_memory"
+  ],
+  "question_kind": "procedural_project_memory_question",
+  "reason": null,
+  "recall_profile": "procedural_memory",
+  "recall_profile_confidence": 0.85,
+  "recall_profile_source": "deterministic_procedural",
+  "recall_profile_spec": {
+    "clarify_policy": "default",
+    "collections": [
+      "lessons",
+      "skill_chains",
+      "sanity_scripts",
+      "checkpoints"
+    ],
+    "depth": 1,
+    "description": "Project-agent troubleshooting, prior implementation, skills, and checkpoint recall.",
+    "hard_filters": null,
+    "k": 8,
+    "min_grounding": 0.7,
+    "name": "procedural_memory",
+    "required_artifacts": [
+      "lesson"
+    ],
+    "reranker_mode": "off",
+    "weights": {
+      "bm25": 0.2,
+      "freshness": 0.15,
+      "graph_multihop": 0.2,
+      "semantic": 0.35,
+      "skill_chain": 0.1
+    }
+  },
+  "recommended_skills": [
+    "memory"
+  ],
+  "render_style_id": "plain_answer",
+  "required_artifacts": [
+    "lesson"
+  ],
+  "reranker_mode": "off",
+  "response_mode": "memory_grounded_answer",
+  "rewritten_query": "title: Controlled Tau self-fix poll should repair proof fixture\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\ntests/fixtures/self_fix_ticket_probe.py\n\n## Current state\n\nThe controlled Tau self-fix proof fixture still says `STATUS = \"bug\"`.\n\n## Requested outcome\n\nTau should process this ticket through `tau self-fix poll --dispatch --repair --apply-github`, run Memory-first intake, run the streaming Scillm-backed coder/reviewer loop, change the fixture to `STATUS = \"fixed\"`, commit and push the scoped repair, attach proof, and close the issue.\n\n## Required proof\n\n- Live GitHub issue selected by Tau poll.\n- Memory `/intent` and `/recall` receipts.\n- Coder and reviewer Scillm receipts with `stream:true`.\n- Deterministic verification command exits `0`.\n- Commit is pushed to `grahama1970/tau`.\n- Proof comment is attached before close.\n\n## Non-goals\n\nNo unrelated code changes.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair the controlled Tau self-fix ticket probe fixture.\",\n  \"target_file\": \"tests/fixtures/self_fix_ticket_probe.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\n    \"python -m py_compile tests/fixtures/self_fix_ticket_probe.py\"\n  ],\n  \"commit_message\": \"Resolve controlled self-fix ticket probe\"\n}\n```\n\n<!-- ticket-skill\ntype: bug\ntarget: tests/fixtures/self_fix_ticket_probe.py\nroute: backend_python_or_skill_runtime\nagent: coder\n-->",
+  "scene_action_id": null,
+  "scope": "brandon_bailey",
+  "skill_chain": [
+    "memory"
+  ],
+  "slots": {
+    "arango_data_requested": false,
+    "document_name": null,
+    "page": null,
+    "page_image_requested": false,
+    "payload_reference": false,
+    "proof_requested": false,
+    "qdrant_similarity_requested": false,
+    "requested_artifacts": [],
+    "similarity_scope": null,
+    "table_requested": false
+  },
+  "suggestions": [],
+  "target_node_id": null,
+  "tier1": [],
+  "tool_calls": [
+    {
+      "arguments": {
+        "collection": "sparta_controls",
+        "filters": {
+          "control_id": "-->"
+        },
+        "limit": 1
+      },
+      "blocking": true,
+      "depends_on": [],
+      "domain": null,
+      "endpoint": "/list",
+      "function": null,
+      "id": "step_0",
+      "required_for_answer": true,
+      "skill": null,
+      "type": "endpoint",
+      "when": null
+    },
+    {
+      "arguments": {
+        "collections": [
+          "sparta_relationships"
+        ],
+        "k": 10,
+        "q": "-->"
+      },
+      "blocking": true,
+      "depends_on": [],
+      "domain": null,
+      "endpoint": "/recall",
+      "function": null,
+      "id": "step_1",
+      "required_for_answer": true,
+      "skill": null,
+      "type": "endpoint",
+      "when": null
+    }
+  ],
+  "top_intents": [],
+  "ui_action": null,
+  "valid_entities": []
+}

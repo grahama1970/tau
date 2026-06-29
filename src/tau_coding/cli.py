@@ -4845,10 +4845,15 @@ def project_agent_self_fix_tick_command(
                 "Tau can fetch the selected GitHub issue through gh.",
                 "Tau can run Memory-first intent/recall before dispatch.",
                 "Tau can generate a goal-helper packet and start handoff from the issue.",
-                "Tau can invoke the existing command-loop for eligible issues.",
+                (
+                    "Tau can route a repair-contract issue into the streaming coder/reviewer "
+                    "repair path."
+                    if repair
+                    else "Tau can invoke the existing command-loop for eligible issues."
+                ),
             ],
             "does_not_prove": [
-                "Autonomous code mutation.",
+                "Autonomous code mutation." if not repair else "Unbounded autonomous repair.",
                 "Scillm-backed coder/reviewer semantic quality unless command specs call Scillm.",
                 "GitHub Actions event wiring.",
                 "Cron recovery.",
@@ -4925,6 +4930,30 @@ def project_agent_self_fix_poll_command(
         )
 
     status = "IDLE" if selected is None else ("DISPATCHED" if dispatch else "READY")
+    proves = [
+        "Tau can poll the live GitHub issue queue through gh.",
+        "Tau can apply the configured one-ticket eligibility rule.",
+    ]
+    if selected is None:
+        proves.append("Tau writes a deterministic idle receipt when no eligible issue exists.")
+    elif dispatch:
+        proves.append("Tau dispatches exactly one selected eligible issue.")
+        if repair:
+            proves.append(
+                "Tau can route the selected issue into the contract-backed repair path."
+            )
+    else:
+        proves.append("Tau reports the first selected eligible issue without dispatch.")
+
+    does_not_prove = [
+        "Unbounded autonomous operation.",
+    ]
+    if not dispatch:
+        does_not_prove.append(
+            "A code repair unless dispatch_requested is true and the nested tick receipt proves it."
+        )
+        does_not_prove.append("GitHub issue closure.")
+
     receipt = {
         "schema": "tau.self_fix_poll_receipt.v1",
         "ok": bool(issue_fetch["ok"] and (dispatch_ok is not False)),
@@ -4950,16 +4979,8 @@ def project_agent_self_fix_poll_command(
             else None,
         },
         "claims": {
-            "proves": [
-                "Tau can poll the live GitHub issue queue through gh.",
-                "Tau can apply the configured one-ticket eligibility rule.",
-                "Tau writes a deterministic idle receipt when no eligible issue exists.",
-            ],
-            "does_not_prove": [
-                "A code repair unless dispatch_requested is true and the nested tick receipt proves it.",
-                "GitHub issue closure.",
-                "Unbounded autonomous operation.",
-            ],
+            "proves": proves,
+            "does_not_prove": does_not_prove,
         },
     }
     _write_json_object(resolved_receipt_dir / "self-fix-poll-receipt.json", receipt)

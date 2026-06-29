@@ -1,0 +1,38 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json"
+    ],
+    "summary": "Reviewer cycle 1 inspected the coder mutation."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#35"
+  },
+  "goal": {
+    "goal_hash": "sha256:07cfe25064d3fa065dfd78e741e0c5b5d24420b4ba218b782c604005c483a57e",
+    "goal_id": "goal-tau-coder-reviewer-loop-coder-reviewer-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "human",
+    "name": "human",
+    "reason": "Human can inspect the proof and commit/push decision."
+  },
+  "previous_subagent": "reviewer",
+  "rationale": "Live reviewer call and deterministic checks both passed.",
+  "required_evidence": [
+    "Final receipt names changed file, checks, and rollback status."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json"
+    ],
+    "status": "PASS",
+    "summary": "Reviewer accepted the coder change after deterministic checks passed."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Human accepts proof and commits/pushes the repair."
+}

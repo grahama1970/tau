@@ -1,0 +1,43 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json"
+    ],
+    "assumptions": [
+      "Scillm output is advisory; deterministic checks are proof."
+    ],
+    "run_id": "coder-reviewer-loop",
+    "subagent": "coder",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:07cfe25064d3fa065dfd78e741e0c5b5d24420b4ba218b782c604005c483a57e",
+    "goal_id": "goal-tau-coder-reviewer-loop-coder-reviewer-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Reviewer validates the coder mutation.",
+    "subagent": "reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau self-fix subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue35-20260629T185748Z/issue-35/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Coder changed tests/fixtures/self_fix_ticket_probe.py by replacing the configured text."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Reviewer posts PASS or a fail-closed blocker."
+}
