@@ -101,6 +101,7 @@ from tau_coding.session_export import (
     normalize_export_format,
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
+from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.tui import run_tui_app
 from tau_coding.tui.proof import (
@@ -861,6 +862,16 @@ def main(
                 goal_guardian_ticket_source=goal_guardian_ticket_source,
                 max_steps=max_steps,
             )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "scillm-subagent-gate":
+        try:
+            summary_path = _parse_scillm_subagent_gate_cli_args(positional_args[1:])
+            ok = project_agent_scillm_subagent_gate_command(summary_path)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
@@ -1900,6 +1911,26 @@ def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | No
             raise RuntimeError(f"Unknown handoff-agent-adapter option: {arg}")
         index += 1
     return options
+
+
+def _parse_scillm_subagent_gate_cli_args(args: list[str]) -> Path:
+    summary_path: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--summary":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--summary requires a value")
+            summary_path = Path(args[index])
+        elif arg.startswith("--summary="):
+            summary_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown scillm-subagent-gate option: {arg}")
+        index += 1
+    if summary_path is None:
+        raise RuntimeError("scillm-subagent-gate requires --summary <summary.json>")
+    return summary_path
 
 
 def _parse_handoff_goal_guardian_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
@@ -3638,6 +3669,14 @@ def project_agent_handoff_command_loop_command(
     )
     typer.echo(json.dumps(loop.as_dict(), indent=2, sort_keys=True))
     return loop.ok
+
+
+def project_agent_scillm_subagent_gate_command(summary_path: Path) -> bool:
+    """Validate that Scillm subagent loop summaries only pass completed substrates."""
+
+    result = validate_scillm_subagent_loop_summary(summary_path)
+    typer.echo(json.dumps(result.as_dict(), indent=2, sort_keys=True))
+    return result.ok
 
 
 def project_agent_handoff_adapter_command(

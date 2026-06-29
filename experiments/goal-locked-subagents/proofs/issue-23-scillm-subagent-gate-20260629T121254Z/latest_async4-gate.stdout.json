@@ -1,0 +1,18 @@
+{
+  "blocked_substrate_receipts": [
+    "/home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/attempt_002/reviewer_tau_subagent_receipt.json"
+  ],
+  "checked_receipts": [
+    "/home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/attempt_001/coder_tau_subagent_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/attempt_001/reviewer_tau_subagent_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/attempt_002/coder_tau_subagent_receipt.json",
+    "/home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/attempt_002/reviewer_tau_subagent_receipt.json"
+  ],
+  "errors": [
+    "summary accepted=true requires completed reviewer substrate plus accepted parsed JSON: /home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/attempt_002/reviewer_tau_subagent_receipt.json",
+    "summary.final_status 'reviewer_passed' requires a completed reviewer receipt with parsed accepted=true"
+  ],
+  "ok": false,
+  "schema": "tau.scillm_subagent_gate.v1",
+  "summary": "/home/graham/workspace/experiments/agent-skills/artifacts/tau_scillm_subagent_while_loop_live/latest_async4/summary.json"
+}
