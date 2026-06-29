@@ -1,0 +1,48 @@
+{
+  "author": {
+    "id": "U_kgDOCRK7qw",
+    "is_bot": false,
+    "login": "grahama1970",
+    "name": "Graham"
+  },
+  "body": "Type: bug\nTarget: tests/fixtures/self_fix_queue_probe_a.py\nObserved: STATUS remains set to bug for the controlled repeated-queue proof.\nExpected: Tau self-fix cron leases this ticket, runs Memory-first intake, calls streaming Scillm coder/reviewer loop, changes STATUS to fixed, commits/pushes the scoped change, comments proof, and closes the ticket.\nRequired proof: self-fix poll receipt, ticket repair receipt, Memory intent/recall receipts, streaming Scillm coder/reviewer receipts with event logs, py_compile exit 0, pushed commit, proof comment.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair repeated queue probe A.\",\n  \"target_file\": \"tests/fixtures/self_fix_queue_probe_a.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\"python -m py_compile tests/fixtures/self_fix_queue_probe_a.py\"],\n  \"commit_message\": \"Resolve self-fix queue probe A\"\n}\n```",
+  "comments": [],
+  "createdAt": "2026-06-29T19:18:43Z",
+  "labels": [
+    {
+      "color": "5319e7",
+      "description": "Tau agent harness work item",
+      "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+      "name": "agent-work"
+    },
+    {
+      "color": "d73a4a",
+      "description": "Defect or regression",
+      "id": "LA_kwDOTG11HM8AAAACpRFAJA",
+      "name": "type:bug"
+    },
+    {
+      "color": "1d76db",
+      "description": "Python CLIs, runtime, harness, and skill integration route",
+      "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+      "name": "route:backend_python_or_skill_runtime"
+    },
+    {
+      "color": "5319e7",
+      "description": "Requested repair agent: coder",
+      "id": "LA_kwDOTG11HM8AAAACpVklOg",
+      "name": "agent:coder"
+    },
+    {
+      "color": "0052cc",
+      "description": "Tau harness and handoff contract",
+      "id": "LA_kwDOTG11HM8AAAACpVkmUw",
+      "name": "tau-harness"
+    }
+  ],
+  "number": 37,
+  "state": "OPEN",
+  "title": "Self-fix queue proof A: repair tracked probe",
+  "updatedAt": "2026-06-29T19:18:43Z",
+  "url": "https://github.com/grahama1970/tau/issues/37"
+}

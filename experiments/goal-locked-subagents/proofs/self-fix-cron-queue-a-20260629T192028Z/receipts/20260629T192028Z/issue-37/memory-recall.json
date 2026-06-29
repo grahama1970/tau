@@ -1,0 +1,194 @@
+{
+  "confidence": 0.8,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_key": "6500ad5b6398c1f1",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Key Files (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 1.0,
+        "dense": 0.3425405,
+        "freshness": 0.9818250008999526,
+        "graph": 0.0
+      },
+      "section": "Key Files",
+      "section_slug": "key-files",
+      "solution": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:key-files"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "5d0d521134d6ec49",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Current Understanding (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.6,
+        "dense": 0.32720694,
+        "freshness": 0.9818250008999526,
+        "graph": 0.0
+      },
+      "section": "Current Understanding",
+      "section_slug": "current-understanding",
+      "solution": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "d2ab664248780d4c",
+      "_source": "project_knowledge",
+      "decisions": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "doc_type": "aggregate",
+      "key_files": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "open_questions": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.8,
+        "dense": 0.23733063,
+        "freshness": 0.9818250008999526,
+        "graph": 0.0
+      },
+      "tags": [
+        "project_knowledge",
+        "project:tau"
+      ],
+      "understanding": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6147631fbe310e2b",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Recent Decisions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.4,
+        "dense": 0.32091495,
+        "freshness": 0.9818250008999526,
+        "graph": 0.0
+      },
+      "section": "Recent Decisions",
+      "section_slug": "recent-decisions",
+      "solution": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:recent-decisions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "9cf6139faffa4260",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Infrastructure State (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.2,
+        "dense": 0.25952953,
+        "freshness": 0.9818250008999526,
+        "graph": 0.0
+      },
+      "section": "Infrastructure State",
+      "section_slug": "infrastructure-state",
+      "solution": "<!-- Auto-populated from /project-state --quick -->",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:infrastructure-state"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    }
+  ],
+  "meta": {
+    "k": 5,
+    "memory_first": true,
+    "q": "title: Self-fix queue proof A: repair tracked probe\nstate: OPEN\n\nType: bug\nTarget: tests/fixtures/self_fix_queue_probe_a.py\nObserved: STATUS remains set to bug for the controlled repeated-queue proof.\nExpected: Tau self-fix cron leases this ticket, runs Memory-first intake, calls streaming Scillm coder/reviewer loop, changes STATUS to fixed, commits/pushes the scoped change, comments proof, and closes the ticket.\nRequired proof: self-fix poll receipt, ticket repair receipt, Memory intent/recall receipts, streaming Scillm coder/reviewer receipts with event logs, py_compile exit 0, pushed commit, proof comment.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair repeated queue probe A.\",\n  \"target_file\": \"tests/fixtures/self_fix_queue_probe_a.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\"python -m py_compile tests/fixtures/self_fix_queue_probe_a.py\"],\n  \"commit_message\": \"Resolve self-fix queue probe A\"\n}\n```",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782760833,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 557,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_route": {
+    "bonds": [],
+    "capabilities": [],
+    "compositions": [],
+    "skills": [
+      {
+        "composability_score": 0.114,
+        "has_run_sh": true,
+        "name": "create-pdf-fixture",
+        "provides": [
+          "create-pdf-fixture"
+        ]
+      },
+      {
+        "composability_score": 0.104,
+        "has_run_sh": true,
+        "name": "monitor-security",
+        "provides": [
+          "monitor-security"
+        ]
+      },
+      {
+        "composability_score": 0.073,
+        "has_run_sh": true,
+        "name": "prompt-lab",
+        "provides": [
+          "skill-creation"
+        ]
+      },
+      {
+        "composability_score": 0.087,
+        "has_run_sh": true,
+        "name": "review-code",
+        "provides": [
+          "code-review"
+        ]
+      },
+      {
+        "composability_score": 0.0,
+        "has_run_sh": true,
+        "name": "create-pdf-fixture",
+        "provides": []
+      }
+    ],
+    "suggested_chain": null
+  }
+}

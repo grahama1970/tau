@@ -1,0 +1,324 @@
+{
+  "artifacts": {
+    "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/command-loop/command-loop-receipt.json",
+    "goal_helper": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/goal-helper.json",
+    "issue": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/issue.json",
+    "memory_intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/memory-intent.json",
+    "memory_recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/memory-recall.json",
+    "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/start-handoff.json",
+    "ticket_repair_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/ticket-repair-receipt.json"
+  },
+  "checkpoint": {
+    "mutation_attempted": true,
+    "required_before_mutation": true,
+    "status": "handled_by_ticket_repair"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous repair.",
+      "Scillm-backed coder/reviewer semantic quality unless command specs call Scillm.",
+      "GitHub Actions event wiring.",
+      "Cron recovery.",
+      "Rollback after a real failed code mutation."
+    ],
+    "proves": [
+      "Tau can fetch the selected GitHub issue through gh.",
+      "Tau can run Memory-first intent/recall before dispatch.",
+      "Tau can generate a goal-helper packet and start handoff from the issue.",
+      "Tau can route a repair-contract issue into the streaming coder/reviewer repair path."
+    ]
+  },
+  "command_loop": {
+    "ok": true,
+    "reason": "repair_request_contract_selected",
+    "schema": "tau.self_fix_command_loop_bypassed_for_repair.v1"
+  },
+  "eligibility": {
+    "eligible": true,
+    "issue_labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "tau-harness",
+      "type:bug"
+    ],
+    "matched_labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "tau-harness"
+    ],
+    "policy": "any_required_label_match",
+    "reason": "issue has at least one configured self-fix routing label",
+    "required_labels_any": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "tau-harness"
+    ]
+  },
+  "goal_hash": "sha256:addd12d69a4094891c94d5184680c91ecc96f387657cb36b3154b4e66f7a0fa2",
+  "issue": {
+    "labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "tau-harness",
+      "type:bug"
+    ],
+    "number": 38,
+    "state": "OPEN",
+    "title": "Self-fix queue proof B: repair next tracked probe",
+    "url": "https://github.com/grahama1970/tau/issues/38"
+  },
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "view",
+      "38",
+      "--repo",
+      "grahama1970/tau",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.703735,
+    "exit_code": 0,
+    "ok": true,
+    "stderr": ""
+  },
+  "live": true,
+  "memory_preflight": {
+    "artifacts": {
+      "intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/memory-intent.json",
+      "recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/memory-recall.json"
+    },
+    "intent_action": "QUERY",
+    "intent_call": {
+      "duration_seconds": 0.595079,
+      "ok": true,
+      "path": "/intent",
+      "status_code": 200
+    },
+    "live": true,
+    "memory_base_url": "http://127.0.0.1:8601",
+    "mocked": false,
+    "ok": true,
+    "recall_call": {
+      "duration_seconds": 1.108076,
+      "ok": true,
+      "path": "/recall",
+      "status_code": 200
+    },
+    "recall_count": 5
+  },
+  "mocked": false,
+  "ok": true,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_tick_receipt.v1",
+  "scope": "One bounded Tau self-fix intake tick: GitHub issue fetch, Memory-first preflight, goal-helper/start handoff generation, and command-loop dispatch.",
+  "ticket_repair": {
+    "apply_github": true,
+    "artifacts": {
+      "coder_reviewer_loop": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/coder-reviewer-loop/self-fix-coder-reviewer-loop-receipt.json",
+      "proof_markdown": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/proof.md",
+      "ticket_repair_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/ticket-repair-receipt.json"
+    },
+    "claims": {
+      "does_not_prove": [
+        "Unbounded autonomous issue processing.",
+        "GitHub Actions event wiring.",
+        "Semantic reviewer correctness beyond Scillm stream plus deterministic checks."
+      ],
+      "proves": [
+        "Tau extracted a schema-valid repair request from a live GitHub issue.",
+        "Tau leased the issue through the guarded ticket workflow when apply_github=true.",
+        "Tau ran the Memory-first streaming Scillm coder/reviewer repair loop.",
+        "Tau committed and pushed the scoped repair after deterministic checks passed.",
+        "Tau attached a proof comment and closed the issue when apply_github=true."
+      ]
+    },
+    "commands": [
+      {
+        "command": [
+          "git",
+          "status",
+          "--porcelain",
+          "--untracked-files=no"
+        ],
+        "duration_seconds": 0.007229,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/gh-ticket-tools.sh",
+          "lease",
+          "38",
+          "--repo",
+          "grahama1970/tau",
+          "--agent",
+          "tau"
+        ],
+        "duration_seconds": 8.946904,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "https://github.com/grahama1970/tau/issues/38\nhttps://github.com/grahama1970/tau/issues/38#issuecomment-4836160272\n{\"ok\":true,\"action\":\"lease\",\"issue\":\"38\",\"agent\":\"tau\",\"lease_id\":\"20260629T192234Z-tau-38\"}"
+      },
+      {
+        "command": [
+          "git",
+          "add",
+          "tests/fixtures/self_fix_queue_probe_b.py"
+        ],
+        "duration_seconds": 0.004464,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "git",
+          "commit",
+          "-m",
+          "Resolve self-fix queue probe B"
+        ],
+        "duration_seconds": 0.010819,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "[main 6de867e] Resolve self-fix queue probe B\n 1 file changed, 1 insertion(+), 1 deletion(-)"
+      },
+      {
+        "command": [
+          "git",
+          "push",
+          "grahama1970",
+          "main"
+        ],
+        "duration_seconds": 1.73192,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "To github.com:grahama1970/tau.git\n   8570615..6de867e  main -> main",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "git",
+          "rev-parse",
+          "--short",
+          "HEAD"
+        ],
+        "duration_seconds": 0.003543,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "6de867e"
+      },
+      {
+        "command": [
+          "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/gh-ticket-tools.sh",
+          "close",
+          "38",
+          "--repo",
+          "grahama1970/tau",
+          "--proof",
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/proof.md",
+          "--reason",
+          "completed"
+        ],
+        "duration_seconds": 4.658024,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "\u2713 Closed issue grahama1970/tau#38 (Self-fix queue proof B: repair next tracked probe)",
+        "stdout": "https://github.com/grahama1970/tau/issues/38#issuecomment-4836166826\nhttps://github.com/grahama1970/tau/issues/38\n{\"ok\":true,\"action\":\"close\",\"issue\":\"38\",\"reason\":\"completed\",\"proof\":\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/proof.md\"}"
+      }
+    ],
+    "commit": {
+      "branch": "main",
+      "commands": [
+        {
+          "command": [
+            "git",
+            "add",
+            "tests/fixtures/self_fix_queue_probe_b.py"
+          ],
+          "duration_seconds": 0.004464,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": ""
+        },
+        {
+          "command": [
+            "git",
+            "commit",
+            "-m",
+            "Resolve self-fix queue probe B"
+          ],
+          "duration_seconds": 0.010819,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "[main 6de867e] Resolve self-fix queue probe B\n 1 file changed, 1 insertion(+), 1 deletion(-)"
+        },
+        {
+          "command": [
+            "git",
+            "push",
+            "grahama1970",
+            "main"
+          ],
+          "duration_seconds": 1.73192,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "To github.com:grahama1970/tau.git\n   8570615..6de867e  main -> main",
+          "stdout": ""
+        },
+        {
+          "command": [
+            "git",
+            "rev-parse",
+            "--short",
+            "HEAD"
+          ],
+          "duration_seconds": 0.003543,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "6de867e"
+        }
+      ],
+      "commit": "6de867e",
+      "ok": true,
+      "remote": "grahama1970"
+    },
+    "created_at": "2026-06-29T19:22:32Z",
+    "issue": {
+      "number": 38,
+      "title": "Self-fix queue proof B: repair next tracked probe",
+      "url": "https://github.com/grahama1970/tau/issues/38"
+    },
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "repair_request": {
+      "commit_message": "Resolve self-fix queue probe B",
+      "find_text": "STATUS = \"bug\"",
+      "replace_text": "STATUS = \"fixed\"",
+      "request": "Repair repeated queue probe B.",
+      "schema": "tau.self_fix_repair_request.v1",
+      "target_file": "tests/fixtures/self_fix_queue_probe_b.py",
+      "verification_commands": [
+        "python -m py_compile tests/fixtures/self_fix_queue_probe_b.py"
+      ]
+    },
+    "repo": "grahama1970/tau",
+    "schema": "tau.self_fix_ticket_repair_receipt.v1",
+    "status": "PASS"
+  }
+}

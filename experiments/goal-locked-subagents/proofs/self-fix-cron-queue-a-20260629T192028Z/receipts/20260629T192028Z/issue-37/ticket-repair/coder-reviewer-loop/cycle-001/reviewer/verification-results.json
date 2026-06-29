@@ -1,0 +1,9 @@
+[
+  {
+    "command": "python -m py_compile tests/fixtures/self_fix_queue_probe_a.py",
+    "duration_seconds": 0.036748,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  }
+]

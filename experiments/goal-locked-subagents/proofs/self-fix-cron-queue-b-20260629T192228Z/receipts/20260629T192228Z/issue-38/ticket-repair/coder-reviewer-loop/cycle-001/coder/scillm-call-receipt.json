@@ -1,0 +1,36 @@
+{
+  "api_key_source": "docker:SCILLM_MASTER_KEY",
+  "content_excerpt": "I\u2019ll inspect the target fixture and available context, then make the minimal requested change and write a receipt.Coder note: I can\u2019t modify files or write the required receipt from this API-only session because no filesystem/tool access is available.\n\nRequired minimal code change:\n\n```diff\n--- a/tests/fixtures/self_fix_queue_probe_b.py\n+++ b/tests/fixtures/self_fix_queue_probe_b.py\n@@\n-STATUS = \"bug\"\n+STATUS = \"fixed\"\n```\n\nRequired receipt should record:\n- target file: `tests/fixtures/self_fix_queue_probe_b.py`\n- replacement: `STATUS = \"bug\"` \u2192 `STATUS = \"fixed\"`\n- status: handoff to reviewer\n- evidence: changed target file plus schema-valid receipt path\n\nNo proof of completion claimed.",
+  "duration_seconds": 13.589134,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-b-20260629T192228Z/receipts/20260629T192228Z/issue-38/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-events.jsonl",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "self-fix-coder-reviewer-loop",
+      "role": "coder"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response": {
+    "elapsed_ms": 13578,
+    "model": "gpt-5.5"
+  },
+  "role": "coder",
+  "schema": "tau.self_fix_scillm_call_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 160,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done"
+}

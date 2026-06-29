@@ -1,0 +1,46 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/handoff.json"
+    ],
+    "assumptions": [
+      "Scillm output is advisory; deterministic checks are proof."
+    ],
+    "run_id": "coder-reviewer-loop",
+    "subagent": "reviewer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/handoff.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:ded088bd127bfc5eff4a6e490b5dba6172b54aee15eff8e265d1a40059a0be94",
+    "goal_id": "goal-tau-coder-reviewer-loop-coder-reviewer-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human can inspect the proof and commit/push decision.",
+    "subagent": "human"
+  },
+  "rationale": "This receipt records one bounded Tau self-fix subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-queue-a-20260629T192028Z/receipts/20260629T192028Z/issue-37/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/handoff.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "PASS",
+    "summary": "Reviewer accepted the coder change after deterministic checks passed."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Human accepts proof and commits/pushes the repair."
+}
