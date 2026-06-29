@@ -30,6 +30,7 @@ def write_persona_dream_panel_proof(
     github_target: str = "issue#27",
     panel_evidence: Path | None = None,
     panel_source: Path | None = None,
+    panel_repair_work_order: Path | None = None,
     scillm_live_panel: bool = False,
     panel_prompt: str | None = None,
     scillm_image_model: str = "gpt-image-2",
@@ -46,6 +47,7 @@ def write_persona_dream_panel_proof(
         panel_evidence,
         proof_dir=proof_dir,
         panel_source=panel_source,
+        panel_repair_work_order=panel_repair_work_order,
         scillm_live_panel=scillm_live_panel,
         panel_prompt=panel_prompt,
         scillm_image_model=scillm_image_model,
@@ -99,6 +101,7 @@ def write_persona_dream_panel_proof(
             "artifact or the first explicit creator/reviewer/repair-gate blocker."
         ),
         "panel_evidence": str(panel_evidence.expanduser().resolve()) if panel_evidence else None,
+        "panel_repair_work_order": str(panel_repair_work_order.expanduser().resolve()) if panel_repair_work_order else None,
         "panel_context": panel_context,
         "scillm_originated_inside_tau": tau_originated_scillm,
         "start_handoff": str(start_path),
@@ -148,6 +151,9 @@ def _start_handoff(
     context_artifacts = [panel_context["run_root"]]
     if panel_evidence is not None:
         context_artifacts.append(str(panel_evidence.expanduser().resolve()))
+    panel_repair_work_order = panel_context.get("panel_repair_work_order")
+    if panel_repair_work_order:
+        context_artifacts.append(panel_repair_work_order)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {"repo": "grahama1970/tau", "target": github_target},
@@ -185,6 +191,7 @@ def _panel_context(
     *,
     proof_dir: Path | None = None,
     panel_source: Path | None = None,
+    panel_repair_work_order: Path | None = None,
     scillm_live_panel: bool = False,
     panel_prompt: str | None = None,
     scillm_image_model: str = "gpt-image-2",
@@ -193,6 +200,20 @@ def _panel_context(
     scillm_vlm_model: str = "gpt-5.5",
     scillm_base_url: str = "http://127.0.0.1:4001",
 ) -> dict[str, str]:
+    if panel_repair_work_order is not None:
+        if panel_evidence is not None or panel_source is not None:
+            raise RuntimeError("--panel-repair-work-order cannot be combined with --panel-evidence or --panel-source")
+        if proof_dir is None:
+            raise RuntimeError("proof_dir is required for panel repair work-order mode")
+        return _panel_context_from_repair_work_order(
+            panel_repair_work_order,
+            proof_dir=proof_dir,
+            scillm_image_model=scillm_image_model,
+            scillm_image_auth=scillm_image_auth,
+            scillm_image_quality=scillm_image_quality,
+            scillm_vlm_model=scillm_vlm_model,
+            scillm_base_url=scillm_base_url,
+        )
     source_context = _source_panel_context(panel_source)
     if scillm_live_panel:
         if panel_evidence is not None:
@@ -261,6 +282,93 @@ def _panel_context(
         if isinstance(value, str) and value.strip():
             panel_context[key] = _resolve_optional_artifact(value, base=Path(run_root)) if key.endswith("_receipt") else value
     return panel_context | source_context
+
+
+def _panel_context_from_repair_work_order(
+    work_order_path: Path,
+    *,
+    proof_dir: Path,
+    scillm_image_model: str,
+    scillm_image_auth: str,
+    scillm_image_quality: str,
+    scillm_vlm_model: str,
+    scillm_base_url: str,
+) -> dict[str, str]:
+    resolved = work_order_path.expanduser().resolve()
+    payload = json.loads(resolved.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"panel repair work order must be a JSON object: {resolved}")
+    if payload.get("schema") != "persona_dream.panel_repair_work_order.v1":
+        raise RuntimeError(f"wrong panel repair work order schema: {payload.get('schema')}")
+    source_paths = payload.get("source_paths")
+    if not isinstance(source_paths, dict):
+        raise RuntimeError("panel repair work order missing source_paths")
+    run_root = _required_path_text(source_paths, "run_root", base=resolved.parent)
+    panel_id = str(payload.get("panel_id") or "panel_01")
+    artifacts_dir = Path(run_root) / "artifacts"
+    receipts_dir = Path(run_root) / "receipts"
+    candidate = payload.get("current_candidate")
+    candidate_image = ""
+    if isinstance(candidate, dict) and isinstance(candidate.get("image_path"), str):
+        candidate_image = _resolve_optional_artifact(candidate["image_path"], base=Path(run_root))
+    output_image = artifacts_dir / f"{panel_id}_scillm_panel.png"
+    visual_review = receipts_dir / "visual_review_receipt.json"
+
+    source_summary = _repair_work_order_source_summary(payload, run_root=Path(run_root))
+    prompt = (
+        "Generate one photorealistic cinematic persona-dream panel from this "
+        "panel repair work order. This is a final usable panel, not a flat "
+        "storyboard contract. Preserve the story beat, required characters, "
+        "props, environment, dynamic behaviors, physical interactions, scale, "
+        "and continuity ledger. No text overlays, captions, logos, UI chrome, "
+        "collage borders, or illustrated/comic styling. Do not use Nano Banana "
+        "or Gemini visual style.\n\n"
+        f"Panel repair work order: {resolved}\n"
+        f"Candidate storyboard/reference image: {candidate_image or 'none'}\n"
+        f"{source_summary}"
+    )
+    return {
+        "panel_id": panel_id,
+        "run_root": run_root,
+        "image_path": str(output_image.resolve()),
+        "visual_review_receipt": str(visual_review.resolve()),
+        "panel_prompt": prompt,
+        "scillm_live_panel": "true",
+        "scillm_image_model": scillm_image_model,
+        "scillm_image_auth": scillm_image_auth,
+        "scillm_image_quality": scillm_image_quality,
+        "scillm_vlm_model": scillm_vlm_model,
+        "scillm_base_url": scillm_base_url,
+        "source_panel": str(resolved),
+        "source_panel_summary": source_summary,
+        "source_script_coverage": "panel repair work order includes storyboard, continuity, and required subagent repair contract",
+        "post_generation_script_coverage": "post-generation script coverage must reconcile generated panel against the work order and continuity ledger",
+        "write_receipts_to_panel_run_root": "true",
+        "panel_repair_work_order": str(resolved),
+    }
+
+
+def _repair_work_order_source_summary(payload: Mapping[str, Any], *, run_root: Path) -> str:
+    lines: list[str] = []
+    for key in ("purpose", "acceptance_criteria", "forbidden_actions", "required_default_action", "current_candidate"):
+        value = payload.get(key)
+        if value is not None:
+            lines.append(f"- {key}: {json.dumps(value, sort_keys=True)}")
+    source_paths = payload.get("source_paths")
+    if isinstance(source_paths, Mapping):
+        for key in ("storyboard_panel_receipt", "continuity_ledger", "work_order"):
+            value = source_paths.get(key)
+            if isinstance(value, str) and value.strip():
+                path = Path(value).expanduser()
+                if not path.is_absolute():
+                    path = run_root / path
+                if path.exists():
+                    try:
+                        loaded = json.loads(path.read_text(encoding="utf-8"))
+                    except json.JSONDecodeError:
+                        loaded = {"path": str(path)}
+                    lines.append(f"- {key}: {json.dumps(loaded, sort_keys=True)}")
+    return "\n".join(lines)
 
 
 def _source_panel_context(panel_source: Path | None) -> dict[str, str]:

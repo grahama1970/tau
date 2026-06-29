@@ -632,7 +632,10 @@ def _run_panel_repair_gate(
         remaining_blockers.append("provider-accessible public image URL is missing")
         remaining_blockers.append("provider media URL probe receipt is missing")
     receipt_path = artifact_dir / "panel_repair_gate_receipt.json"
-    run_root_receipts = _proof_run_root(artifact_dir) / "receipts"
+    if _truthy(panel.get("write_receipts_to_panel_run_root")):
+        run_root_receipts = Path(str(panel.get("run_root"))).expanduser().resolve() / "receipts"
+    else:
+        run_root_receipts = _proof_run_root(artifact_dir) / "receipts"
     run_root_repair_receipt_path = run_root_receipts / "panel_repair_gate_receipt.json"
     run_root_panel_source_path = run_root_receipts / "panel_source_receipt.json"
     support_receipts = _write_persona_dream_support_receipts(
@@ -1233,6 +1236,8 @@ def _panel_context(start_payload: Mapping[str, Any]) -> dict[str, str]:
         "post_generation_script_coverage": str(panel.get("post_generation_script_coverage") or ""),
         "provider_media_probe_receipt": str(panel.get("provider_media_probe_receipt") or ""),
         "provider_media_url": str(panel.get("provider_media_url") or ""),
+        "write_receipts_to_panel_run_root": str(panel.get("write_receipts_to_panel_run_root") or ""),
+        "panel_repair_work_order": str(panel.get("panel_repair_work_order") or ""),
     }
 
 

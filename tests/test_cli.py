@@ -2209,6 +2209,70 @@ def test_persona_dream_panel_live_context_is_tau_owned(tmp_path: Path) -> None:
     assert context["scillm_vlm_model"] == "gpt-5.5"
 
 
+def test_persona_dream_panel_context_accepts_panel_repair_work_order(tmp_path: Path) -> None:
+    run_root = tmp_path / "dream-run"
+    receipts = run_root / "receipts"
+    artifacts = run_root / "artifacts"
+    receipts.mkdir(parents=True)
+    artifacts.mkdir()
+    storyboard_image = artifacts / "panel_001_storyboard_contract.svg"
+    storyboard_image.write_text("<svg></svg>\n", encoding="utf-8")
+    storyboard_receipt = receipts / "storyboard_panel_receipt.json"
+    storyboard_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "persona_dream.storyboard_panel_receipt.v1",
+                "panel_id": "panel_01",
+                "beat": "Embry reviews source evidence under a void-world sky.",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    work_order = receipts / "panel_repair_work_order.json"
+    work_order.write_text(
+        json.dumps(
+            {
+                "schema": "persona_dream.panel_repair_work_order.v1",
+                "panel_id": "panel_01",
+                "purpose": "Run the real panel loop.",
+                "source_paths": {
+                    "run_root": str(run_root),
+                    "storyboard_panel_receipt": str(storyboard_receipt),
+                },
+                "current_candidate": {
+                    "image_path": str(storyboard_image),
+                    "remaining_blockers": ["panel_repair_gate_receipt_missing"],
+                },
+                "forbidden_actions": ["nano_banana_final_panel_generation"],
+                "acceptance_criteria": ["write panel_repair_gate_receipt.json"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    context = _persona_panel_context(
+        None,
+        proof_dir=tmp_path / "proof",
+        panel_repair_work_order=work_order,
+        scillm_image_model="gpt-image-2",
+        scillm_image_auth="codex-oauth",
+        scillm_image_quality="high",
+        scillm_vlm_model="gpt-5.5",
+        scillm_base_url="http://127.0.0.1:4001",
+    )
+
+    assert context["panel_id"] == "panel_01"
+    assert context["run_root"] == str(run_root.resolve())
+    assert context["image_path"] == str((artifacts / "panel_01_scillm_panel.png").resolve())
+    assert context["visual_review_receipt"] == str((receipts / "visual_review_receipt.json").resolve())
+    assert context["scillm_live_panel"] == "true"
+    assert context["write_receipts_to_panel_run_root"] == "true"
+    assert context["panel_repair_work_order"] == str(work_order.resolve())
+    assert "Nano Banana" in context["panel_prompt"]
+
+
 def test_persona_dream_panel_sse_collector_records_liveness(tmp_path: Path) -> None:
     events_path = tmp_path / "events.jsonl"
     result = _collect_scillm_sse(
