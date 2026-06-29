@@ -1,0 +1,212 @@
+{
+  "action": "QUERY",
+  "allowed_tools": [],
+  "candidate_intents": [],
+  "classifier_source": "deterministic_problem_query",
+  "confidence": 0.85,
+  "content_type": "markdown",
+  "depth": 1,
+  "disallowed_tools": [],
+  "entities": [],
+  "entity_context": {
+    "agent_contract": {
+      "authoritative_paths": [
+        "proof_packet.assertions",
+        "nodes.anchors",
+        "nodes.validated_context",
+        "nodes.suppressed"
+      ],
+      "ignore_for_grounding": [
+        "display_summary",
+        "candidate_nodes",
+        "guess_nodes",
+        "rationale.summary"
+      ],
+      "llm_generated_fields_are_never_authoritative": true,
+      "use_for_grounding": [
+        "proof_packet.assertions"
+      ]
+    },
+    "agent_decision": {
+      "grounding_source": "proof_packet.assertions",
+      "needs_clarification": true,
+      "needs_retry": true,
+      "primary_entity_id": null,
+      "reason": "fabricated_id",
+      "safe_to_answer": false,
+      "suggested_action": "clarify_or_repair"
+    },
+    "candidate_nodes": {
+      "controls": [],
+      "not_usable_for": [
+        "grounding",
+        "proof",
+        "approval",
+        "answer_authority",
+        "evidence_gate"
+      ],
+      "proof_role": "none",
+      "qras": [],
+      "requires_user_confirmation": true,
+      "status": "candidate_only",
+      "usable_for": [
+        "suggestions",
+        "related_results",
+        "did_you_mean"
+      ]
+    },
+    "counts": {
+      "anchors": 0,
+      "candidate_controls": 0,
+      "candidate_qras": 0,
+      "context_terms": 0,
+      "media_timecodes": 0,
+      "suppressed": 0,
+      "unsupported": 1,
+      "validated_context": 0
+    },
+    "executed_by": "intent_always_on",
+    "grounding_ok": false,
+    "media_timecodes": [],
+    "nodes": {
+      "anchors": [],
+      "context_terms": [],
+      "suppressed": [],
+      "unsupported": [
+        {
+          "id": "unsupported:controlled_tau_self_fix_cron_probe_fixture",
+          "mention": "controlled Tau self fix cron probe fixture",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "controlled Tau self fix cron probe fixture",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        }
+      ],
+      "validated_context": []
+    },
+    "ok": true,
+    "proof_packet": {
+      "assertions": [
+        {
+          "evidence": {
+            "mention": "controlled Tau self fix cron probe fixture",
+            "normalized_text": "controlled tau self fix cron probe fixture",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_controlled_tau_self_fix_cron_probe_fixture_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:controlled_tau_self_fix_cron_probe_fixture"
+        }
+      ],
+      "authoritative": true,
+      "generated_by": "deterministic_extractor",
+      "llm_used": false,
+      "primary_entity_id": null,
+      "query_text": "grahama1970/tau#36: Cron self-fix mode should repair proof fixture\n\nRepair the controlled Tau self-fix cron probe fixture."
+    },
+    "query_text": "grahama1970/tau#36: Cron self-fix mode should repair proof fixture\n\nRepair the controlled Tau self-fix cron probe fixture.",
+    "route": "/extract-entities",
+    "view": "agent"
+  },
+  "evidence_case": null,
+  "expand_hops": 1,
+  "frameworks": [],
+  "grounding": null,
+  "invalid_terms": [],
+  "k": 8,
+  "keywords": [],
+  "lanes": [
+    "bm25",
+    "dense"
+  ],
+  "matched_persona_aliases": [],
+  "perspective": null,
+  "planner_only": false,
+  "query_plan": null,
+  "query_type": "knowledge",
+  "question_domains": [
+    "procedural_memory"
+  ],
+  "question_kind": "procedural_project_memory_question",
+  "reason": null,
+  "recall_profile": "procedural_memory",
+  "recall_profile_confidence": 0.85,
+  "recall_profile_source": "deterministic_procedural",
+  "recall_profile_spec": {
+    "clarify_policy": "default",
+    "collections": [
+      "lessons",
+      "skill_chains",
+      "sanity_scripts",
+      "checkpoints"
+    ],
+    "depth": 1,
+    "description": "Project-agent troubleshooting, prior implementation, skills, and checkpoint recall.",
+    "hard_filters": null,
+    "k": 8,
+    "min_grounding": 0.7,
+    "name": "procedural_memory",
+    "required_artifacts": [
+      "lesson"
+    ],
+    "reranker_mode": "off",
+    "weights": {
+      "bm25": 0.2,
+      "freshness": 0.15,
+      "graph_multihop": 0.2,
+      "semantic": 0.35,
+      "skill_chain": 0.1
+    }
+  },
+  "recommended_skills": [
+    "memory"
+  ],
+  "render_style_id": "plain_answer",
+  "required_artifacts": [
+    "lesson"
+  ],
+  "reranker_mode": "off",
+  "response_mode": "memory_grounded_answer",
+  "rewritten_query": "grahama1970/tau#36: Cron self-fix mode should repair proof fixture\n\nRepair the controlled Tau self-fix cron probe fixture.",
+  "scene_action_id": null,
+  "scope": "brandon_bailey",
+  "skill_chain": [
+    "memory"
+  ],
+  "slots": {
+    "arango_data_requested": false,
+    "document_name": null,
+    "page": null,
+    "page_image_requested": false,
+    "payload_reference": false,
+    "proof_requested": false,
+    "qdrant_similarity_requested": false,
+    "requested_artifacts": [],
+    "similarity_scope": null,
+    "table_requested": false
+  },
+  "suggestions": [],
+  "target_node_id": null,
+  "tier1": [],
+  "tool_calls": [],
+  "top_intents": [],
+  "ui_action": null,
+  "valid_entities": []
+}

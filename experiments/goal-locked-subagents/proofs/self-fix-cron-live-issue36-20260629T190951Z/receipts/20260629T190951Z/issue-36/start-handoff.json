@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/goal-helper.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/memory-intent.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/memory-recall.json"
+    ],
+    "summary": "Live GitHub issue #36 was selected for a bounded Tau self-fix intake tick: Cron self-fix mode should repair proof fixture"
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#36",
+    "url": "https://github.com/grahama1970/tau/issues/36"
+  },
+  "goal": {
+    "goal_hash": "sha256:d54576abd1206403541305131ff9f0637fedf2bf4cf3cd89eed1d1a2011cfa52",
+    "goal_id": "goal-tau-self-fix-issue-36",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Coder should perform the first bounded implementation analysis for the issue."
+  },
+  "previous_subagent": "human",
+  "rationale": "The issue has a self-fix routing label and Memory-first preflight has produced artifacts, so the next bounded actor should be coder.",
+  "required_evidence": [
+    "Coder emits a schema-valid tau.agent_handoff.v1 handoff.",
+    "Reviewer emits a schema-valid tau.agent_handoff.v1 handoff.",
+    "Any code mutation in a later slice starts from a checkpoint commit and records rollback status."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/goal-helper.json"
+    ],
+    "status": "REQUESTED",
+    "summary": "Human requested Tau to start the coder/reviewer self-fix loop for this issue."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop when reviewer routes to human/PASS, the command-loop hits max steps, or any dispatch fails closed."
+}

@@ -1,0 +1,4 @@
+[2026-06-29T19:08:17Z] tau self-fix poll --repo grahama1970/tau --receipt-dir experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190817Z/receipts/20260629T190817Z --dispatch --issue-limit 30 --memory-base-url http://127.0.0.1:8601 --scillm-base-url http://127.0.0.1:4001 --model gpt-5.5 --max-steps 1 --repair --apply-github --repo-root /home/graham/workspace/experiments/tau
+docker/tau-cron.sh: line 135: tau: command not found
+[2026-06-29T19:08:17Z] Tau bounded loop exited non-zero; next tick remains scheduled.
+[2026-06-29T19:08:17Z] TAU_ORCHESTRATOR_ONCE=1; exiting after one bounded tick.

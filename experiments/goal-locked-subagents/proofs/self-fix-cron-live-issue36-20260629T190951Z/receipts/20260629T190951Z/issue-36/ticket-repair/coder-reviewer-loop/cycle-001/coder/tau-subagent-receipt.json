@@ -1,0 +1,43 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json"
+    ],
+    "assumptions": [
+      "Scillm output is advisory; deterministic checks are proof."
+    ],
+    "run_id": "coder-reviewer-loop",
+    "subagent": "coder",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:d54576abd1206403541305131ff9f0637fedf2bf4cf3cd89eed1d1a2011cfa52",
+    "goal_id": "goal-tau-coder-reviewer-loop-coder-reviewer-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Reviewer validates the coder mutation.",
+    "subagent": "reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau self-fix subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Coder changed tests/fixtures/self_fix_cron_probe.py by replacing the configured text."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Reviewer posts PASS or a fail-closed blocker."
+}

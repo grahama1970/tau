@@ -1,0 +1,203 @@
+{
+  "apply_github": true,
+  "artifacts": {
+    "coder_reviewer_loop": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/coder-reviewer-loop/self-fix-coder-reviewer-loop-receipt.json",
+    "proof_markdown": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/proof.md"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous issue processing.",
+      "GitHub Actions event wiring.",
+      "Semantic reviewer correctness beyond Scillm stream plus deterministic checks."
+    ],
+    "proves": [
+      "Tau extracted a schema-valid repair request from a live GitHub issue.",
+      "Tau leased the issue through the guarded ticket workflow when apply_github=true.",
+      "Tau ran the Memory-first streaming Scillm coder/reviewer repair loop.",
+      "Tau committed and pushed the scoped repair after deterministic checks passed.",
+      "Tau attached a proof comment and closed the issue when apply_github=true."
+    ]
+  },
+  "commands": [
+    {
+      "command": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "duration_seconds": 0.006477,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/gh-ticket-tools.sh",
+        "lease",
+        "36",
+        "--repo",
+        "grahama1970/tau",
+        "--agent",
+        "tau"
+      ],
+      "duration_seconds": 5.752774,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "",
+      "stdout": "https://github.com/grahama1970/tau/issues/36\nhttps://github.com/grahama1970/tau/issues/36#issuecomment-4836059414\n{\"ok\":true,\"action\":\"lease\",\"issue\":\"36\",\"agent\":\"tau\",\"lease_id\":\"20260629T191003Z-tau-36\"}"
+    },
+    {
+      "command": [
+        "git",
+        "add",
+        "tests/fixtures/self_fix_cron_probe.py"
+      ],
+      "duration_seconds": 0.005027,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "git",
+        "commit",
+        "-m",
+        "Resolve controlled self-fix cron probe"
+      ],
+      "duration_seconds": 0.012487,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "",
+      "stdout": "[main 7710206] Resolve controlled self-fix cron probe\n 1 file changed, 1 insertion(+), 1 deletion(-)"
+    },
+    {
+      "command": [
+        "git",
+        "push",
+        "grahama1970",
+        "main"
+      ],
+      "duration_seconds": 1.670168,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "To github.com:grahama1970/tau.git\n   e7a31bc..7710206  main -> main",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "--short",
+        "HEAD"
+      ],
+      "duration_seconds": 0.003281,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "",
+      "stdout": "7710206"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/gh-ticket-tools.sh",
+        "close",
+        "36",
+        "--repo",
+        "grahama1970/tau",
+        "--proof",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/proof.md",
+        "--reason",
+        "completed"
+      ],
+      "duration_seconds": 4.196975,
+      "exit_code": 0,
+      "ok": true,
+      "stderr": "\u2713 Closed issue grahama1970/tau#36 (Cron self-fix mode should repair proof fixture)",
+      "stdout": "https://github.com/grahama1970/tau/issues/36#issuecomment-4836063214\nhttps://github.com/grahama1970/tau/issues/36\n{\"ok\":true,\"action\":\"close\",\"issue\":\"36\",\"reason\":\"completed\",\"proof\":\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-cron-live-issue36-20260629T190951Z/receipts/20260629T190951Z/issue-36/ticket-repair/proof.md\"}"
+    }
+  ],
+  "commit": {
+    "branch": "main",
+    "commands": [
+      {
+        "command": [
+          "git",
+          "add",
+          "tests/fixtures/self_fix_cron_probe.py"
+        ],
+        "duration_seconds": 0.005027,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "git",
+          "commit",
+          "-m",
+          "Resolve controlled self-fix cron probe"
+        ],
+        "duration_seconds": 0.012487,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "[main 7710206] Resolve controlled self-fix cron probe\n 1 file changed, 1 insertion(+), 1 deletion(-)"
+      },
+      {
+        "command": [
+          "git",
+          "push",
+          "grahama1970",
+          "main"
+        ],
+        "duration_seconds": 1.670168,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "To github.com:grahama1970/tau.git\n   e7a31bc..7710206  main -> main",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "git",
+          "rev-parse",
+          "--short",
+          "HEAD"
+        ],
+        "duration_seconds": 0.003281,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "7710206"
+      }
+    ],
+    "commit": "7710206",
+    "ok": true,
+    "remote": "grahama1970"
+  },
+  "created_at": "2026-06-29T19:10:01Z",
+  "issue": {
+    "number": 36,
+    "title": "Cron self-fix mode should repair proof fixture",
+    "url": "https://github.com/grahama1970/tau/issues/36"
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "repair_request": {
+    "commit_message": "Resolve controlled self-fix cron probe",
+    "find_text": "STATUS = \"bug\"",
+    "replace_text": "STATUS = \"fixed\"",
+    "request": "Repair the controlled Tau self-fix cron probe fixture.",
+    "schema": "tau.self_fix_repair_request.v1",
+    "target_file": "tests/fixtures/self_fix_cron_probe.py",
+    "verification_commands": [
+      "python -m py_compile tests/fixtures/self_fix_cron_probe.py"
+    ]
+  },
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_ticket_repair_receipt.v1",
+  "status": "PASS"
+}

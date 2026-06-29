@@ -1,0 +1,238 @@
+{
+  "confidence": 0.833,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_key": "6147631fbe310e2b",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Recent Decisions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 1.0,
+        "dense": 0.4188726,
+        "freshness": 0.9818804021110121,
+        "graph": 0.0,
+        "profile": 0.3928685401055506
+      },
+      "section": "Recent Decisions",
+      "section_slug": "recent-decisions",
+      "solution": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:recent-decisions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "5d0d521134d6ec49",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Current Understanding (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.8333333333333334,
+        "dense": 0.39664906,
+        "freshness": 0.9818804021110121,
+        "graph": 0.0,
+        "profile": 0.35509049877221727
+      },
+      "section": "Current Understanding",
+      "section_slug": "current-understanding",
+      "solution": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6500ad5b6398c1f1",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Key Files (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.6666666666666666,
+        "dense": 0.3942144,
+        "freshness": 0.9818804021110121,
+        "graph": 0.0,
+        "profile": 0.32127023343888395
+      },
+      "section": "Key Files",
+      "section_slug": "key-files",
+      "solution": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:key-files"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "d2ab664248780d4c",
+      "_source": "project_knowledge",
+      "decisions": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "doc_type": "aggregate",
+      "key_files": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "open_questions": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.5,
+        "dense": 0.33037305,
+        "freshness": 0.9818804021110121,
+        "graph": 0.0,
+        "profile": 0.2751686301055506
+      },
+      "tags": [
+        "project_knowledge",
+        "project:tau"
+      ],
+      "understanding": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "9cf6139faffa4260",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Infrastructure State (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.3333333333333333,
+        "dense": 0.32537338,
+        "freshness": 0.9818804021110121,
+        "graph": 0.0,
+        "profile": 0.2408353627722173
+      },
+      "section": "Infrastructure State",
+      "section_slug": "infrastructure-state",
+      "solution": "<!-- Auto-populated from /project-state --quick -->",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:infrastructure-state"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "59bc6f31ae7700a4",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Open Questions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.16666666666666666,
+        "dense": 0.37282282,
+        "freshness": 0.9818804021110121,
+        "graph": 0.0,
+        "profile": 0.21699191743888394
+      },
+      "section": "Open Questions",
+      "section_slug": "open-questions",
+      "solution": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:open-questions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    }
+  ],
+  "meta": {
+    "collections_filter": [
+      "project_activity",
+      "project_knowledge",
+      "lessons",
+      "lessons_v2",
+      "checkpoints"
+    ],
+    "k": 10,
+    "memory_first": true,
+    "q": "title: Cron self-fix mode should repair proof fixture\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\ntests/fixtures/self_fix_cron_probe.py\n\n## Current state\n\nThe controlled Tau cron proof fixture still says `STATUS = \"bug\"`.\n\n## Requested outcome\n\nTau cron should process this ticket through `docker/tau-cron.sh` in `TAU_CRON_MODE=self-fix`, run one bounded `tau self-fix poll --dispatch --repair --apply-github` tick, run Memory-first intake, run the streaming Scillm-backed coder/reviewer loop, change the fixture to `STATUS = \"fixed\"`, commit and push the scoped repair, attach proof, and close the issue.\n\n## Required proof\n\n- `docker/tau-cron.sh` is the entrypoint.\n- Live GitHub issue selected by Tau poll.\n- Memory `/intent` and `/recall` receipts.\n- Coder and reviewer Scillm receipts with `stream:true`.\n- Deterministic verification command exits `0`.\n- Commit is pushed to `grahama1970/tau`.\n- Proof comment is attached before close.\n\n## Non-goals\n\nNo unrelated code changes. No claim of an indefinitely running daemon from this one-shot proof.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair the controlled Tau self-fix cron probe fixture.\",\n  \"target_file\": \"tests/fixtures/self_fix_cron_probe.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\n    \"python -m py_compile tests/fixtures/self_fix_cron_probe.py\"\n  ],\n  \"commit_message\": \"Resolve controlled self-fix cron probe\"\n}\n```\n\n<!-- ticket-skill\ntype: bug\ntarget: tests/fixtures/self_fix_cron_probe.py\nroute: backend_python_or_skill_runtime\nagent: coder\n-->",
+    "recall_profile": "temporal_project_state",
+    "recall_profile_source": "deterministic_project_activity",
+    "required_artifacts": [
+      "temporal_metadata"
+    ],
+    "reranker_mode": "off",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782760201,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 1347,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_route": {
+    "bonds": [],
+    "capabilities": [
+      {
+        "best_provider": "create-pdf-fixture",
+        "capability": "create-pdf-fixture",
+        "providers": [
+          "create-pdf-fixture"
+        ]
+      }
+    ],
+    "compositions": [],
+    "skills": [
+      {
+        "composability_score": 0.114,
+        "has_run_sh": true,
+        "name": "create-pdf-fixture",
+        "provides": [
+          "create-pdf-fixture"
+        ]
+      },
+      {
+        "composability_score": 0.0,
+        "has_run_sh": true,
+        "name": "create-pdf-fixture",
+        "provides": []
+      },
+      {
+        "composability_score": 0.114,
+        "has_run_sh": true,
+        "name": "create-pdf-fixture",
+        "provides": [
+          "create-pdf-fixture"
+        ]
+      },
+      {
+        "composability_score": 0.086,
+        "has_run_sh": true,
+        "name": "fixture-tricky",
+        "provides": [
+          "fixture-tricky"
+        ]
+      }
+    ],
+    "suggested_chain": null
+  }
+}

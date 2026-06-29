@@ -1,0 +1,48 @@
+{
+  "author": {
+    "id": "U_kgDOCRK7qw",
+    "is_bot": false,
+    "login": "grahama1970",
+    "name": "Graham"
+  },
+  "body": "## Type\n\nbug\n\n## Target\n\ntests/fixtures/self_fix_cron_probe.py\n\n## Current state\n\nThe controlled Tau cron proof fixture still says `STATUS = \"bug\"`.\n\n## Requested outcome\n\nTau cron should process this ticket through `docker/tau-cron.sh` in `TAU_CRON_MODE=self-fix`, run one bounded `tau self-fix poll --dispatch --repair --apply-github` tick, run Memory-first intake, run the streaming Scillm-backed coder/reviewer loop, change the fixture to `STATUS = \"fixed\"`, commit and push the scoped repair, attach proof, and close the issue.\n\n## Required proof\n\n- `docker/tau-cron.sh` is the entrypoint.\n- Live GitHub issue selected by Tau poll.\n- Memory `/intent` and `/recall` receipts.\n- Coder and reviewer Scillm receipts with `stream:true`.\n- Deterministic verification command exits `0`.\n- Commit is pushed to `grahama1970/tau`.\n- Proof comment is attached before close.\n\n## Non-goals\n\nNo unrelated code changes. No claim of an indefinitely running daemon from this one-shot proof.\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Repair the controlled Tau self-fix cron probe fixture.\",\n  \"target_file\": \"tests/fixtures/self_fix_cron_probe.py\",\n  \"find_text\": \"STATUS = \\\"bug\\\"\",\n  \"replace_text\": \"STATUS = \\\"fixed\\\"\",\n  \"verification_commands\": [\n    \"python -m py_compile tests/fixtures/self_fix_cron_probe.py\"\n  ],\n  \"commit_message\": \"Resolve controlled self-fix cron probe\"\n}\n```\n\n<!-- ticket-skill\ntype: bug\ntarget: tests/fixtures/self_fix_cron_probe.py\nroute: backend_python_or_skill_runtime\nagent: coder\n-->\n",
+  "comments": [],
+  "createdAt": "2026-06-29T19:08:01Z",
+  "labels": [
+    {
+      "color": "5319e7",
+      "description": "Tau agent harness work item",
+      "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+      "name": "agent-work"
+    },
+    {
+      "color": "d73a4a",
+      "description": "Defect or regression",
+      "id": "LA_kwDOTG11HM8AAAACpRFAJA",
+      "name": "type:bug"
+    },
+    {
+      "color": "1d76db",
+      "description": "Python CLIs, runtime, harness, and skill integration route",
+      "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+      "name": "route:backend_python_or_skill_runtime"
+    },
+    {
+      "color": "5319e7",
+      "description": "Requested repair agent: coder",
+      "id": "LA_kwDOTG11HM8AAAACpVklOg",
+      "name": "agent:coder"
+    },
+    {
+      "color": "0052cc",
+      "description": "Tau harness and handoff contract",
+      "id": "LA_kwDOTG11HM8AAAACpVkmUw",
+      "name": "tau-harness"
+    }
+  ],
+  "number": 36,
+  "state": "OPEN",
+  "title": "Cron self-fix mode should repair proof fixture",
+  "updatedAt": "2026-06-29T19:08:01Z",
+  "url": "https://github.com/grahama1970/tau/issues/36"
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "command": "python -m py_compile tests/fixtures/self_fix_cron_probe.py",
+    "duration_seconds": 0.03476,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  }
+]
