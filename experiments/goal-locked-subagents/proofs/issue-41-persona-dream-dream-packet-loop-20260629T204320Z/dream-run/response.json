@@ -1,0 +1,11 @@
+{
+  "artifact_count": 13,
+  "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json",
+  "manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/manifest.json",
+  "memory_write_status": "skipped",
+  "mode": "static_dream",
+  "output_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "run_id": "issue-41-persona-dream-dream-packet-loop-20260629T204320Z",
+  "schema": "persona_dream.response.v1",
+  "status": "ok"
+}

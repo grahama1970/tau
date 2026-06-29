@@ -1,0 +1,35 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No Kling call, paid provider call, or public upload was performed.",
+      "This does not claim full persona-dream pipeline readiness beyond the first blocker reported by pipeline-loop-status."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from dreamer to dream-reviewer.",
+      "Dreamer called the persona-dream skill runtime rather than fabricating fixture residue.",
+      "Dream-reviewer ran persona-dream validators and recorded their JSON outputs."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "created_at": "2026-06-29T20:43:26Z",
+  "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json",
+  "dream_run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json",
+  "issue": 41,
+  "live": true,
+  "mocked": false,
+  "pipeline_first_blocker": {
+    "path": "story_contract.json | artifacts/story_contract.json",
+    "phase": "story_contract",
+    "reason": "missing_artifact"
+  },
+  "pipeline_loop_status": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_forward.json",
+  "schema": "tau.persona_dream_dream_packet_loop_proof.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "validate_dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_dream_packet.json",
+  "validate_dream_packet_status": "PASS_DREAM_PACKET"
+}

@@ -1,0 +1,85 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream-reviewer-pipeline-loop-status.command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream-reviewer-pipeline-loop-status.stderr.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream-reviewer-pipeline-loop-status.stdout.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream-reviewer-validate-dream-packet.command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream-reviewer-validate-dream-packet.stderr.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream-reviewer-validate-dream-packet.stdout.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_tau_subagent_receipt.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "tau_coding.persona_dream_dream_packet_agent",
+        "--role",
+        "dream-reviewer"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_tau_subagent_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_tau_subagent_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_dream_packet.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_forward.json\"], \"persona_dream_dream_packet\": {\"about\": \"Tau issue 41 dream packet creator reviewer loop\", \"frames\": \"3\", \"limit\": \"4\", \"persona\": \"embry\", \"run_id\": \"issue-41-persona-dream-dream-packet-loop-20260629T204320Z\", \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\", \"secondary_persona\": \"\", \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json\"}, \"summary\": \"Dream-reviewer ran persona-dream dream-packet validation and serial loop status.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue#41\"}, \"goal\": {\"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000041\", \"goal_id\": \"goal-tau-issue-41-persona-dream-dream-packet-loop\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"human\", \"name\": \"human\", \"reason\": \"Human/ticket resolver reviews proof artifacts and closes or redirects.\"}, \"previous_subagent\": \"dream-reviewer\", \"rationale\": \"The next route is human because the bounded creator/reviewer loop has reached a terminal proof or blocker.\", \"required_evidence\": [\"Proof comment cites dreamer, reviewer, validate-dream-packet, and pipeline-loop-status receipts.\"], \"result\": {\"evidence\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_tau_subagent_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_dream_packet.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_forward.json\"], \"status\": \"PASS\", \"summary\": \"Dream-reviewer accepted the dream packet and pipeline-loop-status advanced past dream_packet.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"GitHub issue is closed with proof or left open with exact blocker.\"}\n",
+      "timed_out": false,
+      "timeout_s": 240.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 2,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Dream-reviewer accepted the dream packet and pipeline-loop-status advanced past dream_packet.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: GitHub issue is closed with proof or left open with exact blocker.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_dream_packet.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_forward.json\"\n    ],\n    \"persona_dream_dream_packet\": {\n      \"about\": \"Tau issue 41 dream packet creator reviewer loop\",\n      \"frames\": \"3\",\n      \"limit\": \"4\",\n      \"persona\": \"embry\",\n      \"run_id\": \"issue-41-persona-dream-dream-packet-loop-20260629T204320Z\",\n      \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"secondary_persona\": \"\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json\"\n    },\n    \"summary\": \"Dream-reviewer ran persona-dream dream-packet validation and serial loop status.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#41\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000041\",\n    \"goal_id\": \"goal-tau-issue-41-persona-dream-dream-packet-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human/ticket resolver reviews proof artifacts and closes or redirects.\"\n  },\n  \"previous_subagent\": \"dream-reviewer\",\n  \"rationale\": \"The next route is human because the bounded creator/reviewer loop has reached a terminal proof or blocker.\",\n  \"required_evidence\": [\n    \"Proof comment cites dreamer, reviewer, validate-dream-packet, and pipeline-loop-status receipts.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-002/dream_reviewer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_dream_packet.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_forward.json\"\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Dream-reviewer accepted the dream packet and pipeline-loop-status advanced past dream_packet.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"GitHub issue is closed with proof or left open with exact blocker.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#41"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "dream-reviewer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Dreamer created dream_packet.json through persona-dream generate.\n- Next agent: `dream-reviewer`\n- Executor: `local`\n- Stop condition: Dream-reviewer routes to human with PASS or BLOCKED evidence.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json\"\n    ],\n    \"persona_dream_dream_packet\": {\n      \"about\": \"Tau issue 41 dream packet creator reviewer loop\",\n      \"frames\": \"3\",\n      \"limit\": \"4\",\n      \"persona\": \"embry\",\n      \"run_id\": \"issue-41-persona-dream-dream-packet-loop-20260629T204320Z\",\n      \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"secondary_persona\": \"\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json\"\n    },\n    \"summary\": \"Dreamer consumed the dream-packet work order and invoked persona-dream generate.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#41\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000041\",\n    \"goal_id\": \"goal-tau-issue-41-persona-dream-dream-packet-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"dream-reviewer\",\n    \"reason\": \"Dream-reviewer must run validate-dream-packet and pipeline-loop-status.\"\n  },\n  \"previous_subagent\": \"dreamer\",\n  \"rationale\": \"Independent validation is required before any dream-packet acceptance claim.\",\n  \"required_evidence\": [\n    \"validate-dream-packet JSON and pipeline-loop-status JSON.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/response.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Dreamer created dream_packet.json through persona-dream generate.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Dream-reviewer routes to human with PASS or BLOCKED evidence.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:dream-reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "dream-reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#41"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

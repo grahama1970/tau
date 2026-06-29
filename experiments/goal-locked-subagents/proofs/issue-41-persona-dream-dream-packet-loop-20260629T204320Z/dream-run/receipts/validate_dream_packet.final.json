@@ -1,0 +1,15 @@
+{
+  "contact_sheet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/contact_sheet.png",
+  "exercised": "local dream packet shape, residue list, prompt list, contact sheet path and PNG signature",
+  "first_blocker": null,
+  "frame_prompt_count": 3,
+  "live": "no",
+  "mocked": "no",
+  "packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json",
+  "persona_id": "embry",
+  "run_id": "issue-41-persona-dream-dream-packet-loop-20260629T204320Z",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.dream_packet_validation.v1",
+  "status": "PASS_DREAM_PACKET",
+  "unverified": "live memory recall, residue semantic grounding, story acceptance, panel generation, provider/Kling execution"
+}

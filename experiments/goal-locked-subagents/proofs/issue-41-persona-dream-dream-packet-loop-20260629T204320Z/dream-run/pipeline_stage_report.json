@@ -1,0 +1,187 @@
+{
+  "artifacts": [
+    "contact_sheet.png",
+    "contradiction_report.json",
+    "dream_packet.json",
+    "dream_prompt.txt",
+    "dream_reflection.md",
+    "dream_request.json",
+    "frame_prompts.json",
+    "manifest.json",
+    "memory_write_receipt.json",
+    "pipeline_stage_report.json",
+    "pipeline_stage_report.md",
+    "residue_links.json",
+    "response.json"
+  ],
+  "mode": "static_dream",
+  "non_claims": [
+    "This report does not prove Chutes keyframe generation has run.",
+    "This report does not prove Wan I2V clips exist.",
+    "This report does not prove FFmpeg assembly exists.",
+    "This report does not prove the final 30-second video has passed visual continuity checks."
+  ],
+  "overall_status": "ok",
+  "run_id": "issue-41-persona-dream-dream-packet-loop-20260629T204320Z",
+  "schema": "persona_dream.pipeline_stage_report.v1",
+  "stages": [
+    {
+      "did": "Normalized the user request into a persona-dream run request.",
+      "evidence": {
+        "about": "Tau issue 41 dream packet creator reviewer loop",
+        "mode": "static_dream",
+        "persona": {
+          "display_name": "Embry",
+          "id": "embry"
+        },
+        "scene": null,
+        "secondary_persona": null
+      },
+      "failure_or_gap": null,
+      "stage_id": "stage_01_intake",
+      "status": "ok",
+      "text_outputs": [
+        "dream_request.json"
+      ],
+      "visual_outputs": []
+    },
+    {
+      "did": "Collected residue from fixture or memory recall and preserved source ids.",
+      "evidence": {
+        "recall_receipts": [
+          {
+            "accepted_count": 8,
+            "accepted_persona_ids": [
+              "embry",
+              "embry_lawson"
+            ],
+            "collections": [
+              "persona_memory"
+            ],
+            "confidence": 47.916,
+            "count": 8,
+            "discarded_persona_mismatch_count": 0,
+            "found": true,
+            "k": 32,
+            "persona_id": "embry",
+            "query": "embry embry_lawson source-grounded persona_memory theory of mind emotional residue unresolved themes evidence Tau issue 41 dream packet creator reviewer loop",
+            "scope": "persona-dream",
+            "should_scan": false,
+            "status": "ok"
+          },
+          {
+            "accepted_count": 1,
+            "accepted_persona_ids": [
+              "embry",
+              "embry_lawson"
+            ],
+            "collections": null,
+            "confidence": 1.0,
+            "count": 1,
+            "discarded_persona_mismatch_count": 0,
+            "found": true,
+            "k": 1,
+            "persona_id": "embry",
+            "query": "recent unresolved themes persona memory SPARTA NIST MITRE evidence Tau issue 41 dream packet creator reviewer loop",
+            "scope": "embry-memories",
+            "should_scan": false,
+            "status": "ok"
+          },
+          {
+            "accepted_count": 1,
+            "accepted_persona_ids": [
+              "embry",
+              "embry_lawson"
+            ],
+            "collections": null,
+            "confidence": 1.0,
+            "count": 1,
+            "discarded_persona_mismatch_count": 0,
+            "found": true,
+            "k": 1,
+            "persona_id": "embry",
+            "query": "recent dream motif visual surreal recurring image Tau issue 41 dream packet creator reviewer loop",
+            "scope": "embry-dreams",
+            "should_scan": false,
+            "status": "ok"
+          },
+          {
+            "accepted_count": 1,
+            "accepted_persona_ids": [
+              "embry",
+              "embry_lawson"
+            ],
+            "collections": null,
+            "confidence": 18.657,
+            "count": 1,
+            "discarded_persona_mismatch_count": 0,
+            "found": true,
+            "k": 1,
+            "persona_id": "embry",
+            "query": "dream reflection mood unresolved image feeling Tau issue 41 dream packet creator reviewer loop",
+            "scope": "embry-dream-journals",
+            "should_scan": false,
+            "status": "ok"
+          },
+          {
+            "accepted_count": 1,
+            "accepted_persona_ids": [
+              "embry",
+              "embry_lawson"
+            ],
+            "collections": null,
+            "confidence": 1.0,
+            "count": 1,
+            "discarded_persona_mismatch_count": 0,
+            "found": true,
+            "k": 1,
+            "persona_id": "embry",
+            "query": "embry recent task failure contradiction insight Tau issue 41 dream packet creator reviewer loop",
+            "scope": "operational",
+            "should_scan": false,
+            "status": "ok"
+          }
+        ],
+        "residue_count": 4
+      },
+      "failure_or_gap": null,
+      "stage_id": "stage_02_memory_recall",
+      "status": "ok",
+      "text_outputs": [
+        "residue_links.json"
+      ],
+      "visual_outputs": []
+    },
+    {
+      "did": "Detected simple bridge tensions across residue items.",
+      "evidence": {
+        "contradiction_count": 0
+      },
+      "failure_or_gap": null,
+      "stage_id": "stage_03_tension_detection",
+      "status": "ok",
+      "text_outputs": [
+        "contradiction_report.json"
+      ],
+      "visual_outputs": []
+    },
+    {
+      "did": "Created dream prompt, frame prompts, contact sheet, packet, and reflection.",
+      "evidence": {
+        "frame_prompt_count": 3
+      },
+      "failure_or_gap": "Contact sheet is deterministic planning art, not final generated model output.",
+      "stage_id": "stage_04_static_dream_packet",
+      "status": "ok",
+      "text_outputs": [
+        "dream_packet.json",
+        "dream_prompt.txt",
+        "frame_prompts.json",
+        "dream_reflection.md"
+      ],
+      "visual_outputs": [
+        "contact_sheet.png"
+      ]
+    }
+  ]
+}

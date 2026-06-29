@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/run.sh",
+    "generate",
+    "--persona",
+    "embry",
+    "--about",
+    "Tau issue 41 dream packet creator reviewer loop",
+    "--output-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+    "--run-id",
+    "issue-41-persona-dream-dream-packet-loop-20260629T204320Z",
+    "--limit",
+    "4",
+    "--frames",
+    "3",
+    "--no-write-memory"
+  ],
+  "command_json_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer-persona-dream-generate.command.json",
+  "duration_seconds": 3.966289239935577,
+  "returncode": 0,
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer-persona-dream-generate.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer-persona-dream-generate.stdout.txt"
+}

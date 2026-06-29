@@ -1,0 +1,46 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json"
+    ],
+    "persona_dream_dream_packet": {
+      "about": "Tau issue 41 dream packet creator reviewer loop",
+      "frames": "3",
+      "limit": "4",
+      "persona": "embry",
+      "run_id": "issue-41-persona-dream-dream-packet-loop-20260629T204320Z",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+      "secondary_persona": "",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json"
+    },
+    "summary": "Run a bounded Tau dream-packet creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#41"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000041",
+    "goal_id": "goal-tau-issue-41-persona-dream-dream-packet-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "dreamer",
+    "reason": "Dreamer must create dream_packet.json from real memory residue or fail closed with no_dream."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a dreamer command that creates or fails closed on dream_packet.json.",
+  "required_evidence": [
+    "Dreamer and dream-reviewer write Tau handoffs, subagent receipts, and persona-dream validation receipts."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested a Tau dream-packet creator/reviewer proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Dream-reviewer routes to human with PASS or BLOCKED evidence."
+}

@@ -1,0 +1,47 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/response.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer-persona-dream-generate.command.json"
+    ],
+    "assumptions": [],
+    "run_id": "issue-41-persona-dream-dream-packet-loop-20260629T204320Z",
+    "subagent": "dreamer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/response.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer-persona-dream-generate.command.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000041",
+    "goal_id": "goal-tau-issue-41-persona-dream-dream-packet-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Dream-reviewer must independently run persona-dream validation on the emitted packet or blocker.",
+    "subagent": "dream-reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/input_dream_packet_work_order.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/response.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/command-loop/command-artifacts/command-loop-step-001/dreamer-persona-dream-generate.command.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Dreamer created dream_packet.json through persona-dream generate."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Dream-reviewer emits validation receipts and routes to human."
+}
