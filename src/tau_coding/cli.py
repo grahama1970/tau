@@ -886,7 +886,10 @@ def main(
                 ok = bool(payload.get("ok"))
             else:
                 options = _parse_self_fix_cli_args(positional_args[1:])
-                ok = project_agent_self_fix_tick_command(**options)
+                if options.pop("_self_fix_mode", "tick") == "poll":
+                    ok = project_agent_self_fix_poll_command(**options)
+                else:
+                    ok = project_agent_self_fix_tick_command(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
@@ -1949,12 +1952,15 @@ def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | No
 
 
 def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
-    if not args or args[0] != "tick":
+    if not args or args[0] not in {"tick", "poll"}:
         raise RuntimeError(
-            "Usage: tau self-fix tick --repo <owner/repo> --issue <number> "
+            "Usage: tau self-fix tick --repo <owner/repo> --issue <number>, "
+            "tau self-fix poll --repo <owner/repo>, "
             "or tau self-fix coder-reviewer-loop --request <text> --target-file <path> "
             "--find-text <text> --replace-text <text> --verification-command <cmd>"
         )
+    if args[0] == "poll":
+        return _parse_self_fix_poll_cli_args(args[1:])
     repo: str | None = None
     issue: int | None = None
     receipt_dir: Path | None = None
@@ -2057,6 +2063,115 @@ def _parse_self_fix_cli_args(args: list[str]) -> dict[str, object]:
         "memory_base_url": memory_base_url.rstrip("/"),
         "max_steps": max_steps,
         "required_labels": tuple(label for label in required_labels if label),
+    }
+
+
+def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
+    repo: str | None = None
+    receipt_dir: Path | None = None
+    agents_root = Path("/home/graham/workspace/experiments/agent-skills/agents")
+    command_spec_root: Path | None = None
+    active_goal_hash: str | None = None
+    memory_base_url = "http://127.0.0.1:8601"
+    max_steps = 3
+    issue_limit = 30
+    dispatch = False
+    required_labels = [
+        "agent-work",
+        "agent:coder",
+        "tau-harness",
+        "route:backend_python_or_skill_runtime",
+    ]
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--repo":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo requires a value")
+            repo = args[index]
+        elif arg.startswith("--repo="):
+            repo = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            command_spec_root = Path(args[index])
+        elif arg.startswith("--command-spec-root="):
+            command_spec_root = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--memory-base-url":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--memory-base-url requires a value")
+            memory_base_url = args[index]
+        elif arg.startswith("--memory-base-url="):
+            memory_base_url = arg.partition("=")[2]
+        elif arg == "--max-steps":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-steps requires a value")
+            max_steps = _parse_positive_int(args[index], "--max-steps")
+        elif arg.startswith("--max-steps="):
+            max_steps = _parse_positive_int(arg.partition("=")[2], "--max-steps")
+        elif arg == "--issue-limit":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--issue-limit requires a value")
+            issue_limit = _parse_positive_int(args[index], "--issue-limit")
+        elif arg.startswith("--issue-limit="):
+            issue_limit = _parse_positive_int(arg.partition("=")[2], "--issue-limit")
+        elif arg == "--dispatch":
+            dispatch = True
+        elif arg == "--required-label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--required-label requires a value")
+            required_labels.append(args[index])
+        elif arg.startswith("--required-label="):
+            required_labels.append(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown self-fix poll option: {arg}")
+        index += 1
+    if not repo:
+        raise RuntimeError("self-fix poll requires --repo <owner/repo>")
+    if receipt_dir is None:
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        receipt_dir = Path("experiments/goal-locked-subagents/proofs") / (
+            f"self-fix-poll-{stamp}"
+        )
+    return {
+        "repo": repo,
+        "receipt_dir": receipt_dir,
+        "agents_root": agents_root,
+        "command_spec_root": command_spec_root,
+        "active_goal_hash": active_goal_hash,
+        "memory_base_url": memory_base_url.rstrip("/"),
+        "max_steps": max_steps,
+        "required_labels": tuple(label for label in required_labels if label),
+        "issue_limit": issue_limit,
+        "dispatch": dispatch,
+        "_self_fix_mode": "poll",
     }
 
 
@@ -4170,6 +4285,56 @@ def _fetch_github_issue(*, repo: str, issue: int) -> tuple[dict[str, object], di
     return payload, fetch
 
 
+def _fetch_github_open_issues(
+    *,
+    repo: str,
+    limit: int,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    gh_path = which("gh")
+    if gh_path is None:
+        raise RuntimeError("self-fix poll requires the gh CLI on PATH")
+    command = [
+        gh_path,
+        "issue",
+        "list",
+        "--repo",
+        repo,
+        "--state",
+        "open",
+        "--limit",
+        str(limit),
+        "--json",
+        "number,title,body,state,labels,comments,url,createdAt,updatedAt,author",
+    ]
+    started_at = datetime.now(UTC)
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=45, check=False)
+    duration_seconds = (datetime.now(UTC) - started_at).total_seconds()
+    fetch = {
+        "command": command,
+        "exit_code": completed.returncode,
+        "duration_seconds": duration_seconds,
+        "stderr": completed.stderr.strip(),
+    }
+    if completed.returncode != 0:
+        fetch["ok"] = False
+        raise RuntimeError(f"gh issue list failed for {repo}: {completed.stderr.strip()}")
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        fetch["ok"] = False
+        raise RuntimeError(f"gh issue list returned invalid JSON for {repo}: {exc}") from exc
+    if not isinstance(payload, list):
+        fetch["ok"] = False
+        raise RuntimeError(f"gh issue list returned non-list JSON for {repo}")
+    issues: list[dict[str, object]] = []
+    for item in payload:
+        if isinstance(item, dict):
+            issues.append(item)
+    fetch["ok"] = True
+    fetch["issue_count"] = len(issues)
+    return issues, fetch
+
+
 def _issue_labels(issue_payload: dict[str, object]) -> set[str]:
     labels = issue_payload.get("labels")
     if not isinstance(labels, list):
@@ -4226,6 +4391,17 @@ def _self_fix_eligibility(
             if eligible
             else "issue has no configured self-fix routing labels"
         ),
+    }
+
+
+def _self_fix_issue_ref(issue_payload: dict[str, object]) -> dict[str, object]:
+    return {
+        "number": issue_payload.get("number"),
+        "title": issue_payload.get("title"),
+        "url": issue_payload.get("url"),
+        "state": issue_payload.get("state"),
+        "labels": sorted(_issue_labels(issue_payload)),
+        "updated_at": issue_payload.get("updatedAt"),
     }
 
 
@@ -4580,6 +4756,100 @@ def project_agent_self_fix_tick_command(
         },
     }
     _write_json_object(resolved_receipt_dir / "self-fix-receipt.json", receipt)
+    typer.echo(json.dumps(receipt, indent=2, sort_keys=True))
+    return bool(receipt["ok"])
+
+
+def project_agent_self_fix_poll_command(
+    *,
+    repo: str,
+    receipt_dir: Path,
+    agents_root: Path,
+    command_spec_root: Path | None,
+    active_goal_hash: str | None,
+    memory_base_url: str,
+    max_steps: int,
+    required_labels: tuple[str, ...],
+    issue_limit: int,
+    dispatch: bool,
+) -> bool:
+    """Poll live GitHub issues and optionally dispatch exactly one eligible issue."""
+
+    resolved_receipt_dir = receipt_dir.expanduser().resolve()
+    resolved_receipt_dir.mkdir(parents=True, exist_ok=True)
+    issues, issue_fetch = _fetch_github_open_issues(repo=repo, limit=issue_limit)
+    _write_json_object(resolved_receipt_dir / "open-issues.json", issues)
+
+    candidates: list[dict[str, object]] = []
+    skipped: list[dict[str, object]] = []
+    for issue_payload in issues:
+        labels = _issue_labels(issue_payload)
+        eligibility = _self_fix_eligibility(labels, required_labels)
+        ref = _self_fix_issue_ref(issue_payload)
+        ref["eligibility"] = eligibility
+        number = issue_payload.get("number")
+        if eligibility["eligible"] and isinstance(number, int):
+            candidates.append(ref)
+        else:
+            skipped.append(ref)
+
+    selected = candidates[0] if candidates else None
+    dispatch_receipt_dir = None
+    dispatch_ok: bool | None = None
+    if selected is not None and dispatch:
+        number = selected.get("number")
+        if not isinstance(number, int):
+            raise RuntimeError("selected issue has no integer number")
+        dispatch_receipt_dir = resolved_receipt_dir / f"issue-{number}"
+        dispatch_ok = project_agent_self_fix_tick_command(
+            repo=repo,
+            issue=number,
+            receipt_dir=dispatch_receipt_dir,
+            agents_root=agents_root,
+            command_spec_root=command_spec_root,
+            active_goal_hash=active_goal_hash,
+            memory_base_url=memory_base_url,
+            max_steps=max_steps,
+            required_labels=required_labels,
+        )
+
+    status = "IDLE" if selected is None else ("DISPATCHED" if dispatch else "READY")
+    receipt = {
+        "schema": "tau.self_fix_poll_receipt.v1",
+        "ok": bool(issue_fetch["ok"] and (dispatch_ok is not False)),
+        "status": status,
+        "mocked": False,
+        "live": True,
+        "repo": repo,
+        "issue_limit": issue_limit,
+        "dispatch_requested": dispatch,
+        "issue_fetch": issue_fetch,
+        "open_issue_count": len(issues),
+        "eligible_issue_count": len(candidates),
+        "selected_issue": selected,
+        "candidate_issues": candidates,
+        "skipped_issues": skipped,
+        "artifacts": {
+            "open_issues": str(resolved_receipt_dir / "open-issues.json"),
+            "dispatch_receipt_dir": str(dispatch_receipt_dir) if dispatch_receipt_dir else None,
+            "dispatch_receipt": str(dispatch_receipt_dir / "self-fix-receipt.json")
+            if dispatch_receipt_dir
+            else None,
+        },
+        "claims": {
+            "proves": [
+                "Tau can poll the live GitHub issue queue through gh.",
+                "Tau can apply the configured one-ticket eligibility rule.",
+                "Tau writes a deterministic idle receipt when no eligible issue exists.",
+            ],
+            "does_not_prove": [
+                "A code repair unless dispatch_requested is true and the nested tick receipt proves it.",
+                "GitHub issue closure.",
+                "Unbounded autonomous operation.",
+            ],
+        },
+    }
+    _write_json_object(resolved_receipt_dir / "self-fix-poll-receipt.json", receipt)
     typer.echo(json.dumps(receipt, indent=2, sort_keys=True))
     return bool(receipt["ok"])
 

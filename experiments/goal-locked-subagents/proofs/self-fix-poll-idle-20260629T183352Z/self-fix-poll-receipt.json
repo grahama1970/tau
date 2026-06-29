@@ -1,0 +1,52 @@
+{
+  "artifacts": {
+    "dispatch_receipt": null,
+    "dispatch_receipt_dir": null,
+    "open_issues": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-poll-idle-20260629T183352Z/open-issues.json"
+  },
+  "candidate_issues": [],
+  "claims": {
+    "does_not_prove": [
+      "A code repair unless dispatch_requested is true and the nested tick receipt proves it.",
+      "GitHub issue closure.",
+      "Unbounded autonomous operation."
+    ],
+    "proves": [
+      "Tau can poll the live GitHub issue queue through gh.",
+      "Tau can apply the configured one-ticket eligibility rule.",
+      "Tau writes a deterministic idle receipt when no eligible issue exists."
+    ]
+  },
+  "dispatch_requested": false,
+  "eligible_issue_count": 0,
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "list",
+      "--repo",
+      "grahama1970/tau",
+      "--state",
+      "open",
+      "--limit",
+      "50",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.381769,
+    "exit_code": 0,
+    "issue_count": 0,
+    "ok": true,
+    "stderr": ""
+  },
+  "issue_limit": 50,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "open_issue_count": 0,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_poll_receipt.v1",
+  "selected_issue": null,
+  "skipped_issues": [],
+  "status": "IDLE"
+}
