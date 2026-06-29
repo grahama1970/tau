@@ -52,6 +52,11 @@ def test_battle_live_proof_writes_blocked_receipts_without_scillm_key(tmp_path: 
     assert manifest["status"] == "BLOCKED"
     assert manifest["mocked"] is False
     assert manifest["live"] is True
+    assert manifest["scheduling"]["mode"] == "asyncio.as_completed"
+    assert {item["team"] for item in manifest["scheduling"]["completion_order"]} == {
+        "red",
+        "blue",
+    }
     assert {team["team"] for team in manifest["teams"]} == {"red", "blue"}
 
     for team in ("red", "blue"):

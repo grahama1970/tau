@@ -9,6 +9,7 @@ rung.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import os
 import subprocess
@@ -44,65 +45,21 @@ def write_battle_live_handoff_proof(
     goal = _goal_payload(battle_id=battle_id, scenario_id=scenario_id)
     auth = _resolve_api_key(api_key)
 
-    team_results = []
-    for team, persona in (("red", red_persona), ("blue", blue_persona)):
-        team_dir = out_dir / team
-        team_dir.mkdir(parents=True, exist_ok=True)
-        handoff = _handoff_payload(
+    team_results = asyncio.run(
+        _write_team_handoffs_concurrently(
+            out_dir=out_dir,
             goal=goal,
             battle_id=battle_id,
             run_id=run_id,
             scenario_id=scenario_id,
-            team=team,
-            persona=persona,
-        )
-        handoff_path = _write_json(team_dir / "handoff.json", handoff)
-        scillm_call = _call_scillm(
-            handoff=handoff,
-            team=team,
-            persona=persona,
+            teams=(("red", red_persona), ("blue", blue_persona)),
             model=model,
             scillm_base_url=scillm_base_url,
             timeout_s=timeout_s,
             api_key=auth["api_key"],
             api_key_source=auth["source"],
         )
-        scillm_path = _write_json(team_dir / "scillm-call-receipt.json", scillm_call)
-        receipt = build_subagent_receipt(
-            goal=goal,
-            run_id=run_id,
-            battle_id=battle_id,
-            scenario_id=scenario_id,
-            team=team,
-            persona=persona,
-            scillm_call=scillm_call,
-            artifacts=[str(handoff_path), str(scillm_path)],
-        )
-        receipt_path = _write_json(team_dir / "tau-subagent-receipt.json", receipt)
-        validation = validate_subagent_receipt(receipt, active_goal_hash=goal["goal_hash"])
-        validation_payload = {
-            "schema": "tau.subagent_receipt_validation.v1",
-            "ok": validation.ok,
-            "next_subagent": validation.next_subagent,
-            "errors": list(validation.errors),
-        }
-        validation_path = _write_json(team_dir / "validation.json", validation_payload)
-        team_results.append(
-            {
-                "team": team,
-                "persona": persona,
-                "status": receipt["result"]["status"],
-                "handoff": str(handoff_path),
-                "scillm_call": str(scillm_path),
-                "subagent_receipt": str(receipt_path),
-                "validation": str(validation_path),
-                "validation_ok": validation.ok,
-                "model": scillm_call.get("model"),
-                "surface": "scillm.chat_completions",
-                "http_status": scillm_call.get("http_status"),
-                "error": scillm_call.get("error"),
-            }
-        )
+    )
 
     status = (
         "PASS"
@@ -120,6 +77,18 @@ def write_battle_live_handoff_proof(
         "model": model,
         "surface": "scillm.chat_completions",
         "scillm_base_url": scillm_base_url,
+        "scheduling": {
+            "mode": "asyncio.as_completed",
+            "team_count": len(team_results),
+            "completion_order": [
+                {
+                    "team": item["team"],
+                    "persona": item["persona"],
+                    "completed_at_seconds": item["completed_at_seconds"],
+                }
+                for item in team_results
+            ],
+        },
         "teams": team_results,
         "claims": {
             "proves": [
@@ -136,6 +105,123 @@ def write_battle_live_handoff_proof(
     }
     _write_json(out_dir / "manifest.json", manifest)
     return manifest
+
+
+async def _write_team_handoffs_concurrently(
+    *,
+    out_dir: Path,
+    goal: dict[str, Any],
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    teams: tuple[tuple[str, str], ...],
+    model: str,
+    scillm_base_url: str,
+    timeout_s: float,
+    api_key: str | None,
+    api_key_source: str,
+) -> list[dict[str, Any]]:
+    started = time.monotonic()
+    tasks = [
+        asyncio.create_task(
+            _write_one_team_handoff(
+                out_dir=out_dir,
+                goal=goal,
+                battle_id=battle_id,
+                run_id=run_id,
+                scenario_id=scenario_id,
+                team=team,
+                persona=persona,
+                model=model,
+                scillm_base_url=scillm_base_url,
+                timeout_s=timeout_s,
+                api_key=api_key,
+                api_key_source=api_key_source,
+                batch_started=started,
+            )
+        )
+        for team, persona in teams
+    ]
+    results: list[dict[str, Any]] = []
+    for task in asyncio.as_completed(tasks):
+        results.append(await task)
+    return results
+
+
+async def _write_one_team_handoff(
+    *,
+    out_dir: Path,
+    goal: dict[str, Any],
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    team: str,
+    persona: str,
+    model: str,
+    scillm_base_url: str,
+    timeout_s: float,
+    api_key: str | None,
+    api_key_source: str,
+    batch_started: float,
+) -> dict[str, Any]:
+    team_dir = out_dir / team
+    team_dir.mkdir(parents=True, exist_ok=True)
+    handoff = _handoff_payload(
+        goal=goal,
+        battle_id=battle_id,
+        run_id=run_id,
+        scenario_id=scenario_id,
+        team=team,
+        persona=persona,
+    )
+    handoff_path = _write_json(team_dir / "handoff.json", handoff)
+    scillm_call = await _call_scillm_async(
+        handoff=handoff,
+        team=team,
+        persona=persona,
+        model=model,
+        scillm_base_url=scillm_base_url,
+        timeout_s=timeout_s,
+        api_key=api_key,
+        api_key_source=api_key_source,
+    )
+    scillm_path = _write_json(team_dir / "scillm-call-receipt.json", scillm_call)
+    receipt = build_subagent_receipt(
+        goal=goal,
+        run_id=run_id,
+        battle_id=battle_id,
+        scenario_id=scenario_id,
+        team=team,
+        persona=persona,
+        scillm_call=scillm_call,
+        artifacts=[str(handoff_path), str(scillm_path)],
+    )
+    receipt_path = _write_json(team_dir / "tau-subagent-receipt.json", receipt)
+    validation = validate_subagent_receipt(receipt, active_goal_hash=goal["goal_hash"])
+    validation_payload = {
+        "schema": "tau.subagent_receipt_validation.v1",
+        "ok": validation.ok,
+        "next_subagent": validation.next_subagent,
+        "errors": list(validation.errors),
+    }
+    validation_path = _write_json(team_dir / "validation.json", validation_payload)
+    return {
+        "team": team,
+        "persona": persona,
+        "status": receipt["result"]["status"],
+        "handoff": str(handoff_path),
+        "scillm_call": str(scillm_path),
+        "subagent_receipt": str(receipt_path),
+        "validation": str(validation_path),
+        "validation_ok": validation.ok,
+        "model": scillm_call.get("model"),
+        "surface": "scillm.chat_completions",
+        "http_status": scillm_call.get("http_status"),
+        "error": scillm_call.get("error"),
+        "started_at_seconds": scillm_call.get("started_at_seconds"),
+        "completed_at_seconds": round(time.monotonic() - batch_started, 6),
+        "duration_seconds": scillm_call.get("duration_seconds"),
+    }
 
 
 def build_subagent_receipt(
@@ -260,6 +346,97 @@ def _call_scillm(
     try:
         with httpx.Client(base_url=scillm_base_url.rstrip("/"), timeout=timeout_s) as client:
             response = client.post(
+                "/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "X-Caller-Skill": "tau",
+                },
+                json=payload,
+            )
+    except httpx.HTTPError as exc:
+        receipt["error"] = f"scillm_http_error: {exc}"
+        receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+        return receipt
+
+    receipt["http_status"] = response.status_code
+    receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+    try:
+        data = response.json()
+    except ValueError as exc:
+        receipt["error"] = f"scillm_invalid_json: {exc}"
+        receipt["response_text"] = response.text[:1000]
+        return receipt
+    receipt["response"] = _redact_response(data)
+    if response.status_code != 200:
+        receipt["error"] = f"scillm_http_status_{response.status_code}"
+        return receipt
+    content = _extract_content(data)
+    receipt["response_content"] = content
+    receipt["status"] = "PASS" if content.strip() else "BLOCKED"
+    if not content.strip():
+        receipt["error"] = "scillm_empty_response_content"
+    return receipt
+
+
+async def _call_scillm_async(
+    *,
+    handoff: dict[str, Any],
+    team: str,
+    persona: str,
+    model: str,
+    scillm_base_url: str,
+    timeout_s: float,
+    api_key: str | None,
+    api_key_source: str,
+) -> dict[str, Any]:
+    started = time.monotonic()
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a bounded Battle subagent. Return one concise action "
+                    "summary for the supplied Tau handoff. Do not claim Docker proof."
+                ),
+            },
+            {
+                "role": "user",
+                "content": json.dumps(handoff, sort_keys=True),
+            },
+        ],
+        "temperature": 0,
+        "scillm_metadata": {
+            "caller": "tau",
+            "proof": "battle-live-handoff",
+            "team": team,
+            "persona": persona,
+        },
+    }
+    receipt: dict[str, Any] = {
+        "schema": SCILLM_CALL_SCHEMA,
+        "team": team,
+        "persona": persona,
+        "model": model,
+        "scillm_base_url": scillm_base_url,
+        "api_key_source": api_key_source,
+        "request": {**payload, "messages": "<redacted-request-messages>"},
+        "status": "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "started_at_seconds": 0.0,
+    }
+    if not api_key:
+        receipt["error"] = "scillm_api_key_unavailable"
+        receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+        return receipt
+
+    try:
+        async with httpx.AsyncClient(
+            base_url=scillm_base_url.rstrip("/"),
+            timeout=timeout_s,
+        ) as client:
+            response = await client.post(
                 "/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {api_key}",
