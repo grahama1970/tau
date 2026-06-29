@@ -647,9 +647,10 @@ def _run_panel_repair_gate(
     post_generation_passed = (
         _support_receipt_status(support_receipts, "post_generation_script_coverage_receipt") == "PASS"
     )
-    provider_media_passed = (
-        _support_receipt_status(support_receipts, "provider_media_probe_receipt")
-        == "PASS_PROVIDER_MEDIA_URL_PROBE"
+    current_image_hash = _sha256(Path(str(panel["image_path"])).expanduser().resolve())
+    provider_media_passed = _provider_media_probe_matches_current_image(
+        support_receipts,
+        current_image_hash=current_image_hash,
     )
     provider_eligibility = (
         panel_review_ready
@@ -873,6 +874,26 @@ def _support_receipt_status(support_receipts: Mapping[str, str], name: str) -> s
     return str(status) if isinstance(status, str) else ""
 
 
+def _provider_media_probe_matches_current_image(
+    support_receipts: Mapping[str, str],
+    *,
+    current_image_hash: str,
+) -> bool:
+    path = support_receipts.get("provider_media_probe_receipt")
+    if not path:
+        return False
+    try:
+        payload = _read_json(Path(path))
+    except RuntimeError:
+        return False
+    return (
+        payload.get("status") == "PASS_PROVIDER_MEDIA_URL_PROBE"
+        and payload.get("expected_sha256") == current_image_hash
+        and payload.get("observed_sha256") == current_image_hash
+        and payload.get("http_status") == 200
+    )
+
+
 def _script_coverage_receipt(panel: Mapping[str, Any]) -> dict[str, Any]:
     panel_id = str(panel["panel_id"])
     source_panel = str(panel.get("source_panel") or "")
@@ -982,11 +1003,12 @@ def _persona_dream_repair_gate_receipt(
         support_receipts,
         "post_generation_script_coverage_receipt",
     )
-    provider_media_probe_status = _support_receipt_status(
+    current_image_hash = image_hash if image_hash.startswith("sha256:") else _sha256(image_path)
+    provider_media_passed = _provider_media_probe_matches_current_image(
         support_receipts,
-        "provider_media_probe_receipt",
+        current_image_hash=current_image_hash,
     )
-    provider_media_status = "PASS" if provider_media_probe_status == "PASS_PROVIDER_MEDIA_URL_PROBE" else "FAIL"
+    provider_media_status = "PASS" if provider_media_passed else "FAIL"
     if provider_eligibility:
         status = "PASS_PANEL_REVIEWED"
     elif panel_review_ready:

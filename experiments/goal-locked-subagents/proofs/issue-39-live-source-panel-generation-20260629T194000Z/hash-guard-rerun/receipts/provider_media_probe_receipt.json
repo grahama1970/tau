@@ -1,0 +1,16 @@
+{
+  "blockers": [],
+  "content_length": 2182458,
+  "created_at": "2026-06-29T19:18:51Z",
+  "exercised": "public HTTP(S) GET and sha256 comparison",
+  "expected_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+  "http_status": 200,
+  "live": "yes",
+  "mocked": "no",
+  "observed_sha256": "sha256:3ef0ab7722d6742adf0c4e2b19a325f3e0cdaa761f8459e49329b2737a5d99fa",
+  "panel_id": "panel_001",
+  "schema": "persona_dream.provider_media_url_probe_receipt.v1",
+  "status": "PASS_PROVIDER_MEDIA_URL_PROBE",
+  "unverified": "Kling provider fetch behavior, provider task submission, paid-call authorization",
+  "url": "https://raw.githubusercontent.com/grahama1970/agent-skills/main/skills/persona-dream/provider_media/issue-33-live-persona-dream-20260629T180606Z/panel_001.png"
+}

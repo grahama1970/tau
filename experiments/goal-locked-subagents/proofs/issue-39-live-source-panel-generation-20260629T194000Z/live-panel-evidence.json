@@ -1,0 +1,7 @@
+{
+  "panel_id": "panel_001",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z",
+  "image_path": "scillm-panel/panel_001.png",
+  "visual_review_receipt": "command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "image_generation_receipt": "command-loop/command-artifacts/command-loop-step-001/scillm_image_generation_receipt.json"
+}

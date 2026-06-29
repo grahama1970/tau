@@ -1,0 +1,51 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/live-panel-evidence.json"
+    ],
+    "persona_dream_panel": {
+      "image_generation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/command-loop/command-artifacts/command-loop-step-001/scillm_image_generation_receipt.json",
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/scillm-panel/panel_001.png",
+      "panel_id": "panel_001",
+      "panel_prompt": "Generate one photorealistic cinematic persona-dream storyboard panel from this source work order. Preserve the named action, required entities, props, environment, motion cues, and script beat. No text overlays, captions, logos, or UI chrome.\n\nSource panel panel_001:\n- action: Embry examines SPARTA evidence cards while tea steam crosses the laptop glow and the distant sky-eye watches the workflow.\n- required_visible_entities: Embry, SPARTA evidence cards, laptop or command workstation, tea steam, surreal sky-eye\n- required_props: paper evidence cards, tea cup, generated panel reference\n- required_environment: quiet command workspace, window or horizon with surreal sky-eye\n- required_dynamic_behaviors: tea steam crosses the screen glow, evidence cards remain readable as physical paper props, sky-eye remains outside the workspace rather than a text overlay",
+      "post_generation_script_coverage": "post-generation script coverage must reconcile generated image with source panel requirements",
+      "provider_media_probe_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_probe_receipt.json",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z",
+      "source_panel": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-source-derived-panel-proof-20260629T193000Z/source-panel.json",
+      "source_panel_summary": "- action: Embry examines SPARTA evidence cards while tea steam crosses the laptop glow and the distant sky-eye watches the workflow.\n- required_visible_entities: Embry, SPARTA evidence cards, laptop or command workstation, tea steam, surreal sky-eye\n- required_props: paper evidence cards, tea cup, generated panel reference\n- required_environment: quiet command workspace, window or horizon with surreal sky-eye\n- required_dynamic_behaviors: tea steam crosses the screen glow, evidence cards remain readable as physical paper props, sky-eye remains outside the workspace rather than a text overlay",
+      "source_script_coverage": "source panel includes script/beat/entity requirements",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json"
+    },
+    "summary": "Run one bounded persona-dream panel proof through Tau command-loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#39"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue39providermediahashguard",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "panel-creator",
+    "reason": "Panel Creator must write a local creator receipt before review."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a local panel creator command with receipt output.",
+  "required_evidence": [
+    "Panel creator, reviewer, and repair-gate receipts or the first failed receipt."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/live-panel-evidence.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested the local one-panel persona-dream proof command."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "The local proof command writes manifest.json with first_blocker or dry-run Kling request."
+}

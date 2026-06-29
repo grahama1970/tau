@@ -1,0 +1,25 @@
+{
+  "panel": {
+    "image_generation_receipt": "",
+    "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/scillm-panel/panel_001.png",
+    "panel_id": "panel_001",
+    "panel_prompt": "Generate one photorealistic cinematic persona-dream storyboard panel from this source work order. Preserve the named action, required entities, props, environment, motion cues, and script beat. No text overlays, captions, logos, or UI chrome.\n\nSource panel panel_001:\n- action: Embry examines SPARTA evidence cards while tea steam crosses the laptop glow and the distant sky-eye watches the workflow.\n- required_visible_entities: Embry, SPARTA evidence cards, laptop or command workstation, tea steam, surreal sky-eye\n- required_props: paper evidence cards, tea cup, generated panel reference\n- required_environment: quiet command workspace, window or horizon with surreal sky-eye\n- required_dynamic_behaviors: tea steam crosses the screen glow, evidence cards remain readable as physical paper props, sky-eye remains outside the workspace rather than a text overlay",
+    "post_generation_script_coverage": "post-generation script coverage must reconcile generated image with source panel requirements",
+    "provider_media_probe_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_probe_receipt.json",
+    "provider_media_url": "",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/scillm-panel",
+    "scillm_base_url": "http://127.0.0.1:4001",
+    "scillm_image_auth": "codex-oauth",
+    "scillm_image_model": "gpt-image-2",
+    "scillm_image_quality": "high",
+    "scillm_image_timeout_s": "",
+    "scillm_live_panel": "true",
+    "scillm_vlm_model": "gpt-5.5",
+    "scillm_vlm_timeout_s": "",
+    "source_panel": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-source-derived-panel-proof-20260629T193000Z/source-panel.json",
+    "source_panel_summary": "- action: Embry examines SPARTA evidence cards while tea steam crosses the laptop glow and the distant sky-eye watches the workflow.\n- required_visible_entities: Embry, SPARTA evidence cards, laptop or command workstation, tea steam, surreal sky-eye\n- required_props: paper evidence cards, tea cup, generated panel reference\n- required_environment: quiet command workspace, window or horizon with surreal sky-eye\n- required_dynamic_behaviors: tea steam crosses the screen glow, evidence cards remain readable as physical paper props, sky-eye remains outside the workspace rather than a text overlay",
+    "source_script_coverage": "source panel includes script/beat/entity requirements",
+    "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-39-live-source-panel-generation-20260629T194000Z/scillm-panel/visual_review_receipt.json"
+  },
+  "role": "panel-reviewer"
+}
