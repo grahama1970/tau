@@ -1,0 +1,38 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "no full panel repair loop ran",
+      "no provider-ready packet is claimed",
+      "no Kling or paid provider call occurred"
+    ],
+    "proves": [
+      "repair-gate command consumed the reviewer route",
+      "repair-gate command wrote a terminal receipt from creator/reviewer evidence"
+    ]
+  },
+  "created_at": "2026-06-29T17:47:50Z",
+  "dry_run_one_scene_kling_request": null,
+  "kling_api_call_performed": false,
+  "live_call_performed": false,
+  "paid_call_performed": false,
+  "panel_id": "panel_custom",
+  "provider_eligibility": false,
+  "provider_packet_status": "BLOCKED_PROVIDER_GATE",
+  "public_upload_performed": false,
+  "remaining_blockers": [
+    "live WebGPT/VLM visual PASS receipt is missing",
+    "real panel-creator generation receipt is missing",
+    "loop final receipt for a panel repair attempt is missing"
+  ],
+  "role": "persona-dream-panel-repair-gate",
+  "schema": "tau.persona_dream.panel_repair_gate_receipt.v1",
+  "source_artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/panel-evidence.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/proof/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/artifacts/panel_custom.png",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/proof/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/receipts/visual_review_receipt.json"
+  ],
+  "status": "BLOCKED_PENDING_INDEPENDENT_VERIFICATION"
+}

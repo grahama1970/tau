@@ -1,0 +1,44 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/panel-evidence.json"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/artifacts/panel_custom.png",
+      "panel_id": "panel_custom",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/receipts/visual_review_receipt.json"
+    },
+    "summary": "Run one bounded persona-dream panel proof through Tau command-loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#29"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000029",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "panel-creator",
+    "reason": "Panel Creator must write a local creator receipt before review."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a local panel creator command with receipt output.",
+  "required_evidence": [
+    "Panel creator, reviewer, and repair-gate receipts or the first failed receipt."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/panel-evidence.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested the local one-panel persona-dream proof command."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "The local proof command writes manifest.json with first_blocker or dry-run Kling request."
+}

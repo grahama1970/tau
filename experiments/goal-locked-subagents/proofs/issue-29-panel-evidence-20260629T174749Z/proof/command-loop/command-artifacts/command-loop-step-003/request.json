@@ -1,0 +1,19 @@
+{
+  "panel": {
+    "image_generation_receipt": "",
+    "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/artifacts/panel_custom.png",
+    "panel_id": "panel_custom",
+    "panel_prompt": "",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+    "scillm_base_url": "",
+    "scillm_image_auth": "",
+    "scillm_image_model": "",
+    "scillm_image_quality": "",
+    "scillm_image_timeout_s": "",
+    "scillm_live_panel": "",
+    "scillm_vlm_model": "",
+    "scillm_vlm_timeout_s": "",
+    "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/receipts/visual_review_receipt.json"
+  },
+  "role": "persona-dream-panel-repair-gate"
+}

@@ -1,0 +1,26 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "no public upload or Kling call occurred",
+      "no provider-ready panel is claimed"
+    ],
+    "proves": [
+      "panel-creator command consumed a Tau handoff",
+      "panel-creator command wrote a concrete receipt with a local image artifact path and hash",
+      "panel-creator did not initiate a live Scillm image call"
+    ]
+  },
+  "created_at": "2026-06-29T17:47:49Z",
+  "generated_image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/artifacts/panel_custom.png",
+  "image_generation_receipt": null,
+  "kling_api_call_performed": false,
+  "live_call_performed": false,
+  "paid_call_performed": false,
+  "panel_id": "panel_custom",
+  "public_upload_performed": false,
+  "role": "panel-creator",
+  "schema": "tau.persona_dream.panel_creator_receipt.v1",
+  "sha256": "sha256:a7110789cbddc86a3a0da370dea02dcf3fc4cb39a2d3820b6553a9c7744ec774",
+  "source": "persona-dream one-scene local reference fixture",
+  "status": "DRY_RUN_REFERENCE_LOCKED"
+}

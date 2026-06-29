@@ -1,0 +1,48 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/panel-evidence.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/proof/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/artifacts/panel_custom.png",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/proof/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/receipts/visual_review_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/proof/command-loop/command-artifacts/command-loop-step-003/panel_repair_gate_receipt.json"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/artifacts/panel_custom.png",
+      "panel_id": "panel_custom",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/evidence/run-root/receipts/visual_review_receipt.json"
+    },
+    "summary": "Repair gate consolidated persona-dream panel evidence and blocked provider readiness."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#29"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000029",
+    "goal_id": "goal-tau-issue-27-persona-dream-panel-proof",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "human",
+    "name": "human",
+    "reason": "Human or outer Persona-Dream harness must supply a live one-panel work order with creator, reviewer, and loop receipts before further automation."
+  },
+  "previous_subagent": "persona-dream-panel-repair-gate",
+  "rationale": "The bounded one-panel command chain has produced receipts and reached the first real blocker: independent live visual/generation evidence is absent.",
+  "required_evidence": [
+    "Concrete one-panel work order plus real creator, visual reviewer, no-overlay, and loop final receipts."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-29-panel-evidence-20260629T174749Z/proof/command-loop/command-artifacts/command-loop-step-003/panel_repair_gate_receipt.json"
+    ],
+    "status": "BLOCKED",
+    "summary": "Persona Dream Panel Repair Gate wrote a terminal blocker receipt with provider_eligibility=false; no public upload, Kling call, paid call, or provider-ready claim occurred."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Human provides missing one-panel evidence or routes to a live repair attempt."
+}
