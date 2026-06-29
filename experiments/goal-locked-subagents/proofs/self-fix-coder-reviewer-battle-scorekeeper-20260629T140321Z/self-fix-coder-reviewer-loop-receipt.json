@@ -1,0 +1,123 @@
+{
+  "artifacts": {
+    "cycle-001/coder/handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/coder/handoff.json",
+    "cycle-001/coder/scillm-call-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/coder/scillm-call-receipt.json",
+    "cycle-001/coder/tau-subagent-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/coder/tau-subagent-receipt.json",
+    "cycle-001/reviewer/handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/handoff.json",
+    "cycle-001/reviewer/scillm-call-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/scillm-call-receipt.json",
+    "cycle-001/reviewer/tau-subagent-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/tau-subagent-receipt.json",
+    "cycle-001/reviewer/verification-01.stderr.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/verification-01.stderr.txt",
+    "cycle-001/reviewer/verification-01.stdout.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/verification-01.stdout.txt",
+    "cycle-001/reviewer/verification-02.stderr.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/verification-02.stderr.txt",
+    "cycle-001/reviewer/verification-02.stdout.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/verification-02.stdout.txt",
+    "cycle-001/reviewer/verification-results.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/verification-results.json",
+    "memory-intent.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/memory-intent.json",
+    "memory-recall.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/memory-recall.json",
+    "start-handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/start-handoff.json"
+  },
+  "checkpoint": {
+    "head": "1152c1aa01ba05cff8d408b59f2deec6a3ca16dc",
+    "rollback_strategy": "restore target file preimage on failed proof",
+    "target_clean_at_start": true,
+    "target_file": "src/tau_coding/generated_ticket.py",
+    "target_sha256": "e46a26db8e06d8f721dbac340159f3be0ee078d16ce3b94e6f1f0da80b212753"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous repair.",
+      "GitHub issue monitoring or label mutation.",
+      "Reviewer semantic correctness beyond the recorded live Scillm call and deterministic checks.",
+      "Rollback for unrelated dirty working-tree files."
+    ],
+    "proves": [
+      "Tau ran Memory /intent and /recall before the repair loop.",
+      "Tau called Scillm for a bounded coder turn.",
+      "Coder changed a real Tau repository file.",
+      "Tau called Scillm for a bounded reviewer turn.",
+      "Reviewer PASS required deterministic verification commands to exit 0.",
+      "Tau wrote per-turn handoff and subagent receipt artifacts."
+    ]
+  },
+  "created_at": "2026-06-29T14:03:21.983803+00:00",
+  "cycles": [
+    {
+      "coder": {
+        "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/coder/handoff.json",
+        "patched": true,
+        "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/coder/scillm-call-receipt.json",
+        "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/coder/tau-subagent-receipt.json"
+      },
+      "cycle": 1,
+      "reviewer": {
+        "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/handoff.json",
+        "passed": true,
+        "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/scillm-call-receipt.json",
+        "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/tau-subagent-receipt.json",
+        "verification": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/cycle-001/reviewer/verification-results.json"
+      }
+    }
+  ],
+  "errors": [],
+  "git": {
+    "changed_files": [
+      " M README.md",
+      " M docs/configuration.md",
+      " M src/tau_agent/session/memory.py",
+      " M src/tau_coding/generated_ticket.py",
+      " M src/tau_coding/self_fix_repair_loop.py",
+      " M src/tau_coding/tui/app.py",
+      "?? .ask/create-architecture/real-pty-tui-20260629T000153Z/",
+      "?? .tmp/",
+      "?? experiments/goal-locked-subagents/proofs/issue-25-persona-dream-real-panel-commands-20260629T124005Z/",
+      "?? experiments/goal-locked-subagents/proofs/live-coder-reviewer-command-loop-20260629T112621Z/",
+      "?? experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140225Z/",
+      "?? experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/",
+      "?? experiments/goal-locked-subagents/proofs/self-fix-issue-22-20260629T115315Z/",
+      "?? experiments/goal-locked-subagents/proofs/ux-lab-real-pty-tui-20260629T003900Z/",
+      "?? experiments/goal-locked-subagents/proofs/ux-lab-real-tui-app-pty-20260629T005557Z/",
+      "?? src/tau_coding/tui/__main__.py",
+      "?? src/tau_coding/tui/pty_proof.py",
+      "?? src/tau_coding/tui/pty_proof_app.py",
+      "?? tests/test_tui_pty_proof.py"
+    ],
+    "checkpoint_head": "1152c1aa01ba05cff8d408b59f2deec6a3ca16dc",
+    "target_diff": "diff --git a/src/tau_coding/generated_ticket.py b/src/tau_coding/generated_ticket.py\nindex e1656bb..f044bc8 100644\n--- a/src/tau_coding/generated_ticket.py\n+++ b/src/tau_coding/generated_ticket.py\n@@ -32,6 +32,7 @@ ROUTABLE_AGENTS = frozenset(\n         \"panel-creator\",\n         \"panel-reviewer\",\n         \"persona-dream-panel-repair-gate\",\n+        \"battle-scorekeeper\",\n     }\n )\n TICKET_CREATORS = frozenset({\"chatgpt-pro\", \"chatgpt_pro\", \"webgpt\", \"webgpt-ticket-author\"})\n"
+  },
+  "live": true,
+  "memory_first": {
+    "artifacts": {
+      "intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/memory-intent.json",
+      "recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z/memory-recall.json"
+    },
+    "intent_call": {
+      "duration_seconds": 0.081893,
+      "ok": true,
+      "path": "/intent",
+      "status_code": 200
+    },
+    "live": true,
+    "memory_base_url": "http://127.0.0.1:8601",
+    "mocked": false,
+    "ok": true,
+    "recall_call": {
+      "duration_seconds": 0.709023,
+      "ok": true,
+      "path": "/recall",
+      "status_code": 200
+    },
+    "recall_count": 5
+  },
+  "mocked": false,
+  "model": "gpt-5.5",
+  "ok": true,
+  "repo_root": "/home/graham/workspace/experiments/tau",
+  "rollback": {
+    "attempted": false,
+    "restored": false
+  },
+  "run_id": "self-fix-coder-reviewer-battle-scorekeeper-20260629T140321Z",
+  "schema": "tau.self_fix_coder_reviewer_loop_receipt.v1",
+  "status": "PASS",
+  "target_changed": true,
+  "target_file": "/home/graham/workspace/experiments/tau/src/tau_coding/generated_ticket.py"
+}

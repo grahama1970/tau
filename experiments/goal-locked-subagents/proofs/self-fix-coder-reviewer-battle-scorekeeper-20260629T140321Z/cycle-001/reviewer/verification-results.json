@@ -1,0 +1,16 @@
+[
+  {
+    "command": "PYTHONPATH=src uv run python -c 'from tau_coding.generated_ticket import ROUTABLE_AGENTS, validate_agent_handoff; assert \"battle-scorekeeper\" in ROUTABLE_AGENTS; p={\"schema\":\"tau.agent_handoff.v1\",\"github\":{\"repo\":\"grahama1970/tau\",\"target\":\"local-proof\"},\"goal\":{\"goal_id\":\"g\",\"goal_version\":1,\"goal_hash\":\"sha256:x\"},\"previous_subagent\":\"reviewer\",\"context\":{\"summary\":\"s\",\"artifacts\":[]},\"result\":{\"status\":\"PASS\",\"summary\":\"s\",\"evidence\":[]},\"rationale\":\"r\",\"next_agent\":{\"name\":\"battle-scorekeeper\",\"executor\":\"local\",\"reason\":\"r\"},\"required_evidence\":[\"e\"],\"stop_condition\":\"s\"}; r=validate_agent_handoff(p, active_goal_hash=\"sha256:x\"); assert r.ok, r.errors'",
+    "duration_seconds": 0.467162,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "command": "PYTHONPATH=src uv run pytest tests/test_generated_ticket.py tests/test_self_fix_repair_loop.py -q",
+    "duration_seconds": 0.845398,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ".........................                                                [100%]\n25 passed in 0.48s\n"
+  }
+]

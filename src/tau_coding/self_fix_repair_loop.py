@@ -568,7 +568,11 @@ def _call_scillm(
     try:
         response = httpx.post(
             f"{scillm_base_url.rstrip('/')}/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "X-Caller-Skill": "tau",
+            },
             json=request,
             timeout=timeout_s,
         )

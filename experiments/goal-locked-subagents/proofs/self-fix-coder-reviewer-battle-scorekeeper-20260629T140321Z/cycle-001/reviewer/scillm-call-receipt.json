@@ -1,0 +1,67 @@
+{
+  "api_key_source": "docker:SCILLM_MASTER_KEY",
+  "content_excerpt": "PASS\n\nReview notes:\n- Change is scoped to `src/tau_coding/generated_ticket.py`.\n- `battle-scorekeeper` was added to `ROUTABLE_AGENTS`, enabling handoff validation for that agent.\n- Supplied deterministic checks passed:\n  - Direct validation of a handoff targeting `battle-scorekeeper`: exit code 0.\n  - Test suite subset: `25 passed`.\n\nNo requested changes.",
+  "duration_seconds": 8.252873,
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "self-fix-coder-reviewer-loop",
+      "role": "reviewer"
+    },
+    "temperature": 0
+  },
+  "response": {
+    "_hidden_params": {
+      "additional_headers": {
+        "x-scillm-backoff-active": "false",
+        "x-scillm-queue-depth": "0",
+        "x-scillm-queue-wait-ms": "0"
+      }
+    },
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "annotations": null,
+          "audio": null,
+          "content": "PASS\n\nReview notes:\n- Change is scoped to `src/tau_coding/generated_ticket.py`.\n- `battle-scorekeeper` was added to `ROUTABLE_AGENTS`, enabling handoff validation for that agent.\n- Supplied deterministic checks passed:\n  - Direct validation of a handoff targeting `battle-scorekeeper`: exit code 0.\n  - Test suite subset: `25 passed`.\n\nNo requested changes.",
+          "function_call": null,
+          "refusal": null,
+          "role": "assistant",
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1782741826,
+    "id": "chatcmpl-codex-ea5d7df5",
+    "model": "gpt-5.5",
+    "moderation": null,
+    "object": "chat.completion",
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "self-fix-coder-reviewer-loop",
+      "role": "reviewer"
+    },
+    "service_tier": null,
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 199,
+      "completion_tokens_details": null,
+      "prompt_tokens": 944,
+      "prompt_tokens_details": null,
+      "total_tokens": 1143
+    }
+  },
+  "role": "reviewer",
+  "schema": "tau.self_fix_scillm_call_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS"
+}

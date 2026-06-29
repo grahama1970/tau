@@ -32,6 +32,7 @@ ROUTABLE_AGENTS = frozenset(
         "panel-creator",
         "panel-reviewer",
         "persona-dream-panel-repair-gate",
+        "battle-scorekeeper",
     }
 )
 TICKET_CREATORS = frozenset({"chatgpt-pro", "chatgpt_pro", "webgpt", "webgpt-ticket-author"})

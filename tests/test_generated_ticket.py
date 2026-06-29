@@ -114,6 +114,31 @@ def test_agent_handoff_accepts_monitor_sparta_lane_agents() -> None:
     assert result.next_agent == "prompt-health-auditor"
 
 
+def test_agent_handoff_accepts_battle_scorekeeper_route() -> None:
+    payload = _valid_agent_handoff_payload()
+    payload["previous_subagent"] = "reviewer"
+    payload["context"] = {
+        "summary": "Battle live handoff is ready for scorekeeping.",
+        "artifacts": [],
+    }
+    payload["result"] = {
+        "status": "PASS",
+        "summary": "Red and Blue Tau/Scillm receipts validated.",
+        "evidence": [],
+    }
+    payload["rationale"] = "Battle scorekeeper should consume the validated receipts."
+    payload["next_agent"] = {
+        "name": "battle-scorekeeper",
+        "executor": "local",
+        "reason": "Scorekeeper consumes Battle receipts.",
+    }
+
+    result = validate_agent_handoff(payload, active_goal_hash="sha256:active-goal")
+
+    assert result.ok is True
+    assert result.next_agent == "battle-scorekeeper"
+
+
 def test_agent_handoff_refuses_unknown_monitor_sparta_route() -> None:
     payload = _valid_agent_handoff_payload()
     payload["context"] = {"summary": "Bad route.", "artifacts": []}
