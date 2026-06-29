@@ -1,0 +1,79 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_tau_subagent_receipt.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "tau_coding.persona_dream_dream_packet_agent",
+        "--role",
+        "story-writer"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_tau_subagent_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.md\"], \"persona_dream_story_contract\": {\"dream_packet\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json\", \"run_id\": \"issue-43-persona-dream-story-contract-loop-20260629T2114\", \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\", \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\"}, \"summary\": \"Story-writer consumed the story work order and wrote story_contract.json.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue#43\"}, \"goal\": {\"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000043\", \"goal_id\": \"goal-tau-issue-43-persona-dream-story-contract-loop\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"local\", \"name\": \"story-reviewer\", \"reason\": \"Story-reviewer must run validate-story-contract and pipeline-loop-status.\"}, \"previous_subagent\": \"story-writer\", \"rationale\": \"Independent validation is required before story-contract acceptance.\", \"required_evidence\": [\"validate-story-contract JSON and pipeline-loop-status JSON.\"], \"result\": {\"evidence\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_tau_subagent_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_receipt.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json\"], \"status\": \"COMPLETED\", \"summary\": \"Story-writer created story_contract.json from the accepted dream packet.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Story-reviewer routes to human with PASS or BLOCKED evidence.\"}\n",
+      "timed_out": false,
+      "timeout_s": 240.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 1,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Story-writer created story_contract.json from the accepted dream packet.\n- Next agent: `story-reviewer`\n- Executor: `local`\n- Stop condition: Story-reviewer routes to human with PASS or BLOCKED evidence.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.md\"\n    ],\n    \"persona_dream_story_contract\": {\n      \"dream_packet\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json\",\n      \"run_id\": \"issue-43-persona-dream-story-contract-loop-20260629T2114\",\n      \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\"\n    },\n    \"summary\": \"Story-writer consumed the story work order and wrote story_contract.json.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#43\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000043\",\n    \"goal_id\": \"goal-tau-issue-43-persona-dream-story-contract-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"story-reviewer\",\n    \"reason\": \"Story-reviewer must run validate-story-contract and pipeline-loop-status.\"\n  },\n  \"previous_subagent\": \"story-writer\",\n  \"rationale\": \"Independent validation is required before story-contract acceptance.\",\n  \"required_evidence\": [\n    \"validate-story-contract JSON and pipeline-loop-status JSON.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_tau_subagent_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/command-loop/command-artifacts/command-loop-step-001/story_writer_receipt.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Story-writer created story_contract.json from the accepted dream packet.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Story-reviewer routes to human with PASS or BLOCKED evidence.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:story-reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "story-reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#43"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "story-writer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Human requested a Tau story-contract creator/reviewer proof.\n- Next agent: `story-writer`\n- Executor: `local`\n- Stop condition: Story-reviewer routes to human with PASS or BLOCKED evidence.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\"\n    ],\n    \"persona_dream_story_contract\": {\n      \"run_id\": \"issue-43-persona-dream-story-contract-loop-20260629T2114\",\n      \"run_root\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\"\n    },\n    \"summary\": \"Run a bounded Tau story-contract creator/reviewer loop.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#43\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000043\",\n    \"goal_id\": \"goal-tau-issue-43-persona-dream-story-contract-loop\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"story-writer\",\n    \"reason\": \"Story-writer must create story_contract.json from the accepted dream packet.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The first bounded step is a story-writer command.\",\n  \"required_evidence\": [\n    \"Story-writer and story-reviewer write Tau receipts and persona-dream validation receipts.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Human requested a Tau story-contract creator/reviewer proof.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Story-reviewer routes to human with PASS or BLOCKED evidence.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:story-writer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "story-writer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#43"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "persona_dream.story_contract.v1",
+  "status": "ACCEPTED_AUTOMATED",
+  "artifact_id": "dream-run_story_contract",
+  "target_duration_s": 15.0,
+  "speaking_characters": [
+    "Embry"
+  ],
+  "review_evidence": {
+    "basis": "Derived directly from accepted dream_packet frame prompts and residue ids.",
+    "forbidden_actions_observed": {
+      "kling": false,
+      "paid_provider": false,
+      "panel_generation": false,
+      "public_upload": false
+    },
+    "review_status": "ACCEPTED_AUTOMATED",
+    "reviewed_by": "tau.story-writer",
+    "source_ids": [
+      "embry_age15_19_b01_memory_012",
+      "embry_age19_23_b01_memory_002",
+      "embry_age23_current_b01_memory_040"
+    ]
+  },
+  "downstream_invalidated": {
+    "panels": true,
+    "provider_packets": true,
+    "reason": "New accepted story contract requires downstream regeneration.",
+    "storyboard": true
+  }
+}

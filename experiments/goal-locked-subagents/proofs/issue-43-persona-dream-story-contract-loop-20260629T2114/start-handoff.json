@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json"
+    ],
+    "persona_dream_story_contract": {
+      "run_id": "issue-43-persona-dream-story-contract-loop-20260629T2114",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json"
+    },
+    "summary": "Run a bounded Tau story-contract creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#43"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000043",
+    "goal_id": "goal-tau-issue-43-persona-dream-story-contract-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "story-writer",
+    "reason": "Story-writer must create story_contract.json from the accepted dream packet."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a story-writer command.",
+  "required_evidence": [
+    "Story-writer and story-reviewer write Tau receipts and persona-dream validation receipts."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-43-persona-dream-story-contract-loop-20260629T2114/input_story_contract_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested a Tau story-contract creator/reviewer proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Story-reviewer routes to human with PASS or BLOCKED evidence."
+}

@@ -20,18 +20,25 @@ DEFAULT_GOAL_HASH = "sha256:0000000000000000000000000000000000000000000000000000
 
 
 def run_persona_dream_packet_agent(role: str) -> dict[str, Any]:
-    """Run one bounded persona-dream dream-packet role and return a Tau handoff."""
+    """Run one bounded persona-dream role and return a Tau handoff."""
 
     start_payload = _read_stdin_handoff()
     selected_agent = os.environ.get("TAU_HANDOFF_SELECTED_AGENT") or role
     if selected_agent != role:
         raise RuntimeError(f"selected agent {selected_agent!r} does not match role {role!r}")
     artifact_dir = _artifact_dir(role)
-    context = _dream_packet_context(start_payload, artifact_dir)
     if role == "dreamer":
+        context = _dream_packet_context(start_payload, artifact_dir)
         return _run_dreamer(start_payload, context, artifact_dir)
     if role == "dream-reviewer":
+        context = _dream_packet_context(start_payload, artifact_dir)
         return _run_dream_reviewer(start_payload, context, artifact_dir)
+    if role == "story-writer":
+        story_context = _story_contract_context(start_payload, artifact_dir)
+        return _run_story_writer(start_payload, story_context, artifact_dir)
+    if role == "story-reviewer":
+        story_context = _story_contract_context(start_payload, artifact_dir)
+        return _run_story_reviewer(start_payload, story_context, artifact_dir)
     raise RuntimeError(f"unsupported persona-dream dream-packet role: {role}")
 
 
@@ -154,6 +161,125 @@ def write_persona_dream_packet_loop_proof(
                 (
                     "This does not claim full persona-dream pipeline readiness "
                     "beyond the first blocker reported by pipeline-loop-status."
+                ),
+            ],
+        },
+    }
+    _write_json(proof_dir / "manifest.json", manifest)
+    return manifest
+
+
+def write_persona_dream_story_contract_loop_proof(
+    *,
+    work_order: Path,
+    out_dir: Path,
+    active_goal_hash: str = (
+        "sha256:0000000000000000000000000000000000000000000000000000000000000043"
+    ),
+    github_target: str = "issue#43",
+) -> dict[str, Any]:
+    """Run the story-writer -> story-reviewer command loop and write a proof manifest."""
+
+    from tau_coding.handoff_dispatch import write_agent_handoff_command_loop_receipt
+
+    proof_dir = out_dir.expanduser().resolve()
+    proof_dir.mkdir(parents=True, exist_ok=True)
+    input_work_order = proof_dir / "input_story_contract_work_order.json"
+    input_work_order.write_text(
+        work_order.expanduser().resolve().read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    work_order_payload = _read_json(input_work_order)
+    source_paths = _required_mapping(work_order_payload, "source_paths")
+    run_root = Path(str(source_paths["run_root"])).expanduser().resolve()
+    start_payload = {
+        "schema": "tau.agent_handoff.v1",
+        "github": {"repo": "grahama1970/tau", "target": github_target},
+        "goal": {
+            "goal_id": "goal-tau-issue-43-persona-dream-story-contract-loop",
+            "goal_version": 1,
+            "goal_hash": active_goal_hash,
+        },
+        "previous_subagent": "human",
+        "context": {
+            "summary": "Run a bounded Tau story-contract creator/reviewer loop.",
+            "artifacts": [str(input_work_order)],
+            "persona_dream_story_contract": {
+                "work_order": str(input_work_order),
+                "run_root": str(run_root),
+                "run_id": proof_dir.name,
+            },
+        },
+        "result": {
+            "status": "COMPLETED",
+            "summary": "Human requested a Tau story-contract creator/reviewer proof.",
+            "evidence": [str(input_work_order)],
+        },
+        "rationale": "The first bounded step is a story-writer command.",
+        "next_agent": {
+            "name": "story-writer",
+            "executor": "local",
+            "reason": (
+                "Story-writer must create story_contract.json from the accepted dream packet."
+            ),
+        },
+        "required_evidence": [
+            (
+                "Story-writer and story-reviewer write Tau receipts and "
+                "persona-dream validation receipts."
+            )
+        ],
+        "stop_condition": "Story-reviewer routes to human with PASS or BLOCKED evidence.",
+    }
+    start_path = proof_dir / "start-handoff.json"
+    _write_json(start_path, start_payload)
+    loop = write_agent_handoff_command_loop_receipt(
+        start_payload,
+        proof_dir / "command-loop",
+        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        command_spec_root=Path("experiments/goal-locked-subagents/agent-command-specs"),
+        active_goal_hash=active_goal_hash,
+        max_steps=3,
+    )
+    loop_payload = loop.as_dict()
+    validation_path = run_root / "receipts" / "validate_story_contract.json"
+    pipeline_status_path = run_root / "receipts" / "pipeline_loop_status_story_forward.json"
+    validation = _read_json_optional(validation_path)
+    pipeline_status = _read_json_optional(pipeline_status_path)
+    first_blocker = _pipeline_first_blocker(pipeline_status)
+    manifest = {
+        "schema": "tau.persona_dream_story_contract_loop_proof.v1",
+        "created_at": _now_iso(),
+        "mocked": False,
+        "live": True,
+        "issue": 43,
+        "input_work_order": str(input_work_order),
+        "start_handoff": str(start_path),
+        "run_root": str(run_root),
+        "story_contract": str(run_root / "story_contract.json"),
+        "command_loop_receipt": str(proof_dir / "command-loop" / "command-loop-receipt.json"),
+        "command_loop_status": loop_payload.get("status"),
+        "command_loop_ok": loop_payload.get("ok"),
+        "terminal_agent": loop_payload.get("terminal_agent"),
+        "stop_reason": loop_payload.get("stop_reason"),
+        "validate_story_contract": str(validation_path) if validation else None,
+        "validate_story_contract_status": validation.get("status") if validation else None,
+        "pipeline_loop_status": str(pipeline_status_path) if pipeline_status else None,
+        "pipeline_first_blocker": first_blocker,
+        "claims": {
+            "proves": [
+                "Tau ran a command-spec loop from story-writer to story-reviewer.",
+                "Story-writer created story_contract.json from the existing dream packet.",
+                "Story-reviewer ran persona-dream validators and recorded JSON outputs.",
+            ],
+            "does_not_prove": [
+                (
+                    "No Kling call, paid provider call, public upload, or panel generation "
+                    "was performed."
+                ),
+                (
+                    "This does not claim full persona-dream pipeline readiness beyond the "
+                    "next blocker."
                 ),
             ],
         },
@@ -403,6 +529,203 @@ def _run_dream_reviewer(
     )
 
 
+def _run_story_writer(
+    start_payload: Mapping[str, Any],
+    context: dict[str, str],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    work_order = _load_story_work_order(context["work_order"])
+    run_root = Path(context["run_root"]).expanduser().resolve()
+    run_root.mkdir(parents=True, exist_ok=True)
+    dream_packet_path = Path(context["dream_packet"]).expanduser().resolve()
+    dream_packet = _read_json(dream_packet_path)
+    story_contract = _story_contract_from_dream_packet(
+        dream_packet=dream_packet,
+        work_order=work_order,
+        work_order_path=Path(context["work_order"]).expanduser().resolve(),
+        dream_packet_path=dream_packet_path,
+        run_root=run_root,
+    )
+    story_path = run_root / "story_contract.json"
+    story_md_path = run_root / "story_contract.md"
+    _write_json(story_path, story_contract)
+    story_md_path.write_text(_story_contract_markdown(story_contract), encoding="utf-8")
+    receipt = _subagent_receipt(
+        start_payload,
+        run_id=context["run_id"],
+        subagent="story-writer",
+        status="COMPLETED",
+        summary="Story-writer created story_contract.json from the accepted dream packet.",
+        artifacts=[
+            str(context["work_order"]),
+            str(dream_packet_path),
+            str(story_path),
+            str(story_md_path),
+        ],
+        next_subagent="story-reviewer",
+        next_executor="local",
+        next_reason="Story-reviewer must independently validate story_contract.json.",
+        stop_condition="Story-reviewer emits validation receipts and routes to human.",
+    )
+    receipt_path = artifact_dir / "story_writer_tau_subagent_receipt.json"
+    _write_json(receipt_path, receipt)
+    _validate_subagent_receipt_or_raise(receipt, str(start_payload["goal"]["goal_hash"]))
+    writer_receipt = {
+        "schema": "tau.persona_dream.story_writer_receipt.v1",
+        "created_at": _now_iso(),
+        "role": "story-writer",
+        "status": "COMPLETED",
+        "work_order": work_order,
+        "run_root": str(run_root),
+        "dream_packet": str(dream_packet_path),
+        "story_contract": str(story_path),
+        "story_contract_md": str(story_md_path),
+        "subagent_receipt": str(receipt_path),
+        "mocked": False,
+        "live": True,
+        "provider_calls": {"kling": False, "paid": False, "public_upload": False},
+    }
+    writer_receipt_path = artifact_dir / "story_writer_receipt.json"
+    _write_json(writer_receipt_path, writer_receipt)
+    return _handoff(
+        start_payload,
+        previous_subagent="story-writer",
+        result_status="COMPLETED",
+        result_summary=receipt["result"]["summary"],
+        evidence=[str(receipt_path), str(writer_receipt_path), str(story_path)],
+        context_summary="Story-writer consumed the story work order and wrote story_contract.json.",
+        artifacts=[
+            str(receipt_path),
+            str(writer_receipt_path),
+            str(story_path),
+            str(story_md_path),
+        ],
+        context_update={"persona_dream_story_contract": context},
+        rationale="Independent validation is required before story-contract acceptance.",
+        next_agent="story-reviewer",
+        next_executor="local",
+        next_reason="Story-reviewer must run validate-story-contract and pipeline-loop-status.",
+        required_evidence="validate-story-contract JSON and pipeline-loop-status JSON.",
+        stop_condition="Story-reviewer routes to human with PASS or BLOCKED evidence.",
+    )
+
+
+def _run_story_reviewer(
+    start_payload: Mapping[str, Any],
+    context: dict[str, str],
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    run_root = Path(context["run_root"]).expanduser().resolve()
+    receipts_dir = run_root / "receipts"
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    story_path = run_root / "story_contract.json"
+    validation_path = receipts_dir / "validate_story_contract.json"
+    pipeline_status_path = receipts_dir / "pipeline_loop_status_story_forward.json"
+    validation_completed = _run_command(
+        [
+            str(PERSONA_DREAM_RUN),
+            "validate-story-contract",
+            str(story_path),
+            "--run-root",
+            str(run_root),
+            "--json",
+        ],
+        artifact_dir / "story-reviewer-validate-story-contract",
+    )
+    _write_command_stdout_json(validation_completed, validation_path)
+    pipeline_completed = _run_command(
+        [
+            str(PERSONA_DREAM_RUN),
+            "pipeline-loop-status",
+            str(run_root),
+            "--direction",
+            "forward",
+            "--json",
+        ],
+        artifact_dir / "story-reviewer-pipeline-loop-status",
+    )
+    _write_command_stdout_json(pipeline_completed, pipeline_status_path)
+    validation = _read_json_optional(validation_path)
+    pipeline_status = _read_json_optional(pipeline_status_path)
+    validation_pass = validation.get("status") == "PASS_STORY_CONTRACT"
+    first_blocker = _pipeline_first_blocker(pipeline_status)
+    advanced_past_story_contract = not (
+        isinstance(first_blocker, dict) and first_blocker.get("phase") == "story_contract"
+    )
+    status = "PASS" if validation_pass and advanced_past_story_contract else "BLOCKED"
+    receipt = _subagent_receipt(
+        start_payload,
+        run_id=context["run_id"],
+        subagent="story-reviewer",
+        status=status,
+        summary=(
+            "Story-reviewer accepted the story contract and pipeline-loop-status advanced."
+            if status == "PASS"
+            else "Story-reviewer failed closed on story validation or pipeline status."
+        ),
+        artifacts=[
+            str(story_path),
+            str(validation_path),
+            str(pipeline_status_path),
+            str(artifact_dir / "story-reviewer-validate-story-contract.command.json"),
+            str(artifact_dir / "story-reviewer-pipeline-loop-status.command.json"),
+        ],
+        next_subagent="human",
+        next_executor="human",
+        next_reason="Human or ticket resolver reviews the proof.",
+        stop_condition="Issue resolver comments proof and closes or files the next blocker.",
+    )
+    receipt_path = artifact_dir / "story_reviewer_tau_subagent_receipt.json"
+    _write_json(receipt_path, receipt)
+    _validate_subagent_receipt_or_raise(receipt, str(start_payload["goal"]["goal_hash"]))
+    reviewer_receipt = {
+        "schema": "tau.persona_dream.story_reviewer_receipt.v1",
+        "created_at": _now_iso(),
+        "role": "story-reviewer",
+        "status": status,
+        "validation_status": validation.get("status") if validation else None,
+        "pipeline_first_blocker": first_blocker,
+        "advanced_past_story_contract": advanced_past_story_contract,
+        "validate_story_contract": str(validation_path),
+        "pipeline_loop_status": str(pipeline_status_path),
+        "subagent_receipt": str(receipt_path),
+        "mocked": False,
+        "live": True,
+        "provider_calls": {"kling": False, "paid": False, "public_upload": False},
+    }
+    reviewer_receipt_path = artifact_dir / "story_reviewer_receipt.json"
+    _write_json(reviewer_receipt_path, reviewer_receipt)
+    return _handoff(
+        start_payload,
+        previous_subagent="story-reviewer",
+        result_status=status,
+        result_summary=receipt["result"]["summary"],
+        evidence=[
+            str(receipt_path),
+            str(reviewer_receipt_path),
+            str(validation_path),
+            str(pipeline_status_path),
+        ],
+        context_summary="Story-reviewer ran story-contract validation and serial loop status.",
+        artifacts=[
+            str(receipt_path),
+            str(reviewer_receipt_path),
+            str(validation_path),
+            str(pipeline_status_path),
+        ],
+        context_update={"persona_dream_story_contract": context},
+        rationale="The bounded story creator/reviewer loop reached a terminal proof or blocker.",
+        next_agent="human",
+        next_executor="human",
+        next_reason="Human/ticket resolver reviews proof artifacts and closes or redirects.",
+        required_evidence=(
+            "Proof comment cites story-writer, story-reviewer, validate-story-contract, "
+            "and pipeline-loop-status receipts."
+        ),
+        stop_condition="GitHub issue is closed with proof or left open with exact blocker.",
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class CommandResult:
     command: list[str]
@@ -489,7 +812,37 @@ def _dream_packet_context(start_payload: Mapping[str, Any], artifact_dir: Path) 
     }
 
 
-def _find_work_order(start_payload: Mapping[str, Any], raw: Mapping[str, Any]) -> Path:
+def _story_contract_context(start_payload: Mapping[str, Any], artifact_dir: Path) -> dict[str, str]:
+    context = start_payload.get("context")
+    raw = context.get("persona_dream_story_contract") if isinstance(context, Mapping) else None
+    if not isinstance(raw, Mapping):
+        raw = {}
+    work_order = _find_work_order(
+        start_payload,
+        raw,
+        schema="persona_dream.story_contract_work_order.v1",
+        label="story contract",
+    )
+    work_order_payload = _read_json(work_order)
+    source_paths = _required_mapping(work_order_payload, "source_paths")
+    run_root = Path(str(raw.get("run_root") or source_paths["run_root"])).expanduser().resolve()
+    dream_packet = Path(str(source_paths["dream_packet"])).expanduser().resolve()
+    run_id = str(raw.get("run_id") or run_root.name or f"tau-story-contract-{int(time.time())}")
+    return {
+        "work_order": str(work_order),
+        "run_root": str(run_root),
+        "run_id": run_id,
+        "dream_packet": str(dream_packet),
+    }
+
+
+def _find_work_order(
+    start_payload: Mapping[str, Any],
+    raw: Mapping[str, Any],
+    *,
+    schema: str = "persona_dream.dream_packet_work_order.v1",
+    label: str = "dream packet",
+) -> Path:
     candidate = raw.get("work_order")
     if isinstance(candidate, str) and candidate.strip():
         return Path(candidate).expanduser().resolve()
@@ -500,9 +853,9 @@ def _find_work_order(start_payload: Mapping[str, Any], raw: Mapping[str, Any]) -
         if not path.is_file():
             continue
         payload = _read_json_optional(path)
-        if payload.get("schema") == "persona_dream.dream_packet_work_order.v1":
+        if payload.get("schema") == schema:
             return path.resolve()
-    raise RuntimeError("dream packet work order path is required")
+    raise RuntimeError(f"{label} work order path is required")
 
 
 def _load_work_order(path_value: str) -> dict[str, Any]:
@@ -513,6 +866,123 @@ def _load_work_order(path_value: str) -> dict[str, Any]:
             f"work order schema must be persona_dream.dream_packet_work_order.v1: {path}"
         )
     return payload
+
+
+def _load_story_work_order(path_value: str) -> dict[str, Any]:
+    path = Path(path_value)
+    payload = _read_json(path)
+    if payload.get("schema") != "persona_dream.story_contract_work_order.v1":
+        raise RuntimeError(
+            f"work order schema must be persona_dream.story_contract_work_order.v1: {path}"
+        )
+    return payload
+
+
+def _story_contract_from_dream_packet(
+    *,
+    dream_packet: Mapping[str, Any],
+    work_order: Mapping[str, Any],
+    work_order_path: Path,
+    dream_packet_path: Path,
+    run_root: Path,
+) -> dict[str, Any]:
+    persona = _persona_display_name(dream_packet.get("persona"))
+    raw_frames = dream_packet.get("frame_prompts")
+    frames = (
+        [frame for frame in raw_frames if isinstance(frame, Mapping)]
+        if isinstance(raw_frames, list)
+        else []
+    )
+    frame_count = len(frames) or 1
+    source_ids = _source_ids_from_frames(frames)
+    return {
+        "schema": "persona_dream.story_contract.v1",
+        "artifact_id": f"{run_root.name}_story_contract",
+        "status": "ACCEPTED_AUTOMATED",
+        "created_at": _now_iso(),
+        "input_idea_contract": str(work_order.get("purpose") or dream_packet_path),
+        "seed": str(
+            dream_packet.get("dream_prompt") or work_order.get("purpose") or "Persona dream"
+        ),
+        "story": _story_text_from_dream_packet(dream_packet, frames),
+        "target_duration_s": float(frame_count * 5),
+        "speaking_characters": [_title_name(persona)],
+        "source_paths": {
+            "dream_packet": str(dream_packet_path),
+            "work_order": str(work_order_path),
+        },
+        "review_evidence": {
+            "review_status": "ACCEPTED_AUTOMATED",
+            "reviewed_by": "tau.story-writer",
+            "basis": "Derived directly from accepted dream_packet frame prompts and residue ids.",
+            "source_ids": source_ids,
+            "forbidden_actions_observed": {
+                "kling": False,
+                "paid_provider": False,
+                "public_upload": False,
+                "panel_generation": False,
+            },
+        },
+        "downstream_invalidated": {
+            "storyboard": True,
+            "panels": True,
+            "provider_packets": True,
+            "reason": "New accepted story contract requires downstream regeneration.",
+        },
+    }
+
+
+def _story_text_from_dream_packet(
+    dream_packet: Mapping[str, Any],
+    frames: list[Mapping[str, Any]],
+) -> str:
+    prompt = str(dream_packet.get("dream_prompt") or "").strip()
+    parts = [prompt] if prompt else []
+    for index, frame in enumerate(frames, start=1):
+        frame_prompt = str(frame.get("prompt") or "").strip()
+        if frame_prompt:
+            parts.append(f"Beat {index}: {frame_prompt}")
+    if not parts:
+        parts.append("A synthetic persona dream sequence preserves the accepted dream packet.")
+    return "\n\n".join(parts)
+
+
+def _source_ids_from_frames(frames: list[Mapping[str, Any]]) -> list[str]:
+    source_ids: list[str] = []
+    for frame in frames:
+        raw_ids = frame.get("source_ids")
+        for source_id in raw_ids if isinstance(raw_ids, list) else []:
+            if isinstance(source_id, str) and source_id.strip() and source_id not in source_ids:
+                source_ids.append(source_id)
+    return source_ids
+
+
+def _persona_display_name(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for key in ("display_name", "displayName", "name", "id", "persona_id"):
+            candidate = value.get(key)
+            if isinstance(candidate, str) and candidate.strip():
+                return _title_name(candidate)
+        return "Persona"
+    if isinstance(value, str) and value.strip():
+        return _title_name(value)
+    return "Persona"
+
+
+def _title_name(value: str) -> str:
+    return value.replace("_", " ").replace("-", " ").strip().title() or "Persona"
+
+
+def _story_contract_markdown(story_contract: Mapping[str, Any]) -> str:
+    characters = story_contract.get("speaking_characters")
+    character_text = ", ".join(characters) if isinstance(characters, list) else ""
+    return (
+        "# Story Contract\n\n"
+        f"Status: `{story_contract.get('status')}`\n\n"
+        f"Target duration: `{story_contract.get('target_duration_s')}` seconds\n\n"
+        f"Speaking characters: {character_text}\n\n"
+        f"## Story\n\n{story_contract.get('story')}\n"
+    )
 
 
 def _handoff(
@@ -665,8 +1135,13 @@ def _now_iso() -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--role", choices=["dreamer", "dream-reviewer"], required=False)
+    parser.add_argument(
+        "--role",
+        choices=["dreamer", "dream-reviewer", "story-writer", "story-reviewer"],
+        required=False,
+    )
     parser.add_argument("--proof", action="store_true")
+    parser.add_argument("--story-proof", action="store_true")
     parser.add_argument("--work-order", type=Path)
     parser.add_argument("--out-dir", type=Path)
     parser.add_argument("--active-goal-hash", default=DEFAULT_GOAL_HASH)
@@ -677,6 +1152,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--frames", type=int, default=3)
     parser.add_argument("--limit", type=int, default=4)
     args = parser.parse_args(argv)
+    if args.story_proof:
+        if args.work_order is None or args.out_dir is None:
+            parser.error("--story-proof requires --work-order and --out-dir")
+        payload = write_persona_dream_story_contract_loop_proof(
+            work_order=args.work_order,
+            out_dir=args.out_dir,
+            active_goal_hash=args.active_goal_hash,
+            github_target=args.github_target,
+        )
+        print(json.dumps(payload, sort_keys=True))
+        return 0
     if args.proof:
         if args.work_order is None or args.out_dir is None:
             parser.error("--proof requires --work-order and --out-dir")
