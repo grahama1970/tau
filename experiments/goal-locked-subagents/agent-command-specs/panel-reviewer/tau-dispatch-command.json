@@ -1,0 +1,24 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "COMPLETED",
+    "--result-summary",
+    "Panel Reviewer command spec consumed the creator handoff and delegated to the persona-dream panel repair gate. This command-spec proof does not fabricate a WebGPT visual verdict.",
+    "--next-agent",
+    "persona-dream-panel-repair-gate",
+    "--next-executor",
+    "local",
+    "--next-reason",
+    "The repair gate owns terminal one-panel repair truth and must fail closed without creator, reviewer, loop, and receipt evidence.",
+    "--required-evidence",
+    "Persona Dream Panel Repair Gate posts a panel repair receipt with provider_eligibility=false unless every required subgate passes.",
+    "--stop-condition",
+    "Persona Dream Panel Repair Gate emits terminal PASS or explicit blocker evidence."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}

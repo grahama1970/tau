@@ -1,0 +1,62 @@
+{
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/issue-24-persona-dream-command-specs-20260629T123324Z/start-handoff.json",
+    "experiments/goal-locked-subagents/proofs/issue-24-persona-dream-command-specs-20260629T123324Z/command-output.json",
+    "experiments/goal-locked-subagents/proofs/issue-24-persona-dream-command-specs-20260629T123324Z/command-loop/command-loop-receipt.json",
+    "experiments/goal-locked-subagents/proofs/issue-24-persona-dream-command-specs-20260629T123324Z/command-loop/command-loop-step-001.receipt.json",
+    "experiments/goal-locked-subagents/proofs/issue-24-persona-dream-command-specs-20260629T123324Z/command-loop/command-loop-step-002.receipt.json",
+    "experiments/goal-locked-subagents/proofs/issue-24-persona-dream-command-specs-20260629T123324Z/command-loop/command-loop-step-003.receipt.json"
+  ],
+  "claims": {
+    "does_not_prove": [
+      "No storyboard panel image was generated.",
+      "No WebGPT visual review was run.",
+      "No Kling or paid provider call was made.",
+      "No full persona-dream panel repair transaction is proven without a concrete one-panel work order and receipts."
+    ],
+    "proves": [
+      "Tau committed persona-dream command specs for panel-creator, panel-reviewer, and persona-dream-panel-repair-gate are loadable and executable through handoff-command-loop.",
+      "The loop no longer fails with missing_agent_command_spec for the three persona-dream panel agents when using the committed spec root.",
+      "The command loop preserves mocked=false/live=true boundaries and reaches an explicit human blocker instead of claiming panel/media/provider success without receipts."
+    ]
+  },
+  "command_exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "issue": "https://github.com/grahama1970/tau/issues/24",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.issue_24_persona_dream_command_specs_proof.v1",
+  "selected_agents": [
+    "panel-creator",
+    "panel-reviewer",
+    "persona-dream-panel-repair-gate"
+  ],
+  "status": "WAITING",
+  "step_count": 3,
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "terminal_result_status": "BLOCKED",
+  "terminal_result_summary": "Persona Dream Panel Repair Gate reached the explicit first blocker: no one-panel work-order, panel creator receipt, visual review receipt, or loop final receipt was attached. provider_eligibility remains false.",
+  "verification_commands": [
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_handoff_dispatch.py -q",
+      "exit_code": 0,
+      "result": "21 passed in 2.11s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_cli.py -q -k 'handoff_command_loop or handoff_dispatch_agent_command'",
+      "exit_code": 0,
+      "result": "9 passed, 107 deselected in 2.77s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run tau handoff-command-loop --start <proof>/start-handoff.json --receipt-dir <proof>/command-loop --agents-root /home/graham/workspace/experiments/agent-skills/agents --command-spec-root experiments/goal-locked-subagents/agent-command-specs --active-goal-hash sha256:2424... --max-steps 4",
+      "exit_code": 0,
+      "result": "ok=true status=WAITING step_count=3 terminal_agent=human"
+    }
+  ]
+}

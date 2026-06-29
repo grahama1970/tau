@@ -1,0 +1,24 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "BLOCKED",
+    "--result-summary",
+    "Persona Dream Panel Repair Gate reached the explicit first blocker: no one-panel work-order, panel creator receipt, visual review receipt, or loop final receipt was attached. provider_eligibility remains false.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human or the outer Persona-Dream harness must provide a concrete one-panel work order and receipts before Tau may claim a panel repair transaction.",
+    "--required-evidence",
+    "Attach one panel work order plus creator, generation, visual review, no-overlay, and loop final receipts; or authorize a bounded live panel repair attempt.",
+    "--stop-condition",
+    "Human supplies the missing panel work-order evidence or routes to a live persona-dream repair attempt."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}

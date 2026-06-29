@@ -1,0 +1,87 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "handoff-agent-adapter",
+        "--result-status",
+        "COMPLETED",
+        "--result-summary",
+        "Panel Creator command spec consumed the persona-dream one-panel route and delegated to read-only panel review. This command-spec proof does not generate image media or call a provider.",
+        "--next-agent",
+        "panel-reviewer",
+        "--next-executor",
+        "local",
+        "--next-reason",
+        "Panel Reviewer must independently inspect creator output or fail closed when required panel artifacts are absent.",
+        "--required-evidence",
+        "Panel Reviewer posts a schema-valid visual review handoff with WebGPT/vision source evidence, or an explicit missing-evidence blocker.",
+        "--stop-condition",
+        "Panel Reviewer emits PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE as a tau.agent_handoff.v1 response."
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\n  \"context\": {\n    \"artifacts\": [\n      \"https://github.com/grahama1970/tau/issues/24\"\n    ],\n    \"summary\": \"Registry command adapter handled route for panel-creator.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#24\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:2424242424242424242424242424242424242424242424242424242424242424\",\n    \"goal_id\": \"goal-tau-persona-dream-command-specs\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-reviewer\",\n    \"reason\": \"Panel Reviewer must independently inspect creator output or fail closed when required panel artifacts are absent.\"\n  },\n  \"previous_subagent\": \"panel-creator\",\n  \"rationale\": \"panel-creator completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Panel Reviewer posts a schema-valid visual review handoff with WebGPT/vision source evidence, or an explicit missing-evidence blocker.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Panel Creator command spec consumed the persona-dream one-panel route and delegated to read-only panel review. This command-spec proof does not generate image media or call a provider.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Panel Reviewer emits PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE as a tau.agent_handoff.v1 response.\"\n}\n",
+      "timed_out": false,
+      "timeout_s": 30.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 1,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Panel Creator command spec consumed the persona-dream one-panel route and delegated to read-only panel review. This command-spec proof does not generate image media or call a provider.\n- Next agent: `panel-reviewer`\n- Executor: `local`\n- Stop condition: Panel Reviewer emits PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE as a tau.agent_handoff.v1 response.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"https://github.com/grahama1970/tau/issues/24\"\n    ],\n    \"summary\": \"Registry command adapter handled route for panel-creator.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#24\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:2424242424242424242424242424242424242424242424242424242424242424\",\n    \"goal_id\": \"goal-tau-persona-dream-command-specs\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-reviewer\",\n    \"reason\": \"Panel Reviewer must independently inspect creator output or fail closed when required panel artifacts are absent.\"\n  },\n  \"previous_subagent\": \"panel-creator\",\n  \"rationale\": \"panel-creator completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Panel Reviewer posts a schema-valid visual review handoff with WebGPT/vision source evidence, or an explicit missing-evidence blocker.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Panel Creator command spec consumed the persona-dream one-panel route and delegated to read-only panel review. This command-spec proof does not generate image media or call a provider.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Panel Reviewer emits PASS, NEEDS_CHANGES, BLOCKED, or INSUFFICIENT_EVIDENCE as a tau.agent_handoff.v1 response.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:panel-reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "panel-reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#24"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "panel-creator",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Human requested Tau persona-dream command specs for panel creator, reviewer, and repair gate.\n- Next agent: `panel-creator`\n- Executor: `local`\n- Stop condition: Tau reaches human with an explicit blocker or fails closed with exact command/spec error.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"https://github.com/grahama1970/tau/issues/24\"\n    ],\n    \"summary\": \"Issue #24 proof start: exercise persona-dream panel command specs without provider or media claims.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#24\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:2424242424242424242424242424242424242424242424242424242424242424\",\n    \"goal_id\": \"goal-tau-persona-dream-command-specs\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-creator\",\n    \"reason\": \"Exercise the committed persona-dream command-spec chain.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The first selected subagent must be panel-creator so Tau can prove the committed command-spec chain no longer blocks with missing_agent_command_spec.\",\n  \"required_evidence\": [\n    \"Tau command-loop receipt with selected agents, command exits, mocked/live boundaries, and explicit first blocker.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"https://github.com/grahama1970/tau/issues/24\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Human requested Tau persona-dream command specs for panel creator, reviewer, and repair gate.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Tau reaches human with an explicit blocker or fails closed with exact command/spec error.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:panel-creator",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "panel-creator",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#24"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

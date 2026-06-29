@@ -1,0 +1,36 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#24"
+  },
+  "goal": {
+    "goal_id": "goal-tau-persona-dream-command-specs",
+    "goal_version": 1,
+    "goal_hash": "sha256:2424242424242424242424242424242424242424242424242424242424242424"
+  },
+  "previous_subagent": "human",
+  "context": {
+    "summary": "Issue #24 proof start: exercise persona-dream panel command specs without provider or media claims.",
+    "artifacts": [
+      "https://github.com/grahama1970/tau/issues/24"
+    ]
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "Human requested Tau persona-dream command specs for panel creator, reviewer, and repair gate.",
+    "evidence": [
+      "https://github.com/grahama1970/tau/issues/24"
+    ]
+  },
+  "rationale": "The first selected subagent must be panel-creator so Tau can prove the committed command-spec chain no longer blocks with missing_agent_command_spec.",
+  "next_agent": {
+    "name": "panel-creator",
+    "executor": "local",
+    "reason": "Exercise the committed persona-dream command-spec chain."
+  },
+  "required_evidence": [
+    "Tau command-loop receipt with selected agents, command exits, mocked/live boundaries, and explicit first blocker."
+  ],
+  "stop_condition": "Tau reaches human with an explicit blocker or fails closed with exact command/spec error."
+}

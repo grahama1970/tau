@@ -329,6 +329,42 @@ def test_committed_research_auditor_overlay_command_spec_loads() -> None:
     assert spec["timeout_s"] == 30.0
 
 
+def test_committed_persona_dream_panel_overlay_specs_run_fail_closed_chain() -> None:
+    root = Path(__file__).resolve().parents[1]
+    start = _valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "panel-creator",
+        "executor": "local",
+        "reason": "Exercise the committed persona-dream one-panel command-spec chain.",
+    }
+
+    result = run_agent_handoff_command_loop(
+        start,
+        agent_registry_root=Path("/home/graham/workspace/experiments/agent-skills/agents"),
+        command_spec_root=root / "experiments/goal-locked-subagents/agent-command-specs",
+        active_goal_hash="sha256:active-goal",
+        max_steps=4,
+    )
+
+    assert result.ok is True
+    assert result.status == "WAITING"
+    assert result.terminal_agent == "human"
+    assert result.stop_reason == "next_agent_is_human"
+    assert [dispatch["selected_agent"] for dispatch in result.dispatches] == [
+        "panel-creator",
+        "panel-reviewer",
+        "persona-dream-panel-repair-gate",
+    ]
+    assert all(dispatch["mocked"] is False for dispatch in result.dispatches)
+    assert all(dispatch["live"] is True for dispatch in result.dispatches)
+    final_stdout = result.dispatches[-1]["command_results"][0]["stdout"]
+    final_payload = json.loads(final_stdout)
+    assert final_payload["result"]["status"] == "BLOCKED"
+    assert "provider_eligibility remains false" in final_payload["result"]["summary"]
+    assert final_payload["next_agent"]["name"] == "human"
+
+
 def test_load_agent_dispatch_command_spec_fails_closed_when_missing(tmp_path: Path) -> None:
     agent_dir = tmp_path / "reviewer"
     agent_dir.mkdir()
