@@ -124,6 +124,67 @@ def test_tau_cron_once_runs_one_bounded_tick_with_valid_start(tmp_path: Path) ->
     assert command_log.exists()
 
 
+def test_tau_cron_self_fix_mode_runs_one_poll_tick_without_start_handoff(tmp_path: Path) -> None:
+    receipt_root = tmp_path / "receipts"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    command_log = tmp_path / "tau-self-fix-command.json"
+    fake_tau = bin_dir / "tau"
+    fake_tau.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python",
+                "import json, os, sys",
+                f"open({str(command_log)!r}, 'w', encoding='utf-8').write(json.dumps({{'argv': sys.argv[1:], 'cwd': os.getcwd()}}))",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_tau.chmod(0o755)
+    env = _cron_env(receipt_root)
+    env.update(
+        {
+            "PATH": f"{bin_dir}{os.pathsep}{env['PATH']}",
+            "TAU_CRON_MODE": "self-fix",
+            "TAU_SELF_FIX_REPO": "grahama1970/tau",
+            "TAU_ORCHESTRATOR_ONCE": "1",
+            "TAU_SELF_FIX_REPAIR": "1",
+            "TAU_SELF_FIX_APPLY_GITHUB": "1",
+            "TAU_SELF_FIX_REPO_ROOT": "/workspace",
+            "TAU_MEMORY_BASE_URL": "http://memory:8601",
+            "TAU_SCILLM_BASE_URL": "http://scillm:4001",
+            "TAU_SELF_FIX_MODEL": "gpt-5.5",
+            "TAU_SELF_FIX_ISSUE_LIMIT": "7",
+        }
+    )
+    env.pop("TAU_ORCHESTRATOR_START", None)
+
+    result = subprocess.run(
+        ["bash", str(TAU_CRON)],
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    invocation = json.loads(command_log.read_text())
+    argv = invocation["argv"]
+
+    assert result.returncode == 0
+    assert "self-fix poll" in result.stdout
+    assert argv[:3] == ["self-fix", "poll", "--repo"]
+    assert argv[argv.index("--repo") + 1] == "grahama1970/tau"
+    assert "--dispatch" in argv
+    assert "--repair" in argv
+    assert "--apply-github" in argv
+    assert argv[argv.index("--issue-limit") + 1] == "7"
+    assert argv[argv.index("--memory-base-url") + 1] == "http://memory:8601"
+    assert argv[argv.index("--scillm-base-url") + 1] == "http://scillm:4001"
+    assert argv[argv.index("--repo-root") + 1] == "/workspace"
+    assert len(list(receipt_root.iterdir())) == 1
+
+
 def _cron_env(receipt_root: Path) -> dict[str, str]:
     env = os.environ.copy()
     env.update(
