@@ -1,0 +1,33 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "no full panel repair loop ran",
+      "no provider-ready packet is claimed",
+      "no Kling or paid provider call occurred"
+    ],
+    "proves": [
+      "repair-gate command consumed the reviewer route",
+      "repair-gate command wrote a terminal receipt from creator/reviewer evidence"
+    ]
+  },
+  "created_at": "2026-06-29T17:31:09Z",
+  "dry_run_one_scene_kling_request": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-003/one_scene_kling_request.json",
+  "kling_api_call_performed": false,
+  "live_call_performed": false,
+  "paid_call_performed": false,
+  "panel_id": "panel_001",
+  "provider_eligibility": true,
+  "provider_packet_status": "DRY_RUN_NOT_LIVE_SUBMITTABLE",
+  "public_upload_performed": false,
+  "remaining_blockers": [],
+  "role": "persona-dream-panel-repair-gate",
+  "schema": "tau.persona_dream.panel_repair_gate_receipt.v1",
+  "source_artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel/panel_001.png",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json"
+  ],
+  "status": "DRY_RUN_KLING_REQUEST_READY"
+}

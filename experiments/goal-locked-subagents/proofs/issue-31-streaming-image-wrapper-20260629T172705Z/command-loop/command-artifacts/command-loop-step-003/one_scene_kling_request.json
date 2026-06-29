@@ -1,0 +1,23 @@
+{
+  "callback_url": null,
+  "created_at": "2026-06-29T17:31:09Z",
+  "duration_seconds": 5,
+  "external_task_id": "persona-dream-panel_001",
+  "image_reference": {
+    "local_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel/panel_001.png",
+    "public_url": null,
+    "sha256": "sha256:a07d02ffd8ef78ebbbb978e45e5232dc0de3e74c6aca3451ce9f4c2fa23a9482"
+  },
+  "live_submit_blockers": [
+    "provider-accessible public image URL is missing",
+    "explicit human approval for Kling live call is missing"
+  ],
+  "mode": "std",
+  "negative_prompt": "No text overlays, no captions, no logo, no style change, no missing characters.",
+  "prompt": "Animate the accepted photorealistic persona-dream storyboard panel as one quiet cinematic shot. Preserve character identities, scale, tea steam, evidence cards, laptop glow, distant creatures, and sky-eye.",
+  "provider": "kling",
+  "resolution": "720p",
+  "schema": "persona_dream.kling_one_scene_request.v1",
+  "submit_live": false,
+  "voice_list": []
+}

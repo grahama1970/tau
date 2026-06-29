@@ -1,0 +1,26 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "no public upload or Kling call occurred",
+      "no provider-ready panel is claimed"
+    ],
+    "proves": [
+      "panel-creator command consumed a Tau handoff",
+      "panel-creator command wrote a concrete receipt with a local image artifact path and hash",
+      "panel-creator initiated the Scillm image wrapper inside Tau"
+    ]
+  },
+  "created_at": "2026-06-29T17:30:57Z",
+  "generated_image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel/panel_001.png",
+  "image_generation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-001/scillm_image_generation_receipt.json",
+  "kling_api_call_performed": false,
+  "live_call_performed": true,
+  "paid_call_performed": null,
+  "panel_id": "panel_001",
+  "public_upload_performed": false,
+  "role": "panel-creator",
+  "schema": "tau.persona_dream.panel_creator_receipt.v1",
+  "sha256": "sha256:a07d02ffd8ef78ebbbb978e45e5232dc0de3e74c6aca3451ce9f4c2fa23a9482",
+  "source": "scillm image generation receipt",
+  "status": "SCILLM_IMAGE_GENERATED"
+}

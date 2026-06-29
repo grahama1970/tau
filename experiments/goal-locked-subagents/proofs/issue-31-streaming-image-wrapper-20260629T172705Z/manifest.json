@@ -1,0 +1,54 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "Tau live Scillm calls completed only if the role receipts show live_call_performed=true.",
+      "No Kling or paid provider call was performed.",
+      "No public asset upload was performed.",
+      "No provider-ready persona-dream panel packet is claimed."
+    ],
+    "proves": [
+      "Tau can run the local persona-dream panel creator/reviewer/repair-gate loop through command specs.",
+      "The loop writes concrete per-role receipts and stops at a human-visible first blocker.",
+      "The command path preserves mocked=false/live=true for the Tau command-loop runner.",
+      "Tau panel-creator and panel-reviewer are configured to initiate Scillm calls inside the command loop."
+    ]
+  },
+  "command_exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-loop-receipt.json",
+  "created_at": "2026-06-29T17:31:09Z",
+  "dry_run_one_scene_kling_request": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-003/one_scene_kling_request.json",
+  "first_blocker": null,
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "panel_context": {
+    "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel/panel_001.png",
+    "panel_id": "panel_001",
+    "panel_prompt": "Single photorealistic cinematic panel: one focused project agent at a desk reviewing evidence receipts, laptop glow, paper proof cards, tea steam, subtle surreal sky-eye outside window. No text, no logos, no captions, no UI chrome.",
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel",
+    "scillm_base_url": "http://127.0.0.1:4001",
+    "scillm_image_auth": "codex-oauth",
+    "scillm_image_model": "gpt-image-2",
+    "scillm_image_quality": "medium",
+    "scillm_live_panel": "true",
+    "scillm_vlm_model": "gpt-5.5",
+    "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel/visual_review_receipt.json"
+  },
+  "panel_evidence": null,
+  "proof_scope": "Local Tau command-loop proof for one persona-dream panel. It runs real Tau command specs and stops at either a dry-run one-scene Kling request artifact or the first explicit creator/reviewer/repair-gate blocker.",
+  "schema": "tau.persona_dream_panel_proof.v1",
+  "scillm_originated_inside_tau": true,
+  "selected_agents": [
+    "panel-creator",
+    "panel-reviewer",
+    "persona-dream-panel-repair-gate"
+  ],
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/start-handoff.json",
+  "status": "WAITING",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human"
+}

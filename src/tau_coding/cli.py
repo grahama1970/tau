@@ -2246,7 +2246,7 @@ def _parse_persona_dream_panel_proof_cli_args(args: list[str]) -> dict[str, Path
         "scillm_live_panel": False,
         "panel_prompt": None,
         "scillm_image_model": "gpt-image-2",
-        "scillm_image_auth": "openai-api-key",
+        "scillm_image_auth": "codex-oauth",
         "scillm_image_quality": "high",
         "scillm_vlm_model": "gpt-5.5",
         "scillm_base_url": "http://127.0.0.1:4001",

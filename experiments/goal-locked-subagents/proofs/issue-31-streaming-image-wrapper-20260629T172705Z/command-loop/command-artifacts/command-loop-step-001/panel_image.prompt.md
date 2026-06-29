@@ -1,0 +1,1 @@
+Single photorealistic cinematic panel: one focused project agent at a desk reviewing evidence receipts, laptop glow, paper proof cards, tea steam, subtle surreal sky-eye outside window. No text, no logos, no captions, no UI chrome.

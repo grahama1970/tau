@@ -1,0 +1,66 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "blocking_findings": [],
+  "created_at": "2026-06-29T17:30:58Z",
+  "duration_seconds": 0.065479,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_events.jsonl",
+  "http_status": 200,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/scillm-panel/panel_001.png",
+  "live": true,
+  "live_call_performed": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "parsed_response": {
+    "blocking_findings": [],
+    "passed_entities": [
+      "single primary human subject",
+      "consistent office/interior setting",
+      "clear cinematic lighting and mood",
+      "coherent desk investigation props",
+      "surreal dream element integrated through the window",
+      "no obvious multi-panel collage structure",
+      "no conflicting duplicated subjects",
+      "no major visual incoherence blocking one-scene interpretation"
+    ],
+    "status": "PASS",
+    "summary": "Coherent single cinematic scene: a man at a desk studies notes in a moody office at dusk, with investigation materials, laptop, lamp, tea, and a surreal eye-shaped cloud formation visible through the window. Suitable for a dry-run one-scene Kling request."
+  },
+  "passed_entities": [
+    "single primary human subject",
+    "consistent office/interior setting",
+    "clear cinematic lighting and mood",
+    "coherent desk investigation props",
+    "surreal dream element integrated through the window",
+    "no obvious multi-panel collage structure",
+    "no conflicting duplicated subjects",
+    "no major visual incoherence blocking one-scene interpretation"
+  ],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-31-streaming-image-wrapper-20260629T172705Z/command-loop/command-artifacts/command-loop-step-002/visual_review_receipt.json",
+  "request": {
+    "messages": "<redacted-image-url-request>",
+    "model": "gpt-5.5",
+    "response_format": {
+      "type": "json_object"
+    },
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "persona-dream-panel-review",
+      "role": "panel-reviewer"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15.0,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response_content": "{\n  \"status\": \"PASS\",\n  \"summary\": \"Coherent single cinematic scene: a man at a desk studies notes in a moody office at dusk, with investigation materials, laptop, lamp, tea, and a surreal eye-shaped cloud formation visible through the window. Suitable for a dry-run one-scene Kling request.\",\n  \"blocking_findings\": [],\n  \"passed_entities\": [\n    \"single primary human subject\",\n    \"consistent office/interior setting\",\n    \"clear cinematic lighting and mood\",\n    \"coherent desk investigation props\",\n    \"surreal dream element integrated through the window\",\n    \"no obvious multi-panel collage structure\",\n    \"no conflicting duplicated subjects\",\n    \"no major visual incoherence blocking one-scene interpretation\"\n  ]\n}",
+  "role": "panel-reviewer",
+  "schema": "tau.persona_dream.scillm_vlm_review_receipt.v1",
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 157,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done",
+  "summary": "Coherent single cinematic scene: a man at a desk studies notes in a moody office at dusk, with investigation materials, laptop, lamp, tea, and a surreal eye-shaped cloud formation visible through the window. Suitable for a dry-run one-scene Kling request.",
+  "surface": "scillm.chat_completions.image_url"
+}

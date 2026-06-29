@@ -7,6 +7,7 @@ import base64
 import hashlib
 import json
 import os
+import selectors
 import subprocess
 import time
 from collections.abc import Mapping
@@ -257,15 +258,17 @@ def _generate_panel_image_with_scillm(
     image_path = image_path.resolve()
     receipt_path = artifact_dir / "scillm_image_generation_receipt.json"
     events_path = artifact_dir / "scillm_image_generation_events.jsonl"
+    wrapper_events_path = artifact_dir / "scillm_image_generation_wrapper_events.jsonl"
     prompt = str(panel.get("panel_prompt") or _default_panel_prompt(panel)).strip()
     prompt_file.write_text(prompt + "\n", encoding="utf-8")
     auth = _resolve_scillm_api_key()
+    image_auth = str(panel.get("scillm_image_auth") or "codex-oauth")
     cmd = [
         "bash",
         str(SCILLM_SKILL_RUN),
         "generate-image",
         "--auth",
-        str(panel.get("scillm_image_auth") or "openai-api-key"),
+        image_auth,
         "--prompt-file",
         str(prompt_file),
         "--out",
@@ -273,7 +276,7 @@ def _generate_panel_image_with_scillm(
         "--receipt",
         str(receipt_path),
         "--events-out",
-        str(events_path),
+        str(wrapper_events_path),
         "--model",
         str(panel.get("scillm_image_model") or "gpt-image-2"),
         "--quality",
@@ -282,7 +285,7 @@ def _generate_panel_image_with_scillm(
         "tau-persona-dream-panel-creator",
         "--json",
     ]
-    if str(panel.get("scillm_image_auth") or "openai-api-key") == "openai-api-key":
+    if image_auth == "openai-api-key":
         cmd[-1:-1] = ["--master-key", str(auth["api_key"] or "")]
     started = time.monotonic()
     events_path.parent.mkdir(parents=True, exist_ok=True)
@@ -294,6 +297,8 @@ def _generate_panel_image_with_scillm(
             "role": "panel-creator",
             "surface": "scillm.generate-image-wrapper",
             "model": str(panel.get("scillm_image_model") or "gpt-image-2"),
+            "auth": image_auth,
+            "wrapper_events_path": str(wrapper_events_path),
         },
     )
     proc = subprocess.Popen(
@@ -305,7 +310,18 @@ def _generate_panel_image_with_scillm(
     )
     timeout_s = float(panel.get("scillm_image_timeout_s") or 900)
     heartbeat_s = float(panel.get("scillm_stream_heartbeat_s") or 15)
+    stdout_tail: list[str] = []
+    stderr_tail: list[str] = []
+    wrapper_event_count = 0
+    wrapper_json_event_count = 0
+    heartbeat_event_count = 0
+    success_gate_observed = False
     next_heartbeat_at = 0.0
+    sel = selectors.DefaultSelector()
+    if proc.stdout is not None:
+        sel.register(proc.stdout, selectors.EVENT_READ, data="stdout")
+    if proc.stderr is not None:
+        sel.register(proc.stderr, selectors.EVENT_READ, data="stderr")
     while proc.poll() is None:
         elapsed = time.monotonic() - started
         if elapsed > timeout_s:
@@ -320,7 +336,42 @@ def _generate_panel_image_with_scillm(
                 },
             )
             break
+        for key, _ in sel.select(timeout=0.25):
+            stream_name = str(key.data)
+            line = key.fileobj.readline()
+            if not line:
+                continue
+            if stream_name == "stdout":
+                stdout_tail.append(line)
+                stdout_tail = stdout_tail[-80:]
+            else:
+                stderr_tail.append(line)
+                stderr_tail = stderr_tail[-80:]
+            event = _scillm_image_stream_event(
+                stream_name=stream_name,
+                line=line,
+                elapsed=time.monotonic() - started,
+            )
+            if event is not None:
+                wrapper_event_count += 1
+                if event.get("json") is True:
+                    wrapper_json_event_count += 1
+                _append_event(events_path, event)
+        if _image_success_gate_satisfied(image_path, receipt_path):
+            if not success_gate_observed:
+                success_gate_observed = True
+                _append_event(
+                    events_path,
+                    {
+                        "type": "image_success_gate_observed",
+                        "created_at": _now_iso(),
+                        "elapsed_seconds": round(time.monotonic() - started, 6),
+                        "receipt_path": str(receipt_path),
+                        "image_path": str(image_path),
+                    },
+                )
         if elapsed >= next_heartbeat_at:
+            heartbeat_event_count += 1
             _append_event(
                 events_path,
                 {
@@ -331,9 +382,36 @@ def _generate_panel_image_with_scillm(
                 },
             )
             next_heartbeat_at = elapsed + max(0.1, heartbeat_s)
-        time.sleep(0.25)
+    for key in list(sel.get_map().values()):
+        try:
+            sel.unregister(key.fileobj)
+        except (KeyError, ValueError):
+            pass
+    sel.close()
     stdout, stderr = proc.communicate()
+    if stdout:
+        stdout_tail.extend(stdout.splitlines(keepends=True))
+        stdout_tail = stdout_tail[-80:]
+    if stderr:
+        stderr_tail.extend(stderr.splitlines(keepends=True))
+        stderr_tail = stderr_tail[-80:]
+        for line in stderr.splitlines():
+            event = _scillm_image_stream_event(
+                stream_name="stderr",
+                line=line,
+                elapsed=time.monotonic() - started,
+            )
+            if event is not None:
+                wrapper_event_count += 1
+                if event.get("json") is True:
+                    wrapper_json_event_count += 1
+                _append_event(events_path, event)
     returncode = proc.returncode if proc.returncode is not None else 1
+    final_wrapper_events = _mirror_wrapper_jsonl_events(wrapper_events_path, events_path)
+    wrapper_event_count += final_wrapper_events
+    wrapper_json_event_count += final_wrapper_events
+    if _image_success_gate_satisfied(image_path, receipt_path):
+        success_gate_observed = True
     wrapper = {
         "schema": "tau.persona_dream.scillm_image_generation_call.v1",
         "created_at": _now_iso(),
@@ -345,10 +423,16 @@ def _generate_panel_image_with_scillm(
         "command": _redact_command(cmd),
         "exit_code": returncode,
         "duration_seconds": round(time.monotonic() - started, 6),
-        "stdout_tail": stdout[-4000:],
-        "stderr_tail": stderr[-4000:],
+        "stdout_tail": "".join(stdout_tail)[-4000:],
+        "stderr_tail": "".join(stderr_tail)[-4000:],
         "prompt_file": str(prompt_file),
         "events_path": str(events_path),
+        "wrapper_events_path": str(wrapper_events_path),
+        "stream": True,
+        "heartbeat_event_count": heartbeat_event_count,
+        "wrapper_event_count": wrapper_event_count,
+        "wrapper_json_event_count": wrapper_json_event_count,
+        "success_gate_observed": success_gate_observed,
         "path": str(image_path),
         "receipt_path": str(receipt_path),
         "ok": False,
@@ -376,6 +460,10 @@ def _generate_panel_image_with_scillm(
             "exit_code": returncode,
             "receipt_path": str(receipt_path),
             "image_path": str(image_path),
+            "heartbeat_event_count": heartbeat_event_count,
+            "wrapper_event_count": wrapper_event_count,
+            "wrapper_json_event_count": wrapper_json_event_count,
+            "success_gate_observed": success_gate_observed,
         },
     )
     _write_json(receipt_path, wrapper)
@@ -933,6 +1021,74 @@ def _collect_scillm_sse(lines: Any, events_path: Path) -> dict[str, Any]:
         "done_seen": done_seen,
         "last_event_type": last_event_type,
     }
+
+
+def _scillm_image_stream_event(
+    *,
+    stream_name: str,
+    line: str,
+    elapsed: float,
+) -> dict[str, Any] | None:
+    text = line.strip()
+    if not text:
+        return None
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        payload = {"text": text[:1000]}
+        event_type = "image_wrapper_stdout" if stream_name == "stdout" else "image_wrapper_stderr"
+        json_event = False
+    else:
+        event_type = str(payload.get("type") or f"image_wrapper_{stream_name}_json")
+        json_event = True
+    return {
+        "type": event_type,
+        "created_at": _now_iso(),
+        "elapsed_seconds": round(elapsed, 6),
+        "stream": stream_name,
+        "json": json_event,
+        "data": payload,
+    }
+
+
+def _mirror_wrapper_jsonl_events(wrapper_events_path: Path, events_path: Path) -> int:
+    if not wrapper_events_path.is_file():
+        return 0
+    count = 0
+    for raw_line in wrapper_events_path.read_text(encoding="utf-8").splitlines():
+        if not raw_line.strip():
+            continue
+        try:
+            payload = json.loads(raw_line)
+        except json.JSONDecodeError:
+            payload = {"raw": raw_line[:1000]}
+        count += 1
+        _append_event(
+            events_path,
+            {
+                "type": "image_wrapper_codex_json_event",
+                "created_at": _now_iso(),
+                "stream": "wrapper_events_jsonl",
+                "json": True,
+                "data": payload,
+            },
+        )
+    return count
+
+
+def _image_success_gate_satisfied(image_path: Path, receipt_path: Path) -> bool:
+    if not image_path.is_file() or image_path.stat().st_size <= 0 or not receipt_path.is_file():
+        return False
+    try:
+        receipt = _read_json(receipt_path)
+    except (OSError, json.JSONDecodeError):
+        return False
+    return (
+        receipt.get("ok") is True
+        and bool(receipt.get("sha256"))
+        and receipt.get("width") is not None
+        and receipt.get("height") is not None
+    )
 
 
 def _append_event(path: Path, event: Mapping[str, Any]) -> None:

@@ -25,7 +25,11 @@ from tau_coding import (
 )
 from tau_coding.cli import app, run_print_mode
 from tau_coding.paths import TauPaths
-from tau_coding.persona_dream_panel_agent import _collect_scillm_sse
+from tau_coding.persona_dream_panel_agent import (
+    _collect_scillm_sse,
+    _mirror_wrapper_jsonl_events,
+    _scillm_image_stream_event,
+)
 from tau_coding.persona_dream_panel_proof import _panel_context as _persona_panel_context
 from tau_coding.provider_config import (
     OpenAICompatibleProviderConfig,
@@ -2053,6 +2057,51 @@ def test_persona_dream_panel_sse_collector_records_liveness(tmp_path: Path) -> N
         "last_event_type": "done",
     }
     assert [event["type"] for event in events] == ["started", "heartbeat", "chunk", "done"]
+
+
+def test_persona_dream_panel_image_stream_event_parser() -> None:
+    json_event = _scillm_image_stream_event(
+        stream_name="stderr",
+        line='{"type":"scillm.image.started","auth":"codex-oauth"}',
+        elapsed=1.23456,
+    )
+    text_event = _scillm_image_stream_event(
+        stream_name="stdout",
+        line="[codex +  1.2s] #1 thread.started",
+        elapsed=2.0,
+    )
+
+    assert json_event is not None
+    assert json_event["type"] == "scillm.image.started"
+    assert json_event["json"] is True
+    assert json_event["data"]["auth"] == "codex-oauth"
+    assert text_event is not None
+    assert text_event["type"] == "image_wrapper_stdout"
+    assert text_event["json"] is False
+    assert "thread.started" in text_event["data"]["text"]
+
+
+def test_persona_dream_panel_mirrors_wrapper_jsonl_events(tmp_path: Path) -> None:
+    wrapper_events_path = tmp_path / "wrapper-events.jsonl"
+    events_path = tmp_path / "events.jsonl"
+    wrapper_events_path.write_text(
+        '{"type":"thread.started","thread_id":"abc"}\n'
+        '{"type":"item.completed","item":{"type":"image_generation_call"}}\n',
+        encoding="utf-8",
+    )
+
+    count = _mirror_wrapper_jsonl_events(wrapper_events_path, events_path)
+    events = [
+        json.loads(line)
+        for line in events_path.read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert count == 2
+    assert [event["type"] for event in events] == [
+        "image_wrapper_codex_json_event",
+        "image_wrapper_codex_json_event",
+    ]
+    assert events[0]["data"]["thread_id"] == "abc"
 
 
 def test_cli_handoff_command_loop_github_transport_dry_run(tmp_path: Path) -> None:
