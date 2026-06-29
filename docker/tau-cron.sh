@@ -3,6 +3,7 @@ set -euo pipefail
 
 interval="${TAU_ORCHESTRATOR_INTERVAL_SECONDS:-300}"
 mode="${TAU_CRON_MODE:-handoff}"
+tau_bin="${TAU_BIN:-tau}"
 start="${TAU_ORCHESTRATOR_START:-}"
 agents_root="${TAU_AGENTS_ROOT:-/opt/tau/experiments/goal-locked-subagents/agent-command-specs}"
 command_spec_root="${TAU_COMMAND_SPEC_ROOT:-/workspace/experiments/goal-locked-subagents/agent-command-specs}"
@@ -91,7 +92,7 @@ while true; do
 
   if [[ "${mode}" == "self-fix" ]]; then
     cmd=(
-      tau self-fix poll
+      "${tau_bin}" self-fix poll
       --repo "${self_fix_repo}"
       --receipt-dir "${receipt_dir}"
       --dispatch
@@ -115,7 +116,7 @@ while true; do
     fi
   else
     cmd=(
-      tau handoff-command-loop
+      "${tau_bin}" handoff-command-loop
       --start "${start}"
       --receipt-dir "${receipt_dir}"
       --agents-root "${agents_root}"

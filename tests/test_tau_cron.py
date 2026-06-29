@@ -146,6 +146,7 @@ def test_tau_cron_self_fix_mode_runs_one_poll_tick_without_start_handoff(tmp_pat
     env.update(
         {
             "PATH": f"{bin_dir}{os.pathsep}{env['PATH']}",
+            "TAU_BIN": str(fake_tau),
             "TAU_CRON_MODE": "self-fix",
             "TAU_SELF_FIX_REPO": "grahama1970/tau",
             "TAU_ORCHESTRATOR_ONCE": "1",
