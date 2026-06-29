@@ -1,10 +1,13 @@
 import json
 from pathlib import Path
 
+import httpx
+
 from tau_coding.battle_live_handoff import (
     build_subagent_receipt,
     write_battle_live_handoff_proof,
 )
+from tau_coding.battle_scillm import classify_scillm_http_error
 from tau_coding.subagent_receipt import validate_subagent_receipt
 
 
@@ -201,11 +204,7 @@ def test_battle_live_proof_can_emit_worker_handoffs_from_battle_receipts(tmp_pat
                 encoding="utf-8",
             )
             attempt_path = (
-                run_root
-                / "scorekeeper"
-                / "replays"
-                / combination_id
-                / "attempt-receipt.json"
+                run_root / "scorekeeper" / "replays" / combination_id / "attempt-receipt.json"
             )
             attempt_path.parent.mkdir(parents=True, exist_ok=True)
             attempt_path.write_text(
@@ -245,12 +244,7 @@ def test_battle_live_proof_can_emit_worker_handoffs_from_battle_receipts(tmp_pat
     assert manifest["scheduling"]["worker_count"] == 4
     handoff = json.loads(
         (
-            run_root
-            / "tau-live-worker"
-            / "red"
-            / "workers"
-            / "red-0-exploit-a"
-            / "handoff.json"
+            run_root / "tau-live-worker" / "red" / "workers" / "red-0-exploit-a" / "handoff.json"
         ).read_text()
     )
     receipt = json.loads(
@@ -269,3 +263,113 @@ def test_battle_live_proof_can_emit_worker_handoffs_from_battle_receipts(tmp_pat
     assert handoff["context"]["worker_context"]["research_dispatch"]["research_boost"] == 0.2
     assert receipt["context"]["battle"]["worker"]["worker_id"] == "blue-1-defense-b"
     assert any("attempt-receipt.json" in item for item in receipt["evidence"])
+
+
+def test_battle_live_worker_fanout_backpressure_writes_structured_manifest(
+    tmp_path: Path,
+) -> None:
+    run_root = _write_worker_context_bundle(tmp_path, worker_count_per_team=2)
+
+    manifest = write_battle_live_handoff_proof(
+        out_dir=run_root / "tau-live-backpressure",
+        battle_id="battle-005",
+        run_id="battle-run-1",
+        scenario_id="generated-sqli-xss-warm-pond-001",
+        red_persona="brandon-bailey",
+        blue_persona="coder",
+        api_key="unused",
+        battle_context_json=run_root / "context" / "tau-battle-context-bundle.json",
+        handoff_granularity="worker",
+        max_live_handoffs=3,
+    )
+
+    assert manifest["status"] == "BACKPRESSURE"
+    assert manifest["reason"] == "tau_live_handoff_backpressure"
+    assert manifest["mocked"] is False
+    assert manifest["live"] is True
+    assert manifest["scheduling"]["handoff_count"] == 4
+    assert manifest["scheduling"]["mode"] == "preflight_backpressure"
+    assert manifest["backpressure"]["requested_handoff_count"] == 4
+    assert manifest["backpressure"]["max_live_handoffs"] == 3
+    assert manifest["backpressure"]["would_start_scillm_calls"] is False
+    assert manifest["backpressure"]["error_family"] == "tau_live_backpressure"
+    assert not (run_root / "tau-live-backpressure" / "red" / "workers").exists()
+
+
+def test_scillm_timeout_errors_are_structured_and_nonblank() -> None:
+    error = classify_scillm_http_error(httpx.ReadTimeout(""), timeout_s=90)
+
+    assert error["error_family"] == "scillm_stream_timeout"
+    assert error["error_type"] == "ReadTimeout"
+    assert error["error_message"]
+    assert error["error"] != "scillm_http_error: "
+    assert error["backpressure_likely"] is True
+    assert error["retryable"] is True
+
+
+def _write_worker_context_bundle(tmp_path: Path, *, worker_count_per_team: int) -> Path:
+    run_root = tmp_path / "battle-run"
+    context_dir = run_root / "context"
+    context_dir.mkdir(parents=True)
+    bundle = context_dir / "tau-battle-context-bundle.json"
+    bundle.write_text(
+        json.dumps(
+            {
+                "schema": "tau.battle_context_bundle.v1",
+                "artifacts": {"warm_pond": str(context_dir / "warm-pond-receipt.json")},
+                "summary": {
+                    "teams": {
+                        "red": {"persona": "brandon-bailey"},
+                        "blue": {"persona": "coder"},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    for team, persona, prefix in (
+        ("red", "brandon-bailey", "exploit"),
+        ("blue", "coder", "defense"),
+    ):
+        worker_refs = []
+        for index in range(worker_count_per_team):
+            worker_id = f"{team}-{index}-{prefix}-a"
+            combination_id = f"combo-{index}"
+            worker_path = run_root / team / "workers" / worker_id / "worker-receipt.json"
+            worker_path.parent.mkdir(parents=True)
+            worker_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "battle.worker_receipt.v1",
+                        "status": "PASS",
+                        "team": team,
+                        "worker_id": worker_id,
+                        "combination_id": combination_id,
+                        "persona": persona,
+                        "model": "gpt-5.5",
+                        "outcome": {"ok": True},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            attempt_path = (
+                run_root / "scorekeeper" / "replays" / combination_id / "attempt-receipt.json"
+            )
+            attempt_path.parent.mkdir(parents=True, exist_ok=True)
+            attempt_path.write_text(
+                json.dumps({"schema": "battle.scorekeeper_attempt_receipt.v1"}),
+                encoding="utf-8",
+            )
+            worker_refs.append(str(worker_path.relative_to(run_root)))
+        (run_root / team / "team-receipt.json").write_text(
+            json.dumps(
+                {
+                    "schema": "battle.team_receipt.v1",
+                    "status": "PASS",
+                    "worker_count": len(worker_refs),
+                    "worker_receipts": worker_refs,
+                }
+            ),
+            encoding="utf-8",
+        )
+    return run_root

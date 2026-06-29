@@ -79,11 +79,12 @@ async def call_scillm_async(
         return receipt
 
     try:
-        async with httpx.AsyncClient(
-            base_url=scillm_base_url.rstrip("/"),
-            timeout=timeout_s,
-        ) as client:
-            async with client.stream(
+        async with (
+            httpx.AsyncClient(
+                base_url=scillm_base_url.rstrip("/"),
+                timeout=timeout_s,
+            ) as client,
+            client.stream(
                 "POST",
                 "/v1/chat/completions",
                 headers={
@@ -92,18 +93,28 @@ async def call_scillm_async(
                     "Accept": "text/event-stream",
                 },
                 json=payload,
-            ) as response:
-                receipt["http_status"] = response.status_code
-                if response.status_code != 200:
-                    body = await response.aread()
-                    receipt["error"] = f"scillm_http_status_{response.status_code}"
-                    receipt["response_text"] = body.decode("utf-8", errors="replace")[:1000]
-                    receipt["duration_seconds"] = round(time.monotonic() - started, 6)
-                    return receipt
-                stream_result = await _collect_scillm_sse_async(response.aiter_lines(), events_path)
+            ) as response,
+        ):
+            receipt["http_status"] = response.status_code
+            if response.status_code != 200:
+                body = await response.aread()
+                receipt["error"] = f"scillm_http_status_{response.status_code}"
+                receipt["response_text"] = body.decode("utf-8", errors="replace")[:1000]
+                receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+                return receipt
+            stream_result = await _collect_scillm_sse_async(response.aiter_lines(), events_path)
     except httpx.HTTPError as exc:
-        receipt["error"] = f"scillm_http_error: {exc}"
+        error = classify_scillm_http_error(exc, timeout_s=timeout_s)
+        receipt.update(error)
         receipt["duration_seconds"] = round(time.monotonic() - started, 6)
+        _append_jsonl(
+            events_path,
+            {
+                "type": "scillm_error",
+                "created_at": _now_iso(),
+                "data": error,
+            },
+        )
         return receipt
 
     receipt["duration_seconds"] = round(time.monotonic() - started, 6)
@@ -130,7 +141,11 @@ async def _collect_scillm_sse_async(lines: Any, events_path: Path) -> dict[str, 
     last_payload: dict[str, Any] = {}
     events_path.parent.mkdir(parents=True, exist_ok=True)
     async for raw_line in lines:
-        line = raw_line.decode("utf-8", errors="replace") if isinstance(raw_line, bytes) else str(raw_line)
+        line = (
+            raw_line.decode("utf-8", errors="replace")
+            if isinstance(raw_line, bytes)
+            else str(raw_line)
+        )
         if not line:
             continue
         if line.startswith(":"):
@@ -191,6 +206,34 @@ def _worker_field(worker_context: dict[str, Any] | None, field: str) -> Any:
     if not worker_context:
         return None
     return worker_context.get(field)
+
+
+def classify_scillm_http_error(exc: httpx.HTTPError, *, timeout_s: float) -> dict[str, Any]:
+    """Return a structured, nonblank Scillm transport failure for receipts."""
+
+    error_type = exc.__class__.__name__
+    message = str(exc).strip()
+    if not message:
+        message = repr(exc)
+    family = "scillm_http_error"
+    retryable = True
+    backpressure_likely = False
+    if isinstance(exc, httpx.TimeoutException):
+        family = "scillm_stream_timeout"
+        backpressure_likely = True
+    elif isinstance(exc, httpx.TransportError):
+        family = "scillm_transport_error"
+        backpressure_likely = True
+    return {
+        "error": f"{family}: {message}",
+        "error_family": family,
+        "error_type": error_type,
+        "error_message": message,
+        "retryable": retryable,
+        "backpressure_likely": backpressure_likely,
+        "timeout_s": timeout_s,
+        "http_status": None,
+    }
 
 
 def _append_jsonl(path: Path, payload: dict[str, Any]) -> None:

@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tau_coding.battle_scillm import SCILLM_CALL_SCHEMA, call_scillm_async
+from tau_coding.battle_scillm import call_scillm_async
 from tau_coding.battle_worker_specs import build_handoff_specs
 from tau_coding.subagent_receipt import validate_subagent_receipt
 
@@ -39,6 +39,7 @@ def write_battle_live_handoff_proof(
     api_key: str | None = None,
     battle_context_json: Path | None = None,
     handoff_granularity: str = "team",
+    max_live_handoffs: int = 64,
 ) -> dict[str, Any]:
     """Write Red/Blue Tau handoffs, Scillm call receipts, and Tau subagent receipts."""
 
@@ -51,6 +52,22 @@ def write_battle_live_handoff_proof(
         battle_context=battle_context,
         handoff_granularity=handoff_granularity,
     )
+    if len(handoff_specs) > max_live_handoffs:
+        manifest = _backpressure_manifest(
+            battle_id=battle_id,
+            run_id=run_id,
+            scenario_id=scenario_id,
+            red_persona=red_persona,
+            blue_persona=blue_persona,
+            model=model,
+            scillm_base_url=scillm_base_url,
+            battle_context=battle_context,
+            handoff_granularity=handoff_granularity,
+            handoff_count=len(handoff_specs),
+            max_live_handoffs=max_live_handoffs,
+        )
+        _write_json(out_dir / "manifest.json", manifest)
+        return manifest
 
     team_results = asyncio.run(
         _write_team_handoffs_concurrently(
@@ -119,6 +136,71 @@ def write_battle_live_handoff_proof(
     }
     _write_json(out_dir / "manifest.json", manifest)
     return manifest
+
+
+def _backpressure_manifest(
+    *,
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    red_persona: str,
+    blue_persona: str,
+    model: str,
+    scillm_base_url: str,
+    battle_context: dict[str, Any] | None,
+    handoff_granularity: str,
+    handoff_count: int,
+    max_live_handoffs: int,
+) -> dict[str, Any]:
+    worker_count = handoff_count if handoff_granularity == "worker" else 0
+    return {
+        "schema": SCHEMA,
+        "battle_id": battle_id,
+        "run_id": run_id,
+        "scenario_id": scenario_id,
+        "status": "BACKPRESSURE",
+        "reason": "tau_live_handoff_backpressure",
+        "mocked": False,
+        "live": True,
+        "model": model,
+        "surface": "scillm.chat_completions",
+        "scillm_base_url": scillm_base_url,
+        "battle_context": battle_context["manifest_summary"] if battle_context else None,
+        "scheduling": {
+            "mode": "preflight_backpressure",
+            "granularity": handoff_granularity,
+            "team_count": 2,
+            "handoff_count": handoff_count,
+            "worker_count": worker_count,
+            "completion_order": [],
+        },
+        "teams": [],
+        "backpressure": {
+            "schema": "tau.battle_live_backpressure.v1",
+            "reason": "requested_live_handoff_count_exceeds_configured_safe_limit",
+            "requested_handoff_count": handoff_count,
+            "max_live_handoffs": max_live_handoffs,
+            "suggested_safe_handoff_count": max_live_handoffs,
+            "retry_after_s": 60,
+            "degrade_strategy": (
+                "rerun Battle Tau live with fewer Red/Blue workers or a lower --max-attempts value"
+            ),
+            "would_start_scillm_calls": False,
+            "error_family": "tau_live_backpressure",
+            "retryable": True,
+        },
+        "claims": {
+            "proves": [
+                "Tau refused unsafe live Scillm fanout before starting worker calls.",
+                "Tau wrote a structured backpressure receipt for Battle degradation.",
+            ],
+            "does_not_prove": [
+                "128-worker Scillm live completion.",
+                "Battle Docker scorekeeper PASS.",
+                "Unbounded Battle swarm execution.",
+            ],
+        },
+    }
 
 
 async def _write_team_handoffs_concurrently(
@@ -330,7 +412,7 @@ def build_subagent_receipt(
 
 def _goal_payload(*, battle_id: str, scenario_id: str) -> dict[str, Any]:
     goal_id = f"goal-battle-{battle_id}-tau-live"
-    seed = f"{goal_id}:{scenario_id}".encode("utf-8")
+    seed = f"{goal_id}:{scenario_id}".encode()
     import hashlib
 
     return {
@@ -367,19 +449,13 @@ def _extract_context_artifact_paths(payload: dict[str, Any]) -> list[str]:
     if isinstance(raw_artifacts, list):
         return [str(item) for item in raw_artifacts if isinstance(item, str) and item]
     if isinstance(raw_artifacts, dict):
-        return [
-            str(value)
-            for value in raw_artifacts.values()
-            if isinstance(value, str) and value
-        ]
+        return [str(value) for value in raw_artifacts.values() if isinstance(value, str) and value]
     raw_artifact_paths = payload.get("artifact_paths")
     if isinstance(raw_artifact_paths, list):
         return [str(item) for item in raw_artifact_paths if isinstance(item, str) and item]
     if isinstance(raw_artifact_paths, dict):
         return [
-            str(value)
-            for value in raw_artifact_paths.values()
-            if isinstance(value, str) and value
+            str(value) for value in raw_artifact_paths.values() if isinstance(value, str) and value
         ]
     return []
 
@@ -542,7 +618,9 @@ def _handoff_payload(
             "executor": "local",
             "reason": "Run one bounded Battle persona action through Tau/Scillm.",
         },
-        "required_evidence": [f"{_handoff_dir_name(team, worker_context)}/tau-subagent-receipt.json"],
+        "required_evidence": [
+            f"{_handoff_dir_name(team, worker_context)}/tau-subagent-receipt.json"
+        ],
         "stop_condition": "Tau writes a tau.subagent_receipt.v1 or a structured BLOCKED receipt.",
     }
 
@@ -607,8 +685,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--red-persona", required=True)
     parser.add_argument("--blue-persona", required=True)
     parser.add_argument("--model", default=os.environ.get("TAU_BATTLE_SCILLM_MODEL", "gpt-5.5"))
-    parser.add_argument("--scillm-base-url", default=os.environ.get("SCILLM_BASE_URL", "http://localhost:4001"))
+    parser.add_argument(
+        "--scillm-base-url", default=os.environ.get("SCILLM_BASE_URL", "http://localhost:4001")
+    )
     parser.add_argument("--timeout-s", type=float, default=90.0)
+    parser.add_argument(
+        "--max-live-handoffs",
+        type=int,
+        default=int(os.environ.get("TAU_BATTLE_MAX_LIVE_HANDOFFS", "64")),
+        help="Refuse larger live Scillm fanout with a structured BACKPRESSURE manifest.",
+    )
     parser.add_argument(
         "--handoff-granularity",
         choices=("team", "worker"),
@@ -635,9 +721,14 @@ def main(argv: list[str] | None = None) -> int:
         timeout_s=args.timeout_s,
         battle_context_json=args.battle_context_json,
         handoff_granularity=args.handoff_granularity,
+        max_live_handoffs=args.max_live_handoffs,
     )
     print(json.dumps(manifest, indent=2, sort_keys=True))
-    return 0 if manifest["status"] == "PASS" else 2
+    if manifest["status"] == "PASS":
+        return 0
+    if manifest["status"] == "BACKPRESSURE":
+        return 0
+    return 2
 
 
 if __name__ == "__main__":

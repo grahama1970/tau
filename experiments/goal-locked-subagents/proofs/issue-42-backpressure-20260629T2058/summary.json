@@ -1,0 +1,39 @@
+{
+  "schema": "tau.battle_live_handoff_proof.v1",
+  "status": "BACKPRESSURE",
+  "reason": "tau_live_handoff_backpressure",
+  "mocked": false,
+  "live": true,
+  "model": "gpt-5.5",
+  "scheduling": {
+    "completion_order": [],
+    "granularity": "worker",
+    "handoff_count": 128,
+    "mode": "preflight_backpressure",
+    "team_count": 2,
+    "worker_count": 128
+  },
+  "backpressure": {
+    "degrade_strategy": "rerun Battle Tau live with fewer Red/Blue workers or a lower --max-attempts value",
+    "error_family": "tau_live_backpressure",
+    "max_live_handoffs": 64,
+    "reason": "requested_live_handoff_count_exceeds_configured_safe_limit",
+    "requested_handoff_count": 128,
+    "retry_after_s": 60,
+    "retryable": true,
+    "schema": "tau.battle_live_backpressure.v1",
+    "suggested_safe_handoff_count": 64,
+    "would_start_scillm_calls": false
+  },
+  "claims": {
+    "does_not_prove": [
+      "128-worker Scillm live completion.",
+      "Battle Docker scorekeeper PASS.",
+      "Unbounded Battle swarm execution."
+    ],
+    "proves": [
+      "Tau refused unsafe live Scillm fanout before starting worker calls.",
+      "Tau wrote a structured backpressure receipt for Battle degradation."
+    ]
+  }
+}
