@@ -1,0 +1,43 @@
+{
+  "api_key_source": "docker:scillm-proxy:SCILLM_MASTER_KEY",
+  "combination_id": "exploit-sqli-admin-or__defense-parameterized-like",
+  "duration_seconds": 7.322656,
+  "events_path": "experiments/goal-locked-subagents/proofs/issue-34-worker-handoffs-20260629T182653Z/blue/workers/blue-0-defense-parameterized-like/scillm-events.jsonl",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "persona": "coder",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "combination_id": "exploit-sqli-admin-or__defense-parameterized-like",
+      "persona": "coder",
+      "proof": "battle-live-handoff",
+      "team": "blue",
+      "worker_id": "blue-0-defense-parameterized-like"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response": {
+    "elapsed_ms": 7303,
+    "model": "gpt-5.5"
+  },
+  "response_content": "Action summary: Blue coder selected/applied the `defense-parameterized-like` strategy for `search_users`, replacing interpolated SQL `LIKE` construction with a parameterized query to mitigate SQL injection in `battle-003` / `exploit-sqli-admin-or__defense-parameterized-like`. Worker context reports PASS and patch/regression success via supplied receipts; no independent Docker proof is claimed.",
+  "schema": "tau.battle_scillm_call_receipt.v1",
+  "scillm_base_url": "http://localhost:4001",
+  "started_at_seconds": 0.0,
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 85,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done",
+  "team": "blue",
+  "worker_id": "blue-0-defense-parameterized-like"
+}

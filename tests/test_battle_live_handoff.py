@@ -153,3 +153,119 @@ def test_battle_live_proof_passes_artifact_backed_context_bundle(tmp_path: Path)
     assert red_context["warm_pond_research_weighted_candidate_count"] == 6
     assert red_context["team_summary"]["research_dispatch"]["research_boost"] == 0.2
     assert blue_context["team_summary"]["research_dispatch"]["research_boost"] == 0.2
+
+
+def test_battle_live_proof_can_emit_worker_handoffs_from_battle_receipts(tmp_path: Path) -> None:
+    run_root = tmp_path / "battle-run"
+    context_dir = run_root / "context"
+    context_dir.mkdir(parents=True)
+    bundle = context_dir / "tau-battle-context-bundle.json"
+    bundle.write_text(
+        json.dumps(
+            {
+                "schema": "tau.battle_context_bundle.v1",
+                "artifacts": {"warm_pond": str(context_dir / "warm-pond-receipt.json")},
+                "summary": {
+                    "teams": {
+                        "red": {"persona": "brandon-bailey"},
+                        "blue": {"persona": "coder"},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    for team, persona, worker_ids in (
+        ("red", "brandon-bailey", ("red-0-exploit-a", "red-1-exploit-b")),
+        ("blue", "coder", ("blue-0-defense-a", "blue-1-defense-b")),
+    ):
+        worker_refs = []
+        for index, worker_id in enumerate(worker_ids):
+            combination_id = f"combo-{index}"
+            worker_path = run_root / team / "workers" / worker_id / "worker-receipt.json"
+            worker_path.parent.mkdir(parents=True)
+            worker_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "battle.worker_receipt.v1",
+                        "status": "PASS",
+                        "team": team,
+                        "worker_id": worker_id,
+                        "combination_id": combination_id,
+                        "persona": persona,
+                        "model": "gpt-5.5",
+                        "research_dispatch": {"research_boost": 0.2},
+                        "outcome": {"ok": True},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            attempt_path = (
+                run_root
+                / "scorekeeper"
+                / "replays"
+                / combination_id
+                / "attempt-receipt.json"
+            )
+            attempt_path.parent.mkdir(parents=True, exist_ok=True)
+            attempt_path.write_text(
+                json.dumps({"schema": "battle.scorekeeper_attempt_receipt.v1"}),
+                encoding="utf-8",
+            )
+            worker_refs.append(str(worker_path.relative_to(run_root)))
+        team_receipt = run_root / team / "team-receipt.json"
+        team_receipt.write_text(
+            json.dumps(
+                {
+                    "schema": "battle.team_receipt.v1",
+                    "status": "PASS",
+                    "worker_count": len(worker_refs),
+                    "worker_receipts": worker_refs,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    manifest = write_battle_live_handoff_proof(
+        out_dir=run_root / "tau-live-worker",
+        battle_id="battle-003",
+        run_id="battle-run-1",
+        scenario_id="battle-003",
+        red_persona="brandon-bailey",
+        blue_persona="coder",
+        api_key="",
+        battle_context_json=bundle,
+        handoff_granularity="worker",
+    )
+
+    assert manifest["status"] == "BLOCKED"
+    assert manifest["scheduling"]["granularity"] == "worker"
+    assert manifest["scheduling"]["team_count"] == 2
+    assert manifest["scheduling"]["handoff_count"] == 4
+    assert manifest["scheduling"]["worker_count"] == 4
+    handoff = json.loads(
+        (
+            run_root
+            / "tau-live-worker"
+            / "red"
+            / "workers"
+            / "red-0-exploit-a"
+            / "handoff.json"
+        ).read_text()
+    )
+    receipt = json.loads(
+        (
+            run_root
+            / "tau-live-worker"
+            / "blue"
+            / "workers"
+            / "blue-1-defense-b"
+            / "tau-subagent-receipt.json"
+        ).read_text()
+    )
+
+    assert handoff["context"]["worker_context"]["worker_id"] == "red-0-exploit-a"
+    assert handoff["context"]["worker_context"]["combination_id"] == "combo-0"
+    assert handoff["context"]["worker_context"]["research_dispatch"]["research_boost"] == 0.2
+    assert receipt["context"]["battle"]["worker"]["worker_id"] == "blue-1-defense-b"
+    assert any("attempt-receipt.json" in item for item in receipt["evidence"])
