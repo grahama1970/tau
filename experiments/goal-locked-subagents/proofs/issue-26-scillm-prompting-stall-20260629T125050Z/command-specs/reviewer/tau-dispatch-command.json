@@ -1,0 +1,13 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "tau_coding.scillm_subagent_gate_agent",
+    "--summary",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json"
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}

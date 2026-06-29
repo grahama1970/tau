@@ -1,0 +1,75 @@
+{
+  "artifacts": {
+    "command_loop_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-artifacts/command-loop-step-001/scillm-subagent-gate.receipt.json",
+    "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-loop-receipt.json",
+    "gate_exitcode": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/scillm-subagent-gate.exitcode",
+    "gate_stdout": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/scillm-subagent-gate.stdout.json",
+    "stalled_reviewer_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json",
+    "summary": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json"
+  },
+  "claims": {
+    "does_not_prove": [
+      "A fresh live Scillm/OpenCode provider call completed successfully.",
+      "Persona-dream panel media publication readiness.",
+      "Automatic retry scheduling after the human-visible blocked substrate handoff."
+    ],
+    "proves": [
+      "Tau rejects reviewer_passed summaries when the reviewer substrate receipt remains phase=prompting.",
+      "Tau records blocked substrate details including path, status, kind, reason, and phase.",
+      "Tau handoff-command-loop can run the gate adapter as a selected reviewer command and produce a human-routed BLOCKED handoff."
+    ]
+  },
+  "commands": [
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_scillm_subagent_gate.py -q",
+      "exit_code": 0,
+      "result": "3 passed in 0.47s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_scillm_subagent_gate.py tests/test_handoff_dispatch.py -q",
+      "exit_code": 0,
+      "result": "24 passed in 2.00s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_loop2_alignment_experiment.py tests/test_loop_receipt.py -q",
+      "exit_code": 0,
+      "result": "52 passed in 8.93s"
+    },
+    {
+      "command": "PYTHONPATH=src uv run tau scillm-subagent-gate --summary /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json",
+      "exit_code": 1,
+      "result": "Expected fail-closed refusal because phase=prompting substrate cannot support reviewer_passed."
+    },
+    {
+      "command": "PYTHONPATH=src uv run tau handoff-command-loop --start /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/start-handoff.json --receipt-dir /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop --agents-root /home/graham/workspace/experiments/agent-skills/agents --command-spec-root /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-specs --active-goal-hash $(cat /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/goal-hash.txt) --max-steps 2",
+      "exit_code": 0,
+      "result": "Command-loop selected reviewer, ran gate adapter, wrote blocked substrate receipt, and routed to human."
+    }
+  ],
+  "issue": 26,
+  "live": true,
+  "mocked": false,
+  "observed": {
+    "blocked_substrate_count": 1,
+    "blocked_substrate_details": [
+      {
+        "kind": "delegate_result",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json",
+        "phase": "prompting",
+        "reason": "ok",
+        "status": "COMPLETED"
+      }
+    ],
+    "command_loop_live": true,
+    "command_loop_mocked": false,
+    "command_loop_ok": true,
+    "command_loop_status": "WAITING",
+    "command_loop_step_count": 1,
+    "command_loop_stop_reason": "next_agent_is_human",
+    "command_loop_terminal_agent": "human",
+    "standalone_gate_exit_code": 1,
+    "standalone_gate_ok": false
+  },
+  "proof_scope": "Deterministic Tau gate and handoff-command-loop proof over a captured/fixture-shaped Scillm/OpenCode delegate stall receipt; no live provider call is claimed by this manifest.",
+  "schema": "tau.issue_26_scillm_prompting_stall_proof.v1"
+}

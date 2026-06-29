@@ -1,0 +1,19 @@
+{
+  "events": [
+    {
+      "accepted": true,
+      "attempt": 2,
+      "phase": "prompting",
+      "reviewer": {
+        "accepted": true,
+        "verdict": "pass",
+        "verified": true
+      }
+    }
+  ],
+  "final_status": "reviewer_passed",
+  "live": true,
+  "mocked": false,
+  "out_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture",
+  "schema": "tau.scillm_subagent_while_loop_live_proof.v1"
+}

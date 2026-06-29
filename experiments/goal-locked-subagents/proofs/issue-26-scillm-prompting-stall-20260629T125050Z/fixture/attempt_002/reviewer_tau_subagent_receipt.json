@@ -1,0 +1,16 @@
+{
+  "live": true,
+  "mocked": false,
+  "result": {
+    "kind": "delegate_result",
+    "parsed": {
+      "accepted": true,
+      "verdict": "pass",
+      "verified": true
+    },
+    "phase": "prompting",
+    "reason": "ok",
+    "status": "COMPLETED"
+  },
+  "schema": "tau.subagent_receipt.v1"
+}

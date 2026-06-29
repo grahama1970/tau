@@ -1,0 +1,24 @@
+{
+  "blocked_substrate_details": [
+    {
+      "kind": "delegate_result",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json",
+      "phase": "prompting",
+      "reason": "ok",
+      "status": "COMPLETED"
+    }
+  ],
+  "blocked_substrate_receipts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json"
+  ],
+  "checked_receipts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json"
+  ],
+  "errors": [
+    "summary accepted=true requires completed reviewer substrate plus accepted parsed JSON: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json",
+    "summary.final_status 'reviewer_passed' requires a completed reviewer receipt with parsed accepted=true"
+  ],
+  "ok": false,
+  "schema": "tau.scillm_subagent_gate.v1",
+  "summary": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json"
+}

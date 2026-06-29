@@ -103,5 +103,67 @@ def test_scillm_subagent_gate_accepts_completed_reviewer_pass(tmp_path: Path) ->
     assert result.blocked_substrate_receipts == ()
 
 
+def test_scillm_subagent_gate_rejects_prompting_phase_even_when_completed(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "summary.json",
+        {
+            "schema": "tau.scillm_subagent_while_loop_live_proof.v1",
+            "mocked": False,
+            "live": True,
+            "out_dir": str(tmp_path),
+            "final_status": "reviewer_passed",
+            "events": [
+                {
+                    "attempt": 2,
+                    "accepted": True,
+                    "reviewer": {
+                        "accepted": True,
+                        "verdict": "pass",
+                        "verified": True,
+                    },
+                }
+            ],
+        },
+    )
+    attempt_dir = tmp_path / "attempt_002"
+    attempt_dir.mkdir()
+    receipt_path = attempt_dir / "reviewer_tau_subagent_receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.subagent_receipt.v1",
+            "result": {
+                "status": "COMPLETED",
+                "kind": "delegate_result",
+                "reason": "ok",
+                "phase": "prompting",
+                "parsed": {
+                    "accepted": True,
+                    "verdict": "pass",
+                    "verified": True,
+                },
+            },
+        },
+    )
+
+    result = validate_scillm_subagent_loop_summary(tmp_path / "summary.json")
+
+    assert result.ok is False
+    assert result.blocked_substrate_receipts == (str(receipt_path),)
+    assert result.blocked_substrate_details == (
+        {
+            "path": str(receipt_path),
+            "status": "COMPLETED",
+            "kind": "delegate_result",
+            "reason": "ok",
+            "phase": "prompting",
+        },
+    )
+    assert any("accepted=true requires completed reviewer substrate" in error for error in result.errors)
+    assert any("final_status" in error for error in result.errors)
+
+
 def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

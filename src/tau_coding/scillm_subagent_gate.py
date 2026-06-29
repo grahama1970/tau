@@ -15,6 +15,14 @@ BLOCKED_SUBSTRATE_REASONS = {
     "timeout",
     "command_timeout",
     "delegate_timeout",
+    "prompt_delivery_stall",
+    "prompting_stall",
+    "runtime_stall",
+}
+BLOCKED_SUBSTRATE_PHASES = {
+    "prompting",
+    "prompt_delivery",
+    "runtime_stall",
 }
 
 
@@ -27,6 +35,7 @@ class ScillmSubagentGateResult:
     checked_receipts: tuple[str, ...]
     errors: tuple[str, ...]
     blocked_substrate_receipts: tuple[str, ...]
+    blocked_substrate_details: tuple[dict[str, str], ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -35,6 +44,7 @@ class ScillmSubagentGateResult:
             "summary": self.summary,
             "checked_receipts": list(self.checked_receipts),
             "blocked_substrate_receipts": list(self.blocked_substrate_receipts),
+            "blocked_substrate_details": list(self.blocked_substrate_details),
             "errors": list(self.errors),
         }
 
@@ -48,6 +58,7 @@ def validate_scillm_subagent_loop_summary(summary_path: Path) -> ScillmSubagentG
     checked: list[str] = []
     errors: list[str] = []
     blocked_receipts: list[str] = []
+    blocked_details: list[dict[str, str]] = []
     completed_accepting_review = False
 
     events = summary.get("events")
@@ -77,6 +88,15 @@ def validate_scillm_subagent_loop_summary(summary_path: Path) -> ScillmSubagentG
             gate = _receipt_gate(receipt)
             if gate["blocked"]:
                 blocked_receipts.append(str(receipt_path))
+                blocked_details.append(
+                    {
+                        "path": str(receipt_path),
+                        "status": str(gate["status"]),
+                        "kind": str(gate["kind"]),
+                        "reason": str(gate["reason"]),
+                        "phase": str(gate["phase"]),
+                    }
+                )
             if role == "reviewer" and gate["completed"] and _parsed_reviewer_accepts(gate["parsed"]):
                 completed_accepting_review = True
         if event is not None and event.get("accepted") is True:
@@ -111,6 +131,7 @@ def validate_scillm_subagent_loop_summary(summary_path: Path) -> ScillmSubagentG
         checked_receipts=tuple(checked),
         errors=tuple(errors),
         blocked_substrate_receipts=tuple(blocked_receipts),
+        blocked_substrate_details=tuple(blocked_details),
     )
 
 
@@ -144,16 +165,22 @@ def _receipt_gate(receipt: dict[str, Any]) -> dict[str, Any]:
     status = str(result.get("status") or "")
     kind = str(result.get("kind") or "")
     reason = str(result.get("reason") or "")
+    phase = str(result.get("phase") or receipt.get("phase") or "")
     parsed = result.get("parsed")
     blocked = (
         status.upper() != "COMPLETED"
         or kind in BLOCKED_SUBSTRATE_KINDS
         or reason in BLOCKED_SUBSTRATE_REASONS
+        or phase in BLOCKED_SUBSTRATE_PHASES
     )
     return {
         "completed": status.upper() == "COMPLETED" and not blocked,
         "blocked": blocked,
         "parsed": parsed if isinstance(parsed, dict) else {},
+        "status": status,
+        "kind": kind,
+        "reason": reason,
+        "phase": phase,
     }
 
 

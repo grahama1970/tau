@@ -1,0 +1,36 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json"
+    ],
+    "summary": "Issue #26 proof fixture: attempt 2 reviewer claims pass while substrate remains phase=prompting."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#26"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000026",
+    "goal_id": "goal-tau-issue-26-scillm-prompting-stall",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "reviewer",
+    "reason": "Reviewer route runs the Scillm subagent gate adapter over the stalled delegate receipt."
+  },
+  "previous_subagent": "human",
+  "rationale": "Tau must convert prompt-delivery/runtime stalls into first-class blocked substrate evidence instead of accepting reviewer pass claims.",
+  "required_evidence": [
+    "Command-loop receipt includes the Scillm gate receipt with phase=prompting blocker details."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human routed the stalled Scillm delegate receipt to reviewer gate validation."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Gate adapter routes to human with BLOCKED evidence or fails closed."
+}

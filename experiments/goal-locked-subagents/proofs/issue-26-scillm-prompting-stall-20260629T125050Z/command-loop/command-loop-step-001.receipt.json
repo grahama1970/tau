@@ -1,0 +1,78 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-artifacts/command-loop-step-001/scillm-subagent-gate.receipt.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "tau_coding.scillm_subagent_gate_agent",
+        "--summary",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-artifacts/command-loop-step-001/scillm-subagent-gate.receipt.json\"], \"summary\": \"Tau ran the Scillm subagent gate against a delegate-loop summary.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue#26\"}, \"goal\": {\"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000026\", \"goal_id\": \"goal-tau-issue-26-scillm-prompting-stall\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"human\", \"name\": \"human\", \"reason\": \"A substrate blocker requires human-visible proof before retry or escalation.\"}, \"previous_subagent\": \"reviewer\", \"rationale\": \"Tau must not advance from reviewer pass claims unless the underlying Scillm/OpenCode substrate receipt is completed and no prompt/runtime stall phase remains.\", \"required_evidence\": [\"A subsequent Scillm/OpenCode run must produce completed substrate receipts before Tau accepts reviewer pass.\"], \"result\": {\"evidence\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\", \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-artifacts/command-loop-step-001/scillm-subagent-gate.receipt.json\"], \"gate\": {\"blocked_substrate_details\": [{\"kind\": \"delegate_result\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\", \"phase\": \"prompting\", \"reason\": \"ok\", \"status\": \"COMPLETED\"}], \"blocked_substrate_receipts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\"], \"checked_receipts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\"], \"errors\": [\"summary accepted=true requires completed reviewer substrate plus accepted parsed JSON: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\", \"summary.final_status 'reviewer_passed' requires a completed reviewer receipt with parsed accepted=true\"], \"ok\": false, \"schema\": \"tau.scillm_subagent_gate.v1\", \"summary\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\"}, \"status\": \"BLOCKED\", \"summary\": \"Scillm subagent substrate gate blocked the loop summary: blocked_receipts=1 errors=2.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Human chooses retry, escalation, or accepts this blocked substrate diagnosis.\"}\n",
+      "timed_out": false,
+      "timeout_s": 30.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 1,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `BLOCKED`\n- Summary: Scillm subagent substrate gate blocked the loop summary: blocked_receipts=1 errors=2.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Human chooses retry, escalation, or accepts this blocked substrate diagnosis.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-artifacts/command-loop-step-001/scillm-subagent-gate.receipt.json\"\n    ],\n    \"summary\": \"Tau ran the Scillm subagent gate against a delegate-loop summary.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#26\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000026\",\n    \"goal_id\": \"goal-tau-issue-26-scillm-prompting-stall\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"A substrate blocker requires human-visible proof before retry or escalation.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"Tau must not advance from reviewer pass claims unless the underlying Scillm/OpenCode substrate receipt is completed and no prompt/runtime stall phase remains.\",\n  \"required_evidence\": [\n    \"A subsequent Scillm/OpenCode run must produce completed substrate receipts before Tau accepts reviewer pass.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/command-loop/command-artifacts/command-loop-step-001/scillm-subagent-gate.receipt.json\"\n    ],\n    \"gate\": {\n      \"blocked_substrate_details\": [\n        {\n          \"kind\": \"delegate_result\",\n          \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\",\n          \"phase\": \"prompting\",\n          \"reason\": \"ok\",\n          \"status\": \"COMPLETED\"\n        }\n      ],\n      \"blocked_substrate_receipts\": [\n        \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\"\n      ],\n      \"checked_receipts\": [\n        \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\"\n      ],\n      \"errors\": [\n        \"summary accepted=true requires completed reviewer substrate plus accepted parsed JSON: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/attempt_002/reviewer_tau_subagent_receipt.json\",\n        \"summary.final_status 'reviewer_passed' requires a completed reviewer receipt with parsed accepted=true\"\n      ],\n      \"ok\": false,\n      \"schema\": \"tau.scillm_subagent_gate.v1\",\n      \"summary\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\"\n    },\n    \"status\": \"BLOCKED\",\n    \"summary\": \"Scillm subagent substrate gate blocked the loop summary: blocked_receipts=1 errors=2.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Human chooses retry, escalation, or accepts this blocked substrate diagnosis.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#26"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "reviewer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Human routed the stalled Scillm delegate receipt to reviewer gate validation.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Gate adapter routes to human with BLOCKED evidence or fails closed.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\"\n    ],\n    \"summary\": \"Issue #26 proof fixture: attempt 2 reviewer claims pass while substrate remains phase=prompting.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#26\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000026\",\n    \"goal_id\": \"goal-tau-issue-26-scillm-prompting-stall\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Reviewer route runs the Scillm subagent gate adapter over the stalled delegate receipt.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"Tau must convert prompt-delivery/runtime stalls into first-class blocked substrate evidence instead of accepting reviewer pass claims.\",\n  \"required_evidence\": [\n    \"Command-loop receipt includes the Scillm gate receipt with phase=prompting blocker details.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-26-scillm-prompting-stall-20260629T125050Z/fixture/summary.json\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Human routed the stalled Scillm delegate receipt to reviewer gate validation.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Gate adapter routes to human with BLOCKED evidence or fails closed.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#26"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}
