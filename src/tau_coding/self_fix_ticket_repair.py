@@ -327,8 +327,9 @@ def _write_proof_markdown(
     loop_receipt: dict[str, Any],
     commit: dict[str, Any],
 ) -> Path:
-    coder = loop_receipt["cycles"][0]["coder"]["scillm_call"]
-    reviewer = loop_receipt["cycles"][0]["reviewer"]["scillm_call"]
+    final_cycle = loop_receipt["cycles"][-1]
+    coder = final_cycle["coder"]["scillm_call"]
+    reviewer = final_cycle["reviewer"]["scillm_call"]
     text = "\n".join(
         [
             f"## Tau self-fix proof for {repo}#{issue_number}",
