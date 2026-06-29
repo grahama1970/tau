@@ -1,0 +1,38 @@
+{
+  "beat": "Synthetic dream for Embry. The requested dream topic is Tau issue 41 dream packet creator reviewer loop.Memory residue gathers around embry, yale, review, evidence, asks, contact. Bridge tones: Fragility, Precision. Core tension: No direct opposition surfaced; the dream follows unresolved residue.. Render as symbolic images, not factual claims.",
+  "continuity_ledger": "artifacts/panel_continuity_and_repair_ledger.json",
+  "image": {
+    "height": 720,
+    "path": "artifacts/panel_001_storyboard_contract.svg",
+    "sha256": "sha256:66b05599543e876a742fed0f4bffd86234a4ea075b754d5379d3e252e3788355",
+    "width": 1280
+  },
+  "panel_id": "panel_001",
+  "required_dynamic_behaviors": [
+    "tea steam curls across the workspace light",
+    "evidence cards remain physical props rather than text overlays",
+    "background symbolism stays integrated with the scene"
+  ],
+  "required_environment": [
+    "quiet command workspace",
+    "dream-symbolic background"
+  ],
+  "required_props": [
+    "physical evidence cards",
+    "tea cup",
+    "workspace display"
+  ],
+  "required_visible_entities": [
+    "character_embry",
+    "evidence_cards",
+    "sparta_workspace"
+  ],
+  "run_id": "issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z",
+  "schema": "persona_dream.storyboard_panel_receipt.v1",
+  "status": "PANEL_READY_FOR_SOURCE_REVIEW",
+  "timing": {
+    "end_s": 7.5,
+    "start_s": 0.0
+  },
+  "work_order": "artifacts/panel_001_work_order.json"
+}

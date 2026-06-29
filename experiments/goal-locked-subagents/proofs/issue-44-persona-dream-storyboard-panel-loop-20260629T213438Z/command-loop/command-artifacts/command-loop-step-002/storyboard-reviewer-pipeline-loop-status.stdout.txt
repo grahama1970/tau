@@ -1,0 +1,147 @@
+{
+  "active_loop": {
+    "blocker": "missing_artifact",
+    "default_repair": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+    "external_action_required": false,
+    "loop": "panel_review_loop",
+    "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+    "phase": "panel_repair_gate",
+    "validator": "validate-panel-repair-gate --require-provider-eligible"
+  },
+  "direction": "forward",
+  "exercised": "local run-root validation, first-blocker to serial-loop mapping, fail-closed repair action selection",
+  "generated_at": "2026-06-29T21:34:39Z",
+  "live": "no",
+  "loop_backlog": [
+    {
+      "blocker": "missing_artifact",
+      "default_repair": "Run the panel subagent repair loop; reject Nano Banana/Gemini final imagery, repair the exact visual/text blocker, and write a provider-eligible receipt.",
+      "external_action_required": false,
+      "loop": "panel_review_loop",
+      "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+      "phase": "panel_repair_gate",
+      "sequence": 1,
+      "validator": "validate-panel-repair-gate --require-provider-eligible"
+    },
+    {
+      "blocker": "missing_artifact",
+      "default_repair": "Regenerate panel_source_receipt.json from a provider-eligible panel repair gate receipt.",
+      "external_action_required": false,
+      "loop": "panel_source_loop",
+      "path": "receipts/panel_source_receipt.json | panel_source_receipt.json",
+      "phase": "panel_source_receipt",
+      "sequence": 2,
+      "validator": "validate-panel-source"
+    },
+    {
+      "blocker": "missing_artifact",
+      "default_repair": "Run the visual review subagent against the real panel image and write the eight-check visual review receipt.",
+      "external_action_required": false,
+      "loop": "panel_review_loop",
+      "path": "receipts/visual_review_receipt.json | visual_review_receipt.json",
+      "phase": "visual_review_receipt",
+      "sequence": 3,
+      "validator": "validate-visual-review"
+    },
+    {
+      "blocker": "missing_artifact",
+      "default_repair": "Inspect first_blocker and add an explicit phase mapping before repairing.",
+      "external_action_required": false,
+      "loop": "unknown_loop",
+      "path": "receipts/kling_scene_packet.json",
+      "phase": "provider_media_lock",
+      "sequence": 4,
+      "validator": "validate-run-root --direction backward"
+    },
+    {
+      "blocker": "missing_artifact",
+      "default_repair": "Regenerate the blocked one-scene Kling review packet with paid_call_authorized=false and stable source_artifacts.",
+      "external_action_required": false,
+      "loop": "kling_packet_loop",
+      "path": "receipts/kling_scene_packet.json",
+      "phase": "kling_scene_packet",
+      "sequence": 5,
+      "validator": "validate-run-root --direction backward"
+    }
+  ],
+  "loop_model": {
+    "rule": "validate phase, repair first blocker, write receipt, rebuild report, repeat; convert to DAG only after serial loops are proven.",
+    "shape": "serial_pipeline_of_fail_closed_while_loops"
+  },
+  "mocked": "no",
+  "policy": {
+    "kling_call_allowed": false,
+    "nano_banana_final_panel_allowed": false,
+    "public_upload_allowed_without_explicit_authorization": false
+  },
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.pipeline_loop_status.v1",
+  "status": "BLOCKED",
+  "stop_condition": "No external action performed; repair the active_loop.default_repair, write/refresh receipts, then rerun this command.",
+  "unverified": "actual repair execution, public media hosting if blocked there, live panel subagent generation/review, paid Kling submission",
+  "validation": {
+    "direction": "forward",
+    "exercised": "local run-root files, JSON parse, Kling scene packet schema, dream packet gate, story contract gate, storyboard panel gate, panel repair provider-eligibility gate, panel source provenance gate, provider media publication work-order gate, provider media local staging gate, provider media publication authorization gate, visual review gate, provider URL/hash gate",
+    "first_blocker": {
+      "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+      "phase": "panel_repair_gate",
+      "reason": "missing_artifact"
+    },
+    "live": "no",
+    "mocked": "no",
+    "phases": [
+      {
+        "blocker": null,
+        "path": "dream_packet.json",
+        "phase": "dream_packet",
+        "status": "PASS"
+      },
+      {
+        "blocker": null,
+        "path": "story_contract.json",
+        "phase": "story_contract",
+        "status": "PASS"
+      },
+      {
+        "blocker": null,
+        "path": "receipts/storyboard_panel_receipt.json",
+        "phase": "storyboard_panel",
+        "status": "PASS"
+      },
+      {
+        "blocker": "missing_artifact",
+        "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+        "phase": "panel_repair_gate",
+        "status": "BLOCKED"
+      },
+      {
+        "blocker": "missing_artifact",
+        "path": "receipts/panel_source_receipt.json | panel_source_receipt.json",
+        "phase": "panel_source_receipt",
+        "status": "BLOCKED"
+      },
+      {
+        "blocker": "missing_artifact",
+        "path": "receipts/visual_review_receipt.json | visual_review_receipt.json",
+        "phase": "visual_review_receipt",
+        "status": "BLOCKED"
+      },
+      {
+        "blocker": "missing_artifact",
+        "path": "receipts/kling_scene_packet.json",
+        "phase": "provider_media_lock",
+        "status": "BLOCKED"
+      },
+      {
+        "blocker": "missing_artifact",
+        "path": "receipts/kling_scene_packet.json",
+        "phase": "kling_scene_packet",
+        "status": "BLOCKED"
+      }
+    ],
+    "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+    "schema": "persona_dream.run_root_pipeline_validation.v1",
+    "status": "BLOCKED",
+    "unverified": "live memory, Look Lock/Script DNA execution, live panel image generation/review, provider media hosting reachability, paid approval, Kling task submission"
+  }
+}

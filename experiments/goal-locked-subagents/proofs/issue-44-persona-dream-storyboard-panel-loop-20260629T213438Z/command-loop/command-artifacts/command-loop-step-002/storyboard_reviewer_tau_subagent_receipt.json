@@ -1,0 +1,50 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_storyboard_panel.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_storyboard_forward.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-validate-storyboard-panel.command.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-pipeline-loop-status.command.json"
+    ],
+    "assumptions": [],
+    "run_id": "issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z",
+    "subagent": "storyboard-reviewer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_storyboard_panel.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_storyboard_forward.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-validate-storyboard-panel.command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-pipeline-loop-status.command.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000044",
+    "goal_id": "goal-tau-issue-44-persona-dream-storyboard-panel-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human or ticket resolver reviews the proof.",
+    "subagent": "human"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_storyboard_panel.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_storyboard_forward.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-validate-storyboard-panel.command.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-pipeline-loop-status.command.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "PASS",
+    "summary": "Storyboard-reviewer accepted the storyboard panel and pipeline-loop-status advanced."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Issue resolver comments proof and closes or files the next blocker."
+}

@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/run.sh",
+    "pipeline-loop-status",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+    "--direction",
+    "forward",
+    "--json"
+  ],
+  "command_json_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-pipeline-loop-status.command.json",
+  "duration_seconds": 0.11719480599276721,
+  "returncode": 1,
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-pipeline-loop-status.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-002/storyboard-reviewer-pipeline-loop-status.stdout.txt"
+}

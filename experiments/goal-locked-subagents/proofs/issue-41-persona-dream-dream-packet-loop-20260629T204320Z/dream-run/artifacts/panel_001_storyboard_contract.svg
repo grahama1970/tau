@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"
+  viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#111827"/>
+  <rect x="72" y="72" width="1136" height="576" rx="18" fill="#172033" stroke="#38bdf8" stroke-width="3"/>
+  <text x="112" y="140" fill="#67e8f9" font-family="monospace" font-size="34">panel_001</text>
+  <text x="112" y="204" fill="#e5e7eb" font-family="sans-serif" font-size="28">Storyboard contract panel</text>
+  <text x="112" y="274" fill="#cbd5e1" font-family="sans-serif" font-size="24">Beat: Synthetic dream for Embry. The requested dream topic is Tau issue 41 dream packet creator reviewer loop.Memory residue gathers around embry, yale, review, evidence, asks, contact. </text>
+  <text x="112" y="344" fill="#cbd5e1" font-family="sans-serif" font-size="24">Entities: character_embry, evidence_cards, sparta_workspace</text>
+  <text x="112" y="414" fill="#94a3b8" font-family="sans-serif" font-size="22">Seed: Synthetic dream for Embry.  The requested dream topic is Tau issue 41 dream packet creator reviewer loop.Memory residue </text>
+  <text x="112" y="548" fill="#fbbf24" font-family="monospace" font-size="22">CONTRACT ARTIFACT - NOT FINAL GENERATED PANEL</text>
+</svg>

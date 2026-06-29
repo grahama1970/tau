@@ -1,0 +1,38 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No Kling call, paid provider call, public upload, or provider video call was performed.",
+      "The deterministic SVG is a storyboard contract artifact, not a generated final panel.",
+      "This does not claim full persona-dream pipeline readiness beyond the next blocker."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from storyboard-writer to storyboard-reviewer.",
+      "Storyboard-writer created storyboard_panel_receipt.json from the work order.",
+      "Storyboard-reviewer ran persona-dream validate-storyboard-panel and pipeline-loop-status."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "continuity_ledger": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_continuity_and_repair_ledger.json",
+  "created_at": "2026-06-29T21:34:39Z",
+  "input_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/input_storyboard_panel_work_order.json",
+  "issue": 44,
+  "live": true,
+  "mocked": false,
+  "panel_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_001_work_order.json",
+  "pipeline_first_blocker": {
+    "path": "receipts/panel_repair_gate_receipt.json | panel_repair_gate_receipt.json",
+    "phase": "panel_repair_gate",
+    "reason": "missing_artifact"
+  },
+  "pipeline_loop_status": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/pipeline_loop_status_storyboard_forward.json",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "tau.persona_dream_storyboard_panel_loop_proof.v1",
+  "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "storyboard_panel_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_receipt.json",
+  "terminal_agent": "human",
+  "validate_storyboard_panel": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/validate_storyboard_panel.json",
+  "validate_storyboard_panel_status": "PASS_STORYBOARD_PANEL"
+}

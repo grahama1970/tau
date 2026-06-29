@@ -1,0 +1,13 @@
+{
+  "exercised": "local storyboard panel schema, image existence/hash, timing bounds, continuity ledger path, work order path",
+  "first_blocker": null,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_001_storyboard_contract.svg",
+  "live": "no",
+  "mocked": "no",
+  "receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_receipt.json",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "persona_dream.storyboard_panel_validation.v1",
+  "sha256": "sha256:66b05599543e876a742fed0f4bffd86234a4ea075b754d5379d3e252e3788355",
+  "status": "PASS_STORYBOARD_PANEL",
+  "unverified": "live panel generation, visual review semantics, panel source eligibility, provider/Kling execution"
+}

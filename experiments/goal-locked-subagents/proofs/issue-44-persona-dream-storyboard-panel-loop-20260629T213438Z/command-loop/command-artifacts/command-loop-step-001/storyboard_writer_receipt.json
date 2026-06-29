@@ -1,0 +1,84 @@
+{
+  "continuity_ledger": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_continuity_and_repair_ledger.json",
+  "created_at": "2026-06-29T21:34:39Z",
+  "live": true,
+  "mocked": false,
+  "panel_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/artifacts/panel_001_work_order.json",
+  "provider_calls": {
+    "kling": false,
+    "paid": false,
+    "public_upload": false
+  },
+  "role": "storyboard-writer",
+  "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+  "schema": "tau.persona_dream.storyboard_writer_receipt.v1",
+  "status": "COMPLETED",
+  "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json",
+  "storyboard_panel_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/receipts/storyboard_panel_receipt.json",
+  "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/command-loop/command-artifacts/command-loop-step-001/storyboard_writer_tau_subagent_receipt.json",
+  "work_order": {
+    "acceptance_criteria": [
+      "receipts/storyboard_panel_receipt.json exists and validates",
+      "continuity_ledger exists and records story-to-panel continuity checks",
+      "work_order exists and names timing, beat, entities, props, environment, and dynamic behaviors",
+      "validate-storyboard-panel returns PASS_STORYBOARD_PANEL",
+      "pipeline-loop-status --direction forward advances to panel_repair_gate or a later blocker"
+    ],
+    "blocking_validation": {
+      "command": "./run.sh validate-storyboard-panel <receipt> --run-root <run_root> --json",
+      "first_blocker": {
+        "path": "receipts/storyboard_panel_receipt.json | artifacts/panel_001.json | panel_001.json | storyboard.json",
+        "phase": "storyboard_panel",
+        "reason": "missing_artifact"
+      },
+      "status": "BLOCKED"
+    },
+    "created_at": "2026-06-29T21:19:52Z",
+    "created_by": "project_agent",
+    "exercised": "local story contract validation, storyboard blocker packaging, continuity handoff policy",
+    "forbidden_actions": [
+      "skip_continuity_ledger",
+      "accept_panel_without_story_contract",
+      "generate_final_panel_with_nano_banana_or_gemini",
+      "rewrite_downstream_receipts_to_hide_missing_storyboard",
+      "direct_kling_submit",
+      "direct_paid_provider_call"
+    ],
+    "live": "no",
+    "mocked": "no",
+    "owner_subagent": "dreamer",
+    "purpose": "Create and review the first storyboard panel from the accepted story contract before any panel source, provider, or Kling claim.",
+    "required_default_action": {
+      "steps": [
+        "Read dream_packet.json, story_contract.json, SKILL.md, and project knowledge.",
+        "Write a panel work order with timing, beat, required visible entities, props, environment, and dynamic behaviors.",
+        "Write a continuity ledger that explicitly checks story-to-panel continuity before image generation.",
+        "Create or link the panel image only through the approved panel generation lane; do not use Nano Banana/Gemini final imagery.",
+        "Run validate-storyboard-panel and pipeline-loop-status --direction forward, then report the next first blocker."
+      ],
+      "summary": "Generate a storyboard panel contract with continuity ledger and work-order artifacts from the accepted story."
+    },
+    "run_id": "dream-run",
+    "schema": "persona_dream.storyboard_panel_work_order.v1",
+    "source_paths": {
+      "dream_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/dream_packet.json",
+      "dreamer_agent_contract": "/home/graham/workspace/experiments/agent-skills/agents/dreamer/AGENTS.md",
+      "persona_dream_skill_contract": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/SKILL.md",
+      "project_knowledge": "/home/graham/workspace/experiments/agent-skills/skills/persona-dream/PROJECT_KNOWLEDGE.md",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+      "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json"
+    },
+    "status": "WORK_ORDER_READY_STORYBOARD_PANEL_REQUIRED",
+    "story_contract": {
+      "artifact_id": "dream-run_story_contract",
+      "schema": "persona_dream.story_contract.v1",
+      "speaking_characters": [
+        "Embry"
+      ],
+      "status": "ACCEPTED_AUTOMATED",
+      "story": "Synthetic dream for Embry.  The requested dream topic is Tau issue 41 dream packet creator reviewer loop.Memory residue gathers around embry, yale, review, evidence, asks, contact. Bridge tones: Fragility, Precision. Core tension: No direct opposition surfaced; the dream follows unresolved residue.. Render as symbolic images, not factual claims.\n\nBeat 1: Embry dream frame, persona_memory_record, topic: Tau issue 41 dream packet creator reviewer loop, During an early Yale design review, Embry responds competently to a technical challenge but later tells Kai only that the review went fine, beginning a pattern of protecting relati, symbolic, cinematic still, contact sheet frame, bridge tone: Precision\n\nBeat 2: Embry dream frame, persona_memory_record, topic: Tau issue 41 dream packet creator reviewer loop, On the next call, Embry offers a stricter contact schedule while Kai asks for evidence that she wants spontaneous emotional contact.\nEmbry proposes Tuesday and Thursday calls with , symbolic, cinematic still, contact sheet frame, bridge tone: Fragility\n\nBeat 3: Embry dream frame, persona_memory_record, topic: Tau issue 41 dream packet creator reviewer loop, Embry discovers a discrepancy in a SPARTA review trail that may be harmless, procedural, or evidence that someone bypassed a control.\nShe can explain the technical mismatch but not, symbolic, cinematic still, contact sheet frame, bridge tone: Fragility, Precision",
+      "target_duration_s": 15.0
+    },
+    "unverified": "storyboard subagent execution, live panel generation, visual review, provider/Kling execution"
+  }
+}

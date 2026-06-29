@@ -33,6 +33,8 @@ ROUTABLE_AGENTS = frozenset(
         "dream-reviewer",
         "story-writer",
         "story-reviewer",
+        "storyboard-writer",
+        "storyboard-reviewer",
         "panel-creator",
         "panel-reviewer",
         "persona-dream-panel-repair-gate",

@@ -1,0 +1,41 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/input_storyboard_panel_work_order.json"
+    ],
+    "persona_dream_storyboard_panel": {
+      "run_id": "issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/input_storyboard_panel_work_order.json"
+    },
+    "summary": "Run a bounded Tau storyboard-panel creator/reviewer loop."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#44"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000044",
+    "goal_id": "goal-tau-issue-44-persona-dream-storyboard-panel-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "storyboard-writer",
+    "reason": "Storyboard-writer must create storyboard panel receipt artifacts."
+  },
+  "previous_subagent": "human",
+  "rationale": "The first bounded step is a storyboard-writer command.",
+  "required_evidence": [
+    "Storyboard-writer and storyboard-reviewer write Tau receipts and persona-dream validation receipts."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/input_storyboard_panel_work_order.json"
+    ],
+    "status": "COMPLETED",
+    "summary": "Human requested a Tau storyboard-panel creator/reviewer proof."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Storyboard-reviewer routes to human with PASS or BLOCKED evidence."
+}

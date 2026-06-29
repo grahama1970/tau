@@ -1,0 +1,36 @@
+{
+  "beat": "Synthetic dream for Embry. The requested dream topic is Tau issue 41 dream packet creator reviewer loop.Memory residue gathers around embry, yale, review, evidence, asks, contact. Bridge tones: Fragility, Precision. Core tension: No direct opposition surfaced; the dream follows unresolved residue.. Render as symbolic images, not factual claims.",
+  "continuity_requirements": [
+    "Panel beat derives from story_contract.story.",
+    "Required entities include story_contract.speaking_characters or story text entities.",
+    "No provider, Kling, public upload, or paid call is required for this contract panel."
+  ],
+  "created_at": "2026-06-29T21:34:39Z",
+  "panel_id": "panel_001",
+  "required_dynamic_behaviors": [
+    "tea steam curls across the workspace light",
+    "evidence cards remain physical props rather than text overlays",
+    "background symbolism stays integrated with the scene"
+  ],
+  "required_environment": [
+    "quiet command workspace",
+    "dream-symbolic background"
+  ],
+  "required_props": [
+    "physical evidence cards",
+    "tea cup",
+    "workspace display"
+  ],
+  "required_visible_entities": [
+    "character_embry",
+    "evidence_cards",
+    "sparta_workspace"
+  ],
+  "schema": "persona_dream.storyboard_panel_item_work_order.v1",
+  "source_work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-44-persona-dream-storyboard-panel-loop-20260629T213438Z/input_storyboard_panel_work_order.json",
+  "story_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-41-persona-dream-dream-packet-loop-20260629T204320Z/dream-run/story_contract.json",
+  "timing": {
+    "end_s": 7.5,
+    "start_s": 0.0
+  }
+}

@@ -1,0 +1,60 @@
+[
+  {
+    "failed_requirements": [],
+    "panel": 1,
+    "panel_id": "panel_001",
+    "repair_action": "none_before_source_review",
+    "repair_attempt": 0,
+    "required_dynamic_behaviors": [
+      "tea steam curls across the workspace light",
+      "evidence cards remain physical props rather than text overlays",
+      "background symbolism stays integrated with the scene"
+    ],
+    "required_environment": [
+      "quiet command workspace",
+      "dream-symbolic background"
+    ],
+    "required_props": [
+      "physical evidence cards",
+      "tea cup",
+      "workspace display"
+    ],
+    "required_visible_entities": [
+      "character_embry",
+      "evidence_cards",
+      "sparta_workspace"
+    ],
+    "story_to_panel_checks": [
+      {
+        "check": "story_contract_present",
+        "evidence": true,
+        "status": "PASS"
+      },
+      {
+        "check": "beat_derived_from_story",
+        "evidence": "Synthetic dream for Embry. The requested dream topic is Tau issue 41 dream packet creator reviewer loop.Memory residue gathers around embry, yale, review, evidence, asks, contact. Bridge tones: Fragility, Precision. Core tension: No direct opposition surfaced; the dream follows unresolved residue.. Render as symbolic images, not factual claims.",
+        "status": "PASS_DERIVED_SUMMARY"
+      },
+      {
+        "check": "required_entities_have_story_basis",
+        "evidence": [
+          "character_embry",
+          "evidence_cards",
+          "sparta_workspace"
+        ],
+        "status": "PASS"
+      },
+      {
+        "check": "provider_actions_forbidden",
+        "evidence": {
+          "kling": false,
+          "paid_provider": false,
+          "provider_video": false,
+          "public_upload": false
+        },
+        "status": "PASS"
+      }
+    ],
+    "visual_review_status": "PENDING_SOURCE_REVIEW"
+  }
+]
