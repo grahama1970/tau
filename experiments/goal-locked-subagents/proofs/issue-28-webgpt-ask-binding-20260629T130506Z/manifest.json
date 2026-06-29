@@ -1,0 +1,84 @@
+{
+  "schema": "tau.issue_28_webgpt_ask_binding_proof.v1",
+  "issue": {
+    "repo": "grahama1970/tau",
+    "number": 28,
+    "title": "Repair or document the WebGPT/Ask escalation binding for persona-dream Tau harness reviews after tab 837357007 failed..."
+  },
+  "mocked": false,
+  "live": true,
+  "artifacts": {
+    "binding_contract": "experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/webgpt-escalation-binding.json",
+    "surf_preflight": "experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json",
+    "ask_config_doctor": "experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json",
+    "start_handoff": "experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/start-handoff.json",
+    "command_loop_receipt": "experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/command-loop/command-loop-receipt.json",
+    "step_receipt": "experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/command-loop/command-loop-step-001.receipt.json"
+  },
+  "webgpt_preflight": {
+    "command": "cd /home/graham/workspace/experiments/agent-skills/skills/surf && ./run.sh webgpt.preflight --tab-id 837357007 --json",
+    "exit_code": 5,
+    "status": "fail",
+    "requested_tab_id": "837357007",
+    "active_tab_id": "837357061",
+    "failures": [
+      "tab_open_chatgpt",
+      "tab_identity"
+    ]
+  },
+  "ask_config_doctor": {
+    "command": "cd /home/graham/workspace/experiments/agent-skills/skills/ask && ./run.sh config doctor --json",
+    "exit_code": 2,
+    "status": "needs_attention",
+    "error_count": 5,
+    "release_ready": false
+  },
+  "tau_command_loop": {
+    "command": "PYTHONPATH=src uv run tau handoff-command-loop --start experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/start-handoff.json --receipt-dir experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/command-loop --agents-root /home/graham/workspace/experiments/agent-skills/agents --command-spec-root experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/command-specs --active-goal-hash sha256:0000000000000000000000000000000000000000000000000000000000000028 --max-steps 2",
+    "exit_code": 0,
+    "mocked": false,
+    "live": true,
+    "ok": true,
+    "status": "WAITING",
+    "step_count": 1,
+    "selected_agents": [
+      "reviewer"
+    ],
+    "command_exit_codes": [
+      0
+    ],
+    "terminal_agent": "human",
+    "stop_reason": "next_agent_is_human",
+    "terminal_result_status": "BLOCKED"
+  },
+  "regression_checks": [
+    {
+      "command": "python -m json.tool .ask/webgpt-escalation-binding.json",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=src uv run pytest tests/test_handoff_dispatch.py -q",
+      "exit_code": 0,
+      "result": "21 passed in 2.16s"
+    },
+    {
+      "command": "cd /home/graham/workspace/experiments/agent-skills && uv run pytest skills/persona-dream/tests/test_write_panel_source_receipt.py skills/persona-dream/tests/test_provider_media_publication_work_order.py -q",
+      "exit_code": 0,
+      "result": "5 passed in 0.05s"
+    }
+  ],
+  "claims": {
+    "proves": [
+      "Tau has a local WebGPT escalation binding contract naming the current expected tab and preserving the known failed tab 837357007 as a fail-closed case.",
+      "The stale tab 837357007 fails the real Surf/WebGPT preflight with tab_open_chatgpt and tab_identity.",
+      "The Ask runtime config doctor currently reports needs_attention and is not release-ready in this environment.",
+      "Tau's non-mocked command loop records this escalation binding problem as a BLOCKED handoff and routes to human instead of using stale reviewer output."
+    ],
+    "does_not_prove": [
+      "A successful WebGPT or Ask advisory review round.",
+      "A currently valid ChatGPT tab preflight for tab 837357090.",
+      "Final persona-dream review readiness.",
+      "Closure proof for any implementation issue beyond the escalation binding fail-closed behavior."
+    ]
+  }
+}

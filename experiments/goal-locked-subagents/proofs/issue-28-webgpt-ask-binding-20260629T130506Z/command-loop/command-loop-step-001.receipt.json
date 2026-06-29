@@ -1,0 +1,87 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "tau",
+        "handoff-agent-adapter",
+        "--result-status",
+        "BLOCKED",
+        "--result-summary",
+        "WebGPT/Ask escalation binding failed closed: tab 837357007 is not an open ChatGPT tab and Ask config doctor is needs_attention.",
+        "--next-agent",
+        "human",
+        "--next-executor",
+        "human",
+        "--next-reason",
+        "Human or operator must repair/select the WebGPT binding before using reviewer escalation.",
+        "--required-evidence",
+        "Fresh WebGPT/Ask preflight with valid tab identity before any advisory review can be used.",
+        "--stop-condition",
+        "Valid binding is provided or Tau uses another configured research service."
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/webgpt-escalation-binding.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json\"\n    ],\n    \"summary\": \"Registry command adapter handled route for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#28\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000028\",\n    \"goal_id\": \"goal-tau-issue-28-webgpt-ask-binding\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human or operator must repair/select the WebGPT binding before using reviewer escalation.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"reviewer completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Fresh WebGPT/Ask preflight with valid tab identity before any advisory review can be used.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"BLOCKED\",\n    \"summary\": \"WebGPT/Ask escalation binding failed closed: tab 837357007 is not an open ChatGPT tab and Ask config doctor is needs_attention.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Valid binding is provided or Tau uses another configured research service.\"\n}\n",
+      "timed_out": false,
+      "timeout_s": 30.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 1,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `BLOCKED`\n- Summary: WebGPT/Ask escalation binding failed closed: tab 837357007 is not an open ChatGPT tab and Ask config doctor is needs_attention.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Valid binding is provided or Tau uses another configured research service.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/webgpt-escalation-binding.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json\"\n    ],\n    \"summary\": \"Registry command adapter handled route for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#28\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000028\",\n    \"goal_id\": \"goal-tau-issue-28-webgpt-ask-binding\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human or operator must repair/select the WebGPT binding before using reviewer escalation.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"reviewer completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Fresh WebGPT/Ask preflight with valid tab identity before any advisory review can be used.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"BLOCKED\",\n    \"summary\": \"WebGPT/Ask escalation binding failed closed: tab 837357007 is not an open ChatGPT tab and Ask config doctor is needs_attention.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Valid binding is provided or Tau uses another configured research service.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#28"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "reviewer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `BLOCKED`\n- Summary: WebGPT/Ask escalation binding is not usable through failed tab 837357007; Tau must fail closed and use the current binding or repair the browser state before review.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Reviewer emits BLOCKED handoff with preflight artifacts and routes to human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/webgpt-escalation-binding.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json\"\n    ],\n    \"ask_config_doctor\": {\n      \"error_count\": 5,\n      \"status\": \"needs_attention\"\n    },\n    \"summary\": \"Issue #28 binding proof: stale WebGPT tab failed preflight and Ask doctor is not release-ready.\",\n    \"webgpt_preflight\": {\n      \"failures\": [\n        \"tab_open_chatgpt\",\n        \"tab_identity\"\n      ],\n      \"requested_tab_id\": \"837357007\",\n      \"status\": \"fail\"\n    }\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#28\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:0000000000000000000000000000000000000000000000000000000000000028\",\n    \"goal_id\": \"goal-tau-issue-28-webgpt-ask-binding\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Reviewer route records the binding blocker into a Tau command-loop receipt.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"Ask/WebGPT reviewer output cannot be used unless the tab binding and runtime preflight artifacts are valid.\",\n  \"required_evidence\": [\n    \"Command-loop receipt routes stale binding to human with BLOCKED evidence.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json\"\n    ],\n    \"status\": \"BLOCKED\",\n    \"summary\": \"WebGPT/Ask escalation binding is not usable through failed tab 837357007; Tau must fail closed and use the current binding or repair the browser state before review.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Reviewer emits BLOCKED handoff with preflight artifacts and routes to human.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#28"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

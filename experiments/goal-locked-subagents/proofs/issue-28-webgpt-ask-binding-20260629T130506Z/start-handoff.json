@@ -1,0 +1,51 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/webgpt-escalation-binding.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json"
+    ],
+    "ask_config_doctor": {
+      "error_count": 5,
+      "status": "needs_attention"
+    },
+    "summary": "Issue #28 binding proof: stale WebGPT tab failed preflight and Ask doctor is not release-ready.",
+    "webgpt_preflight": {
+      "failures": [
+        "tab_open_chatgpt",
+        "tab_identity"
+      ],
+      "requested_tab_id": "837357007",
+      "status": "fail"
+    }
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#28"
+  },
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000028",
+    "goal_id": "goal-tau-issue-28-webgpt-ask-binding",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "reviewer",
+    "reason": "Reviewer route records the binding blocker into a Tau command-loop receipt."
+  },
+  "previous_subagent": "human",
+  "rationale": "Ask/WebGPT reviewer output cannot be used unless the tab binding and runtime preflight artifacts are valid.",
+  "required_evidence": [
+    "Command-loop receipt routes stale binding to human with BLOCKED evidence."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/surf-preflight-tab-837357007.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-28-webgpt-ask-binding-20260629T130506Z/ask-config-doctor.json"
+    ],
+    "status": "BLOCKED",
+    "summary": "WebGPT/Ask escalation binding is not usable through failed tab 837357007; Tau must fail closed and use the current binding or repair the browser state before review."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Reviewer emits BLOCKED handoff with preflight artifacts and routes to human."
+}

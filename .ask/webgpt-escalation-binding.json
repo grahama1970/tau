@@ -1,0 +1,32 @@
+{
+  "schema": "tau.webgpt_escalation_binding.v1",
+  "project": "tau",
+  "binding_source": "~/.pi/webgpt-projects/tau.json",
+  "current_expected": {
+    "backend": "webgpt",
+    "tab_id": "837357090",
+    "conversation_url": "https://chatgpt.com/g/g-p-6a401806e7a08191a4ea6745a305f981-tau/c/6a401814-bcac-83ea-a8df-2ff58935524f",
+    "kde_desktop_index": "2"
+  },
+  "known_failed_tabs": [
+    {
+      "tab_id": "837357007",
+      "observed_failures": [
+        "tab_open_chatgpt",
+        "tab_identity"
+      ],
+      "handling": "fail_closed_do_not_submit_review"
+    }
+  ],
+  "runtime_policy": {
+    "preferred_project_agent_path": "direct_webgpt_for_create_architecture_when_requested",
+    "ask_review_path": "skills/ask/run.sh webgpt-review --bundle <bundle> --review-type code --project tau --json",
+    "preflight_required": true,
+    "missing_or_stale_tab_status": "BLOCKED",
+    "webgpt_output_is_closure_proof": false
+  },
+  "proof_commands": [
+    "cd /home/graham/workspace/experiments/agent-skills/skills/surf && ./run.sh webgpt.preflight --tab-id 837357007 --json",
+    "cd /home/graham/workspace/experiments/agent-skills/skills/ask && ./run.sh config doctor --json"
+  ]
+}

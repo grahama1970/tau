@@ -1,0 +1,224 @@
+{
+  "checks": [
+    {
+      "detail": "/home/graham/workspace/experiments/agent-skills/skills/ask/ask.config.yml",
+      "name": "config_file",
+      "ok": true,
+      "repair_command": "Run ./run.sh config init, review ask.config.yml, then re-run ./run.sh config doctor --json.",
+      "severity": "error",
+      "state": "configured"
+    },
+    {
+      "detail": "ask.config.v1",
+      "name": "schema",
+      "ok": true,
+      "repair_command": "Run ./run.sh config init, review ask.config.yml, then re-run ./run.sh config doctor --json.",
+      "severity": "error",
+      "state": "configured"
+    },
+    {
+      "detail": "/home/graham/workspace/experiments/agent-skills/skills/memory/run.sh",
+      "name": "service:memory_run",
+      "ok": true,
+      "repair_command": "Install/configure the memory skill, then run its bootstrap or doctor command outside config doctor.",
+      "severity": "error",
+      "state": "installed"
+    },
+    {
+      "detail": "/home/graham/workspace/experiments/agent-skills/skills/scillm/run.sh",
+      "name": "service:scillm_run",
+      "ok": true,
+      "repair_command": "Install/configure the scillm skill and start its service outside config doctor.",
+      "severity": "error",
+      "state": "installed"
+    },
+    {
+      "detail": "/home/graham/workspace/experiments/agent-skills/skills/dogpile/run.sh",
+      "name": "service:dogpile_run",
+      "ok": true,
+      "repair_command": "Run ./run.sh config init, review ask.config.yml, then re-run ./run.sh config doctor --json.",
+      "severity": "warning",
+      "state": "installed"
+    },
+    {
+      "detail": "/home/graham/workspace/experiments/agent-skills/skills/interview/run.sh",
+      "name": "service:interview_run",
+      "ok": true,
+      "repair_command": "Run ./run.sh config init, review ask.config.yml, then re-run ./run.sh config doctor --json.",
+      "severity": "error",
+      "state": "installed"
+    },
+    {
+      "detail": "/home/graham/workspace/experiments/agent-skills/skills/subagent-runner/run.sh",
+      "name": "service:subagent_runner",
+      "ok": true,
+      "repair_command": "Run ./run.sh config init, review ask.config.yml, then re-run ./run.sh config doctor --json.",
+      "severity": "warning",
+      "state": "installed"
+    },
+    {
+      "detail": "http://127.0.0.1:4001",
+      "name": "service:scillm_base_url",
+      "ok": true,
+      "repair_command": "Install/configure the scillm skill and start its service outside config doctor.",
+      "severity": "error",
+      "state": "configured"
+    },
+    {
+      "detail": "/usr/bin/docker",
+      "name": "docker:cli",
+      "ok": true,
+      "repair_command": "Install Docker Engine/Desktop and ensure the docker CLI is on PATH.",
+      "severity": "error",
+      "state": "installed"
+    },
+    {
+      "detail": "/mnt/storage12tb",
+      "name": "docker:storage_root",
+      "ok": true,
+      "repair_command": "Install Docker Engine/Desktop and ensure the docker CLI is on PATH.",
+      "severity": "warning",
+      "state": "configured"
+    },
+    {
+      "detail": "memory status: exit=0; invalid json: Expecting value: line 1 column 1 (char 0)",
+      "name": "readiness:arangodb",
+      "ok": false,
+      "repair_command": "Start/bootstrap ArangoDB using the memory service setup instructions; do not start it from config doctor.",
+      "severity": "error",
+      "state": "databases_bootstrapped"
+    },
+    {
+      "detail": "exit=0; used_dense=True; qdrant_item=False; embedding_model=False",
+      "name": "readiness:qdrant",
+      "ok": false,
+      "repair_command": "Start/bootstrap Qdrant or the configured vector store using the memory service setup instructions.",
+      "severity": "error",
+      "state": "databases_bootstrapped"
+    },
+    {
+      "detail": "exit=0; used_dense=True; qdrant_item=False; embedding_model=False",
+      "name": "readiness:vector_store",
+      "ok": true,
+      "repair_command": "Start/bootstrap Qdrant or the configured vector store using the memory service setup instructions.",
+      "severity": "error",
+      "state": "databases_bootstrapped"
+    },
+    {
+      "detail": "exit=0; used_dense=True; qdrant_item=False; embedding_model=False",
+      "name": "readiness:embedder",
+      "ok": false,
+      "repair_command": "Configure and verify the embedding provider/model required by memory before release readiness.",
+      "severity": "error",
+      "state": "databases_bootstrapped"
+    },
+    {
+      "detail": "exit=0; invalid json: Expecting value: line 1 column 1 (char 0)",
+      "name": "readiness:memory",
+      "ok": false,
+      "repair_command": "Install/configure the memory skill, then run its bootstrap or doctor command outside config doctor.",
+      "severity": "error",
+      "state": "services_reachable"
+    },
+    {
+      "detail": "exit=1 stderr=Could not determine current text model from proxy config",
+      "name": "readiness:scillm",
+      "ok": false,
+      "repair_command": "Install/configure the scillm skill and start its service outside config doctor.",
+      "severity": "error",
+      "state": "services_reachable"
+    },
+    {
+      "detail": "/home/graham/.codex/auth.json",
+      "name": "credential:~/.codex/auth.json",
+      "ok": true,
+      "repair_command": "Authenticate required model providers (for example Codex/Claude/Gemini), then re-run config doctor.",
+      "severity": "error",
+      "state": "configured"
+    },
+    {
+      "detail": "/home/graham/.claude/.credentials.json",
+      "name": "credential:~/.claude/.credentials.json",
+      "ok": true,
+      "repair_command": "Authenticate required model providers (for example Codex/Claude/Gemini), then re-run config doctor.",
+      "severity": "error",
+      "state": "configured"
+    },
+    {
+      "detail": "/home/graham/.gemini",
+      "name": "credential:~/.gemini",
+      "ok": true,
+      "repair_command": "Authenticate required model providers (for example Codex/Claude/Gemini), then re-run config doctor.",
+      "severity": "error",
+      "state": "configured"
+    }
+  ],
+  "config_exists": true,
+  "config_path": "/home/graham/workspace/experiments/agent-skills/skills/ask/ask.config.yml",
+  "error_count": 5,
+  "needs_attention": {
+    "items": [
+      {
+        "detail": "memory status: exit=0; invalid json: Expecting value: line 1 column 1 (char 0)",
+        "name": "readiness:arangodb",
+        "reason": "ask_release_arangodb_not_verified",
+        "repair_command": "Start/bootstrap ArangoDB using the memory service setup instructions; do not start it from config doctor.",
+        "severity": "error",
+        "state": "databases_bootstrapped"
+      },
+      {
+        "detail": "exit=0; used_dense=True; qdrant_item=False; embedding_model=False",
+        "name": "readiness:qdrant",
+        "reason": "ask_release_qdrant_not_verified",
+        "repair_command": "Start/bootstrap Qdrant or the configured vector store using the memory service setup instructions.",
+        "severity": "error",
+        "state": "databases_bootstrapped"
+      },
+      {
+        "detail": "exit=0; used_dense=True; qdrant_item=False; embedding_model=False",
+        "name": "readiness:embedder",
+        "reason": "ask_release_embedder_not_verified",
+        "repair_command": "Configure and verify the embedding provider/model required by memory before release readiness.",
+        "severity": "error",
+        "state": "databases_bootstrapped"
+      },
+      {
+        "detail": "exit=0; invalid json: Expecting value: line 1 column 1 (char 0)",
+        "name": "readiness:memory",
+        "reason": "ask_release_memory_not_verified",
+        "repair_command": "Install/configure the memory skill, then run its bootstrap or doctor command outside config doctor.",
+        "severity": "error",
+        "state": "services_reachable"
+      },
+      {
+        "detail": "exit=1 stderr=Could not determine current text model from proxy config",
+        "name": "readiness:scillm",
+        "reason": "ask_release_scillm_not_verified",
+        "repair_command": "Install/configure the scillm skill and start its service outside config doctor.",
+        "severity": "error",
+        "state": "services_reachable"
+      }
+    ],
+    "question": "Run repair commands for each item, then re-run release readiness.",
+    "reason": "ask_release_config_incomplete",
+    "resume_hint": "./run.sh config doctor --json",
+    "safe_default": "do_not_claim_release_ready",
+    "suggested_skills": [
+      "/interview"
+    ]
+  },
+  "profile": "release",
+  "readiness": {
+    "configured": true,
+    "databases_bootstrapped": false,
+    "installed": true,
+    "mutation_policy": "report_only_never_start_containers",
+    "release_ready": false,
+    "safe_default": "do_not_claim_release_ready",
+    "schema": "ask.setup_readiness.v1",
+    "services_reachable": false
+  },
+  "schema": "ask.config_doctor.v1",
+  "status": "needs_attention",
+  "warning_count": 0
+}

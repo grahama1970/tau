@@ -1,0 +1,37 @@
+{
+  "status": "fail",
+  "failures": [
+    "tab_open_chatgpt",
+    "tab_identity"
+  ],
+  "requested_tab_id": "837357007",
+  "requested_url": null,
+  "active_tab_id": "837357061",
+  "checks": [
+    {
+      "name": "surf_extension_socket",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "focus_state",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "tab_id_valid",
+      "ok": true,
+      "detail": "837357007"
+    },
+    {
+      "name": "tab_open_chatgpt",
+      "ok": false,
+      "detail": "no open chatgpt tab 837357007"
+    },
+    {
+      "name": "tab_identity",
+      "ok": false,
+      "detail": "tab_not_open_chatgpt"
+    }
+  ]
+}

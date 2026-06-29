@@ -1,0 +1,24 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "tau",
+    "handoff-agent-adapter",
+    "--result-status",
+    "BLOCKED",
+    "--result-summary",
+    "WebGPT/Ask escalation binding failed closed: tab 837357007 is not an open ChatGPT tab and Ask config doctor is needs_attention.",
+    "--next-agent",
+    "human",
+    "--next-executor",
+    "human",
+    "--next-reason",
+    "Human or operator must repair/select the WebGPT binding before using reviewer escalation.",
+    "--required-evidence",
+    "Fresh WebGPT/Ask preflight with valid tab identity before any advisory review can be used.",
+    "--stop-condition",
+    "Valid binding is provided or Tau uses another configured research service."
+  ],
+  "cwd": ".",
+  "timeout_s": 30
+}
