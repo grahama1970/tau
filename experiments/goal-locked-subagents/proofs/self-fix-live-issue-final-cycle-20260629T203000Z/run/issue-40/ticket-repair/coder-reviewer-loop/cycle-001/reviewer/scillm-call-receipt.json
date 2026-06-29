@@ -1,0 +1,36 @@
+{
+  "api_key_source": "docker:SCILLM_MASTER_KEY",
+  "content_excerpt": "PASS\n\nReview notes:\n- The change correctly updates `_write_proof_markdown` to select `loop_receipt[\"cycles\"][-1]` and source both coder and reviewer Scillm call receipts from the final cycle.\n- This directly addresses issue #40: proof markdown should cite the final repair cycle instead of cycle zero.\n- Supplied deterministic checks passed:\n  - Source assertion confirmed final-cycle indexing is present and old `cycles[0]` reference is absent.\n  - Targeted pytest suite passed: `10 passed`.\n\nNo requested changes.",
+  "duration_seconds": 7.61497,
+  "events_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-events.jsonl",
+  "http_status": 200,
+  "live": true,
+  "mocked": false,
+  "model": "gpt-5.5",
+  "request": {
+    "messages": "<redacted-request-messages>",
+    "model": "gpt-5.5",
+    "scillm_metadata": {
+      "caller": "tau",
+      "proof": "self-fix-coder-reviewer-loop",
+      "role": "reviewer"
+    },
+    "stream": true,
+    "stream_heartbeat_s": 15,
+    "stream_progress_events": true,
+    "temperature": 0
+  },
+  "response": {
+    "elapsed_ms": 7595,
+    "model": "gpt-5.5"
+  },
+  "role": "reviewer",
+  "schema": "tau.self_fix_scillm_call_receipt.v1",
+  "scillm_base_url": "http://127.0.0.1:4001",
+  "status": "PASS",
+  "stream": true,
+  "stream_done_seen": true,
+  "stream_event_count": 115,
+  "stream_heartbeat_count": 0,
+  "stream_last_event_type": "done"
+}

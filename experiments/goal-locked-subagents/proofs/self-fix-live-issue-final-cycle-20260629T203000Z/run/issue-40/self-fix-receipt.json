@@ -1,0 +1,323 @@
+{
+  "artifacts": {
+    "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/command-loop/command-loop-receipt.json",
+    "goal_helper": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/goal-helper.json",
+    "issue": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/issue.json",
+    "memory_intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/memory-intent.json",
+    "memory_recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/memory-recall.json",
+    "start_handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/start-handoff.json",
+    "ticket_repair_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/ticket-repair-receipt.json"
+  },
+  "checkpoint": {
+    "mutation_attempted": true,
+    "required_before_mutation": true,
+    "status": "handled_by_ticket_repair"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous repair.",
+      "Scillm-backed coder/reviewer semantic quality unless command specs call Scillm.",
+      "GitHub Actions event wiring.",
+      "Cron recovery.",
+      "Rollback after a real failed code mutation."
+    ],
+    "proves": [
+      "Tau can fetch the selected GitHub issue through gh.",
+      "Tau can run Memory-first intent/recall before dispatch.",
+      "Tau can generate a goal-helper packet and start handoff from the issue.",
+      "Tau can route a repair-contract issue into the streaming coder/reviewer repair path."
+    ]
+  },
+  "command_loop": {
+    "ok": true,
+    "reason": "repair_request_contract_selected",
+    "schema": "tau.self_fix_command_loop_bypassed_for_repair.v1"
+  },
+  "eligibility": {
+    "eligible": true,
+    "issue_labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "type:bug"
+    ],
+    "matched_labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime"
+    ],
+    "policy": "any_required_label_match",
+    "reason": "issue has at least one configured self-fix routing label",
+    "required_labels_any": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "tau-harness"
+    ]
+  },
+  "goal_hash": "sha256:0049bf71c0b3ed741e0f92de897c3f0679f4b4a093ab3f285d04e82ba8fce556",
+  "issue": {
+    "labels": [
+      "agent-work",
+      "agent:coder",
+      "route:backend_python_or_skill_runtime",
+      "type:bug"
+    ],
+    "number": 40,
+    "state": "OPEN",
+    "title": "Self-fix proof markdown should cite final repair cycle",
+    "url": "https://github.com/grahama1970/tau/issues/40"
+  },
+  "issue_fetch": {
+    "command": [
+      "/usr/bin/gh",
+      "issue",
+      "view",
+      "40",
+      "--repo",
+      "grahama1970/tau",
+      "--json",
+      "number,title,body,state,labels,comments,url,createdAt,updatedAt,author"
+    ],
+    "duration_seconds": 0.615017,
+    "exit_code": 0,
+    "ok": true,
+    "stderr": ""
+  },
+  "live": true,
+  "memory_preflight": {
+    "artifacts": {
+      "intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/memory-intent.json",
+      "recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/memory-recall.json"
+    },
+    "intent_action": "QUERY",
+    "intent_call": {
+      "duration_seconds": 4.86341,
+      "ok": true,
+      "path": "/intent",
+      "status_code": 200
+    },
+    "live": true,
+    "memory_base_url": "http://127.0.0.1:8601",
+    "mocked": false,
+    "ok": true,
+    "recall_call": {
+      "duration_seconds": 2.316192,
+      "ok": true,
+      "path": "/recall",
+      "status_code": 200
+    },
+    "recall_count": 6
+  },
+  "mocked": false,
+  "ok": true,
+  "repo": "grahama1970/tau",
+  "schema": "tau.self_fix_tick_receipt.v1",
+  "scope": "One bounded Tau self-fix intake tick: GitHub issue fetch, Memory-first preflight, goal-helper/start handoff generation, and command-loop dispatch.",
+  "ticket_repair": {
+    "apply_github": true,
+    "artifacts": {
+      "coder_reviewer_loop": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/self-fix-coder-reviewer-loop-receipt.json",
+      "proof_markdown": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/proof.md",
+      "ticket_repair_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/ticket-repair-receipt.json"
+    },
+    "claims": {
+      "does_not_prove": [
+        "Unbounded autonomous issue processing.",
+        "GitHub Actions event wiring.",
+        "Semantic reviewer correctness beyond Scillm stream plus deterministic checks."
+      ],
+      "proves": [
+        "Tau extracted a schema-valid repair request from a live GitHub issue.",
+        "Tau leased the issue through the guarded ticket workflow when apply_github=true.",
+        "Tau ran the Memory-first streaming Scillm coder/reviewer repair loop.",
+        "Tau committed and pushed the scoped repair after deterministic checks passed.",
+        "Tau attached a proof comment and closed the issue when apply_github=true."
+      ]
+    },
+    "commands": [
+      {
+        "command": [
+          "git",
+          "status",
+          "--porcelain",
+          "--untracked-files=no"
+        ],
+        "duration_seconds": 0.007837,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/gh-ticket-tools.sh",
+          "lease",
+          "40",
+          "--repo",
+          "grahama1970/tau",
+          "--agent",
+          "tau"
+        ],
+        "duration_seconds": 3.801561,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "https://github.com/grahama1970/tau/issues/40\nhttps://github.com/grahama1970/tau/issues/40#issuecomment-4836599623\n{\"ok\":true,\"action\":\"lease\",\"issue\":\"40\",\"agent\":\"tau\",\"lease_id\":\"20260629T200939Z-tau-40\"}"
+      },
+      {
+        "command": [
+          "git",
+          "add",
+          "src/tau_coding/self_fix_ticket_repair.py"
+        ],
+        "duration_seconds": 0.005953,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "git",
+          "commit",
+          "-m",
+          "Use final self-fix cycle in proof comments"
+        ],
+        "duration_seconds": 0.012996,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "[main 608f1b0] Use final self-fix cycle in proof comments\n 1 file changed, 3 insertions(+), 2 deletions(-)"
+      },
+      {
+        "command": [
+          "git",
+          "push",
+          "grahama1970",
+          "main"
+        ],
+        "duration_seconds": 2.757562,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "To github.com:grahama1970/tau.git\n   7cf6f41..608f1b0  main -> main",
+        "stdout": ""
+      },
+      {
+        "command": [
+          "git",
+          "rev-parse",
+          "--short",
+          "HEAD"
+        ],
+        "duration_seconds": 0.003113,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "",
+        "stdout": "608f1b0"
+      },
+      {
+        "command": [
+          "/home/graham/workspace/experiments/agent-skills/skills/best-practices-github-ticket/scripts/gh-ticket-tools.sh",
+          "close",
+          "40",
+          "--repo",
+          "grahama1970/tau",
+          "--proof",
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/proof.md",
+          "--reason",
+          "completed"
+        ],
+        "duration_seconds": 9.758965,
+        "exit_code": 0,
+        "ok": true,
+        "stderr": "\u2713 Closed issue grahama1970/tau#40 (Self-fix proof markdown should cite final repair cycle)",
+        "stdout": "https://github.com/grahama1970/tau/issues/40#issuecomment-4836603129\nhttps://github.com/grahama1970/tau/issues/40\n{\"ok\":true,\"action\":\"close\",\"issue\":\"40\",\"reason\":\"completed\",\"proof\":\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/proof.md\"}"
+      }
+    ],
+    "commit": {
+      "branch": "main",
+      "commands": [
+        {
+          "command": [
+            "git",
+            "add",
+            "src/tau_coding/self_fix_ticket_repair.py"
+          ],
+          "duration_seconds": 0.005953,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": ""
+        },
+        {
+          "command": [
+            "git",
+            "commit",
+            "-m",
+            "Use final self-fix cycle in proof comments"
+          ],
+          "duration_seconds": 0.012996,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "[main 608f1b0] Use final self-fix cycle in proof comments\n 1 file changed, 3 insertions(+), 2 deletions(-)"
+        },
+        {
+          "command": [
+            "git",
+            "push",
+            "grahama1970",
+            "main"
+          ],
+          "duration_seconds": 2.757562,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "To github.com:grahama1970/tau.git\n   7cf6f41..608f1b0  main -> main",
+          "stdout": ""
+        },
+        {
+          "command": [
+            "git",
+            "rev-parse",
+            "--short",
+            "HEAD"
+          ],
+          "duration_seconds": 0.003113,
+          "exit_code": 0,
+          "ok": true,
+          "stderr": "",
+          "stdout": "608f1b0"
+        }
+      ],
+      "commit": "608f1b0",
+      "ok": true,
+      "remote": "grahama1970"
+    },
+    "created_at": "2026-06-29T20:09:38Z",
+    "issue": {
+      "number": 40,
+      "title": "Self-fix proof markdown should cite final repair cycle",
+      "url": "https://github.com/grahama1970/tau/issues/40"
+    },
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "repair_request": {
+      "commit_message": "Use final self-fix cycle in proof comments",
+      "find_text": "    coder = loop_receipt[\"cycles\"][0][\"coder\"][\"scillm_call\"]\n    reviewer = loop_receipt[\"cycles\"][0][\"reviewer\"][\"scillm_call\"]",
+      "max_review_cycles": 1,
+      "replace_text": "    final_cycle = loop_receipt[\"cycles\"][-1]\n    coder = final_cycle[\"coder\"][\"scillm_call\"]\n    reviewer = final_cycle[\"reviewer\"][\"scillm_call\"]",
+      "request": "Change self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero.",
+      "schema": "tau.self_fix_repair_request.v1",
+      "target_file": "src/tau_coding/self_fix_ticket_repair.py",
+      "verification_commands": [
+        "PYTHONPATH=src uv run python - <<'PY'\nfrom pathlib import Path\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\nassert 'final_cycle = loop_receipt[\"cycles\"][-1]' in text\nassert 'loop_receipt[\"cycles\"][0]' not in text\nPY",
+        "PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q"
+      ]
+    },
+    "repo": "grahama1970/tau",
+    "schema": "tau.self_fix_ticket_repair_receipt.v1",
+    "status": "PASS"
+  }
+}

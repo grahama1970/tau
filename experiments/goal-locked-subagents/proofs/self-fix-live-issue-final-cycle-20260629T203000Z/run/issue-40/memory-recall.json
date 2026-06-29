@@ -1,0 +1,238 @@
+{
+  "confidence": 0.833,
+  "errors": [],
+  "found": true,
+  "items": [
+    {
+      "_key": "6500ad5b6398c1f1",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Key Files (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 1.0,
+        "dense": 0.44928908,
+        "freshness": 0.9815673782058432,
+        "graph": 0.0,
+        "profile": 0.3989361849102922
+      },
+      "section": "Key Files",
+      "section_slug": "key-files",
+      "solution": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:key-files"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "d2ab664248780d4c",
+      "_source": "project_knowledge",
+      "decisions": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "doc_type": "aggregate",
+      "key_files": "| File | Purpose |\n|------|---------|\n| PROJECT_KNOWLEDGE.md | Shared project knowledge |\n| README.md | Human-facing project overview and current harness notes |\n| src/tau_coding/subagent_receipt.py | Validates common subagent receipt envelopes |\n| src/tau_coding/generated_ticket.py | Validates minimal generated-ticket drafts and derives GitHub labels |\n| src/tau_coding/human_goal_change.py | Validates trusted-human-only immutable goal changes |\n| experiments/goal-locked-subagents/ | Schema artifacts and fixtures for the harness contracts |\n| tests/test_subagent_receipt.py | Focused subagent receipt contract tests |\n| tests/test_generated_ticket.py | Focused generated-ticket projection tests |\n| tests/test_human_goal_change.py | Focused human goal-change tests |",
+      "open_questions": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.8333333333333334,
+        "dense": 0.30042058,
+        "freshness": 0.9815673782058432,
+        "graph": 0.0,
+        "profile": 0.33582915157695886
+      },
+      "tags": [
+        "project_knowledge",
+        "project:tau"
+      ],
+      "understanding": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "5d0d521134d6ec49",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Current Understanding (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.6666666666666666,
+        "dense": 0.4256776,
+        "freshness": 0.9815673782058432,
+        "graph": 0.0,
+        "profile": 0.3275472222436255
+      },
+      "section": "Current Understanding",
+      "section_slug": "current-understanding",
+      "solution": "- Project initialized, knowledge tracking started\n- Tau is a fork of alejandro-ao/tau being hardened into a goal-locked agentic harness. Current local slices add Loop2-compatible run receipts plus minimal model-facing contracts for subagent receipts, generated tickets, handoffs, and human-only goal changes. Tau derives GitHub labels deterministically instead of asking model agents to duplicate label/projection fields.",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:current-understanding"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "6147631fbe310e2b",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Recent Decisions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.5,
+        "dense": 0.40852597,
+        "freshness": 0.9815673782058432,
+        "graph": 0.0,
+        "profile": 0.29078356291029217
+      },
+      "section": "Recent Decisions",
+      "section_slug": "recent-decisions",
+      "solution": "| Date | Decision | Why |\n|------|----------|-----|\n| 2026-06-27 | Initialize project knowledge | Enable shared human/agent context |\n| 2026-06-27 | Use a fork at grahama1970/tau rather than a new unrelated repo | The project already has upstream history at alejandro-ao/tau, so a fork preserves attribution and makes future upstream comparison/pull possible. |\n| 2026-06-27 | Keep GitHub mutation out of the first harness slices | Current proof is schema, validator, fixture, and deterministic projection only; live issue creation should come after the contracts are accepted. |",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:recent-decisions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "9cf6139faffa4260",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Infrastructure State (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.3333333333333333,
+        "dense": 0.29210186,
+        "freshness": 0.9815673782058432,
+        "graph": 0.0,
+        "profile": 0.2341654075769588
+      },
+      "section": "Infrastructure State",
+      "section_slug": "infrastructure-state",
+      "solution": "<!-- Auto-populated from /project-state --quick -->",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:infrastructure-state"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    },
+    {
+      "_key": "59bc6f31ae7700a4",
+      "_source": "project_knowledge",
+      "chunk_index": 1,
+      "doc_type": "chunk",
+      "problem": "project knowledge chunk for tau: Open Questions (1)",
+      "project": "tau",
+      "scope": "tau",
+      "scores": {
+        "bm25": 0.16666666666666666,
+        "dense": 0.33815214,
+        "freshness": 0.9815673782058432,
+        "graph": 0.0,
+        "profile": 0.2100421302436255
+      },
+      "section": "Open Questions",
+      "section_slug": "open-questions",
+      "solution": "- [ ] What are the key architectural decisions?\n- [ ] What are the known issues?",
+      "tags": [
+        "project_knowledge",
+        "project_knowledge_chunk",
+        "project:tau",
+        "section:open-questions"
+      ],
+      "updated_at": "2026-06-27T10:11:02.366831"
+    }
+  ],
+  "meta": {
+    "collections_filter": [
+      "project_activity",
+      "project_knowledge",
+      "lessons",
+      "lessons_v2",
+      "checkpoints"
+    ],
+    "k": 10,
+    "memory_first": true,
+    "q": "title: Self-fix proof markdown should cite final repair cycle\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\n`src/tau_coding/self_fix_ticket_repair.py`\n\n## Current State\n\n`_write_proof_markdown()` always reads `loop_receipt[\"cycles\"][0]` for the coder and reviewer Scillm receipt paths. In a bounded repair loop with multiple review cycles, the proof comment would cite the first cycle instead of the terminal/final reviewer cycle.\n\n## Expected State\n\nThe proof writer should cite the final cycle from the coder/reviewer loop receipt.\n\n## Route\n\n`route:backend_python_or_skill_runtime`\n\n## Requested Repair Agent\n\n`agent:coder`\n\n## Required Proof\n\n- Tau self-fix poll selects this real GitHub issue.\n- Memory `/intent` and `/recall` run before the repair loop.\n- Coder and reviewer Scillm calls are streaming and live.\n- The scoped source change is committed and pushed by Tau.\n- The issue is closed only with a deterministic proof comment.\n\n## Tau Repair Contract\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Change self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero.\",\n  \"target_file\": \"src/tau_coding/self_fix_ticket_repair.py\",\n  \"find_text\": \"    coder = loop_receipt[\\\"cycles\\\"][0][\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = loop_receipt[\\\"cycles\\\"][0][\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"replace_text\": \"    final_cycle = loop_receipt[\\\"cycles\\\"][-1]\\n    coder = final_cycle[\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = final_cycle[\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"verification_commands\": [\n    \"PYTHONPATH=src uv run python - <<'PY'\\nfrom pathlib import Path\\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\\nassert 'final_cycle = loop_receipt[\\\"cycles\\\"][-1]' in text\\nassert 'loop_receipt[\\\"cycles\\\"][0]' not in text\\nPY\",\n    \"PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q\"\n  ],\n  \"max_review_cycles\": 1,\n  \"commit_message\": \"Use final self-fix cycle in proof comments\"\n}\n```\n\n## Non-goals\n\n- Do not broaden the repair request contract.\n- Do not change Scillm streaming behavior.\n- Do not change GitHub ticket helper semantics.",
+    "recall_profile": "temporal_project_state",
+    "recall_profile_source": "deterministic_temporal_project_state",
+    "required_artifacts": [
+      "temporal_metadata"
+    ],
+    "reranker_mode": "off",
+    "runtime_pressure": {
+      "active_workloads": [],
+      "checked_at": 1782763778,
+      "level": "normal",
+      "recommended_action": "No active persisted runtime pressure detected.",
+      "slow_query_risk": false,
+      "sources": []
+    },
+    "scope": "tau",
+    "threshold": 0.3,
+    "took_ms": 1536,
+    "used_dense": true,
+    "used_reranker": false
+  },
+  "should_scan": false,
+  "skill_route": {
+    "bonds": [],
+    "capabilities": [
+      {
+        "best_provider": "sparta-review",
+        "capability": "sparta-review",
+        "providers": [
+          "sparta-review"
+        ]
+      }
+    ],
+    "compositions": [],
+    "skills": [
+      {
+        "composability_score": 0.087,
+        "has_run_sh": true,
+        "name": "review-code",
+        "provides": [
+          "code-review"
+        ]
+      },
+      {
+        "composability_score": 0.096,
+        "has_run_sh": true,
+        "name": "sparta-review",
+        "provides": [
+          "sparta-review"
+        ]
+      },
+      {
+        "composability_score": 0.096,
+        "has_run_sh": true,
+        "name": "sparta-review",
+        "provides": [
+          "sparta-review"
+        ]
+      },
+      {
+        "composability_score": 0.0,
+        "has_run_sh": true,
+        "name": "sparta-review",
+        "provides": []
+      }
+    ],
+    "suggested_chain": null
+  }
+}

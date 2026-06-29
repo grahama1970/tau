@@ -1,0 +1,121 @@
+{
+  "artifacts": {
+    "cycle-001/coder/handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json",
+    "cycle-001/coder/scillm-call-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+    "cycle-001/coder/scillm-events.jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-events.jsonl",
+    "cycle-001/coder/tau-subagent-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/tau-subagent-receipt.json",
+    "cycle-001/reviewer/handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/handoff.json",
+    "cycle-001/reviewer/scillm-call-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+    "cycle-001/reviewer/scillm-events.jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-events.jsonl",
+    "cycle-001/reviewer/tau-subagent-receipt.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/tau-subagent-receipt.json",
+    "cycle-001/reviewer/verification-01.stderr.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-01.stderr.txt",
+    "cycle-001/reviewer/verification-01.stdout.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-01.stdout.txt",
+    "cycle-001/reviewer/verification-02.stderr.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-02.stderr.txt",
+    "cycle-001/reviewer/verification-02.stdout.txt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-02.stdout.txt",
+    "cycle-001/reviewer/verification-results.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json",
+    "memory-intent.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-intent.json",
+    "memory-recall.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-recall.json",
+    "start-handoff.json": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/start-handoff.json"
+  },
+  "checkpoint": {
+    "head": "7cf6f41ee0acb307a08b627dacb3d9402791c7c0",
+    "rollback_strategy": "restore target file preimage on failed proof",
+    "target_clean_at_start": true,
+    "target_file": "src/tau_coding/self_fix_ticket_repair.py",
+    "target_sha256": "ca7ab68e29bcc2459ef533812d22ef7e7dc5578cc725edc0e6b8c5146c9da3eb"
+  },
+  "claims": {
+    "does_not_prove": [
+      "Unbounded autonomous repair.",
+      "GitHub issue monitoring or label mutation.",
+      "Reviewer semantic correctness beyond the recorded live Scillm call and deterministic checks.",
+      "Rollback for unrelated dirty working-tree files."
+    ],
+    "proves": [
+      "Tau ran Memory /intent and /recall before the repair loop.",
+      "Tau called Scillm for a bounded coder turn.",
+      "Coder changed a real git-tracked file.",
+      "Tau called Scillm for a bounded reviewer turn.",
+      "Reviewer PASS required deterministic verification commands to exit 0.",
+      "Tau wrote per-turn handoff and subagent receipt artifacts."
+    ]
+  },
+  "created_at": "2026-06-29T20:09:42.151249+00:00",
+  "cycles": [
+    {
+      "coder": {
+        "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/handoff.json",
+        "patched": true,
+        "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/scillm-call-receipt.json",
+        "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/coder/tau-subagent-receipt.json"
+      },
+      "cycle": 1,
+      "reviewer": {
+        "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/handoff.json",
+        "passed": true,
+        "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/scillm-call-receipt.json",
+        "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/tau-subagent-receipt.json",
+        "verification": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/cycle-001/reviewer/verification-results.json"
+      }
+    }
+  ],
+  "errors": [],
+  "git": {
+    "changed_files": [
+      " M src/tau_coding/self_fix_ticket_repair.py",
+      "?? experiments/goal-locked-subagents/proofs/issue-31-codex-oauth-image-20260629T171303Z/",
+      "?? experiments/goal-locked-subagents/proofs/issue-31-scillm-owned-panel-20260629T164644Z/",
+      "?? experiments/goal-locked-subagents/proofs/issue-31-scillm-owned-panel-20260629T164806Z/",
+      "?? experiments/goal-locked-subagents/proofs/issue-31-scillm-owned-panel-20260629T165001Z-codex/",
+      "?? experiments/goal-locked-subagents/proofs/issue-31-streamed-reviewer-20260629T170133Z/",
+      "?? experiments/goal-locked-subagents/proofs/issue-32-battle-context-20260629T174429Z/",
+      "?? experiments/goal-locked-subagents/proofs/issue-33-contract-smoke-20260629T180053Z/",
+      "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_authorization.json",
+      "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_authorization_validation.json",
+      "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/receipts/provider_media_publication_preflight.json",
+      "?? experiments/goal-locked-subagents/proofs/issue-33-live-persona-dream-20260629T180606Z/storyboard/panel_repair_gate/provider_media_publication_work_orders/panel_001_local_staging_receipt.json",
+      "?? experiments/goal-locked-subagents/proofs/issue-34-worker-handoffs-20260629T182240Z/",
+      "?? experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/",
+      "?? experiments/goal-locked-subagents/proofs/self-fix-streaming-coder-reviewer-20260629T183952Z/"
+    ],
+    "checkpoint_head": "7cf6f41ee0acb307a08b627dacb3d9402791c7c0",
+    "target_diff": "diff --git a/src/tau_coding/self_fix_ticket_repair.py b/src/tau_coding/self_fix_ticket_repair.py\nindex 8637bda..1a81440 100644\n--- a/src/tau_coding/self_fix_ticket_repair.py\n+++ b/src/tau_coding/self_fix_ticket_repair.py\n@@ -327,8 +327,9 @@ def _write_proof_markdown(\n     loop_receipt: dict[str, Any],\n     commit: dict[str, Any],\n ) -> Path:\n-    coder = loop_receipt[\"cycles\"][0][\"coder\"][\"scillm_call\"]\n-    reviewer = loop_receipt[\"cycles\"][0][\"reviewer\"][\"scillm_call\"]\n+    final_cycle = loop_receipt[\"cycles\"][-1]\n+    coder = final_cycle[\"coder\"][\"scillm_call\"]\n+    reviewer = final_cycle[\"reviewer\"][\"scillm_call\"]\n     text = \"\\n\".join(\n         [\n             f\"## Tau self-fix proof for {repo}#{issue_number}\",\n"
+  },
+  "live": true,
+  "memory_first": {
+    "artifacts": {
+      "intent": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-intent.json",
+      "recall": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-recall.json"
+    },
+    "intent_call": {
+      "duration_seconds": 0.218015,
+      "ok": true,
+      "path": "/intent",
+      "status_code": 200
+    },
+    "live": true,
+    "memory_base_url": "http://127.0.0.1:8601",
+    "mocked": false,
+    "ok": true,
+    "recall_call": {
+      "duration_seconds": 0.908725,
+      "ok": true,
+      "path": "/recall",
+      "status_code": 200
+    },
+    "recall_count": 5
+  },
+  "mocked": false,
+  "model": "gpt-5.5",
+  "ok": true,
+  "repo_root": "/home/graham/workspace/experiments/tau",
+  "rollback": {
+    "attempted": false,
+    "restored": false
+  },
+  "run_id": "coder-reviewer-loop",
+  "schema": "tau.self_fix_coder_reviewer_loop_receipt.v1",
+  "status": "PASS",
+  "target_changed": true,
+  "target_file": "/home/graham/workspace/experiments/tau/src/tau_coding/self_fix_ticket_repair.py"
+}

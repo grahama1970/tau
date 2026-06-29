@@ -1,0 +1,488 @@
+{
+  "action": "QUERY",
+  "allowed_tools": [],
+  "candidate_intents": [],
+  "classifier_source": "deterministic_problem_query",
+  "confidence": 0.85,
+  "content_type": "markdown",
+  "depth": 1,
+  "disallowed_tools": [],
+  "entities": [],
+  "entity_context": {
+    "agent_contract": {
+      "authoritative_paths": [
+        "proof_packet.assertions",
+        "nodes.anchors",
+        "nodes.validated_context",
+        "nodes.suppressed"
+      ],
+      "ignore_for_grounding": [
+        "display_summary",
+        "candidate_nodes",
+        "guess_nodes",
+        "rationale.summary"
+      ],
+      "llm_generated_fields_are_never_authoritative": true,
+      "use_for_grounding": [
+        "proof_packet.assertions"
+      ]
+    },
+    "agent_decision": {
+      "grounding_source": "proof_packet.assertions",
+      "needs_clarification": true,
+      "needs_retry": true,
+      "primary_entity_id": null,
+      "reason": "fabricated_id",
+      "safe_to_answer": false,
+      "suggested_action": "clarify_or_repair"
+    },
+    "candidate_nodes": {
+      "controls": [],
+      "not_usable_for": [
+        "grounding",
+        "proof",
+        "approval",
+        "answer_authority",
+        "evidence_gate"
+      ],
+      "proof_role": "none",
+      "qras": [],
+      "requires_user_confirmation": true,
+      "status": "candidate_only",
+      "usable_for": [
+        "suggestions",
+        "related_results",
+        "did_you_mean"
+      ]
+    },
+    "counts": {
+      "anchors": 0,
+      "candidate_controls": 0,
+      "candidate_qras": 0,
+      "context_terms": 2,
+      "media_timecodes": 0,
+      "suppressed": 0,
+      "unsupported": 6,
+      "validated_context": 0
+    },
+    "executed_by": "intent_always_on",
+    "grounding_ok": false,
+    "media_timecodes": [],
+    "nodes": {
+      "anchors": [],
+      "context_terms": [
+        {
+          "id": "domain:title",
+          "mention": "title",
+          "metadata": {
+            "exists": true,
+            "grounded": true,
+            "name": "title",
+            "type": "domain_term"
+          },
+          "node_kind": "domain_term",
+          "proof_role": "query_context",
+          "span": [
+            0,
+            5
+          ],
+          "status": "extracted"
+        },
+        {
+          "id": "domain:coder",
+          "mention": "coder",
+          "metadata": {
+            "exists": true,
+            "grounded": true,
+            "name": "coder",
+            "type": "domain_term"
+          },
+          "node_kind": "domain_term",
+          "proof_role": "query_context",
+          "span": [
+            237,
+            242
+          ],
+          "status": "extracted"
+        }
+      ],
+      "suppressed": [],
+      "unsupported": [
+        {
+          "id": "unsupported:final_repair_cycle_state",
+          "mention": "final repair cycle state",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "final repair cycle state",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:bounded_repair_loop",
+          "mention": "bounded repair loop",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "bounded repair loop",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            283,
+            302
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:multiple_review_cycles",
+          "mention": "multiple review cycles",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "multiple review cycles",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            308,
+            330
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:first_cycle",
+          "mention": "first cycle",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "first cycle",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            365,
+            376
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:terminal_final_reviewer_cycle",
+          "mention": "terminal final reviewer cycle",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "terminal final reviewer cycle",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            0,
+            0
+          ],
+          "status": "unsupported"
+        },
+        {
+          "id": "unsupported:expected_state",
+          "mention": "Expected State",
+          "metadata": {
+            "exists": false,
+            "grounded": false,
+            "name": "Expected State",
+            "reason": "out_of_domain",
+            "type": "noun_phrase"
+          },
+          "node_kind": "unsupported_term",
+          "proof_role": "none",
+          "span": [
+            427,
+            441
+          ],
+          "status": "unsupported"
+        }
+      ],
+      "validated_context": []
+    },
+    "ok": true,
+    "proof_packet": {
+      "assertions": [
+        {
+          "evidence": {
+            "mention": "final repair cycle state",
+            "normalized_text": "final repair cycle state",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_final_repair_cycle_state_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:final_repair_cycle_state"
+        },
+        {
+          "evidence": {
+            "mention": "bounded repair loop",
+            "normalized_text": "bounded repair loop",
+            "reason": "out_of_domain",
+            "span": [
+              283,
+              302
+            ]
+          },
+          "id": "assert:unsupported_bounded_repair_loop_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:bounded_repair_loop"
+        },
+        {
+          "evidence": {
+            "mention": "multiple review cycles",
+            "normalized_text": "multiple review cycle",
+            "reason": "out_of_domain",
+            "span": [
+              308,
+              330
+            ]
+          },
+          "id": "assert:unsupported_multiple_review_cycles_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:multiple_review_cycles"
+        },
+        {
+          "evidence": {
+            "mention": "first cycle",
+            "normalized_text": "first cycle",
+            "reason": "out_of_domain",
+            "span": [
+              365,
+              376
+            ]
+          },
+          "id": "assert:unsupported_first_cycle_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:first_cycle"
+        },
+        {
+          "evidence": {
+            "mention": "terminal final reviewer cycle",
+            "normalized_text": "terminal final reviewer cycle",
+            "reason": "out_of_domain",
+            "span": [
+              0,
+              0
+            ]
+          },
+          "id": "assert:unsupported_terminal_final_reviewer_cycle_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:terminal_final_reviewer_cycle"
+        },
+        {
+          "evidence": {
+            "mention": "Expected State",
+            "normalized_text": "expected state",
+            "reason": "out_of_domain",
+            "span": [
+              427,
+              441
+            ]
+          },
+          "id": "assert:unsupported_expected_state_unsupported",
+          "object": "sparta_controls",
+          "predicate": "is_not_grounded_to",
+          "rule_id": "EXTERNAL_ENTITY_NOT_GROUNDED_TO_SPARTA_CONTROLS",
+          "status": "failed",
+          "subject": "unsupported:expected_state"
+        }
+      ],
+      "authoritative": true,
+      "generated_by": "deterministic_extractor",
+      "llm_used": false,
+      "primary_entity_id": null,
+      "query_text": "title: Self-fix proof markdown should cite final repair cycle\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\n`src/tau_coding/self_fix_ticket_repair.py`\n\n## Current State\n\n`_write_proof_markdown()` always reads `loop_receipt[\"cycles\"][0]` for the coder and reviewer Scillm receipt paths. In a bounded repair loop with multiple review cycles, the proof comment would cite the first cycle instead of the terminal/final reviewer cycle.\n\n## Expected State\n\nThe proof writer should cite the final cycle from the coder/reviewer loop receipt.\n\n## Route\n\n`route:backend_python_or_skill_runtime`\n\n## Requested Repair Agent\n\n`agent:coder`\n\n## Required Proof\n\n- Tau self-fix poll selects this real GitHub issue.\n- Memory `/intent` and `/recall` run before the repair loop.\n- Coder and reviewer Scillm calls are streaming and live.\n- The scoped source change is committed and pushed by Tau.\n- The issue is closed only with a deterministic proof comment.\n\n## Tau Repair Contract\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Change self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero.\",\n  \"target_file\": \"src/tau_coding/self_fix_ticket_repair.py\",\n  \"find_text\": \"    coder = loop_receipt[\\\"cycles\\\"][0][\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = loop_receipt[\\\"cycles\\\"][0][\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"replace_text\": \"    final_cycle = loop_receipt[\\\"cycles\\\"][-1]\\n    coder = final_cycle[\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = final_cycle[\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"verification_commands\": [\n    \"PYTHONPATH=src uv run python - <<'PY'\\nfrom pathlib import Path\\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\\nassert 'final_cycle = loop_receipt[\\\"cycles\\\"][-1]' in text\\nassert 'loop_receipt[\\\"cycles\\\"][0]' not in text\\nPY\",\n    \"PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q\"\n  ],\n  \"max_review_cycles\": 1,\n  \"commit_message\": \"Use final self-fix cycle in proof comments\"\n}\n```\n\n## Non-goals\n\n- Do not broaden the repair request contract.\n- Do not change Scillm streaming behavior.\n- Do not change GitHub ticket helper semantics."
+    },
+    "query_text": "title: Self-fix proof markdown should cite final repair cycle\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\n`src/tau_coding/self_fix_ticket_repair.py`\n\n## Current State\n\n`_write_proof_markdown()` always reads `loop_receipt[\"cycles\"][0]` for the coder and reviewer Scillm receipt paths. In a bounded repair loop with multiple review cycles, the proof comment would cite the first cycle instead of the terminal/final reviewer cycle.\n\n## Expected State\n\nThe proof writer should cite the final cycle from the coder/reviewer loop receipt.\n\n## Route\n\n`route:backend_python_or_skill_runtime`\n\n## Requested Repair Agent\n\n`agent:coder`\n\n## Required Proof\n\n- Tau self-fix poll selects this real GitHub issue.\n- Memory `/intent` and `/recall` run before the repair loop.\n- Coder and reviewer Scillm calls are streaming and live.\n- The scoped source change is committed and pushed by Tau.\n- The issue is closed only with a deterministic proof comment.\n\n## Tau Repair Contract\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Change self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero.\",\n  \"target_file\": \"src/tau_coding/self_fix_ticket_repair.py\",\n  \"find_text\": \"    coder = loop_receipt[\\\"cycles\\\"][0][\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = loop_receipt[\\\"cycles\\\"][0][\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"replace_text\": \"    final_cycle = loop_receipt[\\\"cycles\\\"][-1]\\n    coder = final_cycle[\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = final_cycle[\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"verification_commands\": [\n    \"PYTHONPATH=src uv run python - <<'PY'\\nfrom pathlib import Path\\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\\nassert 'final_cycle = loop_receipt[\\\"cycles\\\"][-1]' in text\\nassert 'loop_receipt[\\\"cycles\\\"][0]' not in text\\nPY\",\n    \"PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q\"\n  ],\n  \"max_review_cycles\": 1,\n  \"commit_message\": \"Use final self-fix cycle in proof comments\"\n}\n```\n\n## Non-goals\n\n- Do not broaden the repair request contract.\n- Do not change Scillm streaming behavior.\n- Do not change GitHub ticket helper semantics.",
+    "route": "/extract-entities",
+    "view": "agent"
+  },
+  "evidence_case": null,
+  "expand_hops": 1,
+  "frameworks": [],
+  "grounding": null,
+  "invalid_terms": [],
+  "k": 8,
+  "keywords": [],
+  "lanes": [
+    "bm25",
+    "dense"
+  ],
+  "matched_persona_aliases": [],
+  "perspective": null,
+  "planner_only": false,
+  "query_plan": {
+    "extracted_entities": [],
+    "max_hops": 1,
+    "start_node": "semantics.",
+    "steps": [
+      {
+        "endpoint": "/list",
+        "params": {
+          "collection": "sparta_controls",
+          "filters": {
+            "control_id": "semantics."
+          },
+          "limit": 1
+        }
+      },
+      {
+        "endpoint": "/recall",
+        "params": {
+          "collections": [
+            "sparta_relationships"
+          ],
+          "k": 10,
+          "q": "semantics."
+        }
+      }
+    ],
+    "strategy": "graph_traversal"
+  },
+  "query_type": "knowledge",
+  "question_domains": [
+    "procedural_memory"
+  ],
+  "question_kind": "procedural_project_memory_question",
+  "reason": null,
+  "recall_profile": "procedural_memory",
+  "recall_profile_confidence": 0.85,
+  "recall_profile_source": "deterministic_procedural",
+  "recall_profile_spec": {
+    "clarify_policy": "default",
+    "collections": [
+      "lessons",
+      "skill_chains",
+      "sanity_scripts",
+      "checkpoints"
+    ],
+    "depth": 1,
+    "description": "Project-agent troubleshooting, prior implementation, skills, and checkpoint recall.",
+    "hard_filters": null,
+    "k": 8,
+    "min_grounding": 0.7,
+    "name": "procedural_memory",
+    "required_artifacts": [
+      "lesson"
+    ],
+    "reranker_mode": "off",
+    "weights": {
+      "bm25": 0.2,
+      "freshness": 0.15,
+      "graph_multihop": 0.2,
+      "semantic": 0.35,
+      "skill_chain": 0.1
+    }
+  },
+  "recommended_skills": [
+    "memory"
+  ],
+  "render_style_id": "plain_answer",
+  "required_artifacts": [
+    "lesson"
+  ],
+  "reranker_mode": "off",
+  "response_mode": "memory_grounded_answer",
+  "rewritten_query": "title: Self-fix proof markdown should cite final repair cycle\nstate: OPEN\n\n## Type\n\nbug\n\n## Target\n\n`src/tau_coding/self_fix_ticket_repair.py`\n\n## Current State\n\n`_write_proof_markdown()` always reads `loop_receipt[\"cycles\"][0]` for the coder and reviewer Scillm receipt paths. In a bounded repair loop with multiple review cycles, the proof comment would cite the first cycle instead of the terminal/final reviewer cycle.\n\n## Expected State\n\nThe proof writer should cite the final cycle from the coder/reviewer loop receipt.\n\n## Route\n\n`route:backend_python_or_skill_runtime`\n\n## Requested Repair Agent\n\n`agent:coder`\n\n## Required Proof\n\n- Tau self-fix poll selects this real GitHub issue.\n- Memory `/intent` and `/recall` run before the repair loop.\n- Coder and reviewer Scillm calls are streaming and live.\n- The scoped source change is committed and pushed by Tau.\n- The issue is closed only with a deterministic proof comment.\n\n## Tau Repair Contract\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Change self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero.\",\n  \"target_file\": \"src/tau_coding/self_fix_ticket_repair.py\",\n  \"find_text\": \"    coder = loop_receipt[\\\"cycles\\\"][0][\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = loop_receipt[\\\"cycles\\\"][0][\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"replace_text\": \"    final_cycle = loop_receipt[\\\"cycles\\\"][-1]\\n    coder = final_cycle[\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = final_cycle[\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"verification_commands\": [\n    \"PYTHONPATH=src uv run python - <<'PY'\\nfrom pathlib import Path\\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\\nassert 'final_cycle = loop_receipt[\\\"cycles\\\"][-1]' in text\\nassert 'loop_receipt[\\\"cycles\\\"][0]' not in text\\nPY\",\n    \"PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q\"\n  ],\n  \"max_review_cycles\": 1,\n  \"commit_message\": \"Use final self-fix cycle in proof comments\"\n}\n```\n\n## Non-goals\n\n- Do not broaden the repair request contract.\n- Do not change Scillm streaming behavior.\n- Do not change GitHub ticket helper semantics.",
+  "scene_action_id": null,
+  "scope": "brandon_bailey",
+  "skill_chain": [
+    "memory"
+  ],
+  "slots": {
+    "arango_data_requested": false,
+    "document_name": null,
+    "page": null,
+    "page_image_requested": false,
+    "payload_reference": false,
+    "proof_requested": false,
+    "qdrant_similarity_requested": false,
+    "requested_artifacts": [],
+    "similarity_scope": null,
+    "table_requested": false
+  },
+  "suggestions": [],
+  "target_node_id": null,
+  "tier1": [],
+  "tool_calls": [
+    {
+      "arguments": {
+        "collection": "sparta_controls",
+        "filters": {
+          "control_id": "semantics."
+        },
+        "limit": 1
+      },
+      "blocking": true,
+      "depends_on": [],
+      "domain": null,
+      "endpoint": "/list",
+      "function": null,
+      "id": "step_0",
+      "required_for_answer": true,
+      "skill": null,
+      "type": "endpoint",
+      "when": null
+    },
+    {
+      "arguments": {
+        "collections": [
+          "sparta_relationships"
+        ],
+        "k": 10,
+        "q": "semantics."
+      },
+      "blocking": true,
+      "depends_on": [],
+      "domain": null,
+      "endpoint": "/recall",
+      "function": null,
+      "id": "step_1",
+      "required_for_answer": true,
+      "skill": null,
+      "type": "endpoint",
+      "when": null
+    }
+  ],
+  "top_intents": [],
+  "ui_action": null,
+  "valid_entities": []
+}

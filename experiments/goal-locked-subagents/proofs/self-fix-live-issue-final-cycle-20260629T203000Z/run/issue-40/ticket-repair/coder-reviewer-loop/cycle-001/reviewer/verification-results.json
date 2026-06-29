@@ -1,0 +1,16 @@
+[
+  {
+    "command": "PYTHONPATH=src uv run python - <<'PY'\nfrom pathlib import Path\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\nassert 'final_cycle = loop_receipt[\"cycles\"][-1]' in text\nassert 'loop_receipt[\"cycles\"][0]' not in text\nPY",
+    "duration_seconds": 0.044093,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "command": "PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q",
+    "duration_seconds": 1.252224,
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "..........                                                               [100%]\n10 passed in 0.79s\n"
+  }
+]

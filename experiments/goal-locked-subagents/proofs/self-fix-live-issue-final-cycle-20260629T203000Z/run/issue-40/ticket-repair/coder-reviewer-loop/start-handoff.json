@@ -1,0 +1,39 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-intent.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-recall.json"
+    ],
+    "summary": "grahama1970/tau#40: Self-fix proof markdown should cite final repair cycle\n\nChange self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#40"
+  },
+  "goal": {
+    "goal_hash": "sha256:0049bf71c0b3ed741e0f92de897c3f0679f4b4a093ab3f285d04e82ba8fce556",
+    "goal_id": "goal-tau-coder-reviewer-loop-coder-reviewer-loop",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Coder applies the smallest real Tau code repair."
+  },
+  "previous_subagent": "human",
+  "rationale": "Memory-first intake produced context for a bounded coder turn.",
+  "required_evidence": [
+    "Coder writes a schema-valid receipt.",
+    "Target file changes from pre-run content."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-intent.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/self-fix-live-issue-final-cycle-20260629T203000Z/run/issue-40/ticket-repair/coder-reviewer-loop/memory-recall.json"
+    ],
+    "status": "REQUESTED",
+    "summary": "Human requested a live Tau coder-reviewer repair loop."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Coder hands off to reviewer or Tau fails closed."
+}

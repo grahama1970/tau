@@ -1,0 +1,42 @@
+{
+  "author": {
+    "id": "U_kgDOCRK7qw",
+    "is_bot": false,
+    "login": "grahama1970",
+    "name": "Graham"
+  },
+  "body": "## Type\n\nbug\n\n## Target\n\n`src/tau_coding/self_fix_ticket_repair.py`\n\n## Current State\n\n`_write_proof_markdown()` always reads `loop_receipt[\"cycles\"][0]` for the coder and reviewer Scillm receipt paths. In a bounded repair loop with multiple review cycles, the proof comment would cite the first cycle instead of the terminal/final reviewer cycle.\n\n## Expected State\n\nThe proof writer should cite the final cycle from the coder/reviewer loop receipt.\n\n## Route\n\n`route:backend_python_or_skill_runtime`\n\n## Requested Repair Agent\n\n`agent:coder`\n\n## Required Proof\n\n- Tau self-fix poll selects this real GitHub issue.\n- Memory `/intent` and `/recall` run before the repair loop.\n- Coder and reviewer Scillm calls are streaming and live.\n- The scoped source change is committed and pushed by Tau.\n- The issue is closed only with a deterministic proof comment.\n\n## Tau Repair Contract\n\n```json\n{\n  \"schema\": \"tau.self_fix_repair_request.v1\",\n  \"request\": \"Change self-fix ticket proof markdown to cite the final coder/reviewer cycle instead of cycle zero.\",\n  \"target_file\": \"src/tau_coding/self_fix_ticket_repair.py\",\n  \"find_text\": \"    coder = loop_receipt[\\\"cycles\\\"][0][\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = loop_receipt[\\\"cycles\\\"][0][\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"replace_text\": \"    final_cycle = loop_receipt[\\\"cycles\\\"][-1]\\n    coder = final_cycle[\\\"coder\\\"][\\\"scillm_call\\\"]\\n    reviewer = final_cycle[\\\"reviewer\\\"][\\\"scillm_call\\\"]\",\n  \"verification_commands\": [\n    \"PYTHONPATH=src uv run python - <<'PY'\\nfrom pathlib import Path\\ntext = Path('src/tau_coding/self_fix_ticket_repair.py').read_text(encoding='utf-8')\\nassert 'final_cycle = loop_receipt[\\\"cycles\\\"][-1]' in text\\nassert 'loop_receipt[\\\"cycles\\\"][0]' not in text\\nPY\",\n    \"PYTHONPATH=src uv run pytest tests/test_self_fix_ticket_repair.py tests/test_self_fix_repair_loop.py tests/test_self_fix_poll.py tests/test_tau_cron.py -q\"\n  ],\n  \"max_review_cycles\": 1,\n  \"commit_message\": \"Use final self-fix cycle in proof comments\"\n}\n```\n\n## Non-goals\n\n- Do not broaden the repair request contract.\n- Do not change Scillm streaming behavior.\n- Do not change GitHub ticket helper semantics.\n",
+  "comments": [],
+  "createdAt": "2026-06-29T20:08:44Z",
+  "labels": [
+    {
+      "color": "5319e7",
+      "description": "Tau agent harness work item",
+      "id": "LA_kwDOTG11HM8AAAACpOWQ-w",
+      "name": "agent-work"
+    },
+    {
+      "color": "d73a4a",
+      "description": "Defect or regression",
+      "id": "LA_kwDOTG11HM8AAAACpRFAJA",
+      "name": "type:bug"
+    },
+    {
+      "color": "1d76db",
+      "description": "Python CLIs, runtime, harness, and skill integration route",
+      "id": "LA_kwDOTG11HM8AAAACpRFbZw",
+      "name": "route:backend_python_or_skill_runtime"
+    },
+    {
+      "color": "5319e7",
+      "description": "Requested repair agent: coder",
+      "id": "LA_kwDOTG11HM8AAAACpVklOg",
+      "name": "agent:coder"
+    }
+  ],
+  "number": 40,
+  "state": "OPEN",
+  "title": "Self-fix proof markdown should cite final repair cycle",
+  "updatedAt": "2026-06-29T20:08:44Z",
+  "url": "https://github.com/grahama1970/tau/issues/40"
+}
