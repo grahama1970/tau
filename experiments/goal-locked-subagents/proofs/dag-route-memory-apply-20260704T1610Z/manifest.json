@@ -1,0 +1,27 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "goal": "dag_route_memory_sync_apply_live_memory_proof",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "memory_collection": "tau_route_memory_apply_proof",
+  "commands": [
+    "uv run tau dag-route-memory-sync --candidate-receipt experiments/goal-locked-subagents/proofs/dag-route-memory-candidates-20260704T1605Z/dag-route-memory-candidate-receipt.json --receipt experiments/goal-locked-subagents/proofs/dag-route-memory-apply-20260704T1610Z/dag-route-memory-apply-receipt.json --collection tau_route_memory_apply_proof --apply",
+    "POST http://127.0.0.1:8601/list {\"collection\":\"tau_route_memory_apply_proof\",\"limit\":20}"
+  ],
+  "artifacts": [
+    "dag-route-memory-apply-receipt.json",
+    "memory-readback.json"
+  ],
+  "proves": [
+    "dag-route-memory-sync --apply called live Memory /upsert.",
+    "Memory reported inserted=5 and total=5.",
+    "A live readback from tau_route_memory_apply_proof returned all 5 expected keys."
+  ],
+  "does_not_prove": [
+    "Production tau_route_memory route learning policy.",
+    "Future route correctness.",
+    "Runtime route mutation.",
+    "Provider/model semantic quality."
+  ]
+}

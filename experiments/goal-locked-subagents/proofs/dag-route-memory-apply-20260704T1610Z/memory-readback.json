@@ -1,0 +1,16 @@
+{
+  "collection": "tau_route_memory_apply_proof",
+  "document_count_returned": 5,
+  "expected_keys": [
+    "tau-route-e88f9e9f20ec4f496254b263a74d9426",
+    "tau-route-acbecde97e9592f0397765e91289e373",
+    "tau-route-14eb65cc49ec2229c39c9feff684dc71",
+    "tau-route-3ed45ff133ab85fd846ee099e446d21a",
+    "tau-route-564fc5c72a29436d60acc87798f8f7de"
+  ],
+  "found_count": 5,
+  "missing_keys": [],
+  "ok": true,
+  "schema": "tau.memory_readback_proof.v1",
+  "status_code": 200
+}
