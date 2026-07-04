@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/yaml-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "yaml"
+  ],
+  "timeout_s": 20
+}

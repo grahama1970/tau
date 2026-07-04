@@ -1,0 +1,38 @@
+
+────────────────────────────────────────────────
+
+• I added the proof commands to the receipt
+  before running them, so the recorded command
+  list matches the verification I’m about to
+  perform.
+
+• Ran grep -n 'TODO' /home/graham/workspace/
+  │ experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +7 lines
+  └ 1
+
+• Explored
+  └ Read message.txt
+
+• Ran python -m json.tool /home/graham/
+  │ workspace/experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +7 lines
+  └ (no output)
+
+────────────────────────────────────────────────
+
+• The proof results are concrete: JSON parsing
+  returned exit code 0, the TODO grep returned 1
+  meaning no match, and the target file now
+  contains the completion message. I’m updating
+  the receipt command list to include the final
+  content read as well.
+
+• Working (1m 19s • esc to interrupt)
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

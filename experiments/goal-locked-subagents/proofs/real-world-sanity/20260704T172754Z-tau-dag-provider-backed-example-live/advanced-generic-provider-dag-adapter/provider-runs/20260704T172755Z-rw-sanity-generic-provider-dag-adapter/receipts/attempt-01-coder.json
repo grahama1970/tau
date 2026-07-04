@@ -1,0 +1,27 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' message.txt",
+    "ls -la",
+    "test -f /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json; printf '%s\\n' $?",
+    "python -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json >/tmp/attempt-01-coder-jsoncheck.txt",
+    "grep -n 'TODO' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt; printf '%s\\n' $?",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172754Z-tau-dag-provider-backed-example-live/advanced-generic-provider-dag-adapter/provider-runs/20260704T172755Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

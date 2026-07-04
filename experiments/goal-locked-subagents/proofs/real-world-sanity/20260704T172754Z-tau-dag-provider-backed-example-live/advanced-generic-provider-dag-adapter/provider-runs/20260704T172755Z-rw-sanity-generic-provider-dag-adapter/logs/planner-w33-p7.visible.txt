@@ -1,0 +1,28 @@
+Tau planner subagent visible monitor\nrun_id: 20
+260704T172755Z-rw-sanity-generic-provider-dag-ad
+apter\nrun_dir: /home/graham/workspace/experimen
+ts/tau/experiments/goal-locked-subagents/proofs/
+real-world-sanity/20260704T172754Z-tau-dag-provi
+der-backed-example-live/advanced-generic-provide
+r-dag-adapter/provider-runs/20260704T172755Z-rw-
+sanity-generic-provider-dag-adapter\ndag_spec: /
+home/graham/workspace/experiments/tau/experiment
+s/goal-locked-subagents/proofs/real-world-sanity
+/20260704T172754Z-tau-dag-provider-backed-exampl
+e-live/advanced-generic-provider-dag-adapter/pro
+vider-runs/20260704T172755Z-rw-sanity-generic-pr
+ovider-dag-adapter/dag-spec.json\nplanner_receip
+t: /home/graham/workspace/experiments/tau/experi
+ments/goal-locked-subagents/proofs/real-world-sa
+nity/20260704T172754Z-tau-dag-provider-backed-ex
+ample-live/advanced-generic-provider-dag-adapter
+/provider-runs/20260704T172755Z-rw-sanity-generi
+c-provider-dag-adapter/planner-receipt.json\nfin
+al_receipt: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/proofs/real
+-world-sanity/20260704T172754Z-tau-dag-provider-
+backed-example-live/advanced-generic-provider-da
+g-adapter/provider-runs/20260704T172755Z-rw-sani
+ty-generic-provider-dag-adapter/run-receipt.json
+\ncanonical truth: Tau JSON receipts; this pane
+is human-visible telemetry.\n

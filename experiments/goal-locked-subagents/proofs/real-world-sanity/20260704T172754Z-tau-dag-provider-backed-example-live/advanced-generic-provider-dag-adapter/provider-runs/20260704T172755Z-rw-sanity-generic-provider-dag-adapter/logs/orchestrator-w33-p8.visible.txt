@@ -1,0 +1,37 @@
+xample-live/advanced-g
+eneric-provider-dag-ad
+apter/provider-runs/20
+260704T172755Z-rw-sani
+ty-generic-provider-da
+g-adapter/dag-spec.jso
+n\nplanner_receipt: /h
+ome/graham/workspace/e
+xperiments/tau/experim
+ents/goal-locked-subag
+ents/proofs/real-world
+-sanity/20260704T17275
+4Z-tau-dag-provider-ba
+cked-example-live/adva
+nced-generic-provider-
+dag-adapter/provider-r
+uns/20260704T172755Z-r
+w-sanity-generic-provi
+der-dag-adapter/planne
+r-receipt.json\nfinal_
+receipt: /home/graham/
+workspace/experiments/
+tau/experiments/goal-l
+ocked-subagents/proofs
+/real-world-sanity/202
+60704T172754Z-tau-dag-
+provider-backed-exampl
+e-live/advanced-generi
+c-provider-dag-adapter
+/provider-runs/2026070
+4T172755Z-rw-sanity-ge
+neric-provider-dag-ada
+pter/run-receipt.json\
+ncanonical truth: Tau
+JSON receipts; this pa
+ne is human-visible te
+lemetry.\n
