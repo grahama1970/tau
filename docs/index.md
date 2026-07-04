@@ -64,6 +64,8 @@ Tau currently has:
   [Context Compaction](context-compaction.md).
 - Want to understand the execution engine? Read [Agent Loop](agent-loop.md).
 - Want the reusable stateful brain? Read [Agent Harness](harness.md).
+- Want project agents to hand Tau multi-step work? Read
+  [Project-Agent DAG Contracts](project-agent-dag-contracts.md).
 - Want to build another frontend? Read [Building a Custom TUI](custom-tui.md).
 - Want a summary of the completed pre-extension hardening work? Read
   [Pre-extension Hardening Summary](architecture/pre-extension-hardening.md).

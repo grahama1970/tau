@@ -1,0 +1,71 @@
+schema: tau.dag_contract.v1
+dag_id: tau-issue-47-script-contract
+goal:
+  goal_id: tau-issue-47
+  goal_version: 1
+  goal_hash: sha256:0000000000000000000000000000000000000000000000000000000000000047
+target:
+  repo: grahama1970/tau
+  target: issue#47
+  allowed_paths:
+    - src/tau_coding/persona_dream_dream_packet_agent.py
+    - tests/test_persona_dream_dream_packet_agent.py
+    - experiments/goal-locked-subagents/agent-command-specs/script-writer/**
+    - experiments/goal-locked-subagents/agent-command-specs/script-reviewer/**
+entry_node: script-writer
+terminal_nodes:
+  - human
+limits:
+  resume: true
+  default_timeout_seconds: 240
+  max_total_attempts: 4
+nodes:
+  - id: script-writer
+    agent: script-writer
+    executor: local
+    max_attempts: 2
+    command_spec: experiments/goal-locked-subagents/agent-command-specs/script-writer/tau-dispatch-command.json
+    required_evidence:
+      - script_contract.json
+      - timed_transcript.json
+      - timed_beats.json
+      - entity_environment_script_table.json
+    emits:
+      - tau.agent_handoff.v1
+      - tau.subagent_receipt.v1
+  - id: script-reviewer
+    agent: script-reviewer
+    executor: local
+    max_attempts: 2
+    command_spec: experiments/goal-locked-subagents/agent-command-specs/script-reviewer/tau-dispatch-command.json
+    required_evidence:
+      - validate_script_contract.json
+      - script-reviewer-verdict.json
+    emits:
+      - tau.agent_handoff.v1
+      - tau.subagent_receipt.v1
+  - id: human
+    agent: human
+    executor: human
+edges:
+  - from: script-writer
+    to: script-reviewer
+  - from: script-reviewer
+    to: script-writer
+    condition: reviewer_status_blocked_and_attempts_remaining
+  - from: script-reviewer
+    to: human
+    condition: reviewer_status_pass_or_attempts_exhausted
+required_evidence:
+  - command-loop receipt or DAG receipt
+  - writer receipt
+  - reviewer verdict
+  - validator receipt
+fail_closed_on:
+  - goal_hash_mismatch
+  - target_changed
+  - unexpected_node
+  - unexpected_edge
+  - missing_required_evidence
+  - max_attempts_exceeded
+  - malformed_handoff
