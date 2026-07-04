@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_signal_receipt.v1",
+  "title": "Tau DAG Signal Receipt",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "mocked",
+    "live",
+    "provider_live",
+    "source_dag_receipt",
+    "dag_id",
+    "goal_hash",
+    "source_ok",
+    "source_status",
+    "node_signals",
+    "edge_signals",
+    "route_reinforcement_candidates",
+    "negative_signals",
+    "memory_sync_candidate",
+    "sync_status",
+    "sync_reason",
+    "proof_scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_signal_receipt.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    },
+    "mocked": {
+      "type": "boolean"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "type": "boolean"
+    },
+    "source_dag_receipt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_dag_receipt_sha256": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "receipt_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_hash": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "source_ok": {
+      "type": "boolean"
+    },
+    "source_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_verdict": {
+      "type": ["string", "null"]
+    },
+    "scheduler": {
+      "type": ["string", "null"]
+    },
+    "node_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "node_id",
+          "status",
+          "attempt_count",
+          "required_evidence_missing",
+          "reviewer_blockers",
+          "artifact_count",
+          "proof_strength",
+          "route_reinforcement"
+        ],
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent": {
+            "type": ["string", "null"]
+          },
+          "status": {
+            "enum": ["PASS", "ATTENUATED"]
+          },
+          "attempt_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "required_evidence_missing": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "reviewer_pass": {
+            "type": "boolean"
+          },
+          "reviewer_blockers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "stop_reason": {
+            "type": ["string", "null"]
+          },
+          "artifact_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "proof_strength": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "route_reinforcement": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "negative_signal_reason": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "edge_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["from_node", "to_node", "status", "reinforcement", "decay", "reason"],
+        "properties": {
+          "from_node": {
+            "type": "string"
+          },
+          "to_node": {
+            "type": "string"
+          },
+          "status": {
+            "enum": ["REINFORCE", "DECAY"]
+          },
+          "reinforcement": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "decay": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "route_reinforcement_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "from_node",
+          "to_node",
+          "confidence",
+          "source",
+          "memory_sync_candidate",
+          "sync_status",
+          "sync_reason"
+        ],
+        "properties": {
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "memory_sync_candidate": {
+            "type": "boolean"
+          },
+          "sync_status": {
+            "const": "NOT_SYNCED"
+          }
+        }
+      }
+    },
+    "negative_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["type", "severity", "code", "message", "deterministic"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": ["string", "null"]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "node_id": {
+            "type": ["string", "null"]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deterministic": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "memory_sync_candidate": {
+      "type": "boolean"
+    },
+    "sync_status": {
+      "const": "NOT_SYNCED"
+    },
+    "sync_reason": {
+      "const": "first_slice_local_only"
+    },
+    "proof_scope": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["proves", "does_not_prove"],
+      "properties": {
+        "proves": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "does_not_prove": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

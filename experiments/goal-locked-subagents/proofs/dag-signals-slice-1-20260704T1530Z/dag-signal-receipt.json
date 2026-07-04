@@ -1,0 +1,203 @@
+{
+  "dag_id": "rw-sanity-project-dag-concurrent",
+  "edge_signals": [
+    {
+      "decay": false,
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "reason": "source_dag_passed_without_node_negative_signal",
+      "reinforcement": 1.0,
+      "status": "REINFORCE",
+      "to_agent": "research-auditor",
+      "to_node": "research"
+    },
+    {
+      "decay": false,
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "reason": "source_dag_passed_without_node_negative_signal",
+      "reinforcement": 1.0,
+      "status": "REINFORCE",
+      "to_agent": "coder",
+      "to_node": "coder"
+    },
+    {
+      "decay": false,
+      "from_agent": "research-auditor",
+      "from_node": "research",
+      "reason": "source_dag_passed_without_node_negative_signal",
+      "reinforcement": 1.0,
+      "status": "REINFORCE",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "decay": false,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "reason": "source_dag_passed_without_node_negative_signal",
+      "reinforcement": 1.0,
+      "status": "REINFORCE",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "decay": false,
+      "from_agent": "reviewer",
+      "from_node": "reviewer",
+      "reason": "source_dag_passed_without_node_negative_signal",
+      "reinforcement": 1.0,
+      "status": "REINFORCE",
+      "to_agent": "human",
+      "to_node": "human"
+    }
+  ],
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+  "live": true,
+  "memory_sync_candidate": true,
+  "mocked": false,
+  "negative_signals": [],
+  "node_signals": [
+    {
+      "agent": "coder",
+      "artifact_count": 2,
+      "attempt_count": 1,
+      "negative_signal_reason": null,
+      "node_id": "coder",
+      "proof_strength": 1.0,
+      "required_evidence_missing": [],
+      "reviewer_blockers": [],
+      "reviewer_pass": true,
+      "route_reinforcement": 1.0,
+      "status": "PASS",
+      "stop_reason": null
+    },
+    {
+      "agent": "research-auditor",
+      "artifact_count": 2,
+      "attempt_count": 1,
+      "negative_signal_reason": null,
+      "node_id": "research",
+      "proof_strength": 1.0,
+      "required_evidence_missing": [],
+      "reviewer_blockers": [],
+      "reviewer_pass": false,
+      "route_reinforcement": 1.0,
+      "status": "PASS",
+      "stop_reason": null
+    },
+    {
+      "agent": "reviewer",
+      "artifact_count": 2,
+      "attempt_count": 1,
+      "negative_signal_reason": null,
+      "node_id": "reviewer",
+      "proof_strength": 1.0,
+      "required_evidence_missing": [],
+      "reviewer_blockers": [],
+      "reviewer_pass": true,
+      "route_reinforcement": 1.0,
+      "status": "PASS",
+      "stop_reason": null
+    },
+    {
+      "agent": "goal-guardian",
+      "artifact_count": 0,
+      "attempt_count": 0,
+      "negative_signal_reason": null,
+      "node_id": "start",
+      "proof_strength": 1.0,
+      "required_evidence_missing": [],
+      "reviewer_blockers": [],
+      "reviewer_pass": false,
+      "route_reinforcement": 1.0,
+      "status": "PASS",
+      "stop_reason": null
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Adaptive DAG expansion.",
+      "Parallel DAG scheduling.",
+      "Provider/model semantic quality.",
+      "Memory route learning."
+    ],
+    "proves": [
+      "Existing DAG receipt was inspected.",
+      "Node and edge quality signals were derived deterministically.",
+      "No DAG expansion or route mutation was applied."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-signals-slice-1-20260704T1530Z/dag-signal-receipt.json",
+  "route_reinforcement_candidates": [
+    {
+      "confidence": 1.0,
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "research-auditor",
+      "to_node": "research"
+    },
+    {
+      "confidence": 1.0,
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "coder",
+      "to_node": "coder"
+    },
+    {
+      "confidence": 1.0,
+      "from_agent": "research-auditor",
+      "from_node": "research",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "confidence": 1.0,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "confidence": 1.0,
+      "from_agent": "reviewer",
+      "from_node": "reviewer",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "human",
+      "to_node": "human"
+    }
+  ],
+  "scheduler": "bounded-ready-queue",
+  "schema": "tau.dag_signal_receipt.v1",
+  "source_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/run/dag-receipt.json",
+  "source_dag_receipt_sha256": "sha256:992cfa929a841335d0c7f136886461c66e71c756774387c91721c5cde413e01c",
+  "source_ok": true,
+  "source_status": "PASS",
+  "source_verdict": "PASS",
+  "status": "PASS",
+  "sync_reason": "first_slice_local_only",
+  "sync_status": "NOT_SYNCED",
+  "timestamp": "2026-07-04T15:27:41Z"
+}

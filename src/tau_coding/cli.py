@@ -34,6 +34,7 @@ from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding import __version__
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.credentials import FileCredentialStore
+from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
     inspect_dag_stress_campaign,
     inspect_dag_stress_run,
@@ -806,6 +807,20 @@ def main(
                     spec_path=Path(spec_path),
                     resume=bool(options["resume"]),
                 )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-signals":
+        try:
+            options = _parse_dag_signals_cli_args(positional_args[1:])
+            payload = write_dag_signal_receipt(
+                Path(str(options["source"])),
+                receipt_path=options.get("receipt_path"),
+            )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -1836,6 +1851,25 @@ def _dag_run_schema(spec_path: Path) -> str | None:
     except (OSError, json.JSONDecodeError, RuntimeError):
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
+
+
+def _parse_dag_signals_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau dag-signals <dag-receipt-or-run-dir> [--receipt <path>]")
+    source = Path(args[0])
+    receipt_path: Path | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown dag-signals option: {arg}")
+        index += 1
+    return {"source": source, "receipt_path": receipt_path}
 
 
 def _parse_generic_dag_inspect_cli_args(args: list[str]) -> Path:
