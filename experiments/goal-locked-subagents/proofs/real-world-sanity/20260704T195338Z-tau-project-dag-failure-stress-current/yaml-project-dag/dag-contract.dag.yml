@@ -1,0 +1,60 @@
+schema: tau.dag_contract.v1
+dag_id: "rw-sanity-project-dag-yaml"
+goal:
+  goal_id: "rw-sanity-project-dag-yaml"
+  goal_version: 1
+  goal_hash: "sha256:rw-sanity-project-dag-yaml"
+target:
+  repo: grahama1970/tau
+  target: "scratch-project-dag-yaml"
+entry_node: coder
+terminal_nodes:
+  - human
+limits:
+  resume: true
+  default_timeout_seconds: 20
+  max_total_attempts: 3
+nodes:
+  -
+    id: coder
+    agent: coder
+    executor: local
+    max_attempts: 1
+    command_spec: "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T195338Z-tau-project-dag-failure-stress-current/yaml-project-dag/command-specs/coder/tau-dispatch-command.json"
+    required_evidence:
+      - creator_artifact
+  -
+    id: reviewer
+    agent: reviewer
+    executor: local
+    max_attempts: 1
+    command_spec: "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T195338Z-tau-project-dag-failure-stress-current/yaml-project-dag/command-specs/reviewer/tau-dispatch-command.json"
+    required_evidence:
+      - reviewer_verdict
+    reviewer:
+      reviews_node: coder
+      requires_goal_hash: true
+edges:
+  -
+    from: coder
+    to: reviewer
+  -
+    from: reviewer
+    to: coder
+    condition: reviewer_requests_revision
+  -
+    from: reviewer
+    to: human
+    condition: reviewer_pass_or_block
+required_evidence:
+  - creator_artifact
+  - reviewer_verdict
+fail_closed_on:
+  - goal_hash_mismatch
+  - target_changed
+  - unexpected_node
+  - unexpected_edge
+  - missing_required_evidence
+  - max_attempts_exceeded
+  - malformed_handoff
+  - reviewer_goal_hash_mismatch

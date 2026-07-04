@@ -17,7 +17,6 @@ from typing import Any
 
 import httpx
 
-
 PERSONA_DREAM_ROOT = Path("/home/graham/workspace/experiments/agent-skills/skills/persona-dream")
 DEFAULT_FIXTURE_ROOT = PERSONA_DREAM_ROOT / "fixtures/one_scene_kling_dry_run"
 DEFAULT_IMAGE = DEFAULT_FIXTURE_ROOT / "artifacts/panel_001_reference.png"
@@ -764,8 +763,8 @@ def _run_panel_repair_gate(
             "persona-dream-compatible receipts were emitted, but provider media remains blocked."
             if panel_review_ready
             else "Persona Dream Panel Repair Gate wrote a terminal blocker receipt with "
-            "persona-dream-compatible repair/source receipts; no public upload, Kling call, paid call, "
-            "or provider-ready claim occurred."
+            "provider_eligibility=false and persona-dream-compatible repair/source receipts; "
+            "no public upload, Kling call, paid call, or provider-ready claim occurred."
         ),
         evidence=evidence_paths,
         context_summary="Repair gate consolidated persona-dream panel evidence and emitted fail-closed persona-dream receipts.",

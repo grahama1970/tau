@@ -8,8 +8,8 @@ from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_once,
     load_agent_dispatch_command_spec,
     run_agent_handoff_command_loop,
-    write_agent_handoff_command_loop_receipt,
     write_agent_handoff_command_dispatch_receipt,
+    write_agent_handoff_command_loop_receipt,
     write_agent_handoff_dispatch_receipt,
 )
 

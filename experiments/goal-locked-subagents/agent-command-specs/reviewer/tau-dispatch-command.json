@@ -19,6 +19,8 @@
     "--stop-condition",
     "Human route is posted."
   ],
+  "agent_contract": "agents/reviewer/AGENTS.md",
+  "persona_contract": "agents/reviewer/persona.yaml",
   "cwd": ".",
   "timeout_s": 30
 }

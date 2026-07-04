@@ -19,6 +19,8 @@
     "--stop-condition",
     "Human accepts, redirects, or requests another bounded subagent."
   ],
+  "agent_contract": "agents/coder/AGENTS.md",
+  "persona_contract": "agents/coder/persona.yaml",
   "cwd": ".",
   "timeout_s": 30
 }
