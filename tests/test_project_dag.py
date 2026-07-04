@@ -176,6 +176,122 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     )
 
 
+def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["max_attempts"] = 2
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        sleep_seconds=0.25,
+    )
+    _write_flaky_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "human", _creator_evidence()),
+        first_failure="timeout",
+        timeout_s=0.05,
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["node_attempts"]["coder"] == 2
+    assert receipt["max_observed_concurrency"] >= 2
+    assert [
+        event
+        for event in receipt["scheduler_events"]
+        if event["event"] == "node_attempt_failed" and event["node_id"] == "coder"
+    ][0]["stop_reason"] == "command_timeout"
+
+
+def test_project_dag_bounded_ready_queue_recovers_after_non_json_retry(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["max_attempts"] = 2
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_flaky_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "human", _creator_evidence()),
+        first_failure="non-json",
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["node_attempts"]["coder"] == 2
+    assert [
+        event
+        for event in receipt["scheduler_events"]
+        if event["event"] == "node_attempt_failed" and event["node_id"] == "coder"
+    ][0]["stop_reason"] == "invalid_command_json"
+
+
+def test_project_dag_bounded_ready_queue_blocks_after_max_retries(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["max_attempts"] = 2
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_always_non_json_spec(tmp_path, "coder")
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INVALID_COMMAND_JSON"
+    assert receipt["node_attempts"]["coder"] == 2
+    assert receipt["alerts"][0]["evidence"]["attempts"] == 2
+    assert [event["retrying"] for event in receipt["scheduler_events"] if event["event"] == "node_attempt_failed"] == [
+        True,
+        False,
+    ]
+
+
 def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -> None:
     contract_path = _write_parallel_contract(tmp_path)
     _write_response_spec(
@@ -423,6 +539,7 @@ def _write_response_spec(
     response: dict[str, object],
     *,
     sleep_seconds: float = 0.0,
+    timeout_s: float = 5,
 ) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
@@ -438,6 +555,63 @@ def _write_response_spec(
                     "-c",
                     code,
                 ],
+                "timeout_s": timeout_s,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_flaky_response_spec(
+    tmp_path: Path,
+    agent: str,
+    response: dict[str, object],
+    *,
+    first_failure: str,
+    timeout_s: float = 5,
+) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path = spec_path.parent / "attempt-count.txt"
+    if first_failure == "timeout":
+        failure_code = "import time; time.sleep(0.2)"
+    elif first_failure == "non-json":
+        failure_code = "print('not json')"
+    else:  # pragma: no cover - helper contract guard.
+        raise AssertionError(f"unknown first_failure: {first_failure}")
+    code = f"""
+from pathlib import Path
+import json
+state = Path({str(state_path)!r})
+count = int(state.read_text() or '0') if state.exists() else 0
+state.write_text(str(count + 1))
+if count == 0:
+    {failure_code}
+else:
+    print({json.dumps(json.dumps(response))})
+"""
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    code,
+                ],
+                "timeout_s": timeout_s,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_always_non_json_spec(tmp_path: Path, agent: str) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('not json')"],
                 "timeout_s": 5,
             }
         ),

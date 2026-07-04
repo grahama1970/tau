@@ -384,12 +384,32 @@ def _run_bounded_ready_queue_project_dag(
                     stop_reason = "node_dispatch_failed"
                     if isinstance(dispatch, dict):
                         stop_reason = str(dispatch.get("stop_reason") or stop_reason)
+                    can_retry = node_attempts[node_id] < contract.nodes[node_id].max_attempts
+                    events.append(
+                        {
+                            "event": "node_attempt_failed",
+                            "node_id": node_id,
+                            "agent": contract.nodes[node_id].agent,
+                            "attempt": node_attempts[node_id],
+                            "retrying": can_retry,
+                            "stop_reason": stop_reason,
+                            "errors": result.get("errors", []),
+                            "ts": _utc_stamp(),
+                        }
+                    )
+                    if can_retry:
+                        continue
                     alerts.append(
                         _alert(
                             "BLOCK",
                             stop_reason,
-                            "Ready-queue node dispatch did not pass.",
-                            {"node_id": node_id, "errors": result.get("errors", [])},
+                            "Ready-queue node dispatch did not pass after max_attempts.",
+                            {
+                                "node_id": node_id,
+                                "attempts": node_attempts[node_id],
+                                "max_attempts": contract.nodes[node_id].max_attempts,
+                                "errors": result.get("errors", []),
+                            },
                         )
                     )
                     errors.extend(str(item) for item in result.get("errors", []))

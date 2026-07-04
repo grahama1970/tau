@@ -166,6 +166,21 @@ def build_checks(
         scenario="concurrent",
         goal_hash="sha256:rw-sanity-project-dag-concurrent",
     )
+    project_dag_concurrent_timeout_retry = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-timeout-retry",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-timeout-retry",
+    )
+    project_dag_concurrent_non_json_retry = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-non-json-retry",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-non-json-retry",
+    )
+    project_dag_concurrent_max_retries = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-max-retries",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-max-retries",
+    )
     project_dag_complex = create_project_dag_fixture(
         run_dir,
         scenario="complex",
@@ -780,6 +795,73 @@ def build_checks(
             expected_verdict="PASS",
         ),
         Check(
+            check_id="advanced.project_dag_ready_queue_timeout_retry_recovery",
+            level="advanced",
+            purpose=(
+                "Tau retries a timed-out concurrent ready-queue DAG node, preserves the failed "
+                "attempt evidence, and continues to the reviewer join after the retry passes."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_timeout_retry["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_timeout_retry["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_timeout_retry["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            expected_verdict="PASS",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_non_json_retry_recovery",
+            level="advanced",
+            purpose=(
+                "Tau retries a concurrent ready-queue DAG node that emits non-JSON once, then "
+                "continues to the reviewer join after a valid retry response."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_non_json_retry["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_non_json_retry["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_non_json_retry["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            expected_verdict="PASS",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_max_retries_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a concurrent ready-queue DAG node after repeated non-JSON "
+                "responses exhaust node max_attempts."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_max_retries["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_max_retries["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_max_retries["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="INVALID_COMMAND_JSON",
+        ),
+        Check(
             check_id="advanced.project_dag_reviewer_goal_drift_fail_closed",
             level="advanced",
             purpose=(
@@ -1096,11 +1178,52 @@ def create_project_dag_fixture(
     agents_root.mkdir(parents=True, exist_ok=True)
     worker = fixture_dir / "project_dag_worker.py"
     write_text(worker, project_dag_worker_script())
-    agents = ("research-auditor", "coder", "reviewer") if scenario == "concurrent" else ("coder", "reviewer")
+    concurrent_scenarios = {
+        "concurrent",
+        "concurrent-timeout-retry",
+        "concurrent-non-json-retry",
+        "concurrent-max-retries",
+    }
+    agents = (
+        ("research-auditor", "coder", "reviewer")
+        if scenario in concurrent_scenarios
+        else ("coder", "reviewer")
+    )
     for agent in agents:
         if scenario == "timeout" and agent == "coder":
             command = ["python3", "-c", "import time; time.sleep(5)"]
             timeout_s = 0.1
+        elif scenario == "concurrent-timeout-retry" and agent == "coder":
+            state = command_spec_root / agent / "attempt-count.txt"
+            command = [
+                "python3",
+                "-c",
+                _flaky_project_dag_command(
+                    worker=worker,
+                    role=agent,
+                    scenario=scenario,
+                    state=state,
+                    first_failure="timeout",
+                ),
+            ]
+            timeout_s = 1
+        elif scenario == "concurrent-non-json-retry" and agent == "coder":
+            state = command_spec_root / agent / "attempt-count.txt"
+            command = [
+                "python3",
+                "-c",
+                _flaky_project_dag_command(
+                    worker=worker,
+                    role=agent,
+                    scenario=scenario,
+                    state=state,
+                    first_failure="non-json",
+                ),
+            ]
+            timeout_s = 20
+        elif scenario == "concurrent-max-retries" and agent == "coder":
+            command = ["python3", "-c", "print('not json')"]
+            timeout_s = 20
         elif scenario == "non-json" and agent == "reviewer":
             command = ["python3", "-c", "print('not json')"]
             timeout_s = 20
@@ -1122,10 +1245,10 @@ def create_project_dag_fixture(
             },
         )
 
-    max_attempts = 4 if scenario in {"medium", "concurrent"} else 3
+    max_attempts = 4 if scenario in {"medium", *concurrent_scenarios} else 3
     if scenario == "max-steps":
         max_attempts = 2
-    node_max_attempts = 2 if scenario == "medium" else 1
+    node_max_attempts = 2 if scenario in {"medium", *concurrent_scenarios} else 1
     if scenario == "max-steps":
         node_max_attempts = 3
     nodes = [
@@ -1162,7 +1285,7 @@ def create_project_dag_fixture(
         "default_timeout_seconds": 20,
         "max_total_attempts": max_attempts,
     }
-    if scenario == "concurrent":
+    if scenario in concurrent_scenarios:
         entry_node = "start"
         limits["max_concurrency"] = 2
         nodes = [
@@ -1187,7 +1310,7 @@ def create_project_dag_fixture(
                 "id": "coder",
                 "agent": "coder",
                 "executor": "local",
-                "max_attempts": 1,
+                "max_attempts": node_max_attempts,
                 "command_spec": str(command_spec_root / "coder" / "tau-dispatch-command.json"),
                 "required_evidence": ["creator_artifact"],
             },
@@ -1298,6 +1421,37 @@ def _yaml_scalar(value: Any) -> str:
     return text
 
 
+def _flaky_project_dag_command(
+    *,
+    worker: Path,
+    role: str,
+    scenario: str,
+    state: Path,
+    first_failure: str,
+) -> str:
+    if first_failure == "timeout":
+        failure = "import time; time.sleep(5)"
+    elif first_failure == "non-json":
+        failure = "print('not json')"
+    else:
+        raise ValueError(f"unknown first_failure: {first_failure}")
+    return f"""
+import runpy
+import sys
+from pathlib import Path
+
+state = Path({str(state)!r})
+state.parent.mkdir(parents=True, exist_ok=True)
+count = int(state.read_text() or '0') if state.exists() else 0
+state.write_text(str(count + 1))
+if count == 0:
+    {failure}
+else:
+    sys.argv = [{str(worker)!r}, '--role', {role!r}, '--scenario', {scenario!r}]
+    runpy.run_path({str(worker)!r}, run_name='__main__')
+"""
+
+
 def project_dag_worker_script() -> str:
     return r'''#!/usr/bin/env python3
 import argparse
@@ -1329,7 +1483,7 @@ def main() -> int:
 
 
 def coder_response(payload, artifact_dir, scenario):
-    if scenario == "concurrent":
+    if scenario.startswith("concurrent"):
         time.sleep(0.4)
     prior = reviewer_verdicts(payload)
     attempt = 2 if any(item.get("verdict") == "REVISE" for item in prior) else 1
@@ -1361,7 +1515,7 @@ def coder_response(payload, artifact_dir, scenario):
 
 
 def research_response(payload, artifact_dir, scenario):
-    if scenario == "concurrent":
+    if scenario.startswith("concurrent"):
         time.sleep(0.4)
     artifact = artifact_dir / "source-summary.json"
     artifact_payload = {

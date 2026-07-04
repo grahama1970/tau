@@ -1,0 +1,115 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "invalid_command_json"
+        ],
+        "alert_count": 1,
+        "errors": [
+          "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+        ],
+        "execution_seconds": 0.475599,
+        "live": true,
+        "max_concurrency": 2,
+        "max_observed_concurrency": 1,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 2,
+          "research": 1
+        },
+        "node_count": 4,
+        "observed_edges": [],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [],
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "coder"
+        ],
+        "status": "BLOCKED",
+        "verdict": "INVALID_COMMAND_JSON"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_ready_queue_max_retries_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/concurrent-max-retries-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/concurrent-max-retries-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/concurrent-max-retries-project-dag/agents",
+    "--scheduler",
+    "bounded-ready-queue"
+  ],
+  "completed_at": "2026-07-04T17:41:56Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "INVALID_COMMAND_JSON",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks a concurrent ready-queue DAG node after repeated non-JSON responses exhaust node max_attempts.",
+  "receipt_summary": {
+    "alert_codes": [
+      "invalid_command_json"
+    ],
+    "alert_count": 1,
+    "errors": [
+      "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+    ],
+    "execution_seconds": 0.475599,
+    "live": true,
+    "max_concurrency": 2,
+    "max_observed_concurrency": 1,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 2,
+      "research": 1
+    },
+    "node_count": 4,
+    "observed_edges": [],
+    "ok": false,
+    "provider_live": false,
+    "reviewer_verdicts": [],
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "coder",
+      "coder"
+    ],
+    "status": "BLOCKED",
+    "verdict": "INVALID_COMMAND_JSON"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-04T17:41:55Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/advanced.project_dag_ready_queue_max_retries_fail_closed.stdout.txt",
+  "timeout_seconds": 120
+}

@@ -1,0 +1,187 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 2,
+          "reviewer": 2
+        },
+        "node_count": 2,
+        "observed_edges": [
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "coder",
+            "to_node": "coder"
+          },
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-medium",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "REVISE"
+          },
+          {
+            "creator_attempt": 2,
+            "goal_hash": "sha256:rw-sanity-project-dag-medium",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/run/command-loop/command-artifacts/command-loop-step-004/reviewer-verdict-attempt-2.json",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS"
+          }
+        ],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "reviewer",
+          "coder",
+          "reviewer"
+        ],
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/medium.project_dag_reviewer_repair_loop.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/medium.project_dag_reviewer_repair_loop.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.project_dag_reviewer_repair_loop",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/agents"
+  ],
+  "completed_at": "2026-07-04T17:41:50Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": "PASS",
+  "level": "medium",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau runs a DAG-level creator-reviewer repair loop where reviewer returns REVISE once, creator reruns, and reviewer then returns PASS.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "errors": [],
+    "live": true,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 2,
+      "reviewer": 2
+    },
+    "node_count": 2,
+    "observed_edges": [
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "coder",
+        "to_node": "coder"
+      },
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "human",
+        "to_node": "human"
+      }
+    ],
+    "ok": true,
+    "provider_live": false,
+    "reviewer_verdicts": [
+      {
+        "creator_attempt": 1,
+        "goal_hash": "sha256:rw-sanity-project-dag-medium",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+        "reviewed_node_id": "coder",
+        "verdict": "REVISE"
+      },
+      {
+        "creator_attempt": 2,
+        "goal_hash": "sha256:rw-sanity-project-dag-medium",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/medium-project-dag/run/command-loop/command-artifacts/command-loop-step-004/reviewer-verdict-attempt-2.json",
+        "reviewed_node_id": "coder",
+        "verdict": "PASS"
+      }
+    ],
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "coder",
+      "reviewer",
+      "coder",
+      "reviewer"
+    ],
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-04T17:41:50Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/medium.project_dag_reviewer_repair_loop.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T174148Z-tau-project-dag-hard-retry-full-sanity/logs/medium.project_dag_reviewer_repair_loop.stdout.txt",
+  "timeout_seconds": 120
+}
