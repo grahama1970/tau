@@ -150,6 +150,12 @@ def build_checks(
         scenario="simple",
         goal_hash="sha256:rw-sanity-project-dag-simple",
     )
+    project_dag_yaml = create_project_dag_fixture(
+        run_dir,
+        scenario="yaml",
+        goal_hash="sha256:rw-sanity-project-dag-yaml",
+        contract_format="yaml",
+    )
     project_dag_medium = create_project_dag_fixture(
         run_dir,
         scenario="medium",
@@ -260,6 +266,26 @@ def build_checks(
                 str(project_dag_simple["run_dir"]),
                 "--agents-root",
                 str(project_dag_simple["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+        ),
+        Check(
+            check_id="simple.project_dag_yaml_creator_reviewer",
+            level="simple",
+            purpose=(
+                "Tau runs a YAML tau.dag_contract.v1 creator-reviewer DAG through the "
+                "same non-mocked local subprocess handoff path."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_yaml["contract"]),
+                "--receipt-dir",
+                str(project_dag_yaml["run_dir"]),
+                "--agents-root",
+                str(project_dag_yaml["agents_root"]),
             ],
             timeout_seconds=90,
             expected_status="PASS",
@@ -1061,6 +1087,7 @@ def create_project_dag_fixture(
     *,
     scenario: str,
     goal_hash: str,
+    contract_format: str = "json",
 ) -> dict[str, Path]:
     fixture_dir = run_dir / f"{scenario}-project-dag"
     command_spec_root = fixture_dir / "command-specs"
@@ -1214,13 +1241,61 @@ def create_project_dag_fixture(
             "reviewer_goal_hash_mismatch",
         ],
     }
-    contract_path = fixture_dir / "dag-contract.json"
-    write_json(contract_path, contract)
+    if contract_format == "yaml":
+        contract_path = fixture_dir / "dag-contract.dag.yml"
+        write_text(contract_path, _simple_yaml(contract))
+    else:
+        contract_path = fixture_dir / "dag-contract.json"
+        write_json(contract_path, contract)
     return {
         "contract": contract_path,
         "agents_root": agents_root,
         "run_dir": run_output_dir,
     }
+
+
+def _simple_yaml(value: Any, *, indent: int = 0) -> str:
+    """Emit the simple YAML subset used by Tau DAG fixtures."""
+
+    prefix = " " * indent
+    if isinstance(value, dict):
+        lines: list[str] = []
+        for key, item in value.items():
+            if isinstance(item, dict):
+                lines.append(f"{prefix}{key}:")
+                lines.append(_simple_yaml(item, indent=indent + 2).rstrip())
+            elif isinstance(item, list):
+                lines.append(f"{prefix}{key}:")
+                lines.append(_simple_yaml(item, indent=indent + 2).rstrip())
+            else:
+                lines.append(f"{prefix}{key}: {_yaml_scalar(item)}")
+        return "\n".join(lines) + "\n"
+    if isinstance(value, list):
+        lines = []
+        for item in value:
+            if isinstance(item, dict):
+                lines.append(f"{prefix}-")
+                lines.append(_simple_yaml(item, indent=indent + 2).rstrip())
+            elif isinstance(item, list):
+                lines.append(f"{prefix}-")
+                lines.append(_simple_yaml(item, indent=indent + 2).rstrip())
+            else:
+                lines.append(f"{prefix}- {_yaml_scalar(item)}")
+        return "\n".join(lines) + "\n"
+    return f"{prefix}{_yaml_scalar(value)}\n"
+
+
+def _yaml_scalar(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int | float):
+        return str(value)
+    if value is None:
+        return "null"
+    text = str(value)
+    if not text or any(char in text for char in ":#{}[],&*?|-<>=!%@`'\""):
+        return json.dumps(text)
+    return text
 
 
 def project_dag_worker_script() -> str:

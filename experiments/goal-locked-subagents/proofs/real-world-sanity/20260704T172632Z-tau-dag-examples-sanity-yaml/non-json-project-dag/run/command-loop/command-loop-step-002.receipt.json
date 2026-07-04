@@ -1,0 +1,53 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "print('not json')"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "not json\n",
+      "timed_out": false,
+      "timeout_s": 20.0
+    }
+  ],
+  "errors": [
+    "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "live": false,
+  "loop_step": 2,
+  "mocked": true,
+  "ok": false,
+  "receipt_dir": null,
+  "response_projection": null,
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "reviewer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Creator produced attempt 1 artifact for reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/non-json-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n    ],\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-non-json\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-non-json\",\n    \"goal_id\": \"rw-sanity-project-dag-non-json\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-non-json\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/non-json-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-non-json"
+    }
+  },
+  "status": "BLOCKED",
+  "stop_reason": "invalid_command_json"
+}

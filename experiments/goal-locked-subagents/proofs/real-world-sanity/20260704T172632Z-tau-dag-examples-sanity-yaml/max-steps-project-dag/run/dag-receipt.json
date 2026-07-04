@@ -1,0 +1,99 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+  "alerts": [
+    {
+      "code": "max_steps_exhausted",
+      "evidence": {
+        "errors": [
+          "command handoff loop exceeded max_steps=2"
+        ]
+      },
+      "message": "Underlying handoff command loop did not pass.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run/start-handoff.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run/command-loop/command-loop-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json"
+  ],
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run/command-loop/command-loop-receipt.json",
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:cdd6057f9c03e8f88fd00c501d470cf5d5aea087f4a179467f605501ce183fc1",
+  "dag_id": "rw-sanity-project-dag-max-steps",
+  "edge_count": 3,
+  "entry_node": "coder",
+  "errors": [
+    "command handoff loop exceeded max_steps=2"
+  ],
+  "execution": "project_agent_dag_via_handoff_command_loop",
+  "live": true,
+  "max_steps": 2,
+  "mocked": false,
+  "node_attempts": {
+    "coder": 1,
+    "reviewer": 1
+  },
+  "node_count": 2,
+  "observed_edges": [
+    {
+      "from_agent": "coder",
+      "from_node": "coder",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "from_agent": "reviewer",
+      "from_node": "reviewer",
+      "to_agent": "coder",
+      "to_node": "coder"
+    }
+  ],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Parallel DAG scheduling.",
+      "GitHub mutation or ticket closure.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Entry node was compiled into a tau.agent_handoff.v1 start handoff.",
+      "Node routing was executed by the real local command-loop subprocess runner.",
+      "Observed edges and retry counts were checked against the DAG contract.",
+      "Reviewer verdict evidence was checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [
+    {
+      "creator_attempt": 1,
+      "goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+      "kind": "reviewer_verdict",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+      "reviewed_node_id": "coder",
+      "verdict": "REVISE"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T172632Z-tau-dag-examples-sanity-yaml/max-steps-project-dag/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [
+    "coder",
+    "reviewer"
+  ],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-max-steps"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-04T17:26:38Z",
+  "verdict": "MAX_STEPS_EXHAUSTED"
+}

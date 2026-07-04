@@ -109,6 +109,31 @@ def test_cli_dag_run_dispatches_project_dag_contract(tmp_path: Path) -> None:
     assert payload["reviewer_verdicts"][0]["goal_hash"] == "sha256:active-goal"
 
 
+def test_cli_dag_run_dispatches_yaml_project_dag_contract(tmp_path: Path) -> None:
+    contract_path = _write_yaml_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "cli-yaml-run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == DAG_RECEIPT_SCHEMA
+    assert payload["ok"] is True
+    assert payload["contract_path"].endswith(".dag.yml")
+    assert payload["selected_agents"] == ["coder", "reviewer"]
+
+
 def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     tmp_path: Path,
 ) -> None:
@@ -244,6 +269,67 @@ def _write_contract(tmp_path: Path) -> Path:
     }
     path = tmp_path / "dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _write_yaml_contract(tmp_path: Path) -> Path:
+    (tmp_path / "agents").mkdir()
+    spec_root = tmp_path / "specs"
+    path = tmp_path / "creator-reviewer.dag.yml"
+    path.write_text(
+        f"""schema: tau.dag_contract.v1
+dag_id: creator-reviewer-test
+goal:
+  goal_id: creator-reviewer-test
+  goal_version: 1
+  goal_hash: sha256:active-goal
+target:
+  repo: grahama1970/tau
+  target: scratch-creator-reviewer
+entry_node: coder
+terminal_nodes:
+  - human
+limits:
+  resume: true
+  default_timeout_seconds: 30
+  max_total_attempts: 3
+nodes:
+  - id: coder
+    agent: coder
+    executor: local
+    max_attempts: 1
+    command_spec: {spec_root / "coder" / "tau-dispatch-command.json"}
+    required_evidence:
+      - creator_artifact
+  - id: reviewer
+    agent: reviewer
+    executor: local
+    max_attempts: 1
+    command_spec: {spec_root / "reviewer" / "tau-dispatch-command.json"}
+    required_evidence:
+      - reviewer_verdict
+    reviewer:
+      reviews_node: coder
+      requires_goal_hash: true
+edges:
+  - from: coder
+    to: reviewer
+  - from: reviewer
+    to: human
+required_evidence:
+  - creator_artifact
+  - reviewer_verdict
+fail_closed_on:
+  - goal_hash_mismatch
+  - target_changed
+  - unexpected_node
+  - unexpected_edge
+  - missing_required_evidence
+  - max_attempts_exceeded
+  - malformed_handoff
+""",
+        encoding="utf-8",
+    )
     return path
 
 
