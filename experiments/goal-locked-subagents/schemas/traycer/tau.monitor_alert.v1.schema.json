@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "alert_id": { "type": "string" },
+    "alert_sha256": { "type": "string" },
+    "observed_agent": { "type": ["string", "null"] },
+    "recommended_action": { "type": "object" },
+    "run_id": { "type": "string" },
+    "schema": { "const": "tau.monitor_alert.v1" },
+    "severity": { "enum": ["WARN", "REVIEW", "REROUTE", "BLOCK"] },
+    "ts": { "type": "string" },
+    "violation": {
+      "additionalProperties": true,
+      "properties": {
+        "code": { "type": "string" },
+        "deterministic": { "type": "boolean" },
+        "evidence_trace_ids": {
+          "items": { "type": "string" },
+          "type": "array"
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["code", "message", "evidence_trace_ids", "deterministic"],
+      "type": "object"
+    }
+  },
+  "required": ["schema", "run_id", "alert_id", "ts", "severity", "violation", "recommended_action", "alert_sha256"],
+  "title": "tau.monitor_alert.v1",
+  "type": "object"
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "active_goal_hash": { "type": "string" },
+    "alerts": {
+      "items": { "type": "object" },
+      "type": "array"
+    },
+    "does_not_prove": {
+      "items": { "type": "string" },
+      "type": "array"
+    },
+    "evidence_authority": { "type": ["string", "null"] },
+    "final_handoff": { "type": "object" },
+    "live": { "type": "boolean" },
+    "mocked": { "type": "boolean" },
+    "ok": { "type": "boolean" },
+    "observed_agent": { "type": ["string", "null"] },
+    "proves": {
+      "items": { "type": "string" },
+      "type": "array"
+    },
+    "required_evidence": { "type": "object" },
+    "run_id": { "type": "string" },
+    "schema": { "const": "tau.monitor_receipt.v1" },
+    "status": { "enum": ["PASS", "REVIEW", "REROUTE", "BLOCKED"] },
+    "summary": { "type": "object" },
+    "trace": { "type": "object" },
+    "verdict": { "type": "object" }
+  },
+  "required": ["schema", "ok", "status", "mocked", "live", "run_id", "active_goal_hash", "trace", "final_handoff", "alerts", "summary", "verdict", "does_not_prove"],
+  "title": "tau.monitor_receipt.v1",
+  "type": "object"
+}

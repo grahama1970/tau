@@ -1,0 +1,42 @@
+{
+  "schema": "tau.traycer_slice_1_proof_manifest.v1",
+  "mocked": false,
+  "live": false,
+  "commands": [
+    {
+      "command": "uv run pytest tests/test_traycer_validate.py -q",
+      "exit_code": 0,
+      "result": "12 passed in 0.38s"
+    },
+    {
+      "command": "uv run tau traycer validate --trace experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/valid.trace.jsonl --handoff experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/final-handoff.json --active-goal-hash sha256:active-goal --required-evidence experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/required-evidence.json --receipt experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/monitor-receipt.json",
+      "exit_code": 0,
+      "result": "PASS receipt written with ok:true, event_count:2, last_sequence:2, alerts:[]"
+    },
+    {
+      "command": "uv run tau traycer validate --trace experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/invalid-goal-drift.trace.jsonl --handoff experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/final-handoff.json --active-goal-hash sha256:active-goal --required-evidence experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/required-evidence.json --receipt experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/invalid-goal-drift-monitor-receipt.json",
+      "exit_code": 1,
+      "result": "BLOCKED receipt written with one goal_hash_mismatch BLOCK alert and next_allowed:false"
+    }
+  ],
+  "artifacts": [
+    "valid.trace.jsonl",
+    "invalid-goal-drift.trace.jsonl",
+    "final-handoff.json",
+    "required-evidence.json",
+    "focused-tests.txt",
+    "monitor-receipt.json",
+    "invalid-goal-drift-monitor-receipt.json"
+  ],
+  "proves": [
+    "offline Traycer validator can emit PASS monitor receipts",
+    "offline Traycer validator fails closed on trace goal drift",
+    "tau traycer validate command path writes receipt artifacts"
+  ],
+  "does_not_prove": [
+    "hidden chain-of-thought correctness",
+    "live Herdr steering",
+    "DAG or chain validation",
+    "semantic code quality beyond declared evidence"
+  ]
+}

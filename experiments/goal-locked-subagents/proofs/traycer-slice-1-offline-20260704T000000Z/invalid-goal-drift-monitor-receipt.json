@@ -1,0 +1,89 @@
+{
+  "active_goal_hash": "sha256:active-goal",
+  "alerts": [
+    {
+      "alert_id": "alert-0001",
+      "alert_sha256": "sha256:da9c6684859f12431c799a35ce0d5d6ab8ef1a49090f06c26cd9043b378cfb4c",
+      "observed_agent": "coder",
+      "recommended_action": {
+        "reason": "trace goal_hash 'sha256:wrong' does not match active goal hash",
+        "type": "wait_for_human"
+      },
+      "run_id": "traycer-proof-run-goal-drift",
+      "schema": "tau.monitor_alert.v1",
+      "severity": "BLOCK",
+      "ts": "2026-07-04T12:45:16Z",
+      "violation": {
+        "code": "goal_hash_mismatch",
+        "deterministic": true,
+        "evidence_trace_ids": [
+          "trace-0001"
+        ],
+        "message": "trace goal_hash 'sha256:wrong' does not match active goal hash"
+      }
+    }
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/invalid-goal-drift.trace.jsonl",
+    "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/final-handoff.json",
+    "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/invalid-goal-drift-monitor-receipt.json"
+  ],
+  "authority_warning": null,
+  "created_at": "2026-07-04T12:45:16Z",
+  "does_not_prove": [
+    "hidden chain-of-thought correctness",
+    "semantic code quality beyond declared evidence",
+    "human acceptance of goal changes",
+    "live Herdr steering or DAG validation"
+  ],
+  "errors": [
+    "trace goal_hash 'sha256:wrong' does not match active goal hash"
+  ],
+  "evidence_authority": "required_evidence",
+  "final_handoff": {
+    "path": "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/final-handoff.json",
+    "sha256": "sha256:67945ffb35c3192d010ff25dc1dcab2ccdf952e0b1f11e606b99a5518608da84"
+  },
+  "live": false,
+  "mocked": false,
+  "observed_agent": "coder",
+  "ok": false,
+  "proves": [
+    "offline trace rows parsed",
+    "active goal hash and target invariants checked",
+    "required evidence ids matched against evidence claims",
+    "final handoff passed existing Tau handoff validator"
+  ],
+  "required_evidence": {
+    "count": 1,
+    "ids": [
+      "focused_tests_pass"
+    ],
+    "path": "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/required-evidence.json",
+    "sha256": "sha256:ce1d94163786af17a5f2a072beed8211cc140c7892b65556877fe61b134ef73b",
+    "source": "required_evidence"
+  },
+  "run_id": "traycer-proof-run-goal-drift",
+  "schema": "tau.monitor_receipt.v1",
+  "status": "BLOCKED",
+  "summary": {
+    "blocking_alert_count": 1,
+    "max_severity": "BLOCK",
+    "reroute_alert_count": 0,
+    "review_count": 0,
+    "unresolved_review_count": 0,
+    "warning_count": 0
+  },
+  "trace": {
+    "event_count": 2,
+    "last_sequence": 2,
+    "path": "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/invalid-goal-drift.trace.jsonl",
+    "sha256": "sha256:1f79525ee176c9792276528895260be095b77ea33b537accc940cb7814fa1077"
+  },
+  "verdict": {
+    "next_allowed": false,
+    "recommended_next_agent": "goal-guardian",
+    "review_required": false,
+    "status": "BLOCKED"
+  }
+}

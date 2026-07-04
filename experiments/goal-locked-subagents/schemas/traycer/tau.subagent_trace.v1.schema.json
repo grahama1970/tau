@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "agent": {
+      "additionalProperties": true,
+      "properties": {
+        "executor": { "type": "string" },
+        "name": { "type": "string" },
+        "pane_id": { "type": "string" }
+      },
+      "required": ["name"],
+      "type": "object"
+    },
+    "event": {
+      "type": "object"
+    },
+    "goal": {
+      "additionalProperties": true,
+      "properties": {
+        "goal_hash": { "type": "string" },
+        "goal_id": { "type": "string" },
+        "goal_version": {}
+      },
+      "required": ["goal_hash"],
+      "type": "object"
+    },
+    "phase": { "type": "string" },
+    "run_id": { "type": "string" },
+    "schema": { "const": "tau.subagent_trace.v1" },
+    "sequence": { "type": "integer" },
+    "trace_id": { "type": "string" },
+    "ts": { "type": "string" }
+  },
+  "required": ["schema", "run_id", "trace_id", "sequence", "ts", "agent", "goal", "phase", "event"],
+  "title": "tau.subagent_trace.v1",
+  "type": "object"
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "agent": {
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" }
+      },
+      "required": ["name"],
+      "type": "object"
+    },
+    "claim": {
+      "additionalProperties": true,
+      "properties": {
+        "artifact": { "type": "string" },
+        "confidence": { "type": "string" },
+        "statement": { "type": "string" },
+        "supports_required_evidence": {
+          "items": { "type": "string" },
+          "type": "array"
+        },
+        "type": { "type": "string" }
+      },
+      "required": ["type", "statement", "supports_required_evidence"],
+      "type": "object"
+    },
+    "claim_id": { "type": "string" },
+    "goal": {
+      "properties": {
+        "goal_hash": { "type": "string" }
+      },
+      "required": ["goal_hash"],
+      "type": "object"
+    },
+    "run_id": { "type": "string" },
+    "schema": { "const": "tau.evidence_claim.v1" },
+    "sequence": { "type": "integer" },
+    "ts": { "type": "string" }
+  },
+  "required": ["schema", "run_id", "claim_id", "sequence", "ts", "agent", "goal", "claim"],
+  "title": "tau.evidence_claim.v1",
+  "type": "object"
+}

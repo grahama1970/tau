@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "goal_hash": { "type": "string" },
+    "required": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "description": { "type": "string" },
+          "id": { "type": "string" },
+          "required_confidence": { "type": "string" },
+          "severity": { "enum": ["REVIEW", "BLOCK"] }
+        },
+        "required": ["id"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schema": { "const": "tau.required_evidence.v1" }
+  },
+  "required": ["schema", "required"],
+  "title": "tau.required_evidence.v1",
+  "type": "object"
+}

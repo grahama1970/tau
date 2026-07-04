@@ -1,0 +1,12 @@
+{
+  "goal_hash": "sha256:active-goal",
+  "required": [
+    {
+      "description": "Focused deterministic Traycer tests must pass.",
+      "id": "focused_tests_pass",
+      "required_confidence": "deterministic",
+      "severity": "REVIEW"
+    }
+  ],
+  "schema": "tau.required_evidence.v1"
+}

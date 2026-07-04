@@ -113,6 +113,7 @@ from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summar
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.self_fix_ticket_repair import run_ticket_repair
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
+from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.tui import run_tui_app
 from tau_coding.tui.proof import (
     DEFAULT_TUI_PROOF_PROMPT,
@@ -451,6 +452,26 @@ def main(
             max_retry_delay_seconds=setup_max_retry_delay_seconds,
             set_default=setup_default,
         )
+        raise typer.Exit()
+
+    if prompt_option is None and command == "traycer":
+        try:
+            if len(positional_args) >= 2 and positional_args[1] == "validate":
+                options = parse_traycer_validate_cli_args(positional_args[2:])
+                payload = traycer_validate_command(options)
+            else:
+                raise RuntimeError(
+                    "Usage: tau traycer validate --trace <trace.jsonl> "
+                    "--handoff <final-handoff.json> --active-goal-hash <sha256:...> "
+                    "[--required-evidence <required-evidence.json> | "
+                    "--start-handoff <start-handoff.json>] "
+                    "[--advisory-final-handoff-evidence] --receipt <monitor-receipt.json>"
+                )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if not payload.get("ok"):
+            raise typer.Exit(1)
         raise typer.Exit()
 
     if prompt_option is None and command == "loop2-validate":

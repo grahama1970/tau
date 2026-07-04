@@ -1,0 +1,44 @@
+{
+  "context": {
+    "artifacts": [
+      {
+        "kind": "trace_jsonl",
+        "path": "experiments/goal-locked-subagents/proofs/traycer-slice-1-offline-20260704T000000Z/valid.trace.jsonl",
+        "schema": "tau.subagent_trace.v1"
+      }
+    ],
+    "summary": "Coder completed the Traycer Slice 1 offline fixture."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue:44"
+  },
+  "goal": {
+    "goal_hash": "sha256:active-goal",
+    "goal_id": "tau-traycer",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "reviewer",
+    "reason": "Reviewer should inspect the monitor receipt evidence."
+  },
+  "previous_subagent": "coder",
+  "rationale": "The offline fixture has deterministic evidence and should be reviewed.",
+  "required_evidence": [
+    "focused_tests_pass"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "command_exit",
+        "command": "uv run pytest tests/test_traycer_validate.py -q",
+        "exit_code": 0
+      }
+    ],
+    "status": "COMPLETED",
+    "summary": "Focused Traycer tests passed for the offline monitor."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop if reviewer finds unresolved monitor BLOCK or REROUTE evidence."
+}
