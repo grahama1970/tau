@@ -837,6 +837,35 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
                 {},
             )
         )
+    non_local_nodes = [
+        node.node_id
+        for node in contract.nodes.values()
+        if node.command_spec and node.executor != "local"
+    ]
+    if non_local_nodes:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "non_local_ready_queue_node_not_allowed",
+                "Bounded ready-queue scheduler only dispatches local command nodes in this slice.",
+                {"node_ids": non_local_nodes},
+            )
+        )
+    provider_nodes = [
+        node.node_id
+        for node in contract.nodes.values()
+        if isinstance(_node_payload(contract, node.node_id).get("provider"), dict)
+        or node.executor == "provider"
+    ]
+    if provider_nodes:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "provider_node_not_allowed",
+                "Bounded ready-queue scheduler does not accept provider branches until branch locks exist.",
+                {"node_ids": provider_nodes},
+            )
+        )
     mutating_nodes = [
         node.node_id
         for node in contract.nodes.values()
@@ -1082,6 +1111,19 @@ def _ready_queue_receipt(
     errors: list[str],
     node_artifacts: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
+    proves = [
+        "DAG contract parsed and validated.",
+        "Bounded ready-queue scheduler preflight checked acyclicity, local-only execution, provider branches, and mutating branches.",
+    ]
+    if dispatches:
+        proves.extend(
+            [
+                "Ready nodes were dispatched by the bounded ready-queue scheduler.",
+                "Independent ready nodes can run concurrently when dependencies are satisfied.",
+                "Each dispatched node used the real local command subprocess runner.",
+                "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
+            ]
+        )
     return {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": status == "PASS",
@@ -1127,13 +1169,7 @@ def _ready_queue_receipt(
         "proof_scope": {
             "mocked": False,
             "live": True,
-            "proves": [
-                "DAG contract parsed and validated.",
-                "Ready nodes were dispatched by the bounded ready-queue scheduler.",
-                "Independent ready nodes can run concurrently when dependencies are satisfied.",
-                "Each dispatched node used the real local command subprocess runner.",
-                "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
-            ],
+            "proves": proves,
             "does_not_prove": [
                 "Provider/model semantic quality.",
                 "GitHub mutation or ticket closure.",

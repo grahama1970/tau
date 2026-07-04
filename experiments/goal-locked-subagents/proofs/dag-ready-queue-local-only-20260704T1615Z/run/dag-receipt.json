@@ -1,0 +1,67 @@
+{
+  "active_goal_hash": "sha256:ready-queue-local-only-proof",
+  "alerts": [
+    {
+      "code": "provider_node_not_allowed",
+      "evidence": {
+        "node_ids": [
+          "provider-task"
+        ]
+      },
+      "message": "Bounded ready-queue scheduler does not accept provider branches until branch locks exist.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [],
+  "command_spec_root": null,
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-ready-queue-local-only-20260704T1615Z/dag-contract.json",
+  "contract_sha256": "sha256:464c5ade1f7fa0251eb3fe23f43a1f16bd1bedc1d73a75f349539c8e8510c45d",
+  "dag_id": "ready-queue-local-only-proof",
+  "dispatches": [],
+  "edge_count": 1,
+  "entry_node": "provider-task",
+  "errors": [],
+  "execution": "project_agent_dag_bounded_ready_queue",
+  "execution_seconds": 0.0,
+  "live": true,
+  "max_concurrency": 2,
+  "max_observed_concurrency": 0,
+  "max_steps": 1,
+  "mocked": false,
+  "node_artifacts": {},
+  "node_attempts": {},
+  "node_count": 1,
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "GitHub mutation or ticket closure.",
+      "Mutating branch safety.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Bounded ready-queue scheduler preflight checked acyclicity, local-only execution, provider branches, and mutating branches."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-ready-queue-local-only-20260704T1615Z/run",
+  "scheduler": "bounded-ready-queue",
+  "scheduler_events": [],
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-ready-queue-local-only"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-04T15:50:06Z",
+  "verdict": "PROVIDER_NODE_NOT_ALLOWED"
+}

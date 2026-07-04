@@ -151,6 +151,38 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     )
 
 
+def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["executor"] = "provider"
+            node["provider"] = {"adapter": "generic-provider-dag-node"}
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED"
+    assert {alert["code"] for alert in receipt["alerts"]} == {
+        "non_local_ready_queue_node_not_allowed",
+        "provider_node_not_allowed",
+    }
+
+
 def _write_contract(tmp_path: Path) -> Path:
     (tmp_path / "agents").mkdir()
     spec_root = tmp_path / "specs"

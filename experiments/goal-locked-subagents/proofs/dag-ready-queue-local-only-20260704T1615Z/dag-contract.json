@@ -1,0 +1,53 @@
+{
+  "schema": "tau.dag_contract.v1",
+  "dag_id": "ready-queue-local-only-proof",
+  "goal": {
+    "goal_id": "ready-queue-local-only-proof",
+    "goal_version": 1,
+    "goal_hash": "sha256:ready-queue-local-only-proof"
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-ready-queue-local-only"
+  },
+  "entry_node": "provider-task",
+  "terminal_nodes": [
+    "human"
+  ],
+  "limits": {
+    "resume": true,
+    "default_timeout_seconds": 30,
+    "max_total_attempts": 1,
+    "max_concurrency": 2
+  },
+  "nodes": [
+    {
+      "id": "provider-task",
+      "agent": "coder",
+      "executor": "provider",
+      "provider": {
+        "adapter": "generic-provider-dag-node"
+      },
+      "max_attempts": 1,
+      "required_evidence": [
+        "provider_receipt"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "provider-task",
+      "to": "human"
+    }
+  ],
+  "required_evidence": [
+    "provider_receipt"
+  ],
+  "fail_closed_on": [
+    "provider_node_not_allowed",
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge"
+  ]
+}

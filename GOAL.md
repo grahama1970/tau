@@ -8,11 +8,11 @@ reasoning, or provider-dependent claims.
 
 The current implementation track is:
 
-1. `tau.dag_signal_receipt.v1` local signal receipts.
-2. `tau.dag_expansion_proposal.v1` validation-only expansion proposals.
-3. Independent dissent reviewer motif.
-4. Quality-gated route-memory reinforcement.
-5. Bounded ready-node scheduler hardening for local, non-mutating branches.
+1. `tau.dag_signal_receipt.v1` local signal receipts. Implemented.
+2. `tau.dag_expansion_proposal.v1` validation-only expansion proposals. Implemented.
+3. Independent dissent reviewer motif. Implemented as validation-only.
+4. Quality-gated route-memory reinforcement. Implemented as local candidates only.
+5. Bounded ready-node scheduler hardening for local, non-mutating branches. Implemented for local-only/provider-branch preflight.
 
 Only the next smallest receipt-backed slice should be implemented at a time.
 
@@ -61,9 +61,9 @@ The current baseline includes:
 reinforcement candidates or negative signals, but it must not mutate routes,
 write Memory, rewrite DAG contracts, call providers, or apply expansions.
 
-## Next Slice: Expansion Validation Only
+## Implemented Slice: Expansion Validation Only
 
-Implement next:
+Implemented command:
 
 ```text
 tau dag-expansion-validate \
@@ -83,6 +83,45 @@ Required outputs:
 Do not automatically apply the expansion to a running DAG. Do not mutate the
 source DAG contract. Do not route or dispatch the expanded DAG inside this
 command.
+
+## Implemented Slice: Local Route-Memory Candidates
+
+Implemented command:
+
+```text
+tau dag-route-memory-candidates \
+  --signal-receipt <dag-signal-receipt.json> \
+  --receipt <dag-route-memory-candidate-receipt.json> \
+  [--min-confidence <0..1>]
+```
+
+This command gates route reinforcement candidates from a clean
+`tau.dag_signal_receipt.v1` and writes
+`tau.dag_route_memory_candidate_receipt.v1`. It does not write Memory, mutate
+routes, mutate DAG contracts, call providers, or dispatch commands.
+
+## Implemented Slice: Independent Dissent Motif Validation
+
+Implemented command:
+
+```text
+tau dag-motif-validate \
+  --dag-contract <dag-contract.json|yaml> \
+  --motif <dag-motif.json|yaml> \
+  --receipt <dag-motif-validation-receipt.json>
+```
+
+The first motif kind is `independent_dissent_reviewer_v1`. It checks that a DAG
+has at least two distinct reviewer nodes, no reviewer-to-reviewer dependency
+before the join, producer-to-reviewer edges, reviewer-to-join edges, and a
+distinct reviewer/validator/goal-guardian-style reconciliation node. It does
+not execute reviewers or claim consensus correctness.
+
+## Implemented Slice: Ready-Queue Local-Only Preflight
+
+`tau dag-run --scheduler bounded-ready-queue` now blocks provider executor
+branches and non-local command nodes before dispatch. It also keeps explicit
+preflight-only proof scope when the scheduler blocks before running any node.
 
 ## Expansion Authority Rules
 
