@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_contract.v1.schema.json",
+  "title": "Tau DAG Contract",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "dag_id",
+    "goal",
+    "target",
+    "entry_node",
+    "terminal_nodes",
+    "limits",
+    "nodes",
+    "edges",
+    "required_evidence",
+    "fail_closed_on"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_contract.v1"
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["goal_id", "goal_version", "goal_hash"],
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "goal_hash": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["target"],
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entry_node": {
+      "type": "string",
+      "minLength": 1
+    },
+    "terminal_nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["resume", "default_timeout_seconds", "max_total_attempts"],
+      "properties": {
+        "resume": {
+          "type": "boolean"
+        },
+        "default_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_total_attempts": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "agent", "executor"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent": {
+            "type": "string",
+            "minLength": 1
+          },
+          "executor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "max_attempts": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "required_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "emits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["from", "to"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "condition": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fail_closed_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

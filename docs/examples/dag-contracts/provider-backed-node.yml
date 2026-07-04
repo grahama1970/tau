@@ -1,0 +1,51 @@
+schema: tau.dag_contract.v1
+dag_id: tau-provider-dag-one-pass
+goal:
+  goal_id: tau-provider-sanity
+  goal_version: 1
+  goal_hash: sha256:active-goal
+target:
+  repo: grahama1970/tau
+  target: scratch-provider-proof
+entry_node: provider-task
+terminal_nodes:
+  - human
+limits:
+  resume: true
+  default_timeout_seconds: 600
+  max_total_attempts: 2
+nodes:
+  - id: provider-task
+    agent: coder
+    executor: provider
+    provider:
+      adapter: generic-provider-dag-node
+      allowed_providers:
+        - codex
+        - opencode
+      cleanup_mode: apply
+    max_attempts: 1
+    required_evidence:
+      - runtime_manifest
+      - events_jsonl
+      - provider_readiness_receipt
+      - orchestration_evidence_receipt
+      - herdr_cleanup_receipt
+    emits:
+      - tau.generic_dag_node_receipt.v1
+  - id: human
+    agent: human
+    executor: human
+edges:
+  - from: provider-task
+    to: human
+required_evidence:
+  - provider_live:true
+  - work_order_sha256
+  - cleanup.post_verified_absent_count
+fail_closed_on:
+  - goal_hash_mismatch
+  - target_changed
+  - invalid_provider_receipt
+  - missing_work_order_sha256
+  - cleanup_apply_without_absence_proof
