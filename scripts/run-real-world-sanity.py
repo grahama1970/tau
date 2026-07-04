@@ -2985,6 +2985,7 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "observed_edges",
         "node_attempts",
         "reviewer_verdicts",
+        "dag_error",
         "errors",
     )
     summary = {key: payload.get(key) for key in keys if key in payload}

@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_error.v1.schema.json",
+  "title": "Tau DAG Error Course-Correction Contract",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "status",
+    "severity",
+    "failure_code",
+    "verdict",
+    "message",
+    "dag_id",
+    "scheduler",
+    "active_goal_hash",
+    "target",
+    "receipt_path",
+    "run_dir",
+    "recommended_action",
+    "evidence",
+    "proof_scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_error.v1"
+    },
+    "status": {
+      "const": "BLOCKED"
+    },
+    "severity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scheduler": {
+      "type": "string",
+      "minLength": 1
+    },
+    "active_goal_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "object"
+    },
+    "receipt_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failed_node": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failed_agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "recommended_action": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["type", "next_agent", "reason"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_agent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["primary_alert", "alert_count", "alert_codes", "errors"],
+      "properties": {
+        "primary_alert": {
+          "type": "object"
+        },
+        "alert_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "alert_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "proof_scope": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["proves", "does_not_prove"],
+      "properties": {
+        "proves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "does_not_prove": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

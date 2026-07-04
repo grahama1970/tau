@@ -5,7 +5,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
-from tau_coding.project_dag import DAG_RECEIPT_SCHEMA, run_project_dag_contract
+from tau_coding.project_dag import DAG_ERROR_SCHEMA, DAG_RECEIPT_SCHEMA, run_project_dag_contract
 
 
 def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
@@ -65,6 +65,15 @@ def test_project_dag_blocks_unexpected_edge(tmp_path: Path) -> None:
     assert receipt["status"] == "BLOCKED"
     assert receipt["verdict"] == "UNEXPECTED_EDGE"
     assert receipt["alerts"][0]["code"] == "unexpected_edge"
+    assert receipt["dag_error"]["schema"] == DAG_ERROR_SCHEMA
+    assert receipt["dag_error"]["failure_code"] == "unexpected_edge"
+    assert receipt["dag_error"]["failed_node"] == "coder"
+    assert receipt["dag_error"]["failed_agent"] == "coder"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "reroute",
+        "next_agent": "goal-guardian",
+        "reason": "Reconcile DAG route, goal, or target drift before continuing.",
+    }
 
 
 def test_project_dag_blocks_reviewer_goal_hash_mismatch(tmp_path: Path) -> None:
@@ -286,6 +295,17 @@ def test_project_dag_bounded_ready_queue_blocks_after_max_retries(
     assert receipt["verdict"] == "INVALID_COMMAND_JSON"
     assert receipt["node_attempts"]["coder"] == 2
     assert receipt["alerts"][0]["evidence"]["attempts"] == 2
+    assert receipt["dag_error"]["schema"] == DAG_ERROR_SCHEMA
+    assert receipt["dag_error"]["failure_code"] == "invalid_command_json"
+    assert receipt["dag_error"]["failed_node"] == "coder"
+    assert receipt["dag_error"]["failed_agent"] == "coder"
+    assert receipt["dag_error"]["attempts"] == 2
+    assert receipt["dag_error"]["max_attempts"] == 2
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_then_retry_or_reroute",
+        "next_agent": "goal-guardian",
+        "reason": "Repair the node command or subagent response contract before retrying.",
+    }
     assert [event["retrying"] for event in receipt["scheduler_events"] if event["event"] == "node_attempt_failed"] == [
         True,
         False,

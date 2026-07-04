@@ -195,6 +195,15 @@ def test_summarize_receipt_includes_project_dag_fields() -> None:
                     "verdict": "PASS",
                 }
             ],
+            "dag_error": {
+                "schema": "tau.dag_error.v1",
+                "failure_code": "invalid_command_json",
+                "recommended_action": {
+                    "type": "repair_then_retry_or_reroute",
+                    "next_agent": "goal-guardian",
+                    "reason": "Repair the node command or subagent response contract before retrying.",
+                },
+            },
             "alerts": [{"code": "invalid_command_json"}],
             "errors": ["command stdout was not JSON"],
         }
@@ -224,6 +233,15 @@ def test_summarize_receipt_includes_project_dag_fields() -> None:
                 "verdict": "PASS",
             }
         ],
+        "dag_error": {
+            "schema": "tau.dag_error.v1",
+            "failure_code": "invalid_command_json",
+            "recommended_action": {
+                "type": "repair_then_retry_or_reroute",
+                "next_agent": "goal-guardian",
+                "reason": "Repair the node command or subagent response contract before retrying.",
+            },
+        },
         "errors": ["command stdout was not JSON"],
         "alert_count": 1,
         "alert_codes": ["invalid_command_json"],

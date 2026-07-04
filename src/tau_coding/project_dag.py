@@ -26,6 +26,7 @@ except ImportError:  # pragma: no cover - exercised only in stripped runtime env
 
 DAG_CONTRACT_SCHEMA = "tau.dag_contract.v1"
 DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
+DAG_ERROR_SCHEMA = "tau.dag_error.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,6 +181,18 @@ def run_project_dag_contract(
         "errors": list(loop_payload.get("errors", [])) if isinstance(loop_payload, dict) else [],
         "timestamp": _utc_stamp(),
     }
+    dag_error = _dag_error(
+        contract=contract,
+        receipt_dir=resolved_receipt_dir,
+        scheduler=scheduler,
+        status=status,
+        verdict=verdict,
+        alerts=alerts,
+        errors=receipt["errors"],
+        node_attempts=receipt["node_attempts"],
+    )
+    if dag_error is not None:
+        receipt["dag_error"] = dag_error
     _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
     return receipt
 
@@ -1144,7 +1157,7 @@ def _ready_queue_receipt(
                 "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
             ]
         )
-    return {
+    receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": status == "PASS",
         "status": status,
@@ -1199,6 +1212,164 @@ def _ready_queue_receipt(
         },
         "errors": errors,
         "timestamp": _utc_stamp(),
+    }
+    dag_error = _dag_error(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        scheduler="bounded-ready-queue",
+        status=status,
+        verdict=verdict,
+        alerts=alerts,
+        errors=errors,
+        node_attempts=node_attempts,
+    )
+    if dag_error is not None:
+        receipt["dag_error"] = dag_error
+    return receipt
+
+
+def _dag_error(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    scheduler: str,
+    status: str,
+    verdict: str,
+    alerts: list[dict[str, Any]],
+    errors: list[str],
+    node_attempts: dict[str, int],
+) -> dict[str, Any] | None:
+    if status == "PASS":
+        return None
+    primary = alerts[0] if alerts else {}
+    evidence = primary.get("evidence") if isinstance(primary.get("evidence"), dict) else {}
+    failure_code = str(primary.get("code") or verdict or "dag_blocked")
+    failed_node = _dag_error_node_id(contract, evidence)
+    failed_agent = contract.nodes[failed_node].agent if failed_node in contract.nodes else None
+    action = _dag_error_recommended_action(failure_code)
+    payload: dict[str, Any] = {
+        "schema": DAG_ERROR_SCHEMA,
+        "status": "BLOCKED",
+        "severity": str(primary.get("severity") or "BLOCK"),
+        "failure_code": failure_code,
+        "verdict": verdict,
+        "message": str(primary.get("message") or "DAG execution blocked."),
+        "dag_id": contract.dag_id,
+        "scheduler": scheduler,
+        "active_goal_hash": contract.goal["goal_hash"],
+        "target": contract.target,
+        "receipt_path": str(receipt_dir / "dag-receipt.json"),
+        "run_dir": str(receipt_dir),
+        "recommended_action": action,
+        "evidence": {
+            "primary_alert": primary,
+            "alert_count": len(alerts),
+            "alert_codes": [
+                item.get("code")
+                for item in alerts
+                if isinstance(item, dict) and item.get("code")
+            ],
+            "errors": errors,
+        },
+        "proof_scope": {
+            "proves": [
+                "Tau detected a blocked DAG execution.",
+                "Tau packaged the primary failure as a project-agent course-correction payload.",
+                "No DAG route, goal, target, or handoff was mutated by this error contract.",
+            ],
+            "does_not_prove": [
+                "The recommended action has been executed.",
+                "The project agent accepted or applied the course correction.",
+                "Provider/model semantic quality.",
+            ],
+        },
+    }
+    if failed_node is not None:
+        payload["failed_node"] = failed_node
+        payload["attempts"] = node_attempts.get(failed_node, 0)
+        payload["max_attempts"] = contract.nodes[failed_node].max_attempts
+    if failed_agent is not None:
+        payload["failed_agent"] = failed_agent
+    return payload
+
+
+def _dag_error_node_id(contract: ProjectDagContract, evidence: dict[str, Any]) -> str | None:
+    node_id = evidence.get("node_id")
+    if isinstance(node_id, str) and node_id in contract.nodes:
+        return node_id
+    from_node = evidence.get("from_node")
+    if isinstance(from_node, str) and from_node in contract.nodes:
+        return from_node
+    selected_agent = evidence.get("selected_agent")
+    if isinstance(selected_agent, str):
+        node = _node_for_agent(contract, selected_agent)
+        if node is not None:
+            return node.node_id
+    node_ids = evidence.get("node_ids")
+    if isinstance(node_ids, list):
+        for item in node_ids:
+            if isinstance(item, str) and item in contract.nodes:
+                return item
+    return None
+
+
+def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
+    normalized = failure_code.lower()
+    if normalized in {
+        "reviewer_goal_hash_mismatch",
+        "target_changed",
+        "goal_changed",
+        "goal_hash_mismatch",
+        "unexpected_edge",
+        "unexpected_node",
+        "entry_node_mismatch",
+        "cycle_detected",
+    }:
+        return {
+            "type": "reroute",
+            "next_agent": "goal-guardian",
+            "reason": "Reconcile DAG route, goal, or target drift before continuing.",
+        }
+    if normalized in {
+        "missing_required_evidence",
+        "missing_reviewer_verdict",
+        "reviewer_target_mismatch",
+        "missing_terminal_route",
+    }:
+        return {
+            "type": "reroute",
+            "next_agent": "reviewer",
+            "reason": "Inspect missing or inconsistent evidence before normal continuation.",
+        }
+    if normalized in {
+        "command_timeout",
+        "invalid_command_json",
+        "command_failed",
+        "max_attempts_exceeded",
+        "missing_node_response",
+        "missing_dispatch",
+        "ready_queue_stalled",
+        "command_loop_blocked",
+    }:
+        return {
+            "type": "repair_then_retry_or_reroute",
+            "next_agent": "goal-guardian",
+            "reason": "Repair the node command or subagent response contract before retrying.",
+        }
+    if normalized in {
+        "non_local_ready_queue_node_not_allowed",
+        "provider_node_not_allowed",
+        "mutating_node_not_allowed",
+    }:
+        return {
+            "type": "request_policy_gate",
+            "next_agent": "goal-guardian",
+            "reason": "This branch requires an explicit policy or branch-lock gate before execution.",
+        }
+    return {
+        "type": "wait_for_human",
+        "next_agent": "human",
+        "reason": "Unhandled DAG failure requires human or orchestrator review.",
     }
 
 
