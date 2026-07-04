@@ -1,0 +1,97 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "herdr_cleanup": {
+    "candidate_count": 1,
+    "live": false,
+    "mocked": false,
+    "mode": "dry-run",
+    "status": "PASS"
+  },
+  "herdr_cleanup_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144647Z-project-dag-advanced-negative-sanity/medium-provider-dag-status/herdr-cleanup-receipt.json",
+  "live": false,
+  "max_attempts": 2,
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": {
+    "feature_counts": {
+      "agent_lineage": 4,
+      "provider_capabilities": 2,
+      "worktree_session_bindings": 4
+    },
+    "live": false,
+    "mocked": false,
+    "provider_live": false,
+    "status": "PASS"
+  },
+  "orchestration_evidence_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144647Z-project-dag-advanced-negative-sanity/medium-provider-dag-status/orchestration-evidence-receipt.json",
+  "provider_live": false,
+  "provider_sessions": {
+    "codex": {
+      "pane_id": "w-rw-provider-dag:p5",
+      "provider_id": "codex",
+      "ready": true,
+      "role": "coder",
+      "state": "ready",
+      "terminal_id": "term-codex",
+      "visible": true,
+      "workspace_id": "w-rw-provider-dag"
+    },
+    "opencode": {
+      "pane_id": "w-rw-provider-dag:p6",
+      "provider_id": "opencode",
+      "ready": true,
+      "role": "reviewer",
+      "state": "ready",
+      "terminal_id": "term-opencode",
+      "visible": true,
+      "workspace_id": "w-rw-provider-dag"
+    }
+  },
+  "run_id": "rw-sanity-provider-dag-status",
+  "schema": "tau.dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144647Z-project-dag-advanced-negative-sanity/medium-provider-dag-status/scratch-worktree",
+  "status": "PASS",
+  "verdict": "PASS",
+  "visible_subagents": {
+    "coder": {
+      "pane_id": "w-rw-provider-dag:p5",
+      "provider_id": "codex",
+      "role": "coder",
+      "terminal_id": "term-codex",
+      "visible": true,
+      "workspace_id": "w-rw-provider-dag"
+    },
+    "orchestrator": {
+      "pane_id": "w-rw-provider-dag:p8",
+      "role": "orchestrator",
+      "terminal_id": "term-orchestrator",
+      "visible": true,
+      "workspace_id": "w-rw-provider-dag"
+    },
+    "planner": {
+      "pane_id": "w-rw-provider-dag:p7",
+      "role": "planner",
+      "terminal_id": "term-planner",
+      "visible": true,
+      "workspace_id": "w-rw-provider-dag"
+    },
+    "reviewer": {
+      "pane_id": "w-rw-provider-dag:p6",
+      "provider_id": "opencode",
+      "role": "reviewer",
+      "terminal_id": "term-opencode",
+      "visible": true,
+      "workspace_id": "w-rw-provider-dag"
+    }
+  }
+}

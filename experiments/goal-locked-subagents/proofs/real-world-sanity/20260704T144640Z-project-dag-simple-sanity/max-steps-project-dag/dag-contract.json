@@ -1,0 +1,78 @@
+{
+  "dag_id": "rw-sanity-project-dag-max-steps",
+  "edges": [
+    {
+      "from": "coder",
+      "to": "reviewer"
+    },
+    {
+      "condition": "reviewer_requests_revision",
+      "from": "reviewer",
+      "to": "coder"
+    },
+    {
+      "condition": "reviewer_pass_or_block",
+      "from": "reviewer",
+      "to": "human"
+    }
+  ],
+  "entry_node": "coder",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff",
+    "reviewer_goal_hash_mismatch"
+  ],
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+    "goal_id": "rw-sanity-project-dag-max-steps",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 20,
+    "max_total_attempts": 2,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "coder",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144640Z-project-dag-simple-sanity/max-steps-project-dag/command-specs/coder/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "coder",
+      "max_attempts": 3,
+      "required_evidence": [
+        "creator_artifact"
+      ]
+    },
+    {
+      "agent": "reviewer",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144640Z-project-dag-simple-sanity/max-steps-project-dag/command-specs/reviewer/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "reviewer",
+      "max_attempts": 3,
+      "required_evidence": [
+        "reviewer_verdict"
+      ],
+      "reviewer": {
+        "requires_goal_hash": true,
+        "reviews_node": "coder"
+      }
+    }
+  ],
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-max-steps"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

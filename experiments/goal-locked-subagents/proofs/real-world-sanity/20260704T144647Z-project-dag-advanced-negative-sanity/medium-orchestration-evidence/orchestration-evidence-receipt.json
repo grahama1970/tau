@@ -1,0 +1,21 @@
+{
+  "errors": [],
+  "execution": "real_world_sanity_static_orchestration_evidence_status_fixture",
+  "feature_counts": {
+    "agent_lineage": 4,
+    "agent_messages": 1,
+    "doctor": 1,
+    "execution_timeline": 2,
+    "provider_capabilities": 2,
+    "review_comments": 1,
+    "worktree_session_bindings": 4
+  },
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "run_id": "rw-sanity-orchestration-evidence",
+  "schema": "tau.orchestration_evidence_receipt.v1",
+  "source_run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144647Z-project-dag-advanced-negative-sanity/medium-orchestration-evidence",
+  "status": "PASS"
+}

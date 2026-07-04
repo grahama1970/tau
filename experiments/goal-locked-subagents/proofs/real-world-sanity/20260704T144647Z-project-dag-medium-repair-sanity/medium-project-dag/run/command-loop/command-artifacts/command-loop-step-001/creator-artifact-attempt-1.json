@@ -1,0 +1,7 @@
+{
+  "attempt": 1,
+  "goal_hash": "sha256:rw-sanity-project-dag-medium",
+  "scenario": "medium",
+  "schema": "tau.creator_artifact.v1",
+  "summary": "Creator artifact for real-world project DAG sanity."
+}

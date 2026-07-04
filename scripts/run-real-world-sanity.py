@@ -1,0 +1,2791 @@
+#!/usr/bin/env python3
+"""Run Tau real-world, non-mocked sanity checks.
+
+The runner intentionally excludes Tau commands whose own receipts report
+``mocked: true``. It writes one inspectable receipt under
+``experiments/goal-locked-subagents/proofs/real-world-sanity``.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+RECEIPT_SCHEMA = "tau.real_world_sanity_suite_receipt.v1"
+CHECK_SCHEMA = "tau.real_world_sanity_check_receipt.v1"
+
+
+@dataclass(frozen=True)
+class Check:
+    check_id: str
+    level: str
+    purpose: str
+    command: list[str]
+    timeout_seconds: int
+    expected_exit_codes: tuple[int, ...] = (0,)
+    expected_status: str | None = None
+    expected_verdict: str | None = None
+    expected_provider_live: bool | None = None
+    require_mocked_false: bool = True
+    require_json_receipt: bool = True
+    output_receipt: Path | None = None
+    expected_min_provider_session_states: int = 0
+    expected_min_resumed_nodes: int = 0
+    attempts: int = 1
+    post_cleanup_mode: str = "off"
+    post_cleanup_uv_bin: str = "uv"
+    post_cleanup_herdr_bin: str = "herdr"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--run-root",
+        type=Path,
+        default=Path("experiments/goal-locked-subagents/proofs/real-world-sanity"),
+    )
+    parser.add_argument("--label", default="tau-real-world-sanity")
+    parser.add_argument(
+        "--levels",
+        default="simple,medium,advanced",
+        help="Comma-separated levels to run. Default runs all levels.",
+    )
+    parser.add_argument(
+        "--checks",
+        default="",
+        help="Optional comma-separated check ids to run after level filtering.",
+    )
+    parser.add_argument("--uv-bin", default=os.environ.get("UV_BIN", "uv"))
+    parser.add_argument("--herdr-bin", default=os.environ.get("HERDR_BIN", "herdr"))
+    parser.add_argument("--receipt-timeout-seconds", type=int, default=120)
+    parser.add_argument(
+        "--provider-cleanup-mode",
+        choices=("off", "audit", "dry-run", "apply"),
+        default="dry-run",
+        help=(
+            "Cleanup mode for provider-owned Herdr resources created by advanced checks. "
+            "Default records dry-run receipts; apply closes only run-owned workspaces."
+        ),
+    )
+    args = parser.parse_args()
+
+    repo = args.repo.expanduser().resolve()
+    if not repo.exists():
+        raise SystemExit(f"repo does not exist: {repo}")
+    run_root = args.run_root.expanduser()
+    if not run_root.is_absolute():
+        run_root = repo / run_root
+    run_root = run_root.resolve()
+    run_root.mkdir(parents=True, exist_ok=True)
+    run_id = f"{compact_stamp()}-{slug(args.label)}"
+    run_dir = run_root / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    selected_levels = {level.strip() for level in args.levels.split(",") if level.strip()}
+
+    checks = build_checks(
+        repo=repo,
+        run_dir=run_dir,
+        uv_bin=args.uv_bin,
+        herdr_bin=args.herdr_bin,
+        receipt_timeout_seconds=args.receipt_timeout_seconds,
+        provider_cleanup_mode=args.provider_cleanup_mode,
+    )
+    selected_checks = [check for check in checks if check.level in selected_levels]
+    selected_check_ids = {check_id.strip() for check_id in args.checks.split(",") if check_id.strip()}
+    if selected_check_ids:
+        selected_checks = [check for check in selected_checks if check.check_id in selected_check_ids]
+        missing = sorted(selected_check_ids - {check.check_id for check in selected_checks})
+        if missing:
+            raise SystemExit(f"unknown or unselected check ids: {', '.join(missing)}")
+    if not selected_checks:
+        raise SystemExit(f"no checks selected by levels={args.levels!r}")
+
+    records: list[dict[str, Any]] = []
+    for check in selected_checks:
+        records.append(run_check(check, repo=repo, run_dir=run_dir))
+        write_suite_receipt(
+            repo=repo,
+            run_dir=run_dir,
+            run_id=run_id,
+            records=records,
+            selected_levels=sorted(selected_levels),
+            complete=False,
+        )
+
+    receipt = write_suite_receipt(
+        repo=repo,
+        run_dir=run_dir,
+        run_id=run_id,
+        records=records,
+        selected_levels=sorted(selected_levels),
+        complete=True,
+    )
+    print(json.dumps(receipt, indent=2, sort_keys=True))
+    return 0 if receipt["ok"] is True else 1
+
+
+def build_checks(
+    *,
+    repo: Path,
+    run_dir: Path,
+    uv_bin: str,
+    herdr_bin: str,
+    receipt_timeout_seconds: int,
+    provider_cleanup_mode: str,
+) -> list[Check]:
+    uv_tau = [uv_bin, "run", "--project", str(repo), "tau"]
+    live_provider_receipt_timeout_seconds = max(receipt_timeout_seconds, 300)
+    handoff = create_handoff_loop_fixture(run_dir, repo=repo)
+    project_dag_simple = create_project_dag_fixture(
+        run_dir,
+        scenario="simple",
+        goal_hash="sha256:rw-sanity-project-dag-simple",
+    )
+    project_dag_medium = create_project_dag_fixture(
+        run_dir,
+        scenario="medium",
+        goal_hash="sha256:rw-sanity-project-dag-medium",
+    )
+    project_dag_complex = create_project_dag_fixture(
+        run_dir,
+        scenario="complex",
+        goal_hash="sha256:rw-sanity-project-dag-complex",
+    )
+    project_dag_timeout = create_project_dag_fixture(
+        run_dir,
+        scenario="timeout",
+        goal_hash="sha256:rw-sanity-project-dag-timeout",
+    )
+    project_dag_non_json = create_project_dag_fixture(
+        run_dir,
+        scenario="non-json",
+        goal_hash="sha256:rw-sanity-project-dag-non-json",
+    )
+    project_dag_max_steps = create_project_dag_fixture(
+        run_dir,
+        scenario="max-steps",
+        goal_hash="sha256:rw-sanity-project-dag-max-steps",
+    )
+    generic_dag_spec = create_generic_dag_fixture(run_dir)
+    generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
+    generic_dag_stale_work_order_spec = create_generic_dag_stale_work_order_fixture(run_dir)
+    generic_dag_timeout_spec = create_generic_dag_timeout_fixture(run_dir)
+    approval = create_approval_gate_fixtures(run_dir)
+    cleanup = create_cleanup_status_fixture(run_dir)
+    orchestration_evidence = create_orchestration_evidence_status_fixture(run_dir)
+    provider_lifecycle = create_provider_lifecycle_status_fixture(run_dir)
+    provider_readiness_status = create_provider_readiness_status_fixture(run_dir)
+    provider_pane_status = create_provider_pane_status_fixture(run_dir)
+    provider_dag_status = create_provider_dag_status_fixture(run_dir)
+    provider_root = run_dir / "advanced-provider-runs"
+    generic_provider_adapter_spec = create_generic_provider_adapter_fixture(
+        run_dir,
+        repo=repo,
+        uv_tau=uv_tau,
+        herdr_bin=herdr_bin,
+        receipt_timeout_seconds=live_provider_receipt_timeout_seconds,
+        provider_cleanup_mode=provider_cleanup_mode,
+    )
+    return [
+        Check(
+            check_id="simple.version",
+            level="simple",
+            purpose="Tau CLI starts from the checked-out project and reports its version.",
+            command=[uv_bin, "run", "--project", str(repo), "tau", "--version"],
+            timeout_seconds=60,
+            require_json_receipt=False,
+            require_mocked_false=False,
+        ),
+        Check(
+            check_id="simple.command_spec_catalog",
+            level="simple",
+            purpose="Planner, orchestrator, coder, and reviewer command specs are real JSON files.",
+            command=[
+                sys.executable,
+                "-c",
+                command_spec_probe(repo),
+            ],
+            timeout_seconds=60,
+        ),
+        Check(
+            check_id="simple.local_handoff_loop",
+            level="simple",
+            purpose="A real Tau handoff command loop routes goal-guardian to verifier to human.",
+            command=[
+                *uv_tau,
+                "handoff-command-loop",
+                "--start",
+                str(handoff["start"]),
+                "--agents-root",
+                str(handoff["agents_root"]),
+                "--command-spec-root",
+                str(handoff["command_spec_root"]),
+                "--active-goal-hash",
+                "sha256:active-goal",
+                "--receipt-dir",
+                str(handoff["receipt_dir"]),
+                "--max-steps",
+                "4",
+            ],
+            timeout_seconds=90,
+            expected_status="WAITING",
+            output_receipt=handoff["receipt_dir"] / "command-loop-receipt.json",
+        ),
+        Check(
+            check_id="simple.project_dag_creator_reviewer",
+            level="simple",
+            purpose=(
+                "Tau runs a tau.dag_contract.v1 creator-reviewer DAG, executes real local "
+                "subprocess workers, and records a reviewer verdict against the immutable goal."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_simple["contract"]),
+                "--receipt-dir",
+                str(project_dag_simple["run_dir"]),
+                "--agents-root",
+                str(project_dag_simple["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+        ),
+        Check(
+            check_id="medium.provider_dag_plan",
+            level="medium",
+            purpose="Tau planner emits a receipt-backed scratch coder/reviewer DAG without providers.",
+            command=[
+                *uv_tau,
+                "provider-dag-plan",
+                "--label",
+                "rw-sanity-plan",
+                "--run-root",
+                str(run_dir / "medium-provider-dag-plan"),
+                "--max-attempts",
+                "2",
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.provider_dag_plan_status",
+            level="medium",
+            purpose="Tau summarizes a provider DAG planner-only run through the read-only run-status surface.",
+            command=[
+                sys.executable,
+                "-c",
+                run_status_after_json_command(
+                    producer_command=[
+                        *uv_tau,
+                        "provider-dag-plan",
+                        "--label",
+                        "rw-sanity-plan-status",
+                        "--run-root",
+                        str(run_dir / "medium-provider-dag-plan-status"),
+                        "--max-attempts",
+                        "2",
+                    ],
+                    status_command_prefix=[*uv_tau, "run-status"],
+                    run_dir_key="run_dir",
+                ),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.generic_dag_run",
+            level="medium",
+            purpose="Tau executes a generic schema-validated local subprocess DAG with planner -> coder -> reviewer dependencies.",
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(generic_dag_spec),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.generic_dag_status",
+            level="medium",
+            purpose="Tau summarizes a generic DAG run through the read-only run-status surface.",
+            command=[
+                uv_bin,
+                "run",
+                "--project",
+                str(repo),
+                "python",
+                "-c",
+                run_status_after_json_command(
+                    producer_command=[
+                        *uv_tau,
+                        "dag-run",
+                        str(generic_dag_spec),
+                    ],
+                    status_command_prefix=[*uv_tau, "run-status"],
+                    run_dir_key="run_dir",
+                ),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.generic_dag_resume",
+            level="medium",
+            purpose=(
+                "Tau resumes a generic DAG from an existing valid node receipt and "
+                "does not rerun that node command."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(generic_dag_resume_spec),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_min_resumed_nodes=1,
+        ),
+        Check(
+            check_id="medium.generic_dag_resume_from_run_dir",
+            level="medium",
+            purpose=(
+                "Tau resumes a generic DAG from run-directory checkpoint metadata "
+                "without requiring the operator to pass the original spec path."
+            ),
+            command=[
+                uv_bin,
+                "run",
+                "--project",
+                str(repo),
+                "python",
+                "-c",
+                resume_from_run_dir_json_command(
+                    first_command=[
+                        *uv_tau,
+                        "dag-run",
+                        str(generic_dag_resume_spec),
+                    ],
+                    resume_command_prefix=[*uv_tau, "dag-resume"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_min_resumed_nodes=1,
+        ),
+        Check(
+            check_id="medium.generic_dag_stale_work_order_blocks",
+            level="medium",
+            purpose=(
+                "Tau refuses to resume a generic DAG node from a stale work-order "
+                "receipt and blocks when rerun fails."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(generic_dag_stale_work_order_spec),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="SUBAGENT_ERROR",
+        ),
+        Check(
+            check_id="medium.generic_dag_stale_work_order_status",
+            level="medium",
+            purpose=(
+                "Tau summarizes a stale work-order blocked generic DAG through "
+                "the read-only run-status surface without requiring provider artifacts."
+            ),
+            command=[
+                uv_bin,
+                "run",
+                "--project",
+                str(repo),
+                "python",
+                "-c",
+                run_status_after_json_command(
+                    producer_command=[
+                        *uv_tau,
+                        "dag-run",
+                        str(generic_dag_stale_work_order_spec),
+                    ],
+                    status_command_prefix=[*uv_tau, "run-status"],
+                    run_dir_key="run_dir",
+                    producer_expected_exit_codes=(1,),
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.generic_dag_timeout_fail_closed",
+            level="medium",
+            purpose=(
+                "Tau retries a timed-out generic DAG worker up to max_attempts "
+                "and then blocks with SUBAGENT_TIMEOUT."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(generic_dag_timeout_spec),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="SUBAGENT_TIMEOUT",
+        ),
+        Check(
+            check_id="medium.approval_gate_pass",
+            level="medium",
+            purpose="Tau accepts an explicit human approval packet before a gated working-tree mutation.",
+            command=[
+                *uv_tau,
+                "approval-gate-check",
+                "--approval-packet",
+                str(approval["pass_packet"]),
+                "--requested-action",
+                "working_tree_mutation",
+                "--run-dir",
+                str(approval["pass_run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.approval_gate_fail_closed",
+            level="medium",
+            purpose="Tau blocks a GitHub ticket-closure gate when the human approval packet names a different action.",
+            command=[
+                *uv_tau,
+                "approval-gate-check",
+                "--approval-packet",
+                str(approval["mismatch_packet"]),
+                "--requested-action",
+                "github_ticket_closure",
+                "--run-dir",
+                str(approval["blocked_run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.approval_gate_expired_fail_closed",
+            level="medium",
+            purpose="Tau blocks a gated mutation when the human approval packet is expired.",
+            command=[
+                *uv_tau,
+                "approval-gate-check",
+                "--approval-packet",
+                str(approval["expired_packet"]),
+                "--requested-action",
+                "working_tree_mutation",
+                "--run-dir",
+                str(approval["expired_run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.approval_gate_status",
+            level="medium",
+            purpose="Tau summarizes the blocked approval-gate receipt through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(approval["blocked_run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.herdr_cleanup_dry_run",
+            level="medium",
+            purpose="Tau identifies run-owned Herdr cleanup candidates without mutating Herdr.",
+            command=[
+                *uv_tau,
+                "herdr-cleanup",
+                "dry-run",
+                "--run-dir",
+                str(cleanup["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.herdr_cleanup_status",
+            level="medium",
+            purpose="Tau summarizes a standalone Herdr cleanup receipt through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(cleanup["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.orchestration_evidence_status",
+            level="medium",
+            purpose="Tau summarizes a standalone orchestration evidence receipt through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(orchestration_evidence["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.provider_lifecycle_status",
+            level="medium",
+            purpose="Tau summarizes provider lifecycle state artifacts through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(provider_lifecycle["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            expected_min_provider_session_states=2,
+        ),
+        Check(
+            check_id="medium.provider_lifecycle_crashed_ready_fail_closed",
+            level="medium",
+            purpose=(
+                "Tau normalizes a provider readiness record that claims ready but has "
+                "no live foreground process as crashed, not schedulable."
+            ),
+            command=[
+                uv_bin,
+                "run",
+                "--project",
+                str(repo),
+                "python",
+                "-c",
+                _provider_lifecycle_crashed_ready_probe_code(),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.provider_readiness_status",
+            level="medium",
+            purpose="Tau summarizes structured provider readiness records through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(provider_readiness_status["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            expected_min_provider_session_states=2,
+        ),
+        Check(
+            check_id="medium.provider_pane_status",
+            level="medium",
+            purpose="Tau summarizes provider-pane allocation records through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(provider_pane_status["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.provider_dag_status",
+            level="medium",
+            purpose="Tau summarizes provider DAG visibility, cleanup, and orchestration evidence through the read-only run-status surface.",
+            command=[
+                *uv_tau,
+                "run-status",
+                str(provider_dag_status["run_dir"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.dag_stress_poc",
+            level="medium",
+            purpose="Tau executes simple, retry, fan-out/fan-in, timeout, error, invalid-receipt, wrong-result, and model-missing scheduler rungs.",
+            command=[
+                *uv_tau,
+                "dag-stress-poc",
+                "--label",
+                "rw-sanity-dag-stress",
+                "--run-root",
+                str(run_dir / "medium-dag-stress-poc"),
+                "--max-attempts",
+                "4",
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.dag_stress_status",
+            level="medium",
+            purpose="Tau summarizes a deterministic DAG stress suite through the read-only run-status surface.",
+            command=[
+                sys.executable,
+                "-c",
+                run_status_after_json_command(
+                    producer_command=[
+                        *uv_tau,
+                        "dag-stress-poc",
+                        "--label",
+                        "rw-sanity-dag-stress-status",
+                        "--run-root",
+                        str(run_dir / "medium-dag-stress-status"),
+                        "--max-attempts",
+                        "4",
+                    ],
+                    status_command_prefix=[*uv_tau, "run-status"],
+                    run_dir_key="run_dir",
+                ),
+            ],
+            timeout_seconds=180,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.dag_stress_campaign",
+            level="medium",
+            purpose="Tau repeats the DAG stress suite across retry budgets for stability.",
+            command=[
+                *uv_tau,
+                "dag-stress-campaign",
+                "--label",
+                "rw-sanity-dag-campaign",
+                "--run-root",
+                str(run_dir / "medium-dag-stress-campaign"),
+                "--max-budget",
+                "3",
+                "--repetitions",
+                "2",
+            ],
+            timeout_seconds=180,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.dag_stress_campaign_status",
+            level="medium",
+            purpose="Tau summarizes a deterministic DAG stress campaign through the read-only run-status surface.",
+            command=[
+                sys.executable,
+                "-c",
+                run_status_after_json_command(
+                    producer_command=[
+                        *uv_tau,
+                        "dag-stress-campaign",
+                        "--label",
+                        "rw-sanity-dag-campaign-status",
+                        "--run-root",
+                        str(run_dir / "medium-dag-stress-campaign-status"),
+                        "--max-budget",
+                        "3",
+                        "--repetitions",
+                        "2",
+                    ],
+                    status_command_prefix=[*uv_tau, "run-status"],
+                    run_dir_key="campaign_dir",
+                ),
+            ],
+            timeout_seconds=240,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.project_dag_reviewer_repair_loop",
+            level="medium",
+            purpose=(
+                "Tau runs a DAG-level creator-reviewer repair loop where reviewer returns "
+                "REVISE once, creator reruns, and reviewer then returns PASS."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_medium["contract"]),
+                "--receipt-dir",
+                str(project_dag_medium["run_dir"]),
+                "--agents-root",
+                str(project_dag_medium["agents_root"]),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            expected_verdict="PASS",
+        ),
+        Check(
+            check_id="advanced.project_dag_reviewer_goal_drift_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a project-agent DAG when the reviewer verdict cites a goal hash "
+                "that does not match the immutable DAG goal."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_complex["contract"]),
+                "--receipt-dir",
+                str(project_dag_complex["run_dir"]),
+                "--agents-root",
+                str(project_dag_complex["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="REVIEWER_GOAL_HASH_MISMATCH",
+        ),
+        Check(
+            check_id="advanced.project_dag_timeout_fail_closed",
+            level="advanced",
+            purpose="Tau blocks a project-agent DAG when a selected node command times out.",
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_timeout["contract"]),
+                "--receipt-dir",
+                str(project_dag_timeout["run_dir"]),
+                "--agents-root",
+                str(project_dag_timeout["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="COMMAND_TIMEOUT",
+        ),
+        Check(
+            check_id="advanced.project_dag_non_json_fail_closed",
+            level="advanced",
+            purpose="Tau blocks a project-agent DAG when a selected node emits non-JSON stdout.",
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_non_json["contract"]),
+                "--receipt-dir",
+                str(project_dag_non_json["run_dir"]),
+                "--agents-root",
+                str(project_dag_non_json["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="INVALID_COMMAND_JSON",
+        ),
+        Check(
+            check_id="advanced.project_dag_max_steps_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a project-agent DAG when a reviewer keeps routing back and "
+                "the DAG max_total_attempts budget is exhausted."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_max_steps["contract"]),
+                "--receipt-dir",
+                str(project_dag_max_steps["run_dir"]),
+                "--agents-root",
+                str(project_dag_max_steps["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MAX_STEPS_EXHAUSTED",
+        ),
+        Check(
+            check_id="advanced.provider_readiness",
+            level="advanced",
+            purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
+            command=[
+                *uv_tau,
+                "provider-readiness-poc",
+                "--label",
+                "rw-sanity-provider-readiness",
+                "--run-root",
+                str(provider_root / "readiness"),
+                "--herdr-bin",
+                herdr_bin,
+                "--no-install-integrations",
+            ],
+            timeout_seconds=240,
+            expected_status="PASS",
+            expected_min_provider_session_states=2,
+            attempts=2,
+            post_cleanup_mode=provider_cleanup_mode,
+            post_cleanup_uv_bin=uv_bin,
+            post_cleanup_herdr_bin=herdr_bin,
+        ),
+        Check(
+            check_id="advanced.provider_dag_one_pass",
+            level="advanced",
+            purpose="Live visible Codex coder and OpenCode reviewer complete a one-pass scratch DAG.",
+            command=[
+                *uv_tau,
+                "provider-dag-poc",
+                "--label",
+                "rw-sanity-provider-dag-one-pass",
+                "--run-root",
+                str(provider_root / "one-pass"),
+                "--max-attempts",
+                "1",
+                "--receipt-timeout-seconds",
+                str(live_provider_receipt_timeout_seconds),
+                "--herdr-bin",
+                herdr_bin,
+                "--no-install-integrations",
+                "--cleanup-mode",
+                provider_cleanup_mode,
+            ],
+            timeout_seconds=live_provider_receipt_timeout_seconds + 180,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="advanced.generic_provider_dag_adapter",
+            level="advanced",
+            purpose="Generic DAG executes a provider-backed adapter node and carries provider_live evidence.",
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(generic_provider_adapter_spec),
+                "--no-resume",
+            ],
+            timeout_seconds=live_provider_receipt_timeout_seconds + 240,
+            expected_status="PASS",
+            expected_provider_live=True,
+        ),
+        Check(
+            check_id="advanced.generic_provider_dag_adapter_resume",
+            level="advanced",
+            purpose=(
+                "Generic DAG resumes an already-completed live provider-backed adapter node "
+                "without launching the provider adapter a second time."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                rerun_json_command_with_resume(
+                    first_command=[
+                        *uv_tau,
+                        "dag-run",
+                        str(generic_provider_adapter_spec),
+                        "--no-resume",
+                    ],
+                    second_command=[
+                        *uv_tau,
+                        "dag-run",
+                        str(generic_provider_adapter_spec),
+                    ],
+                ),
+            ],
+            timeout_seconds=(live_provider_receipt_timeout_seconds * 2) + 300,
+            expected_status="PASS",
+            expected_provider_live=True,
+            expected_min_resumed_nodes=1,
+            attempts=2,
+        ),
+        Check(
+            check_id="advanced.provider_dag_repair_loop",
+            level="advanced",
+            purpose=(
+                "Visible provider DAG handles reviewer REVISE, retries a visible deterministic "
+                "coder, then accepts reviewer PASS."
+            ),
+            command=[
+                *uv_tau,
+                "provider-dag-poc",
+                "--label",
+                "rw-sanity-provider-dag-repair",
+                "--run-root",
+                str(provider_root / "repair-loop"),
+                "--max-attempts",
+                "2",
+                "--receipt-timeout-seconds",
+                str(live_provider_receipt_timeout_seconds),
+                "--force-reviewer-revise-first",
+                "--coder-mode",
+                "deterministic-visible",
+                "--herdr-bin",
+                herdr_bin,
+                "--no-install-integrations",
+                "--cleanup-mode",
+                provider_cleanup_mode,
+            ],
+            timeout_seconds=(live_provider_receipt_timeout_seconds * 2) + 180,
+            expected_status="PASS",
+        ),
+        Check(
+            check_id="advanced.provider_dag_max_attempts_fail_closed",
+            level="advanced",
+            purpose="Live provider DAG blocks when reviewer revisions exhaust max attempts.",
+            command=[
+                *uv_tau,
+                "provider-dag-poc",
+                "--label",
+                "rw-sanity-provider-dag-max-exhaustion",
+                "--run-root",
+                str(provider_root / "max-exhaustion"),
+                "--max-attempts",
+                "2",
+                "--receipt-timeout-seconds",
+                str(live_provider_receipt_timeout_seconds),
+                "--force-reviewer-revise-attempts",
+                "1,2",
+                "--allow-final-forced-revise",
+                "--coder-mode",
+                "deterministic-visible",
+                "--herdr-bin",
+                herdr_bin,
+                "--no-install-integrations",
+                "--cleanup-mode",
+                provider_cleanup_mode,
+            ],
+            timeout_seconds=(live_provider_receipt_timeout_seconds * 2) + 180,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="REVISE",
+        ),
+        Check(
+            check_id="advanced.provider_dag_invalid_model_fail_closed",
+            level="advanced",
+            purpose="Live provider DAG blocks and preserves artifacts when the reviewer model does not exist.",
+            command=[
+                *uv_tau,
+                "provider-dag-poc",
+                "--label",
+                "rw-sanity-provider-dag-invalid-model",
+                "--run-root",
+                str(provider_root / "invalid-model"),
+                "--max-attempts",
+                "1",
+                "--receipt-timeout-seconds",
+                "45",
+                "--reviewer-model",
+                "openai/not-a-real-model-20260703",
+                "--coder-mode",
+                "deterministic-visible",
+                "--herdr-bin",
+                herdr_bin,
+                "--no-install-integrations",
+                "--cleanup-mode",
+                provider_cleanup_mode,
+            ],
+            timeout_seconds=180,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="REVIEWER_RECEIPT_INVALID",
+        ),
+    ]
+
+
+def create_generic_dag_fixture(run_dir: Path) -> Path:
+    fixture_dir = run_dir / "medium-generic-dag"
+    receipts = fixture_dir / "receipts"
+    receipts.mkdir(parents=True, exist_ok=True)
+    nodes = []
+    for node_id, depends_on in (
+        ("planner", []),
+        ("coder", ["planner"]),
+        ("reviewer", ["coder"]),
+    ):
+        receipt_path = receipts / f"{node_id}.json"
+        nodes.append(
+            {
+                "node_id": node_id,
+                "role": node_id,
+                "depends_on": depends_on,
+                "command": [
+                    "python3",
+                    "-c",
+                    generic_dag_receipt_writer(receipt_path, node_id=node_id),
+                ],
+                "receipt_path": str(receipt_path),
+                "timeout_seconds": 30,
+                "max_attempts": 1,
+            }
+        )
+    spec_path = fixture_dir / "dag-spec.json"
+    write_json(
+        spec_path,
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "rw-sanity-generic-dag",
+            "run_dir": str(fixture_dir),
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "nodes": nodes,
+        },
+    )
+    return spec_path
+
+
+def create_project_dag_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    goal_hash: str,
+) -> dict[str, Path]:
+    fixture_dir = run_dir / f"{scenario}-project-dag"
+    command_spec_root = fixture_dir / "command-specs"
+    agents_root = fixture_dir / "agents"
+    run_output_dir = fixture_dir / "run"
+    agents_root.mkdir(parents=True, exist_ok=True)
+    worker = fixture_dir / "project_dag_worker.py"
+    write_text(worker, project_dag_worker_script())
+    for agent in ("coder", "reviewer"):
+        if scenario == "timeout" and agent == "coder":
+            command = ["python3", "-c", "import time; time.sleep(5)"]
+            timeout_s = 0.1
+        elif scenario == "non-json" and agent == "reviewer":
+            command = ["python3", "-c", "print('not json')"]
+            timeout_s = 20
+        else:
+            command = [
+                "python3",
+                str(worker),
+                "--role",
+                agent,
+                "--scenario",
+                scenario,
+            ]
+            timeout_s = 20
+        write_json(
+            command_spec_root / agent / "tau-dispatch-command.json",
+            {
+                "command": command,
+                "timeout_s": timeout_s,
+            },
+        )
+
+    max_attempts = 4 if scenario == "medium" else 3
+    if scenario == "max-steps":
+        max_attempts = 2
+    node_max_attempts = 2 if scenario == "medium" else 1
+    if scenario == "max-steps":
+        node_max_attempts = 3
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": f"rw-sanity-project-dag-{scenario}",
+        "goal": {
+            "goal_id": f"rw-sanity-project-dag-{scenario}",
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": f"scratch-project-dag-{scenario}",
+        },
+        "entry_node": "coder",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 20,
+            "max_total_attempts": max_attempts,
+        },
+        "nodes": [
+            {
+                "id": "coder",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": node_max_attempts,
+                "command_spec": str(command_spec_root / "coder" / "tau-dispatch-command.json"),
+                "required_evidence": ["creator_artifact"],
+            },
+            {
+                "id": "reviewer",
+                "agent": "reviewer",
+                "executor": "local",
+                "max_attempts": node_max_attempts,
+                "command_spec": str(command_spec_root / "reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "coder",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "coder", "to": "reviewer"},
+            {"from": "reviewer", "to": "coder", "condition": "reviewer_requests_revision"},
+            {"from": "reviewer", "to": "human", "condition": "reviewer_pass_or_block"},
+        ],
+        "required_evidence": ["creator_artifact", "reviewer_verdict"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+            "reviewer_goal_hash_mismatch",
+        ],
+    }
+    contract_path = fixture_dir / "dag-contract.json"
+    write_json(contract_path, contract)
+    return {
+        "contract": contract_path,
+        "agents_root": agents_root,
+        "run_dir": run_output_dir,
+    }
+
+
+def project_dag_worker_script() -> str:
+    return r'''#!/usr/bin/env python3
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--role", required=True)
+    parser.add_argument("--scenario", required=True)
+    args = parser.parse_args()
+    payload = json.load(sys.stdin)
+    artifact_dir = Path(os.environ["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"])
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    if args.role == "coder":
+        response = coder_response(payload, artifact_dir, args.scenario)
+    elif args.role == "reviewer":
+        response = reviewer_response(payload, artifact_dir, args.scenario)
+    else:
+        raise SystemExit(f"unknown role: {args.role}")
+    print(json.dumps(response, sort_keys=True))
+    return 0
+
+
+def coder_response(payload, artifact_dir, scenario):
+    prior = reviewer_verdicts(payload)
+    attempt = 2 if any(item.get("verdict") == "REVISE" for item in prior) else 1
+    artifact = artifact_dir / f"creator-artifact-attempt-{attempt}.json"
+    artifact_payload = {
+        "schema": "tau.creator_artifact.v1",
+        "attempt": attempt,
+        "scenario": scenario,
+        "goal_hash": payload["goal"]["goal_hash"],
+        "summary": "Creator artifact for real-world project DAG sanity.",
+    }
+    artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return handoff(
+        payload,
+        previous_subagent="coder",
+        result_status="PASS",
+        evidence=[
+            {
+                "kind": "creator_artifact",
+                "path": str(artifact),
+                "attempt": attempt,
+                "goal_hash": payload["goal"]["goal_hash"],
+            }
+        ],
+        next_agent="reviewer",
+        next_executor="local",
+        summary=f"Creator produced attempt {attempt} artifact for reviewer.",
+    )
+
+
+def reviewer_response(payload, artifact_dir, scenario):
+    creator = creator_artifacts(payload)
+    attempt = int(creator[-1].get("attempt", 1)) if creator else 0
+    active_goal_hash = os.environ["TAU_HANDOFF_ACTIVE_GOAL_HASH"]
+    verdict_goal_hash = "sha256:stale-reviewer-goal" if scenario == "complex" else active_goal_hash
+    if scenario == "max-steps":
+        verdict = "REVISE"
+        next_agent = "coder"
+        next_executor = "local"
+    elif scenario == "medium" and attempt < 2:
+        verdict = "REVISE"
+        next_agent = "coder"
+        next_executor = "local"
+    else:
+        verdict = "PASS"
+        next_agent = "human"
+        next_executor = "human"
+    artifact = artifact_dir / f"reviewer-verdict-attempt-{max(attempt, 1)}.json"
+    artifact_payload = {
+        "schema": "tau.reviewer_verdict.v1",
+        "scenario": scenario,
+        "reviewed_node_id": "coder",
+        "creator_artifact_count": len(creator),
+        "creator_attempt": attempt,
+        "goal_hash": verdict_goal_hash,
+        "active_goal_hash": active_goal_hash,
+        "goal_matches": verdict_goal_hash == active_goal_hash,
+        "verdict": verdict,
+    }
+    artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return handoff(
+        payload,
+        previous_subagent="reviewer",
+        result_status=verdict,
+        evidence=[
+            {
+                "kind": "reviewer_verdict",
+                "path": str(artifact),
+                "reviewed_node_id": "coder",
+                "creator_attempt": attempt,
+                "goal_hash": verdict_goal_hash,
+                "verdict": verdict,
+            }
+        ],
+        next_agent=next_agent,
+        next_executor=next_executor,
+        summary=f"Reviewer returned {verdict} for creator attempt {attempt}.",
+    )
+
+
+def handoff(payload, *, previous_subagent, result_status, evidence, next_agent, next_executor, summary):
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": payload["github"],
+        "goal": payload["goal"],
+        "previous_subagent": previous_subagent,
+        "context": {
+            "summary": summary,
+            "artifacts": [item["path"] for item in evidence if isinstance(item, dict) and "path" in item],
+        },
+        "result": {
+            "status": result_status,
+            "summary": summary,
+            "evidence": evidence,
+        },
+        "rationale": "The DAG contract controls routing and immutable-goal checks.",
+        "next_agent": {
+            "name": next_agent,
+            "executor": next_executor,
+            "reason": "Continue according to the project DAG contract.",
+        },
+        "required_evidence": ["creator_artifact", "reviewer_verdict"],
+        "stop_condition": "Stop at human or a fail-closed DAG invariant.",
+    }
+
+
+def creator_artifacts(payload):
+    return evidence_items(payload, "creator_artifact")
+
+
+def reviewer_verdicts(payload):
+    return evidence_items(payload, "reviewer_verdict")
+
+
+def evidence_items(payload, kind):
+    evidence = payload.get("result", {}).get("evidence", [])
+    return [item for item in evidence if isinstance(item, dict) and item.get("kind") == kind]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'''
+
+
+def create_generic_dag_resume_fixture(run_dir: Path) -> Path:
+    fixture_dir = run_dir / "medium-generic-dag-resume"
+    receipts = fixture_dir / "receipts"
+    receipts.mkdir(parents=True, exist_ok=True)
+    planner_receipt = receipts / "planner.json"
+    write_json(
+        planner_receipt,
+        {
+            "schema": "tau.generic_dag_node_receipt.v1",
+            "node_id": "planner",
+            "status": "PASS",
+            "verdict": "PASS",
+            "artifacts": [],
+            "commands_run": ["preexisting planner receipt for resume proof"],
+            "handoff_summary": "planner receipt existed before dag-run",
+            "errors": [],
+            "policy_exceptions": [],
+        },
+    )
+    coder_receipt = receipts / "coder.json"
+    spec_path = fixture_dir / "dag-spec.json"
+    write_json(
+        spec_path,
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "rw-sanity-generic-dag-resume",
+            "run_dir": str(fixture_dir),
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "nodes": [
+                {
+                    "node_id": "planner",
+                    "role": "planner",
+                    "depends_on": [],
+                    "command": [
+                        "python3",
+                        "-c",
+                        "raise SystemExit('planner command should have been resumed')",
+                    ],
+                    "receipt_path": str(planner_receipt),
+                    "timeout_seconds": 30,
+                    "max_attempts": 1,
+                },
+                {
+                    "node_id": "coder",
+                    "role": "coder",
+                    "depends_on": ["planner"],
+                    "command": [
+                        "python3",
+                        "-c",
+                        generic_dag_receipt_writer(coder_receipt, node_id="coder"),
+                    ],
+                    "receipt_path": str(coder_receipt),
+                    "timeout_seconds": 30,
+                    "max_attempts": 1,
+                },
+            ],
+        },
+    )
+    return spec_path
+
+
+def create_generic_dag_stale_work_order_fixture(run_dir: Path) -> Path:
+    fixture_dir = run_dir / "medium-generic-dag-stale-work-order"
+    receipts = fixture_dir / "receipts"
+    work_orders = fixture_dir / "work-orders"
+    receipts.mkdir(parents=True, exist_ok=True)
+    work_orders.mkdir(parents=True, exist_ok=True)
+    work_order = work_orders / "planner.json"
+    work_order.write_text('{"task":"old planner work"}\n', encoding="utf-8")
+    old_hash = sha256_file(work_order)
+    planner_receipt = receipts / "planner.json"
+    write_json(
+        planner_receipt,
+        {
+            "schema": "tau.generic_dag_node_receipt.v1",
+            "node_id": "planner",
+            "status": "PASS",
+            "verdict": "PASS",
+            "work_order_sha256": old_hash,
+            "artifacts": [],
+            "commands_run": ["preexisting stale planner receipt for resume guard proof"],
+            "handoff_summary": "planner receipt was written before the work order changed",
+            "errors": [],
+            "policy_exceptions": [],
+        },
+    )
+    work_order.write_text('{"task":"changed planner work"}\n', encoding="utf-8")
+    spec_path = fixture_dir / "dag-spec.json"
+    write_json(
+        spec_path,
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "rw-sanity-generic-dag-stale-work-order",
+            "run_dir": str(fixture_dir),
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "nodes": [
+                {
+                    "node_id": "planner",
+                    "role": "planner",
+                    "depends_on": [],
+                    "work_order_path": str(work_order),
+                    "command": [
+                        "python3",
+                        "-c",
+                        "raise SystemExit('stale work-order receipt should not be resumed')",
+                    ],
+                    "receipt_path": str(planner_receipt),
+                    "timeout_seconds": 30,
+                    "max_attempts": 1,
+                }
+            ],
+        },
+    )
+    return spec_path
+
+
+def create_generic_dag_timeout_fixture(run_dir: Path) -> Path:
+    fixture_dir = run_dir / "medium-generic-dag-timeout"
+    receipts = fixture_dir / "receipts"
+    receipts.mkdir(parents=True, exist_ok=True)
+    spec_path = fixture_dir / "dag-spec.json"
+    write_json(
+        spec_path,
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "rw-sanity-generic-dag-timeout",
+            "run_dir": str(fixture_dir),
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "nodes": [
+                {
+                    "node_id": "slow",
+                    "role": "worker",
+                    "depends_on": [],
+                    "command": [
+                        "python3",
+                        "-c",
+                        "import time; time.sleep(5)",
+                    ],
+                    "receipt_path": str(receipts / "slow.json"),
+                    "timeout_seconds": 0.1,
+                    "max_attempts": 2,
+                }
+            ],
+        },
+    )
+    return spec_path
+
+
+def create_approval_gate_fixtures(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-approval-gates"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    pass_packet = fixture_dir / "working-tree-approval.json"
+    mismatch_packet = fixture_dir / "closure-mismatch-approval.json"
+    expired_packet = fixture_dir / "expired-working-tree-approval.json"
+    write_json(
+        pass_packet,
+        approval_packet(
+            action="working_tree_mutation",
+            target_id="scratch-working-tree",
+            reason="Approve a bounded scratch working-tree mutation gate for sanity proof.",
+        ),
+    )
+    write_json(
+        mismatch_packet,
+        approval_packet(
+            action="working_tree_mutation",
+            target_id="github-ticket-closure",
+            reason="Intentionally mismatched action for fail-closed sanity proof.",
+        ),
+    )
+    expired_payload = approval_packet(
+        action="working_tree_mutation",
+        target_id="scratch-working-tree",
+        reason="Intentionally expired approval for fail-closed sanity proof.",
+    )
+    expired_payload["expires_at"] = "2000-01-01T00:00:00Z"
+    write_json(expired_packet, expired_payload)
+    return {
+        "pass_packet": pass_packet,
+        "mismatch_packet": mismatch_packet,
+        "expired_packet": expired_packet,
+        "pass_run_dir": fixture_dir / "pass",
+        "blocked_run_dir": fixture_dir / "blocked",
+        "expired_run_dir": fixture_dir / "expired",
+    }
+
+
+def create_cleanup_status_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-herdr-cleanup"
+    write_json(
+        fixture_dir / "runtime-manifest.json",
+        {
+            "schema": "tau.provider_dag_runtime_manifest.v1",
+            "run_id": "rw-sanity-herdr-cleanup",
+            "provider_sessions": {
+                "codex": {
+                    "workspace_id": "w-rw-sanity-cleanup",
+                    "pane_id": "w-rw-sanity-cleanup:p5",
+                    "terminal_id": "term-codex",
+                }
+            },
+            "visible_subagents": {
+                "planner": {
+                    "workspace_id": "w-rw-sanity-cleanup",
+                    "pane_id": "w-rw-sanity-cleanup:p7",
+                    "terminal_id": "term-planner",
+                },
+                "orchestrator": {
+                    "workspace_id": "w-rw-sanity-cleanup",
+                    "pane_id": "w-rw-sanity-cleanup:p8",
+                    "terminal_id": "term-orchestrator",
+                },
+            },
+        },
+    )
+    return {"run_dir": fixture_dir}
+
+
+def create_orchestration_evidence_status_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-orchestration-evidence"
+    write_json(
+        fixture_dir / "orchestration-evidence-receipt.json",
+        {
+            "schema": "tau.orchestration_evidence_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "execution": "real_world_sanity_static_orchestration_evidence_status_fixture",
+            "run_id": "rw-sanity-orchestration-evidence",
+            "source_run_dir": str(fixture_dir),
+            "feature_counts": {
+                "agent_lineage": 4,
+                "execution_timeline": 2,
+                "provider_capabilities": 2,
+                "worktree_session_bindings": 4,
+                "review_comments": 1,
+                "agent_messages": 1,
+                "doctor": 1,
+            },
+            "errors": [],
+        },
+    )
+    return {"run_dir": fixture_dir}
+
+
+def create_provider_lifecycle_status_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-provider-lifecycle"
+    readiness_dir = fixture_dir / "readiness"
+    codex_state = readiness_dir / "codex.session-state.json"
+    opencode_state = readiness_dir / "opencode.session-state.json"
+    write_json(
+        codex_state,
+        {
+            "schema": "tau.provider_session_state.v1",
+            "provider_id": "codex",
+            "workspace_id": "w-rw-sanity-lifecycle",
+            "pane_id": "w-rw-sanity-lifecycle:p5",
+            "terminal_id": "term-codex",
+            "state": "ready",
+            "ready": True,
+            "source": "real_world_sanity_static_provider_lifecycle_fixture",
+            "process": {"alive": True, "command": "codex"},
+            "evidence": {"visible_log_path": str(fixture_dir / "logs/codex.visible.txt")},
+        },
+    )
+    write_json(
+        opencode_state,
+        {
+            "schema": "tau.provider_session_state.v1",
+            "provider_id": "opencode",
+            "workspace_id": "w-rw-sanity-lifecycle",
+            "pane_id": "w-rw-sanity-lifecycle:p6",
+            "terminal_id": "term-opencode",
+            "state": "auth_required",
+            "ready": False,
+            "source": "real_world_sanity_static_provider_lifecycle_fixture",
+            "process": {"alive": True, "command": "opencode"},
+            "evidence": {"visible_log_path": str(fixture_dir / "logs/opencode.visible.txt")},
+        },
+    )
+    write_json(
+        fixture_dir / "runtime-manifest.json",
+        {
+            "schema": "tau.provider_readiness_runtime_manifest.v1",
+            "run_id": "rw-sanity-provider-lifecycle",
+            "provider_session_states": [str(codex_state), str(opencode_state)],
+        },
+    )
+    write_json(
+        fixture_dir / "run-receipt.json",
+        {
+            "schema": "tau.provider_readiness_run_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "run_id": "rw-sanity-provider-lifecycle",
+            "all_provider_structured_ready": False,
+        },
+    )
+    return {"run_dir": fixture_dir}
+
+
+def _provider_lifecycle_crashed_ready_probe_code() -> str:
+    return (
+        "import json; "
+        "from tau_coding.provider_lifecycle import build_provider_session_state; "
+        "readiness = {"
+        "'schema':'tau.provider_readiness.v1',"
+        "'run_id':'rw-sanity-provider-lifecycle-crashed-ready',"
+        "'provider_id':'codex',"
+        "'workspace_id':'w-rw-sanity-lifecycle',"
+        "'pane_id':'w-rw-sanity-lifecycle:p5',"
+        "'terminal_id':'term-codex',"
+        "'state':'ready',"
+        "'ready':True,"
+        "'source':'real_world_sanity_lifecycle_probe',"
+        "'evidence':{"
+        "'process_alive':False,"
+        "'foreground_command':'',"
+        "'visible_log_path':'/tmp/codex.visible.txt'"
+        "},"
+        "'diagnostics':{"
+        "'visible_prompt_observed':True,"
+        "'visible_prompt_is_gate':False,"
+        "'interstitial_visible':False"
+        "}"
+        "}; "
+        "state = build_provider_session_state(readiness); "
+        "passed = state.get('state') == 'crashed' and state.get('ready') is False; "
+        "print(json.dumps({"
+        "'schema':'tau.provider_lifecycle_probe_receipt.v1',"
+        "'ok':passed,"
+        "'status':'PASS' if passed else 'BLOCKED',"
+        "'mocked':False,"
+        "'live':False,"
+        "'normalized_state':state.get('state'),"
+        "'ready':state.get('ready'),"
+        "'errors':[] if passed else ['dead ready provider was not normalized as crashed']"
+        "}, sort_keys=True)); "
+        "raise SystemExit(0 if passed else 1)"
+    )
+
+
+def create_provider_readiness_status_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-provider-readiness-status"
+    readiness_dir = fixture_dir / "readiness"
+    codex_readiness = readiness_dir / "codex.readiness.json"
+    opencode_readiness = readiness_dir / "opencode.readiness.json"
+    codex_state = readiness_dir / "codex.session-state.json"
+    opencode_state = readiness_dir / "opencode.session-state.json"
+    write_json(
+        codex_readiness,
+        {
+            "schema": "tau.provider_readiness.v1",
+            "provider_id": "codex",
+            "workspace_id": "w-rw-sanity-readiness",
+            "pane_id": "w-rw-sanity-readiness:p5",
+            "terminal_id": "term-codex",
+            "state": "ready",
+            "ready": True,
+            "source": "real_world_sanity_static_provider_readiness_fixture",
+            "diagnostics": {
+                "visible_prompt_observed": True,
+                "visible_prompt_is_gate": False,
+            },
+            "evidence": {
+                "visible_log_path": str(fixture_dir / "logs/codex.visible.txt"),
+                "provider_readiness_path": str(codex_readiness),
+                "provider_session_state_path": str(codex_state),
+            },
+        },
+    )
+    write_json(
+        opencode_readiness,
+        {
+            "schema": "tau.provider_readiness.v1",
+            "provider_id": "opencode",
+            "workspace_id": "w-rw-sanity-readiness",
+            "pane_id": "w-rw-sanity-readiness:p6",
+            "terminal_id": "term-opencode",
+            "state": "ready",
+            "ready": True,
+            "source": "real_world_sanity_static_provider_readiness_fixture",
+            "diagnostics": {
+                "visible_prompt_observed": True,
+                "visible_prompt_is_gate": False,
+            },
+            "evidence": {
+                "visible_log_path": str(fixture_dir / "logs/opencode.visible.txt"),
+                "provider_readiness_path": str(opencode_readiness),
+                "provider_session_state_path": str(opencode_state),
+            },
+        },
+    )
+    for state_path, provider_id, pane_id, command in (
+        (codex_state, "codex", "w-rw-sanity-readiness:p5", "codex"),
+        (opencode_state, "opencode", "w-rw-sanity-readiness:p6", "opencode"),
+    ):
+        write_json(
+            state_path,
+            {
+                "schema": "tau.provider_session_state.v1",
+                "provider_id": provider_id,
+                "workspace_id": "w-rw-sanity-readiness",
+                "pane_id": pane_id,
+                "terminal_id": f"term-{provider_id}",
+                "state": "ready",
+                "ready": True,
+                "source": "real_world_sanity_static_provider_readiness_fixture",
+                "process": {"alive": True, "command": command},
+                "evidence": {"visible_log_path": str(fixture_dir / f"logs/{provider_id}.visible.txt")},
+            },
+        )
+    write_text(
+        fixture_dir / "events.jsonl",
+        json.dumps(
+            {
+                "schema": "tau.provider_pane_event.v1",
+                "kind": "provider_readiness_recorded",
+                "run_id": "rw-sanity-provider-readiness-status",
+            },
+            sort_keys=True,
+        )
+        + "\n",
+    )
+    write_json(
+        fixture_dir / "runtime-manifest.json",
+        {
+            "schema": "tau.provider_readiness_runtime_manifest.v1",
+            "run_id": "rw-sanity-provider-readiness-status",
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "readiness_records": [str(codex_readiness), str(opencode_readiness)],
+            "provider_session_states": [str(codex_state), str(opencode_state)],
+            "workstation_manifest": str(fixture_dir / "workstation.json"),
+            "inspect_path": str(fixture_dir / "inspect.json"),
+        },
+    )
+    write_json(
+        fixture_dir / "run-receipt.json",
+        {
+            "schema": "tau.provider_readiness_run_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "run_id": "rw-sanity-provider-readiness-status",
+            "all_provider_structured_ready": True,
+        },
+    )
+    return {"run_dir": fixture_dir}
+
+
+def create_provider_pane_status_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-provider-pane-status"
+    write_text(
+        fixture_dir / "events.jsonl",
+        json.dumps(
+            {
+                "schema": "tau.provider_pane_event.v1",
+                "kind": "provider_pane_settled",
+                "run_id": "rw-sanity-provider-pane-status",
+            },
+            sort_keys=True,
+        )
+        + "\n",
+    )
+    write_json(
+        fixture_dir / "runtime-manifest.json",
+        {
+            "schema": "tau.provider_pane_runtime_manifest.v1",
+            "run_id": "rw-sanity-provider-pane-status",
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "workstation_manifest": str(fixture_dir / "workstation.json"),
+            "inspect_path": str(fixture_dir / "inspect.json"),
+            "providers": [
+                {
+                    "provider_id": "codex",
+                    "role": "codex",
+                    "pane_id": "w-rw-sanity-pane:p5",
+                    "terminal_id": "term-codex",
+                    "work_order_path": str(fixture_dir / "work-orders/codex.json"),
+                    "ready_prompt_observed": True,
+                    "readiness_actions": ["codex_update_prompt_skipped"],
+                    "visible_log": str(fixture_dir / "logs/codex.visible.txt"),
+                    "read_returncode": 0,
+                },
+                {
+                    "provider_id": "opencode",
+                    "role": "opencode",
+                    "pane_id": "w-rw-sanity-pane:p6",
+                    "terminal_id": "term-opencode",
+                    "work_order_path": str(fixture_dir / "work-orders/opencode.json"),
+                    "ready_prompt_observed": False,
+                    "readiness_actions": [],
+                    "visible_log": str(fixture_dir / "logs/opencode.visible.txt"),
+                    "read_returncode": 0,
+                },
+            ],
+        },
+    )
+    write_json(
+        fixture_dir / "run-receipt.json",
+        {
+            "schema": "tau.provider_pane_run_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "run_id": "rw-sanity-provider-pane-status",
+            "proof_scope": {
+                "proves": ["provider-pane allocation artifacts can fail closed"],
+                "does_not_prove": ["structured provider readiness"],
+            },
+        },
+    )
+    return {"run_dir": fixture_dir}
+
+
+def create_provider_dag_status_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-provider-dag-status"
+    events = fixture_dir / "events.jsonl"
+    write_text(
+        events,
+        json.dumps(
+            {
+                "schema": "tau.provider_dag_event.v1",
+                "kind": "coder_dispatch",
+                "run_id": "rw-sanity-provider-dag-status",
+            },
+            sort_keys=True,
+        )
+        + "\n",
+    )
+    write_json(
+        fixture_dir / "runtime-manifest.json",
+        {
+            "schema": "tau.provider_dag_runtime_manifest.v1",
+            "run_id": "rw-sanity-provider-dag-status",
+            "events_jsonl": str(events),
+            "scratch_worktree": str(fixture_dir / "scratch-worktree"),
+        },
+    )
+    write_json(
+        fixture_dir / "run-receipt.json",
+        {
+            "schema": "tau.dag_run_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "run_id": "rw-sanity-provider-dag-status",
+            "scratch_worktree": str(fixture_dir / "scratch-worktree"),
+            "attempt_count": 1,
+            "max_attempts": 2,
+            "provider_sessions": {
+                "codex": {
+                    "role": "coder",
+                    "provider_id": "codex",
+                    "workspace_id": "w-rw-provider-dag",
+                    "pane_id": "w-rw-provider-dag:p5",
+                    "terminal_id": "term-codex",
+                    "visible": True,
+                    "ready": True,
+                    "state": "ready",
+                },
+                "opencode": {
+                    "role": "reviewer",
+                    "provider_id": "opencode",
+                    "workspace_id": "w-rw-provider-dag",
+                    "pane_id": "w-rw-provider-dag:p6",
+                    "terminal_id": "term-opencode",
+                    "visible": True,
+                    "ready": True,
+                    "state": "ready",
+                },
+            },
+            "visible_subagents": {
+                "planner": {
+                    "role": "planner",
+                    "workspace_id": "w-rw-provider-dag",
+                    "pane_id": "w-rw-provider-dag:p7",
+                    "terminal_id": "term-planner",
+                    "visible": True,
+                },
+                "orchestrator": {
+                    "role": "orchestrator",
+                    "workspace_id": "w-rw-provider-dag",
+                    "pane_id": "w-rw-provider-dag:p8",
+                    "terminal_id": "term-orchestrator",
+                    "visible": True,
+                },
+                "coder": {
+                    "role": "coder",
+                    "provider_id": "codex",
+                    "workspace_id": "w-rw-provider-dag",
+                    "pane_id": "w-rw-provider-dag:p5",
+                    "terminal_id": "term-codex",
+                    "visible": True,
+                },
+                "reviewer": {
+                    "role": "reviewer",
+                    "provider_id": "opencode",
+                    "workspace_id": "w-rw-provider-dag",
+                    "pane_id": "w-rw-provider-dag:p6",
+                    "terminal_id": "term-opencode",
+                    "visible": True,
+                },
+            },
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "coder_status": "PASS",
+                    "coder_verdict": "PASS",
+                    "reviewer_status": "PASS",
+                    "reviewer_verdict": "PASS",
+                    "errors": [],
+                }
+            ],
+            "herdr_cleanup_receipt": str(fixture_dir / "herdr-cleanup-receipt.json"),
+            "herdr_cleanup": {
+                "status": "PASS",
+                "mocked": False,
+                "live": False,
+                "mode": "dry-run",
+                "candidate_count": 1,
+            },
+            "orchestration_evidence_receipt": str(
+                fixture_dir / "orchestration-evidence-receipt.json"
+            ),
+            "orchestration_evidence": {
+                "status": "PASS",
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "feature_counts": {
+                    "agent_lineage": 4,
+                    "provider_capabilities": 2,
+                    "worktree_session_bindings": 4,
+                },
+            },
+        },
+    )
+    return {"run_dir": fixture_dir}
+
+
+def approval_packet(*, action: str, target_id: str, reason: str) -> dict[str, Any]:
+    return {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "action": action,
+        "human": {"id": "human:graham"},
+        "target": {"id": target_id},
+        "reason": reason,
+        "evidence": ["real-world-sanity approval fixture"],
+    }
+
+
+def create_generic_provider_adapter_fixture(
+    run_dir: Path,
+    *,
+    repo: Path,
+    uv_tau: list[str],
+    herdr_bin: str,
+    receipt_timeout_seconds: int,
+    provider_cleanup_mode: str,
+) -> Path:
+    fixture_dir = run_dir / "advanced-generic-provider-dag-adapter"
+    receipt_path = fixture_dir / "receipts" / "provider-task.json"
+    provider_run_root = fixture_dir / "provider-runs"
+    work_order_path = fixture_dir / "work-orders" / "provider-task.json"
+    write_json(
+        work_order_path,
+        {
+            "schema": "tau.generic_provider_adapter_work_order.v1",
+            "purpose": (
+                "Exercise generic DAG -> provider adapter -> visible provider DAG "
+                "-> generic node receipt."
+            ),
+        },
+    )
+    spec_path = fixture_dir / "dag-spec.json"
+    write_json(
+        spec_path,
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "rw-sanity-generic-provider-dag-adapter",
+            "run_dir": str(fixture_dir),
+            "events_jsonl": str(fixture_dir / "events.jsonl"),
+            "nodes": [
+                {
+                    "node_id": "provider_task",
+                    "role": "provider_dag_adapter",
+                    "depends_on": [],
+                    "work_order_path": str(work_order_path),
+                    "receipt_path": str(receipt_path),
+                    "timeout_seconds": receipt_timeout_seconds + 180,
+                    "max_attempts": 1,
+                    "command": [
+                        *uv_tau,
+                        "generic-provider-dag-node",
+                        "--node-id",
+                        "provider_task",
+                        "--receipt-path",
+                        str(receipt_path),
+                        "--work-order-path",
+                        str(work_order_path),
+                        "--provider-run-root",
+                        str(provider_run_root),
+                        "--repo",
+                        str(repo),
+                        "--label",
+                        "rw-sanity-generic-provider-dag-adapter",
+                        "--max-attempts",
+                        "1",
+                        "--receipt-timeout-seconds",
+                        str(receipt_timeout_seconds),
+                        "--herdr-bin",
+                        herdr_bin,
+                        "--no-install-integrations",
+                        "--cleanup-mode",
+                        provider_cleanup_mode,
+                    ],
+                }
+            ],
+        },
+    )
+    return spec_path
+
+
+def generic_dag_receipt_writer(receipt_path: Path, *, node_id: str) -> str:
+    payload = {
+        "schema": "tau.generic_dag_node_receipt.v1",
+        "node_id": node_id,
+        "status": "PASS",
+        "verdict": "PASS",
+        "artifacts": [],
+        "commands_run": ["python3 inline receipt writer"],
+        "handoff_summary": f"{node_id} completed by real-world sanity worker",
+        "errors": [],
+        "policy_exceptions": [],
+    }
+    return (
+        "import json; from pathlib import Path; "
+        f"path=Path({str(receipt_path)!r}); "
+        "path.parent.mkdir(parents=True, exist_ok=True); "
+        f"path.write_text(json.dumps({payload!r}, sort_keys=True), encoding='utf-8')"
+    )
+
+
+def run_status_after_json_command(
+    *,
+    producer_command: list[str],
+    status_command_prefix: list[str],
+    run_dir_key: str,
+    producer_expected_exit_codes: tuple[int, ...] = (0,),
+) -> str:
+    return "\n".join(
+        [
+            "import json, subprocess, sys",
+            f"producer = {producer_command!r}",
+            f"status_prefix = {status_command_prefix!r}",
+            f"run_dir_key = {run_dir_key!r}",
+            f"producer_expected = {producer_expected_exit_codes!r}",
+            "first = subprocess.run(producer, text=True, capture_output=True)",
+            "sys.stderr.write(first.stderr)",
+            "if first.returncode not in producer_expected:",
+            "    sys.stdout.write(first.stdout)",
+            "    raise SystemExit(first.returncode)",
+            "payload = json.loads(first.stdout)",
+            "run_dir = payload[run_dir_key]",
+            "second = subprocess.run([*status_prefix, run_dir], text=True, capture_output=True)",
+            "sys.stderr.write(second.stderr)",
+            "sys.stdout.write(second.stdout)",
+            "raise SystemExit(second.returncode)",
+        ]
+    )
+
+
+def rerun_json_command_with_resume(
+    *,
+    first_command: list[str],
+    second_command: list[str],
+) -> str:
+    return "\n".join(
+        [
+            "import subprocess, sys",
+            f"first = {first_command!r}",
+            f"second = {second_command!r}",
+            "first_result = subprocess.run(first, text=True, capture_output=True)",
+            "sys.stderr.write(first_result.stderr)",
+            "if first_result.returncode != 0:",
+            "    sys.stdout.write(first_result.stdout)",
+            "    raise SystemExit(first_result.returncode)",
+            "second_result = subprocess.run(second, text=True, capture_output=True)",
+            "sys.stderr.write(second_result.stderr)",
+            "sys.stdout.write(second_result.stdout)",
+            "raise SystemExit(second_result.returncode)",
+        ]
+    )
+
+
+def resume_from_run_dir_json_command(
+    *,
+    first_command: list[str],
+    resume_command_prefix: list[str],
+) -> str:
+    return "\n".join(
+        [
+            "import json, subprocess, sys",
+            f"first = {first_command!r}",
+            f"resume_prefix = {resume_command_prefix!r}",
+            "first_result = subprocess.run(first, text=True, capture_output=True)",
+            "sys.stderr.write(first_result.stderr)",
+            "if first_result.returncode != 0:",
+            "    sys.stdout.write(first_result.stdout)",
+            "    raise SystemExit(first_result.returncode)",
+            "payload = json.loads(first_result.stdout)",
+            "run_dir = payload.get('run_dir')",
+            "if not isinstance(run_dir, str) or not run_dir:",
+            "    sys.stdout.write(first_result.stdout)",
+            "    raise SystemExit('dag-run output did not include run_dir')",
+            "second_result = subprocess.run([*resume_prefix, run_dir], text=True, capture_output=True)",
+            "sys.stderr.write(second_result.stderr)",
+            "sys.stdout.write(second_result.stdout)",
+            "raise SystemExit(second_result.returncode)",
+        ]
+    )
+
+
+def create_handoff_loop_fixture(run_dir: Path, *, repo: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "simple-handoff-loop"
+    agents_root = fixture_dir / "agents"
+    command_spec_root = fixture_dir / "command-specs"
+    receipt_dir = fixture_dir / "receipts"
+    for path in (
+        agents_root / "project-or-harness-verifier",
+        command_spec_root / "goal-guardian",
+        command_spec_root / "project-or-harness-verifier",
+        receipt_dir,
+    ):
+        path.mkdir(parents=True, exist_ok=True)
+    (agents_root / "project-or-harness-verifier" / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    start = valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Goal preservation should be checked first.",
+    }
+    start_path = fixture_dir / "start-handoff.json"
+    write_json(start_path, start)
+    write_json(
+        command_spec_root / "goal-guardian" / "tau-dispatch-command.json",
+        {
+            "command": [
+                "uv",
+                "run",
+                "--project",
+                str(repo),
+                "python",
+                "-c",
+                (
+                    "import json; "
+                    "from tau_coding.cli import "
+                    "project_agent_handoff_goal_guardian_adapter_command; "
+                    "print(json.dumps(project_agent_handoff_goal_guardian_adapter_command("
+                    "next_agent='project-or-harness-verifier', "
+                    "next_executor='local', "
+                    "next_reason='Verifier should inspect preserved-goal receipt.', "
+                    "required_evidence='Verifier posts the next schema-valid route.', "
+                    "stop_condition='Verifier route is posted.'"
+                    ")))"
+                ),
+            ],
+            "timeout_s": 10,
+        },
+    )
+    write_json(
+        command_spec_root / "project-or-harness-verifier" / "tau-dispatch-command.json",
+        {
+            "command": [
+                "uv",
+                "run",
+                "--project",
+                str(repo),
+                "python",
+                "-c",
+                (
+                    "import json; "
+                    "from tau_coding.cli import project_agent_handoff_adapter_command; "
+                    "print(json.dumps(project_agent_handoff_adapter_command("
+                    "result_status='COMPLETED', "
+                    "result_summary='Verifier adapter consumed the guardian handoff.', "
+                    "next_agent='human', "
+                    "next_executor='human', "
+                    "next_reason='Human should decide the next bounded step.', "
+                    "required_evidence='Human posts the next schema-valid route.', "
+                    "stop_condition='Human route is posted.'"
+                    ")))"
+                ),
+            ],
+            "timeout_s": 10,
+        },
+    )
+    return {
+        "agents_root": agents_root,
+        "command_spec_root": command_spec_root,
+        "receipt_dir": receipt_dir,
+        "start": start_path,
+    }
+
+
+def valid_handoff() -> dict[str, Any]:
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": {"repo": "grahama1970/tau", "target": "local-sanity"},
+        "goal": {
+            "goal_id": "goal-real-world-sanity",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "previous_subagent": "coder",
+        "context": {
+            "summary": "Real-world sanity runner created a bounded handoff.",
+            "artifacts": [],
+        },
+        "result": {
+            "status": "COMPLETED",
+            "summary": "The route is ready for the next local agent.",
+            "evidence": [],
+        },
+        "rationale": "The next local agent should inspect the receipt.",
+        "next_agent": {
+            "name": "reviewer",
+            "executor": "either",
+            "reason": "Reviewer should inspect evidence before routing onward.",
+        },
+        "required_evidence": ["schema-valid handoff response"],
+        "stop_condition": "Next agent posts a schema-valid route.",
+    }
+
+
+def command_spec_probe(repo: Path) -> str:
+    roles = ("planner", "orchestrator", "coder", "reviewer")
+    return (
+        "import json; from pathlib import Path; "
+        f"root=Path({str(repo / 'experiments/goal-locked-subagents/agent-command-specs')!r}); "
+        f"roles={roles!r}; missing=[]; specs=[]; "
+        "\nfor role in roles:\n"
+        "    path=root / role / 'tau-dispatch-command.json'\n"
+        "    if not path.exists(): missing.append(str(path)); continue\n"
+        "    payload=json.loads(path.read_text(encoding='utf-8'))\n"
+        "    if not isinstance(payload.get('command'), list): missing.append(str(path)+': command missing')\n"
+        "    specs.append({'role': role, 'path': str(path), 'command': payload.get('command')})\n"
+        "receipt={'schema':'tau.real_world_command_spec_catalog_check.v1','ok':not missing,"
+        "'status':'PASS' if not missing else 'BLOCKED','mocked':False,'live':False,"
+        "'checked_roles':roles,'specs':specs,'errors':missing}\n"
+        "print(json.dumps(receipt, sort_keys=True))\n"
+        "raise SystemExit(0 if receipt['ok'] else 1)\n"
+    )
+
+
+def run_check(check: Check, *, repo: Path, run_dir: Path) -> dict[str, Any]:
+    started = utc_stamp()
+    attempt_records: list[dict[str, Any]] = []
+    payload: dict[str, Any] | None = None
+    errors: list[str] = []
+    exit_code = 1
+    for attempt in range(1, check.attempts + 1):
+        attempt_record = run_check_attempt(
+            check=check,
+            repo=repo,
+            run_dir=run_dir,
+            attempt=attempt,
+        )
+        attempt_records.append(attempt_record)
+        payload = (
+            attempt_record["payload"] if isinstance(attempt_record.get("payload"), dict) else None
+        )
+        errors = list(attempt_record["errors"])
+        exit_code = int(attempt_record["exit_code"])
+        if not errors:
+            break
+
+    output_receipt_path = check.output_receipt
+    last_attempt = attempt_records[-1]
+    cleanup_record: dict[str, Any] | None = None
+    if not errors and check.post_cleanup_mode != "off":
+        cleanup_record = run_post_check_cleanup(
+            check=check,
+            repo=repo,
+            run_dir=run_dir,
+            payload=payload,
+        )
+        if cleanup_record["status"] != "PASS":
+            errors.extend(cleanup_record["errors"])
+    status = "PASS" if not errors else "BLOCKED"
+    record = {
+        "schema": CHECK_SCHEMA,
+        "check_id": check.check_id,
+        "level": check.level,
+        "purpose": check.purpose,
+        "status": status,
+        "ok": status == "PASS",
+        "mocked": False,
+        "live": receipt_live_value(payload),
+        "provider_live": receipt_provider_live_value(check, payload),
+        "started_at": started,
+        "completed_at": utc_stamp(),
+        "timeout_seconds": check.timeout_seconds,
+        "attempt_count": len(attempt_records),
+        "max_attempts": check.attempts,
+        "command": check.command,
+        "exit_code": exit_code,
+        "expected_exit_codes": list(check.expected_exit_codes),
+        "expected_status": check.expected_status,
+        "expected_verdict": check.expected_verdict,
+        "expected_min_provider_session_states": check.expected_min_provider_session_states,
+        "stdout_path": last_attempt["stdout_path"],
+        "stderr_path": last_attempt["stderr_path"],
+        "output_receipt_path": str(output_receipt_path) if output_receipt_path else None,
+        "receipt_summary": summarize_receipt(payload),
+        "post_cleanup": cleanup_record,
+        "attempts": [
+            {
+                key: value
+                for key, value in attempt.items()
+                if key not in {"payload", "stdout", "stderr"}
+            }
+            for attempt in attempt_records
+        ],
+        "errors": errors,
+    }
+    write_json(run_dir / "checks" / f"{check.check_id}.json", record)
+    return record
+
+
+def run_post_check_cleanup(
+    *,
+    check: Check,
+    repo: Path,
+    run_dir: Path,
+    payload: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        return {
+            "status": "BLOCKED",
+            "ok": False,
+            "mode": check.post_cleanup_mode,
+            "errors": ["cannot run cleanup without a JSON receipt payload"],
+        }
+    provider_run_dir_value = payload.get("run_dir")
+    if not isinstance(provider_run_dir_value, str) or not provider_run_dir_value:
+        return {
+            "status": "BLOCKED",
+            "ok": False,
+            "mode": check.post_cleanup_mode,
+            "errors": ["cannot run cleanup because receipt has no run_dir"],
+        }
+    provider_run_dir = Path(provider_run_dir_value).expanduser()
+    if not provider_run_dir.is_absolute():
+        provider_run_dir = repo / provider_run_dir
+    cleanup_stdout = run_dir / "logs" / f"{check.check_id}.cleanup.stdout.txt"
+    cleanup_stderr = run_dir / "logs" / f"{check.check_id}.cleanup.stderr.txt"
+    command = [
+        check.post_cleanup_uv_bin,
+        "run",
+        "--project",
+        str(repo),
+        "tau",
+        "herdr-cleanup",
+        check.post_cleanup_mode,
+        "--run-dir",
+        str(provider_run_dir),
+        "--herdr-bin",
+        check.post_cleanup_herdr_bin,
+    ]
+    completed = subprocess.run(
+        command,
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+    write_text(cleanup_stdout, completed.stdout)
+    write_text(cleanup_stderr, completed.stderr)
+    parsed = parse_json_payload(completed.stdout)
+    errors: list[str] = []
+    if completed.returncode != 0:
+        errors.append(f"cleanup exit_code {completed.returncode}")
+    if not isinstance(parsed, dict):
+        errors.append("cleanup did not emit a JSON receipt")
+    elif parsed.get("status") != "PASS":
+        errors.append(f"cleanup status {parsed.get('status')!r}, expected 'PASS'")
+    return {
+        "schema": "tau.real_world_sanity_post_cleanup.v1",
+        "status": "PASS" if not errors else "BLOCKED",
+        "ok": not errors,
+        "mocked": False,
+        "live": check.post_cleanup_mode == "apply",
+        "mode": check.post_cleanup_mode,
+        "command": command,
+        "exit_code": completed.returncode,
+        "run_dir": str(provider_run_dir),
+        "stdout_path": str(cleanup_stdout),
+        "stderr_path": str(cleanup_stderr),
+        "receipt_summary": summarize_receipt(parsed),
+        "receipt_path": str(provider_run_dir / "herdr-cleanup-receipt.json"),
+        "errors": errors,
+    }
+
+
+def run_check_attempt(
+    *,
+    check: Check,
+    repo: Path,
+    run_dir: Path,
+    attempt: int,
+) -> dict[str, Any]:
+    timed_out = False
+    try:
+        completed = subprocess.run(
+            check.command,
+            cwd=repo,
+            text=True,
+            capture_output=True,
+            timeout=check.timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        timed_out = True
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        exit_code = 124
+    else:
+        stdout = completed.stdout
+        stderr = completed.stderr
+        exit_code = completed.returncode
+
+    parsed = parse_json_payload(stdout)
+    output_receipt_payload = None
+    if check.output_receipt and check.output_receipt.exists():
+        output_receipt_payload = read_json(check.output_receipt)
+    payload = output_receipt_payload or parsed
+    errors = check_payload_errors(
+        check=check,
+        payload=payload,
+        exit_code=exit_code,
+        timed_out=timed_out,
+    )
+    suffix = f".attempt-{attempt:02d}" if check.attempts > 1 else ""
+    stdout_path = write_text(run_dir / "logs" / f"{check.check_id}{suffix}.stdout.txt", stdout)
+    stderr_path = write_text(run_dir / "logs" / f"{check.check_id}{suffix}.stderr.txt", stderr)
+    return {
+        "attempt": attempt,
+        "exit_code": exit_code,
+        "timed_out": timed_out,
+        "stdout_path": str(stdout_path),
+        "stderr_path": str(stderr_path),
+        "payload": payload,
+        "receipt_summary": summarize_receipt(payload),
+        "errors": errors,
+    }
+
+
+def check_payload_errors(
+    *,
+    check: Check,
+    payload: dict[str, Any] | None,
+    exit_code: int,
+    timed_out: bool,
+) -> list[str]:
+    errors: list[str] = []
+    if timed_out:
+        errors.append(f"timed out after {check.timeout_seconds}s")
+    if exit_code not in check.expected_exit_codes:
+        errors.append(f"exit_code {exit_code} not in expected {list(check.expected_exit_codes)}")
+    if check.require_json_receipt and not isinstance(payload, dict):
+        errors.append("no JSON receipt found in stdout or expected output receipt path")
+    if isinstance(payload, dict):
+        mocked = payload.get("mocked")
+        if check.require_mocked_false and mocked is not False:
+            errors.append(f"receipt mocked field is {mocked!r}, expected false")
+        if check.expected_status is not None and payload.get("status") != check.expected_status:
+            errors.append(
+                f"receipt status {payload.get('status')!r}, expected {check.expected_status!r}"
+            )
+        if check.expected_verdict is not None and payload.get("verdict") != check.expected_verdict:
+            errors.append(
+                f"receipt verdict {payload.get('verdict')!r}, expected {check.expected_verdict!r}"
+            )
+        if (
+            check.expected_provider_live is not None
+            and payload.get("provider_live") is not check.expected_provider_live
+        ):
+            errors.append(
+                "receipt provider_live "
+                f"{payload.get('provider_live')!r}, expected {check.expected_provider_live!r}"
+            )
+        if check.expected_min_provider_session_states:
+            states = payload.get("provider_session_states")
+            state_count = len(states) if isinstance(states, list) else 0
+            if state_count < check.expected_min_provider_session_states:
+                errors.append(
+                    "provider_session_states count "
+                    f"{state_count}, expected at least "
+                    f"{check.expected_min_provider_session_states}"
+                )
+        if check.expected_min_resumed_nodes:
+            nodes = payload.get("nodes")
+            resumed_count = (
+                len(
+                    [
+                        node
+                        for node in nodes
+                        if isinstance(node, dict) and node.get("resumed") is True
+                    ]
+                )
+                if isinstance(nodes, list)
+                else 0
+            )
+            if resumed_count < check.expected_min_resumed_nodes:
+                errors.append(
+                    f"resumed node count {resumed_count}, expected at least "
+                    f"{check.expected_min_resumed_nodes}"
+                )
+    return errors
+
+
+def write_suite_receipt(
+    *,
+    repo: Path,
+    run_dir: Path,
+    run_id: str,
+    records: list[dict[str, Any]],
+    selected_levels: list[str],
+    complete: bool,
+) -> dict[str, Any]:
+    level_counts: dict[str, dict[str, int]] = {}
+    for record in records:
+        level = str(record["level"])
+        status = str(record["status"])
+        level_counts.setdefault(level, {})
+        level_counts[level][status] = level_counts[level].get(status, 0) + 1
+    failed = [record for record in records if record.get("ok") is not True]
+    receipt = {
+        "schema": RECEIPT_SCHEMA,
+        "ok": complete and not failed,
+        "status": "PASS" if complete and not failed else "BLOCKED" if failed else "RUNNING",
+        "mocked": False,
+        "live": "mixed",
+        "provider_live": any(record.get("provider_live") is True for record in records),
+        "run_id": run_id,
+        "run_dir": str(run_dir),
+        "repo": str(repo),
+        "selected_levels": selected_levels,
+        "check_count": len(records),
+        "failed_check_count": len(failed),
+        "level_counts": level_counts,
+        "checks": records,
+        "completed_at": utc_stamp() if complete else None,
+        "proof_scope": {
+            "proves": [
+                "Tau CLI and command-spec surfaces execute from the local checkout",
+                "Tau can run a real local handoff command loop",
+                "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+                "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+                "Tau fail-closed negative controls preserve typed BLOCKED receipts",
+            ],
+            "does_not_prove": [
+                "GitHub ticket closure",
+                "remote Tailscale monitoring",
+                "browser/CDP chat UI rendering",
+                "production repository mutation",
+            ],
+        },
+        "timestamp": utc_stamp(),
+    }
+    write_json(run_dir / "real-world-sanity-receipt.json", receipt)
+    return receipt
+
+
+def parse_json_payload(text: str) -> dict[str, Any] | None:
+    stripped = text.strip()
+    for start in (stripped.find("{"), stripped.find("[")):
+        if start < 0:
+            continue
+        candidate = stripped[start:]
+        try:
+            payload = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    return None
+
+
+def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    keys = (
+        "schema",
+        "ok",
+        "status",
+        "mocked",
+        "live",
+        "provider_live",
+        "verdict",
+        "spec_path",
+        "resume_requested",
+        "resume_source",
+        "attempt_count",
+        "node_count",
+        "completed_node_count",
+        "rung_count",
+        "suite_count",
+        "total_rungs",
+        "feature_counts",
+        "provider_session_state_count",
+        "resource_count",
+        "candidate_count",
+        "runtime_manifest",
+        "runtime_manifest_sha256",
+        "requested_action",
+        "approved",
+        "approval_packet_sha256",
+        "packet_summary",
+        "normalized_state",
+        "ready",
+        "selected_agents",
+        "observed_edges",
+        "node_attempts",
+        "reviewer_verdicts",
+        "errors",
+    )
+    summary = {key: payload.get(key) for key in keys if key in payload}
+    alerts = payload.get("alerts")
+    if isinstance(alerts, list):
+        summary["alert_count"] = len(alerts)
+        summary["alert_codes"] = [
+            item.get("code") for item in alerts if isinstance(item, dict) and item.get("code")
+        ]
+    applied_actions = payload.get("applied_actions")
+    if isinstance(applied_actions, list):
+        summary["applied_action_count"] = len(applied_actions)
+        summary["post_verified_absent_count"] = _post_verified_absent_count(applied_actions)
+    states = payload.get("provider_session_states")
+    if isinstance(states, list):
+        summary["provider_session_state_count"] = len(states)
+    nodes = payload.get("nodes")
+    if isinstance(nodes, list):
+        summary["node_count"] = len(nodes)
+        summary["resumed_node_count"] = len(
+            [node for node in nodes if isinstance(node, dict) and node.get("resumed") is True]
+        )
+        summary["dispatched_node_count"] = len(
+            [
+                node
+                for node in nodes
+                if isinstance(node, dict) and int(node.get("attempt_count") or 0) > 0
+            ]
+        )
+        summary["blocked_node_count"] = len(
+            [
+                node
+                for node in nodes
+                if isinstance(node, dict) and str(node.get("status") or "").upper() == "BLOCKED"
+            ]
+        )
+        summary["node_attempt_counts"] = {
+            str(node.get("node_id")): node.get("attempt_count")
+            for node in nodes
+            if isinstance(node, dict)
+            and isinstance(node.get("node_id"), str)
+            and isinstance(node.get("attempt_count"), int)
+        }
+        summary["node_statuses"] = {
+            str(node.get("node_id")): node.get("status")
+            for node in nodes
+            if isinstance(node, dict)
+            and isinstance(node.get("node_id"), str)
+            and isinstance(node.get("status"), str)
+        }
+        summary["node_verdicts"] = {
+            str(node.get("node_id")): node.get("verdict")
+            for node in nodes
+            if isinstance(node, dict)
+            and isinstance(node.get("node_id"), str)
+            and isinstance(node.get("verdict"), str)
+        }
+        summary["node_error_counts"] = {
+            str(node.get("node_id")): len(node.get("errors"))
+            for node in nodes
+            if isinstance(node, dict)
+            and isinstance(node.get("node_id"), str)
+            and isinstance(node.get("errors"), list)
+        }
+        node_durations = {
+            str(node.get("node_id")): node.get("duration_seconds")
+            for node in nodes
+            if isinstance(node, dict)
+            and isinstance(node.get("node_id"), str)
+            and isinstance(node.get("duration_seconds"), int | float)
+        }
+        if node_durations:
+            durations = [float(value) for value in node_durations.values()]
+            summary["timed_node_count"] = len(node_durations)
+            summary["node_duration_seconds_total"] = round(sum(durations), 3)
+            summary["node_duration_seconds_max"] = round(max(durations), 3)
+            summary["node_durations_seconds"] = node_durations
+    cleanup = payload.get("herdr_cleanup")
+    if isinstance(cleanup, dict):
+        summary["herdr_cleanup"] = {
+            key: cleanup.get(key)
+            for key in (
+                "mode",
+                "status",
+                "ok",
+                "mocked",
+                "live",
+                "runtime_manifest",
+                "runtime_manifest_sha256",
+                "resource_count",
+                "candidate_count",
+                "applied_action_count",
+                "post_verified_absent_count",
+                "receipt_path",
+            )
+            if key in cleanup
+        }
+    return summary
+
+
+def _post_verified_absent_count(value: list[Any]) -> int:
+    return sum(1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True)
+
+
+def receipt_live_value(payload: dict[str, Any] | None) -> Any:
+    if isinstance(payload, dict) and "live" in payload:
+        return payload["live"]
+    return "command"
+
+
+def receipt_provider_live_value(check: Check, payload: dict[str, Any] | None) -> Any:
+    if isinstance(payload, dict) and "provider_live" in payload:
+        return payload["provider_live"]
+    if check.check_id.startswith("advanced.provider_"):
+        return True
+    return False
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_json(path: Path, payload: dict[str, Any]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_text(path: Path, text: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def utc_stamp() -> str:
+    return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def compact_stamp() -> str:
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+
+
+def slug(value: str) -> str:
+    chars = [ch.lower() if ch.isalnum() else "-" for ch in value.strip()]
+    return "-".join(part for part in "".join(chars).split("-") if part)[:80] or "sanity"
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

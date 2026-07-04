@@ -388,10 +388,11 @@ def _evaluate_loop_against_contract(
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     if loop_payload.get("ok") is not True:
+        stop_reason = str(loop_payload.get("stop_reason") or "command_loop_blocked")
         alerts.append(
             _alert(
                 "BLOCK",
-                "command_loop_blocked",
+                stop_reason,
                 "Underlying handoff command loop did not pass.",
                 {"errors": loop_payload.get("errors", [])},
             )

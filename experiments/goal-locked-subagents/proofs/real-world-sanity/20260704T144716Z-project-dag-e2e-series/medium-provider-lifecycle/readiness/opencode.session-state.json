@@ -1,0 +1,17 @@
+{
+  "evidence": {
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T144716Z-project-dag-e2e-series/medium-provider-lifecycle/logs/opencode.visible.txt"
+  },
+  "pane_id": "w-rw-sanity-lifecycle:p6",
+  "process": {
+    "alive": true,
+    "command": "opencode"
+  },
+  "provider_id": "opencode",
+  "ready": false,
+  "schema": "tau.provider_session_state.v1",
+  "source": "real_world_sanity_static_provider_lifecycle_fixture",
+  "state": "auth_required",
+  "terminal_id": "term-opencode",
+  "workspace_id": "w-rw-sanity-lifecycle"
+}

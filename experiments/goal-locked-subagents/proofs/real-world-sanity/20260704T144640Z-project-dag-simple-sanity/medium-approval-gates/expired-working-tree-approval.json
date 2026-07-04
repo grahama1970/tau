@@ -1,0 +1,16 @@
+{
+  "action": "working_tree_mutation",
+  "approved": true,
+  "evidence": [
+    "real-world-sanity approval fixture"
+  ],
+  "expires_at": "2000-01-01T00:00:00Z",
+  "human": {
+    "id": "human:graham"
+  },
+  "reason": "Intentionally expired approval for fail-closed sanity proof.",
+  "schema": "tau.human_approval_packet.v1",
+  "target": {
+    "id": "scratch-working-tree"
+  }
+}
