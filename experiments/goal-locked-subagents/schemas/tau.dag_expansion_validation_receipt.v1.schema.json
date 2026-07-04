@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_expansion_validation_receipt.v1",
+  "title": "Tau DAG Expansion Validation Receipt",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "verdict",
+    "mocked",
+    "live",
+    "provider_live",
+    "dag_id",
+    "goal_hash",
+    "dag_contract",
+    "proposal",
+    "receipt_path",
+    "limits",
+    "proposal_summary",
+    "alerts",
+    "applied",
+    "mutated_source_dag",
+    "memory_sync",
+    "provider_calls",
+    "proof_scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_expansion_validation_receipt.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mocked": {
+      "type": "boolean"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "type": "boolean"
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_hash": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "dag_contract": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dag_contract_sha256": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "proposal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposal_sha256": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "receipt_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preview_path": {
+      "type": ["string", "null"]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_new_nodes",
+        "max_depth_delta",
+        "max_new_edges",
+        "allow_new_executors",
+        "allow_target_change",
+        "allow_goal_change",
+        "allow_terminal_node_change",
+        "allow_command_spec_change"
+      ],
+      "properties": {
+        "max_new_nodes": {
+          "const": 2
+        },
+        "max_depth_delta": {
+          "const": 1
+        },
+        "max_new_edges": {
+          "const": 4
+        },
+        "allow_new_executors": {
+          "const": false
+        },
+        "allow_target_change": {
+          "const": false
+        },
+        "allow_goal_change": {
+          "const": false
+        },
+        "allow_terminal_node_change": {
+          "const": false
+        },
+        "allow_command_spec_change": {
+          "const": false
+        }
+      }
+    },
+    "proposal_summary": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["severity", "code", "message", "evidence"],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "applied": {
+      "const": false
+    },
+    "mutated_source_dag": {
+      "const": false
+    },
+    "memory_sync": {
+      "const": false
+    },
+    "provider_calls": {
+      "const": false
+    },
+    "proof_scope": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["proves", "does_not_prove"],
+      "properties": {
+        "proves": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "does_not_prove": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

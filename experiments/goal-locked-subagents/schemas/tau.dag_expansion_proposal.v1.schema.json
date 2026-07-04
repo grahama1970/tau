@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_expansion_proposal.v1",
+  "title": "Tau DAG Expansion Proposal",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "proposal_id",
+    "parent_dag_id",
+    "goal_hash",
+    "proposed_by",
+    "reason",
+    "new_nodes",
+    "new_edges"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_expansion_proposal.v1"
+    },
+    "proposal_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_hash": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "goal": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "proposed_by": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "agent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "role": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "new_nodes": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "agent", "executor"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent": {
+            "type": "string",
+            "enum": ["reviewer", "validator", "goal-guardian", "research-auditor"]
+          },
+          "executor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "max_attempts": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "required_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": ["command_spec"]
+            },
+            {
+              "required": ["provider"]
+            }
+          ]
+        }
+      }
+    },
+    "new_edges": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["from", "to"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "condition": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

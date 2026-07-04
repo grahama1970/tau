@@ -1,0 +1,29 @@
+{
+  "schema": "tau.dag_expansion_proposal.v1",
+  "proposal_id": "dag-expansion-validation-slice-1",
+  "parent_dag_id": "rw-sanity-project-dag-concurrent",
+  "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+  "proposed_by": "reviewer",
+  "reason": "Insert a deterministic validator gate between creator output and reviewer verdict without changing the immutable goal, target, terminal node, executor set, command specs, or route state.",
+  "new_nodes": [
+    {
+      "id": "validator",
+      "agent": "validator",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": [
+        "validation_receipt"
+      ]
+    }
+  ],
+  "new_edges": [
+    {
+      "from": "coder",
+      "to": "validator"
+    },
+    {
+      "from": "validator",
+      "to": "reviewer"
+    }
+  ]
+}

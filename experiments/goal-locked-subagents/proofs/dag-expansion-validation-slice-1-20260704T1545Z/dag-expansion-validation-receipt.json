@@ -1,0 +1,56 @@
+{
+  "alerts": [],
+  "applied": false,
+  "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/dag-contract.json",
+  "dag_contract_sha256": "sha256:5046b02924b9da3548284408e5d5d52772df17c60085da42ae8c0d0491abf116",
+  "dag_id": "rw-sanity-project-dag-concurrent",
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+  "limits": {
+    "allow_command_spec_change": false,
+    "allow_goal_change": false,
+    "allow_new_executors": false,
+    "allow_target_change": false,
+    "allow_terminal_node_change": false,
+    "max_depth_delta": 1,
+    "max_new_edges": 4,
+    "max_new_nodes": 2
+  },
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": true,
+  "preview_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-expansion-validation-slice-1-20260704T1545Z/expanded-dag.preview.json",
+  "proof_scope": {
+    "does_not_prove": [
+      "Adaptive DAG expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "DAG expansion proposal was inspected deterministically.",
+      "Immutable goal, target, terminal node, executor, command-spec, depth, node, and edge limits were checked.",
+      "No expansion was applied to a running DAG.",
+      "No source DAG contract mutation, route mutation, Memory write, GitHub mutation, provider call, or command dispatch occurred."
+    ]
+  },
+  "proposal": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-expansion-validation-slice-1-20260704T1545Z/dag-expansion-proposal.json",
+  "proposal_sha256": "sha256:e04f488f14ebc259ad5229b131d41fd5c17e400c5904663db2a4af38e9f36432",
+  "proposal_summary": {
+    "new_edge_count": 2,
+    "new_node_count": 1,
+    "phase": null,
+    "proposal_id": "dag-expansion-validation-slice-1",
+    "proposed_by": "reviewer"
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-expansion-validation-slice-1-20260704T1545Z/dag-expansion-validation-receipt.json",
+  "schema": "tau.dag_expansion_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-04T15:38:08Z",
+  "verdict": "PASS"
+}
