@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "alerts": {
+      "type": "array"
+    },
+    "apply_allowed": {
+      "type": "boolean"
+    },
+    "dag_id": {
+      "type": ["string", "null"]
+    },
+    "goal_hash": {
+      "type": ["string", "null"]
+    },
+    "live": {
+      "const": true
+    },
+    "mocked": {
+      "const": false
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "const": false
+    },
+    "schema": {
+      "const": "tau.dag_expansion_policy_receipt.v1"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    },
+    "validation_receipt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "mocked",
+    "live",
+    "provider_live",
+    "validation_receipt",
+    "apply_allowed",
+    "alerts",
+    "proof_scope"
+  ],
+  "title": "Tau DAG Expansion Policy Receipt",
+  "type": "object"
+}

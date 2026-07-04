@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "dag_id": {
+      "type": "string"
+    },
+    "goal_hash": {
+      "type": "string"
+    },
+    "locks": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "branch_type": {
+            "enum": ["provider", "mutating"]
+          },
+          "lock_id": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          }
+        },
+        "required": ["node_id", "branch_type", "lock_id", "owner"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schema": {
+      "const": "tau.dag_branch_locks.v1"
+    }
+  },
+  "required": ["schema", "dag_id", "goal_hash", "locks"],
+  "title": "Tau DAG Branch Locks",
+  "type": "object"
+}

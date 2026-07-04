@@ -19,6 +19,8 @@ except ImportError:  # pragma: no cover - only used in stripped environments.
 
 DAG_EXPANSION_PROPOSAL_SCHEMA = "tau.dag_expansion_proposal.v1"
 DAG_EXPANSION_VALIDATION_RECEIPT_SCHEMA = "tau.dag_expansion_validation_receipt.v1"
+DAG_EXPANSION_POLICY_RECEIPT_SCHEMA = "tau.dag_expansion_policy_receipt.v1"
+DAG_EXPANSION_APPLY_RECEIPT_SCHEMA = "tau.dag_expansion_apply_receipt.v1"
 
 EXPANSION_LIMITS = {
     "max_new_nodes": 2,
@@ -86,6 +88,11 @@ def write_dag_expansion_validation_receipt(
         "proposal_sha256": f"sha256:{_sha256(resolved_proposal_path)}",
         "receipt_path": str(resolved_receipt_path),
         "preview_path": str(resolved_preview_path) if resolved_preview_path and status == "PASS" else None,
+        "preview_sha256": (
+            f"sha256:{_sha256(resolved_preview_path)}"
+            if resolved_preview_path and status == "PASS" and resolved_preview_path.exists()
+            else None
+        ),
         "limits": EXPANSION_LIMITS,
         "proposal_summary": _proposal_summary(proposal),
         "alerts": alerts,
@@ -114,6 +121,163 @@ def write_dag_expansion_validation_receipt(
     _write_json(resolved_receipt_path, receipt)
     if status == "PASS" and resolved_preview_path is not None and expanded_preview is not None:
         _write_json(resolved_preview_path, expanded_preview)
+    return receipt
+
+
+def write_dag_expansion_policy_receipt(
+    *,
+    validation_receipt_path: Path,
+    receipt_path: Path,
+    signal_receipt_path: Path | None = None,
+    require_clean_signal: bool = False,
+) -> dict[str, Any]:
+    """Decide whether a validated expansion is allowed to become a new DAG artifact."""
+
+    resolved_validation_path = validation_receipt_path.expanduser().resolve()
+    resolved_signal_path = signal_receipt_path.expanduser().resolve() if signal_receipt_path else None
+    resolved_receipt_path = receipt_path.expanduser().resolve()
+    validation = _load_object(resolved_validation_path, label="DAG expansion validation receipt")
+    alerts = _policy_alerts(
+        validation=validation,
+        validation_receipt_path=resolved_validation_path,
+        signal_receipt_path=resolved_signal_path,
+        require_clean_signal=require_clean_signal,
+    )
+    status = "PASS" if not alerts else "BLOCKED"
+    receipt = {
+        "schema": DAG_EXPANSION_POLICY_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "verdict": "PASS" if status == "PASS" else str(alerts[0]["code"]).upper(),
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "validation_receipt": str(resolved_validation_path),
+        "validation_receipt_sha256": f"sha256:{_sha256(resolved_validation_path)}",
+        "signal_receipt": str(resolved_signal_path) if resolved_signal_path else None,
+        "signal_receipt_sha256": f"sha256:{_sha256(resolved_signal_path)}" if resolved_signal_path else None,
+        "receipt_path": str(resolved_receipt_path),
+        "dag_id": validation.get("dag_id"),
+        "goal_hash": validation.get("goal_hash"),
+        "require_clean_signal": require_clean_signal,
+        "apply_allowed": status == "PASS",
+        "recommended_next_command": (
+            "tau dag-expansion-apply --validation-receipt <receipt> "
+            "--out <expanded-dag.json> --receipt <apply-receipt.json>"
+            if status == "PASS"
+            else None
+        ),
+        "alerts": alerts,
+        "applied": False,
+        "route_mutation": False,
+        "dag_mutation": False,
+        "memory_sync": False,
+        "provider_calls": False,
+        "proof_scope": {
+            "proves": [
+                "Expansion validation receipt was checked for policy eligibility.",
+                "Policy decision was emitted as a receipt.",
+                "No DAG artifact was written by policy validation.",
+            ],
+            "does_not_prove": [
+                "Expansion application.",
+                "Runtime route mutation.",
+                "Provider/model semantic quality.",
+                "Memory route learning.",
+            ],
+        },
+        "errors": [],
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(resolved_receipt_path, receipt)
+    return receipt
+
+
+def write_dag_expansion_apply_receipt(
+    *,
+    validation_receipt_path: Path,
+    out_path: Path,
+    receipt_path: Path,
+    policy_receipt_path: Path | None = None,
+) -> dict[str, Any]:
+    """Materialize a validated preview as a new DAG contract artifact."""
+
+    resolved_validation_path = validation_receipt_path.expanduser().resolve()
+    resolved_policy_path = policy_receipt_path.expanduser().resolve() if policy_receipt_path else None
+    resolved_out_path = out_path.expanduser().resolve()
+    resolved_receipt_path = receipt_path.expanduser().resolve()
+    validation = _load_object(resolved_validation_path, label="DAG expansion validation receipt")
+    alerts = _apply_alerts(
+        validation=validation,
+        validation_receipt_path=resolved_validation_path,
+        policy_receipt_path=resolved_policy_path,
+    )
+    expanded: dict[str, Any] | None = None
+    if not alerts:
+        preview_path = Path(str(validation["preview_path"])).expanduser().resolve()
+        expanded = _load_object(preview_path, label="expanded DAG preview")
+        try:
+            validate_dag_contract(expanded)
+        except RuntimeError as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "expanded_dag_invalid",
+                    "Expanded DAG preview does not satisfy tau.dag_contract.v1.",
+                    {"error": str(exc)},
+                )
+            )
+    status = "PASS" if not alerts else "BLOCKED"
+    if status == "PASS" and expanded is not None:
+        _write_json(resolved_out_path, expanded)
+    resume_supported = bool(expanded.get("limits", {}).get("resume")) if expanded else None
+    receipt = {
+        "schema": DAG_EXPANSION_APPLY_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "verdict": "PASS" if status == "PASS" else str(alerts[0]["code"]).upper(),
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "validation_receipt": str(resolved_validation_path),
+        "validation_receipt_sha256": f"sha256:{_sha256(resolved_validation_path)}",
+        "policy_receipt": str(resolved_policy_path) if resolved_policy_path else None,
+        "policy_receipt_sha256": f"sha256:{_sha256(resolved_policy_path)}" if resolved_policy_path else None,
+        "receipt_path": str(resolved_receipt_path),
+        "source_dag_contract": validation.get("dag_contract"),
+        "expanded_dag": str(resolved_out_path) if status == "PASS" else None,
+        "expanded_dag_sha256": f"sha256:{_sha256(resolved_out_path)}" if status == "PASS" else None,
+        "dag_id": validation.get("dag_id"),
+        "goal_hash": validation.get("goal_hash"),
+        "alerts": alerts,
+        "applied": status == "PASS",
+        "mutated_source_dag": False,
+        "runtime_route_mutation": False,
+        "memory_sync": False,
+        "provider_calls": False,
+        "resume_supported": resume_supported,
+        "rerun_command": (
+            ["tau", "dag-run", str(resolved_out_path), "--scheduler", "bounded-ready-queue"]
+            if status == "PASS"
+            else None
+        ),
+        "proof_scope": {
+            "proves": [
+                "Validated expansion preview was materialized as a new DAG contract artifact.",
+                "Source DAG contract was not mutated.",
+                "No running DAG route was mutated.",
+            ],
+            "does_not_prove": [
+                "Expanded DAG execution.",
+                "Provider/model semantic quality.",
+                "Memory route learning.",
+                "Mutating branch safety.",
+            ],
+        },
+        "errors": [],
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(resolved_receipt_path, receipt)
     return receipt
 
 
@@ -261,6 +425,176 @@ def _validate_proposal(
                     {},
                 )
             )
+    return alerts
+
+
+def _policy_alerts(
+    *,
+    validation: dict[str, Any],
+    validation_receipt_path: Path,
+    signal_receipt_path: Path | None,
+    require_clean_signal: bool,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if validation.get("schema") != DAG_EXPANSION_VALIDATION_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_validation_schema",
+                "Expansion policy requires a tau.dag_expansion_validation_receipt.v1 input.",
+                {"path": str(validation_receipt_path), "schema": validation.get("schema")},
+            )
+        )
+    if validation.get("ok") is not True or validation.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "validation_not_pass",
+                "Expansion policy requires a passing validation receipt.",
+                {"ok": validation.get("ok"), "status": validation.get("status")},
+            )
+        )
+    preview_path = validation.get("preview_path")
+    if not isinstance(preview_path, str) or not preview_path:
+        alerts.append(_alert("BLOCK", "missing_preview", "Expansion validation receipt has no preview path.", {}))
+    elif not Path(preview_path).expanduser().is_file():
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "preview_missing",
+                "Expansion preview path does not exist.",
+                {"preview_path": preview_path},
+            )
+        )
+    if validation.get("applied") is not False:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "validation_receipt_not_pure",
+                "Expansion policy requires a validation-only receipt with applied=false.",
+                {"applied": validation.get("applied")},
+            )
+        )
+    if require_clean_signal:
+        if signal_receipt_path is None:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_signal_receipt",
+                    "--require-clean-signal requires --signal-receipt.",
+                    {},
+                )
+            )
+        else:
+            alerts.extend(_clean_signal_alerts(signal_receipt_path))
+    return alerts
+
+
+def _apply_alerts(
+    *,
+    validation: dict[str, Any],
+    validation_receipt_path: Path,
+    policy_receipt_path: Path | None,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if validation.get("schema") != DAG_EXPANSION_VALIDATION_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_validation_schema",
+                "Expansion apply requires a tau.dag_expansion_validation_receipt.v1 input.",
+                {"path": str(validation_receipt_path), "schema": validation.get("schema")},
+            )
+        )
+    if validation.get("ok") is not True or validation.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "validation_not_pass",
+                "Expansion apply requires a passing validation receipt.",
+                {"ok": validation.get("ok"), "status": validation.get("status")},
+            )
+        )
+    preview_path = validation.get("preview_path")
+    if not isinstance(preview_path, str) or not preview_path:
+        alerts.append(_alert("BLOCK", "missing_preview", "Expansion validation receipt has no preview path.", {}))
+    elif not Path(preview_path).expanduser().is_file():
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "preview_missing",
+                "Expansion preview path does not exist.",
+                {"preview_path": preview_path},
+            )
+        )
+    if validation.get("applied") is not False:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "validation_receipt_not_pure",
+                "Expansion apply requires a validation-only receipt with applied=false.",
+                {"applied": validation.get("applied")},
+            )
+        )
+    if policy_receipt_path is not None:
+        policy = _load_object(policy_receipt_path, label="DAG expansion policy receipt")
+        if policy.get("schema") != DAG_EXPANSION_POLICY_RECEIPT_SCHEMA:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "invalid_policy_schema",
+                    "Expansion apply policy receipt has an unsupported schema.",
+                    {"schema": policy.get("schema"), "path": str(policy_receipt_path)},
+                )
+            )
+        if policy.get("ok") is not True or policy.get("apply_allowed") is not True:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "policy_not_allowing_apply",
+                    "Expansion policy receipt does not allow apply.",
+                    {"ok": policy.get("ok"), "status": policy.get("status"), "apply_allowed": policy.get("apply_allowed")},
+                )
+            )
+    return alerts
+
+
+def _clean_signal_alerts(signal_receipt_path: Path) -> list[dict[str, Any]]:
+    signal = _load_object(signal_receipt_path, label="DAG signal receipt")
+    alerts: list[dict[str, Any]] = []
+    if signal.get("schema") != "tau.dag_signal_receipt.v1":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_signal_schema",
+                "Expansion policy clean-signal gate requires tau.dag_signal_receipt.v1.",
+                {"schema": signal.get("schema"), "path": str(signal_receipt_path)},
+            )
+        )
+    if signal.get("ok") is not True or signal.get("source_ok") is not True:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "signal_not_clean",
+                "Expansion policy clean-signal gate requires passing signal and source DAG receipts.",
+                {
+                    "ok": signal.get("ok"),
+                    "status": signal.get("status"),
+                    "source_ok": signal.get("source_ok"),
+                    "source_status": signal.get("source_status"),
+                },
+            )
+        )
+    negative_signals = _dict_list(signal.get("negative_signals"))
+    if negative_signals:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "negative_signals_present",
+                "Expansion policy clean-signal gate requires zero negative DAG signals.",
+                {"negative_signal_count": len(negative_signals)},
+            )
+        )
     return alerts
 
 

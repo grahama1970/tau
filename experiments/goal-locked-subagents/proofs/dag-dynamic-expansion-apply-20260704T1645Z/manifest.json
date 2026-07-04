@@ -1,0 +1,38 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "goal": "dynamic_dag_expansion_apply_guardrails",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "commands": [
+    "uv run tau dag-expansion-policy --validation-receipt experiments/goal-locked-subagents/proofs/dag-expansion-validation-slice-1-20260704T1545Z/dag-expansion-validation-receipt.json --signal-receipt experiments/goal-locked-subagents/proofs/dag-signals-slice-1-20260704T1530Z/dag-signal-receipt.json --require-clean-signal --receipt experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/dag-expansion-policy-receipt.json",
+    "uv run tau dag-expansion-apply --validation-receipt experiments/goal-locked-subagents/proofs/dag-expansion-validation-slice-1-20260704T1545Z/dag-expansion-validation-receipt.json --policy-receipt experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/dag-expansion-policy-receipt.json --out experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/expanded-dag.applied.json --receipt experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/dag-expansion-apply-receipt.json",
+    "uv run tau dag-run experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/expanded-dag.applied.json --scheduler bounded-ready-queue --receipt-dir experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/expanded-run --agents-root /home/graham/workspace/experiments/agent-skills/agents",
+    "uv run tau dag-branch-locks-validate --dag-contract experiments/goal-locked-subagents/proofs/dag-branch-locks-20260704T1645Z/provider-mutating-dag.json --locks experiments/goal-locked-subagents/proofs/dag-branch-locks-20260704T1645Z/branch-locks.json --receipt experiments/goal-locked-subagents/proofs/dag-branch-locks-20260704T1645Z/dag-branch-lock-validation-receipt.json",
+    "uv run tau dag-route-memory-sync --candidate-receipt experiments/goal-locked-subagents/proofs/dag-route-memory-candidates-20260704T1605Z/dag-route-memory-candidate-receipt.json --receipt experiments/goal-locked-subagents/proofs/dag-route-memory-sync-20260704T1645Z/dag-route-memory-sync-receipt.json",
+    "uv run pytest tests/test_dag_expansion.py tests/test_dag_branch_locks.py tests/test_dag_route_memory.py -q",
+    "uv run ruff check --select F,I src/tau_coding/dag_expansion.py src/tau_coding/dag_branch_locks.py src/tau_coding/dag_route_memory.py src/tau_coding/cli.py tests/test_dag_expansion.py tests/test_dag_branch_locks.py tests/test_dag_route_memory.py"
+  ],
+  "artifacts": [
+    "dag-expansion-policy-receipt.json",
+    "dag-expansion-apply-receipt.json",
+    "expanded-dag.applied.json",
+    "expanded-run/dag-receipt.json",
+    "../dag-branch-locks-20260704T1645Z/dag-branch-lock-validation-receipt.json",
+    "../dag-route-memory-sync-20260704T1645Z/dag-route-memory-sync-receipt.json"
+  ],
+  "proves": [
+    "Expansion policy can gate a validated preview with a clean signal receipt.",
+    "Expansion apply can materialize a new DAG contract artifact without source DAG or running-route mutation.",
+    "The applied expanded DAG can be rerun with bounded-ready-queue local execution.",
+    "Provider and mutating branch lock metadata can be validated deterministically.",
+    "Route-memory candidates can be projected into Memory /upsert document shape without writing Memory."
+  ],
+  "does_not_prove": [
+    "Automatic runtime route mutation.",
+    "Provider/model semantic quality.",
+    "Memory sync through live /upsert.",
+    "Provider or mutating branch execution safety.",
+    "GitHub mutation or ticket closure."
+  ]
+}

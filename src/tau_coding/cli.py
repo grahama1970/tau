@@ -34,9 +34,17 @@ from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding import __version__
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.credentials import FileCredentialStore
-from tau_coding.dag_expansion import write_dag_expansion_validation_receipt
+from tau_coding.dag_branch_locks import write_dag_branch_lock_validation_receipt
+from tau_coding.dag_expansion import (
+    write_dag_expansion_apply_receipt,
+    write_dag_expansion_policy_receipt,
+    write_dag_expansion_validation_receipt,
+)
 from tau_coding.dag_motif import write_dag_motif_validation_receipt
-from tau_coding.dag_route_memory import write_dag_route_memory_candidate_receipt
+from tau_coding.dag_route_memory import (
+    write_dag_route_memory_candidate_receipt,
+    write_dag_route_memory_sync_receipt,
+)
 from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
     inspect_dag_stress_campaign,
@@ -847,6 +855,53 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "dag-expansion-policy":
+        try:
+            options = _parse_dag_expansion_policy_cli_args(positional_args[1:])
+            payload = write_dag_expansion_policy_receipt(
+                validation_receipt_path=Path(str(options["validation_receipt"])),
+                receipt_path=Path(str(options["receipt"])),
+                signal_receipt_path=options.get("signal_receipt"),
+                require_clean_signal=bool(options["require_clean_signal"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-expansion-apply":
+        try:
+            options = _parse_dag_expansion_apply_cli_args(positional_args[1:])
+            payload = write_dag_expansion_apply_receipt(
+                validation_receipt_path=Path(str(options["validation_receipt"])),
+                out_path=Path(str(options["out"])),
+                receipt_path=Path(str(options["receipt"])),
+                policy_receipt_path=options.get("policy_receipt"),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-branch-locks-validate":
+        try:
+            options = _parse_dag_branch_locks_validate_cli_args(positional_args[1:])
+            payload = write_dag_branch_lock_validation_receipt(
+                dag_contract_path=Path(str(options["dag_contract"])),
+                locks_path=Path(str(options["locks"])),
+                receipt_path=Path(str(options["receipt"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "dag-motif-validate":
         try:
             options = _parse_dag_motif_validate_cli_args(positional_args[1:])
@@ -869,6 +924,23 @@ def main(
                 signal_receipt_path=Path(str(options["signal_receipt"])),
                 receipt_path=Path(str(options["receipt"])),
                 min_confidence=float(options["min_confidence"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-route-memory-sync":
+        try:
+            options = _parse_dag_route_memory_sync_cli_args(positional_args[1:])
+            payload = write_dag_route_memory_sync_receipt(
+                candidate_receipt_path=Path(str(options["candidate_receipt"])),
+                receipt_path=Path(str(options["receipt"])),
+                collection=str(options["collection"]),
+                memory_url=str(options["memory_url"]),
+                apply=bool(options["apply"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1951,6 +2023,95 @@ def _parse_dag_expansion_validate_cli_args(args: list[str]) -> dict[str, object]
     return options
 
 
+def _parse_dag_expansion_policy_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "validation_receipt": None,
+        "signal_receipt": None,
+        "receipt": None,
+        "require_clean_signal": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--validation-receipt", "--signal-receipt", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = Path(args[index])
+        elif arg == "--require-clean-signal":
+            options["require_clean_signal"] = True
+        else:
+            raise RuntimeError(f"unknown dag-expansion-policy option: {arg}")
+        index += 1
+    missing = [key for key in ("validation_receipt", "receipt") if options[key] is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau dag-expansion-policy "
+            "--validation-receipt <dag-expansion-validation-receipt.json> "
+            "--receipt <dag-expansion-policy-receipt.json> "
+            "[--signal-receipt <dag-signal-receipt.json>] [--require-clean-signal]"
+        )
+    return options
+
+
+def _parse_dag_expansion_apply_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "validation_receipt": None,
+        "policy_receipt": None,
+        "out": None,
+        "receipt": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--validation-receipt", "--policy-receipt", "--out", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown dag-expansion-apply option: {arg}")
+        index += 1
+    missing = [key for key in ("validation_receipt", "out", "receipt") if options[key] is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau dag-expansion-apply "
+            "--validation-receipt <dag-expansion-validation-receipt.json> "
+            "--out <expanded-dag.json> --receipt <dag-expansion-apply-receipt.json> "
+            "[--policy-receipt <dag-expansion-policy-receipt.json>]"
+        )
+    return options
+
+
+def _parse_dag_branch_locks_validate_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "dag_contract": None,
+        "locks": None,
+        "receipt": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--dag-contract", "--locks", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown dag-branch-locks-validate option: {arg}")
+        index += 1
+    missing = [key for key in ("dag_contract", "locks", "receipt") if options[key] is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau dag-branch-locks-validate --dag-contract <dag-contract.json|yaml> "
+            "--locks <branch-locks.json|yaml> --receipt <dag-branch-lock-validation-receipt.json>"
+        )
+    return options
+
+
 def _parse_dag_motif_validate_cli_args(args: list[str]) -> dict[str, object]:
     options: dict[str, object] = {
         "dag_contract": None,
@@ -2009,6 +2170,42 @@ def _parse_dag_route_memory_candidates_cli_args(args: list[str]) -> dict[str, ob
             "--signal-receipt <dag-signal-receipt.json> "
             "--receipt <dag-route-memory-candidate-receipt.json> "
             "[--min-confidence <0..1>]"
+        )
+    return options
+
+
+def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "candidate_receipt": None,
+        "receipt": None,
+        "collection": "tau_route_memory",
+        "memory_url": "http://127.0.0.1:8601",
+        "apply": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--candidate-receipt", "--receipt", "--collection", "--memory-url"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            if key in {"candidate_receipt", "receipt"}:
+                options[key] = Path(args[index])
+            else:
+                options[key] = args[index]
+        elif arg == "--apply":
+            options["apply"] = True
+        else:
+            raise RuntimeError(f"unknown dag-route-memory-sync option: {arg}")
+        index += 1
+    missing = [key for key in ("candidate_receipt", "receipt") if options[key] is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau dag-route-memory-sync "
+            "--candidate-receipt <dag-route-memory-candidate-receipt.json> "
+            "--receipt <dag-route-memory-sync-receipt.json> "
+            "[--collection <collection>] [--memory-url <url>] [--apply]"
         )
     return options
 

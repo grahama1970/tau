@@ -1,0 +1,48 @@
+{
+  "alerts": [],
+  "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-branch-locks-20260704T1645Z/provider-mutating-dag.json",
+  "dag_contract_sha256": "sha256:5b7fc9486acfdf9499b80a7098676bbae1a617887a149434bdaea89cf7ef2b83",
+  "dag_id": "branch-lock-proof",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:branch-lock-proof",
+  "live": true,
+  "locks": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-branch-locks-20260704T1645Z/branch-locks.json",
+  "locks_sha256": "sha256:1ab6f54267a284aeaf0fb9ae21c4fab8906c7bbe7c7f64cc9c1e74c92395edc7",
+  "memory_sync": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider branch safety after execution.",
+      "GitHub mutation safety.",
+      "Concurrent scheduling of provider or mutating branches.",
+      "Human authorization for external side effects."
+    ],
+    "proves": [
+      "DAG contract was inspected for provider and mutating branches.",
+      "Branch-lock metadata was checked against required provider/mutating nodes.",
+      "No provider branch, mutating branch, route mutation, or DAG mutation was executed."
+    ]
+  },
+  "provided_lock_count": 2,
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-branch-locks-20260704T1645Z/dag-branch-lock-validation-receipt.json",
+  "required_lock_count": 2,
+  "required_locks": [
+    {
+      "branch_type": "provider",
+      "node_id": "provider-node"
+    },
+    {
+      "branch_type": "mutating",
+      "node_id": "mutating-node"
+    }
+  ],
+  "route_mutation": false,
+  "schema": "tau.dag_branch_lock_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-04T16:03:21Z",
+  "verdict": "PASS"
+}

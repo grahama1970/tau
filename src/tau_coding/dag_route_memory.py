@@ -8,7 +8,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import httpx
+
 DAG_ROUTE_MEMORY_CANDIDATE_RECEIPT_SCHEMA = "tau.dag_route_memory_candidate_receipt.v1"
+DAG_ROUTE_MEMORY_SYNC_RECEIPT_SCHEMA = "tau.dag_route_memory_sync_receipt.v1"
 SOURCE_DAG_SIGNAL_RECEIPT_SCHEMA = "tau.dag_signal_receipt.v1"
 
 
@@ -81,6 +84,87 @@ def write_dag_route_memory_candidate_receipt(
                 "Adaptive DAG expansion application.",
                 "Provider/model semantic quality.",
                 "Future route correctness.",
+            ],
+        },
+        "errors": [],
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(resolved_receipt_path, receipt)
+    return receipt
+
+
+def write_dag_route_memory_sync_receipt(
+    *,
+    candidate_receipt_path: Path,
+    receipt_path: Path,
+    collection: str = "tau_route_memory",
+    memory_url: str = "http://127.0.0.1:8601",
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Project candidate routes into Memory documents, optionally syncing through /upsert."""
+
+    resolved_candidate_path = candidate_receipt_path.expanduser().resolve()
+    resolved_receipt_path = receipt_path.expanduser().resolve()
+    candidate_receipt = _read_json_object(resolved_candidate_path, label="DAG route-memory candidate receipt")
+    alerts = _sync_gate_alerts(candidate_receipt, collection=collection)
+    documents = _memory_documents(candidate_receipt, collection=collection) if not alerts else []
+    sync_response: dict[str, Any] | None = None
+    if apply and not alerts:
+        try:
+            with httpx.Client(base_url=memory_url.rstrip("/"), timeout=httpx.Timeout(10.0, connect=2.0)) as client:
+                response = client.post("/upsert", json={"collection": collection, "documents": documents})
+                response.raise_for_status()
+                sync_response = response.json() if response.content else {"status_code": response.status_code}
+        except (httpx.HTTPError, json.JSONDecodeError) as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "memory_upsert_failed",
+                    "Memory /upsert failed while syncing route-memory candidates.",
+                    {"memory_url": memory_url, "error": str(exc)},
+                )
+            )
+    status = "PASS" if not alerts else "BLOCKED"
+    receipt = {
+        "schema": DAG_ROUTE_MEMORY_SYNC_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "verdict": "PASS" if status == "PASS" else str(alerts[0]["code"]).upper(),
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "candidate_receipt": str(resolved_candidate_path),
+        "candidate_receipt_sha256": f"sha256:{_sha256(resolved_candidate_path)}",
+        "receipt_path": str(resolved_receipt_path),
+        "dag_id": candidate_receipt.get("dag_id"),
+        "goal_hash": candidate_receipt.get("goal_hash"),
+        "collection": collection,
+        "memory_url": memory_url,
+        "apply": apply,
+        "memory_sync": bool(apply and status == "PASS"),
+        "sync_status": "SYNCED" if apply and status == "PASS" else ("BLOCKED" if alerts else "DRY_RUN"),
+        "projected_document_count": len(documents),
+        "documents": documents,
+        "memory_response": sync_response,
+        "alerts": alerts,
+        "route_mutation": False,
+        "dag_mutation": False,
+        "provider_calls": False,
+        "proof_scope": {
+            "proves": [
+                "Route-memory candidate receipt was inspected deterministically.",
+                "Accepted candidates were projected into Memory /upsert document shape.",
+                (
+                    "Projected documents were written through Memory /upsert."
+                    if apply and status == "PASS"
+                    else "No Memory write was attempted in dry-run mode."
+                ),
+            ],
+            "does_not_prove": [
+                "Future route correctness.",
+                "Runtime route mutation.",
+                "Adaptive DAG expansion application.",
+                "Provider/model semantic quality.",
             ],
         },
         "errors": [],
@@ -164,6 +248,78 @@ def _gate_candidates(
                 }
             )
     return accepted, rejected
+
+
+def _sync_gate_alerts(candidate_receipt: dict[str, Any], *, collection: str) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if candidate_receipt.get("schema") != DAG_ROUTE_MEMORY_CANDIDATE_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_candidate_schema",
+                "Route-memory sync requires a tau.dag_route_memory_candidate_receipt.v1 input.",
+                {"schema": candidate_receipt.get("schema")},
+            )
+        )
+    if candidate_receipt.get("ok") is not True or candidate_receipt.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "candidate_receipt_not_pass",
+                "Route-memory sync requires a passing candidate receipt.",
+                {"ok": candidate_receipt.get("ok"), "status": candidate_receipt.get("status")},
+            )
+        )
+    if not collection:
+        alerts.append(_alert("BLOCK", "missing_collection", "Memory sync collection is required.", {}))
+    if int(candidate_receipt.get("accepted_candidate_count") or 0) <= 0:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "no_accepted_candidates",
+                "Route-memory sync requires at least one accepted candidate.",
+                {"accepted_candidate_count": candidate_receipt.get("accepted_candidate_count")},
+            )
+        )
+    return alerts
+
+
+def _memory_documents(candidate_receipt: dict[str, Any], *, collection: str) -> list[dict[str, Any]]:
+    documents: list[dict[str, Any]] = []
+    for candidate in _dict_list(candidate_receipt.get("accepted_candidates")):
+        route_key = str(candidate.get("route_key") or "")
+        digest = hashlib.sha256(
+            f"{collection}|{candidate_receipt.get('goal_hash')}|{candidate_receipt.get('dag_id')}|{route_key}".encode(
+                "utf-8"
+            )
+        ).hexdigest()[:32]
+        documents.append(
+            {
+                "_key": f"tau-route-{digest}",
+                "schema": "tau.route_memory_signal.v1",
+                "kind": "tau_route_memory_signal",
+                "dag_id": candidate_receipt.get("dag_id"),
+                "goal_hash": candidate_receipt.get("goal_hash"),
+                "route_key": route_key,
+                "from_node": candidate.get("from_node"),
+                "to_node": candidate.get("to_node"),
+                "from_agent": candidate.get("from_agent"),
+                "to_agent": candidate.get("to_agent"),
+                "confidence": candidate.get("confidence"),
+                "source": candidate.get("source"),
+                "source_signal_receipt": candidate_receipt.get("source_signal_receipt"),
+                "source_dag_receipt": candidate.get("source_dag_receipt"),
+                "source_candidate_receipt": candidate_receipt.get("receipt_path"),
+                "sync_source": "tau.dag_route_memory_sync_receipt.v1",
+                "retrieval_text": (
+                    f"Tau DAG route memory signal {route_key} for {candidate_receipt.get('dag_id')} "
+                    f"goal {candidate_receipt.get('goal_hash')}"
+                ),
+                "observed_at": _utc_stamp(),
+                "memory_sync_candidate": True,
+            }
+        )
+    return documents
 
 
 def _route_key(candidate: dict[str, Any]) -> str:

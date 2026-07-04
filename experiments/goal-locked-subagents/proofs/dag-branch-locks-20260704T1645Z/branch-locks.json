@@ -1,0 +1,21 @@
+{
+  "schema": "tau.dag_branch_locks.v1",
+  "dag_id": "branch-lock-proof",
+  "goal_hash": "sha256:branch-lock-proof",
+  "locks": [
+    {
+      "node_id": "provider-node",
+      "branch_type": "provider",
+      "lock_id": "provider-lock-20260704T1645Z",
+      "owner": "goal-guardian",
+      "reason": "Provider branches require explicit lock metadata before scheduling."
+    },
+    {
+      "node_id": "mutating-node",
+      "branch_type": "mutating",
+      "lock_id": "mutating-lock-20260704T1645Z",
+      "owner": "goal-guardian",
+      "reason": "Mutating branches require explicit lock metadata before scheduling."
+    }
+  ]
+}

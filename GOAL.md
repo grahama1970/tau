@@ -13,6 +13,7 @@ The current implementation track is:
 3. Independent dissent reviewer motif. Implemented as validation-only.
 4. Quality-gated route-memory reinforcement. Implemented as local candidates only.
 5. Bounded ready-node scheduler hardening for local, non-mutating branches. Implemented for local-only/provider-branch preflight.
+6. Expansion policy/apply, branch locks, rerun/resume receipts, and gated Memory sync. In progress for this slice.
 
 Only the next smallest receipt-backed slice should be implemented at a time.
 
@@ -123,6 +124,49 @@ not execute reviewers or claim consensus correctness.
 branches and non-local command nodes before dispatch. It also keeps explicit
 preflight-only proof scope when the scheduler blocks before running any node.
 
+## Current Slice: Expansion Apply And Guardrails
+
+Implemented commands for this slice:
+
+```text
+tau dag-expansion-policy \
+  --validation-receipt <dag-expansion-validation-receipt.json> \
+  --receipt <dag-expansion-policy-receipt.json> \
+  [--signal-receipt <dag-signal-receipt.json>] \
+  [--require-clean-signal]
+
+tau dag-expansion-apply \
+  --validation-receipt <dag-expansion-validation-receipt.json> \
+  --out <expanded-dag.json> \
+  --receipt <dag-expansion-apply-receipt.json> \
+  [--policy-receipt <dag-expansion-policy-receipt.json>]
+
+tau dag-branch-locks-validate \
+  --dag-contract <dag-contract.json|yaml> \
+  --locks <branch-locks.json|yaml> \
+  --receipt <dag-branch-lock-validation-receipt.json>
+
+tau dag-route-memory-sync \
+  --candidate-receipt <dag-route-memory-candidate-receipt.json> \
+  --receipt <dag-route-memory-sync-receipt.json> \
+  [--collection tau_route_memory] \
+  [--memory-url http://127.0.0.1:8601] \
+  [--apply]
+```
+
+Boundary rules:
+
+- `dag-expansion-policy` is decision-only. It writes no DAG artifact.
+- `dag-expansion-apply` materializes a validated preview as a new DAG contract
+  artifact. It does not mutate the source DAG or a running route.
+- Rerun/resume semantics are explicit receipt fields and a `rerun_command`; the
+  orchestrator or human decides whether to execute the expanded DAG.
+- `dag-branch-locks-validate` checks lock metadata for provider or mutating
+  nodes. It does not make provider calls or permit concurrent side effects.
+- `dag-route-memory-sync` is dry-run by default. Memory `/upsert` is used only
+  with explicit `--apply`; local proof may exercise projection without writing
+  Memory.
+
 ## Expansion Authority Rules
 
 Allowed proposal authors for the first expansion slice:
@@ -209,12 +253,13 @@ For the expansion validation slice, tests must cover:
 
 Until separately implemented and proven, do not claim:
 
-- adaptive DAG expansion is applied automatically;
+- adaptive DAG expansion is applied automatically to a running route;
 - route mutation is live;
-- Memory route learning is active;
+- Memory route learning is active unless `dag-route-memory-sync --apply`
+  produces a passing receipt;
 - provider/model semantic quality is proven;
 - mutating parallel branches are safe;
-- branch locks exist;
+- branch locks make provider/mutating branches safe to execute concurrently;
 - GitHub mutation paths are covered;
 - hidden chain-of-thought is evaluated;
 - consensus or reviewer agreement is proof.

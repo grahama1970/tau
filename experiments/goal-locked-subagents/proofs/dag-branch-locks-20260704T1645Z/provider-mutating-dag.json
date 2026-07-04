@@ -1,0 +1,57 @@
+{
+  "schema": "tau.dag_contract.v1",
+  "dag_id": "branch-lock-proof",
+  "goal": {
+    "goal_id": "branch-lock-proof",
+    "goal_version": 1,
+    "goal_hash": "sha256:branch-lock-proof"
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "branch-lock-proof"
+  },
+  "entry_node": "provider-node",
+  "terminal_nodes": ["human"],
+  "limits": {
+    "resume": true,
+    "default_timeout_seconds": 30,
+    "max_total_attempts": 3
+  },
+  "nodes": [
+    {
+      "id": "provider-node",
+      "agent": "provider-agent",
+      "executor": "provider",
+      "max_attempts": 1,
+      "required_evidence": ["provider_receipt"],
+      "provider": {
+        "name": "local-provider"
+      }
+    },
+    {
+      "id": "mutating-node",
+      "agent": "coder",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": ["mutation_receipt"],
+      "mutates": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "provider-node",
+      "to": "mutating-node"
+    },
+    {
+      "from": "mutating-node",
+      "to": "human"
+    }
+  ],
+  "required_evidence": ["provider_receipt", "mutation_receipt"],
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "missing_required_evidence",
+    "max_attempts_exceeded"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "alerts": {
+      "type": "array"
+    },
+    "applied": {
+      "type": "boolean"
+    },
+    "expanded_dag": {
+      "type": ["string", "null"]
+    },
+    "live": {
+      "const": true
+    },
+    "mocked": {
+      "const": false
+    },
+    "mutated_source_dag": {
+      "const": false
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "const": false
+    },
+    "runtime_route_mutation": {
+      "const": false
+    },
+    "schema": {
+      "const": "tau.dag_expansion_apply_receipt.v1"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    },
+    "validation_receipt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "mocked",
+    "live",
+    "provider_live",
+    "validation_receipt",
+    "applied",
+    "mutated_source_dag",
+    "runtime_route_mutation",
+    "alerts",
+    "proof_scope"
+  ],
+  "title": "Tau DAG Expansion Apply Receipt",
+  "type": "object"
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "alerts": {
+      "type": "array"
+    },
+    "apply": {
+      "type": "boolean"
+    },
+    "candidate_receipt": {
+      "type": "string"
+    },
+    "documents": {
+      "type": "array"
+    },
+    "live": {
+      "const": true
+    },
+    "memory_sync": {
+      "type": "boolean"
+    },
+    "mocked": {
+      "const": false
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "const": false
+    },
+    "schema": {
+      "const": "tau.dag_route_memory_sync_receipt.v1"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    }
+  },
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "mocked",
+    "live",
+    "provider_live",
+    "candidate_receipt",
+    "apply",
+    "memory_sync",
+    "documents",
+    "alerts",
+    "proof_scope"
+  ],
+  "title": "Tau DAG Route Memory Sync Receipt",
+  "type": "object"
+}

@@ -6,7 +6,9 @@ from typer.testing import CliRunner
 from tau_coding.cli import app
 from tau_coding.dag_route_memory import (
     DAG_ROUTE_MEMORY_CANDIDATE_RECEIPT_SCHEMA,
+    DAG_ROUTE_MEMORY_SYNC_RECEIPT_SCHEMA,
     write_dag_route_memory_candidate_receipt,
+    write_dag_route_memory_sync_receipt,
 )
 
 
@@ -124,10 +126,82 @@ def test_cli_route_memory_candidates_writes_receipt(tmp_path: Path) -> None:
     assert receipt_path.exists()
 
 
+def test_route_memory_sync_projects_documents_without_memory_write(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    receipt_path = tmp_path / "sync.json"
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["schema"] == DAG_ROUTE_MEMORY_SYNC_RECEIPT_SCHEMA
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["apply"] is False
+    assert receipt["memory_sync"] is False
+    assert receipt["sync_status"] == "DRY_RUN"
+    assert receipt["projected_document_count"] == 2
+    assert receipt["documents"][0]["schema"] == "tau.route_memory_signal.v1"
+    assert receipt["documents"][0]["_key"].startswith("tau-route-")
+    assert receipt_path.exists()
+
+
+def test_route_memory_sync_blocks_failed_candidate_receipt(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    candidate["ok"] = False
+    candidate["status"] = "BLOCKED"
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert any(alert["code"] == "candidate_receipt_not_pass" for alert in receipt["alerts"])
+
+
+def test_cli_route_memory_sync_writes_dry_run_receipt(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    receipt_path = tmp_path / "sync.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-route-memory-sync",
+            "--candidate-receipt",
+            str(candidate_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == DAG_ROUTE_MEMORY_SYNC_RECEIPT_SCHEMA
+    assert payload["memory_sync"] is False
+    assert payload["projected_document_count"] == 2
+    assert receipt_path.exists()
+
+
 def _write_signal(tmp_path: Path, payload: dict[str, object]) -> Path:
     path = tmp_path / "dag-signal-receipt.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
+
+
+def _write_candidate_receipt(tmp_path: Path) -> Path:
+    signal_path = _write_signal(tmp_path, _signal_receipt())
+    candidate_path = tmp_path / "candidate.json"
+    write_dag_route_memory_candidate_receipt(
+        signal_receipt_path=signal_path,
+        receipt_path=candidate_path,
+    )
+    return candidate_path
 
 
 def _signal_receipt() -> dict[str, object]:

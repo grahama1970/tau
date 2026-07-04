@@ -6,7 +6,11 @@ from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.dag_expansion import (
+    DAG_EXPANSION_APPLY_RECEIPT_SCHEMA,
+    DAG_EXPANSION_POLICY_RECEIPT_SCHEMA,
     DAG_EXPANSION_VALIDATION_RECEIPT_SCHEMA,
+    write_dag_expansion_apply_receipt,
+    write_dag_expansion_policy_receipt,
     write_dag_expansion_validation_receipt,
 )
 
@@ -232,6 +236,135 @@ def test_cli_dag_expansion_validate_invalid_exits_nonzero_but_writes_receipt(
     assert not preview_path.exists()
 
 
+def test_dag_expansion_policy_accepts_clean_validation_and_signal(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    signal_path = tmp_path / "signal.json"
+    signal_path.write_text(json.dumps(_clean_signal()), encoding="utf-8")
+
+    receipt = write_dag_expansion_policy_receipt(
+        validation_receipt_path=validation_path,
+        signal_receipt_path=signal_path,
+        require_clean_signal=True,
+        receipt_path=tmp_path / "policy.json",
+    )
+
+    assert receipt["schema"] == DAG_EXPANSION_POLICY_RECEIPT_SCHEMA
+    assert receipt["ok"] is True
+    assert receipt["apply_allowed"] is True
+    assert receipt["applied"] is False
+    assert receipt["dag_mutation"] is False
+    assert receipt["route_mutation"] is False
+
+
+def test_dag_expansion_policy_blocks_failed_validation(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    validation["ok"] = False
+    validation["status"] = "BLOCKED"
+    validation_path.write_text(json.dumps(validation), encoding="utf-8")
+
+    receipt = write_dag_expansion_policy_receipt(
+        validation_receipt_path=validation_path,
+        receipt_path=tmp_path / "policy.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert any(alert["code"] == "validation_not_pass" for alert in receipt["alerts"])
+
+
+def test_dag_expansion_apply_materializes_preview_without_mutating_source(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    policy_path = tmp_path / "policy.json"
+    write_dag_expansion_policy_receipt(
+        validation_receipt_path=validation_path,
+        receipt_path=policy_path,
+    )
+    out_path = tmp_path / "expanded-dag.json"
+
+    receipt = write_dag_expansion_apply_receipt(
+        validation_receipt_path=validation_path,
+        policy_receipt_path=policy_path,
+        out_path=out_path,
+        receipt_path=tmp_path / "apply.json",
+    )
+
+    assert receipt["schema"] == DAG_EXPANSION_APPLY_RECEIPT_SCHEMA
+    assert receipt["ok"] is True
+    assert receipt["applied"] is True
+    assert receipt["mutated_source_dag"] is False
+    assert receipt["runtime_route_mutation"] is False
+    assert receipt["resume_supported"] is True
+    assert out_path.exists()
+    assert json.loads(out_path.read_text(encoding="utf-8"))["schema"] == "tau.dag_contract.v1"
+
+
+def test_dag_expansion_apply_blocks_failed_policy(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    policy_path = tmp_path / "policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_expansion_policy_receipt.v1",
+                "ok": False,
+                "status": "BLOCKED",
+                "apply_allowed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    receipt = write_dag_expansion_apply_receipt(
+        validation_receipt_path=validation_path,
+        policy_receipt_path=policy_path,
+        out_path=tmp_path / "expanded-dag.json",
+        receipt_path=tmp_path / "apply.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["expanded_dag"] is None
+    assert any(alert["code"] == "policy_not_allowing_apply" for alert in receipt["alerts"])
+
+
+def test_cli_dag_expansion_policy_and_apply_write_receipts(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    policy_path = tmp_path / "policy.json"
+    apply_path = tmp_path / "apply.json"
+    out_path = tmp_path / "expanded-dag.json"
+
+    policy_result = CliRunner().invoke(
+        app,
+        [
+            "dag-expansion-policy",
+            "--validation-receipt",
+            str(validation_path),
+            "--receipt",
+            str(policy_path),
+        ],
+    )
+    apply_result = CliRunner().invoke(
+        app,
+        [
+            "dag-expansion-apply",
+            "--validation-receipt",
+            str(validation_path),
+            "--policy-receipt",
+            str(policy_path),
+            "--out",
+            str(out_path),
+            "--receipt",
+            str(apply_path),
+        ],
+    )
+
+    assert policy_result.exit_code == 0
+    assert apply_result.exit_code == 0
+    assert json.loads(policy_result.output)["schema"] == DAG_EXPANSION_POLICY_RECEIPT_SCHEMA
+    assert json.loads(apply_result.output)["schema"] == DAG_EXPANSION_APPLY_RECEIPT_SCHEMA
+    assert out_path.exists()
+
+
 def _write_contract(tmp_path: Path) -> Path:
     contract = {
         "schema": "tau.dag_contract.v1",
@@ -316,4 +449,29 @@ def _new_node(node_id: str, agent: str) -> dict[str, object]:
         "executor": "local",
         "max_attempts": 1,
         "required_evidence": ["validation_receipt"],
+    }
+
+
+def _write_valid_validation_receipt(tmp_path: Path) -> Path:
+    contract_path = _write_contract(tmp_path)
+    proposal_path = _write_proposal(tmp_path, _valid_proposal())
+    receipt_path = tmp_path / "validation.json"
+    preview_path = tmp_path / "expanded-dag.preview.json"
+    write_dag_expansion_validation_receipt(
+        dag_contract_path=contract_path,
+        proposal_path=proposal_path,
+        receipt_path=receipt_path,
+        preview_path=preview_path,
+    )
+    return receipt_path
+
+
+def _clean_signal() -> dict[str, object]:
+    return {
+        "schema": "tau.dag_signal_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "source_ok": True,
+        "source_status": "PASS",
+        "negative_signals": [],
     }

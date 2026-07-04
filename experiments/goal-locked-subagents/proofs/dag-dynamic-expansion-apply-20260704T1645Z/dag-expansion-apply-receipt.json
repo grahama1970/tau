@@ -1,0 +1,48 @@
+{
+  "alerts": [],
+  "applied": true,
+  "dag_id": "rw-sanity-project-dag-concurrent",
+  "errors": [],
+  "expanded_dag": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/expanded-dag.applied.json",
+  "expanded_dag_sha256": "sha256:0f40481b5e2cb5c554f7d80166088b67f546fe29f7543bcfd2efea4cb9ed5df5",
+  "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": true,
+  "policy_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/dag-expansion-policy-receipt.json",
+  "policy_receipt_sha256": "sha256:6a77035f6cdcaee38fb79b320ac64d6b610488be9de8bd056e93e970f240d9ab",
+  "proof_scope": {
+    "does_not_prove": [
+      "Expanded DAG execution.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "Validated expansion preview was materialized as a new DAG contract artifact.",
+      "Source DAG contract was not mutated.",
+      "No running DAG route was mutated."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/dag-expansion-apply-receipt.json",
+  "rerun_command": [
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-dynamic-expansion-apply-20260704T1645Z/expanded-dag.applied.json",
+    "--scheduler",
+    "bounded-ready-queue"
+  ],
+  "resume_supported": true,
+  "runtime_route_mutation": false,
+  "schema": "tau.dag_expansion_apply_receipt.v1",
+  "source_dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/dag-contract.json",
+  "status": "PASS",
+  "timestamp": "2026-07-04T16:03:31Z",
+  "validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-expansion-validation-slice-1-20260704T1545Z/dag-expansion-validation-receipt.json",
+  "validation_receipt_sha256": "sha256:a06df60b96fbaea716767c3797393e45a71b6631d1faa56e51abd166f1f6b7e1",
+  "verdict": "PASS"
+}

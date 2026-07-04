@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "alerts": {
+      "type": "array"
+    },
+    "live": {
+      "const": true
+    },
+    "mocked": {
+      "const": false
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "const": false
+    },
+    "required_locks": {
+      "type": "array"
+    },
+    "schema": {
+      "const": "tau.dag_branch_lock_validation_receipt.v1"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    }
+  },
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "mocked",
+    "live",
+    "provider_live",
+    "required_locks",
+    "alerts",
+    "proof_scope"
+  ],
+  "title": "Tau DAG Branch Lock Validation Receipt",
+  "type": "object"
+}
