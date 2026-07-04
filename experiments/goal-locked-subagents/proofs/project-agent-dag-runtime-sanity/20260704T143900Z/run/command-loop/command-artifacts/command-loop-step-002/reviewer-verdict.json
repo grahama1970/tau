@@ -1,0 +1,10 @@
+{
+  "creator_evidence_count": 1,
+  "creator_goal_hash": "sha256:creator-reviewer-immutable-goal",
+  "evidence_matches": true,
+  "goal_hash": "sha256:creator-reviewer-immutable-goal",
+  "goal_matches": true,
+  "reviewed_node_id": "coder",
+  "schema": "tau.reviewer_verdict.v1",
+  "verdict": "PASS"
+}

@@ -32,7 +32,14 @@ from tau_ai import (
 )
 from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding import __version__
+from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.credentials import FileCredentialStore
+from tau_coding.dag_stress_poc import (
+    inspect_dag_stress_campaign,
+    inspect_dag_stress_run,
+    run_dag_stress_campaign,
+    run_dag_stress_poc,
+)
 from tau_coding.generated_ticket import (
     load_generated_ticket,
     project_agent_handoff,
@@ -41,6 +48,12 @@ from tau_coding.generated_ticket import (
     write_agent_handoff_loop_receipt,
     write_agent_handoff_projection_receipt,
 )
+from tau_coding.generic_dag import (
+    inspect_generic_dag_run,
+    resume_generic_dag_from_run,
+    run_generic_dag,
+)
+from tau_coding.generic_provider_adapter import run_generic_provider_dag_node
 from tau_coding.github_handoff import (
     fetch_goal_guardian_ticket_source_from_github,
     transport_command_loop_terminal_to_github,
@@ -56,6 +69,7 @@ from tau_coding.handoff_dispatch import (
     write_agent_handoff_command_loop_receipt,
     write_agent_handoff_dispatch_receipt,
 )
+from tau_coding.herdr_cleanup import run_herdr_cleanup
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
@@ -73,6 +87,28 @@ from tau_coding.loop_validation import (
     validate_loop_receipt_with_loop2_contracts,
     validate_native_loop2_run_with_contracts,
 )
+from tau_coding.media_explainer_orchestration import (
+    inspect_media_explainer_run,
+    run_media_explainer_smoke,
+)
+from tau_coding.orchestration_evidence import build_orchestration_evidence
+from tau_coding.persona_dream_panel_proof import (
+    DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
+)
+from tau_coding.persona_dream_panel_proof import (
+    DEFAULT_COMMAND_SPEC_ROOT as DEFAULT_PERSONA_DREAM_PANEL_COMMAND_SPEC_ROOT,
+)
+from tau_coding.persona_dream_panel_proof import (
+    DEFAULT_GOAL_HASH as DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
+)
+from tau_coding.persona_dream_panel_proof import (
+    write_persona_dream_panel_proof,
+)
+from tau_coding.project_dag import (
+    DAG_CONTRACT_SCHEMA,
+    load_dag_contract_payload,
+    run_project_dag_contract,
+)
 from tau_coding.provider_config import (
     DEFAULT_MODEL,
     DEFAULT_PROVIDER_NAME,
@@ -87,15 +123,25 @@ from tau_coding.provider_config import (
     save_provider_settings,
     upsert_openai_compatible_provider,
 )
+from tau_coding.provider_dag_poc import (
+    inspect_provider_dag_run,
+    plan_provider_dag_poc,
+    run_provider_dag_orchestrator,
+    run_provider_dag_poc,
+)
+from tau_coding.provider_pane_poc import (
+    inspect_provider_pane_run,
+    inspect_provider_readiness_run,
+    run_provider_pane_poc,
+    run_provider_readiness_poc,
+)
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.resources import TauResourcePaths
-from tau_coding.persona_dream_panel_proof import (
-    DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
-    DEFAULT_COMMAND_SPEC_ROOT as DEFAULT_PERSONA_DREAM_PANEL_COMMAND_SPEC_ROOT,
-    DEFAULT_GOAL_HASH as DEFAULT_PERSONA_DREAM_PANEL_GOAL_HASH,
-    write_persona_dream_panel_proof,
-)
+from tau_coding.run_status import build_run_status
+from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
+from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
+from tau_coding.self_fix_ticket_repair import run_ticket_repair
 from tau_coding.session import (
     CodingSession,
     CodingSessionConfig,
@@ -109,9 +155,6 @@ from tau_coding.session_export import (
     normalize_export_format,
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
-from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
-from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
-from tau_coding.self_fix_ticket_repair import run_ticket_repair
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.tui import run_tui_app
@@ -120,6 +163,7 @@ from tau_coding.tui.proof import (
     DEFAULT_TUI_PROOF_RUN_ID,
     render_textual_tui_memory_stage_proof,
 )
+from tau_coding.visible_dag_poc import inspect_visible_dag_run, run_visible_dag_poc
 
 app = typer.Typer(
     name="tau",
@@ -621,6 +665,282 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "visible-dag-poc":
+        try:
+            options = _parse_visible_dag_poc_cli_args(positional_args[1:])
+            payload = run_visible_dag_poc(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "visible-dag-inspect":
+        try:
+            run_dir = _parse_visible_dag_inspect_cli_args(positional_args[1:])
+            payload = inspect_visible_dag_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-pane-poc":
+        try:
+            options = _parse_provider_pane_poc_cli_args(positional_args[1:])
+            payload = run_provider_pane_poc(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-pane-inspect":
+        try:
+            run_dir = _parse_provider_pane_inspect_cli_args(positional_args[1:])
+            payload = inspect_provider_pane_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-readiness-poc":
+        try:
+            options = _parse_provider_readiness_poc_cli_args(positional_args[1:])
+            payload = run_provider_readiness_poc(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-readiness-inspect":
+        try:
+            run_dir = _parse_provider_readiness_inspect_cli_args(positional_args[1:])
+            payload = inspect_provider_readiness_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-dag-poc":
+        try:
+            options = _parse_provider_dag_poc_cli_args(positional_args[1:])
+            payload = run_provider_dag_poc(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-dag-plan":
+        try:
+            options = _parse_provider_dag_plan_cli_args(positional_args[1:])
+            payload = plan_provider_dag_poc(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-dag-orchestrate":
+        try:
+            options = _parse_provider_dag_orchestrate_cli_args(positional_args[1:])
+            payload = run_provider_dag_orchestrator(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "provider-dag-inspect":
+        try:
+            run_dir = _parse_provider_dag_inspect_cli_args(positional_args[1:])
+            payload = inspect_provider_dag_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "orchestration-evidence":
+        try:
+            run_dir = _parse_orchestration_evidence_cli_args(positional_args[1:])
+            payload = build_orchestration_evidence(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-run":
+        try:
+            options = _parse_generic_dag_run_cli_args(positional_args[1:])
+            spec_path = options["spec_path"]
+            if _dag_run_schema(Path(spec_path)) == DAG_CONTRACT_SCHEMA:
+                payload = run_project_dag_contract(
+                    contract_path=Path(spec_path),
+                    receipt_dir=options.get("receipt_dir"),
+                    agents_root=Path(str(options["agents_root"])),
+                    command_spec_root=options.get("command_spec_root"),
+                )
+            else:
+                payload = run_generic_dag(
+                    spec_path=Path(spec_path),
+                    resume=bool(options["resume"]),
+                )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-inspect":
+        try:
+            run_dir = _parse_generic_dag_inspect_cli_args(positional_args[1:])
+            payload = inspect_generic_dag_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-resume":
+        try:
+            run_dir = _parse_generic_dag_resume_cli_args(positional_args[1:])
+            payload = resume_generic_dag_from_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "generic-provider-dag-node":
+        try:
+            options = _parse_generic_provider_dag_node_cli_args(positional_args[1:])
+            payload = run_generic_provider_dag_node(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("status") != "PASS":
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-stress-poc":
+        try:
+            options = _parse_dag_stress_poc_cli_args(positional_args[1:])
+            payload = run_dag_stress_poc(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-stress-inspect":
+        try:
+            run_dir = _parse_dag_stress_inspect_cli_args(positional_args[1:])
+            payload = inspect_dag_stress_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-stress-campaign":
+        try:
+            options = _parse_dag_stress_campaign_cli_args(positional_args[1:])
+            payload = run_dag_stress_campaign(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-stress-campaign-inspect":
+        try:
+            run_dir = _parse_dag_stress_campaign_inspect_cli_args(positional_args[1:])
+            payload = inspect_dag_stress_campaign(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "media-explainer-smoke":
+        try:
+            options = _parse_media_explainer_smoke_cli_args(positional_args[1:])
+            payload = run_media_explainer_smoke(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "media-explainer-inspect":
+        try:
+            run_dir = _parse_media_explainer_inspect_cli_args(positional_args[1:])
+            payload = inspect_media_explainer_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "herdr-cleanup":
+        try:
+            options = _parse_herdr_cleanup_cli_args(positional_args[1:])
+            payload = run_herdr_cleanup(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "approval-gate-check":
+        try:
+            options = _parse_approval_gate_check_cli_args(positional_args[1:])
+            payload = evaluate_approval_gate(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "run-status":
+        try:
+            run_dir = _parse_run_status_cli_args(positional_args[1:])
+            payload = build_run_status(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -1135,6 +1455,700 @@ def _parse_loop2_run_contract_cli_args(args: list[str]) -> Path:
 def _parse_loop2_scillm_doctor_receipt_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau loop2-check-scillm-doctor <receipt.json>")
+    return Path(args[0])
+
+
+def _parse_visible_dag_poc_cli_args(args: list[str]) -> dict[str, object]:
+    repo = Path.cwd()
+    run_root = Path("experiments/goal-locked-subagents/proofs/visible-dag-poc")
+    label = "tau-visible-dag-poc"
+    herdr_workstation: Path | None = None
+    herdr_bin = "herdr"
+    session: str | None = None
+    receipt_timeout_seconds = 30.0
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--repo":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo requires a value")
+            repo = Path(args[index])
+        elif arg.startswith("--repo="):
+            repo = Path(arg.partition("=")[2])
+        elif arg == "--run-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-root requires a value")
+            run_root = Path(args[index])
+        elif arg.startswith("--run-root="):
+            run_root = Path(arg.partition("=")[2])
+        elif arg == "--label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--label requires a value")
+            label = args[index]
+        elif arg.startswith("--label="):
+            label = arg.partition("=")[2]
+        elif arg == "--herdr-workstation":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--herdr-workstation requires a value")
+            herdr_workstation = Path(args[index])
+        elif arg.startswith("--herdr-workstation="):
+            herdr_workstation = Path(arg.partition("=")[2])
+        elif arg == "--herdr-bin":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--herdr-bin requires a value")
+            herdr_bin = args[index]
+        elif arg.startswith("--herdr-bin="):
+            herdr_bin = arg.partition("=")[2]
+        elif arg == "--session":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--session requires a value")
+            session = args[index]
+        elif arg.startswith("--session="):
+            session = arg.partition("=")[2]
+        elif arg == "--receipt-timeout-seconds":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-timeout-seconds requires a value")
+            receipt_timeout_seconds = float(args[index])
+        elif arg.startswith("--receipt-timeout-seconds="):
+            receipt_timeout_seconds = float(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown visible-dag-poc option: {arg}")
+        index += 1
+    return {
+        "repo": repo,
+        "run_root": run_root,
+        "label": label,
+        "herdr_workstation": herdr_workstation,
+        "herdr_bin": herdr_bin,
+        "session": session,
+        "receipt_timeout_seconds": receipt_timeout_seconds,
+    }
+
+
+def _parse_visible_dag_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau visible-dag-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_provider_pane_poc_cli_args(args: list[str]) -> dict[str, object]:
+    repo = Path.cwd()
+    run_root = Path("experiments/goal-locked-subagents/proofs/provider-pane-poc")
+    label = "tau-provider-pane-poc"
+    herdr_workstation: Path | None = None
+    herdr_bin = "herdr"
+    session: str | None = None
+    install_integrations = True
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--repo":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repo requires a value")
+            repo = Path(args[index])
+        elif arg.startswith("--repo="):
+            repo = Path(arg.partition("=")[2])
+        elif arg == "--run-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-root requires a value")
+            run_root = Path(args[index])
+        elif arg.startswith("--run-root="):
+            run_root = Path(arg.partition("=")[2])
+        elif arg == "--label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--label requires a value")
+            label = args[index]
+        elif arg.startswith("--label="):
+            label = arg.partition("=")[2]
+        elif arg == "--herdr-workstation":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--herdr-workstation requires a value")
+            herdr_workstation = Path(args[index])
+        elif arg.startswith("--herdr-workstation="):
+            herdr_workstation = Path(arg.partition("=")[2])
+        elif arg == "--herdr-bin":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--herdr-bin requires a value")
+            herdr_bin = args[index]
+        elif arg.startswith("--herdr-bin="):
+            herdr_bin = arg.partition("=")[2]
+        elif arg == "--session":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--session requires a value")
+            session = args[index]
+        elif arg.startswith("--session="):
+            session = arg.partition("=")[2]
+        elif arg == "--no-install-integrations":
+            install_integrations = False
+        else:
+            raise RuntimeError(f"Unknown provider-pane-poc option: {arg}")
+        index += 1
+    return {
+        "repo": repo,
+        "run_root": run_root,
+        "label": label,
+        "herdr_workstation": herdr_workstation,
+        "herdr_bin": herdr_bin,
+        "session": session,
+        "install_integrations": install_integrations,
+    }
+
+
+def _parse_provider_pane_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau provider-pane-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_provider_readiness_poc_cli_args(args: list[str]) -> dict[str, object]:
+    options = _parse_provider_pane_poc_cli_args(args)
+    if options["run_root"] == Path("experiments/goal-locked-subagents/proofs/provider-pane-poc"):
+        options["run_root"] = Path("experiments/goal-locked-subagents/proofs/provider-readiness-poc")
+    if options["label"] == "tau-provider-pane-poc":
+        options["label"] = "tau-provider-readiness-poc"
+    return options
+
+
+def _parse_provider_readiness_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau provider-readiness-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_provider_dag_poc_cli_args(args: list[str]) -> dict[str, object]:
+    max_attempts = 2
+    receipt_timeout_seconds = 300.0
+    force_reviewer_revise_attempts: tuple[int, ...] = ()
+    allow_final_forced_revise = False
+    reviewer_model: str | None = None
+    coder_mode = "codex"
+    cleanup_mode = "dry-run"
+    filtered_args: list[str] = []
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--max-attempts":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-attempts requires a value")
+            max_attempts = int(args[index])
+        elif arg.startswith("--max-attempts="):
+            max_attempts = int(arg.partition("=")[2])
+        elif arg == "--receipt-timeout-seconds":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-timeout-seconds requires a value")
+            receipt_timeout_seconds = float(args[index])
+        elif arg.startswith("--receipt-timeout-seconds="):
+            receipt_timeout_seconds = float(arg.partition("=")[2])
+        elif arg == "--force-reviewer-revise-attempts":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--force-reviewer-revise-attempts requires a value")
+            force_reviewer_revise_attempts = _parse_int_csv(
+                args[index], "--force-reviewer-revise-attempts"
+            )
+        elif arg.startswith("--force-reviewer-revise-attempts="):
+            force_reviewer_revise_attempts = _parse_int_csv(
+                arg.partition("=")[2], "--force-reviewer-revise-attempts"
+            )
+        elif arg == "--force-reviewer-revise-first":
+            force_reviewer_revise_attempts = (1,)
+        elif arg == "--allow-final-forced-revise":
+            allow_final_forced_revise = True
+        elif arg == "--reviewer-model":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--reviewer-model requires a value")
+            reviewer_model = args[index]
+        elif arg.startswith("--reviewer-model="):
+            reviewer_model = arg.partition("=")[2]
+        elif arg == "--coder-mode":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--coder-mode requires a value")
+            coder_mode = args[index]
+        elif arg.startswith("--coder-mode="):
+            coder_mode = arg.partition("=")[2]
+        elif arg == "--cleanup-mode":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--cleanup-mode requires a value")
+            cleanup_mode = args[index]
+        elif arg.startswith("--cleanup-mode="):
+            cleanup_mode = arg.partition("=")[2]
+        else:
+            filtered_args.append(arg)
+            if arg in {
+                "--repo",
+                "--run-root",
+                "--label",
+                "--herdr-workstation",
+                "--herdr-bin",
+                "--session",
+            }:
+                index += 1
+                if index >= len(args):
+                    raise RuntimeError(f"{arg} requires a value")
+                filtered_args.append(args[index])
+        index += 1
+    base = _parse_provider_pane_poc_cli_args(filtered_args)
+    if base["run_root"] == Path("experiments/goal-locked-subagents/proofs/provider-pane-poc"):
+        base["run_root"] = Path("experiments/goal-locked-subagents/proofs/provider-dag-poc")
+    if base["label"] == "tau-provider-pane-poc":
+        base["label"] = "tau-provider-dag-poc"
+    base["max_attempts"] = max_attempts
+    base["receipt_timeout_seconds"] = receipt_timeout_seconds
+    base["force_reviewer_revise_attempts"] = force_reviewer_revise_attempts
+    base["allow_final_forced_revise"] = allow_final_forced_revise
+    base["reviewer_model"] = reviewer_model
+    base["coder_mode"] = coder_mode
+    base["cleanup_mode"] = cleanup_mode
+    return base
+
+
+def _parse_int_csv(value: str, option_name: str) -> tuple[int, ...]:
+    parts = [part.strip() for part in value.split(",") if part.strip()]
+    if not parts:
+        return ()
+    try:
+        return tuple(int(part) for part in parts)
+    except ValueError as exc:
+        raise RuntimeError(f"{option_name} must be a comma-separated integer list") from exc
+
+
+def _parse_provider_dag_plan_cli_args(args: list[str]) -> dict[str, object]:
+    options = _parse_provider_dag_poc_cli_args(args)
+    return {
+        "repo": options["repo"],
+        "run_root": options["run_root"],
+        "label": options["label"],
+        "max_attempts": options["max_attempts"],
+        "force_reviewer_revise_attempts": options["force_reviewer_revise_attempts"],
+        "allow_final_forced_revise": options["allow_final_forced_revise"],
+        "reviewer_model": options["reviewer_model"],
+        "coder_mode": options["coder_mode"],
+    }
+
+
+def _parse_provider_dag_orchestrate_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau provider-dag-orchestrate <dag-spec> [options]")
+    dag_spec = Path(args[0])
+    options = _parse_provider_dag_poc_cli_args(args[1:])
+    return {
+        "dag_spec": dag_spec,
+        "repo": options["repo"],
+        "receipt_timeout_seconds": options["receipt_timeout_seconds"],
+        "herdr_workstation": options["herdr_workstation"],
+        "herdr_bin": options["herdr_bin"],
+        "session": options["session"],
+        "install_integrations": options["install_integrations"],
+        "cleanup_mode": options["cleanup_mode"],
+    }
+
+
+def _parse_provider_dag_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau provider-dag-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_orchestration_evidence_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau orchestration-evidence <provider-dag-run-dir>")
+    return Path(args[0])
+
+
+def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau dag-run <dag-spec> [--no-resume] "
+            "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>]"
+        )
+    spec_path = Path(args[0])
+    resume = True
+    receipt_dir: Path | None = None
+    agents_root = Path(
+        os.environ.get(
+            "TAU_AGENT_REGISTRY_ROOT",
+            "/home/graham/workspace/experiments/agent-skills/agents",
+        )
+    )
+    command_spec_root: Path | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--no-resume":
+            resume = False
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            command_spec_root = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown dag-run option: {arg}")
+        index += 1
+    return {
+        "spec_path": spec_path,
+        "resume": resume,
+        "receipt_dir": receipt_dir,
+        "agents_root": agents_root,
+        "command_spec_root": command_spec_root,
+    }
+
+
+def _dag_run_schema(spec_path: Path) -> str | None:
+    try:
+        payload = load_dag_contract_payload(spec_path)
+    except (OSError, json.JSONDecodeError, RuntimeError):
+        return None
+    return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
+
+
+def _parse_generic_dag_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau dag-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_generic_dag_resume_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau dag-resume <run-dir>")
+    return Path(args[0])
+
+
+def _parse_generic_provider_dag_node_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "repo": Path("."),
+        "label": "tau-generic-provider-dag-node",
+        "max_attempts": 1,
+        "receipt_timeout_seconds": 120.0,
+        "herdr_workstation": None,
+        "herdr_bin": "herdr",
+        "session": None,
+        "install_integrations": False,
+        "cleanup_mode": "dry-run",
+        "work_order_path": None,
+    }
+    required: dict[str, object | None] = {
+        "node_id": None,
+        "receipt_path": None,
+        "provider_run_root": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--node-id",
+            "--receipt-path",
+            "--provider-run-root",
+            "--repo",
+            "--label",
+            "--work-order-path",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            value: object = args[index]
+            if key in {"receipt_path", "provider_run_root", "repo", "work_order_path"}:
+                value = Path(str(value))
+            if key in required:
+                required[key] = value
+            else:
+                options[key] = value
+        elif arg in {"--max-attempts", "--receipt-timeout-seconds", "--herdr-bin", "--session"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            value: object = args[index]
+            if key == "max_attempts":
+                value = int(str(value))
+            elif key == "receipt_timeout_seconds":
+                value = float(str(value))
+            options[key] = value
+        elif arg == "--herdr-workstation":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--herdr-workstation requires a value")
+            options["herdr_workstation"] = Path(args[index])
+        elif arg == "--install-integrations":
+            options["install_integrations"] = True
+        elif arg == "--no-install-integrations":
+            options["install_integrations"] = False
+        elif arg == "--cleanup-mode":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--cleanup-mode requires a value")
+            options["cleanup_mode"] = args[index]
+        else:
+            raise RuntimeError(f"unknown generic-provider-dag-node option: {arg}")
+        index += 1
+    missing = [key for key, value in required.items() if value is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau generic-provider-dag-node --node-id <id> "
+            "--receipt-path <path> --provider-run-root <dir> [options]; "
+            f"missing {', '.join(missing)}"
+        )
+    return {**options, **required}
+
+
+def _parse_dag_stress_poc_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_root": Path("experiments/goal-locked-subagents/proofs/dag-stress-poc"),
+        "label": "tau-dag-stress-poc",
+        "max_attempts": 3,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-root requires a value")
+            options["run_root"] = Path(args[index])
+        elif arg.startswith("--run-root="):
+            options["run_root"] = Path(arg.partition("=")[2])
+        elif arg == "--label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--label requires a value")
+            options["label"] = args[index]
+        elif arg.startswith("--label="):
+            options["label"] = arg.partition("=")[2]
+        elif arg == "--max-attempts":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-attempts requires a value")
+            options["max_attempts"] = int(args[index])
+        elif arg.startswith("--max-attempts="):
+            options["max_attempts"] = int(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown dag-stress-poc option: {arg}")
+        index += 1
+    return options
+
+
+def _parse_dag_stress_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau dag-stress-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_dag_stress_campaign_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_root": Path("experiments/goal-locked-subagents/proofs/dag-stress-campaign"),
+        "label": "tau-dag-stress-campaign",
+        "max_budget": 5,
+        "repetitions": 3,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-root requires a value")
+            options["run_root"] = Path(args[index])
+        elif arg.startswith("--run-root="):
+            options["run_root"] = Path(arg.partition("=")[2])
+        elif arg == "--label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--label requires a value")
+            options["label"] = args[index]
+        elif arg.startswith("--label="):
+            options["label"] = arg.partition("=")[2]
+        elif arg == "--max-budget":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-budget requires a value")
+            options["max_budget"] = int(args[index])
+        elif arg.startswith("--max-budget="):
+            options["max_budget"] = int(arg.partition("=")[2])
+        elif arg == "--repetitions":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--repetitions requires a value")
+            options["repetitions"] = int(args[index])
+        elif arg.startswith("--repetitions="):
+            options["repetitions"] = int(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown dag-stress-campaign option: {arg}")
+        index += 1
+    return options
+
+
+def _parse_dag_stress_campaign_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau dag-stress-campaign-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_media_explainer_smoke_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_root": Path("experiments/goal-locked-subagents/proofs/media-explainer-smoke"),
+        "label": "tau-media-explainer-smoke",
+        "work_item": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-root requires a value")
+            options["run_root"] = Path(args[index])
+        elif arg.startswith("--run-root="):
+            options["run_root"] = Path(arg.partition("=")[2])
+        elif arg == "--label":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--label requires a value")
+            options["label"] = args[index]
+        elif arg.startswith("--label="):
+            options["label"] = arg.partition("=")[2]
+        elif arg == "--work-item":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--work-item requires a value")
+            options["work_item"] = Path(args[index])
+        elif arg.startswith("--work-item="):
+            options["work_item"] = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown media-explainer-smoke option: {arg}")
+        index += 1
+    return options
+
+
+def _parse_media_explainer_inspect_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau media-explainer-inspect <run-dir>")
+    return Path(args[0])
+
+
+def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
+    if not args or args[0] not in {"audit", "dry-run", "apply"}:
+        raise RuntimeError(
+            "Usage: tau herdr-cleanup audit|dry-run|apply --run-dir <run-dir> "
+            "[--herdr-bin herdr] [--include-current-workspace]"
+        )
+    mode = args[0]
+    run_dir: Path | None = None
+    herdr_bin = "herdr"
+    include_current_workspace = False
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        elif arg == "--herdr-bin":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--herdr-bin requires a value")
+            herdr_bin = args[index]
+        elif arg.startswith("--herdr-bin="):
+            herdr_bin = arg.partition("=")[2]
+        elif arg == "--include-current-workspace":
+            include_current_workspace = True
+        else:
+            raise RuntimeError(f"unknown herdr-cleanup option: {arg}")
+        index += 1
+    if run_dir is None:
+        raise RuntimeError("--run-dir is required")
+    return {
+        "run_dir": run_dir,
+        "mode": mode,
+        "herdr_bin": herdr_bin,
+        "include_current_workspace": include_current_workspace,
+    }
+
+
+def _parse_approval_gate_check_cli_args(args: list[str]) -> dict[str, object]:
+    approval_packet: Path | None = None
+    requested_action = ""
+    run_dir = Path("experiments/goal-locked-subagents/proofs/approval-gates")
+    output: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--approval-packet":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--approval-packet requires a value")
+            approval_packet = Path(args[index])
+        elif arg.startswith("--approval-packet="):
+            approval_packet = Path(arg.partition("=")[2])
+        elif arg == "--requested-action":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--requested-action requires a value")
+            requested_action = args[index]
+        elif arg.startswith("--requested-action="):
+            requested_action = arg.partition("=")[2]
+        elif arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        elif arg == "--output":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--output requires a value")
+            output = Path(args[index])
+        elif arg.startswith("--output="):
+            output = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown approval-gate-check option: {arg}")
+        index += 1
+    if approval_packet is None:
+        raise RuntimeError("--approval-packet is required")
+    if not requested_action:
+        raise RuntimeError("--requested-action is required")
+    return {
+        "approval_packet": approval_packet,
+        "requested_action": requested_action,
+        "run_dir": run_dir,
+        "output": output,
+    }
+
+
+def _parse_run_status_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau run-status <run-dir>")
     return Path(args[0])
 
 

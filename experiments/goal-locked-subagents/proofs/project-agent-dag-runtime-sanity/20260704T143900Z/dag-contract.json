@@ -1,0 +1,72 @@
+{
+  "dag_id": "creator-reviewer-immutable-goal-sanity",
+  "edges": [
+    {
+      "from": "coder",
+      "to": "reviewer"
+    },
+    {
+      "from": "reviewer",
+      "to": "human"
+    }
+  ],
+  "entry_node": "coder",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff",
+    "reviewer_goal_hash_mismatch"
+  ],
+  "goal": {
+    "goal_hash": "sha256:creator-reviewer-immutable-goal",
+    "goal_id": "creator-reviewer-immutable-goal-sanity",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 10,
+    "max_total_attempts": 3,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "coder",
+      "command_spec": "command-specs/coder/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "coder",
+      "max_attempts": 1,
+      "required_evidence": [
+        "creator_artifact"
+      ]
+    },
+    {
+      "agent": "reviewer",
+      "command_spec": "command-specs/reviewer/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "reviewer",
+      "max_attempts": 1,
+      "required_evidence": [
+        "reviewer_verdict"
+      ],
+      "reviewer": {
+        "requires_goal_hash": true,
+        "reviews_node": "coder"
+      }
+    }
+  ],
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-creator-reviewer-immutable-goal"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

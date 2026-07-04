@@ -1,0 +1,5 @@
+{
+  "goal_hash": "sha256:creator-reviewer-immutable-goal",
+  "schema": "tau.creator_artifact.v1",
+  "summary": "Creator produced bounded artifact for immutable-goal review."
+}

@@ -1,0 +1,42 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/project-agent-dag-runtime-sanity/20260704T143900Z/dag-contract.json"
+    ],
+    "summary": "Dispatch DAG contract creator-reviewer-immutable-goal-sanity."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-creator-reviewer-immutable-goal"
+  },
+  "goal": {
+    "goal_hash": "sha256:creator-reviewer-immutable-goal",
+    "goal_id": "creator-reviewer-immutable-goal-sanity",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Entry node for DAG creator-reviewer-immutable-goal-sanity."
+  },
+  "previous_subagent": "human",
+  "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "dag_contract",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/project-agent-dag-runtime-sanity/20260704T143900Z/dag-contract.json",
+        "schema": "tau.dag_contract.v1",
+        "sha256": "sha256:81193d759fac1ea84c6c472f4f78597e69bf1bc6da6f4e35a74b925b3df24d7c"
+      }
+    ],
+    "status": "DAG_DISPATCH_REQUESTED",
+    "summary": "Tau is dispatching entry node coder."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation."
+}
