@@ -1,0 +1,15 @@
+{
+  "action": "working_tree_mutation",
+  "approved": true,
+  "evidence": [
+    "real-world-sanity approval fixture"
+  ],
+  "human": {
+    "id": "human:graham"
+  },
+  "reason": "Approve a bounded scratch working-tree mutation gate for sanity proof.",
+  "schema": "tau.human_approval_packet.v1",
+  "target": {
+    "id": "scratch-working-tree"
+  }
+}

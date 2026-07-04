@@ -344,6 +344,168 @@ def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -
     }
 
 
+def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_path: Path) -> None:
+    contract_path = tmp_path / "bad-project-dag.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_contract.v1",
+                "dag_id": "bad-contract",
+                "goal": {"goal_id": "bad", "goal_hash": "sha256:bad"},
+                "target": {"repo": "grahama1970/tau"},
+                "nodes": [],
+                "edges": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "bad-run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == DAG_ERROR_SCHEMA
+    assert payload["status"] == "BLOCKED"
+    assert payload["failure_code"] == "dag_contract_invalid"
+    assert payload["verdict"] == "DAG_CONTRACT_INVALID"
+    assert "goal.goal_version must be an integer or string" in payload["message"]
+    assert "target must be a non-empty string" in payload["message"]
+    assert payload["recommended_action"] == {
+        "type": "repair_then_retry_or_reroute",
+        "next_agent": "goal-guardian",
+        "reason": "Repair the DAG contract so it satisfies tau.dag_contract.v1 before dispatch.",
+    }
+    assert payload["proof_scope"]["proves"] == [
+        "Tau rejected a malformed or incomplete DAG contract before dispatch.",
+        "Tau packaged the contract failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, command, or handoff was executed.",
+    ]
+
+
+def test_cli_dag_run_missing_command_spec_returns_course_correction_json(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "missing-spec-run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == DAG_ERROR_SCHEMA
+    assert payload["failure_code"] == "dag_contract_invalid"
+    assert "command_spec for node coder does not exist" in payload["message"]
+    assert payload["evidence"]["alert_codes"] == ["dag_contract_invalid"]
+
+
+def test_project_dag_blocks_missing_required_evidence_with_reviewer_action(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", []))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_REQUIRED_EVIDENCE"
+    assert receipt["dag_error"]["failure_code"] == "missing_required_evidence"
+    assert receipt["dag_error"]["failed_node"] == "coder"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "reroute",
+        "next_agent": "reviewer",
+        "reason": "Inspect missing or inconsistent evidence before normal continuation.",
+    }
+
+
+def test_project_dag_blocks_reviewer_target_mismatch(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    reviewer = _reviewer_handoff(goal_hash="sha256:active-goal")
+    reviewer["result"]["evidence"][0]["reviewed_node_id"] = "different-node"  # type: ignore[index]
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", reviewer)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "REVIEWER_TARGET_MISMATCH"
+    assert receipt["dag_error"]["failure_code"] == "reviewer_target_mismatch"
+    assert receipt["dag_error"]["failed_node"] == "reviewer"
+
+
+def test_project_dag_bounded_ready_queue_blocks_cycles(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"].append({"from": "reviewer", "to": "start"})
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "CYCLE_DETECTED"
+    assert receipt["dag_error"]["failure_code"] == "cycle_detected"
+    assert receipt["dag_error"]["recommended_action"]["next_agent"] == "goal-guardian"
+
+
+def test_project_dag_bounded_ready_queue_blocks_mutating_nodes(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["mutates"] = True
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MUTATING_NODE_NOT_ALLOWED"
+    assert receipt["dag_error"]["failure_code"] == "mutating_node_not_allowed"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "request_policy_gate",
+        "next_agent": "goal-guardian",
+        "reason": "This branch requires an explicit policy or branch-lock gate before execution.",
+    }
+
+
 def _write_contract(tmp_path: Path) -> Path:
     (tmp_path / "agents").mkdir()
     spec_root = tmp_path / "specs"

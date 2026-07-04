@@ -1,0 +1,22 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-01-coder.json)"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file is clean (TODO removed) and coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields, but max-exhaustion test requires REVISE. Feedback: message.txt is a single static completion sentence — next coder should populate the file with a concrete provider DAG description: which provider (tau-deterministic-visible) ran, what the DAG node topology looks like, the initial TODO text that was replaced, and a brief summary of what the coder receipt records. Include at minimum: original TODO content, provider_id, attempt number, and the fact that coder receipt status=PASS. This simulates the force-revise gate that would be used in a real provider-DAG test to verify the reviewer node detects the forced-revise flag and returns REVISE with actionable feedback regardless of pass quality.",
+  "errors": [],
+  "policy_exceptions": []
+}

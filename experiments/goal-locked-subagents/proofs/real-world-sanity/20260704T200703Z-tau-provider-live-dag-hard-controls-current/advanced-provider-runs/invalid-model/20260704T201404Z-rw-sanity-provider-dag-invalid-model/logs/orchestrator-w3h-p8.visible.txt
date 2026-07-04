@@ -1,0 +1,37 @@
+valid-model/20260704
+T201404Z-rw-sanity-p
+rovider-dag-invalid-
+model/dag-spec.json\
+nplanner_receipt: /h
+ome/graham/workspace
+/experiments/tau/exp
+eriments/goal-locked
+-subagents/proofs/re
+al-world-sanity/2026
+0704T200703Z-tau-pro
+vider-live-dag-hard-
+controls-current/adv
+anced-provider-runs/
+invalid-model/202607
+04T201404Z-rw-sanity
+-provider-dag-invali
+d-model/planner-rece
+ipt.json\nfinal_rece
+ipt: /home/graham/wo
+rkspace/experiments/
+tau/experiments/goal
+-locked-subagents/pr
+oofs/real-world-sani
+ty/20260704T200703Z-
+tau-provider-live-da
+g-hard-controls-curr
+ent/advanced-provide
+r-runs/invalid-model
+/20260704T201404Z-rw
+-sanity-provider-dag
+-invalid-model/run-r
+eceipt.json\ncanonic
+al truth: Tau JSON r
+eceipts; this pane i
+s human-visible tele
+metry.\n

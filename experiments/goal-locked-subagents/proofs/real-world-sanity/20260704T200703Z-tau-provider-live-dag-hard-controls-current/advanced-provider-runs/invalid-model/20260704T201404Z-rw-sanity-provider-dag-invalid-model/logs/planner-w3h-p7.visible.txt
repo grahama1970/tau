@@ -1,0 +1,30 @@
+Tau planner subagent visible monitor\nrun_id
+: 20260704T201404Z-rw-sanity-provider-dag-in
+valid-model\nrun_dir: /home/graham/workspace
+/experiments/tau/experiments/goal-locked-sub
+agents/proofs/real-world-sanity/20260704T200
+703Z-tau-provider-live-dag-hard-controls-cur
+rent/advanced-provider-runs/invalid-model/20
+260704T201404Z-rw-sanity-provider-dag-invali
+d-model\ndag_spec: /home/graham/workspace/ex
+periments/tau/experiments/goal-locked-subage
+nts/proofs/real-world-sanity/20260704T200703
+Z-tau-provider-live-dag-hard-controls-curren
+t/advanced-provider-runs/invalid-model/20260
+704T201404Z-rw-sanity-provider-dag-invalid-m
+odel/dag-spec.json\nplanner_receipt: /home/g
+raham/workspace/experiments/tau/experiments/
+goal-locked-subagents/proofs/real-world-sani
+ty/20260704T200703Z-tau-provider-live-dag-ha
+rd-controls-current/advanced-provider-runs/i
+nvalid-model/20260704T201404Z-rw-sanity-prov
+ider-dag-invalid-model/planner-receipt.json\
+nfinal_receipt: /home/graham/workspace/exper
+iments/tau/experiments/goal-locked-subagents
+/proofs/real-world-sanity/20260704T200703Z-t
+au-provider-live-dag-hard-controls-current/a
+dvanced-provider-runs/invalid-model/20260704
+T201404Z-rw-sanity-provider-dag-invalid-mode
+l/run-receipt.json\ncanonical truth: Tau JSO
+N receipts; this pane is human-visible telem
+etry.\n

@@ -1,0 +1,22 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/medium-generic-dag-stale-work-order/events.jsonl",
+  "nodes": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "raise SystemExit('stale work-order receipt should not be resumed')"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "planner",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/medium-generic-dag-stale-work-order/receipts/planner.json",
+      "role": "planner",
+      "timeout_seconds": 30,
+      "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/medium-generic-dag-stale-work-order/work-orders/planner.json"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/medium-generic-dag-stale-work-order",
+  "run_id": "rw-sanity-generic-dag-stale-work-order",
+  "schema": "tau.generic_dag_spec.v1"
+}

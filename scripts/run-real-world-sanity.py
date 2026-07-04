@@ -201,6 +201,22 @@ def build_checks(
         scenario="max-steps",
         goal_hash="sha256:rw-sanity-project-dag-max-steps",
     )
+    project_dag_bad_contract = create_project_dag_bad_contract_fixture(run_dir)
+    project_dag_cycle = create_project_dag_policy_fixture(
+        run_dir,
+        scenario="ready-queue-cycle",
+        mutation="cycle",
+    )
+    project_dag_mutating = create_project_dag_policy_fixture(
+        run_dir,
+        scenario="ready-queue-mutating",
+        mutation="mutating",
+    )
+    project_dag_provider_policy = create_project_dag_policy_fixture(
+        run_dir,
+        scenario="ready-queue-provider-policy",
+        mutation="provider",
+    )
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
     generic_dag_stale_work_order_spec = create_generic_dag_stale_work_order_fixture(run_dir)
@@ -940,6 +956,96 @@ def build_checks(
             expected_verdict="MAX_STEPS_EXHAUSTED",
         ),
         Check(
+            check_id="advanced.project_dag_bad_contract_course_correction",
+            level="advanced",
+            purpose=(
+                "Tau rejects a malformed project-agent DAG before dispatch and returns a "
+                "project-agent-readable tau.dag_error.v1 course-correction payload."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_bad_contract["contract"]),
+                "--receipt-dir",
+                str(project_dag_bad_contract["run_dir"]),
+                "--agents-root",
+                str(project_dag_bad_contract["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="DAG_CONTRACT_INVALID",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_cycle_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a bounded ready-queue DAG whose declared graph contains a cycle "
+                "before dispatching node commands."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_cycle["contract"]),
+                "--receipt-dir",
+                str(project_dag_cycle["run_dir"]),
+                "--agents-root",
+                str(project_dag_cycle["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="CYCLE_DETECTED",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_mutating_branch_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a bounded ready-queue DAG that marks a branch as mutating before "
+                "branch locks and mutation policy are present."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_mutating["contract"]),
+                "--receipt-dir",
+                str(project_dag_mutating["run_dir"]),
+                "--agents-root",
+                str(project_dag_mutating["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MUTATING_NODE_NOT_ALLOWED",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_provider_policy_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks provider/non-local ready-queue branches until provider concurrency "
+                "and branch-lock policy are explicitly supported."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_provider_policy["contract"]),
+                "--receipt-dir",
+                str(project_dag_provider_policy["run_dir"]),
+                "--agents-root",
+                str(project_dag_provider_policy["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED",
+        ),
+        Check(
             check_id="advanced.provider_readiness",
             level="advanced",
             purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
@@ -1183,6 +1289,9 @@ def create_project_dag_fixture(
         "concurrent-timeout-retry",
         "concurrent-non-json-retry",
         "concurrent-max-retries",
+        "ready-queue-cycle",
+        "ready-queue-mutating",
+        "ready-queue-provider-policy",
     }
     agents = (
         ("research-auditor", "coder", "reviewer")
@@ -1375,6 +1484,63 @@ def create_project_dag_fixture(
         "agents_root": agents_root,
         "run_dir": run_output_dir,
     }
+
+
+def create_project_dag_bad_contract_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "bad-contract-project-dag"
+    agents_root = fixture_dir / "agents"
+    run_output_dir = fixture_dir / "run"
+    agents_root.mkdir(parents=True, exist_ok=True)
+    contract_path = fixture_dir / "dag-contract.json"
+    write_json(
+        contract_path,
+        {
+            "schema": "tau.dag_contract.v1",
+            "dag_id": "rw-sanity-project-dag-bad-contract",
+            "goal": {
+                "goal_id": "rw-sanity-project-dag-bad-contract",
+                "goal_hash": "sha256:rw-sanity-project-dag-bad-contract",
+            },
+            "target": {"repo": "grahama1970/tau"},
+            "nodes": [],
+            "edges": [],
+        },
+    )
+    return {
+        "contract": contract_path,
+        "agents_root": agents_root,
+        "run_dir": run_output_dir,
+    }
+
+
+def create_project_dag_policy_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    mutation: str,
+) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario=scenario,
+        goal_hash=f"sha256:rw-sanity-project-dag-{scenario}",
+    )
+    contract_path = fixture["contract"]
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    if mutation == "cycle":
+        contract["edges"].append({"from": "reviewer", "to": "start"})
+    elif mutation == "mutating":
+        for node in contract["nodes"]:
+            if node.get("id") == "coder":
+                node["mutates"] = True
+    elif mutation == "provider":
+        for node in contract["nodes"]:
+            if node.get("id") == "coder":
+                node["executor"] = "provider"
+                node["provider"] = {"adapter": "generic-provider-dag-node"}
+    else:  # pragma: no cover - fixture guard.
+        raise AssertionError(f"unknown project DAG policy mutation: {mutation}")
+    write_json(contract_path, contract)
+    return fixture
 
 
 def _simple_yaml(value: Any, *, indent: int = 0) -> str:

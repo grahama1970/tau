@@ -1,0 +1,137 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-non-json",
+  "alerts": [
+    {
+      "code": "invalid_command_json",
+      "evidence": {
+        "errors": [
+          "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+        ]
+      },
+      "message": "Underlying handoff command loop did not pass.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run/start-handoff.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run/command-loop/command-loop-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json"
+  ],
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run/command-loop/command-loop-receipt.json",
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:5b678911c2233dfcd8208043beddbcd9c2e889b3dde4ebbbff5d14e98dd3a507",
+  "dag_error": {
+    "active_goal_hash": "sha256:rw-sanity-project-dag-non-json",
+    "dag_id": "rw-sanity-project-dag-non-json",
+    "evidence": {
+      "alert_codes": [
+        "invalid_command_json"
+      ],
+      "alert_count": 1,
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "primary_alert": {
+        "code": "invalid_command_json",
+        "evidence": {
+          "errors": [
+            "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+          ]
+        },
+        "message": "Underlying handoff command loop did not pass.",
+        "severity": "BLOCK"
+      }
+    },
+    "failure_code": "invalid_command_json",
+    "message": "Underlying handoff command loop did not pass.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "goal-guardian",
+      "reason": "Repair the node command or subagent response contract before retrying.",
+      "type": "repair_then_retry_or_reroute"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run",
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-non-json"
+    },
+    "verdict": "INVALID_COMMAND_JSON"
+  },
+  "dag_id": "rw-sanity-project-dag-non-json",
+  "edge_count": 3,
+  "entry_node": "coder",
+  "errors": [
+    "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "execution": "project_agent_dag_via_handoff_command_loop",
+  "live": true,
+  "max_steps": 3,
+  "mocked": false,
+  "node_attempts": {
+    "coder": 1,
+    "reviewer": 1
+  },
+  "node_count": 2,
+  "observed_edges": [
+    {
+      "from_agent": "coder",
+      "from_node": "coder",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    }
+  ],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Parallel DAG scheduling.",
+      "GitHub mutation or ticket closure.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Entry node was compiled into a tau.agent_handoff.v1 start handoff.",
+      "Node routing was executed by the real local command-loop subprocess runner.",
+      "Observed edges and retry counts were checked against the DAG contract.",
+      "Reviewer verdict evidence was checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200642Z-tau-project-dag-comprehensive-local-stress-v2/non-json-project-dag/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [
+    "coder",
+    "reviewer"
+  ],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-non-json"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-04T20:06:51Z",
+  "verdict": "INVALID_COMMAND_JSON"
+}

@@ -1,0 +1,37 @@
+dvanced-provider-run
+s/repair-loop/202607
+04T200805Z-rw-sanity
+-provider-dag-repair
+/dag-spec.json\nplan
+ner_receipt: /home/g
+raham/workspace/expe
+riments/tau/experime
+nts/goal-locked-suba
+gents/proofs/real-wo
+rld-sanity/20260704T
+200703Z-tau-provider
+-live-dag-hard-contr
+ols-current/advanced
+-provider-runs/repai
+r-loop/20260704T2008
+05Z-rw-sanity-provid
+er-dag-repair/planne
+r-receipt.json\nfina
+l_receipt: /home/gra
+ham/workspace/experi
+ments/tau/experiment
+s/goal-locked-subage
+nts/proofs/real-worl
+d-sanity/20260704T20
+0703Z-tau-provider-l
+ive-dag-hard-control
+s-current/advanced-p
+rovider-runs/repair-
+loop/20260704T200805
+Z-rw-sanity-provider
+-dag-repair/run-rece
+ipt.json\ncanonical
+truth: Tau JSON rece
+ipts; this pane is h
+uman-visible telemet
+ry.\n

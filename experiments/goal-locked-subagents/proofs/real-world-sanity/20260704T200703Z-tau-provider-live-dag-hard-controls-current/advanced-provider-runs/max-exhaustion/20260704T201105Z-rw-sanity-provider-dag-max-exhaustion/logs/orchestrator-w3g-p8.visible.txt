@@ -1,0 +1,37 @@
+/max-exhaustion/2026
+0704T201105Z-rw-sani
+ty-provider-dag-max-
+exhaustion/dag-spec.
+json\nplanner_receip
+t: /home/graham/work
+space/experiments/ta
+u/experiments/goal-l
+ocked-subagents/proo
+fs/real-world-sanity
+/20260704T200703Z-ta
+u-provider-live-dag-
+hard-controls-curren
+t/advanced-provider-
+runs/max-exhaustion/
+20260704T201105Z-rw-
+sanity-provider-dag-
+max-exhaustion/plann
+er-receipt.json\nfin
+al_receipt: /home/gr
+aham/workspace/exper
+iments/tau/experimen
+ts/goal-locked-subag
+ents/proofs/real-wor
+ld-sanity/20260704T2
+00703Z-tau-provider-
+live-dag-hard-contro
+ls-current/advanced-
+provider-runs/max-ex
+haustion/20260704T20
+1105Z-rw-sanity-prov
+ider-dag-max-exhaust
+ion/run-receipt.json
+\ncanonical truth: T
+au JSON receipts; th
+is pane is human-vis
+ible telemetry.\n

@@ -1,0 +1,36 @@
+
+Both chec
+ks pass:
+
+- **targe
+t_file**:
+ TODO lin
+e is gone
+, file re
+ads `comp
+leted imp
+lementati
+on by det
+erministi
+c visible
+ coder at
+tempt 2`
+- **coder
+_receipt*
+*: Schema
+-valid `t
+au.provid
+er_dag_no
+de_receip
+t.v1` wit
+h all req
+uired fie
+lds, stat
+us `PASS`
+- **force
+_revise**
+: `false`
+
+Writing P
+ASS recei
+pt:

@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w3G",
+          "--tab",
+          "w3G:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260704T201106Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-codex",
+              "pane_id": "w3G:p5",
+              "revision": 0,
+              "tab_id": "w3G:t2",
+              "terminal_id": "term_655cea4c46c59392",
+              "workspace_id": "w3G"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-codex\",\"pane_id\":\"w3G:p5\",\"revision\":0,\"tab_id\":\"w3G:t2\",\"terminal_id\":\"term_655cea4c46c59392\",\"workspace_id\":\"w3G\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260704T201116Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json"
+    },
+    "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w3G",
+          "--tab",
+          "w3G:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260704T201106Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-opencode",
+              "pane_id": "w3G:p6",
+              "revision": 0,
+              "tab_id": "w3G:t2",
+              "terminal_id": "term_655cea553eed5393",
+              "workspace_id": "w3G"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness-opencode\",\"pane_id\":\"w3G:p6\",\"revision\":0,\"tab_id\":\"w3G:t2\",\"terminal_id\":\"term_655cea553eed5393\",\"workspace_id\":\"w3G\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260704T201125Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260704T201107Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260704T201106Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260704T201106Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "run_id": "20260704T201106Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "w3G:t3",
+    "providers": "w3G:t2",
+    "receipts": "w3G:t4"
+  },
+  "updated_at": "20260704T201125Z",
+  "workspace_id": "w3G",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/events.jsonl",
+  "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/inspect.json",
+  "providers": [
+    {
+      "pane_id": "w-rw-sanity-pane:p5",
+      "provider_id": "codex",
+      "read_returncode": 0,
+      "readiness_actions": [
+        "codex_update_prompt_skipped"
+      ],
+      "ready_prompt_observed": true,
+      "role": "codex",
+      "terminal_id": "term-codex",
+      "visible_log": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/logs/codex.visible.txt",
+      "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/work-orders/codex.json"
+    },
+    {
+      "pane_id": "w-rw-sanity-pane:p6",
+      "provider_id": "opencode",
+      "read_returncode": 0,
+      "readiness_actions": [],
+      "ready_prompt_observed": false,
+      "role": "opencode",
+      "terminal_id": "term-opencode",
+      "visible_log": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/logs/opencode.visible.txt",
+      "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/work-orders/opencode.json"
+    }
+  ],
+  "run_id": "rw-sanity-provider-pane-status",
+  "schema": "tau.provider_pane_runtime_manifest.v1",
+  "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/medium-provider-pane-status/workstation.json"
+}

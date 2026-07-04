@@ -91,6 +91,10 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.project_dag_timeout_fail_closed`: Tau blocks a project-agent DAG when a selected node command times out.
 - `advanced.project_dag_non_json_fail_closed`: Tau blocks a project-agent DAG when a selected node emits non-JSON stdout.
 - `advanced.project_dag_max_steps_fail_closed`: Tau blocks a project-agent DAG when reviewer keeps routing back and `max_total_attempts` is exhausted.
+- `advanced.project_dag_bad_contract_course_correction`: Tau rejects an invalid project DAG contract and emits a `tau.dag_error.v1` course-correction JSON payload for project agents.
+- `advanced.project_dag_ready_queue_cycle_fail_closed`: Tau blocks a bounded ready-queue project DAG when the declared graph contains a cycle.
+- `advanced.project_dag_ready_queue_mutating_branch_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares mutating behavior before branch locks exist.
+- `advanced.project_dag_ready_queue_provider_policy_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares provider-live behavior before provider branch policy exists.
 - `advanced.provider_readiness`: Herdr allocates visible Codex and OpenCode provider panes, writes structured `tau.provider_session_state.v1` lifecycle records, and records post-check cleanup when provider cleanup is enabled.
 - `advanced.provider_dag_one_pass`: live visible Codex coder and OpenCode reviewer complete a one-pass scratch DAG.
 - `advanced.generic_provider_dag_adapter`: generic DAG executes a provider-backed adapter node and carries `provider_live` evidence in the generic run receipt.

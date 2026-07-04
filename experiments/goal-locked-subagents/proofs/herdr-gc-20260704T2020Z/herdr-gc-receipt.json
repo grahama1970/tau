@@ -1,0 +1,440 @@
+{
+  "applied_action_count": 8,
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 6,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w1M"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 6,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w1W"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 6,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w22"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w2A"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w2E"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w2M"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w2N"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w33"
+    }
+  ],
+  "candidate_count": 8,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 6,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w1M"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 6,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w1W"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 6,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w22"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w2A"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w2E"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w2M"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w2N"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "focused": false,
+      "label": "rw-sanity-generic-provider-dag-adapter-readiness",
+      "pane_count": 8,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w33"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "list"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:list\",\"result\":{\"type\":\"workspace_list\",\"workspaces\":[{\"active_tab_id\":\"w1:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"agent-skills\",\"number\":1,\"pane_count\":1,\"tab_count\":1,\"workspace_id\":\"w1\"},{\"active_tab_id\":\"w6:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"tau-visible-dag-poc-held\",\"number\":2,\"pane_count\":4,\"tab_count\":4,\"workspace_id\":\"w6\"},{\"active_tab_id\":\"wM:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"tau-planner-orchestrator-poc-readiness\",\"number\":3,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"wM\"},{\"active_tab_id\":\"wN:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"tau-planner-orchestrator-visible-poc-readiness\",\"number\":4,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"wN\"},{\"active_tab_id\":\"wP:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"tau-planner-orchestrator-subagents-visible-proof-readiness\",\"number\":5,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"wP\"},{\"active_tab_id\":\"w11:t1\",\"agent_status\":\"working\",\"focused\":true,\"label\":\"chatterbox\",\"number\":6,\"pane_count\":4,\"tab_count\":4,\"workspace_id\":\"w11\"},{\"active_tab_id\":\"w1M:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":7,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w1M\"},{\"active_tab_id\":\"w1W:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":8,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w1W\"},{\"active_tab_id\":\"w22:t2\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":9,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w22\"},{\"active_tab_id\":\"w2A:t2\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":10,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w2A\"},{\"active_tab_id\":\"w2E:t2\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":11,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w2E\"},{\"active_tab_id\":\"w2M:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":12,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w2M\"},{\"active_tab_id\":\"w2N:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":13,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w2N\"},{\"active_tab_id\":\"w33:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"rw-sanity-generic-provider-dag-adapter-readiness\",\"number\":14,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w33\"}]}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w1M"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w1M"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w1M not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w1W"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w1W"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w1W not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w22"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w22"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w22 not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w2A"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w2A"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w2A not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w2E"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w2E"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w2E not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w2M"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w2M"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w2M not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w2N"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w2N"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w2N not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w33"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w33"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w33 not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "include_current_workspace": false,
+  "label_prefixes": [
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-"
+  ],
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "post_verified_absent_count": 8,
+  "proof_scope": {
+    "does_not_prove": [
+      "Cleanup of arbitrary non-Tau Herdr workspaces.",
+      "Deletion of Git worktrees or local proof artifacts.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
+      "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
+      "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+      "Apply mode verifies closed workspaces are no longer addressable through Herdr."
+    ]
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-20260704T2020Z",
+  "schema": "tau.herdr_gc_receipt.v1",
+  "skipped": [],
+  "skipped_count": 0,
+  "status": "PASS",
+  "timestamp": "2026-07-04T20:20:13Z",
+  "workspace_count": 14
+}

@@ -1,0 +1,538 @@
+{
+  "errors": [],
+  "execution": "read_only_projection_from_tau_provider_dag_run",
+  "feature_counts": {
+    "agent_lineage": 4,
+    "agent_messages": 5,
+    "doctor": 1,
+    "execution_timeline": 11,
+    "provider_capabilities": 2,
+    "review_comments": 2,
+    "worktree_session_bindings": 4
+  },
+  "features": {
+    "agent_lineage": [
+      {
+        "agent_id": "planner",
+        "node_id": "planner",
+        "pane_id": "w3G:p7",
+        "parent_agent_id": null,
+        "process_alive": null,
+        "provider_id": "tau",
+        "role": "planner",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655cea831788f394",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G"
+      },
+      {
+        "agent_id": "orchestrator",
+        "node_id": "orchestrator",
+        "pane_id": "w3G:p8",
+        "parent_agent_id": "planner",
+        "process_alive": null,
+        "provider_id": "tau",
+        "role": "orchestrator",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655cea8af09e2395",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G"
+      },
+      {
+        "agent_id": "coder",
+        "node_id": "coder",
+        "pane_id": "w3G:pB",
+        "parent_agent_id": "orchestrator",
+        "process_alive": null,
+        "provider_id": "tau-deterministic-visible",
+        "role": "coder",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655ceac16ee24398",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G"
+      },
+      {
+        "agent_id": "reviewer",
+        "node_id": "reviewer",
+        "pane_id": "w3G:pC",
+        "parent_agent_id": "orchestrator",
+        "process_alive": null,
+        "provider_id": "opencode",
+        "role": "reviewer",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655ceaca4bbb9399",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G"
+      }
+    ],
+    "agent_messages": [
+      {
+        "body": "coder_dispatch: execute work order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json",
+        "created_at": "2026-07-04T20:12:21Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0003",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json",
+        "receiver_agent_id": "coder",
+        "response_id": "response-0003",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "orchestrator",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json"
+      },
+      {
+        "body": "reviewer_dispatch: execute work order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+        "created_at": "2026-07-04T20:12:30Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0005",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json",
+        "receiver_agent_id": "reviewer",
+        "response_id": "response-0005",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "orchestrator",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json"
+      },
+      {
+        "body": "reviewer_requested_revision: force_revise=true: target_file is clean (TODO removed) and coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields, but max-exhaustion test requires REVISE. Feedback: message.txt is a single static completion sentence \u2014 next coder should populate the file with a concrete provider DAG description: which provider (tau-deterministic-visible) ran, what the DAG node topology looks like, the initial TODO text that was replaced, and a brief summary of what the coder receipt records. Include at minimum: original TODO content, provider_id, attempt number, and the fact that coder receipt status=PASS. This simulates the force-revise gate that would be used in a real provider-DAG test to verify the reviewer node detects the forced-revise flag and returns REVISE with actionable feedback regardless of pass quality.",
+        "created_at": "2026-07-04T20:13:11Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0007",
+        "receipt_path": null,
+        "receiver_agent_id": "coder",
+        "response_id": "response-0007",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "reviewer",
+        "work_order_path": null
+      },
+      {
+        "body": "coder_dispatch: execute work order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json",
+        "created_at": "2026-07-04T20:13:11Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0008",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+        "receiver_agent_id": "coder",
+        "response_id": "response-0008",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "orchestrator",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json"
+      },
+      {
+        "body": "reviewer_dispatch: execute work order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+        "created_at": "2026-07-04T20:13:20Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0010",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json",
+        "receiver_agent_id": "reviewer",
+        "response_id": "response-0010",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "orchestrator",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json"
+      }
+    ],
+    "doctor": {
+      "checks": [
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+          "name": "run_dir_exists",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json",
+          "name": "run_receipt_schema",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/runtime-manifest.json",
+          "name": "runtime_manifest_schema",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json",
+          "name": "dag_spec_schema",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/events.jsonl",
+          "name": "events_jsonl_exists",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+          "name": "scratch_worktree_exists",
+          "ok": true
+        },
+        {
+          "evidence": "provider_sessions",
+          "name": "provider_sessions_present",
+          "ok": true
+        },
+        {
+          "evidence": "visible_subagents",
+          "name": "visible_subagents_present",
+          "ok": true
+        },
+        {
+          "evidence": "receipts",
+          "name": "node_receipts_present",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+          "name": "codex_ready",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+          "name": "codex_visible_log_exists",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+          "name": "opencode_ready",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+          "name": "opencode_visible_log_exists",
+          "ok": true
+        }
+      ],
+      "live": true,
+      "mocked": false,
+      "schema": "tau.doctor_status_receipt.v1",
+      "status": "PASS"
+    },
+    "execution_timeline": [
+      {
+        "actor": "planner",
+        "attempt": null,
+        "kind": "dag_spec_created",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 1,
+        "timestamp": "2026-07-04T20:11:05Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "orchestrator",
+        "attempt": null,
+        "kind": "orchestrator_started",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 2,
+        "timestamp": "2026-07-04T20:11:05Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "coder",
+        "attempt": 1,
+        "kind": "coder_dispatch",
+        "pane_id": "w3G:p5",
+        "provider_id": "codex",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 3,
+        "timestamp": "2026-07-04T20:12:21Z",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json"
+      },
+      {
+        "actor": "coder",
+        "attempt": 1,
+        "kind": "coder_receipt_validated",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 4,
+        "timestamp": "2026-07-04T20:12:30Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "reviewer",
+        "attempt": 1,
+        "kind": "reviewer_dispatch",
+        "pane_id": "w3G:p6",
+        "provider_id": "opencode",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 5,
+        "timestamp": "2026-07-04T20:12:30Z",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json"
+      },
+      {
+        "actor": "reviewer",
+        "attempt": 1,
+        "kind": "reviewer_receipt_validated",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 6,
+        "timestamp": "2026-07-04T20:13:11Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "reviewer",
+        "attempt": 1,
+        "kind": "reviewer_requested_revision",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 7,
+        "timestamp": "2026-07-04T20:13:11Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "coder",
+        "attempt": 2,
+        "kind": "coder_dispatch",
+        "pane_id": "w3G:p5",
+        "provider_id": "codex",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 8,
+        "timestamp": "2026-07-04T20:13:11Z",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json"
+      },
+      {
+        "actor": "coder",
+        "attempt": 2,
+        "kind": "coder_receipt_validated",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 9,
+        "timestamp": "2026-07-04T20:13:20Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "reviewer",
+        "attempt": 2,
+        "kind": "reviewer_dispatch",
+        "pane_id": "w3G:p6",
+        "provider_id": "opencode",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 10,
+        "timestamp": "2026-07-04T20:13:20Z",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json"
+      },
+      {
+        "actor": "reviewer",
+        "attempt": 2,
+        "kind": "reviewer_receipt_validated",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json",
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.execution_event.v1",
+        "seq": 11,
+        "timestamp": "2026-07-04T20:14:02Z",
+        "work_order_path": null
+      }
+    ],
+    "provider_capabilities": [
+      {
+        "a2a_supported": false,
+        "executable_found": true,
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "models": [],
+        "provider_id": "codex",
+        "readiness_state": "ready",
+        "ready": true,
+        "roles_supported": [
+          "coder"
+        ],
+        "schema": "tau.provider_capability.v1",
+        "stop_supported": true,
+        "structured_readiness_supported": true,
+        "surface": "herdr_pane",
+        "transcript_supported": true,
+        "workspace_binding_supported": true
+      },
+      {
+        "a2a_supported": false,
+        "executable_found": true,
+        "foreground_command": "opencode",
+        "models": [],
+        "provider_id": "opencode",
+        "readiness_state": "ready",
+        "ready": true,
+        "roles_supported": [
+          "reviewer"
+        ],
+        "schema": "tau.provider_capability.v1",
+        "stop_supported": true,
+        "structured_readiness_supported": true,
+        "surface": "herdr_pane",
+        "transcript_supported": true,
+        "workspace_binding_supported": true
+      }
+    ],
+    "review_comments": [
+      {
+        "anchor": {
+          "attempt": 1,
+          "node_id": "reviewer"
+        },
+        "artifact_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+        "author_agent_id": "reviewer",
+        "body": "force_revise=true: target_file is clean (TODO removed) and coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields, but max-exhaustion test requires REVISE. Feedback: message.txt is a single static completion sentence \u2014 next coder should populate the file with a concrete provider DAG description: which provider (tau-deterministic-visible) ran, what the DAG node topology looks like, the initial TODO text that was replaced, and a brief summary of what the coder receipt records. Include at minimum: original TODO content, provider_id, attempt number, and the fact that coder receipt status=PASS. This simulates the force-revise gate that would be used in a real provider-DAG test to verify the reviewer node detects the forced-revise flag and returns REVISE with actionable feedback regardless of pass quality.",
+        "comment_id": "reviewer-attempt-1-1",
+        "created_at": "2026-07-04T20:14:03Z",
+        "evidence_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+        "schema": "tau.review_comment.v1",
+        "severity": "major",
+        "status": "open"
+      },
+      {
+        "anchor": {
+          "attempt": 2,
+          "node_id": "reviewer"
+        },
+        "artifact_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+        "author_agent_id": "reviewer",
+        "body": "force_revise=true: target_file TODO is resolved (message reads 'completed implementation by deterministic visible coder attempt 2'), coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with status PASS. However forced REVISE required. Feedback for next coder attempt: (1) target_file message is too terse \u2014 include substantive implementation detail (what was implemented, key decisions, or changes made) rather than just restating attempt/provider metadata. (2) coder commands_run entry is a prose description ('python deterministic visible coder') rather than an actual runnable command \u2014 use the exact command executed.",
+        "comment_id": "reviewer-attempt-2-1",
+        "created_at": "2026-07-04T20:14:03Z",
+        "evidence_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+        "schema": "tau.review_comment.v1",
+        "severity": "major",
+        "status": "open"
+      }
+    ],
+    "worktree_session_bindings": [
+      {
+        "agent_id": "coder",
+        "node_id": "coder",
+        "pane_id": "w3G:pB",
+        "process_alive": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655ceac16ee24398",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+      },
+      {
+        "agent_id": "orchestrator",
+        "node_id": "orchestrator",
+        "pane_id": "w3G:p8",
+        "process_alive": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655cea8af09e2395",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+      },
+      {
+        "agent_id": "planner",
+        "node_id": "planner",
+        "pane_id": "w3G:p7",
+        "process_alive": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655cea831788f394",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+      },
+      {
+        "agent_id": "reviewer",
+        "node_id": "reviewer",
+        "pane_id": "w3G:pC",
+        "process_alive": null,
+        "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w3G:t1",
+        "terminal_id": "term_655ceaca4bbb9399",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w3G",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+      }
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "new live provider execution by this command",
+      "cloud collaboration",
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "agent-to-agent transport delivery outside the Tau receipt channel"
+    ],
+    "proves": [
+      "Tau can project agent lineage from a real provider-DAG run receipt",
+      "Tau can project a normalized execution timeline from provider-DAG events",
+      "Tau can derive provider capability records from structured readiness/session data",
+      "Tau can bind visible subagents to Herdr sessions and scratch worktree evidence",
+      "Tau can convert reviewer node receipts into typed review-comment records",
+      "Tau can represent DAG dispatches as typed agent-message side-channel records",
+      "Tau can emit a doctor/status receipt over real run artifacts"
+    ]
+  },
+  "provider_live": true,
+  "run_id": "20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.orchestration_evidence_receipt.v1",
+  "source_dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json",
+  "source_run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion",
+  "source_run_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json",
+  "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T200703Z-tau-provider-live-dag-hard-controls-current/advanced-provider-runs/max-exhaustion/20260704T201105Z-rw-sanity-provider-dag-max-exhaustion/runtime-manifest.json",
+  "status": "PASS",
+  "timestamp": "2026-07-04T20:14:03Z"
+}

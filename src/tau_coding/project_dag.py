@@ -82,12 +82,6 @@ def run_project_dag_contract(
     )
     resolved_receipt_dir.mkdir(parents=True, exist_ok=True)
 
-    compiled_spec_root = _compile_command_specs(
-        contract=contract,
-        contract_path=resolved_contract_path,
-        receipt_dir=resolved_receipt_dir,
-        fallback_root=command_spec_root,
-    )
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
     if scheduler == "bounded-ready-queue":
@@ -96,8 +90,15 @@ def run_project_dag_contract(
             contract_path=resolved_contract_path,
             receipt_dir=resolved_receipt_dir,
             agents_root=agents_root.expanduser().resolve(),
-            command_spec_root=compiled_spec_root,
+            command_spec_root=command_spec_root,
         )
+
+    compiled_spec_root = _compile_command_specs(
+        contract=contract,
+        contract_path=resolved_contract_path,
+        receipt_dir=resolved_receipt_dir,
+        fallback_root=command_spec_root,
+    )
 
     start_handoff = _start_handoff(contract, contract_path=resolved_contract_path)
     start_path = resolved_receipt_dir / "start-handoff.json"
@@ -197,6 +198,72 @@ def run_project_dag_contract(
     return receipt
 
 
+def dag_contract_error_payload(
+    *,
+    contract_path: Path,
+    receipt_dir: Path | None,
+    error: str,
+    scheduler: str,
+) -> dict[str, Any]:
+    """Project-agent-readable error for DAGs that fail before execution starts."""
+
+    resolved_contract_path = contract_path.expanduser().resolve()
+    resolved_receipt_dir = (
+        receipt_dir.expanduser().resolve()
+        if receipt_dir is not None
+        else resolved_contract_path.parent / ".tau-dag-run"
+    )
+    payload: dict[str, Any] = {
+        "schema": DAG_ERROR_SCHEMA,
+        "ok": False,
+        "status": "BLOCKED",
+        "severity": "BLOCK",
+        "failure_code": "dag_contract_invalid",
+        "verdict": "DAG_CONTRACT_INVALID",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "message": error,
+        "dag_id": None,
+        "scheduler": scheduler,
+        "contract_path": str(resolved_contract_path),
+        "run_dir": str(resolved_receipt_dir),
+        "receipt_path": str(resolved_receipt_dir / "dag-receipt.json"),
+        "recommended_action": {
+            "type": "repair_then_retry_or_reroute",
+            "next_agent": "goal-guardian",
+            "reason": "Repair the DAG contract so it satisfies tau.dag_contract.v1 before dispatch.",
+        },
+        "evidence": {
+            "primary_alert": {
+                "severity": "BLOCK",
+                "code": "dag_contract_invalid",
+                "message": error,
+                "evidence": {
+                    "contract_path": str(resolved_contract_path),
+                    "scheduler": scheduler,
+                },
+            },
+            "alert_count": 1,
+            "alert_codes": ["dag_contract_invalid"],
+            "errors": [error],
+        },
+        "proof_scope": {
+            "proves": [
+                "Tau rejected a malformed or incomplete DAG contract before dispatch.",
+                "Tau packaged the contract failure as a project-agent course-correction payload.",
+                "No DAG route, goal, target, command, or handoff was executed.",
+            ],
+            "does_not_prove": [
+                "The repaired DAG contract will pass.",
+                "Any subagent or provider command was executed.",
+                "Provider/model semantic quality.",
+            ],
+        },
+    }
+    return payload
+
+
 def _run_bounded_ready_queue_project_dag(
     *,
     contract: ProjectDagContract,
@@ -228,6 +295,13 @@ def _run_bounded_ready_queue_project_dag(
         )
         _write_json(receipt_dir / "dag-receipt.json", receipt)
         return receipt
+
+    command_spec_root = _compile_command_specs(
+        contract=contract,
+        contract_path=contract_path,
+        receipt_dir=receipt_dir,
+        fallback_root=command_spec_root,
+    )
 
     max_concurrency = _max_concurrency(contract)
     runnable_nodes = {

@@ -81,7 +81,7 @@ from tau_coding.handoff_dispatch import (
     write_agent_handoff_command_loop_receipt,
     write_agent_handoff_dispatch_receipt,
 )
-from tau_coding.herdr_cleanup import run_herdr_cleanup
+from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
@@ -118,6 +118,7 @@ from tau_coding.persona_dream_panel_proof import (
 )
 from tau_coding.project_dag import (
     DAG_CONTRACT_SCHEMA,
+    dag_contract_error_payload,
     load_dag_contract_payload,
     run_project_dag_contract,
 )
@@ -806,13 +807,21 @@ def main(
             options = _parse_generic_dag_run_cli_args(positional_args[1:])
             spec_path = options["spec_path"]
             if _dag_run_schema(Path(spec_path)) == DAG_CONTRACT_SCHEMA:
-                payload = run_project_dag_contract(
-                    contract_path=Path(spec_path),
-                    receipt_dir=options.get("receipt_dir"),
-                    agents_root=Path(str(options["agents_root"])),
-                    command_spec_root=options.get("command_spec_root"),
-                    scheduler=str(options["scheduler"]),
-                )
+                try:
+                    payload = run_project_dag_contract(
+                        contract_path=Path(spec_path),
+                        receipt_dir=options.get("receipt_dir"),
+                        agents_root=Path(str(options["agents_root"])),
+                        command_spec_root=options.get("command_spec_root"),
+                        scheduler=str(options["scheduler"]),
+                    )
+                except RuntimeError as exc:
+                    payload = dag_contract_error_payload(
+                        contract_path=Path(spec_path),
+                        receipt_dir=options.get("receipt_dir"),
+                        error=str(exc),
+                        scheduler=str(options["scheduler"]),
+                    )
             else:
                 payload = run_generic_dag(
                     spec_path=Path(spec_path),
@@ -1051,7 +1060,12 @@ def main(
     if prompt_option is None and command == "herdr-cleanup":
         try:
             options = _parse_herdr_cleanup_cli_args(positional_args[1:])
-            payload = run_herdr_cleanup(**options)
+            if options.pop("gc"):
+                options.pop("mode", None)
+                payload = run_herdr_gc(**options)
+            else:
+                options.pop("apply", None)
+                payload = run_herdr_cleanup(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2435,15 +2449,18 @@ def _parse_media_explainer_inspect_cli_args(args: list[str]) -> Path:
 
 
 def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
-    if not args or args[0] not in {"audit", "dry-run", "apply"}:
+    if not args or args[0] not in {"audit", "dry-run", "apply", "gc"}:
         raise RuntimeError(
             "Usage: tau herdr-cleanup audit|dry-run|apply --run-dir <run-dir> "
-            "[--herdr-bin herdr] [--include-current-workspace]"
+            "[--herdr-bin herdr] [--include-current-workspace]\n"
+            "       tau herdr-cleanup gc --run-dir <receipt-dir> "
+            "[--apply] [--herdr-bin herdr] [--include-current-workspace]"
         )
     mode = args[0]
     run_dir: Path | None = None
     herdr_bin = "herdr"
     include_current_workspace = False
+    apply_gc = False
     index = 1
     while index < len(args):
         arg = args[index]
@@ -2463,6 +2480,8 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             herdr_bin = arg.partition("=")[2]
         elif arg == "--include-current-workspace":
             include_current_workspace = True
+        elif arg == "--apply" and mode == "gc":
+            apply_gc = True
         else:
             raise RuntimeError(f"unknown herdr-cleanup option: {arg}")
         index += 1
@@ -2471,8 +2490,10 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
     return {
         "run_dir": run_dir,
         "mode": mode,
+        "apply": apply_gc,
         "herdr_bin": herdr_bin,
         "include_current_workspace": include_current_workspace,
+        "gc": mode == "gc",
     }
 
 
