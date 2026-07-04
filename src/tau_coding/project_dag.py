@@ -5,12 +5,18 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import time
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tau_coding.handoff_dispatch import write_agent_handoff_command_loop_receipt
+from tau_coding.handoff_dispatch import (
+    dispatch_agent_handoff_command_once,
+    load_agent_dispatch_command_spec,
+    write_agent_handoff_command_loop_receipt,
+)
 
 try:  # YAML is available in the project lock through docs tooling, but keep JSON first.
     import yaml
@@ -61,6 +67,7 @@ def run_project_dag_contract(
     receipt_dir: Path | None = None,
     agents_root: Path,
     command_spec_root: Path | None = None,
+    scheduler: str = "handoff-loop",
 ) -> dict[str, Any]:
     """Run a project-agent DAG contract through the existing handoff command loop."""
 
@@ -80,6 +87,17 @@ def run_project_dag_contract(
         receipt_dir=resolved_receipt_dir,
         fallback_root=command_spec_root,
     )
+    if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
+        raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    if scheduler == "bounded-ready-queue":
+        return _run_bounded_ready_queue_project_dag(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            agents_root=agents_root.expanduser().resolve(),
+            command_spec_root=compiled_spec_root,
+        )
+
     start_handoff = _start_handoff(contract, contract_path=resolved_contract_path)
     start_path = resolved_receipt_dir / "start-handoff.json"
     _write_json(start_path, start_handoff)
@@ -110,6 +128,7 @@ def run_project_dag_contract(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "scheduler": scheduler,
         "execution": "project_agent_dag_via_handoff_command_loop",
         "dag_id": contract.dag_id,
         "contract_path": str(resolved_contract_path),
@@ -162,6 +181,279 @@ def run_project_dag_contract(
         "timestamp": _utc_stamp(),
     }
     _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+    return receipt
+
+
+def _run_bounded_ready_queue_project_dag(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+    agents_root: Path,
+    command_spec_root: Path | None,
+) -> dict[str, Any]:
+    """Run acyclic project DAG nodes when dependencies are ready."""
+
+    graph_alerts = _ready_queue_contract_alerts(contract)
+    if graph_alerts:
+        receipt = _ready_queue_receipt(
+            contract=contract,
+            contract_path=contract_path,
+            receipt_dir=receipt_dir,
+            command_spec_root=command_spec_root,
+            status="BLOCKED",
+            verdict=str(graph_alerts[0]["code"]).upper(),
+            alerts=graph_alerts,
+            dispatches=[],
+            events=[],
+            node_attempts={},
+            reviewer_verdicts=[],
+            observed_edges=[],
+            execution_seconds=0.0,
+            max_observed_concurrency=0,
+            errors=[],
+        )
+        _write_json(receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+
+    max_concurrency = _max_concurrency(contract)
+    runnable_nodes = {
+        node_id
+        for node_id, node in contract.nodes.items()
+        if node.executor != "human" and node_id not in contract.terminal_nodes
+    }
+    predecessors = _predecessors(contract)
+    successors = _successors(contract)
+    completed: set[str] = set()
+    failed = False
+    dispatches: list[dict[str, Any]] = []
+    events: list[dict[str, Any]] = []
+    responses: dict[str, dict[str, Any]] = {}
+    node_artifacts: dict[str, list[str]] = {}
+    node_attempts: dict[str, int] = {}
+    alerts: list[dict[str, Any]] = []
+    errors: list[str] = []
+    intervals: list[tuple[float, float]] = []
+    started_at = time.monotonic()
+
+    def mark_virtual_ready_nodes() -> None:
+        changed = True
+        while changed:
+            changed = False
+            for node_id in sorted(runnable_nodes - completed):
+                node = contract.nodes[node_id]
+                if node.command_spec:
+                    continue
+                if not _node_dependencies_satisfied(node_id, predecessors, completed):
+                    continue
+                completed.add(node_id)
+                events.append(
+                    {
+                        "event": "virtual_node_completed",
+                        "node_id": node_id,
+                        "agent": node.agent,
+                        "ts": _utc_stamp(),
+                    }
+                )
+                changed = True
+
+    def ready_nodes(running: set[str]) -> list[str]:
+        return [
+            node_id
+            for node_id in sorted(runnable_nodes - completed - running)
+            if contract.nodes[node_id].command_spec
+            and _node_dependencies_satisfied(node_id, predecessors, completed)
+        ]
+
+    mark_virtual_ready_nodes()
+    with ThreadPoolExecutor(max_workers=max_concurrency) as executor:
+        futures: dict[Future[dict[str, Any]], str] = {}
+        while len(completed) < len(runnable_nodes):
+            if failed:
+                break
+            running_node_ids = set(futures.values())
+            for node_id in ready_nodes(running_node_ids):
+                if len(futures) >= max_concurrency:
+                    break
+                node = contract.nodes[node_id]
+                node_attempts[node_id] = node_attempts.get(node_id, 0) + 1
+                if node_attempts[node_id] > node.max_attempts:
+                    alerts.append(
+                        _alert(
+                            "BLOCK",
+                            "max_attempts_exceeded",
+                            "Node exceeded its DAG max_attempts.",
+                            {
+                                "node_id": node_id,
+                                "attempts": node_attempts[node_id],
+                                "max_attempts": node.max_attempts,
+                            },
+                        )
+                    )
+                    failed = True
+                    break
+                start_payload = _node_start_handoff(
+                    contract,
+                    node,
+                    contract_path=contract_path,
+                    predecessor_responses=[
+                        responses[item]
+                        for item in sorted(predecessors.get(node_id, set()))
+                        if item in responses
+                    ],
+                )
+                artifact_dir = receipt_dir / "ready-queue" / node_id / f"attempt-{node_attempts[node_id]:03d}"
+                future = executor.submit(
+                    _dispatch_ready_node,
+                    node=node,
+                    start_payload=start_payload,
+                    agents_root=agents_root,
+                    command_spec_root=command_spec_root,
+                    artifact_dir=artifact_dir,
+                )
+                futures[future] = node_id
+                events.append(
+                    {
+                        "event": "node_started",
+                        "node_id": node_id,
+                        "agent": node.agent,
+                        "attempt": node_attempts[node_id],
+                        "ts": _utc_stamp(),
+                    }
+                )
+            if failed:
+                break
+            if not futures:
+                remaining = sorted(runnable_nodes - completed)
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "ready_queue_stalled",
+                        "No runnable DAG node had satisfied dependencies.",
+                        {"remaining_nodes": remaining, "completed_nodes": sorted(completed)},
+                    )
+                )
+                break
+            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            for future in done:
+                node_id = futures.pop(future)
+                try:
+                    result = future.result()
+                except Exception as exc:  # pragma: no cover - defensive executor boundary.
+                    result = {
+                        "ok": False,
+                        "dispatch": None,
+                        "response": None,
+                        "started_monotonic": time.monotonic(),
+                        "completed_monotonic": time.monotonic(),
+                        "errors": [str(exc)],
+                    }
+                intervals.append(
+                    (
+                        float(result["started_monotonic"]),
+                        float(result["completed_monotonic"]),
+                    )
+                )
+                dispatch = result.get("dispatch")
+                if isinstance(dispatch, dict):
+                    dispatches.append(dispatch)
+                    dispatch_path = (
+                        receipt_dir
+                        / "ready-queue"
+                        / node_id
+                        / f"attempt-{node_attempts[node_id]:03d}"
+                        / "dispatch-receipt.json"
+                    )
+                    _write_json(dispatch_path, dispatch)
+                node_artifacts[node_id] = [
+                    str(path)
+                    for path in sorted((receipt_dir / "ready-queue" / node_id).rglob("*"))
+                    if path.is_file()
+                ]
+                events.append(
+                    {
+                        "event": "node_completed",
+                        "node_id": node_id,
+                        "agent": contract.nodes[node_id].agent,
+                        "attempt": node_attempts[node_id],
+                        "ok": result.get("ok") is True,
+                        "ts": _utc_stamp(),
+                    }
+                )
+                if result.get("ok") is not True:
+                    stop_reason = "node_dispatch_failed"
+                    if isinstance(dispatch, dict):
+                        stop_reason = str(dispatch.get("stop_reason") or stop_reason)
+                    alerts.append(
+                        _alert(
+                            "BLOCK",
+                            stop_reason,
+                            "Ready-queue node dispatch did not pass.",
+                            {"node_id": node_id, "errors": result.get("errors", [])},
+                        )
+                    )
+                    errors.extend(str(item) for item in result.get("errors", []))
+                    failed = True
+                    continue
+                response = result.get("response")
+                if isinstance(response, dict):
+                    responses[node_id] = response
+                    node_alerts = _node_response_alerts(contract, contract.nodes[node_id], response)
+                    if node_alerts:
+                        alerts.extend(node_alerts)
+                        failed = True
+                    else:
+                        completed.add(node_id)
+                        mark_virtual_ready_nodes()
+                else:
+                    alerts.append(
+                        _alert(
+                            "BLOCK",
+                            "missing_node_response",
+                            "Ready-queue node did not return a JSON handoff response.",
+                            {"node_id": node_id},
+                        )
+                    )
+                    failed = True
+
+    execution_seconds = round(time.monotonic() - started_at, 6)
+    if not alerts and not _terminal_reachable_from_completed(contract, completed, successors):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_terminal_route",
+                "Completed DAG nodes do not reach a declared terminal node.",
+                {"completed_nodes": sorted(completed), "terminal_nodes": list(contract.terminal_nodes)},
+            )
+        )
+    observed_edges = _ready_queue_observed_edges(contract, completed)
+    reviewer_verdicts = [
+        verdict
+        for node_id, response in responses.items()
+        if contract.nodes[node_id].reviewer is not None
+        for verdict in _reviewer_verdict_evidence(response)
+    ]
+    status = "PASS" if not alerts else "BLOCKED"
+    verdict = "PASS" if status == "PASS" else str(alerts[0]["code"]).upper()
+    receipt = _ready_queue_receipt(
+        contract=contract,
+        contract_path=contract_path,
+        receipt_dir=receipt_dir,
+        command_spec_root=command_spec_root,
+        status=status,
+        verdict=verdict,
+        alerts=alerts,
+        dispatches=dispatches,
+        events=events,
+        node_attempts=node_attempts,
+        reviewer_verdicts=reviewer_verdicts,
+        observed_edges=observed_edges,
+        execution_seconds=execution_seconds,
+        max_observed_concurrency=_max_observed_concurrency(intervals),
+        errors=errors,
+        node_artifacts=node_artifacts,
+    )
+    _write_json(receipt_dir / "dag-receipt.json", receipt)
     return receipt
 
 
@@ -511,6 +803,347 @@ def _reviewer_alerts(
                 )
             )
     return alerts
+
+
+def _node_response_alerts(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    response: dict[str, Any],
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    missing = _missing_required_evidence(node.required_evidence, response)
+    if missing:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_required_evidence",
+                "Node response did not include required evidence.",
+                {"node_id": node.node_id, "missing": missing},
+            )
+        )
+    if node.reviewer is not None:
+        alerts.extend(_reviewer_alerts(contract, node, response))
+    return alerts
+
+
+def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if _cycle_detected(contract):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "cycle_detected",
+                "Bounded ready-queue scheduler requires an acyclic DAG contract.",
+                {},
+            )
+        )
+    mutating_nodes = [
+        node.node_id
+        for node in contract.nodes.values()
+        if bool(contract.payload.get("mutating")) or bool(_node_payload(contract, node.node_id).get("mutates"))
+    ]
+    if mutating_nodes:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "mutating_node_not_allowed",
+                "Bounded ready-queue scheduler only accepts non-mutating local nodes in this slice.",
+                {"node_ids": mutating_nodes},
+            )
+        )
+    return alerts
+
+
+def _node_payload(contract: ProjectDagContract, node_id: str) -> dict[str, Any]:
+    raw_nodes = contract.payload.get("nodes")
+    if not isinstance(raw_nodes, list):
+        return {}
+    for item in raw_nodes:
+        if isinstance(item, dict) and item.get("id") == node_id:
+            return item
+    return {}
+
+
+def _cycle_detected(contract: ProjectDagContract) -> bool:
+    graph = _successors(contract, include_terminals=False)
+    temporary: set[str] = set()
+    permanent: set[str] = set()
+
+    def visit(node_id: str) -> bool:
+        if node_id in permanent:
+            return False
+        if node_id in temporary:
+            return True
+        temporary.add(node_id)
+        for child in graph.get(node_id, set()):
+            if visit(child):
+                return True
+        temporary.remove(node_id)
+        permanent.add(node_id)
+        return False
+
+    return any(visit(node_id) for node_id in contract.nodes)
+
+
+def _predecessors(contract: ProjectDagContract) -> dict[str, set[str]]:
+    predecessors: dict[str, set[str]] = {node_id: set() for node_id in contract.nodes}
+    for edge in contract.edges:
+        if edge.target in predecessors and edge.source in contract.nodes:
+            predecessors[edge.target].add(edge.source)
+    return predecessors
+
+
+def _successors(
+    contract: ProjectDagContract,
+    *,
+    include_terminals: bool = True,
+) -> dict[str, set[str]]:
+    successors: dict[str, set[str]] = {node_id: set() for node_id in contract.nodes}
+    for edge in contract.edges:
+        if edge.source not in successors:
+            continue
+        if edge.target in contract.nodes or include_terminals:
+            successors[edge.source].add(edge.target)
+    return successors
+
+
+def _node_dependencies_satisfied(
+    node_id: str,
+    predecessors: dict[str, set[str]],
+    completed: set[str],
+) -> bool:
+    return predecessors.get(node_id, set()).issubset(completed)
+
+
+def _terminal_reachable_from_completed(
+    contract: ProjectDagContract,
+    completed: set[str],
+    successors: dict[str, set[str]],
+) -> bool:
+    return any(
+        node_id in completed and any(target in contract.terminal_nodes for target in successors[node_id])
+        for node_id in completed
+    )
+
+
+def _ready_queue_observed_edges(
+    contract: ProjectDagContract,
+    completed: set[str],
+) -> list[dict[str, Any]]:
+    edges: list[dict[str, Any]] = []
+    for edge in contract.edges:
+        if edge.source not in completed:
+            continue
+        if edge.target not in completed and edge.target not in contract.terminal_nodes:
+            continue
+        source_node = contract.nodes[edge.source]
+        target_node = contract.nodes.get(edge.target)
+        edges.append(
+            {
+                "from_node": edge.source,
+                "from_agent": source_node.agent,
+                "to_node": edge.target,
+                "to_agent": target_node.agent if target_node else edge.target,
+            }
+        )
+    return edges
+
+
+def _node_start_handoff(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    *,
+    contract_path: Path,
+    predecessor_responses: list[dict[str, Any]],
+) -> dict[str, Any]:
+    evidence: list[Any] = [
+        {
+            "kind": "dag_contract",
+            "schema": DAG_CONTRACT_SCHEMA,
+            "path": str(contract_path),
+            "sha256": f"sha256:{_sha256(contract_path)}",
+        }
+    ]
+    artifacts: list[str] = [str(contract_path)]
+    for response in predecessor_responses:
+        evidence.extend(_result_evidence(response))
+        context = response.get("context")
+        if isinstance(context, dict):
+            artifacts.extend(str(item) for item in context.get("artifacts", []) if isinstance(item, str))
+    return {
+        "schema": "tau.agent_handoff.v1",
+        "github": {
+            "repo": contract.target["repo"],
+            "target": contract.target["target"],
+        },
+        "goal": contract.goal,
+        "previous_subagent": "human",
+        "context": {
+            "summary": f"Dispatch ready DAG node {node.node_id}.",
+            "artifacts": artifacts,
+        },
+        "result": {
+            "status": "DAG_NODE_READY",
+            "summary": f"Dependencies are satisfied for DAG node {node.node_id}.",
+            "evidence": evidence,
+        },
+        "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+        "next_agent": {
+            "name": node.agent,
+            "executor": node.executor,
+            "reason": f"Ready node for DAG {contract.dag_id}.",
+        },
+        "required_evidence": list(node.required_evidence),
+        "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation.",
+    }
+
+
+def _dispatch_ready_node(
+    *,
+    node: ProjectDagNode,
+    start_payload: dict[str, Any],
+    agents_root: Path,
+    command_spec_root: Path | None,
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    started = time.monotonic()
+    try:
+        spec = load_agent_dispatch_command_spec(
+            agents_root,
+            node.agent,
+            command_spec_root=command_spec_root,
+        )
+        dispatch = dispatch_agent_handoff_command_once(
+            start_payload,
+            list(spec["command"]),
+            timeout_s=float(spec["timeout_s"]),
+            cwd=spec.get("cwd") if isinstance(spec.get("cwd"), Path) else None,
+            active_goal_hash=str(start_payload["goal"]["goal_hash"]),
+            agent_registry_root=agents_root,
+            artifact_dir=artifact_dir,
+        )
+        dispatch_payload = dispatch.as_dict()
+        response = _response_payload(dispatch_payload)
+        return {
+            "ok": dispatch.ok,
+            "dispatch": dispatch_payload,
+            "response": response,
+            "started_monotonic": started,
+            "completed_monotonic": time.monotonic(),
+            "errors": list(dispatch.errors),
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "dispatch": None,
+            "response": None,
+            "started_monotonic": started,
+            "completed_monotonic": time.monotonic(),
+            "errors": [str(exc)],
+        }
+
+
+def _max_concurrency(contract: ProjectDagContract) -> int:
+    raw = contract.limits.get("max_concurrency", 2)
+    if isinstance(raw, bool) or not isinstance(raw, int) or raw < 1:
+        return 2
+    return raw
+
+
+def _max_observed_concurrency(intervals: list[tuple[float, float]]) -> int:
+    points: list[tuple[float, int]] = []
+    for start, end in intervals:
+        points.append((start, 1))
+        points.append((end, -1))
+    active = 0
+    max_active = 0
+    for _, delta in sorted(points, key=lambda item: (item[0], -item[1])):
+        active += delta
+        max_active = max(max_active, active)
+    return max_active
+
+
+def _ready_queue_receipt(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+    command_spec_root: Path | None,
+    status: str,
+    verdict: str,
+    alerts: list[dict[str, Any]],
+    dispatches: list[dict[str, Any]],
+    events: list[dict[str, Any]],
+    node_attempts: dict[str, int],
+    reviewer_verdicts: list[dict[str, Any]],
+    observed_edges: list[dict[str, Any]],
+    execution_seconds: float,
+    max_observed_concurrency: int,
+    errors: list[str],
+    node_artifacts: dict[str, list[str]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "schema": DAG_RECEIPT_SCHEMA,
+        "ok": status == "PASS",
+        "status": status,
+        "verdict": verdict,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "scheduler": "bounded-ready-queue",
+        "execution": "project_agent_dag_bounded_ready_queue",
+        "dag_id": contract.dag_id,
+        "contract_path": str(contract_path),
+        "contract_sha256": f"sha256:{_sha256(contract_path)}",
+        "run_dir": str(receipt_dir),
+        "active_goal_hash": contract.goal["goal_hash"],
+        "target": contract.target,
+        "entry_node": contract.entry_node,
+        "terminal_nodes": list(contract.terminal_nodes),
+        "node_count": len(contract.nodes),
+        "edge_count": len(contract.edges),
+        "max_steps": _max_steps(contract),
+        "max_concurrency": _max_concurrency(contract),
+        "max_observed_concurrency": max_observed_concurrency,
+        "execution_seconds": execution_seconds,
+        "command_spec_root": str(command_spec_root) if command_spec_root else None,
+        "selected_agents": [
+            dispatch.get("selected_agent")
+            for dispatch in dispatches
+            if dispatch.get("selected_agent")
+        ],
+        "observed_edges": observed_edges,
+        "node_attempts": node_attempts,
+        "reviewer_verdicts": reviewer_verdicts,
+        "scheduler_events": events,
+        "dispatches": dispatches,
+        "alerts": alerts,
+        "artifacts": [
+            str(path)
+            for path in sorted(receipt_dir.rglob("*"))
+            if path.is_file() and path.name != "dag-receipt.json"
+        ],
+        "node_artifacts": node_artifacts or {},
+        "proof_scope": {
+            "mocked": False,
+            "live": True,
+            "proves": [
+                "DAG contract parsed and validated.",
+                "Ready nodes were dispatched by the bounded ready-queue scheduler.",
+                "Independent ready nodes can run concurrently when dependencies are satisfied.",
+                "Each dispatched node used the real local command subprocess runner.",
+                "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
+            ],
+            "does_not_prove": [
+                "Provider/model semantic quality.",
+                "GitHub mutation or ticket closure.",
+                "Mutating branch safety.",
+                "Unbounded autonomous operation.",
+            ],
+        },
+        "errors": errors,
+        "timestamp": _utc_stamp(),
+    }
 
 
 def _observed_edges(contract: ProjectDagContract, loop_payload: dict[str, Any]) -> list[dict[str, Any]]:

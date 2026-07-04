@@ -109,6 +109,48 @@ def test_cli_dag_run_dispatches_project_dag_contract(tmp_path: Path) -> None:
     assert payload["reviewer_verdicts"][0]["goal_hash"] == "sha256:active-goal"
 
 
+def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        sleep_seconds=0.25,
+    )
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "human", _creator_evidence()),
+        sleep_seconds=0.25,
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["scheduler"] == "bounded-ready-queue"
+    assert receipt["max_observed_concurrency"] >= 2
+    assert set(receipt["selected_agents"]) == {"research-auditor", "coder", "reviewer"}
+    assert receipt["node_attempts"] == {
+        "coder": 1,
+        "research": 1,
+        "reviewer": 1,
+    }
+    assert receipt["reviewer_verdicts"][0]["goal_hash"] == "sha256:active-goal"
+    assert any(
+        event["event"] == "virtual_node_completed" and event["node_id"] == "start"
+        for event in receipt["scheduler_events"]
+    )
+
+
 def _write_contract(tmp_path: Path) -> Path:
     (tmp_path / "agents").mkdir()
     spec_root = tmp_path / "specs"
@@ -173,16 +215,110 @@ def _write_contract(tmp_path: Path) -> Path:
     return path
 
 
-def _write_response_spec(tmp_path: Path, agent: str, response: dict[str, object]) -> None:
+def _write_parallel_contract(tmp_path: Path) -> Path:
+    (tmp_path / "agents").mkdir(exist_ok=True)
+    spec_root = tmp_path / "specs"
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "parallel-creator-reviewer-test",
+        "goal": {
+            "goal_id": "creator-reviewer-test",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-creator-reviewer",
+        },
+        "entry_node": "start",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 4,
+            "max_concurrency": 2,
+        },
+        "nodes": [
+            {
+                "id": "start",
+                "agent": "goal-guardian",
+                "executor": "scheduler",
+                "max_attempts": 1,
+                "required_evidence": [],
+            },
+            {
+                "id": "research",
+                "agent": "research-auditor",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "research-auditor" / "tau-dispatch-command.json"),
+                "required_evidence": ["source_summary"],
+            },
+            {
+                "id": "coder",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "coder" / "tau-dispatch-command.json"),
+                "required_evidence": ["creator_artifact"],
+            },
+            {
+                "id": "reviewer",
+                "agent": "reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "coder",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "start", "to": "research"},
+            {"from": "start", "to": "coder"},
+            {"from": "research", "to": "reviewer"},
+            {"from": "coder", "to": "reviewer"},
+            {"from": "reviewer", "to": "human"},
+        ],
+        "required_evidence": ["source_summary", "creator_artifact", "reviewer_verdict"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "missing_required_join",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = tmp_path / "parallel-dag-contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _write_response_spec(
+    tmp_path: Path,
+    agent: str,
+    response: dict[str, object],
+    *,
+    sleep_seconds: float = 0.0,
+) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
+    code = ""
+    if sleep_seconds:
+        code += f"import time; time.sleep({sleep_seconds!r}); "
+    code += f"print({json.dumps(json.dumps(response))})"
     spec_path.write_text(
         json.dumps(
             {
                 "command": [
                     sys.executable,
                     "-c",
-                    f"print({json.dumps(json.dumps(response))})",
+                    code,
                 ],
                 "timeout_s": 5,
             }

@@ -1,0 +1,151 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "max_steps_exhausted"
+        ],
+        "alert_count": 1,
+        "errors": [
+          "command handoff loop exceeded max_steps=2"
+        ],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 1,
+          "reviewer": 1
+        },
+        "node_count": 2,
+        "observed_edges": [
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "coder",
+            "to_node": "coder"
+          }
+        ],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/max-steps-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "REVISE"
+          }
+        ],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "reviewer"
+        ],
+        "status": "BLOCKED",
+        "verdict": "MAX_STEPS_EXHAUSTED"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/advanced.project_dag_max_steps_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/advanced.project_dag_max_steps_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_max_steps_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/max-steps-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/max-steps-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/max-steps-project-dag/agents"
+  ],
+  "completed_at": "2026-07-04T15:16:21Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "MAX_STEPS_EXHAUSTED",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks a project-agent DAG when a reviewer keeps routing back and the DAG max_total_attempts budget is exhausted.",
+  "receipt_summary": {
+    "alert_codes": [
+      "max_steps_exhausted"
+    ],
+    "alert_count": 1,
+    "errors": [
+      "command handoff loop exceeded max_steps=2"
+    ],
+    "live": true,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 1,
+      "reviewer": 1
+    },
+    "node_count": 2,
+    "observed_edges": [
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "coder",
+        "to_node": "coder"
+      }
+    ],
+    "ok": false,
+    "provider_live": false,
+    "reviewer_verdicts": [
+      {
+        "creator_attempt": 1,
+        "goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/max-steps-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+        "reviewed_node_id": "coder",
+        "verdict": "REVISE"
+      }
+    ],
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "coder",
+      "reviewer"
+    ],
+    "status": "BLOCKED",
+    "verdict": "MAX_STEPS_EXHAUSTED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-04T15:16:21Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/advanced.project_dag_max_steps_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/advanced.project_dag_max_steps_fail_closed.stdout.txt",
+  "timeout_seconds": 90
+}

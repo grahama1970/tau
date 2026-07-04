@@ -799,6 +799,7 @@ def main(
                     receipt_dir=options.get("receipt_dir"),
                     agents_root=Path(str(options["agents_root"])),
                     command_spec_root=options.get("command_spec_root"),
+                    scheduler=str(options["scheduler"]),
                 )
             else:
                 payload = run_generic_dag(
@@ -1777,7 +1778,8 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
     if not args:
         raise RuntimeError(
             "Usage: tau dag-run <dag-spec> [--no-resume] "
-            "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>]"
+            "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>] "
+            "[--scheduler <handoff-loop|bounded-ready-queue>]"
         )
     spec_path = Path(args[0])
     resume = True
@@ -1789,6 +1791,7 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
         )
     )
     command_spec_root: Path | None = None
+    scheduler = "handoff-loop"
     index = 1
     while index < len(args):
         arg = args[index]
@@ -1809,6 +1812,11 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
             if index >= len(args):
                 raise RuntimeError("--command-spec-root requires a value")
             command_spec_root = Path(args[index])
+        elif arg == "--scheduler":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--scheduler requires a value")
+            scheduler = args[index]
         else:
             raise RuntimeError(f"unknown dag-run option: {arg}")
         index += 1
@@ -1818,6 +1826,7 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
         "receipt_dir": receipt_dir,
         "agents_root": agents_root,
         "command_spec_root": command_spec_root,
+        "scheduler": scheduler,
     }
 
 

@@ -1,0 +1,191 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "execution_seconds": 0.501118,
+        "live": true,
+        "max_concurrency": 2,
+        "max_observed_concurrency": 2,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 1,
+          "research": 1,
+          "reviewer": 1
+        },
+        "node_count": 4,
+        "observed_edges": [
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "research-auditor",
+            "to_node": "research"
+          },
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "coder",
+            "to_node": "coder"
+          },
+          {
+            "from_agent": "research-auditor",
+            "from_node": "research",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS"
+          }
+        ],
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "research-auditor",
+          "coder",
+          "reviewer"
+        ],
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/medium.project_dag_ready_queue_parallel_join.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/medium.project_dag_ready_queue_parallel_join.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.project_dag_ready_queue_parallel_join",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/agents",
+    "--scheduler",
+    "bounded-ready-queue"
+  ],
+  "completed_at": "2026-07-04T15:16:19Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": "PASS",
+  "level": "medium",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau runs a bounded ready-queue project DAG with concurrent researcher/coder branches and a reviewer join against the immutable goal.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "errors": [],
+    "execution_seconds": 0.501118,
+    "live": true,
+    "max_concurrency": 2,
+    "max_observed_concurrency": 2,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 1,
+      "research": 1,
+      "reviewer": 1
+    },
+    "node_count": 4,
+    "observed_edges": [
+      {
+        "from_agent": "goal-guardian",
+        "from_node": "start",
+        "to_agent": "research-auditor",
+        "to_node": "research"
+      },
+      {
+        "from_agent": "goal-guardian",
+        "from_node": "start",
+        "to_agent": "coder",
+        "to_node": "coder"
+      },
+      {
+        "from_agent": "research-auditor",
+        "from_node": "research",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "human",
+        "to_node": "human"
+      }
+    ],
+    "ok": true,
+    "provider_live": false,
+    "reviewer_verdicts": [
+      {
+        "creator_attempt": 1,
+        "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/concurrent-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+        "reviewed_node_id": "coder",
+        "verdict": "PASS"
+      }
+    ],
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "research-auditor",
+      "coder",
+      "reviewer"
+    ],
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-04T15:16:18Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/medium.project_dag_ready_queue_parallel_join.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151616Z-project-dag-sequential-concurrent-negative/logs/medium.project_dag_ready_queue_parallel_join.stdout.txt",
+  "timeout_seconds": 120
+}

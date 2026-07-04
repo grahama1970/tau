@@ -60,6 +60,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `medium.provider_dag_plan`: Tau planner emits a scratch coder/reviewer DAG receipt.
 - `medium.provider_dag_plan_status`: Tau summarizes a provider DAG planner-only run through the read-only `tau run-status` surface.
 - `medium.project_dag_reviewer_repair_loop`: Tau runs a project-agent DAG repair loop where reviewer returns `REVISE`, creator reruns, and reviewer returns `PASS`.
+- `medium.project_dag_ready_queue_parallel_join`: Tau runs a bounded ready-queue project DAG where a virtual start node fans out to concurrent `research-auditor` and `coder` local subprocess branches, then joins at `reviewer` for an immutable-goal verdict.
 - `medium.generic_dag_run`: Tau executes a schema-validated generic local subprocess DAG with planner -> coder -> reviewer dependencies.
 - `medium.generic_dag_status`: Tau summarizes the generic DAG run through the read-only `tau run-status` surface.
 - `medium.generic_dag_resume`: Tau resumes a generic DAG from an existing valid node receipt and does not rerun that node command.

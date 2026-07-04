@@ -1,0 +1,231 @@
+{
+  "check_count": 1,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "alert_codes": [],
+            "alert_count": 0,
+            "errors": [],
+            "execution_seconds": 0.505875,
+            "live": true,
+            "max_concurrency": 2,
+            "max_observed_concurrency": 2,
+            "mocked": false,
+            "node_attempts": {
+              "coder": 1,
+              "research": 1,
+              "reviewer": 1
+            },
+            "node_count": 4,
+            "observed_edges": [
+              {
+                "from_agent": "goal-guardian",
+                "from_node": "start",
+                "to_agent": "research-auditor",
+                "to_node": "research"
+              },
+              {
+                "from_agent": "goal-guardian",
+                "from_node": "start",
+                "to_agent": "coder",
+                "to_node": "coder"
+              },
+              {
+                "from_agent": "research-auditor",
+                "from_node": "research",
+                "to_agent": "reviewer",
+                "to_node": "reviewer"
+              },
+              {
+                "from_agent": "coder",
+                "from_node": "coder",
+                "to_agent": "reviewer",
+                "to_node": "reviewer"
+              },
+              {
+                "from_agent": "reviewer",
+                "from_node": "reviewer",
+                "to_agent": "human",
+                "to_node": "human"
+              }
+            ],
+            "ok": true,
+            "provider_live": false,
+            "reviewer_verdicts": [
+              {
+                "creator_attempt": 1,
+                "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+                "kind": "reviewer_verdict",
+                "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/concurrent-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+                "reviewed_node_id": "coder",
+                "verdict": "PASS"
+              }
+            ],
+            "scheduler": "bounded-ready-queue",
+            "schema": "tau.dag_receipt.v1",
+            "selected_agents": [
+              "research-auditor",
+              "coder",
+              "reviewer"
+            ],
+            "status": "PASS",
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/logs/medium.project_dag_ready_queue_parallel_join.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/logs/medium.project_dag_ready_queue_parallel_join.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.project_dag_ready_queue_parallel_join",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/concurrent-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/concurrent-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/concurrent-project-dag/agents",
+        "--scheduler",
+        "bounded-ready-queue"
+      ],
+      "completed_at": "2026-07-04T15:15:27Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": "PASS",
+      "level": "medium",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau runs a bounded ready-queue project DAG with concurrent researcher/coder branches and a reviewer join against the immutable goal.",
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "execution_seconds": 0.505875,
+        "live": true,
+        "max_concurrency": 2,
+        "max_observed_concurrency": 2,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 1,
+          "research": 1,
+          "reviewer": 1
+        },
+        "node_count": 4,
+        "observed_edges": [
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "research-auditor",
+            "to_node": "research"
+          },
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "coder",
+            "to_node": "coder"
+          },
+          {
+            "from_agent": "research-auditor",
+            "from_node": "research",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-concurrent",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/concurrent-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS"
+          }
+        ],
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "research-auditor",
+          "coder",
+          "reviewer"
+        ],
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-04T15:15:25Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/logs/medium.project_dag_ready_queue_parallel_join.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue/logs/medium.project_dag_ready_queue_parallel_join.stdout.txt",
+      "timeout_seconds": 120
+    }
+  ],
+  "completed_at": "2026-07-04T15:15:27Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "medium": {
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260704T151525Z-project-dag-concurrent-ready-queue",
+  "run_id": "20260704T151525Z-project-dag-concurrent-ready-queue",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "medium"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-04T15:15:27Z"
+}

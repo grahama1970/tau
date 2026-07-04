@@ -155,6 +155,11 @@ def build_checks(
         scenario="medium",
         goal_hash="sha256:rw-sanity-project-dag-medium",
     )
+    project_dag_concurrent = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent",
+    )
     project_dag_complex = create_project_dag_fixture(
         run_dir,
         scenario="complex",
@@ -727,6 +732,28 @@ def build_checks(
             expected_verdict="PASS",
         ),
         Check(
+            check_id="medium.project_dag_ready_queue_parallel_join",
+            level="medium",
+            purpose=(
+                "Tau runs a bounded ready-queue project DAG with concurrent researcher/coder "
+                "branches and a reviewer join against the immutable goal."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            expected_verdict="PASS",
+        ),
+        Check(
             check_id="advanced.project_dag_reviewer_goal_drift_fail_closed",
             level="advanced",
             purpose=(
@@ -1042,7 +1069,8 @@ def create_project_dag_fixture(
     agents_root.mkdir(parents=True, exist_ok=True)
     worker = fixture_dir / "project_dag_worker.py"
     write_text(worker, project_dag_worker_script())
-    for agent in ("coder", "reviewer"):
+    agents = ("research-auditor", "coder", "reviewer") if scenario == "concurrent" else ("coder", "reviewer")
+    for agent in agents:
         if scenario == "timeout" and agent == "coder":
             command = ["python3", "-c", "import time; time.sleep(5)"]
             timeout_s = 0.1
@@ -1067,12 +1095,96 @@ def create_project_dag_fixture(
             },
         )
 
-    max_attempts = 4 if scenario == "medium" else 3
+    max_attempts = 4 if scenario in {"medium", "concurrent"} else 3
     if scenario == "max-steps":
         max_attempts = 2
     node_max_attempts = 2 if scenario == "medium" else 1
     if scenario == "max-steps":
         node_max_attempts = 3
+    nodes = [
+        {
+            "id": "coder",
+            "agent": "coder",
+            "executor": "local",
+            "max_attempts": node_max_attempts,
+            "command_spec": str(command_spec_root / "coder" / "tau-dispatch-command.json"),
+            "required_evidence": ["creator_artifact"],
+        },
+        {
+            "id": "reviewer",
+            "agent": "reviewer",
+            "executor": "local",
+            "max_attempts": node_max_attempts,
+            "command_spec": str(command_spec_root / "reviewer" / "tau-dispatch-command.json"),
+            "required_evidence": ["reviewer_verdict"],
+            "reviewer": {
+                "reviews_node": "coder",
+                "requires_goal_hash": True,
+            },
+        },
+    ]
+    edges = [
+        {"from": "coder", "to": "reviewer"},
+        {"from": "reviewer", "to": "coder", "condition": "reviewer_requests_revision"},
+        {"from": "reviewer", "to": "human", "condition": "reviewer_pass_or_block"},
+    ]
+    required_evidence = ["creator_artifact", "reviewer_verdict"]
+    entry_node = "coder"
+    limits = {
+        "resume": True,
+        "default_timeout_seconds": 20,
+        "max_total_attempts": max_attempts,
+    }
+    if scenario == "concurrent":
+        entry_node = "start"
+        limits["max_concurrency"] = 2
+        nodes = [
+            {
+                "id": "start",
+                "agent": "goal-guardian",
+                "executor": "scheduler",
+                "max_attempts": 1,
+                "required_evidence": [],
+            },
+            {
+                "id": "research",
+                "agent": "research-auditor",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(
+                    command_spec_root / "research-auditor" / "tau-dispatch-command.json"
+                ),
+                "required_evidence": ["source_summary"],
+            },
+            {
+                "id": "coder",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(command_spec_root / "coder" / "tau-dispatch-command.json"),
+                "required_evidence": ["creator_artifact"],
+            },
+            {
+                "id": "reviewer",
+                "agent": "reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(command_spec_root / "reviewer" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "coder",
+                    "requires_goal_hash": True,
+                },
+            },
+        ]
+        edges = [
+            {"from": "start", "to": "research"},
+            {"from": "start", "to": "coder"},
+            {"from": "research", "to": "reviewer"},
+            {"from": "coder", "to": "reviewer"},
+            {"from": "reviewer", "to": "human", "condition": "reviewer_pass_or_block"},
+        ]
+        required_evidence = ["source_summary", "creator_artifact", "reviewer_verdict"]
     contract = {
         "schema": "tau.dag_contract.v1",
         "dag_id": f"rw-sanity-project-dag-{scenario}",
@@ -1085,41 +1197,12 @@ def create_project_dag_fixture(
             "repo": "grahama1970/tau",
             "target": f"scratch-project-dag-{scenario}",
         },
-        "entry_node": "coder",
+        "entry_node": entry_node,
         "terminal_nodes": ["human"],
-        "limits": {
-            "resume": True,
-            "default_timeout_seconds": 20,
-            "max_total_attempts": max_attempts,
-        },
-        "nodes": [
-            {
-                "id": "coder",
-                "agent": "coder",
-                "executor": "local",
-                "max_attempts": node_max_attempts,
-                "command_spec": str(command_spec_root / "coder" / "tau-dispatch-command.json"),
-                "required_evidence": ["creator_artifact"],
-            },
-            {
-                "id": "reviewer",
-                "agent": "reviewer",
-                "executor": "local",
-                "max_attempts": node_max_attempts,
-                "command_spec": str(command_spec_root / "reviewer" / "tau-dispatch-command.json"),
-                "required_evidence": ["reviewer_verdict"],
-                "reviewer": {
-                    "reviews_node": "coder",
-                    "requires_goal_hash": True,
-                },
-            },
-        ],
-        "edges": [
-            {"from": "coder", "to": "reviewer"},
-            {"from": "reviewer", "to": "coder", "condition": "reviewer_requests_revision"},
-            {"from": "reviewer", "to": "human", "condition": "reviewer_pass_or_block"},
-        ],
-        "required_evidence": ["creator_artifact", "reviewer_verdict"],
+        "limits": limits,
+        "nodes": nodes,
+        "edges": edges,
+        "required_evidence": required_evidence,
         "fail_closed_on": [
             "goal_hash_mismatch",
             "target_changed",
@@ -1146,6 +1229,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 
@@ -1159,6 +1243,8 @@ def main() -> int:
     artifact_dir.mkdir(parents=True, exist_ok=True)
     if args.role == "coder":
         response = coder_response(payload, artifact_dir, args.scenario)
+    elif args.role == "research-auditor":
+        response = research_response(payload, artifact_dir, args.scenario)
     elif args.role == "reviewer":
         response = reviewer_response(payload, artifact_dir, args.scenario)
     else:
@@ -1168,6 +1254,8 @@ def main() -> int:
 
 
 def coder_response(payload, artifact_dir, scenario):
+    if scenario == "concurrent":
+        time.sleep(0.4)
     prior = reviewer_verdicts(payload)
     attempt = 2 if any(item.get("verdict") == "REVISE" for item in prior) else 1
     artifact = artifact_dir / f"creator-artifact-attempt-{attempt}.json"
@@ -1194,6 +1282,34 @@ def coder_response(payload, artifact_dir, scenario):
         next_agent="reviewer",
         next_executor="local",
         summary=f"Creator produced attempt {attempt} artifact for reviewer.",
+    )
+
+
+def research_response(payload, artifact_dir, scenario):
+    if scenario == "concurrent":
+        time.sleep(0.4)
+    artifact = artifact_dir / "source-summary.json"
+    artifact_payload = {
+        "schema": "tau.source_summary.v1",
+        "scenario": scenario,
+        "goal_hash": payload["goal"]["goal_hash"],
+        "summary": "Research branch source summary for real-world project DAG sanity.",
+    }
+    artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return handoff(
+        payload,
+        previous_subagent="research-auditor",
+        result_status="PASS",
+        evidence=[
+            {
+                "kind": "source_summary",
+                "path": str(artifact),
+                "goal_hash": payload["goal"]["goal_hash"],
+            }
+        ],
+        next_agent="human",
+        next_executor="human",
+        summary="Research branch produced source summary evidence.",
     )
 
 
@@ -2622,6 +2738,10 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "total_rungs",
         "feature_counts",
         "provider_session_state_count",
+        "scheduler",
+        "max_concurrency",
+        "max_observed_concurrency",
+        "execution_seconds",
         "resource_count",
         "candidate_count",
         "runtime_manifest",
