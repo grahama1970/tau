@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_route_memory_candidate_receipt.v1",
+  "title": "Tau DAG Route Memory Candidate Receipt",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "verdict",
+    "mocked",
+    "live",
+    "provider_live",
+    "source_signal_receipt",
+    "receipt_path",
+    "dag_id",
+    "goal_hash",
+    "min_confidence",
+    "accepted_candidates",
+    "rejected_candidates",
+    "accepted_candidate_count",
+    "rejected_candidate_count",
+    "alerts",
+    "memory_sync",
+    "sync_status",
+    "sync_reason",
+    "route_mutation",
+    "dag_mutation",
+    "provider_calls",
+    "proof_scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_route_memory_candidate_receipt.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mocked": {
+      "type": "boolean"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "type": "boolean"
+    },
+    "source_signal_receipt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_signal_receipt_sha256": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "receipt_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_hash": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "min_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "accepted_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "route_key",
+          "confidence",
+          "memory_sync_candidate",
+          "sync_status",
+          "sync_reason"
+        ],
+        "properties": {
+          "route_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "memory_sync_candidate": {
+            "const": true
+          },
+          "sync_status": {
+            "const": "NOT_SYNCED"
+          },
+          "sync_reason": {
+            "const": "local_candidate_receipt_only"
+          }
+        }
+      }
+    },
+    "rejected_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "accepted_candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rejected_candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["severity", "code", "message", "evidence"]
+      }
+    },
+    "memory_sync": {
+      "const": false
+    },
+    "sync_status": {
+      "const": "NOT_SYNCED"
+    },
+    "sync_reason": {
+      "const": "local_candidate_receipt_only"
+    },
+    "route_mutation": {
+      "const": false
+    },
+    "dag_mutation": {
+      "const": false
+    },
+    "provider_calls": {
+      "const": false
+    },
+    "proof_scope": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["proves", "does_not_prove"]
+    }
+  }
+}

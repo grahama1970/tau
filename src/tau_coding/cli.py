@@ -36,6 +36,7 @@ from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.credentials import FileCredentialStore
 from tau_coding.dag_expansion import write_dag_expansion_validation_receipt
 from tau_coding.dag_motif import write_dag_motif_validation_receipt
+from tau_coding.dag_route_memory import write_dag_route_memory_candidate_receipt
 from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
     inspect_dag_stress_campaign,
@@ -853,6 +854,21 @@ def main(
                 dag_contract_path=Path(str(options["dag_contract"])),
                 motif_path=Path(str(options["motif"])),
                 receipt_path=Path(str(options["receipt"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-route-memory-candidates":
+        try:
+            options = _parse_dag_route_memory_candidates_cli_args(positional_args[1:])
+            payload = write_dag_route_memory_candidate_receipt(
+                signal_receipt_path=Path(str(options["signal_receipt"])),
+                receipt_path=Path(str(options["receipt"])),
+                min_confidence=float(options["min_confidence"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1958,6 +1974,41 @@ def _parse_dag_motif_validate_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError(
             "Usage: tau dag-motif-validate --dag-contract <dag-contract.json|yaml> "
             "--motif <dag-motif.json|yaml> --receipt <dag-motif-validation-receipt.json>"
+        )
+    return options
+
+
+def _parse_dag_route_memory_candidates_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "signal_receipt": None,
+        "receipt": None,
+        "min_confidence": 1.0,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--signal-receipt", "--receipt", "--min-confidence"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            if key == "min_confidence":
+                try:
+                    options[key] = float(args[index])
+                except ValueError as exc:
+                    raise RuntimeError("--min-confidence must be a number") from exc
+            else:
+                options[key] = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown dag-route-memory-candidates option: {arg}")
+        index += 1
+    missing = [key for key in ("signal_receipt", "receipt") if options[key] is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau dag-route-memory-candidates "
+            "--signal-receipt <dag-signal-receipt.json> "
+            "--receipt <dag-route-memory-candidate-receipt.json> "
+            "[--min-confidence <0..1>]"
         )
     return options
 
