@@ -1,0 +1,44 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/receipts/validate_script_contract.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script-reviewer-verdict.json"
+    ],
+    "assumptions": [],
+    "run_id": "script-ui-20260704T140000Z",
+    "subagent": "script-reviewer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/receipts/validate_script_contract.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script-reviewer-verdict.json"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000046",
+    "goal_id": "goal-tau-issue-47-persona-dream-script-contract-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "human",
+    "reason": "Human or ticket resolver reviews the proof.",
+    "subagent": "human"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/receipts/validate_script_contract.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script-reviewer-verdict.json"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "PASS",
+    "summary": "Script-reviewer accepted the Phase 06 script contract."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Issue resolver comments proof and closes or files the next blocker."
+}

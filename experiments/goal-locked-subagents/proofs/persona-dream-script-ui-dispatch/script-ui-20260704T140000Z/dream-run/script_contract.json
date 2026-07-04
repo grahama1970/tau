@@ -1,0 +1,240 @@
+{
+  "action_blocks": [
+    {
+      "action": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+      "beat_id": "beat-01",
+      "end_s": 10.0,
+      "start_s": 0.0
+    },
+    {
+      "action": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+      "beat_id": "beat-02",
+      "end_s": 20.0,
+      "start_s": 10.0
+    }
+  ],
+  "artifact_id": "dream-run_script_contract",
+  "asset_usage": [
+    {
+      "asset_id": "asset-contact-embry",
+      "title": "Embry contact sheet",
+      "use_in_story": "visual continuity reference for script staging"
+    },
+    {
+      "asset_id": "asset-contact-kai",
+      "title": "Kai contact sheet",
+      "use_in_story": "visual continuity reference for script staging"
+    }
+  ],
+  "created_at": "2026-07-04T13:49:55Z",
+  "dialogue_blocks": [
+    {
+      "end_s": 10.0,
+      "speaker": "Embry",
+      "start_s": 0.0,
+      "text": "We wait until the choice is actually ours.",
+      "voice_direction": "quiet resolve"
+    }
+  ],
+  "entity_environment_script_table": [
+    {
+      "category": "character",
+      "described_in_script": true,
+      "entity": "Embry",
+      "environment_interaction": "Heat, glare, salt, and softened wax make fatigue and resolve visible.",
+      "missing_script_details": [],
+      "objects_used": [
+        "borrowed white shortboard",
+        "navy rashguard"
+      ],
+      "script_evidence": "Embry is staged in action and dialogue with visible environmental response.",
+      "script_function": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+      "source_seed_id": "seed-embry",
+      "visible_or_audible": true
+    },
+    {
+      "category": "character",
+      "described_in_script": true,
+      "entity": "Kai",
+      "environment_interaction": "Spray, swell rhythm, and etiquette shape his restraint.",
+      "missing_script_details": [],
+      "objects_used": [
+        "white board",
+        "black rashguard"
+      ],
+      "script_evidence": "Kai is staged in dialogue/action with practical restraint and visible position.",
+      "script_function": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+      "source_seed_id": "seed-kai",
+      "visible_or_audible": true
+    },
+    {
+      "category": "environment",
+      "described_in_script": true,
+      "entity": "lava reef",
+      "environment_interaction": "Visible dark reef shapes below clear water constrain the line.",
+      "missing_script_details": [],
+      "objects_used": [],
+      "script_evidence": "The environment changes timing, safety, and visible decision pressure.",
+      "script_function": "Forces a safe channel choice and makes the timing consequential.",
+      "source_seed_id": "seed-lava-reef",
+      "visible_or_audible": true
+    }
+  ],
+  "interaction_matrix_coverage": [
+    {
+      "coverage_note": "Mapped into entity_environment_script_table and script staging.",
+      "covered": true,
+      "source_seed_id": "seed-embry"
+    },
+    {
+      "coverage_note": "Mapped into entity_environment_script_table and script staging.",
+      "covered": true,
+      "source_seed_id": "seed-kai"
+    },
+    {
+      "coverage_note": "Mapped into entity_environment_script_table and script staging.",
+      "covered": true,
+      "source_seed_id": "seed-lava-reef"
+    }
+  ],
+  "quality_checks": {
+    "covered_seed_ids": [
+      "seed-embry",
+      "seed-kai",
+      "seed-lava-reef"
+    ],
+    "live": true,
+    "matrix_completeness": 3,
+    "missing_seed_ids": [],
+    "mocked": false,
+    "provider_model_call": false,
+    "used_core_idea": true,
+    "used_environment": true,
+    "used_location": true,
+    "used_story": true
+  },
+  "realism_contract": {
+    "dynamic_object_ledger": [
+      {
+        "environment_driver": "Heat, glare, salt, and softened wax make fatigue and resolve visible.",
+        "object": "Embry",
+        "observable_script_evidence": "Embry is staged in action and dialogue with visible environmental response."
+      },
+      {
+        "environment_driver": "Spray, swell rhythm, and etiquette shape his restraint.",
+        "object": "Kai",
+        "observable_script_evidence": "Kai is staged in dialogue/action with practical restraint and visible position."
+      },
+      {
+        "environment_driver": "Visible dark reef shapes below clear water constrain the line.",
+        "object": "lava reef",
+        "observable_script_evidence": "The environment changes timing, safety, and visible decision pressure."
+      }
+    ],
+    "entity_rows_described": [
+      "seed-embry",
+      "seed-kai",
+      "seed-lava-reef"
+    ],
+    "human_skin_face_ledger": [
+      {
+        "character": "Embry",
+        "environment_response": "Body language and dialogue are tied to the scene pressure.",
+        "skin_face_evidence": "The script requires visible environmental response."
+      }
+    ],
+    "schema": "persona_dream.script_realism_contract.v1",
+    "script_forbidden_artifacts_absent": true,
+    "status": "SELF_CHECKED_PENDING_VERIFIER"
+  },
+  "review_evidence": {
+    "basis": "Derived from the Phase 06 prompt payload and accepted upstream artifacts.",
+    "provider_calls": {
+      "script_reviewer_model": false,
+      "script_writer_model": false
+    },
+    "review_status": "ACCEPTED_AUTOMATED",
+    "reviewed_by": "tau.script-writer"
+  },
+  "schema": "persona_dream.script_contract.v1",
+  "script": "EXT. KAHALU'U BAY, KONA COAST, BIG ISLAND - DAY\n\nHot, humid Kona Coast surf conditions with glare, saltwater, softened wax, fatigue, summer swell timing, lava reef constraints, and local lineup etiquette.\nEmbry waits through heat, glare, and local lineup pressure until the right shoulder opens over the lava reef.\n\nACTION\nEmbry - Waits, chooses the second shoulder, and commits without cutting across the lineup.\nKai - Holds position outside and reads the reef, channel, locals, and Embry's cadence.\nlava reef - Forces a safe channel choice and makes the timing consequential.\n\nDIALOGUE\nEMBRY\nWe wait until the choice is actually ours.\n\nKAI\nThen every move has to show why.",
+  "source_context_summary": {
+    "core_idea": "Embry and Kai steal a Wednesday surf window at Kahalu'u Bay on the Kona Coast in June 2024.",
+    "environment": {
+      "active_pressures": [
+        "heat",
+        "humidity",
+        "glare",
+        "saltwater",
+        "softened wax",
+        "fatigue",
+        "summer swell",
+        "lava reef",
+        "local etiquette"
+      ],
+      "description": "Hot, humid Kona Coast surf conditions with glare, saltwater, softened wax, fatigue, summer swell timing, lava reef constraints, and local lineup etiquette."
+    },
+    "location": {
+      "island": "Big Island",
+      "month": "June",
+      "place": "Kahalu'u Bay",
+      "region": "Kona Coast",
+      "time_window": "daylight surf window",
+      "weekday": "Wednesday",
+      "year": 2024
+    },
+    "story_excerpt": "Embry waits through heat, glare, and local lineup pressure until the right shoulder opens over the lava reef. Kai keeps position outside and lets the first peak go to the local already angled in."
+  },
+  "source_paths": {
+    "prompt_payload": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+    "work_order": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/input_script_contract_work_order.json"
+  },
+  "status": "ACCEPTED_AUTOMATED",
+  "task": {
+    "kind": "phase_06_script",
+    "scene_count": 2,
+    "target_duration_s": 20.0,
+    "target_pages": 2
+  },
+  "timed_beats": [
+    {
+      "action": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+      "beat_id": "beat-01",
+      "end_s": 10.0,
+      "environment_driver": "Heat, glare, salt, and softened wax make fatigue and resolve visible.",
+      "focus_entity": "Embry",
+      "start_s": 0.0
+    },
+    {
+      "action": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+      "beat_id": "beat-02",
+      "end_s": 20.0,
+      "environment_driver": "Spray, swell rhythm, and etiquette shape his restraint.",
+      "focus_entity": "Kai",
+      "start_s": 10.0
+    }
+  ],
+  "timed_transcript": [
+    {
+      "end_s": 10.0,
+      "speaker": null,
+      "start_s": 0.0,
+      "text": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+      "voice_direction": "action description"
+    },
+    {
+      "end_s": 20.0,
+      "speaker": null,
+      "start_s": 10.0,
+      "text": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+      "voice_direction": "action description"
+    },
+    {
+      "end_s": 10.0,
+      "speaker": "Embry",
+      "start_s": 0.0,
+      "text": "We wait until the choice is actually ours.",
+      "voice_direction": "quiet resolve"
+    }
+  ]
+}

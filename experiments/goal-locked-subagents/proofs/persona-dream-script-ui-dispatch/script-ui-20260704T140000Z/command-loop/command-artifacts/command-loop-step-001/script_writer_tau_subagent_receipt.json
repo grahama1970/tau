@@ -1,0 +1,56 @@
+{
+  "context": {
+    "actor_type": "tau",
+    "artifacts_read": [
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/input_script_contract_work_order.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_transcript.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_beats.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/entity_environment_script_table.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.md"
+    ],
+    "assumptions": [],
+    "run_id": "script-ui-20260704T140000Z",
+    "subagent": "script-writer",
+    "unknowns": []
+  },
+  "evidence": [
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/input_script_contract_work_order.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_transcript.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_beats.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/entity_environment_script_table.json",
+    "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.md"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000046",
+    "goal_id": "goal-tau-issue-47-persona-dream-script-contract-loop",
+    "goal_version": 1,
+    "immutable_goal_preserved": true
+  },
+  "next": {
+    "executor": "local",
+    "reason": "Script-reviewer must independently validate script_contract.json.",
+    "subagent": "script-reviewer"
+  },
+  "rationale": "This receipt records one bounded Tau persona-dream dream-packet subagent turn.",
+  "result": {
+    "artifacts": [
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/input_script_contract_work_order.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_transcript.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_beats.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/entity_environment_script_table.json",
+      "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.md"
+    ],
+    "live": true,
+    "mocked": false,
+    "status": "COMPLETED",
+    "summary": "Script-writer created Phase 06 script_contract.json from the prompt payload."
+  },
+  "schema": "tau.subagent_receipt.v1",
+  "stop_condition": "Script-reviewer emits validation receipts and routes to human."
+}

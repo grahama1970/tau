@@ -1,0 +1,10 @@
+{
+  "schema": "persona_dream.script_contract_work_order.v1",
+  "status": "WORK_ORDER_READY_SCRIPT_REQUIRED",
+  "purpose": "Create a Phase 06 script contract from a real persona-dream prompt bundle for issue #47.",
+  "prompt_payload_path": "experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+  "source_paths": {
+    "run_root": "experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run",
+    "prompt_payload": "experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json"
+  }
+}

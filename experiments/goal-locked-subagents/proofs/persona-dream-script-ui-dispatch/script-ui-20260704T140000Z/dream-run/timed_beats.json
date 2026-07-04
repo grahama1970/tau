@@ -1,0 +1,18 @@
+[
+  {
+    "action": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+    "beat_id": "beat-01",
+    "end_s": 10.0,
+    "environment_driver": "Heat, glare, salt, and softened wax make fatigue and resolve visible.",
+    "focus_entity": "Embry",
+    "start_s": 0.0
+  },
+  {
+    "action": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+    "beat_id": "beat-02",
+    "end_s": 20.0,
+    "environment_driver": "Spray, swell rhythm, and etiquette shape his restraint.",
+    "focus_entity": "Kai",
+    "start_s": 10.0
+  }
+]

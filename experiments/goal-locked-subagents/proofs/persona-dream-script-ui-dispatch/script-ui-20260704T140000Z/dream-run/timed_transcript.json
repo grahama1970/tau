@@ -1,0 +1,23 @@
+[
+  {
+    "end_s": 10.0,
+    "speaker": null,
+    "start_s": 0.0,
+    "text": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+    "voice_direction": "action description"
+  },
+  {
+    "end_s": 20.0,
+    "speaker": null,
+    "start_s": 10.0,
+    "text": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+    "voice_direction": "action description"
+  },
+  {
+    "end_s": 10.0,
+    "speaker": "Embry",
+    "start_s": 0.0,
+    "text": "We wait until the choice is actually ours.",
+    "voice_direction": "quiet resolve"
+  }
+]

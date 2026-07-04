@@ -5,6 +5,7 @@ from tau_coding.generated_ticket import validate_agent_handoff
 from tau_coding.persona_dream_dream_packet_agent import (
     _pipeline_first_blocker,
     write_persona_dream_packet_loop_proof,
+    write_persona_dream_script_contract_loop_proof,
     write_persona_dream_story_contract_loop_proof,
     write_persona_dream_storyboard_panel_loop_proof,
 )
@@ -34,6 +35,10 @@ def test_dreamer_routes_are_valid_and_command_specs_exist() -> None:
     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
     payload["next_agent"]["name"] = "story-reviewer"
     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+    payload["next_agent"]["name"] = "script-writer"
+    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
+    payload["next_agent"]["name"] = "script-reviewer"
+    assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
     payload["next_agent"]["name"] = "storyboard-writer"
     assert validate_agent_handoff(payload, active_goal_hash="sha256:goal").ok
     payload["next_agent"]["name"] = "storyboard-reviewer"
@@ -44,6 +49,8 @@ def test_dreamer_routes_are_valid_and_command_specs_exist() -> None:
     assert (root / "dream-reviewer" / "tau-dispatch-command.json").is_file()
     assert (root / "story-writer" / "tau-dispatch-command.json").is_file()
     assert (root / "story-reviewer" / "tau-dispatch-command.json").is_file()
+    assert (root / "script-writer" / "tau-dispatch-command.json").is_file()
+    assert (root / "script-reviewer" / "tau-dispatch-command.json").is_file()
     assert (root / "storyboard-writer" / "tau-dispatch-command.json").is_file()
     assert (root / "storyboard-reviewer" / "tau-dispatch-command.json").is_file()
 
@@ -216,4 +223,79 @@ def test_storyboard_proof_writer_creates_start_handoff_without_running_agents(
     assert start["next_agent"]["name"] == "storyboard-writer"
     assert start["context"]["persona_dream_storyboard_panel"]["work_order"].endswith(
         "input_storyboard_panel_work_order.json"
+    )
+
+
+def test_script_proof_writer_creates_start_handoff_without_running_agents(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    run_root = tmp_path / "dream-run"
+    run_root.mkdir()
+    prompt_payload = run_root / "prompt_payload.json"
+    prompt_payload.write_text(
+        json.dumps(
+            {
+                "schema": "persona_dream.script_prompt_payload.v1",
+                "task": {"scene_count": 1, "target_pages": 1, "duration_seconds": 10},
+                "source_context": {
+                    "core_idea": "Embry and Kai surf Kahalu'u Bay on a hot Kona day.",
+                    "story": "Embry waits for the right wave instead of cutting across locals.",
+                    "interaction_matrix": [
+                        {
+                            "source_seed_id": "seed-embry",
+                            "entity": "Embry",
+                            "story_function": "Waits, chooses, and commits.",
+                            "environment_interaction": "Heat and glare make fatigue visible.",
+                        }
+                    ],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    work_order = tmp_path / "script_contract_work_order.json"
+    work_order.write_text(
+        json.dumps(
+            {
+                "schema": "persona_dream.script_contract_work_order.v1",
+                "status": "WORK_ORDER_READY_SCRIPT_REQUIRED",
+                "prompt_payload_path": str(prompt_payload),
+                "source_paths": {
+                    "run_root": str(run_root),
+                    "prompt_payload": str(prompt_payload),
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class FakeLoop:
+        def as_dict(self) -> dict:
+            return {
+                "ok": True,
+                "status": "WAITING",
+                "terminal_agent": "human",
+                "stop_reason": "next_agent_is_human",
+            }
+
+    def fake_loop(*args, **kwargs) -> FakeLoop:
+        return FakeLoop()
+
+    monkeypatch.setattr(
+        "tau_coding.handoff_dispatch.write_agent_handoff_command_loop_receipt",
+        fake_loop,
+    )
+    manifest = write_persona_dream_script_contract_loop_proof(
+        work_order=work_order,
+        out_dir=tmp_path / "proof",
+        active_goal_hash="sha256:goal",
+    )
+
+    start = json.loads((tmp_path / "proof" / "start-handoff.json").read_text())
+    assert manifest["mocked"] is False
+    assert manifest["proof_scope"]["live"] is True
+    assert start["next_agent"]["name"] == "script-writer"
+    assert start["context"]["persona_dream_script_contract"]["work_order"].endswith(
+        "input_script_contract_work_order.json"
     )

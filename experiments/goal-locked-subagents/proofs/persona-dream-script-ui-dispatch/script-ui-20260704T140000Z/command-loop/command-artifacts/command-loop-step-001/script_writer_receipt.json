@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-07-04T13:49:55Z",
+  "entity_environment_script_table": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/entity_environment_script_table.json",
+  "live": true,
+  "mocked": false,
+  "prompt_payload": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+  "provider_calls": {
+    "kling": false,
+    "paid": false,
+    "script_writer_model": false
+  },
+  "role": "script-writer",
+  "run_root": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run",
+  "schema": "tau.persona_dream.script_writer_receipt.v1",
+  "script_contract": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+  "status": "COMPLETED",
+  "subagent_receipt": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/command-loop/command-artifacts/command-loop-step-001/script_writer_tau_subagent_receipt.json",
+  "timed_beats": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_beats.json",
+  "timed_transcript": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_transcript.json",
+  "work_order": {
+    "prompt_payload_path": "experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+    "purpose": "Create a Phase 06 script contract from a real persona-dream prompt bundle for issue #47.",
+    "schema": "persona_dream.script_contract_work_order.v1",
+    "source_paths": {
+      "prompt_payload": "experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z-input/prompt_payload.json",
+      "run_root": "experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run"
+    },
+    "status": "WORK_ORDER_READY_SCRIPT_REQUIRED"
+  }
+}

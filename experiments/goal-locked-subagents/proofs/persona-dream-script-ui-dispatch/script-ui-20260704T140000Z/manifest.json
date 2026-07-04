@@ -1,0 +1,48 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "No paid provider, Kling, public upload, or voice synthesis call was performed.",
+      "This deterministic pass does not prove model-authored screenplay quality."
+    ],
+    "proves": [
+      "Tau ran a command-spec loop from script-writer to script-reviewer.",
+      "Script-writer created script_contract.json and UI-loadable script artifacts.",
+      "Script-reviewer produced validate_script_contract.json and a reviewer verdict."
+    ]
+  },
+  "command_loop_ok": true,
+  "command_loop_receipt": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/command-loop/command-loop-receipt.json",
+  "command_loop_status": "WAITING",
+  "created_at": "2026-07-04T13:49:55Z",
+  "entity_environment_script_table": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/entity_environment_script_table.json",
+  "input_work_order": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/input_script_contract_work_order.json",
+  "issue": 47,
+  "live": true,
+  "mocked": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "No paid provider, Kling, public upload, or voice synthesis call was performed.",
+      "This deterministic pass does not prove model-authored screenplay quality."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "Tau ran a command-spec loop from script-writer to script-reviewer.",
+      "Script-writer created script_contract.json and UI-loadable script artifacts.",
+      "Script-reviewer produced validate_script_contract.json and a reviewer verdict."
+    ],
+    "provider_live": false
+  },
+  "provider_live": false,
+  "run_root": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run",
+  "schema": "tau.persona_dream_script_contract_loop_proof.v1",
+  "script_contract": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script_contract.json",
+  "script_reviewer_verdict": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/script-reviewer-verdict.json",
+  "start_handoff": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/start-handoff.json",
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human",
+  "timed_beats": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_beats.json",
+  "timed_transcript": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/timed_transcript.json",
+  "validate_script_contract": "/tmp/tau-issue47-minimal/experiments/goal-locked-subagents/proofs/persona-dream-script-ui-dispatch/script-ui-20260704T140000Z/dream-run/receipts/validate_script_contract.json",
+  "validate_script_contract_status": "PASS_SCRIPT_CONTRACT"
+}

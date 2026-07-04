@@ -1,0 +1,44 @@
+[
+  {
+    "category": "character",
+    "described_in_script": true,
+    "entity": "Embry",
+    "environment_interaction": "Heat, glare, salt, and softened wax make fatigue and resolve visible.",
+    "missing_script_details": [],
+    "objects_used": [
+      "borrowed white shortboard",
+      "navy rashguard"
+    ],
+    "script_evidence": "Embry is staged in action and dialogue with visible environmental response.",
+    "script_function": "Waits, chooses the second shoulder, and commits without cutting across the lineup.",
+    "source_seed_id": "seed-embry",
+    "visible_or_audible": true
+  },
+  {
+    "category": "character",
+    "described_in_script": true,
+    "entity": "Kai",
+    "environment_interaction": "Spray, swell rhythm, and etiquette shape his restraint.",
+    "missing_script_details": [],
+    "objects_used": [
+      "white board",
+      "black rashguard"
+    ],
+    "script_evidence": "Kai is staged in dialogue/action with practical restraint and visible position.",
+    "script_function": "Holds position outside and reads the reef, channel, locals, and Embry's cadence.",
+    "source_seed_id": "seed-kai",
+    "visible_or_audible": true
+  },
+  {
+    "category": "environment",
+    "described_in_script": true,
+    "entity": "lava reef",
+    "environment_interaction": "Visible dark reef shapes below clear water constrain the line.",
+    "missing_script_details": [],
+    "objects_used": [],
+    "script_evidence": "The environment changes timing, safety, and visible decision pressure.",
+    "script_function": "Forces a safe channel choice and makes the timing consequential.",
+    "source_seed_id": "seed-lava-reef",
+    "visible_or_audible": true
+  }
+]
