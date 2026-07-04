@@ -1,0 +1,17 @@
+{
+  "collection": "tau_route_memory",
+  "document_count_returned": 5,
+  "expected_keys": [
+    "tau-route-e1f6c7f18d2cdf9b7d8fa6fe1e226fef",
+    "tau-route-8f717508f4ae5661015046a256069e63",
+    "tau-route-069cade897ff2d2e5d19ec6a796543b2",
+    "tau-route-6cd6eeef11053dcbe5a4aa561890dd8a",
+    "tau-route-3d4f878d1b6b8436a5a08fd3f1b834d9"
+  ],
+  "found_count": 5,
+  "missing_keys": [],
+  "ok": true,
+  "schema": "tau.memory_readback_proof.v1",
+  "source_receipt": "experiments/goal-locked-subagents/proofs/dag-route-memory-production-apply-20260704T1620Z/dag-route-memory-production-apply-receipt.json",
+  "status_code": 200
+}
