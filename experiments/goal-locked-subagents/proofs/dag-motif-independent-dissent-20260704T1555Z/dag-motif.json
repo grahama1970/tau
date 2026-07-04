@@ -1,0 +1,13 @@
+{
+  "schema": "tau.dag_motif.v1",
+  "motif_id": "independent-dissent-proof",
+  "kind": "independent_dissent_reviewer_v1",
+  "dag_id": "independent-dissent-proof",
+  "goal_hash": "sha256:independent-dissent-proof",
+  "producer_node": "creator",
+  "reviewer_nodes": [
+    "reviewer-a",
+    "reviewer-b"
+  ],
+  "join_node": "join-review"
+}

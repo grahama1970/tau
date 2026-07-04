@@ -35,6 +35,7 @@ from tau_coding import __version__
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.credentials import FileCredentialStore
 from tau_coding.dag_expansion import write_dag_expansion_validation_receipt
+from tau_coding.dag_motif import write_dag_motif_validation_receipt
 from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
     inspect_dag_stress_campaign,
@@ -837,6 +838,21 @@ def main(
                 proposal_path=Path(str(options["proposal"])),
                 receipt_path=Path(str(options["receipt"])),
                 preview_path=options.get("preview"),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-motif-validate":
+        try:
+            options = _parse_dag_motif_validate_cli_args(positional_args[1:])
+            payload = write_dag_motif_validation_receipt(
+                dag_contract_path=Path(str(options["dag_contract"])),
+                motif_path=Path(str(options["motif"])),
+                receipt_path=Path(str(options["receipt"])),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1915,6 +1931,33 @@ def _parse_dag_expansion_validate_cli_args(args: list[str]) -> dict[str, object]
             "--proposal <dag-expansion-proposal.json|yaml> "
             "--receipt <dag-expansion-validation-receipt.json> "
             "[--preview <expanded-dag.preview.json>]"
+        )
+    return options
+
+
+def _parse_dag_motif_validate_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "dag_contract": None,
+        "motif": None,
+        "receipt": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--dag-contract", "--motif", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown dag-motif-validate option: {arg}")
+        index += 1
+    missing = [key for key in ("dag_contract", "motif", "receipt") if options[key] is None]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau dag-motif-validate --dag-contract <dag-contract.json|yaml> "
+            "--motif <dag-motif.json|yaml> --receipt <dag-motif-validation-receipt.json>"
         )
     return options
 

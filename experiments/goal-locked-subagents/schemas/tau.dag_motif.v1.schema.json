@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_motif.v1",
+  "title": "Tau DAG Motif",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "motif_id",
+    "kind",
+    "dag_id",
+    "goal_hash",
+    "producer_node",
+    "reviewer_nodes",
+    "join_node"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_motif.v1"
+    },
+    "motif_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "const": "independent_dissent_reviewer_v1"
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_hash": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "producer_node": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewer_nodes": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "join_node": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

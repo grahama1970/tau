@@ -1,0 +1,94 @@
+{
+  "schema": "tau.dag_contract.v1",
+  "dag_id": "independent-dissent-proof",
+  "goal": {
+    "goal_id": "independent-dissent-proof",
+    "goal_version": 1,
+    "goal_hash": "sha256:independent-dissent-proof"
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-independent-dissent"
+  },
+  "entry_node": "creator",
+  "terminal_nodes": [
+    "human"
+  ],
+  "limits": {
+    "resume": true,
+    "default_timeout_seconds": 30,
+    "max_total_attempts": 5
+  },
+  "nodes": [
+    {
+      "id": "creator",
+      "agent": "creator",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": [
+        "creator_artifact"
+      ]
+    },
+    {
+      "id": "reviewer-a",
+      "agent": "reviewer-a",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": [
+        "reviewer_verdict"
+      ]
+    },
+    {
+      "id": "reviewer-b",
+      "agent": "reviewer-b",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": [
+        "reviewer_verdict"
+      ]
+    },
+    {
+      "id": "join-review",
+      "agent": "reviewer-join",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": [
+        "dissent_reconciliation"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "creator",
+      "to": "reviewer-a"
+    },
+    {
+      "from": "creator",
+      "to": "reviewer-b"
+    },
+    {
+      "from": "reviewer-a",
+      "to": "join-review"
+    },
+    {
+      "from": "reviewer-b",
+      "to": "join-review"
+    },
+    {
+      "from": "join-review",
+      "to": "human"
+    }
+  ],
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict",
+    "dissent_reconciliation"
+  ],
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.dag_motif_validation_receipt.v1",
+  "title": "Tau DAG Motif Validation Receipt",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "ok",
+    "status",
+    "verdict",
+    "mocked",
+    "live",
+    "provider_live",
+    "dag_id",
+    "goal_hash",
+    "dag_contract",
+    "motif",
+    "receipt_path",
+    "motif_summary",
+    "alerts",
+    "applied",
+    "mutated_source_dag",
+    "memory_sync",
+    "provider_calls",
+    "proof_scope"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_motif_validation_receipt.v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": ["PASS", "BLOCKED"]
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mocked": {
+      "type": "boolean"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "provider_live": {
+      "type": "boolean"
+    },
+    "dag_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_hash": {
+      "type": "string",
+      "pattern": "^sha256:.+"
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["severity", "code", "message", "evidence"]
+      }
+    },
+    "applied": {
+      "const": false
+    },
+    "mutated_source_dag": {
+      "const": false
+    },
+    "memory_sync": {
+      "const": false
+    },
+    "provider_calls": {
+      "const": false
+    },
+    "proof_scope": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["proves", "does_not_prove"]
+    }
+  }
+}

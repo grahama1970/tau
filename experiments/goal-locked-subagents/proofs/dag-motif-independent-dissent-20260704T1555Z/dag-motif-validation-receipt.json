@@ -1,0 +1,47 @@
+{
+  "alerts": [],
+  "applied": false,
+  "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-motif-independent-dissent-20260704T1555Z/dag-contract.json",
+  "dag_contract_sha256": "sha256:4140a24c9d08122880a3b9a195f44d56badf0c9f9d22f94065eb0140cad8c9f3",
+  "dag_id": "independent-dissent-proof",
+  "errors": [],
+  "goal_hash": "sha256:independent-dissent-proof",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "motif": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-motif-independent-dissent-20260704T1555Z/dag-motif.json",
+  "motif_sha256": "sha256:ba824078198b0e8e69b6f72d733e8f480147504a8af2fd08fb7f7b481344f63b",
+  "motif_summary": {
+    "join_node": "join-review",
+    "kind": "independent_dissent_reviewer_v1",
+    "motif_id": "independent-dissent-proof",
+    "producer_node": "creator",
+    "reviewer_nodes": [
+      "reviewer-a",
+      "reviewer-b"
+    ]
+  },
+  "mutated_source_dag": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Reviewer semantic quality.",
+      "Runtime reviewer execution.",
+      "Consensus correctness.",
+      "Adaptive DAG expansion application.",
+      "Memory route learning."
+    ],
+    "proves": [
+      "DAG motif declaration was inspected deterministically.",
+      "Independent dissent reviewer topology was checked against the DAG contract.",
+      "No DAG route mutation, dispatch, Memory write, GitHub mutation, provider call, or command execution occurred."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/dag-motif-independent-dissent-20260704T1555Z/dag-motif-validation-receipt.json",
+  "schema": "tau.dag_motif_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-04T15:43:11Z",
+  "verdict": "PASS"
+}
