@@ -1,0 +1,201 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "execution_seconds": 1.500121,
+        "live": true,
+        "max_concurrency": 2,
+        "max_observed_concurrency": 2,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 2,
+          "research": 1,
+          "reviewer": 1
+        },
+        "node_count": 4,
+        "observed_edges": [
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "research-auditor",
+            "to_node": "research"
+          },
+          {
+            "from_agent": "goal-guardian",
+            "from_node": "start",
+            "to_agent": "coder",
+            "to_node": "coder"
+          },
+          {
+            "from_agent": "research-auditor",
+            "from_node": "research",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-concurrent-timeout-retry",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/concurrent-timeout-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS"
+          }
+        ],
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "research-auditor",
+          "coder",
+          "coder",
+          "reviewer"
+        ],
+        "status": "PASS",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-timeout-retry"
+        },
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_ready_queue_timeout_retry_recovery",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/concurrent-timeout-retry-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/concurrent-timeout-retry-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/concurrent-timeout-retry-project-dag/agents",
+    "--scheduler",
+    "bounded-ready-queue"
+  ],
+  "completed_at": "2026-07-05T22:19:46Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": "PASS",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau retries a timed-out concurrent ready-queue DAG node, preserves the failed attempt evidence, and continues to the reviewer join after the retry passes.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "errors": [],
+    "execution_seconds": 1.500121,
+    "live": true,
+    "max_concurrency": 2,
+    "max_observed_concurrency": 2,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 2,
+      "research": 1,
+      "reviewer": 1
+    },
+    "node_count": 4,
+    "observed_edges": [
+      {
+        "from_agent": "goal-guardian",
+        "from_node": "start",
+        "to_agent": "research-auditor",
+        "to_node": "research"
+      },
+      {
+        "from_agent": "goal-guardian",
+        "from_node": "start",
+        "to_agent": "coder",
+        "to_node": "coder"
+      },
+      {
+        "from_agent": "research-auditor",
+        "from_node": "research",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "human",
+        "to_node": "human"
+      }
+    ],
+    "ok": true,
+    "provider_live": false,
+    "reviewer_verdicts": [
+      {
+        "creator_attempt": 1,
+        "goal_hash": "sha256:rw-sanity-project-dag-concurrent-timeout-retry",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/concurrent-timeout-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+        "reviewed_node_id": "coder",
+        "verdict": "PASS"
+      }
+    ],
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "research-auditor",
+      "coder",
+      "coder",
+      "reviewer"
+    ],
+    "status": "PASS",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-timeout-retry"
+    },
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:44Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/advanced.project_dag_ready_queue_timeout_retry_recovery.stdout.txt",
+  "timeout_seconds": 120
+}

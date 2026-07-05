@@ -1,0 +1,32 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [
+    "planner"
+  ],
+  "completed_nodes": [],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/events.jsonl",
+  "node_statuses": {
+    "planner": {
+      "attempt_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/receipts/planner.json",
+      "resumed": false,
+      "status": "BLOCKED",
+      "verdict": "SUBAGENT_ERROR"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "planner": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/receipts/planner.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order",
+  "run_id": "rw-sanity-generic-dag-stale-work-order",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/dag-spec.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:19:29Z",
+  "verdict": "SUBAGENT_ERROR"
+}

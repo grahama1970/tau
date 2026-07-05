@@ -1,0 +1,37 @@
+pec.json\nplanner_
+receipt: /home/gra
+ham/workspace/expe
+riments/tau/experi
+ments/goal-locked-
+subagents/proofs/r
+eal-world-sanity/2
+0260705T221919Z-ta
+u-all-level-with-b
+ranch-locks-202607
+05/advanced-provid
+er-runs/max-exhaus
+tion/20260705T2229
+51Z-rw-sanity-prov
+ider-dag-max-exhau
+stion/planner-rece
+ipt.json\nfinal_re
+ceipt: /home/graha
+m/workspace/experi
+ments/tau/experime
+nts/goal-locked-su
+bagents/proofs/rea
+l-world-sanity/202
+60705T221919Z-tau-
+all-level-with-bra
+nch-locks-20260705
+/advanced-provider
+-runs/max-exhausti
+on/20260705T222951
+Z-rw-sanity-provid
+er-dag-max-exhaust
+ion/run-receipt.js
+on\ncanonical trut
+h: Tau JSON receip
+ts; this pane is h
+uman-visible telem
+etry.\n

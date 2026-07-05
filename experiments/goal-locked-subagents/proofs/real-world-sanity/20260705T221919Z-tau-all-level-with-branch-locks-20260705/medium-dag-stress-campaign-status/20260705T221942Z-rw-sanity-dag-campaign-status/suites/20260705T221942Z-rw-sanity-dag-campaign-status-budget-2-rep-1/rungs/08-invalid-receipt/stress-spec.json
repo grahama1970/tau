@@ -1,0 +1,14 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign-status/20260705T221942Z-rw-sanity-dag-campaign-status/suites/20260705T221942Z-rw-sanity-dag-campaign-status-budget-2-rep-1/rungs/08-invalid-receipt/events.jsonl",
+  "expected_status": "BLOCKED",
+  "max_attempts": 2,
+  "policy": {
+    "max_attempts": 2,
+    "orchestrator_owns_loop": true,
+    "subagents_one_bounded_turn": true
+  },
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign-status/20260705T221942Z-rw-sanity-dag-campaign-status/suites/20260705T221942Z-rw-sanity-dag-campaign-status-budget-2-rep-1/rungs/08-invalid-receipt/receipts",
+  "rung_id": "08-invalid-receipt",
+  "schema": "tau.dag_stress_spec.v1",
+  "work_order_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign-status/20260705T221942Z-rw-sanity-dag-campaign-status/suites/20260705T221942Z-rw-sanity-dag-campaign-status-budget-2-rep-1/rungs/08-invalid-receipt/work-orders"
+}

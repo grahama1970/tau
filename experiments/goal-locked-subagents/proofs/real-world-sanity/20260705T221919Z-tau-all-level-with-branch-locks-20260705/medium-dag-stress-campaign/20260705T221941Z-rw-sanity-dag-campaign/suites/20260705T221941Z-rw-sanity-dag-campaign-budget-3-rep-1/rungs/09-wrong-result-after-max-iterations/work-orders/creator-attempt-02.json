@@ -1,0 +1,8 @@
+{
+  "artifact_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign/20260705T221941Z-rw-sanity-dag-campaign/suites/20260705T221941Z-rw-sanity-dag-campaign-budget-3-rep-1/rungs/09-wrong-result-after-max-iterations/scratch/artifact.txt",
+  "attempt": 2,
+  "node_id": "creator",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign/20260705T221941Z-rw-sanity-dag-campaign/suites/20260705T221941Z-rw-sanity-dag-campaign-budget-3-rep-1/rungs/09-wrong-result-after-max-iterations/receipts/creator-attempt-02.json",
+  "role": "creator",
+  "schema": "tau.dag_stress_work_order.v1"
+}

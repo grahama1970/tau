@@ -1,0 +1,72 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "provider_initializing_visible": false,
+    "readiness_actions": [
+      "provider_initializing_visible"
+    ],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "foreground_argv": [
+      "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "--cd",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "foreground_cwd": "/home/graham/workspace/experiments/tau",
+    "foreground_pid": 2469515,
+    "pane_agent_status": "idle",
+    "pane_cwd": "/home/graham/workspace/experiments/tau",
+    "pane_label": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+    "process_alive": true,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+    "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.session-state.json",
+    "readiness_probe_attempt_count": 1,
+    "readiness_probe_samples": [
+      {
+        "attempt": 1,
+        "command_matches": true,
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "pane_get_returncode": 0,
+        "process_alive": true,
+        "process_info_returncode": 0,
+        "ready": true,
+        "state": "ready"
+      }
+    ],
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt"
+  },
+  "observed_at": "2026-07-05T22:29:59Z",
+  "pane_id": "w63:p5",
+  "provider_id": "codex",
+  "provider_session_state": {
+    "auth_status": "unknown",
+    "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "interstitial_kind": null,
+    "interstitial_present": false,
+    "observed_at": "2026-07-05T22:29:59Z",
+    "pane_id": "w63:p5",
+    "process_alive": true,
+    "provider_api_available": false,
+    "provider_event_log_path": null,
+    "provider_id": "codex",
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+    "ready": true,
+    "schema": "tau.provider_session_state.v1",
+    "source": "herdr_process_info",
+    "state": "ready",
+    "terminal_id": "term_655e4b25be8326b8",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+    "workspace_id": "w63"
+  },
+  "ready": true,
+  "run_id": "20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e4b25be8326b8",
+  "workspace_id": "w63"
+}

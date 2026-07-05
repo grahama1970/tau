@@ -1,0 +1,34 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T222755Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:bde31e23e5466bc926dc0e43e387d7c68261b5a40ec8dbb0b66bd8ea851b8865",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w62",
+  "pane_id": "w62:p6",
+  "terminal_id": "term_655e4ab720d5f6ad",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "ebdb34486a48ac9f41e5028ff6da94508612fc5a30321d85d780b1c8e5904b9a",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file (scratch-worktree/message.txt)",
+    "read coder_receipt_path (attempt-02-coder.json)",
+    "sha256sum visible_log_path",
+    "verify no TODO in target_file",
+    "verify coder receipt schema completeness",
+    "write reviewer receipt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "Both checks pass. target_file contains 'completed implementation by deterministic visible coder attempt 2' with no TODO line. coder receipt is schema-valid (tau.provider_dag_node_receipt.v1) with all required fields present. force_revise is false. Verdict: PASS.",
+  "errors": [],
+  "policy_exceptions": []
+}

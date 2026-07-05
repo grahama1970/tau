@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign/20260705T221941Z-rw-sanity-dag-campaign/suites/20260705T221941Z-rw-sanity-dag-campaign-budget-2-rep-1/rungs/03-fanout-fanin-review/scratch/creator-a.txt"
+  ],
+  "attempt": 1,
+  "handoff_summary": "creator-a output",
+  "node_id": "creator-a",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:41.919878Z",
+  "verdict": "PASS"
+}

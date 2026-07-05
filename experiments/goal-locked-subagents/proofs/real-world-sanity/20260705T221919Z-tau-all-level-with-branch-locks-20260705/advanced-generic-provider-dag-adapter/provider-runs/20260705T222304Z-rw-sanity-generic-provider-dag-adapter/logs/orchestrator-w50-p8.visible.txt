@@ -1,0 +1,37 @@
+pt: /home/graham/w
+orkspace/experimen
+ts/tau/experiments
+/goal-locked-subag
+ents/proofs/real-w
+orld-sanity/202607
+05T221919Z-tau-all
+-level-with-branch
+-locks-20260705/ad
+vanced-generic-pro
+vider-dag-adapter/
+provider-runs/2026
+0705T222304Z-rw-sa
+nity-generic-provi
+der-dag-adapter/pl
+anner-receipt.json
+\nfinal_receipt: /
+home/graham/worksp
+ace/experiments/ta
+u/experiments/goal
+-locked-subagents/
+proofs/real-world-
+sanity/20260705T22
+1919Z-tau-all-leve
+l-with-branch-lock
+s-20260705/advance
+d-generic-provider
+-dag-adapter/provi
+der-runs/20260705T
+222304Z-rw-sanity-
+generic-provider-d
+ag-adapter/run-rec
+eipt.json\ncanonic
+al truth: Tau JSON
+ receipts; this pa
+ne is human-visibl
+e telemetry.\n

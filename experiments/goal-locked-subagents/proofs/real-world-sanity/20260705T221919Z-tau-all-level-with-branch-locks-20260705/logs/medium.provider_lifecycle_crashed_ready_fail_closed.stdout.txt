@@ -1,0 +1,1 @@
+{"errors": [], "live": false, "mocked": false, "normalized_state": "crashed", "ok": true, "ready": false, "schema": "tau.provider_lifecycle_probe_receipt.v1", "status": "PASS"}

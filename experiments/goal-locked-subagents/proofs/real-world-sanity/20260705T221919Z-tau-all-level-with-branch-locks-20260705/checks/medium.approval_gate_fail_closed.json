@@ -1,0 +1,104 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "approval_packet_sha256": "3c75337e9fd547e0e44c5fac753b4a088b55897d019d063a04c76bc2169b5008",
+        "approved": false,
+        "errors": [
+          "action must match requested_action github_ticket_closure"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "packet_summary": {
+          "action": "working_tree_mutation",
+          "actor_auth_method": "manual",
+          "actor_id": "human:graham",
+          "approved": true,
+          "evidence_count": 1,
+          "expires_at": null,
+          "human_id": "human:graham",
+          "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+          "schema": "tau.human_approval_packet.v1",
+          "signature_present": true,
+          "target_id": "github-ticket-closure"
+        },
+        "requested_action": "github_ticket_closure",
+        "schema": "tau.approval_gate_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.approval_gate_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.approval_gate_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.approval_gate_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "approval-gate-check",
+    "--approval-packet",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-approval-gates/closure-mismatch-approval.json",
+    "--requested-action",
+    "github_ticket_closure",
+    "--run-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-approval-gates/blocked"
+  ],
+  "completed_at": "2026-07-05T22:19:31Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks a GitHub ticket-closure gate when the human approval packet names a different action.",
+  "receipt_summary": {
+    "approval_packet_sha256": "3c75337e9fd547e0e44c5fac753b4a088b55897d019d063a04c76bc2169b5008",
+    "approved": false,
+    "errors": [
+      "action must match requested_action github_ticket_closure"
+    ],
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "packet_summary": {
+      "action": "working_tree_mutation",
+      "actor_auth_method": "manual",
+      "actor_id": "human:graham",
+      "approved": true,
+      "evidence_count": 1,
+      "expires_at": null,
+      "human_id": "human:graham",
+      "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+      "schema": "tau.human_approval_packet.v1",
+      "signature_present": true,
+      "target_id": "github-ticket-closure"
+    },
+    "requested_action": "github_ticket_closure",
+    "schema": "tau.approval_gate_receipt.v1",
+    "status": "BLOCKED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:31Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.approval_gate_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.approval_gate_fail_closed.stdout.txt",
+  "timeout_seconds": 60
+}

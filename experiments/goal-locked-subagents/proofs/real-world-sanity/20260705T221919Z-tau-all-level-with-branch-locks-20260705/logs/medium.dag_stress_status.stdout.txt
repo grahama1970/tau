@@ -1,0 +1,150 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "dag_stress_suite": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-status/20260705T221940Z-rw-sanity-dag-stress-status/suite-receipt.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": {
+    "blocked_rung_count": 6,
+    "execution": "local_deterministic_tau_scheduler",
+    "expected_blocked_rungs": 6,
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "passed_rungs": 4,
+    "provider_live": false,
+    "rung_count": 10,
+    "rungs": [
+      {
+        "attempt_count": 1,
+        "event_count": 5,
+        "expected_status": "PASS",
+        "rung_id": "01-linear-creator-reviewer",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      {
+        "attempt_count": 2,
+        "event_count": 10,
+        "expected_status": "PASS",
+        "rung_id": "02-creator-reviewer-retry",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      {
+        "attempt_count": 1,
+        "event_count": 11,
+        "expected_status": "PASS",
+        "rung_id": "03-fanout-fanin-review",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      {
+        "attempt_count": 3,
+        "event_count": 15,
+        "expected_status": "PASS",
+        "rung_id": "04-multi-revision-loop",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      {
+        "attempt_count": 4,
+        "event_count": 20,
+        "expected_status": "BLOCKED",
+        "rung_id": "05-max-attempts-fail-closed",
+        "status": "BLOCKED",
+        "verdict": "MAX_ATTEMPTS_EXHAUSTED"
+      },
+      {
+        "attempt_count": 0,
+        "event_count": 3,
+        "expected_status": "BLOCKED",
+        "rung_id": "06-subagent-timeout",
+        "status": "BLOCKED",
+        "verdict": "SUBAGENT_TIMEOUT"
+      },
+      {
+        "attempt_count": 0,
+        "event_count": 3,
+        "expected_status": "BLOCKED",
+        "rung_id": "07-subagent-error",
+        "status": "BLOCKED",
+        "verdict": "SUBAGENT_ERROR"
+      },
+      {
+        "attempt_count": 0,
+        "event_count": 3,
+        "expected_status": "BLOCKED",
+        "rung_id": "08-invalid-receipt",
+        "status": "BLOCKED",
+        "verdict": "INVALID_RECEIPT"
+      },
+      {
+        "attempt_count": 4,
+        "event_count": 24,
+        "expected_status": "BLOCKED",
+        "rung_id": "09-wrong-result-after-max-iterations",
+        "status": "BLOCKED",
+        "verdict": "WRONG_RESULT_MAX_ITERATIONS"
+      },
+      {
+        "attempt_count": 0,
+        "event_count": 2,
+        "expected_status": "BLOCKED",
+        "rung_id": "10-model-unavailable",
+        "status": "BLOCKED",
+        "verdict": "MODEL_UNAVAILABLE"
+      }
+    ],
+    "schema": "tau.dag_stress_suite_receipt.v1",
+    "status": "PASS",
+    "unexpected_rungs": []
+  },
+  "dag_stress_campaign": null,
+  "detected_type": "dag_stress",
+  "events": {
+    "count": 0,
+    "path": null
+  },
+  "evidence_validation": null,
+  "generic_dag": null,
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": null,
+  "project_dag": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-status/20260705T221940Z-rw-sanity-dag-stress-status",
+  "run_receipt": null,
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:41Z"
+}

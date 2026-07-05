@@ -1,0 +1,137 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "blocked_node_count": 0,
+        "completed_node_count": 2,
+        "dispatched_node_count": 0,
+        "live": false,
+        "mocked": false,
+        "node_attempt_counts": {
+          "coder": 0,
+          "planner": 0
+        },
+        "node_count": 2,
+        "node_duration_seconds_max": 0.0,
+        "node_duration_seconds_total": 0.0,
+        "node_durations_seconds": {
+          "coder": 0.0,
+          "planner": 0.0
+        },
+        "node_error_counts": {
+          "coder": 0,
+          "planner": 0
+        },
+        "node_statuses": {
+          "coder": "PASS",
+          "planner": "PASS"
+        },
+        "node_verdicts": {
+          "coder": "PASS",
+          "planner": "PASS"
+        },
+        "ok": true,
+        "provider_live": false,
+        "resume_requested": true,
+        "resume_source": {
+          "metadata_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/current-state.json",
+          "mode": "run_metadata",
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume",
+          "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json"
+        },
+        "resumed_node_count": 2,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json",
+        "status": "PASS",
+        "timed_node_count": 2,
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_resume_from_run_dir.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_resume_from_run_dir.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.generic_dag_resume_from_run_dir",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "python",
+    "-c",
+    "import json, subprocess, sys\nfirst = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json']\nresume_prefix = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-resume']\nfirst_result = subprocess.run(first, text=True, capture_output=True)\nsys.stderr.write(first_result.stderr)\nif first_result.returncode != 0:\n    sys.stdout.write(first_result.stdout)\n    raise SystemExit(first_result.returncode)\npayload = json.loads(first_result.stdout)\nrun_dir = payload.get('run_dir')\nif not isinstance(run_dir, str) or not run_dir:\n    sys.stdout.write(first_result.stdout)\n    raise SystemExit('dag-run output did not include run_dir')\nsecond_result = subprocess.run([*resume_prefix, run_dir], text=True, capture_output=True)\nsys.stderr.write(second_result.stderr)\nsys.stdout.write(second_result.stdout)\nraise SystemExit(second_result.returncode)"
+  ],
+  "completed_at": "2026-07-05T22:19:28Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau resumes a generic DAG from run-directory checkpoint metadata without requiring the operator to pass the original spec path.",
+  "receipt_summary": {
+    "blocked_node_count": 0,
+    "completed_node_count": 2,
+    "dispatched_node_count": 0,
+    "live": false,
+    "mocked": false,
+    "node_attempt_counts": {
+      "coder": 0,
+      "planner": 0
+    },
+    "node_count": 2,
+    "node_duration_seconds_max": 0.0,
+    "node_duration_seconds_total": 0.0,
+    "node_durations_seconds": {
+      "coder": 0.0,
+      "planner": 0.0
+    },
+    "node_error_counts": {
+      "coder": 0,
+      "planner": 0
+    },
+    "node_statuses": {
+      "coder": "PASS",
+      "planner": "PASS"
+    },
+    "node_verdicts": {
+      "coder": "PASS",
+      "planner": "PASS"
+    },
+    "ok": true,
+    "provider_live": false,
+    "resume_requested": true,
+    "resume_source": {
+      "metadata_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/current-state.json",
+      "mode": "run_metadata",
+      "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume",
+      "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json"
+    },
+    "resumed_node_count": 2,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json",
+    "status": "PASS",
+    "timed_node_count": 2,
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:27Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_resume_from_run_dir.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_resume_from_run_dir.stdout.txt",
+  "timeout_seconds": 90
+}

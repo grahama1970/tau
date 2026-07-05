@@ -1,0 +1,192 @@
+{
+  "alerts": [],
+  "applied_actions": [
+    {
+      "action": "session_stop",
+      "applied": true,
+      "post_verified_absent": true,
+      "post_verify_action": "session_get",
+      "post_verify_error_code": "session_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned session recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex"
+      ],
+      "session": "session-rw-sanity-codex"
+    },
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w-rw-sanity-session-cleanup:p5"
+      ],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex"
+      ],
+      "workspace_id": "w-rw-sanity-session-cleanup"
+    }
+  ],
+  "candidate_count": 2,
+  "candidates": [
+    {
+      "action": "session_stop",
+      "reason": "run-owned session recorded in runtime manifest",
+      "roles": [
+        "codex"
+      ],
+      "session": "session-rw-sanity-codex"
+    },
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w-rw-sanity-session-cleanup:p5"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex"
+      ],
+      "workspace_id": "w-rw-sanity-session-cleanup"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+        "session",
+        "stop",
+        "session-rw-sanity-codex"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+        "session",
+        "get",
+        "session-rw-sanity-codex"
+      ],
+      "returncode": 1,
+      "stderr": "",
+      "stdout": "{\"error\":{\"code\":\"session_not_found\",\"message\":\"session not found\"}}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+        "workspace",
+        "close",
+        "w-rw-sanity-session-cleanup"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+        "workspace",
+        "get",
+        "w-rw-sanity-session-cleanup"
+      ],
+      "returncode": 1,
+      "stderr": "",
+      "stdout": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\n"
+    }
+  ],
+  "current_workspace": "w11",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+      "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
+      "Tau apply cleanup requires explicit session ownership before stopping recorded sessions"
+    ]
+  },
+  "resource_count": 2,
+  "resources": [
+    {
+      "kind": "session",
+      "roles": [
+        "codex"
+      ],
+      "session": "session-rw-sanity-codex",
+      "sources": [
+        "provider_sessions"
+      ]
+    },
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w-rw-sanity-session-cleanup:p5"
+      ],
+      "roles": [
+        "codex"
+      ],
+      "sources": [
+        "provider_sessions"
+      ],
+      "terminal_ids": [
+        "term-codex"
+      ],
+      "workspace_id": "w-rw-sanity-session-cleanup"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/runtime-manifest.json",
+  "runtime_manifest_sha256": "ebfeff33a864c0c1512b65e57e0c1f574c52de7d725fa2310547e77f3ff87294",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "session_ownership": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/herdr-session-ownership.json",
+  "session_ownership_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-05T22:19:19Z",
+    "dag_id": "rw-sanity-herdr-cleanup-session",
+    "expires_at": "2026-07-06T22:19:19Z",
+    "owner": "tau-real-world-sanity",
+    "run_id": "rw-sanity-herdr-cleanup-session",
+    "schema": "tau.herdr_session_ownership.v1",
+    "session_ids": [
+      "session-rw-sanity-codex"
+    ],
+    "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/runtime-manifest.json"
+  },
+  "session_ownership_sha256": "2bb6dfcdd91a843614a42787a41bb9075086e9f36e90e5d358ada3ecb2f061b9",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:34Z",
+  "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/herdr-workspace-lease.json",
+  "workspace_lease_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-05T22:19:19Z",
+    "dag_id": "rw-sanity-herdr-cleanup-session",
+    "expires_at": "2026-07-06T22:19:19Z",
+    "owner": "tau-real-world-sanity",
+    "run_id": "rw-sanity-herdr-cleanup-session",
+    "schema": "tau.herdr_workspace_lease.v1",
+    "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/owned/runtime-manifest.json",
+    "workspace_ids": [
+      "w-rw-sanity-session-cleanup"
+    ]
+  },
+  "workspace_lease_sha256": "21f42193239cf6739430e2ef31a5b484710d0b996514bf649317dc6a1cbb39e1"
+}

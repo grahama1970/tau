@@ -1,0 +1,139 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "alerts": [
+    {
+      "code": "evidence_manifest_invalid",
+      "evidence": {
+        "errors": [
+          "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+        ],
+        "evidence_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/evidence-manifest.json",
+        "evidence_validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json"
+      },
+      "message": "DAG evidence_manifest did not pass typed evidence validation.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "evidence_manifest_missing_required_evidence",
+      "evidence": {
+        "covered_kinds": [
+          "creator_artifact"
+        ],
+        "evidence_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/evidence-manifest.json",
+        "evidence_validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json",
+        "missing": [
+          "reviewer_verdict"
+        ]
+      },
+      "message": "DAG evidence_manifest does not cover all DAG-level required_evidence kinds.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/dag-contract.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json"
+  ],
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:160285a4a078563329bc1d6b23bb2934e1b5d20ac728050ab18deea633b52a89",
+  "dag_error": {
+    "active_goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+    "dag_id": "rw-sanity-project-dag-evidence-manifest-goal-drift",
+    "evidence": {
+      "alert_codes": [
+        "evidence_manifest_invalid",
+        "evidence_manifest_missing_required_evidence"
+      ],
+      "alert_count": 2,
+      "errors": [
+        "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+      ],
+      "primary_alert": {
+        "code": "evidence_manifest_invalid",
+        "evidence": {
+          "errors": [
+            "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+          ],
+          "evidence_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/evidence-manifest.json",
+          "evidence_validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json"
+        },
+        "message": "DAG evidence_manifest did not pass typed evidence validation.",
+        "severity": "BLOCK"
+      }
+    },
+    "failure_code": "evidence_manifest_invalid",
+    "message": "DAG evidence_manifest did not pass typed evidence validation.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "reviewer",
+      "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+      "type": "repair_evidence_manifest"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run",
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-evidence-manifest-goal-drift"
+    },
+    "verdict": "EVIDENCE_MANIFEST_INVALID"
+  },
+  "dag_id": "rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "edge_count": 3,
+  "entry_node": "coder",
+  "errors": [
+    "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+  ],
+  "evidence_validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json",
+  "execution": "project_agent_dag_pre_dispatch_validation",
+  "live": true,
+  "mocked": false,
+  "node_attempts": {},
+  "node_count": 2,
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The repaired DAG contract will pass.",
+      "Provider/model semantic quality.",
+      "Runtime route mutation or GitHub side effects."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Tau inspected pre-dispatch gates before dispatch.",
+      "No node command, provider, GitHub, Memory, or browser action was executed."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/evidence-manifest-goal-drift-project-dag/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-evidence-manifest-goal-drift"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-05T22:19:52Z",
+  "verdict": "EVIDENCE_MANIFEST_INVALID",
+  "zero_trust_preflight_receipt": null
+}

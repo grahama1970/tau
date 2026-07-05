@@ -1,0 +1,14 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-poc/20260705T221940Z-rw-sanity-dag-stress/rungs/06-subagent-timeout/events.jsonl",
+  "expected_status": "BLOCKED",
+  "max_attempts": 4,
+  "policy": {
+    "max_attempts": 4,
+    "orchestrator_owns_loop": true,
+    "subagents_one_bounded_turn": true
+  },
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-poc/20260705T221940Z-rw-sanity-dag-stress/rungs/06-subagent-timeout/receipts",
+  "rung_id": "06-subagent-timeout",
+  "schema": "tau.dag_stress_spec.v1",
+  "work_order_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-poc/20260705T221940Z-rw-sanity-dag-stress/rungs/06-subagent-timeout/work-orders"
+}

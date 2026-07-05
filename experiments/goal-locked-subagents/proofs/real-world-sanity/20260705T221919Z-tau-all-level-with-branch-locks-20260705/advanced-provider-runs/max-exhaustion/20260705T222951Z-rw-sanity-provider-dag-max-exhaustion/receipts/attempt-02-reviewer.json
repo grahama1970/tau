@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T222951Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:e96335eebc0e4dda115e8dcb4f2fb339aea667f8efb8812eeeb2a510528fce05",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w63",
+  "pane_id": "w63:p6",
+  "terminal_id": "term_655e4b26422e66b9",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "a6c2831dd0cf7d8913c34c869c34443d537d5ae9ce4e34e6ac92509ba5b35328",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum <visible_log_path>",
+    "read <work_order_path>",
+    "read <target_file>",
+    "read <coder_receipt_path>"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise is true. target_file (message.txt) is clean — TODO line removed, replaced with valid completion message. coder_receipt is schema-valid (tau.provider_dag_node_receipt.v1), all required fields present, status PASS, no errors. Since force_revise is true, verdict is REVISE. Feedback for next coder: update message.txt to include explicit DAG attempt iteration indicator (e.g. 'attempt=2 iteration=2') and add a brief evidence line such as 'reviewer_verdict=REVISE force_revise=true' so the max-exhaustion loop can distinguish reuse from genuine progress.",
+  "errors": [],
+  "policy_exceptions": []
+}

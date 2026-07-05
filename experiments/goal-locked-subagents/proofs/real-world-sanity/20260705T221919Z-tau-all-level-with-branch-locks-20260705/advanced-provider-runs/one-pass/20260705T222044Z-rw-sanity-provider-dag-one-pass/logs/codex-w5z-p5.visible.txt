@@ -1,0 +1,38 @@
+
+• Ran jq -r '.visible_log_sha256' /
+  │ home/graham/workspace/
+  │ experiments/tau/experiments/
+  │ … +7 lines
+  └ 61888bcc91a23e1994755e6e9e59533ede1
+    e05c984e3cfb1a6c0070e1b7d44b5
+
+• Explored
+  └ Read message.txt
+
+• Ran sha256sum /home/graham/workspace/
+  │ experiments/tau/experiments/
+  │ goal-locked-subagents/proofs/
+  │ … +9 lines
+  └ 61888bcc91a23e1994755e6e9e59533ede1
+    … +10 lines (ctrl + t to view
+    transcript)
+    -rw-sanity-provider-dag-one-pass-re
+    adiness/logs/codex.visible.txt
+
+───────────────────────────────────────
+
+• The final hash check matched the
+  receipt exactly, and the receipt
+  schema/status/verdict/path counts
+  evaluated to true. I ran a few
+  receipt-validation commands after
+  creating it, so I’m adding those
+  command strings to the receipt for a
+  complete audit trail.
+
+• Working (1m 41s • esc to interrupt)
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace/experim…

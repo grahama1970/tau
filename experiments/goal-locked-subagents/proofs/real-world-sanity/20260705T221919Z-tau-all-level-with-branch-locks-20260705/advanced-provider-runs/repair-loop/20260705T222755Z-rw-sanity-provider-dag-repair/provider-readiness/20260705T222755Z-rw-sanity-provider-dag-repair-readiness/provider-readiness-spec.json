@@ -1,0 +1,50 @@
+{
+  "label": "rw-sanity-provider-dag-repair-readiness",
+  "providers": [
+    {
+      "agent_name": "20260705t222755z-rw-sanity-provider-dag-repair-coder-codex",
+      "command": [
+        "codex",
+        "--cd",
+        "/home/graham/workspace/experiments/tau"
+      ],
+      "dag": {
+        "agent": "coder",
+        "dag_id": "20260705T222755Z-rw-sanity-provider-dag-repair",
+        "node_id": "coder"
+      },
+      "provider_id": "codex",
+      "receipt_required": false,
+      "role": "codex",
+      "stop_conditions": [
+        "pane_started",
+        "blocked_with_reason"
+      ]
+    },
+    {
+      "agent_name": "20260705t222755z-rw-sanity-provider-dag-repair-reviewer-opencode",
+      "command": [
+        "opencode",
+        "/home/graham/workspace/experiments/tau"
+      ],
+      "dag": {
+        "agent": "reviewer",
+        "dag_id": "20260705T222755Z-rw-sanity-provider-dag-repair",
+        "node_id": "reviewer"
+      },
+      "provider_id": "opencode",
+      "receipt_required": false,
+      "role": "opencode",
+      "stop_conditions": [
+        "pane_started",
+        "blocked_with_reason"
+      ]
+    }
+  ],
+  "receipt_policy": {
+    "final_receipt_required": true,
+    "provider_task_receipt_required": false
+  },
+  "run_id": "20260705T222755Z-rw-sanity-provider-dag-repair-readiness",
+  "schema": "tau.provider_pane_spec.v1"
+}

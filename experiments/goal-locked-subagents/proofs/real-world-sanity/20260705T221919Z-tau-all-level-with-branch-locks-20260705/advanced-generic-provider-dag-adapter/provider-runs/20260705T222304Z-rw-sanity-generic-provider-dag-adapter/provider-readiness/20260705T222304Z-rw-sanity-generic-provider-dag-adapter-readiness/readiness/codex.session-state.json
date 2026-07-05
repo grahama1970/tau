@@ -1,0 +1,53 @@
+{
+  "auth": {
+    "method": "unknown",
+    "status": "unknown"
+  },
+  "diagnostics": {
+    "pane_agent_status": "idle",
+    "pane_label": "20260705t222304z-rw-sanity-generic-provider-dag-adapter-coder-codex",
+    "readiness_state": "ready",
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T222304Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T222304Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/codex.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T222304Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T222304Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt"
+  },
+  "interstitial": {
+    "kind": null,
+    "present": false,
+    "safe_actions": [
+      "provider_initializing_visible"
+    ]
+  },
+  "observed_at": "2026-07-05T22:23:09Z",
+  "pane_id": "w50:p5",
+  "process": {
+    "alive": true,
+    "argv": [
+      "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "--cd",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "foreground": true,
+    "pid": 2435429
+  },
+  "provider_api": {
+    "available": false,
+    "endpoint": "none",
+    "last_event_type": null
+  },
+  "provider_id": "codex",
+  "provider_session_id": null,
+  "ready": true,
+  "run_id": "20260705T222304Z-rw-sanity-generic-provider-dag-adapter-readiness",
+  "schema": "tau.provider_session_state.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e49a18d85c69a",
+  "workspace_id": "w50"
+}

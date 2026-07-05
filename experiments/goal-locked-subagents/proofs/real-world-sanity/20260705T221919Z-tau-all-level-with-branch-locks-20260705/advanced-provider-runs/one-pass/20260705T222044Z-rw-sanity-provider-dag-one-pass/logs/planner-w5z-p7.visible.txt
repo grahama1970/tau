@@ -1,0 +1,32 @@
+Tau planner subagent visible monitor\nr
+un_id: 20260705T222044Z-rw-sanity-provi
+der-dag-one-pass\nrun_dir: /home/graham
+/workspace/experiments/tau/experiments/
+goal-locked-subagents/proofs/real-world
+-sanity/20260705T221919Z-tau-all-level-
+with-branch-locks-20260705/advanced-pro
+vider-runs/one-pass/20260705T222044Z-rw
+-sanity-provider-dag-one-pass\ndag_spec
+: /home/graham/workspace/experiments/ta
+u/experiments/goal-locked-subagents/pro
+ofs/real-world-sanity/20260705T221919Z-
+tau-all-level-with-branch-locks-2026070
+5/advanced-provider-runs/one-pass/20260
+705T222044Z-rw-sanity-provider-dag-one-
+pass/dag-spec.json\nplanner_receipt: /h
+ome/graham/workspace/experiments/tau/ex
+periments/goal-locked-subagents/proofs/
+real-world-sanity/20260705T221919Z-tau-
+all-level-with-branch-locks-20260705/ad
+vanced-provider-runs/one-pass/20260705T
+222044Z-rw-sanity-provider-dag-one-pass
+/planner-receipt.json\nfinal_receipt: /
+home/graham/workspace/experiments/tau/e
+xperiments/goal-locked-subagents/proofs
+/real-world-sanity/20260705T221919Z-tau
+-all-level-with-branch-locks-20260705/a
+dvanced-provider-runs/one-pass/20260705
+T222044Z-rw-sanity-provider-dag-one-pas
+s/run-receipt.json\ncanonical truth: Ta
+u JSON receipts; this pane is human-vis
+ible telemetry.\n
