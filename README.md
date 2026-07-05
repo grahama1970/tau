@@ -48,6 +48,9 @@ uv run tau init --profile zero-trust --out /tmp/tau-init-zero-trust
 This writes `.tau/policy-profile.json`, `.tau/data-boundary.json`,
 `.tau/command-policy.json`, `.tau/dag-template.json`, and `.tau/README.md`.
 
+For a checked-in copyable example, see
+[examples/zero-trust-basic](examples/zero-trust-basic/).
+
 ## Research Influence: Adaptive DAGs
 
 T’au's adaptive DAG direction is inspired by graph reasoning, parallel tool

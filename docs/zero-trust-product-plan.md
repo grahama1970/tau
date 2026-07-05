@@ -323,6 +323,9 @@ Internally, this can delegate to `tau dag-run`.
 
 ### B3. Examples
 
+Status: `examples/zero-trust-basic/` is implemented as the first copyable
+example. The remaining examples in this section are still planned.
+
 Add:
 
 ```text
@@ -410,7 +413,7 @@ POST /runs/{id}/compliance-package
 1. Agent-skills wrapper and `proof-status`: complete in `agent-skills`.
 2. Agent-skills Tau zero-trust contract: complete in `agent-skills`.
 3. Add `tau init --profile zero-trust`: implemented.
-4. Add `examples/zero-trust-basic`.
+4. Add `examples/zero-trust-basic`: implemented.
 
 ### Phase 2: The Memory-First Wedge
 

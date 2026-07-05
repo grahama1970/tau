@@ -1,0 +1,15 @@
+{
+  "classification": "internal",
+  "export_controlled": false,
+  "external_provider_allowed": false,
+  "external_research_allowed": false,
+  "foreign_person_access": "restricted",
+  "itar": false,
+  "notes": [
+    "Example boundary for Tau zero-trust preflight.",
+    "Not a legal or export-control classification."
+  ],
+  "public_repo_allowed": false,
+  "schema": "tau.data_boundary.v1",
+  "technical_data": false
+}
