@@ -1,0 +1,119 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "blocked_node_count": 0,
+        "completed_node_count": 1,
+        "dispatched_node_count": 0,
+        "live": true,
+        "mocked": false,
+        "node_attempt_counts": {
+          "provider_task": 0
+        },
+        "node_count": 1,
+        "node_duration_seconds_max": 0.0,
+        "node_duration_seconds_total": 0.0,
+        "node_durations_seconds": {
+          "provider_task": 0.0
+        },
+        "node_error_counts": {
+          "provider_task": 0
+        },
+        "node_statuses": {
+          "provider_task": "PASS"
+        },
+        "node_verdicts": {
+          "provider_task": "PASS"
+        },
+        "ok": true,
+        "provider_live": true,
+        "resume_requested": true,
+        "resume_source": {
+          "mode": "spec_path",
+          "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/dag-spec.json"
+        },
+        "resumed_node_count": 1,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/dag-spec.json",
+        "status": "PASS",
+        "timed_node_count": 1,
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/logs/advanced.generic_provider_dag_adapter_resume.attempt-01.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/logs/advanced.generic_provider_dag_adapter_resume.attempt-01.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.generic_provider_dag_adapter_resume",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "import subprocess, sys\nfirst = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/dag-spec.json', '--no-resume']\nsecond = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/dag-spec.json']\nfirst_result = subprocess.run(first, text=True, capture_output=True)\nsys.stderr.write(first_result.stderr)\nif first_result.returncode != 0:\n    sys.stdout.write(first_result.stdout)\n    raise SystemExit(first_result.returncode)\nsecond_result = subprocess.run(second, text=True, capture_output=True)\nsys.stderr.write(second_result.stderr)\nsys.stdout.write(second_result.stdout)\nraise SystemExit(second_result.returncode)"
+  ],
+  "completed_at": "2026-07-05T16:44:54Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 2,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": true,
+  "purpose": "Generic DAG resumes an already-completed live provider-backed adapter node without launching the provider adapter a second time.",
+  "receipt_summary": {
+    "blocked_node_count": 0,
+    "completed_node_count": 1,
+    "dispatched_node_count": 0,
+    "live": true,
+    "mocked": false,
+    "node_attempt_counts": {
+      "provider_task": 0
+    },
+    "node_count": 1,
+    "node_duration_seconds_max": 0.0,
+    "node_duration_seconds_total": 0.0,
+    "node_durations_seconds": {
+      "provider_task": 0.0
+    },
+    "node_error_counts": {
+      "provider_task": 0
+    },
+    "node_statuses": {
+      "provider_task": "PASS"
+    },
+    "node_verdicts": {
+      "provider_task": "PASS"
+    },
+    "ok": true,
+    "provider_live": true,
+    "resume_requested": true,
+    "resume_source": {
+      "mode": "spec_path",
+      "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/dag-spec.json"
+    },
+    "resumed_node_count": 1,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/advanced-generic-provider-dag-adapter/dag-spec.json",
+    "status": "PASS",
+    "timed_node_count": 1,
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T16:43:06Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/logs/advanced.generic_provider_dag_adapter_resume.attempt-01.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T164103Z-tau-provider-live-after-gc-hardening-20260705/logs/advanced.generic_provider_dag_adapter_resume.attempt-01.stdout.txt",
+  "timeout_seconds": 900
+}
