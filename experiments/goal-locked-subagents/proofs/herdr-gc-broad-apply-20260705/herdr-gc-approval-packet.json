@@ -1,0 +1,20 @@
+{
+  "schema": "tau.human_approval_packet.v1",
+  "approved": true,
+  "action": "herdr_gc_apply",
+  "actor": {
+    "id": "human:graham",
+    "auth_method": "manual"
+  },
+  "target": {
+    "id": "experiments/goal-locked-subagents/proofs/herdr-gc-broad-apply-20260705",
+    "scope": "Tau-labeled Herdr workspace GC only"
+  },
+  "reason": "Approve bounded Herdr GC apply proof for stale Tau/real-world-sanity workspaces; no arbitrary workspace cleanup, session deletion, Git worktree deletion, or proof artifact deletion is approved.",
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/herdr-gc-broad-audit-20260705/herdr-gc-receipt.json"
+  ],
+  "nonce": "herdr-gc-broad-apply-20260705",
+  "signature": "manual-approval-recorded-in-codex-turn",
+  "expires_at": "2026-07-06T00:00:00Z"
+}
