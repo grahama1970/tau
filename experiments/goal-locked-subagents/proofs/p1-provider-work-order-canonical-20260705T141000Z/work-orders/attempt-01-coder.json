@@ -1,0 +1,47 @@
+{
+  "attempt": 1,
+  "dag_id": "proof-dag",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:proof-goal",
+    "goal_id": "proof-run",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w-proof:p1",
+    "terminal_id": "term-proof",
+    "workspace_id": "w-proof"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 1,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/receipts/coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "",
+  "run_id": "proof-run",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree"
+  },
+  "target_file": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "0bd02ba8e58aa165f9d672234421d51d65eb5ad6d4902e30877848bfd29d0c40"
+}

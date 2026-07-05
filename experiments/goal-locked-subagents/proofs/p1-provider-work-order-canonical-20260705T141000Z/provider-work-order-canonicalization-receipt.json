@@ -1,0 +1,61 @@
+{
+  "check_count": 8,
+  "checks": [
+    {
+      "name": "coder_schema",
+      "ok": true
+    },
+    {
+      "name": "coder_goal_hash",
+      "ok": true
+    },
+    {
+      "name": "coder_node_attempt",
+      "ok": true
+    },
+    {
+      "name": "coder_herdr_binding",
+      "ok": true
+    },
+    {
+      "name": "coder_work_order_sha256_present",
+      "ok": true
+    },
+    {
+      "name": "reviewer_schema",
+      "ok": true
+    },
+    {
+      "name": "reviewer_allowed_paths_include_coder_receipt",
+      "ok": true
+    },
+    {
+      "name": "reviewer_work_order_sha256_present",
+      "ok": true
+    }
+  ],
+  "failed_check_count": 0,
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Live provider execution.",
+      "Herdr pane readiness.",
+      "Provider/model semantic quality.",
+      "GitHub mutation."
+    ],
+    "proves": [
+      "Provider DAG POC work-order builders emit canonical nested goal/node/target/herdr fields.",
+      "Provider DAG POC work-order builders emit deterministic work_order_sha256 fields.",
+      "Flat compatibility aliases remain present for existing provider prompts and deterministic workers."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.provider_work_order_canonicalization_proof.v1",
+  "status": "PASS",
+  "work_orders": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/work-orders/attempt-01-coder.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/work-orders/attempt-01-reviewer.json"
+  ]
+}

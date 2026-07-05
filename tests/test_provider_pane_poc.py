@@ -3,6 +3,8 @@ from pathlib import Path
 
 from tau_coding.cli import _parse_provider_dag_poc_cli_args
 from tau_coding.provider_dag_poc import (
+    _coder_work_order,
+    _reviewer_work_order,
     _run_provider_dag_cleanup,
     inspect_provider_dag_run,
     plan_provider_dag_poc,
@@ -578,6 +580,11 @@ def test_plan_provider_dag_poc_writes_spec_and_planner_receipt(tmp_path: Path) -
     spec_path = Path(str(receipt["dag_spec"]))
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     assert spec["schema"] == "tau.dag_run_spec.v1"
+    assert spec["goal"]["goal_hash"].startswith("sha256:")
+    assert spec["goal"]["goal_version"] == 1
+    assert spec["target"]["repo"] == str(repo.resolve())
+    assert spec["target"]["scratch_worktree"] == receipt["scratch_worktree"]
+    assert spec["target"]["allowed_paths"] == [receipt["target_file"]]
     assert spec["proof_controls"] == {
         "force_reviewer_revise_attempts": [],
         "allow_final_forced_revise": False,
@@ -604,6 +611,76 @@ def test_plan_provider_dag_poc_writes_spec_and_planner_receipt(tmp_path: Path) -
     ]
     assert spec["policy"]["require_structured_readiness"] is True
     assert spec["policy"]["allow_visible_text_readiness_gate"] is False
+
+
+def test_provider_dag_work_orders_are_canonical_and_hash_bound(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scratch = tmp_path / "scratch-worktree"
+    receipt_dir = tmp_path / "receipts"
+    repo.mkdir()
+    scratch.mkdir()
+    receipt_dir.mkdir()
+    target_file = scratch / "message.txt"
+    coder_receipt = receipt_dir / "coder.json"
+    reviewer_receipt = receipt_dir / "reviewer.json"
+    provider_record = {
+        "workspace_id": "w1",
+        "pane_id": "w1:p3",
+        "terminal_id": "term-coder",
+    }
+
+    coder = _coder_work_order(
+        run_id="run-001",
+        dag_id="dag-001",
+        goal_hash="sha256:goal",
+        attempt=1,
+        max_attempts=2,
+        repo=repo,
+        scratch_dir=scratch,
+        target_file=target_file,
+        receipt_path=coder_receipt,
+        reviewer_feedback="",
+        provider_record=provider_record,
+    )
+    reviewer = _reviewer_work_order(
+        run_id="run-001",
+        dag_id="dag-001",
+        goal_hash="sha256:goal",
+        attempt=1,
+        max_attempts=2,
+        repo=repo,
+        scratch_dir=scratch,
+        target_file=target_file,
+        receipt_path=reviewer_receipt,
+        coder_receipt_path=coder_receipt,
+        force_revise=False,
+        provider_record={**provider_record, "terminal_id": "term-reviewer"},
+    )
+
+    assert coder["schema"] == "tau.provider_dag_work_order.v1"
+    assert coder["dag_id"] == "dag-001"
+    assert coder["goal"]["goal_hash"] == "sha256:goal"
+    assert coder["node"] == {
+        "node_id": "coder",
+        "agent": "coder",
+        "attempt": 1,
+        "max_attempts": 2,
+    }
+    assert coder["target"] == {
+        "repo": str(repo),
+        "allowed_paths": [str(target_file)],
+        "scratch_worktree": str(scratch),
+    }
+    assert coder["herdr"] == provider_record
+    assert coder["work_order_sha256"] == _canonical_work_order_sha256(coder)
+    assert coder["target_file"] == str(target_file)
+    assert coder["receipt_path"] == str(coder_receipt)
+
+    assert reviewer["node"]["node_id"] == "reviewer"
+    assert reviewer["target"]["allowed_paths"] == [str(target_file), str(coder_receipt)]
+    assert reviewer["required_evidence"] == ["coder_receipt_reviewed", "target_file_reviewed"]
+    assert reviewer["herdr"]["terminal_id"] == "term-reviewer"
+    assert reviewer["work_order_sha256"] == _canonical_work_order_sha256(reviewer)
 
 
 def test_plan_provider_dag_poc_records_forced_reviewer_revise_attempts(tmp_path: Path) -> None:
@@ -919,3 +996,12 @@ def test_tau_dag_command_specs_reference_agent_contracts() -> None:
         assert spec["persona_contract"] == f"agents/{agent_id}/persona.yaml"
         assert (root / spec["agent_contract"]).exists()
         assert (root / spec["persona_contract"]).exists()
+
+
+def _canonical_work_order_sha256(payload: dict[str, object]) -> str:
+    import hashlib
+
+    canonical = dict(payload)
+    canonical.pop("work_order_sha256", None)
+    data = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()

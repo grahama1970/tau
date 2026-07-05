@@ -1,0 +1,49 @@
+{
+  "attempt": 1,
+  "coder_receipt_path": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/receipts/coder.json",
+  "dag_id": "proof-dag",
+  "forbidden_actions": [
+    "modify_files",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "force_revise": false,
+  "goal": {
+    "goal_hash": "sha256:proof-goal",
+    "goal_id": "proof-run",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w-proof:p2",
+    "terminal_id": "term-reviewer",
+    "workspace_id": "w-proof"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "reviewer",
+    "attempt": 1,
+    "max_attempts": 2,
+    "node_id": "reviewer"
+  },
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "receipt_path": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/receipts/reviewer.json",
+  "required_evidence": [
+    "coder_receipt_reviewed",
+    "target_file_reviewed"
+  ],
+  "run_id": "proof-run",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree/message.txt",
+      "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/receipts/coder.json"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree"
+  },
+  "target_file": "experiments/goal-locked-subagents/proofs/p1-provider-work-order-canonical-20260705T141000Z/scratch-worktree/message.txt",
+  "task": "Review target_file and the coder receipt. If force_revise is true, return REVISE with actionable feedback even if the file is acceptable. Otherwise return PASS if the TODO line is gone and the coder receipt is schema-valid enough to inspect; otherwise return REVISE.",
+  "work_order_sha256": "fea8b6f9afc8655c5d6019699ca831f5e0180ae002a15caf832e17f358f84384"
+}

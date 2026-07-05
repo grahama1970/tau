@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import time
@@ -105,6 +106,7 @@ def plan_provider_dag_poc(
         run_id,
         label,
         max_attempts,
+        resolved_repo,
         run_dir,
         scratch_dir,
         target_file,
@@ -277,11 +279,16 @@ def run_provider_dag_orchestrator(
         reviewer_work_order_path = work_order_dir / f"attempt-{attempt:02d}-reviewer.json"
         coder_work_order = _coder_work_order(
             run_id=run_id,
+            dag_id=run_id,
+            goal_hash=str(spec["goal"]["goal_hash"]),
             attempt=attempt,
+            max_attempts=max_attempts,
+            repo=resolved_repo,
             scratch_dir=scratch_dir,
             target_file=target_file,
             receipt_path=coder_receipt_path,
             reviewer_feedback=reviewer_feedback,
+            provider_record=provider_map["codex"],
         )
         _write_json(coder_work_order_path, coder_work_order)
         _append_event(
@@ -371,12 +378,17 @@ def run_provider_dag_orchestrator(
 
         reviewer_work_order = _reviewer_work_order(
             run_id=run_id,
+            dag_id=run_id,
+            goal_hash=str(spec["goal"]["goal_hash"]),
             attempt=attempt,
+            max_attempts=max_attempts,
+            repo=resolved_repo,
             scratch_dir=scratch_dir,
             target_file=target_file,
             receipt_path=reviewer_receipt_path,
             coder_receipt_path=coder_receipt_path,
             force_revise=attempt in force_reviewer_revise_attempts,
+            provider_record=provider_map["opencode"],
         )
         _write_json(reviewer_work_order_path, reviewer_work_order)
         _append_event(
@@ -681,10 +693,32 @@ def _validate_coder_mode(mode: str) -> None:
         raise RuntimeError("coder_mode must be codex or deterministic-visible")
 
 
+def _provider_goal_hash(*, run_id: str, label: str) -> str:
+    payload = json.dumps(
+        {
+            "run_id": run_id,
+            "label": label,
+            "contract": "tau.provider_dag_work_order.v1",
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return f"sha256:{hashlib.sha256(payload).hexdigest()}"
+
+
+def _with_work_order_sha256(payload: dict[str, Any]) -> dict[str, Any]:
+    canonical = dict(payload)
+    canonical.pop("work_order_sha256", None)
+    data = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    payload["work_order_sha256"] = hashlib.sha256(data).hexdigest()
+    return payload
+
+
 def _dag_spec(
     run_id: str,
     label: str,
     max_attempts: int,
+    repo: Path,
     run_dir: Path,
     scratch_dir: Path,
     target_file: Path,
@@ -704,6 +738,16 @@ def _dag_spec(
         "work_order_dir": str(run_dir / "work-orders"),
         "receipt_dir": str(run_dir / "receipts"),
         "logs_dir": str(run_dir / "logs"),
+        "goal": {
+            "goal_id": label,
+            "goal_version": 1,
+            "goal_hash": _provider_goal_hash(run_id=run_id, label=label),
+        },
+        "target": {
+            "repo": str(repo),
+            "allowed_paths": [str(target_file)],
+            "scratch_worktree": str(scratch_dir),
+        },
         "max_attempts": max_attempts,
         "scratch_worktree": str(scratch_dir),
         "target_file": str(target_file),
@@ -820,49 +864,110 @@ def _validate_dag_spec(spec: dict[str, Any]) -> None:
 def _coder_work_order(
     *,
     run_id: str,
+    dag_id: str,
+    goal_hash: str,
     attempt: int,
+    max_attempts: int,
+    repo: Path,
     scratch_dir: Path,
     target_file: Path,
     receipt_path: Path,
     reviewer_feedback: str,
+    provider_record: dict[str, Any],
 ) -> dict[str, Any]:
-    return {
+    payload = {
         "schema": "tau.provider_dag_work_order.v1",
+        "dag_id": dag_id,
         "run_id": run_id,
+        "goal": {
+            "goal_id": run_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "node": {
+            "node_id": "coder",
+            "agent": "coder",
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+        },
+        "target": {
+            "repo": str(repo),
+            "allowed_paths": [str(target_file)],
+            "scratch_worktree": str(scratch_dir),
+        },
+        "herdr": {
+            "workspace_id": str(provider_record.get("workspace_id") or ""),
+            "pane_id": str(provider_record.get("pane_id") or ""),
+            "terminal_id": str(provider_record.get("terminal_id") or ""),
+        },
         "node_id": "coder",
         "provider_id": "codex",
         "attempt": attempt,
+        "max_attempts": max_attempts,
         "scratch_worktree": str(scratch_dir),
         "target_file": str(target_file),
         "receipt_path": str(receipt_path),
+        "required_evidence": ["target_file_updated", "node_receipt_written"],
+        "forbidden_actions": ["modify_tau_repository", "github_mutation", "tailscale_access"],
         "reviewer_feedback": reviewer_feedback,
         "task": (
             "Modify only target_file. Replace the TODO line with a short completed "
             "implementation message. Then write the node receipt JSON exactly at receipt_path."
         ),
     }
+    return _with_work_order_sha256(payload)
 
 
 def _reviewer_work_order(
     *,
     run_id: str,
+    dag_id: str,
+    goal_hash: str,
     attempt: int,
+    max_attempts: int,
+    repo: Path,
     scratch_dir: Path,
     target_file: Path,
     receipt_path: Path,
     coder_receipt_path: Path,
     force_revise: bool,
+    provider_record: dict[str, Any],
 ) -> dict[str, Any]:
-    return {
+    payload = {
         "schema": "tau.provider_dag_work_order.v1",
+        "dag_id": dag_id,
         "run_id": run_id,
+        "goal": {
+            "goal_id": run_id,
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "node": {
+            "node_id": "reviewer",
+            "agent": "reviewer",
+            "attempt": attempt,
+            "max_attempts": max_attempts,
+        },
+        "target": {
+            "repo": str(repo),
+            "allowed_paths": [str(target_file), str(coder_receipt_path)],
+            "scratch_worktree": str(scratch_dir),
+        },
+        "herdr": {
+            "workspace_id": str(provider_record.get("workspace_id") or ""),
+            "pane_id": str(provider_record.get("pane_id") or ""),
+            "terminal_id": str(provider_record.get("terminal_id") or ""),
+        },
         "node_id": "reviewer",
         "provider_id": "opencode",
         "attempt": attempt,
+        "max_attempts": max_attempts,
         "scratch_worktree": str(scratch_dir),
         "target_file": str(target_file),
         "coder_receipt_path": str(coder_receipt_path),
         "receipt_path": str(receipt_path),
+        "required_evidence": ["coder_receipt_reviewed", "target_file_reviewed"],
+        "forbidden_actions": ["modify_files", "github_mutation", "tailscale_access"],
         "force_revise": force_revise,
         "task": (
             "Review target_file and the coder receipt. If force_revise is true, return REVISE "
@@ -871,6 +976,7 @@ def _reviewer_work_order(
             "otherwise return REVISE."
         ),
     }
+    return _with_work_order_sha256(payload)
 
 
 def _coder_prompt(work_order_path: Path, receipt_path: Path) -> str:
