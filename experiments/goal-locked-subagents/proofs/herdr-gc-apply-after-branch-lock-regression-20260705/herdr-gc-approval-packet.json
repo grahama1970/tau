@@ -1,0 +1,22 @@
+{
+  "action": "herdr_gc_apply",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/herdr-gc-audit-after-branch-lock-regression-20260705/herdr-gc-receipt.json",
+    "candidate workspace_id w4C label rw-sanity-provider-dag-max-exhaustion-readiness agent_status idle focused false"
+  ],
+  "expires_at": "2026-07-06T00:36:29Z",
+  "nonce": "tau-herdr-gc-apply-after-branch-lock-regression-20260705",
+  "reason": "User requested Tau garbage collection for completed rw-sanity Herdr agents/spaces; dry-run audit selected stale Tau/real-world-sanity workspace w4C and protected current workspace w11.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-approval-from-current-codex-session",
+  "target": {
+    "id": "herdr-workspace-label:rw-sanity-provider-dag-max-exhaustion-readiness",
+    "source_audit": "experiments/goal-locked-subagents/proofs/herdr-gc-audit-after-branch-lock-regression-20260705/herdr-gc-receipt.json",
+    "workspace_id": "w4C"
+  }
+}
