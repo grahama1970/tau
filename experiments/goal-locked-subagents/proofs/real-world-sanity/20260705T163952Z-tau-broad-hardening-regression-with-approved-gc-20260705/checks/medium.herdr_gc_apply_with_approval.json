@@ -1,0 +1,67 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "applied_action_count": 1,
+        "candidate_count": 1,
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "post_verified_absent_count": 1,
+        "schema": "tau.herdr_gc_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.herdr_gc_apply_with_approval",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "\nimport json\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\nfixture_dir = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval')\nherdr_bin = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/fake-herdr')\napproval_packet_path = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/herdr-gc-approval.json')\napproval_run_dir = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/approval')\nreceipt_path = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/herdr-gc-receipt.json')\napproval_receipt = approval_run_dir / \"approval-gate-receipt.json\"\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"approval-gate-check\",\n    \"--approval-packet\",\n    str(approval_packet_path),\n    \"--requested-action\",\n    \"herdr_gc_apply\",\n    \"--run-dir\",\n    str(approval_run_dir),\n], 0)\ncompleted = run([\n    *uv_tau,\n    \"herdr-cleanup\",\n    \"gc\",\n    \"--run-dir\",\n    str(fixture_dir),\n    \"--apply\",\n    \"--approval-receipt\",\n    str(approval_receipt),\n    \"--herdr-bin\",\n    str(herdr_bin),\n], 0)\npayload = json.loads(receipt_path.read_text(encoding=\"utf-8\"))\nif payload.get(\"applied_action_count\") != 1:\n    raise SystemExit(\"expected exactly one applied action\")\nif payload.get(\"post_verified_absent_count\") != 1:\n    raise SystemExit(\"expected exactly one post-verified absent workspace\")\nraise SystemExit(completed.returncode)\n"
+  ],
+  "completed_at": "2026-07-05T16:39:54Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/herdr-gc-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau allows broad Herdr GC apply only after a generated approval receipt authorizes label-based workspace cleanup.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "applied_action_count": 1,
+    "candidate_count": 1,
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "post_verified_absent_count": 1,
+    "schema": "tau.herdr_gc_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T16:39:52Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stdout.txt",
+  "timeout_seconds": 60
+}

@@ -1,0 +1,1101 @@
+{
+  "check_count": 9,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "missing_approval_receipt"
+            ],
+            "alert_count": 1,
+            "applied_action_count": 0,
+            "candidate_count": 1,
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "post_verified_absent_count": 0,
+            "schema": "tau.herdr_gc_receipt.v1",
+            "status": "BLOCKED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_requires_approval.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_requires_approval.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.herdr_gc_apply_requires_approval",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "herdr-cleanup",
+        "gc",
+        "--run-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval",
+        "--apply",
+        "--herdr-bin",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/fake-herdr"
+      ],
+      "completed_at": "2026-07-05T16:39:52Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks broad Herdr GC apply when no approval receipt authorizes label-based workspace cleanup.",
+      "receipt_summary": {
+        "alert_codes": [
+          "missing_approval_receipt"
+        ],
+        "alert_count": 1,
+        "applied_action_count": 0,
+        "candidate_count": 1,
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "post_verified_absent_count": 0,
+        "schema": "tau.herdr_gc_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:52Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_requires_approval.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_requires_approval.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "alert_codes": [],
+            "alert_count": 0,
+            "applied_action_count": 1,
+            "candidate_count": 1,
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "post_verified_absent_count": 1,
+            "schema": "tau.herdr_gc_receipt.v1",
+            "status": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.herdr_gc_apply_with_approval",
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "\nimport json\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\nfixture_dir = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval')\nherdr_bin = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/fake-herdr')\napproval_packet_path = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/herdr-gc-approval.json')\napproval_run_dir = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/approval')\nreceipt_path = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/herdr-gc-receipt.json')\napproval_receipt = approval_run_dir / \"approval-gate-receipt.json\"\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"approval-gate-check\",\n    \"--approval-packet\",\n    str(approval_packet_path),\n    \"--requested-action\",\n    \"herdr_gc_apply\",\n    \"--run-dir\",\n    str(approval_run_dir),\n], 0)\ncompleted = run([\n    *uv_tau,\n    \"herdr-cleanup\",\n    \"gc\",\n    \"--run-dir\",\n    str(fixture_dir),\n    \"--apply\",\n    \"--approval-receipt\",\n    str(approval_receipt),\n    \"--herdr-bin\",\n    str(herdr_bin),\n], 0)\npayload = json.loads(receipt_path.read_text(encoding=\"utf-8\"))\nif payload.get(\"applied_action_count\") != 1:\n    raise SystemExit(\"expected exactly one applied action\")\nif payload.get(\"post_verified_absent_count\") != 1:\n    raise SystemExit(\"expected exactly one post-verified absent workspace\")\nraise SystemExit(completed.returncode)\n"
+      ],
+      "completed_at": "2026-07-05T16:39:54Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/medium-herdr-gc-approval/herdr-gc-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau allows broad Herdr GC apply only after a generated approval receipt authorizes label-based workspace cleanup.",
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "applied_action_count": 1,
+        "candidate_count": 1,
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "post_verified_absent_count": 1,
+        "schema": "tau.herdr_gc_receipt.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:52Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/medium.herdr_gc_apply_with_approval.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "evidence_manifest_invalid",
+              "evidence_manifest_missing_required_evidence"
+            ],
+            "alert_count": 2,
+            "dag_error": {
+              "active_goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+              "dag_id": "rw-sanity-project-dag-evidence-manifest-goal-drift",
+              "evidence": {
+                "alert_codes": [
+                  "evidence_manifest_invalid",
+                  "evidence_manifest_missing_required_evidence"
+                ],
+                "alert_count": 2,
+                "errors": [
+                  "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+                ],
+                "primary_alert": {
+                  "code": "evidence_manifest_invalid",
+                  "evidence": {
+                    "errors": [
+                      "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+                    ],
+                    "evidence_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/evidence-manifest.json",
+                    "evidence_validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json"
+                  },
+                  "message": "DAG evidence_manifest did not pass typed evidence validation.",
+                  "severity": "BLOCK"
+                }
+              },
+              "failure_code": "evidence_manifest_invalid",
+              "message": "DAG evidence_manifest did not pass typed evidence validation.",
+              "proof_scope": {
+                "does_not_prove": [
+                  "The recommended action has been executed.",
+                  "The project agent accepted or applied the course correction.",
+                  "Provider/model semantic quality."
+                ],
+                "proves": [
+                  "Tau detected a blocked DAG execution.",
+                  "Tau packaged the primary failure as a project-agent course-correction payload.",
+                  "No DAG route, goal, target, or handoff was mutated by this error contract."
+                ]
+              },
+              "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run/dag-receipt.json",
+              "recommended_action": {
+                "next_agent": "reviewer",
+                "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+                "type": "repair_evidence_manifest"
+              },
+              "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run",
+              "scheduler": "handoff-loop",
+              "schema": "tau.dag_error.v1",
+              "severity": "BLOCK",
+              "status": "BLOCKED",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "scratch-project-dag-evidence-manifest-goal-drift"
+              },
+              "verdict": "EVIDENCE_MANIFEST_INVALID"
+            },
+            "errors": [
+              "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+            ],
+            "live": true,
+            "mocked": false,
+            "node_attempts": {},
+            "node_count": 2,
+            "observed_edges": [],
+            "ok": false,
+            "provider_live": false,
+            "reviewer_verdicts": [],
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_receipt.v1",
+            "selected_agents": [],
+            "status": "BLOCKED",
+            "verdict": "EVIDENCE_MANIFEST_INVALID"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_evidence_manifest_goal_hash_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_evidence_manifest_goal_hash_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_evidence_manifest_goal_hash_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T16:39:54Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "EVIDENCE_MANIFEST_INVALID",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau rejects a project DAG before dispatch when its typed evidence manifest contains an artifact with a goal hash that differs from the immutable DAG goal.",
+      "receipt_summary": {
+        "alert_codes": [
+          "evidence_manifest_invalid",
+          "evidence_manifest_missing_required_evidence"
+        ],
+        "alert_count": 2,
+        "dag_error": {
+          "active_goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+          "dag_id": "rw-sanity-project-dag-evidence-manifest-goal-drift",
+          "evidence": {
+            "alert_codes": [
+              "evidence_manifest_invalid",
+              "evidence_manifest_missing_required_evidence"
+            ],
+            "alert_count": 2,
+            "errors": [
+              "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+            ],
+            "primary_alert": {
+              "code": "evidence_manifest_invalid",
+              "evidence": {
+                "errors": [
+                  "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+                ],
+                "evidence_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/evidence-manifest.json",
+                "evidence_validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json"
+              },
+              "message": "DAG evidence_manifest did not pass typed evidence validation.",
+              "severity": "BLOCK"
+            }
+          },
+          "failure_code": "evidence_manifest_invalid",
+          "message": "DAG evidence_manifest did not pass typed evidence validation.",
+          "proof_scope": {
+            "does_not_prove": [
+              "The recommended action has been executed.",
+              "The project agent accepted or applied the course correction.",
+              "Provider/model semantic quality."
+            ],
+            "proves": [
+              "Tau detected a blocked DAG execution.",
+              "Tau packaged the primary failure as a project-agent course-correction payload.",
+              "No DAG route, goal, target, or handoff was mutated by this error contract."
+            ]
+          },
+          "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run/dag-receipt.json",
+          "recommended_action": {
+            "next_agent": "reviewer",
+            "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+            "type": "repair_evidence_manifest"
+          },
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/evidence-manifest-goal-drift-project-dag/run",
+          "scheduler": "handoff-loop",
+          "schema": "tau.dag_error.v1",
+          "severity": "BLOCK",
+          "status": "BLOCKED",
+          "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-project-dag-evidence-manifest-goal-drift"
+          },
+          "verdict": "EVIDENCE_MANIFEST_INVALID"
+        },
+        "errors": [
+          "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+        ],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {},
+        "node_count": 2,
+        "observed_edges": [],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [],
+        "status": "BLOCKED",
+        "verdict": "EVIDENCE_MANIFEST_INVALID"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:54Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_evidence_manifest_goal_hash_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_evidence_manifest_goal_hash_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "command_policy_rejected",
+              "missing_dispatch"
+            ],
+            "alert_count": 2,
+            "dag_error": {
+              "active_goal_hash": "sha256:rw-sanity-project-dag-command-policy-network",
+              "dag_id": "rw-sanity-project-dag-command-policy-network",
+              "evidence": {
+                "alert_codes": [
+                  "command_policy_rejected",
+                  "missing_dispatch"
+                ],
+                "alert_count": 2,
+                "errors": [
+                  "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json requires network but command policy does not allow network"
+                ],
+                "primary_alert": {
+                  "code": "command_policy_rejected",
+                  "evidence": {
+                    "errors": [
+                      "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json requires network but command policy does not allow network"
+                    ]
+                  },
+                  "message": "Underlying handoff command loop did not pass.",
+                  "severity": "BLOCK"
+                }
+              },
+              "failure_code": "command_policy_rejected",
+              "message": "Underlying handoff command loop did not pass.",
+              "proof_scope": {
+                "does_not_prove": [
+                  "The recommended action has been executed.",
+                  "The project agent accepted or applied the course correction.",
+                  "Provider/model semantic quality."
+                ],
+                "proves": [
+                  "Tau detected a blocked DAG execution.",
+                  "Tau packaged the primary failure as a project-agent course-correction payload.",
+                  "No DAG route, goal, target, or handoff was mutated by this error contract."
+                ]
+              },
+              "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/dag-receipt.json",
+              "recommended_action": {
+                "next_agent": "goal-guardian",
+                "reason": "Repair the command spec or trust policy before retrying the DAG.",
+                "type": "repair_command_policy"
+              },
+              "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run",
+              "scheduler": "handoff-loop",
+              "schema": "tau.dag_error.v1",
+              "severity": "BLOCK",
+              "status": "BLOCKED",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "scratch-project-dag-command-policy-network"
+              },
+              "verdict": "COMMAND_POLICY_REJECTED"
+            },
+            "errors": [
+              "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json requires network but command policy does not allow network"
+            ],
+            "live": true,
+            "mocked": false,
+            "node_attempts": {},
+            "node_count": 2,
+            "observed_edges": [],
+            "ok": false,
+            "provider_live": false,
+            "reviewer_verdicts": [],
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_receipt.v1",
+            "selected_agents": [],
+            "status": "BLOCKED",
+            "verdict": "COMMAND_POLICY_REJECTED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_network_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_network_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_command_policy_network_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T16:39:55Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "COMMAND_POLICY_REJECTED",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau returns a project-agent-readable command_policy_rejected DAG error when a command spec declares network use without policy approval.",
+      "receipt_summary": {
+        "alert_codes": [
+          "command_policy_rejected",
+          "missing_dispatch"
+        ],
+        "alert_count": 2,
+        "dag_error": {
+          "active_goal_hash": "sha256:rw-sanity-project-dag-command-policy-network",
+          "dag_id": "rw-sanity-project-dag-command-policy-network",
+          "evidence": {
+            "alert_codes": [
+              "command_policy_rejected",
+              "missing_dispatch"
+            ],
+            "alert_count": 2,
+            "errors": [
+              "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json requires network but command policy does not allow network"
+            ],
+            "primary_alert": {
+              "code": "command_policy_rejected",
+              "evidence": {
+                "errors": [
+                  "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json requires network but command policy does not allow network"
+                ]
+              },
+              "message": "Underlying handoff command loop did not pass.",
+              "severity": "BLOCK"
+            }
+          },
+          "failure_code": "command_policy_rejected",
+          "message": "Underlying handoff command loop did not pass.",
+          "proof_scope": {
+            "does_not_prove": [
+              "The recommended action has been executed.",
+              "The project agent accepted or applied the course correction.",
+              "Provider/model semantic quality."
+            ],
+            "proves": [
+              "Tau detected a blocked DAG execution.",
+              "Tau packaged the primary failure as a project-agent course-correction payload.",
+              "No DAG route, goal, target, or handoff was mutated by this error contract."
+            ]
+          },
+          "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/dag-receipt.json",
+          "recommended_action": {
+            "next_agent": "goal-guardian",
+            "reason": "Repair the command spec or trust policy before retrying the DAG.",
+            "type": "repair_command_policy"
+          },
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run",
+          "scheduler": "handoff-loop",
+          "schema": "tau.dag_error.v1",
+          "severity": "BLOCK",
+          "status": "BLOCKED",
+          "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-project-dag-command-policy-network"
+          },
+          "verdict": "COMMAND_POLICY_REJECTED"
+        },
+        "errors": [
+          "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-network-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json requires network but command policy does not allow network"
+        ],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {},
+        "node_count": 2,
+        "observed_edges": [],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [],
+        "status": "BLOCKED",
+        "verdict": "COMMAND_POLICY_REJECTED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:54Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_network_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_network_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "command_policy_rejected",
+              "missing_dispatch"
+            ],
+            "alert_count": 2,
+            "dag_error": {
+              "active_goal_hash": "sha256:rw-sanity-project-dag-command-policy-mutation",
+              "dag_id": "rw-sanity-project-dag-command-policy-mutation",
+              "evidence": {
+                "alert_codes": [
+                  "command_policy_rejected",
+                  "missing_dispatch"
+                ],
+                "alert_count": 2,
+                "errors": [
+                  "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+                ],
+                "primary_alert": {
+                  "code": "command_policy_rejected",
+                  "evidence": {
+                    "errors": [
+                      "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+                    ]
+                  },
+                  "message": "Underlying handoff command loop did not pass.",
+                  "severity": "BLOCK"
+                }
+              },
+              "failure_code": "command_policy_rejected",
+              "message": "Underlying handoff command loop did not pass.",
+              "proof_scope": {
+                "does_not_prove": [
+                  "The recommended action has been executed.",
+                  "The project agent accepted or applied the course correction.",
+                  "Provider/model semantic quality."
+                ],
+                "proves": [
+                  "Tau detected a blocked DAG execution.",
+                  "Tau packaged the primary failure as a project-agent course-correction payload.",
+                  "No DAG route, goal, target, or handoff was mutated by this error contract."
+                ]
+              },
+              "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/dag-receipt.json",
+              "recommended_action": {
+                "next_agent": "goal-guardian",
+                "reason": "Repair the command spec or trust policy before retrying the DAG.",
+                "type": "repair_command_policy"
+              },
+              "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run",
+              "scheduler": "handoff-loop",
+              "schema": "tau.dag_error.v1",
+              "severity": "BLOCK",
+              "status": "BLOCKED",
+              "target": {
+                "repo": "grahama1970/tau",
+                "target": "scratch-project-dag-command-policy-mutation"
+              },
+              "verdict": "COMMAND_POLICY_REJECTED"
+            },
+            "errors": [
+              "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+            ],
+            "live": true,
+            "mocked": false,
+            "node_attempts": {},
+            "node_count": 2,
+            "observed_edges": [],
+            "ok": false,
+            "provider_live": false,
+            "reviewer_verdicts": [],
+            "scheduler": "handoff-loop",
+            "schema": "tau.dag_receipt.v1",
+            "selected_agents": [],
+            "status": "BLOCKED",
+            "verdict": "COMMAND_POLICY_REJECTED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_mutation_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_mutation_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.project_dag_command_policy_mutation_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "dag-run",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/dag-contract.json",
+        "--receipt-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run",
+        "--agents-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/agents"
+      ],
+      "completed_at": "2026-07-05T16:39:55Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "COMMAND_POLICY_REJECTED",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau returns a project-agent-readable command_policy_rejected DAG error when a command spec declares mutation without policy approval.",
+      "receipt_summary": {
+        "alert_codes": [
+          "command_policy_rejected",
+          "missing_dispatch"
+        ],
+        "alert_count": 2,
+        "dag_error": {
+          "active_goal_hash": "sha256:rw-sanity-project-dag-command-policy-mutation",
+          "dag_id": "rw-sanity-project-dag-command-policy-mutation",
+          "evidence": {
+            "alert_codes": [
+              "command_policy_rejected",
+              "missing_dispatch"
+            ],
+            "alert_count": 2,
+            "errors": [
+              "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+            ],
+            "primary_alert": {
+              "code": "command_policy_rejected",
+              "evidence": {
+                "errors": [
+                  "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+                ]
+              },
+              "message": "Underlying handoff command loop did not pass.",
+              "severity": "BLOCK"
+            }
+          },
+          "failure_code": "command_policy_rejected",
+          "message": "Underlying handoff command loop did not pass.",
+          "proof_scope": {
+            "does_not_prove": [
+              "The recommended action has been executed.",
+              "The project agent accepted or applied the course correction.",
+              "Provider/model semantic quality."
+            ],
+            "proves": [
+              "Tau detected a blocked DAG execution.",
+              "Tau packaged the primary failure as a project-agent course-correction payload.",
+              "No DAG route, goal, target, or handoff was mutated by this error contract."
+            ]
+          },
+          "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/dag-receipt.json",
+          "recommended_action": {
+            "next_agent": "goal-guardian",
+            "reason": "Repair the command spec or trust policy before retrying the DAG.",
+            "type": "repair_command_policy"
+          },
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run",
+          "scheduler": "handoff-loop",
+          "schema": "tau.dag_error.v1",
+          "severity": "BLOCK",
+          "status": "BLOCKED",
+          "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-project-dag-command-policy-mutation"
+          },
+          "verdict": "COMMAND_POLICY_REJECTED"
+        },
+        "errors": [
+          "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+        ],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {},
+        "node_count": 2,
+        "observed_edges": [],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [],
+        "status": "BLOCKED",
+        "verdict": "COMMAND_POLICY_REJECTED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:55Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_mutation_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.project_dag_command_policy_mutation_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "preview_hash_mismatch"
+            ],
+            "alert_count": 1,
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "schema": "tau.dag_expansion_apply_receipt.v1",
+            "status": "BLOCKED",
+            "verdict": "PREVIEW_HASH_MISMATCH"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.dag_expansion_apply_tampered_preview_fail_closed",
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "\nimport json\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\ncontract = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/dag-contract.json')\nproposal = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/proposal.json')\nvalidation_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/validation-receipt.json')\npolicy_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/policy-receipt.json')\napply_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/apply-receipt.json')\npreview = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/expanded-dag.preview.json')\nout = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/expanded-dag.json')\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"dag-expansion-validate\",\n    \"--dag-contract\",\n    str(contract),\n    \"--proposal\",\n    str(proposal),\n    \"--receipt\",\n    str(validation_receipt),\n    \"--preview\",\n    str(preview),\n], 0)\nrun([\n    *uv_tau,\n    \"dag-expansion-policy\",\n    \"--validation-receipt\",\n    str(validation_receipt),\n    \"--receipt\",\n    str(policy_receipt),\n], 0)\npayload = json.loads(preview.read_text(encoding=\"utf-8\"))\npayload[\"nodes\"].append({\n    \"id\": \"tampered\",\n    \"agent\": \"validator\",\n    \"executor\": \"local\",\n    \"max_attempts\": 1,\n    \"required_evidence\": [\"tampered_receipt\"],\n})\npayload[\"edges\"].append({\"from\": \"validator\", \"to\": \"tampered\"})\npreview.write_text(json.dumps(payload, indent=2, sort_keys=True) + \"\\n\", encoding=\"utf-8\")\ncompleted = run([\n    *uv_tau,\n    \"dag-expansion-apply\",\n    \"--validation-receipt\",\n    str(validation_receipt),\n    \"--policy-receipt\",\n    str(policy_receipt),\n    \"--out\",\n    str(out),\n    \"--receipt\",\n    str(apply_receipt),\n], 1)\nraise SystemExit(completed.returncode)\n"
+      ],
+      "completed_at": "2026-07-05T16:39:57Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "PREVIEW_HASH_MISMATCH",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-expansion-tampered-preview/apply-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau validates an adaptive DAG expansion, records policy, then refuses to apply a tampered preview whose sha256 no longer matches validation.",
+      "receipt_summary": {
+        "alert_codes": [
+          "preview_hash_mismatch"
+        ],
+        "alert_count": 1,
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "schema": "tau.dag_expansion_apply_receipt.v1",
+        "status": "BLOCKED",
+        "verdict": "PREVIEW_HASH_MISMATCH"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:55Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "missing_approval_receipt"
+            ],
+            "alert_count": 1,
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "schema": "tau.dag_route_memory_sync_receipt.v1",
+            "status": "BLOCKED",
+            "verdict": "MISSING_APPROVAL_RECEIPT"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.dag_route_memory_apply_requires_approval",
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\nsignal = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-route-memory-approval/dag-signal-receipt.json')\ncandidate_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-route-memory-approval/candidate-receipt.json')\nsync_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-route-memory-approval/sync-receipt.json')\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"dag-route-memory-candidates\",\n    \"--signal-receipt\",\n    str(signal),\n    \"--receipt\",\n    str(candidate_receipt),\n], 0)\ncompleted = run([\n    *uv_tau,\n    \"dag-route-memory-sync\",\n    \"--candidate-receipt\",\n    str(candidate_receipt),\n    \"--receipt\",\n    str(sync_receipt),\n    \"--apply\",\n], 1)\nraise SystemExit(completed.returncode)\n"
+      ],
+      "completed_at": "2026-07-05T16:39:58Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "MISSING_APPROVAL_RECEIPT",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/dag-route-memory-approval/sync-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau projects route-memory candidates locally, then blocks Memory sync apply when no memory_upsert approval receipt is supplied.",
+      "receipt_summary": {
+        "alert_codes": [
+          "missing_approval_receipt"
+        ],
+        "alert_count": 1,
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "schema": "tau.dag_route_memory_sync_receipt.v1",
+        "status": "BLOCKED",
+        "verdict": "MISSING_APPROVAL_RECEIPT"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:57Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "errors": [
+              "preflight is required by policy but --preflight-ready was not supplied",
+              "redaction receipt is required by policy",
+              "approval receipt is required by policy"
+            ],
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "provider_live": false,
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "BLOCKED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.github_apply_policy_missing_gates_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.github_apply_policy_missing_gates_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.github_apply_policy_missing_gates_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "github-apply-policy-check",
+        "--projection",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/github-apply-policy-missing-gates/projection.json",
+        "--policy",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/github-apply-policy-missing-gates/github-apply-policy.json",
+        "--receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/github-apply-policy-missing-gates/github-apply-policy-receipt.json"
+      ],
+      "completed_at": "2026-07-05T16:39:59Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/github-apply-policy-missing-gates/github-apply-policy-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a GitHub apply projection when policy-required approval, preflight, and redaction gates are missing.",
+      "receipt_summary": {
+        "errors": [
+          "preflight is required by policy but --preflight-ready was not supplied",
+          "redaction receipt is required by policy",
+          "approval receipt is required by policy"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "schema": "tau.github_apply_policy_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:58Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.github_apply_policy_missing_gates_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.github_apply_policy_missing_gates_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "errors": [],
+            "live": true,
+            "mocked": false,
+            "ok": true,
+            "provider_live": false,
+            "schema": "tau.browser_cdp_proof.v1",
+            "status": "PASS",
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.browser_cdp_proof.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.browser_cdp_proof.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.browser_cdp_proof",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "browser-cdp-proof",
+        "--out-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/browser-cdp-proof",
+        "--run-id",
+        "20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705-browser-cdp-proof"
+      ],
+      "completed_at": "2026-07-05T16:40:00Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": "PASS",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau opens a local proof page through Surf browser transport, observes required Tau proof text, and records a screenshot artifact.",
+      "receipt_summary": {
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "schema": "tau.browser_cdp_proof.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T16:39:59Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.browser_cdp_proof.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705/logs/advanced.browser_cdp_proof.stdout.txt",
+      "timeout_seconds": 90
+    }
+  ],
+  "completed_at": "2026-07-05T16:40:00Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 7
+    },
+    "medium": {
+      "PASS": 2
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705",
+  "run_id": "20260705T163952Z-tau-broad-hardening-regression-with-approved-gc-20260705",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced",
+    "medium"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-05T16:40:00Z"
+}
