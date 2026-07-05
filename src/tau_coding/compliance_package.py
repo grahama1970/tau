@@ -42,6 +42,7 @@ RECEIPT_DIRECTORIES = {
     "herdr-lease-receipts": ("herdr-lease", "workspace-lease", "session-ownership"),
     "github-apply-policy-receipts": ("github-apply-policy",),
     "browser-cdp-proof-receipts": ("browser-cdp-proof",),
+    "sandbox-receipts": ("sandbox",),
 }
 
 

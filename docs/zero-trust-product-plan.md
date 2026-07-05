@@ -232,6 +232,15 @@ signed + policy-valid + boundary-valid = proof candidate
 
 Policy metadata is not enough. High-stakes mode needs an execution boundary.
 
+Status: first fail-closed runtime gate implemented as `tau sandbox-run`. Tau
+checks zero-trust local-only policy and data-boundary compatibility, probes a
+Bubblewrap network namespace, and only executes the payload command if the
+backend probe succeeds. On hosts where Bubblewrap or network namespaces are not
+permitted, Tau emits `tau.sandbox_run_receipt.v1` with
+`sandbox_backend_unavailable` and `command_executed:false`. This is a runtime
+containment gate, not proof of ITAR compliance, legal sufficiency, human
+identity, provider/model safety, or immunity to host/backend escape flaws.
+
 Build:
 
 ```text
