@@ -761,7 +761,14 @@ def validate_command_dispatch_spec(
         raise ValueError(f"{label} timeout_s must be a positive number")
     cwd_value = payload.get("cwd")
     cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
-    return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
+    return {
+        "command": command,
+        "timeout_s": timeout_s,
+        "cwd": cwd,
+        "requires_network": _bool(payload.get("requires_network")),
+        "mutates": _bool(payload.get("mutates")),
+        "requires_clean_worktree": _bool(payload.get("requires_clean_worktree")),
+    }
 
 
 def load_command_spec_policy(path: Path) -> dict[str, object]:
@@ -818,12 +825,40 @@ def validate_command_dispatch_spec_policy(
             raise ValueError(
                 f"{label} cwd {resolved_cwd} is outside allowed command policy cwd roots"
             )
+    if spec.get("requires_network") is True and policy.get("allows_network") is not True:
+        raise ValueError(f"{label} requires network but command policy does not allow network")
+    if spec.get("mutates") is True and policy.get("allows_mutation") is not True:
+        raise ValueError(f"{label} mutates state but command policy does not allow mutation")
+    if policy.get("requires_clean_worktree") is True or spec.get("requires_clean_worktree") is True:
+        _validate_clean_worktree(policy_dir=policy_dir, label=label)
 
 
 def _string_list(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, str) and item]
+
+
+def _bool(value: object) -> bool:
+    return value is True
+
+
+def _validate_clean_worktree(*, policy_dir: Path, label: str) -> None:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(policy_dir), "status", "--porcelain"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ValueError(f"{label} clean worktree check failed: {exc}") from exc
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        raise ValueError(f"{label} clean worktree check failed: {detail}")
+    if completed.stdout.strip():
+        raise ValueError(f"{label} requires a clean git worktree")
 
 
 def _resolve_policy_path(path: Path, policy_dir: Path) -> Path:

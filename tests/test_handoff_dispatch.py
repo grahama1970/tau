@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -374,6 +375,128 @@ def test_load_agent_dispatch_command_spec_blocks_cwd_outside_policy_root(
         assert "is outside allowed command policy cwd roots" in str(exc)
     else:
         raise AssertionError("cwd outside policy root should fail closed")
+
+
+def test_load_agent_dispatch_command_spec_blocks_disallowed_network(
+    tmp_path: Path,
+) -> None:
+    agent_dir = tmp_path / "reviewer"
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    (agent_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('{}')"],
+                "requires_network": True,
+                "timeout_s": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+                "allows_network": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_agent_dispatch_command_spec(
+            tmp_path,
+            "reviewer",
+            command_policy_path=policy_path,
+        )
+    except ValueError as exc:
+        assert "requires network but command policy does not allow network" in str(exc)
+    else:
+        raise AssertionError("network command should fail closed")
+
+
+def test_load_agent_dispatch_command_spec_blocks_disallowed_mutation(
+    tmp_path: Path,
+) -> None:
+    agent_dir = tmp_path / "reviewer"
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    (agent_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('{}')"],
+                "mutates": True,
+                "timeout_s": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+                "allows_mutation": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_agent_dispatch_command_spec(
+            tmp_path,
+            "reviewer",
+            command_policy_path=policy_path,
+        )
+    except ValueError as exc:
+        assert "mutates state but command policy does not allow mutation" in str(exc)
+    else:
+        raise AssertionError("mutating command should fail closed")
+
+
+def test_load_agent_dispatch_command_spec_blocks_dirty_worktree(
+    tmp_path: Path,
+) -> None:
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    dirty_file = tmp_path / "dirty.txt"
+    dirty_file.write_text("dirty\n", encoding="utf-8")
+    agent_dir = tmp_path / "reviewer"
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    (agent_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('{}')"],
+                "requires_clean_worktree": True,
+                "timeout_s": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_agent_dispatch_command_spec(
+            tmp_path,
+            "reviewer",
+            command_policy_path=policy_path,
+        )
+    except ValueError as exc:
+        assert "requires a clean git worktree" in str(exc)
+    else:
+        raise AssertionError("dirty worktree should fail closed")
 
 
 def test_load_agent_dispatch_command_spec_from_overlay_requires_registry_entry(
