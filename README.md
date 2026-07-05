@@ -550,6 +550,17 @@ minutes, Tau must stop the local loop. It must write a help bundle with the
 objective, primary proof command, files touched, commands run, failing output,
 artifact paths, current hypothesis, and one narrow question.
 
+Tau also treats blocked-agent test churn as a drift signal. If an orchestrated
+subagent is failing and its observable output devolves into non-essential test
+runs without the required task evidence, the bounded ready-queue scheduler stops
+normal retry and writes a `tau.course_correction.v1` artifact. That artifact
+requires a blocker report naming the blocker, what was attempted, why more test
+churn is not progress, the next non-test action, and any required search
+receipt. After two failed attempts with retry budget remaining, Tau requires
+`$brave-search` before another local attempt; it records the failed node,
+attempt count, search query, and Brave Search command as durable course
+correction input, not closure proof.
+
 That hard-stop path is Memory-first:
 
 ```text
