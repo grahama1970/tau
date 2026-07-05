@@ -167,6 +167,46 @@ def test_summarize_receipt_includes_generic_dag_node_timing() -> None:
     }
 
 
+def test_summarize_receipt_includes_github_apply_policy_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "actions": ["comment", "label"],
+            "requirements": {
+                "approval_packet": True,
+                "preflight": True,
+                "redaction": True,
+            },
+            "preflight_ready": True,
+            "errors": [],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.github_apply_policy_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "actions": ["comment", "label"],
+        "requirements": {
+            "approval_packet": True,
+            "preflight": True,
+            "redaction": True,
+        },
+        "preflight_ready": True,
+        "errors": [],
+    }
+
+
 def test_summarize_receipt_includes_project_dag_fields() -> None:
     module = _load_runner_module()
 

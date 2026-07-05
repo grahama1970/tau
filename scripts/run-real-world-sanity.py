@@ -1265,6 +1265,32 @@ def build_checks(
             output_receipt=github_apply_policy["receipt"],
         ),
         Check(
+            check_id="advanced.github_apply_policy_all_gates_pass",
+            level="advanced",
+            purpose=(
+                "Tau allows a GitHub apply projection to pass local policy only when "
+                "approval, preflight, and redaction evidence are all supplied."
+            ),
+            command=[
+                *uv_tau,
+                "github-apply-policy-check",
+                "--projection",
+                str(github_apply_policy["positive_projection"]),
+                "--policy",
+                str(github_apply_policy["positive_policy"]),
+                "--receipt",
+                str(github_apply_policy["positive_receipt"]),
+                "--approval-receipt",
+                str(github_apply_policy["positive_approval"]),
+                "--redaction-receipt",
+                str(github_apply_policy["positive_redaction"]),
+                "--preflight-ready",
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            output_receipt=github_apply_policy["positive_receipt"],
+        ),
+        Check(
             check_id="advanced.provider_readiness",
             level="advanced",
             purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
@@ -2132,7 +2158,9 @@ raise SystemExit(completed.returncode)
 
 def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "github-apply-policy-missing-gates"
+    positive_dir = run_dir / "github-apply-policy-all-gates"
     fixture_dir.mkdir(parents=True, exist_ok=True)
+    positive_dir.mkdir(parents=True, exist_ok=True)
     projection = {
         "schema": "tau.agent_handoff_projection_receipt.v1",
         "ok": True,
@@ -2158,10 +2186,45 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "requires_preflight": True,
         "requires_redaction": True,
     }
+    positive_projection_path = positive_dir / "projection.json"
+    positive_redacted_projection_path = positive_dir / "projection.redacted.json"
+    approval_receipt = {
+        "schema": "tau.approval_gate_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": True,
+        "approved": True,
+        "requested_action": "github_apply",
+        "errors": [],
+    }
+    redaction_receipt = {
+        "schema": "tau.github_projection_redaction_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": True,
+        "projection": str(positive_projection_path.resolve()),
+        "redacted_projection": str(positive_redacted_projection_path.resolve()),
+        "redaction_count": 1,
+        "errors": [],
+    }
     return {
         "projection": write_json(fixture_dir / "projection.json", projection),
         "policy": write_json(fixture_dir / "github-apply-policy.json", policy),
         "receipt": fixture_dir / "github-apply-policy-receipt.json",
+        "positive_projection": write_json(positive_projection_path, projection),
+        "positive_redacted_projection": write_json(positive_redacted_projection_path, projection),
+        "positive_policy": write_json(positive_dir / "github-apply-policy.json", policy),
+        "positive_approval": write_json(
+            positive_dir / "approval-gate-receipt.json",
+            approval_receipt,
+        ),
+        "positive_redaction": write_json(
+            positive_dir / "github-redaction-receipt.json",
+            redaction_receipt,
+        ),
+        "positive_receipt": positive_dir / "github-apply-policy-receipt.json",
     }
 
 
@@ -3992,6 +4055,9 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "observed_edges",
         "node_attempts",
         "reviewer_verdicts",
+        "actions",
+        "requirements",
+        "preflight_ready",
         "dag_error",
         "errors",
     )
