@@ -915,6 +915,53 @@ def test_run_status_summarizes_github_apply_policy_receipt(tmp_path: Path) -> No
     }
 
 
+def test_run_status_summarizes_github_handoff_transport_receipt(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "github-transport-missing-policy-receipt.json",
+        {
+            "schema": "tau.github_handoff_transport_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dry_run": False,
+            "applied": False,
+            "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+            "commands": [],
+            "command_results": [],
+            "preflight_results": [],
+            "errors": [
+                "GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."
+            ],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is False
+    assert status["status"] == "BLOCKED"
+    assert status["detected_type"] == "github_handoff_transport"
+    assert status["missing_required_artifacts"] == []
+    assert status["github_handoff_transport"] == {
+        "schema": "tau.github_handoff_transport_receipt.v1",
+        "status": "BLOCKED",
+        "ok": False,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "dry_run": False,
+        "applied": False,
+        "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+        "command_count": 0,
+        "command_result_count": 0,
+        "preflight_result_count": 0,
+        "errors": [
+            "GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."
+        ],
+    }
+
+
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
