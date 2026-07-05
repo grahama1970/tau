@@ -1410,6 +1410,75 @@ def test_run_status_summarizes_project_dag_command_policy_rejection(
     assert status["evidence_validation"] is None
 
 
+def test_run_status_summarizes_project_dag_blocking_alerts(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "dag-receipt.json",
+        {
+            "schema": "tau.dag_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "verdict": "INVALID_COMMAND_JSON",
+            "mocked": False,
+            "live": True,
+            "dag_id": "project-dag-max-retries",
+            "goal": {"goal_hash": "sha256:goal"},
+            "target": {
+                "repo": "grahama1970/tau",
+                "target": "scratch-project-dag-max-retries",
+            },
+            "observed_edges": [],
+            "node_attempts": {"coder": 2, "research": 1},
+            "errors": [
+                "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+            ],
+            "alerts": [
+                {
+                    "code": "invalid_command_json",
+                    "severity": "BLOCK",
+                    "message": "Ready-queue node dispatch did not pass after max_attempts.",
+                    "evidence": {
+                        "node_id": "coder",
+                        "attempts": 2,
+                        "max_attempts": 2,
+                        "errors": [
+                            "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+                        ],
+                    },
+                }
+            ],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is False
+    assert status["status"] == "BLOCKED"
+    assert status["detected_type"] == "project_dag"
+    assert status["project_dag"]["goal_hash"] == "sha256:goal"
+    assert status["project_dag"]["alert_count"] == 1
+    assert status["project_dag"]["blocking_alert_count"] == 1
+    assert status["project_dag"]["alerts"] == [
+        {
+            "code": "invalid_command_json",
+            "severity": "BLOCK",
+            "message": "Ready-queue node dispatch did not pass after max_attempts.",
+            "node_id": "coder",
+            "attempts": 2,
+            "max_attempts": 2,
+            "errors": [
+                "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+            ],
+            "recommended_action": {
+                "next_agent": "goal-guardian",
+                "reason": "Ready-queue node dispatch did not pass after max_attempts.",
+                "type": "reroute",
+            },
+        }
+    ]
+
+
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

@@ -527,6 +527,7 @@ def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         return None
     node_attempts = payload.get("node_attempts")
     observed_edges = payload.get("observed_edges")
+    alerts = payload.get("alerts")
     return {
         "schema": payload.get("schema"),
         "status": payload.get("status"),
@@ -535,7 +536,7 @@ def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "mocked": payload.get("mocked"),
         "live": payload.get("live"),
         "dag_id": payload.get("dag_id"),
-        "goal_hash": payload.get("goal_hash"),
+        "goal_hash": _project_dag_goal_hash(payload),
         "target": payload.get("target"),
         "entry_node": payload.get("entry_node"),
         "terminal_nodes": payload.get("terminal_nodes"),
@@ -546,8 +547,60 @@ def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "missing_required_evidence": payload.get("missing_required_evidence"),
         "unexpected_edges": payload.get("unexpected_edges"),
         "course_correction_path": payload.get("course_correction_path"),
+        "alert_count": _count(alerts),
+        "blocking_alert_count": len(
+            [
+                alert
+                for alert in alerts or []
+                if isinstance(alert, dict)
+                and str(alert.get("severity") or "").upper() == "BLOCK"
+            ]
+        )
+        if isinstance(alerts, list)
+        else 0,
+        "alerts": [_project_dag_alert_summary(alert) for alert in alerts]
+        if isinstance(alerts, list)
+        else [],
         "error_count": _count(payload.get("errors")),
         "errors": payload.get("errors") if isinstance(payload.get("errors"), list) else [],
+    }
+
+
+def _project_dag_goal_hash(payload: dict[str, Any]) -> Any:
+    if payload.get("goal_hash"):
+        return payload.get("goal_hash")
+    goal = payload.get("goal")
+    if isinstance(goal, dict):
+        return goal.get("goal_hash")
+    return None
+
+
+def _project_dag_alert_summary(alert: Any) -> dict[str, Any]:
+    if not isinstance(alert, dict):
+        return {"message": str(alert)}
+    evidence = alert.get("evidence")
+    evidence = evidence if isinstance(evidence, dict) else {}
+    recommended_action = alert.get("recommended_action")
+    if not isinstance(recommended_action, dict):
+        severity = str(alert.get("severity") or "").upper()
+        recommended_action = (
+            {
+                "type": "reroute",
+                "next_agent": "goal-guardian",
+                "reason": alert.get("message") or "Project DAG alert requires review.",
+            }
+            if severity in {"BLOCK", "REROUTE"}
+            else None
+        )
+    return {
+        "code": alert.get("code"),
+        "severity": alert.get("severity"),
+        "message": alert.get("message"),
+        "node_id": evidence.get("node_id") or alert.get("node_id"),
+        "attempts": evidence.get("attempts") or alert.get("attempts"),
+        "max_attempts": evidence.get("max_attempts") or alert.get("max_attempts"),
+        "errors": evidence.get("errors") if isinstance(evidence.get("errors"), list) else [],
+        "recommended_action": recommended_action,
     }
 
 
