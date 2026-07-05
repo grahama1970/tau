@@ -13,6 +13,7 @@ import httpx
 DAG_ROUTE_MEMORY_CANDIDATE_RECEIPT_SCHEMA = "tau.dag_route_memory_candidate_receipt.v1"
 DAG_ROUTE_MEMORY_SYNC_RECEIPT_SCHEMA = "tau.dag_route_memory_sync_receipt.v1"
 SOURCE_DAG_SIGNAL_RECEIPT_SCHEMA = "tau.dag_signal_receipt.v1"
+APPROVAL_GATE_RECEIPT_SCHEMA = "tau.approval_gate_receipt.v1"
 
 
 def write_dag_route_memory_candidate_receipt(
@@ -100,13 +101,26 @@ def write_dag_route_memory_sync_receipt(
     collection: str = "tau_route_memory",
     memory_url: str = "http://127.0.0.1:8601",
     apply: bool = False,
+    approval_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     """Project candidate routes into Memory documents, optionally syncing through /upsert."""
 
     resolved_candidate_path = candidate_receipt_path.expanduser().resolve()
     resolved_receipt_path = receipt_path.expanduser().resolve()
+    resolved_approval_path = approval_receipt_path.expanduser().resolve() if approval_receipt_path else None
     candidate_receipt = _read_json_object(resolved_candidate_path, label="DAG route-memory candidate receipt")
-    alerts = _sync_gate_alerts(candidate_receipt, collection=collection)
+    approval_receipt = (
+        _read_json_object(resolved_approval_path, label="approval gate receipt")
+        if resolved_approval_path
+        else None
+    )
+    alerts = _sync_gate_alerts(
+        candidate_receipt,
+        collection=collection,
+        apply=apply,
+        approval_receipt=approval_receipt,
+        approval_receipt_path=resolved_approval_path,
+    )
     documents = _memory_documents(candidate_receipt, collection=collection) if not alerts else []
     sync_response: dict[str, Any] | None = None
     if apply and not alerts:
@@ -135,6 +149,10 @@ def write_dag_route_memory_sync_receipt(
         "provider_live": False,
         "candidate_receipt": str(resolved_candidate_path),
         "candidate_receipt_sha256": f"sha256:{_sha256(resolved_candidate_path)}",
+        "approval_receipt": str(resolved_approval_path) if resolved_approval_path else None,
+        "approval_receipt_sha256": f"sha256:{_sha256(resolved_approval_path)}"
+        if resolved_approval_path
+        else None,
         "receipt_path": str(resolved_receipt_path),
         "dag_id": candidate_receipt.get("dag_id"),
         "goal_hash": candidate_receipt.get("goal_hash"),
@@ -250,7 +268,14 @@ def _gate_candidates(
     return accepted, rejected
 
 
-def _sync_gate_alerts(candidate_receipt: dict[str, Any], *, collection: str) -> list[dict[str, Any]]:
+def _sync_gate_alerts(
+    candidate_receipt: dict[str, Any],
+    *,
+    collection: str,
+    apply: bool,
+    approval_receipt: dict[str, Any] | None,
+    approval_receipt_path: Path | None,
+) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     if candidate_receipt.get("schema") != DAG_ROUTE_MEMORY_CANDIDATE_RECEIPT_SCHEMA:
         alerts.append(
@@ -279,6 +304,71 @@ def _sync_gate_alerts(candidate_receipt: dict[str, Any], *, collection: str) -> 
                 "no_accepted_candidates",
                 "Route-memory sync requires at least one accepted candidate.",
                 {"accepted_candidate_count": candidate_receipt.get("accepted_candidate_count")},
+            )
+        )
+    if apply:
+        alerts.extend(
+            _approval_alerts(
+                approval_receipt=approval_receipt,
+                approval_receipt_path=approval_receipt_path,
+            )
+        )
+    return alerts
+
+
+def _approval_alerts(
+    *,
+    approval_receipt: dict[str, Any] | None,
+    approval_receipt_path: Path | None,
+) -> list[dict[str, Any]]:
+    if approval_receipt_path is None:
+        return [
+            _alert(
+                "BLOCK",
+                "missing_approval_receipt",
+                "Route-memory apply requires a PASS approval receipt for memory_upsert.",
+                {},
+            )
+        ]
+    if approval_receipt is None:
+        return [
+            _alert(
+                "BLOCK",
+                "approval_receipt_unreadable",
+                "Route-memory apply approval receipt could not be loaded.",
+                {"approval_receipt": str(approval_receipt_path)},
+            )
+        ]
+    alerts: list[dict[str, Any]] = []
+    if approval_receipt.get("schema") != APPROVAL_GATE_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_approval_receipt_schema",
+                "Route-memory apply requires tau.approval_gate_receipt.v1.",
+                {"schema": approval_receipt.get("schema")},
+            )
+        )
+    if approval_receipt.get("ok") is not True or approval_receipt.get("approved") is not True:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_receipt_not_pass",
+                "Route-memory apply requires approved=true and ok=true.",
+                {
+                    "ok": approval_receipt.get("ok"),
+                    "status": approval_receipt.get("status"),
+                    "approved": approval_receipt.get("approved"),
+                },
+            )
+        )
+    if approval_receipt.get("requested_action") != "memory_upsert":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_action_mismatch",
+                "Route-memory apply approval must be for requested_action=memory_upsert.",
+                {"requested_action": approval_receipt.get("requested_action")},
             )
         )
     return alerts

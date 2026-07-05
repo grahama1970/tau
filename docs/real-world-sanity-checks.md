@@ -101,6 +101,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.project_dag_ready_queue_mutating_branch_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares mutating behavior before branch locks exist.
 - `advanced.project_dag_ready_queue_provider_policy_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares provider-live behavior before provider branch policy exists.
 - `advanced.dag_expansion_apply_tampered_preview_fail_closed`: Tau validates and policy-checks an adaptive DAG expansion, then blocks `dag-expansion-apply` when the expanded preview artifact no longer matches the validation hash.
+- `advanced.dag_route_memory_apply_requires_approval`: Tau projects route-memory candidates locally, then blocks Memory sync apply when no `memory_upsert` approval receipt is supplied.
 - `advanced.provider_readiness`: Herdr allocates visible Codex and OpenCode provider panes, writes structured `tau.provider_session_state.v1` lifecycle records, and records post-check cleanup when provider cleanup is enabled.
 - `advanced.provider_dag_one_pass`: live visible Codex coder and OpenCode reviewer complete a one-pass scratch DAG.
 - `advanced.generic_provider_dag_adapter`: generic DAG executes a provider-backed adapter node and carries `provider_live` evidence in the generic run receipt.

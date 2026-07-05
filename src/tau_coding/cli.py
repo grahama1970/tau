@@ -1137,6 +1137,11 @@ def main(
                 collection=str(options["collection"]),
                 memory_url=str(options["memory_url"]),
                 apply=bool(options["apply"]),
+                approval_receipt_path=(
+                    Path(str(options["approval_receipt"]))
+                    if options["approval_receipt"] is not None
+                    else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -2457,16 +2462,23 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
         "collection": "tau_route_memory",
         "memory_url": "http://127.0.0.1:8601",
         "apply": False,
+        "approval_receipt": None,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--candidate-receipt", "--receipt", "--collection", "--memory-url"}:
+        if arg in {
+            "--candidate-receipt",
+            "--receipt",
+            "--collection",
+            "--memory-url",
+            "--approval-receipt",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
             key = arg.removeprefix("--").replace("-", "_")
-            if key in {"candidate_receipt", "receipt"}:
+            if key in {"candidate_receipt", "receipt", "approval_receipt"}:
                 options[key] = Path(args[index])
             else:
                 options[key] = args[index]
@@ -2481,7 +2493,8 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
             "Usage: tau dag-route-memory-sync "
             "--candidate-receipt <dag-route-memory-candidate-receipt.json> "
             "--receipt <dag-route-memory-sync-receipt.json> "
-            "[--collection <collection>] [--memory-url <url>] [--apply]"
+            "[--collection <collection>] [--memory-url <url>] "
+            "[--apply --approval-receipt <approval-gate-receipt.json>]"
         )
     return options
 

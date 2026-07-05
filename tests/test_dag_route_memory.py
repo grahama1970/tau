@@ -165,6 +165,42 @@ def test_route_memory_sync_blocks_failed_candidate_receipt(tmp_path: Path) -> No
     assert any(alert["code"] == "candidate_receipt_not_pass" for alert in receipt["alerts"])
 
 
+def test_route_memory_sync_apply_requires_approval_receipt(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+        apply=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert receipt["sync_status"] == "BLOCKED"
+    assert receipt["approval_receipt"] is None
+    assert any(alert["code"] == "missing_approval_receipt" for alert in receipt["alerts"])
+
+
+def test_route_memory_sync_apply_blocks_wrong_approval_action(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    approval_path = _write_approval_receipt(tmp_path, requested_action="github_apply")
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+        approval_receipt_path=approval_path,
+        apply=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert receipt["approval_receipt"] == str(approval_path.resolve())
+    assert receipt["approval_receipt_sha256"].startswith("sha256:")
+    assert any(alert["code"] == "approval_action_mismatch" for alert in receipt["alerts"])
+
+
 def test_cli_route_memory_sync_writes_dry_run_receipt(tmp_path: Path) -> None:
     candidate_path = _write_candidate_receipt(tmp_path)
     receipt_path = tmp_path / "sync.json"
@@ -188,6 +224,31 @@ def test_cli_route_memory_sync_writes_dry_run_receipt(tmp_path: Path) -> None:
     assert receipt_path.exists()
 
 
+def test_cli_route_memory_sync_apply_without_approval_exits_nonzero(
+    tmp_path: Path,
+) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    receipt_path = tmp_path / "sync.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-route-memory-sync",
+            "--candidate-receipt",
+            str(candidate_path),
+            "--receipt",
+            str(receipt_path),
+            "--apply",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["status"] == "BLOCKED"
+    assert payload["alerts"][0]["code"] == "missing_approval_receipt"
+    assert receipt_path.exists()
+
+
 def _write_signal(tmp_path: Path, payload: dict[str, object]) -> Path:
     path = tmp_path / "dag-signal-receipt.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -202,6 +263,23 @@ def _write_candidate_receipt(tmp_path: Path) -> Path:
         receipt_path=candidate_path,
     )
     return candidate_path
+
+
+def _write_approval_receipt(tmp_path: Path, *, requested_action: str) -> Path:
+    path = tmp_path / "approval-receipt.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "approved": True,
+                "requested_action": requested_action,
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
 
 
 def _signal_receipt() -> dict[str, object]:

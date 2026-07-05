@@ -231,6 +231,7 @@ def build_checks(
         spec_flag="mutates",
     )
     dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
+    route_memory_apply = create_route_memory_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
     generic_dag_stale_work_order_spec = create_generic_dag_stale_work_order_fixture(run_dir)
@@ -1173,6 +1174,29 @@ def build_checks(
             output_receipt=dag_expansion_tamper["apply_receipt"],
         ),
         Check(
+            check_id="advanced.dag_route_memory_apply_requires_approval",
+            level="advanced",
+            purpose=(
+                "Tau projects route-memory candidates locally, then blocks Memory "
+                "sync apply when no memory_upsert approval receipt is supplied."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                route_memory_apply_without_approval_command(
+                    uv_tau=uv_tau,
+                    signal=route_memory_apply["signal"],
+                    candidate_receipt=route_memory_apply["candidate_receipt"],
+                    sync_receipt=route_memory_apply["sync_receipt"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_APPROVAL_RECEIPT",
+            output_receipt=route_memory_apply["sync_receipt"],
+        ),
+        Check(
             check_id="advanced.provider_readiness",
             level="advanced",
             purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
@@ -1943,6 +1967,96 @@ completed = run([
     str(out),
     "--receipt",
     str(apply_receipt),
+], 1)
+raise SystemExit(completed.returncode)
+"""
+
+
+def create_route_memory_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "dag-route-memory-approval"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    signal = {
+        "schema": "tau.dag_signal_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "receipt_path": str(fixture_dir / "dag-signal-receipt.json"),
+        "source_dag_receipt": str(fixture_dir / "dag-receipt.json"),
+        "dag_id": "rw-sanity-route-memory",
+        "goal_hash": "sha256:rw-sanity-route-memory",
+        "source_ok": True,
+        "source_status": "PASS",
+        "source_verdict": "PASS",
+        "scheduler": "bounded-ready-queue",
+        "negative_signals": [],
+        "route_reinforcement_candidates": [
+            {
+                "from_node": "coder",
+                "from_agent": "coder",
+                "to_node": "reviewer",
+                "to_agent": "reviewer",
+                "confidence": 1.0,
+                "source": "deterministic_dag_receipt_pass",
+                "memory_sync_candidate": True,
+                "sync_status": "NOT_SYNCED",
+                "sync_reason": "first_slice_local_only",
+            }
+        ],
+    }
+    return {
+        "signal": write_json(fixture_dir / "dag-signal-receipt.json", signal),
+        "candidate_receipt": fixture_dir / "candidate-receipt.json",
+        "sync_receipt": fixture_dir / "sync-receipt.json",
+    }
+
+
+def route_memory_apply_without_approval_command(
+    *,
+    uv_tau: list[str],
+    signal: Path,
+    candidate_receipt: Path,
+    sync_receipt: Path,
+) -> str:
+    return f"""
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+signal = Path({str(signal)!r})
+candidate_receipt = Path({str(candidate_receipt)!r})
+sync_receipt = Path({str(sync_receipt)!r})
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-route-memory-candidates",
+    "--signal-receipt",
+    str(signal),
+    "--receipt",
+    str(candidate_receipt),
+], 0)
+completed = run([
+    *uv_tau,
+    "dag-route-memory-sync",
+    "--candidate-receipt",
+    str(candidate_receipt),
+    "--receipt",
+    str(sync_receipt),
+    "--apply",
 ], 1)
 raise SystemExit(completed.returncode)
 """
