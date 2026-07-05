@@ -776,6 +776,36 @@ def test_project_dag_memory_evidence_gate_blocks_inline_evidence(tmp_path: Path)
     assert receipt["dag_error"]["recommended_action"]["type"] == "repair_memory_intent"
 
 
+def test_project_dag_memory_evidence_gate_blocks_clarify_route(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(tmp_path, overrides={"route": "CLARIFY"})
+    evidence_case_path = _write_evidence_case(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MEMORY_ROUTE_NOT_DISPATCHABLE"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "memory_route_not_dispatchable"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "request_memory_clarification",
+        "next_agent": "human",
+        "reason": (
+            "Memory routed to clarification or deflection; resolve that "
+            "route before DAG dispatch."
+        ),
+    }
+
+
 def test_project_dag_memory_evidence_gate_blocks_missing_case_hash(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     memory_path = _write_memory_intent(tmp_path)

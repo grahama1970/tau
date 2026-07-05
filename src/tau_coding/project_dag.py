@@ -2134,12 +2134,20 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
                 "continuation."
             ),
         }
+    if normalized == "memory_route_not_dispatchable":
+        return {
+            "type": "request_memory_clarification",
+            "next_agent": "human",
+            "reason": (
+                "Memory routed to clarification or deflection; resolve that "
+                "route before DAG dispatch."
+            ),
+        }
     if normalized in {
         "missing_memory_intent",
         "invalid_memory_intent_schema",
         "memory_first_required",
         "missing_memory_route",
-        "memory_route_not_dispatchable",
         "memory_intent_low_confidence",
         "memory_intent_goal_hash_mismatch",
         "memory_intent_target_mismatch",

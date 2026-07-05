@@ -235,6 +235,16 @@ def build_checks(
         scenario="memory-evidence-inline",
         mutation="inline_evidence",
     )
+    project_dag_memory_evidence_clarify = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-clarify",
+        mutation="clarify_route",
+    )
+    project_dag_memory_evidence_missing_hash = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-missing-hash",
+        mutation="missing_case_hash",
+    )
     evidence_manifest_valid = create_evidence_manifest_valid_fixture(run_dir)
     project_dag_command_policy_network = create_project_dag_command_policy_fixture(
         run_dir,
@@ -1211,6 +1221,50 @@ def build_checks(
             expected_status="BLOCKED",
             expected_verdict="INLINE_MEMORY_EVIDENCE_REJECTED",
             output_receipt=project_dag_memory_evidence_inline["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_memory_evidence_gate_clarify_route_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when Memory routes "
+                "to CLARIFY instead of an actionable execution route."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_clarify["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_clarify["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_clarify["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MEMORY_ROUTE_NOT_DISPATCHABLE",
+            output_receipt=project_dag_memory_evidence_clarify["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_memory_evidence_gate_missing_case_hash_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when the separate "
+                "evidence case lacks a stable case hash."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_missing_hash["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_missing_hash["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_missing_hash["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_EVIDENCE_CASE_HASH",
+            output_receipt=project_dag_memory_evidence_missing_hash["run_dir"] / "dag-receipt.json",
         ),
         Check(
             check_id="advanced.project_dag_command_policy_network_fail_closed",
@@ -2201,6 +2255,11 @@ def create_project_dag_memory_evidence_fixture(
                 "statement": "Inline evidence must be rejected; use a separate evidence case.",
             }
         ]
+    elif mutation == "clarify_route":
+        memory_intent["route"] = "CLARIFY"
+        memory_intent["summary"] = "Memory needs human clarification before execution."
+    elif mutation == "missing_case_hash":
+        evidence_case.pop("case_sha256", None)
     else:  # pragma: no cover - fixture guard.
         raise AssertionError(f"unknown project DAG memory/evidence mutation: {mutation}")
     memory_intent_path = write_json(fixture_dir / "memory-intent.json", memory_intent)

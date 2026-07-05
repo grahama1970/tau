@@ -1,0 +1,43 @@
+{
+  "alert_codes": [
+    "memory_intent_gate_not_passed"
+  ],
+  "alert_count": 1,
+  "alerts": [
+    {
+      "code": "memory_intent_gate_not_passed",
+      "evidence": {
+        "memory_intent_status": "BLOCKED"
+      },
+      "message": "Evidence case cannot pass until memory_intent gate passes.",
+      "severity": "BLOCK"
+    }
+  ],
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-clarify",
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "payload_schema": "tau.evidence_case.v1",
+  "proof_scope": {
+    "does_not_prove": [
+      "Evidence-case semantic completeness.",
+      "Memory truth.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected a separate evidence case before DAG dispatch.",
+      "Evidence case goal, target, and policy/boundary references were checked."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234631Z-tau-memory-evidence-gate-expanded-fixed-20260705/memory-evidence-clarify-project-dag/run/evidence-case-gate-receipt.json",
+  "schema": "tau.evidence_case_gate_receipt.v1",
+  "source_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234631Z-tau-memory-evidence-gate-expanded-fixed-20260705/memory-evidence-clarify-project-dag/evidence-case.json",
+  "source_sha256": "sha256:5e6cac0f2169fef3b55ffdc193e08076f1c3e4fe2a8f0e48723124d722ab0f58",
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-clarify"
+  },
+  "timestamp": "2026-07-05T23:46:32Z"
+}
