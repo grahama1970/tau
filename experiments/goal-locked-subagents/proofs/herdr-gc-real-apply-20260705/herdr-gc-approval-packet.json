@@ -1,0 +1,20 @@
+{
+  "schema": "tau.human_approval_packet.v1",
+  "approved": true,
+  "action": "herdr_gc_apply",
+  "actor": {
+    "id": "human:graham",
+    "auth_method": "manual"
+  },
+  "target": {
+    "id": "tau-stale-herdr-workspaces",
+    "scope": "Tau-labeled stale Herdr workspaces only"
+  },
+  "reason": "Approve bounded real Herdr GC apply for stale Tau-owned workspaces after dry-run audit; protect focused/current workspaces.",
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/herdr-gc-audit-after-failure-stress-20260705/herdr-gc-receipt.json"
+  ],
+  "nonce": "herdr-gc-real-apply-20260705",
+  "signature": "manual-approval-recorded-in-chat",
+  "expires_at": "2026-07-06T00:00:00Z"
+}

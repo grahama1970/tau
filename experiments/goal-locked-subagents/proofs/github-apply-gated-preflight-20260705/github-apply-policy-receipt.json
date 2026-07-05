@@ -1,0 +1,75 @@
+{
+  "actions": [
+    "comment",
+    "label"
+  ],
+  "approval_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-approval-gate-receipt.json",
+  "approval_receipt_sha256": "ee62f81215e75dedaa4149540a0e6c1cdb1b3996d151a461658ddfebad6f0419",
+  "checks": [
+    {
+      "code": "repo_allowlist",
+      "ok": true,
+      "repo": "grahama1970/tau"
+    },
+    {
+      "code": "action_denylist",
+      "denied_hits": [],
+      "ok": true
+    },
+    {
+      "allowed_misses": [],
+      "code": "action_allowlist",
+      "ok": true
+    },
+    {
+      "code": "preflight_required",
+      "ok": true,
+      "required": true
+    },
+    {
+      "code": "redaction_receipt",
+      "ok": true
+    },
+    {
+      "code": "approval_receipt",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "policy": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-policy.json",
+  "policy_sha256": "cbd7ce240a906a61358deae532a5f8c718be72c4f54ab2205a8e5e3dc53b5edb",
+  "preflight_ready": true,
+  "projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json",
+  "projection_sha256": "60ebe038b93be8a5fafc374883fa2e7880b1420707afd3869727a5f8b9a8a7e5",
+  "proof_scope": {
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "GitHub auth actually succeeds.",
+      "Semantic safety of the projected public comment.",
+      "Human acceptance of the projection content."
+    ],
+    "proves": [
+      "A GitHub projection and apply policy were inspected deterministically.",
+      "Repo/action allowlists and denial checks were evaluated before apply.",
+      "Required approval, redaction, and preflight gates fail closed when missing."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-policy-receipt.json",
+  "redaction_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-redaction-receipt.json",
+  "redaction_receipt_sha256": "ca0c7a52a90d8a10493f93d133d273dd84947178227c60f6f208f0608f3d3b19",
+  "requirements": {
+    "approval_packet": true,
+    "preflight": true,
+    "redaction": true
+  },
+  "schema": "tau.github_apply_policy_receipt.v1",
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}

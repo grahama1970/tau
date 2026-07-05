@@ -1,0 +1,30 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "goal": "real_herdr_gc_apply_after_tau_hardening",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "commands": [
+    "uv run tau approval-gate-check --approval-packet experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705/herdr-gc-approval-packet.json --requested-action herdr_gc_apply --run-dir experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705",
+    "uv run tau herdr-cleanup gc --run-dir experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705",
+    "uv run tau herdr-cleanup gc --run-dir experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705 --apply --approval-receipt experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705/approval-gate-receipt.json",
+    "uv run tau herdr-cleanup gc --run-dir experiments/goal-locked-subagents/proofs/herdr-gc-real-post-audit-20260705"
+  ],
+  "artifacts": [
+    "herdr-gc-approval-packet.json",
+    "approval-gate-receipt.json",
+    "herdr-gc-receipt.json",
+    "../herdr-gc-real-post-audit-20260705/herdr-gc-receipt.json"
+  ],
+  "proves": [
+    "Tau required and accepted a PASS approval-gate receipt for real Herdr GC apply.",
+    "Tau closed two stale Tau-labeled Herdr workspaces through Herdr CLI/API.",
+    "Tau post-verified both closed workspaces with workspace_not_found.",
+    "A follow-up dry-run audit found zero stale Tau-labeled GC candidates."
+  ],
+  "does_not_prove": [
+    "Cleanup of arbitrary non-Tau Herdr workspaces.",
+    "Deletion of Git worktrees or local proof artifacts.",
+    "Provider/model semantic quality."
+  ]
+}

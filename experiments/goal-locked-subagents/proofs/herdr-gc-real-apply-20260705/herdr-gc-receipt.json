@@ -1,0 +1,157 @@
+{
+  "alerts": [],
+  "applied_action_count": 2,
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-provider-readiness",
+      "pane_count": 6,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w3J"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-provider-readiness",
+      "pane_count": 6,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w3N"
+    }
+  ],
+  "approval_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705/approval-gate-receipt.json",
+  "approval_receipt_sha256": "sha256:77c5d2c89e7930cc3223387263a59e6550622bac05b2cb7256d1a474ed7bea39",
+  "approval_required": true,
+  "candidate_count": 2,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-provider-readiness",
+      "pane_count": 6,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w3J"
+    },
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-provider-readiness",
+      "pane_count": 6,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w3N"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "list"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:list\",\"result\":{\"type\":\"workspace_list\",\"workspaces\":[{\"active_tab_id\":\"w11:t1\",\"agent_status\":\"working\",\"focused\":true,\"label\":\"chatterbox\",\"number\":1,\"pane_count\":6,\"tab_count\":6,\"workspace_id\":\"w11\"},{\"active_tab_id\":\"w3J:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-provider-readiness\",\"number\":2,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w3J\"},{\"active_tab_id\":\"w3N:t2\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-provider-readiness\",\"number\":3,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w3N\"}]}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w3J"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w3J"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w3J not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w3N"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w3N"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w3N not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "include_current_workspace": false,
+  "label_prefixes": [
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-"
+  ],
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "post_verified_absent_count": 2,
+  "proof_scope": {
+    "does_not_prove": [
+      "Cleanup of arbitrary non-Tau Herdr workspaces.",
+      "Deletion of Git worktrees or local proof artifacts.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
+      "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
+      "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+      "Tau Herdr GC apply requires an explicit approval receipt before mutation.",
+      "Apply mode verifies closed workspaces are no longer addressable through Herdr."
+    ]
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705",
+  "schema": "tau.herdr_gc_receipt.v1",
+  "skipped": [],
+  "skipped_count": 0,
+  "status": "PASS",
+  "timestamp": "2026-07-05T18:14:42Z",
+  "workspace_count": 3
+}

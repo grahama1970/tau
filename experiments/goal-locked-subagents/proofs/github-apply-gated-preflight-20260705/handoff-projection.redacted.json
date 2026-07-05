@@ -1,0 +1,22 @@
+{
+  "comment": {
+    "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: GitHub live mutation remains gated; this handoff exists to exercise Tau's GitHub projection, redaction, and policy chain without applying a public mutation.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop before live GitHub apply unless a human approval packet names repo grahama1970/tau and issue#47.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705/herdr-gc-receipt.json\",\n      \"experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-sync-receipt.json\",\n      \"experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-dry-run-receipt.json\"\n    ],\n    \"summary\": \"Tau hardening proof lanes produced bounded receipts for provider, DAG, Herdr cleanup, Memory route-memory sync, browser/CDP, and GitHub dry-run policy surfaces.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue#47\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:tau-broader-hardening-20260705\",\n    \"goal_id\": \"tau-broader-hardening\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Reviewer should inspect bounded proof artifacts and non-claims.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"Reviewer should inspect proof receipts before any public GitHub update is approved.\",\n  \"required_evidence\": [\n    \"reviewer verifies Herdr GC receipt\",\n    \"reviewer verifies Memory sync and readback receipt\",\n    \"human explicitly approves any live GitHub comment before --apply\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"Herdr GC apply closed stale Tau workspaces and post-verified absence.\",\n      \"Memory route-memory sync wrote one quality-gated route signal and readback found it.\",\n      \"GitHub transport is dry-run unless explicit apply approval names this target.\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"GitHub live mutation remains gated; this handoff exists to exercise Tau's GitHub projection, redaction, and policy chain without applying a public mutation.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop before live GitHub apply unless a human approval packet names repo grahama1970/tau and issue#47.\"\n}\n```\n"
+  },
+  "dry_run": true,
+  "errors": [],
+  "labels": {
+    "add": [
+      "agent-work",
+      "next:reviewer",
+      "executor:local"
+    ],
+    "remove": []
+  },
+  "next_agent": "reviewer",
+  "ok": true,
+  "schema": "tau.agent_handoff_projection_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}

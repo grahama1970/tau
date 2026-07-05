@@ -1,0 +1,30 @@
+{
+  "errors": [],
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json",
+  "projection_sha256": "60ebe038b93be8a5fafc374883fa2e7880b1420707afd3869727a5f8b9a8a7e5",
+  "proof_scope": {
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "Human approval for posting.",
+      "Semantic safety of the public comment body.",
+      "Exhaustive secret detection beyond the configured redaction patterns."
+    ],
+    "proves": [
+      "A GitHub projection artifact was inspected deterministically.",
+      "Sensitive-key values, local absolute paths, and known token patterns were redacted.",
+      "A separate redacted projection artifact was written for public GitHub transport review."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-redaction-receipt.json",
+  "redacted_projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.redacted.json",
+  "redacted_projection_sha256": "60ebe038b93be8a5fafc374883fa2e7880b1420707afd3869727a5f8b9a8a7e5",
+  "redaction_count": 0,
+  "redactions": [],
+  "review_required": false,
+  "schema": "tau.github_projection_redaction_receipt.v1",
+  "status": "PASS"
+}

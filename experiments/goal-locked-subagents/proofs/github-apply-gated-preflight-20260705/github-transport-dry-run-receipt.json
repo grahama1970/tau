@@ -1,0 +1,36 @@
+{
+  "applied": false,
+  "command_results": [],
+  "commands": [
+    [
+      "gh",
+      "issue",
+      "comment",
+      "47",
+      "--repo",
+      "grahama1970/tau",
+      "--body-file",
+      "-"
+    ],
+    [
+      "gh",
+      "issue",
+      "edit",
+      "47",
+      "--repo",
+      "grahama1970/tau",
+      "--add-label",
+      "agent-work,next:reviewer,executor:local"
+    ]
+  ],
+  "dry_run": true,
+  "errors": [],
+  "ok": true,
+  "preflight_results": [],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-dry-run-receipt.json",
+  "schema": "tau.github_handoff_transport_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}

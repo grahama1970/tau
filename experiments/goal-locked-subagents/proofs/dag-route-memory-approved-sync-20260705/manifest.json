@@ -1,0 +1,37 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "goal": "approved_live_route_memory_sync_after_tau_hardening",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "memory_url": "http://127.0.0.1:8601",
+  "memory_collection": "tau_route_memory",
+  "commands": [
+    "curl -sS -m 3 http://127.0.0.1:8601/health",
+    "uv run tau dag-route-memory-candidates --signal-receipt experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/dag-route-memory-approval/dag-signal-receipt.json --receipt experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-candidate-receipt.json",
+    "uv run tau approval-gate-check --approval-packet experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/memory-upsert-approval-packet.json --requested-action memory_upsert --run-dir experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705",
+    "uv run tau dag-route-memory-sync --candidate-receipt experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-candidate-receipt.json --receipt experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-sync-receipt.json --collection tau_route_memory --memory-url http://127.0.0.1:8601 --apply --approval-receipt experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/approval-gate-receipt.json",
+    "POST http://127.0.0.1:8601/list {\"collection\":\"tau_route_memory\",\"limit\":100}"
+  ],
+  "artifacts": [
+    "memory-upsert-approval-packet.json",
+    "approval-gate-receipt.json",
+    "dag-route-memory-candidate-receipt.json",
+    "dag-route-memory-sync-receipt.json",
+    "memory-list-response.json",
+    "memory-readback.json"
+  ],
+  "proves": [
+    "Local Memory was reachable at http://127.0.0.1:8601.",
+    "Tau quality-gated one DAG route-memory candidate.",
+    "Tau required a PASS memory_upsert approval receipt before /upsert.",
+    "Tau wrote one route-memory document to the tau_route_memory collection.",
+    "A live Memory /list readback found the expected document key."
+  ],
+  "does_not_prove": [
+    "Future route correctness.",
+    "Runtime route mutation.",
+    "Adaptive DAG expansion application.",
+    "Provider/model semantic quality."
+  ]
+}

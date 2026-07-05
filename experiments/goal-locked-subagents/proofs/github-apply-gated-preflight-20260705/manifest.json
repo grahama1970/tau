@@ -1,0 +1,42 @@
+{
+  "schema": "tau.proof_manifest.v1",
+  "goal": "github_apply_gate_preflight_without_public_mutation",
+  "mocked": false,
+  "live": "mixed",
+  "provider_live": false,
+  "github_repo": "grahama1970/tau",
+  "github_target": "issue#47",
+  "commands": [
+    "gh issue list --repo grahama1970/tau --state open --limit 10 --json number,title,state,url",
+    "uv run tau handoff-project experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-github-issue-47.json --active-goal-hash sha256:tau-broader-hardening-20260705 --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json",
+    "uv run tau handoff-github-transport experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-github-issue-47.json --active-goal-hash sha256:tau-broader-hardening-20260705 --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-dry-run-receipt.json",
+    "uv run tau github-redact-projection --projection experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json --out experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.redacted.json --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-redaction-receipt.json",
+    "uv run tau approval-gate-check --approval-packet experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-approval-packet.json --requested-action github_apply --run-dir experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705 --output experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-approval-gate-receipt.json",
+    "uv run tau github-apply-policy-check --projection experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json --policy experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-policy.json --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-policy-receipt.json --approval-receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-approval-gate-receipt.json --redaction-receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-redaction-receipt.json --preflight-ready",
+    "gh auth status --hostname github.com",
+    "gh issue view 47 --repo grahama1970/tau --json number,title,state,url"
+  ],
+  "artifacts": [
+    "handoff-github-issue-47.json",
+    "handoff-projection.json",
+    "github-transport-dry-run-receipt.json",
+    "github-redaction-receipt.json",
+    "github-approval-gate-receipt.json",
+    "github-apply-policy-receipt.json",
+    "gh-auth-status.txt",
+    "gh-issue-47-view.json"
+  ],
+  "proves": [
+    "Tau rendered a GitHub issue#47 comment and label transport in dry-run mode.",
+    "Tau redaction inspected the projection and wrote a redacted projection artifact.",
+    "Tau validated a github_apply approval-gate receipt for the target.",
+    "Tau apply-policy checks accepted repo/action allowlist, denylist, approval, redaction, and preflight requirements.",
+    "Read-only gh auth and issue-view commands succeeded."
+  ],
+  "does_not_prove": [
+    "Live GitHub mutation.",
+    "A public issue comment was posted.",
+    "Human acceptance of the comment content.",
+    "The transport command internally enforces github-apply-policy-check before --apply."
+  ]
+}

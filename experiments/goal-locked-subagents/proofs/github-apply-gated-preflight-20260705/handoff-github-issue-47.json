@@ -1,0 +1,42 @@
+{
+  "schema": "tau.agent_handoff.v1",
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  },
+  "goal": {
+    "goal_id": "tau-broader-hardening",
+    "goal_version": 1,
+    "goal_hash": "sha256:tau-broader-hardening-20260705"
+  },
+  "previous_subagent": "coder",
+  "context": {
+    "summary": "Tau hardening proof lanes produced bounded receipts for provider, DAG, Herdr cleanup, Memory route-memory sync, browser/CDP, and GitHub dry-run policy surfaces.",
+    "artifacts": [
+      "experiments/goal-locked-subagents/proofs/herdr-gc-real-apply-20260705/herdr-gc-receipt.json",
+      "experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-sync-receipt.json",
+      "experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-dry-run-receipt.json"
+    ]
+  },
+  "result": {
+    "status": "COMPLETED",
+    "summary": "GitHub live mutation remains gated; this handoff exists to exercise Tau's GitHub projection, redaction, and policy chain without applying a public mutation.",
+    "evidence": [
+      "Herdr GC apply closed stale Tau workspaces and post-verified absence.",
+      "Memory route-memory sync wrote one quality-gated route signal and readback found it.",
+      "GitHub transport is dry-run unless explicit apply approval names this target."
+    ]
+  },
+  "rationale": "Reviewer should inspect proof receipts before any public GitHub update is approved.",
+  "next_agent": {
+    "name": "reviewer",
+    "executor": "local",
+    "reason": "Reviewer should inspect bounded proof artifacts and non-claims."
+  },
+  "required_evidence": [
+    "reviewer verifies Herdr GC receipt",
+    "reviewer verifies Memory sync and readback receipt",
+    "human explicitly approves any live GitHub comment before --apply"
+  ],
+  "stop_condition": "Stop before live GitHub apply unless a human approval packet names repo grahama1970/tau and issue#47."
+}

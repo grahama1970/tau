@@ -29,6 +29,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     browser_cdp_proof = _read_optional_json(artifacts["browser_cdp_proof"])
     dag_stress_suite = _read_optional_json(artifacts["dag_stress_suite"])
     dag_stress_campaign = _read_optional_json(artifacts["dag_stress_campaign"])
+    github_apply_policy = _read_optional_json(artifacts["github_apply_policy"])
     lifecycle_states = _load_lifecycle_states(resolved, runtime_manifest, run_receipt)
     readiness_records = _load_readiness_records(resolved, runtime_manifest, run_receipt)
     events_path = _event_path(resolved, run_receipt, runtime_manifest)
@@ -43,6 +44,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         browser_cdp_proof=browser_cdp_proof,
         dag_stress_suite=dag_stress_suite,
         dag_stress_campaign=dag_stress_campaign,
+        github_apply_policy=github_apply_policy,
     )
     status = _overall_status(
         run_receipt,
@@ -54,6 +56,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         browser_cdp_proof,
         dag_stress_suite,
         dag_stress_campaign,
+        github_apply_policy,
     )
     missing = [
         name
@@ -79,6 +82,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             browser_cdp_proof,
             dag_stress_suite,
             dag_stress_campaign,
+            github_apply_policy,
         ),
         "run_dir": str(resolved),
         "detected_type": detected_type,
@@ -109,6 +113,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "browser_cdp_proof": _browser_cdp_proof_summary(browser_cdp_proof),
         "dag_stress": _dag_stress_summary(dag_stress_suite),
         "dag_stress_campaign": _dag_stress_campaign_summary(dag_stress_campaign),
+        "github_apply_policy": _github_apply_policy_summary(github_apply_policy),
         "proof_scope": {
             "proves": [
                 "Tau can summarize known run artifacts from one run directory",
@@ -141,6 +146,7 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "browser_cdp_proof": run_dir / "browser-cdp-proof" / "browser-cdp-proof-receipt.json",
         "dag_stress_suite": run_dir / "suite-receipt.json",
         "dag_stress_campaign": run_dir / "campaign-receipt.json",
+        "github_apply_policy": run_dir / "github-apply-policy-receipt.json",
     }
 
 
@@ -164,6 +170,7 @@ def _missing_required_artifact(
         "provider_dag_planner",
         "real_world_sanity",
         "browser_cdp_proof",
+        "github_apply_policy",
     }:
         return False
     if name == "runtime_manifest" and detected_type in {
@@ -176,6 +183,7 @@ def _missing_required_artifact(
         "provider_dag_planner",
         "real_world_sanity",
         "browser_cdp_proof",
+        "github_apply_policy",
     }:
         return False
     return True
@@ -192,6 +200,7 @@ def _detected_type(
     browser_cdp_proof: dict[str, Any],
     dag_stress_suite: dict[str, Any],
     dag_stress_campaign: dict[str, Any],
+    github_apply_policy: dict[str, Any],
 ) -> str:
     schema = str(
         run_receipt.get("schema")
@@ -202,6 +211,7 @@ def _detected_type(
         or browser_cdp_proof.get("schema")
         or dag_stress_suite.get("schema")
         or dag_stress_campaign.get("schema")
+        or github_apply_policy.get("schema")
         or runtime_manifest.get("schema")
         or ""
     )
@@ -229,6 +239,8 @@ def _detected_type(
         return "dag_stress"
     if schema == "tau.dag_stress_campaign_receipt.v1":
         return "dag_stress_campaign"
+    if schema == "tau.github_apply_policy_receipt.v1":
+        return "github_apply_policy"
     if schema:
         return schema.removeprefix("tau.").removesuffix(".v1")
     return "unknown"
@@ -244,6 +256,7 @@ def _overall_status(
     browser_cdp_proof: dict[str, Any],
     dag_stress_suite: dict[str, Any],
     dag_stress_campaign: dict[str, Any],
+    github_apply_policy: dict[str, Any],
 ) -> str:
     for payload in (
         run_receipt,
@@ -255,6 +268,7 @@ def _overall_status(
         browser_cdp_proof,
         dag_stress_suite,
         dag_stress_campaign,
+        github_apply_policy,
     ):
         status = payload.get("status")
         if isinstance(status, str) and status:
@@ -953,6 +967,34 @@ def _dag_stress_campaign_summary(payload: dict[str, Any]) -> dict[str, Any] | No
         "status_counts": payload.get("status_counts"),
         "verdict_counts": payload.get("verdict_counts"),
         "grading_dimensions": payload.get("grading_dimensions"),
+    }
+
+
+def _github_apply_policy_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.github_apply_policy_receipt.v1":
+        return None
+    checks = payload.get("checks")
+    check_records = checks if isinstance(checks, list) else []
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "target": payload.get("target"),
+        "actions": payload.get("actions"),
+        "requirements": payload.get("requirements"),
+        "preflight_ready": payload.get("preflight_ready"),
+        "approval_receipt": payload.get("approval_receipt"),
+        "redaction_receipt": payload.get("redaction_receipt"),
+        "check_count": len(check_records),
+        "failed_checks": [
+            check.get("code")
+            for check in check_records
+            if isinstance(check, dict) and check.get("ok") is not True
+        ],
+        "errors": payload.get("errors"),
     }
 
 

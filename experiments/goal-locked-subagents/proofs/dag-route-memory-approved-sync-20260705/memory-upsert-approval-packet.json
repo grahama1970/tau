@@ -1,0 +1,20 @@
+{
+  "schema": "tau.human_approval_packet.v1",
+  "approved": true,
+  "action": "memory_upsert",
+  "actor": {
+    "id": "human:graham",
+    "auth_method": "manual"
+  },
+  "target": {
+    "id": "tau_route_memory",
+    "memory_url": "http://127.0.0.1:8601"
+  },
+  "reason": "Approve bounded live Memory /upsert of quality-gated Tau DAG route-memory signal documents; this does not authorize runtime route mutation.",
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/dag-route-memory-approval/dag-signal-receipt.json"
+  ],
+  "nonce": "dag-route-memory-approved-sync-20260705",
+  "signature": "manual-approval-recorded-in-chat",
+  "expires_at": "2026-07-06T00:00:00Z"
+}

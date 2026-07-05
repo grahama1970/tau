@@ -856,6 +856,65 @@ def test_run_status_summarizes_real_world_sanity_post_cleanup(tmp_path: Path) ->
     assert status["browser_cdp_proof"]["visible_assertion_pass_count"] == 3
 
 
+def test_run_status_summarizes_github_apply_policy_receipt(tmp_path: Path) -> None:
+    approval = tmp_path / "approval-gate-receipt.json"
+    redaction = tmp_path / "github-redaction-receipt.json"
+    _write_json(
+        tmp_path / "github-apply-policy-receipt.json",
+        {
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+            "actions": ["comment", "label"],
+            "requirements": {
+                "approval_packet": True,
+                "preflight": True,
+                "redaction": True,
+            },
+            "preflight_ready": True,
+            "approval_receipt": str(approval),
+            "redaction_receipt": str(redaction),
+            "checks": [
+                {"code": "repo_allowlist", "ok": True},
+                {"code": "approval_receipt", "ok": True},
+            ],
+            "errors": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["detected_type"] == "github_apply_policy"
+    assert status["missing_required_artifacts"] == []
+    assert status["github_apply_policy"] == {
+        "schema": "tau.github_apply_policy_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+        "actions": ["comment", "label"],
+        "requirements": {
+            "approval_packet": True,
+            "preflight": True,
+            "redaction": True,
+        },
+        "preflight_ready": True,
+        "approval_receipt": str(approval),
+        "redaction_receipt": str(redaction),
+        "check_count": 2,
+        "failed_checks": [],
+        "errors": [],
+    }
+
+
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

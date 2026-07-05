@@ -1,0 +1,21 @@
+{
+  "schema": "tau.human_approval_packet.v1",
+  "approved": true,
+  "action": "github_apply",
+  "actor": {
+    "id": "human:graham",
+    "auth_method": "manual"
+  },
+  "target": {
+    "id": "grahama1970/tau#47",
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  },
+  "reason": "Approve Tau's GitHub apply policy preflight chain for issue#47. This packet is not used to run --apply in this proof.",
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-dry-run-receipt.json"
+  ],
+  "nonce": "github-apply-policy-preflight-issue-47-20260705",
+  "signature": "manual-approval-recorded-in-chat-for-policy-preflight-only",
+  "expires_at": "2026-07-06T00:00:00Z"
+}
