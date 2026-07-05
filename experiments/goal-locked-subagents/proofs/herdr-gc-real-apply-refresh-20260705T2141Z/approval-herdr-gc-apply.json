@@ -1,0 +1,10 @@
+{
+  "schema": "tau.approval_gate_receipt.v1",
+  "ok": true,
+  "status": "PASS",
+  "approved": true,
+  "requested_action": "herdr_gc_apply",
+  "actor": "human:graham",
+  "reason": "Refresh real Herdr GC apply proof for Tau hardening; Tau must protect current/focused/non-idle workspaces and only close eligible run-owned stale candidates.",
+  "timestamp": "2026-07-05T21:41:00Z"
+}
