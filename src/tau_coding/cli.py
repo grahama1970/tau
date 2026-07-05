@@ -33,6 +33,11 @@ from tau_ai import (
 from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding import __version__
 from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.browser_cdp_proof import (
+    DEFAULT_BROWSER_PROOF_RUN_ID,
+    DEFAULT_SURF_WRAPPER,
+    write_browser_cdp_proof,
+)
 from tau_coding.credentials import FileCredentialStore
 from tau_coding.dag_branch_locks import write_dag_branch_lock_validation_receipt
 from tau_coding.dag_expansion import (
@@ -217,6 +222,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
         "git": which("git"),
         "gh": which("gh"),
         "herdr": which("herdr"),
+        "surf": str(DEFAULT_SURF_WRAPPER) if DEFAULT_SURF_WRAPPER.exists() else which("surf"),
     }
 
     provider_payload: dict[str, object]
@@ -249,6 +255,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
 
     herdr_ready = command_paths["herdr"] is not None
     gh_ready = command_paths["gh"] is not None
+    surf_ready = command_paths["surf"] is not None
 
     lanes = {
         "local_cli": {
@@ -282,8 +289,10 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
             "reason": "live GitHub mutation requires approval, preflight, redaction, and apply policy receipts",
         },
         "browser_cdp": {
-            "ready": False,
-            "reason": "browser/CDP proof requires an explicit UI proof command and screenshot artifacts",
+            "ready": surf_ready,
+            "reason": "Surf wrapper or surf executable found; run tau browser-cdp-proof for screenshot proof"
+            if surf_ready
+            else "Surf wrapper or surf executable not found",
         },
     }
 
@@ -321,7 +330,7 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
                 "Live provider/model semantic quality.",
                 "Provider DAG execution.",
                 "GitHub live mutation.",
-                "Browser/CDP UI proof.",
+                "Browser/CDP UI proof; run tau browser-cdp-proof for screenshot artifacts.",
                 "Full hardening roadmap completion.",
             ],
         },
@@ -823,6 +832,21 @@ def main(
                 run_id=str(options["run_id"]),
                 route=str(options["route"]),
                 next_agent=str(options["next_agent"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "browser-cdp-proof":
+        try:
+            options = _parse_browser_cdp_proof_cli_args(positional_args[1:])
+            ok = browser_cdp_proof_command(
+                output_dir=options["output_dir"],
+                run_id=str(options["run_id"]),
+                surf_bin=options["surf_bin"],
+                keep_tab=bool(options["keep_tab"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -2881,6 +2905,50 @@ def _parse_tui_proof_cli_args(args: list[str]) -> dict[str, str | Path]:
         "run_id": run_id,
         "route": route,
         "next_agent": next_agent,
+    }
+
+
+def _parse_browser_cdp_proof_cli_args(args: list[str]) -> dict[str, str | Path | bool | None]:
+    output_dir = Path(".tmp/browser-cdp-proof")
+    run_id = DEFAULT_BROWSER_PROOF_RUN_ID
+    surf_bin: Path | None = None
+    keep_tab = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau browser-cdp-proof [--out-dir DIR]")
+            output_dir = Path(args[index])
+        elif arg.startswith("--out-dir="):
+            output_dir = Path(arg.partition("=")[2])
+        elif arg == "--run-id":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau browser-cdp-proof [--run-id RUN_ID]")
+            run_id = args[index]
+        elif arg.startswith("--run-id="):
+            run_id = arg.partition("=")[2]
+        elif arg == "--surf-bin":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("Usage: tau browser-cdp-proof [--surf-bin PATH]")
+            surf_bin = Path(args[index])
+        elif arg.startswith("--surf-bin="):
+            surf_bin = Path(arg.partition("=")[2])
+        elif arg == "--keep-tab":
+            keep_tab = True
+        else:
+            raise RuntimeError(f"Unknown browser-cdp-proof option: {arg}")
+        index += 1
+    if not run_id.strip():
+        raise RuntimeError("--run-id must not be empty")
+    return {
+        "output_dir": output_dir,
+        "run_id": run_id,
+        "surf_bin": surf_bin,
+        "keep_tab": keep_tab,
     }
 
 
@@ -7866,6 +7934,25 @@ def tui_proof_command(
         run_id=run_id,
         route=route,
         next_agent=next_agent,
+    )
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    return bool(payload.get("ok"))
+
+
+def browser_cdp_proof_command(
+    *,
+    output_dir: Path,
+    run_id: str,
+    surf_bin: Path | None,
+    keep_tab: bool,
+) -> bool:
+    """Render a local Tau proof page through Surf and write screenshot proof."""
+
+    payload = write_browser_cdp_proof(
+        output_dir=output_dir,
+        run_id=run_id,
+        surf_bin=surf_bin,
+        keep_tab=keep_tab,
     )
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     return bool(payload.get("ok"))

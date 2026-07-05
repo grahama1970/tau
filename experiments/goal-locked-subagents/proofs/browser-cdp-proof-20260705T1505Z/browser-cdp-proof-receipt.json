@@ -1,0 +1,99 @@
+{
+  "artifacts": {
+    "html": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.html",
+    "receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/browser-cdp-proof-receipt.json",
+    "screenshot_png": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.png"
+  },
+  "commands": [
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "tab.new",
+        "file:///home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.html"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Created tab 837357618: file:///home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.html\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "read",
+        "--filter",
+        "all"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "\n\n[Viewport: 2173x1079]\n\n--- Page Text ---\nTau Browser/CDP Proof Rendered by Surf browser transport for Tau proof boundary inspection. Required handoff schema: tau.agent_handoff.v1 Receipt schema: tau.browser_cdp_proof.v1 { \"handoff_schema\": \"tau.agent_handoff.v1\", \"next_agent\": \"reviewer\", \"run_id\": \"tau-browser-cdp-proof-20260705T1505Z\", \"schema\": \"tau.browser_cdp_proof.v1\" }\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "snap",
+        "--output",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.png"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Saved to /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.png (1200x596, from 3667x1821)\n[Screenshot ID: screenshot_66_1783263832449 - use with upload_image]\n"
+    },
+    {
+      "command": [
+        "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+        "tab.close",
+        "837357618"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Closed tab 837357618\n"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Production chat UX acceptance.",
+      "Live Memory backend behavior.",
+      "Live provider/model semantic quality.",
+      "GitHub mutation.",
+      "Arbitrary browser UI correctness beyond this proof page."
+    ],
+    "proves": [
+      "Surf browser transport opened a local Tau proof page.",
+      "Surf read observed required Tau proof text from the rendered page.",
+      "Surf screenshot wrote a non-empty PNG artifact.",
+      "No provider, GitHub, Memory, or DAG route mutation was performed."
+    ]
+  },
+  "provider_live": false,
+  "run_id": "tau-browser-cdp-proof-20260705T1505Z",
+  "schema": "tau.browser_cdp_proof.v1",
+  "screenshot": {
+    "height": 596,
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.png",
+    "sha256": "sha256:349fbbb2652f3b88da6f287a541042825bfb899c3cb5a57e09dabee02fdee654",
+    "size_bytes": 45088,
+    "width": 1200
+  },
+  "status": "PASS",
+  "surface": "local Tau browser proof page",
+  "timestamp": "2026-07-05T15:03:52Z",
+  "transport": {
+    "command": "/home/graham/workspace/experiments/agent-skills/skills/surf/run.sh",
+    "keep_tab": false,
+    "kind": "surf",
+    "tab_id": "837357618",
+    "url": "file:///home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/browser-cdp-proof-20260705T1505Z/tau-browser-cdp-proof.html"
+  },
+  "verdict": "PASS",
+  "visible_assertions": {
+    "page_text_contains_handoff_schema": true,
+    "page_text_contains_receipt_schema": true,
+    "page_text_contains_title": true,
+    "screenshot_exists": true,
+    "screenshot_nonempty": true,
+    "screenshot_png_dimensions": true
+  }
+}
