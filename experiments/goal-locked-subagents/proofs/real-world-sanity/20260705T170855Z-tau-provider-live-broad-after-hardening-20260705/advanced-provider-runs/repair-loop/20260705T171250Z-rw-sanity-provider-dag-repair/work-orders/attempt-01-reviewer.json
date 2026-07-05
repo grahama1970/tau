@@ -1,0 +1,49 @@
+{
+  "attempt": 1,
+  "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json",
+  "dag_id": "20260705T171250Z-rw-sanity-provider-dag-repair",
+  "forbidden_actions": [
+    "modify_files",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "force_revise": true,
+  "goal": {
+    "goal_hash": "sha256:8e9e0327412c3d9f9bd0cfa623725747c3de70aa96c15ef013736d60b8fb2918",
+    "goal_id": "20260705T171250Z-rw-sanity-provider-dag-repair",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w49:p6",
+    "terminal_id": "term_655e044a03a6647f",
+    "workspace_id": "w49"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "reviewer",
+    "attempt": 1,
+    "max_attempts": 2,
+    "node_id": "reviewer"
+  },
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/receipts/attempt-01-reviewer.json",
+  "required_evidence": [
+    "coder_receipt_reviewed",
+    "target_file_reviewed"
+  ],
+  "run_id": "20260705T171250Z-rw-sanity-provider-dag-repair",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+  "task": "Review target_file and the coder receipt. If force_revise is true, return REVISE with actionable feedback even if the file is acceptable. Otherwise return PASS if the TODO line is gone and the coder receipt is schema-valid enough to inspect; otherwise return REVISE.",
+  "work_order_sha256": "6c42d8869302363ef5a7079aa17d964b55c2b784fad0390c640c459d1594a334"
+}

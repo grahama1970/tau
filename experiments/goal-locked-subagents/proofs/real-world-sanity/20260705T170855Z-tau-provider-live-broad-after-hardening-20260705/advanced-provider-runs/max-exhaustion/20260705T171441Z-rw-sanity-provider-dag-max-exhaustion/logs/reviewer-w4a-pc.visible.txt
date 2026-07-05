@@ -1,0 +1,36 @@
+iptive
+ label
+ 'pyth
+on det
+ermini
+stic v
+isible
+ coder
+' inst
+ead of
+ an ac
+tual s
+hell c
+ommand
+ — nex
+t code
+r shou
+ld log
+ the r
+eal co
+mmand
+execut
+ed.",
+  "err
+ors":
+[],
+  "pol
+icy_ex
+ceptio
+ns": [
+]
+}
+JSONEO
+F
+(no ou
+tput)

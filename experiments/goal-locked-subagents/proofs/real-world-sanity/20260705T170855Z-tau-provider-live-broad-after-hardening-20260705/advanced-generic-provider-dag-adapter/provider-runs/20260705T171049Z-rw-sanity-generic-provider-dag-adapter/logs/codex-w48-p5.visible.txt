@@ -1,0 +1,38 @@
+        /advanced-generic-provi
+        der-dag-adapter/provide
+        r-runs/20260705T171049Z
+        -rw-sanity-generic-prov
+        ider-dag-adapter/receip
+        ts/attempt-01-coder.jso
+        n"
+    29    ],
+
+• Explored
+  └ Read attempt-01-coder.json
+
+• Ran sha256sum /home/graham/
+  │ workspace/experiments/
+  │ tau/experiments/
+  │ … +29 lines
+  └ 278380ad86b683c05e454bf0aa5
+    … +35 lines (ctrl + t to
+    view transcript)
+    der-dag-adapter/receipts/
+    attempt-01-coder.json
+
+• Ran python3 -m json.tool /
+  │ home/graham/workspace/
+  │ experiments/tau/
+  │ … +14 lines
+  └ {
+    … +48 lines (ctrl + t to
+    view transcript)
+        "policy_exceptions": []
+    }
+
+• Working (1m 24s • esc to int…
+
+
+› Find and fix a bug in @filen
+
+  gpt-5.5 medium · ~/workspace…

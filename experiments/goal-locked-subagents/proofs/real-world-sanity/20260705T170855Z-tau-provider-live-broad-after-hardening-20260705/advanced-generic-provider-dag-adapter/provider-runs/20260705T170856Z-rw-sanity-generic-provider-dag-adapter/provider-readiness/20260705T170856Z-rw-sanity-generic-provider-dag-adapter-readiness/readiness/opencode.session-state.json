@@ -1,0 +1,50 @@
+{
+  "auth": {
+    "method": "unknown",
+    "status": "unknown"
+  },
+  "diagnostics": {
+    "pane_agent_status": "idle",
+    "pane_label": "20260705t170856z-rw-sanity-generic-provider-dag-adapter-reviewer-opencode",
+    "readiness_state": "ready",
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T170856Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T170856Z-rw-sanity-generic-provider-dag-adapter-readiness/readiness/opencode.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T170856Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T170856Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt"
+  },
+  "interstitial": {
+    "kind": null,
+    "present": false,
+    "safe_actions": []
+  },
+  "observed_at": "2026-07-05T17:09:30Z",
+  "pane_id": "w47:p6",
+  "process": {
+    "alive": true,
+    "argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "command": "opencode",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "foreground": true,
+    "pid": 1040034
+  },
+  "provider_api": {
+    "available": false,
+    "endpoint": "none",
+    "last_event_type": null
+  },
+  "provider_id": "opencode",
+  "provider_session_id": null,
+  "ready": true,
+  "run_id": "20260705T170856Z-rw-sanity-generic-provider-dag-adapter-readiness",
+  "schema": "tau.provider_session_state.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e036b42efc46d",
+  "workspace_id": "w47"
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T171250Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:8e9e0327412c3d9f9bd0cfa623725747c3de70aa96c15ef013736d60b8fb2918",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w49",
+  "pane_id": "w49:p6",
+  "terminal_id": "term_655e044a03a6647f",
+  "work_order_sha256": "6c42d8869302363ef5a7079aa17d964b55c2b784fad0390c640c459d1594a334",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work_order JSON",
+    "read target_file message.txt",
+    "read coder_receipt attempt-01-coder.json",
+    "ls receipts/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/repair-loop/20260705T171250Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "FORCE_REVISE triggered. target_file (message.txt) is a generic prose string with no actual implementation content or proof of deterministic tool execution. coder_receipt is schema-valid but commands_run is a vague label not a replayable command. Next coder must: (1) write message.txt with concrete implementation evidence (e.g., actual Python code or deterministic file operation output), (2) record exact shell commands in commands_run that can be verified. The TODO line is gone so pass that gate, but the file content lacks substance.",
+  "errors": [],
+  "policy_exceptions": []
+}

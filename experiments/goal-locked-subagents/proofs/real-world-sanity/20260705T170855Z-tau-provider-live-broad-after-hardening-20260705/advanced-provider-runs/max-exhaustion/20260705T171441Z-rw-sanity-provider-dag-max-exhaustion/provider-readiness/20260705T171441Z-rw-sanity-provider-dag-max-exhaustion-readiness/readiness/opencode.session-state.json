@@ -1,0 +1,50 @@
+{
+  "auth": {
+    "method": "unknown",
+    "status": "unknown"
+  },
+  "diagnostics": {
+    "pane_agent_status": "idle",
+    "pane_label": "20260705t171441z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+    "readiness_state": "ready",
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt"
+  },
+  "interstitial": {
+    "kind": null,
+    "present": false,
+    "safe_actions": []
+  },
+  "observed_at": "2026-07-05T17:15:14Z",
+  "pane_id": "w4A:p6",
+  "process": {
+    "alive": true,
+    "argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "command": "opencode",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "foreground": true,
+    "pid": 1075051
+  },
+  "provider_api": {
+    "available": false,
+    "endpoint": "none",
+    "last_event_type": null
+  },
+  "provider_id": "opencode",
+  "provider_session_id": null,
+  "ready": true,
+  "run_id": "20260705T171441Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema": "tau.provider_session_state.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e04b45444e48b",
+  "workspace_id": "w4A"
+}

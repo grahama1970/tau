@@ -1,0 +1,37 @@
+oofs/real-world-sanity/20260705
+T170855Z-tau-provider-live-broa
+d-after-hardening-20260705/adva
+nced-provider-runs/max-exhausti
+on/20260705T171441Z-rw-sanity-p
+rovider-dag-max-exhaustion\ndag
+_spec: /home/graham/workspace/e
+xperiments/tau/experiments/goal
+-locked-subagents/proofs/real-w
+orld-sanity/20260705T170855Z-ta
+u-provider-live-broad-after-har
+dening-20260705/advanced-provid
+er-runs/max-exhaustion/20260705
+T171441Z-rw-sanity-provider-dag
+-max-exhaustion/dag-spec.json\n
+planner_receipt: /home/graham/w
+orkspace/experiments/tau/experi
+ments/goal-locked-subagents/pro
+ofs/real-world-sanity/20260705T
+170855Z-tau-provider-live-broad
+-after-hardening-20260705/advan
+ced-provider-runs/max-exhaustio
+n/20260705T171441Z-rw-sanity-pr
+ovider-dag-max-exhaustion/plann
+er-receipt.json\nfinal_receipt:
+ /home/graham/workspace/experim
+ents/tau/experiments/goal-locke
+d-subagents/proofs/real-world-s
+anity/20260705T170855Z-tau-prov
+ider-live-broad-after-hardening
+-20260705/advanced-provider-run
+s/max-exhaustion/20260705T17144
+1Z-rw-sanity-provider-dag-max-e
+xhaustion/run-receipt.json\ncan
+onical truth: Tau JSON receipts
+; this pane is human-visible te
+lemetry.\n

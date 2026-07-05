@@ -1,0 +1,37 @@
+ve-broad-after
+-hardening-202
+60705/advanced
+-provider-runs
+/invalid-model
+/20260705T1716
+33Z-rw-sanity-
+provider-dag-i
+nvalid-model/p
+lanner-receipt
+.json\nfinal_r
+eceipt: /home/
+graham/workspa
+ce/experiments
+/tau/experimen
+ts/goal-locked
+-subagents/pro
+ofs/real-world
+-sanity/202607
+05T170855Z-tau
+-provider-live
+-broad-after-h
+ardening-20260
+705/advanced-p
+rovider-runs/i
+nvalid-model/2
+0260705T171633
+Z-rw-sanity-pr
+ovider-dag-inv
+alid-model/run
+-receipt.json\
+ncanonical tru
+th: Tau JSON r
+eceipts; this
+pane is human-
+visible teleme
+try.\n

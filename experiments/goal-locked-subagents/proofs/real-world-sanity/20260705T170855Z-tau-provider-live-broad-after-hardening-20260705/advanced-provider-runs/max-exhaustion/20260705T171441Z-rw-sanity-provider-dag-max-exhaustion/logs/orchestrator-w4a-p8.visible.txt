@@ -1,0 +1,37 @@
+after-hardenin
+g-20260705/adv
+anced-provider
+-runs/max-exha
+ustion/2026070
+5T171441Z-rw-s
+anity-provider
+-dag-max-exhau
+stion/planner-
+receipt.json\n
+final_receipt:
+ /home/graham/
+workspace/expe
+riments/tau/ex
+periments/goal
+-locked-subage
+nts/proofs/rea
+l-world-sanity
+/20260705T1708
+55Z-tau-provid
+er-live-broad-
+after-hardenin
+g-20260705/adv
+anced-provider
+-runs/max-exha
+ustion/2026070
+5T171441Z-rw-s
+anity-provider
+-dag-max-exhau
+stion/run-rece
+ipt.json\ncano
+nical truth: T
+au JSON receip
+ts; this pane
+is human-visib
+le telemetry.\
+n

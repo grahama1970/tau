@@ -1,0 +1,37 @@
+e/experiments/tau/experiments/g
+oal-locked-subagents/proofs/rea
+l-world-sanity/20260705T170855Z
+-tau-provider-live-broad-after-
+hardening-20260705/advanced-pro
+vider-runs/repair-loop/20260705
+T171250Z-rw-sanity-provider-dag
+-repair\ndag_spec: /home/graham
+/workspace/experiments/tau/expe
+riments/goal-locked-subagents/p
+roofs/real-world-sanity/2026070
+5T170855Z-tau-provider-live-bro
+ad-after-hardening-20260705/adv
+anced-provider-runs/repair-loop
+/20260705T171250Z-rw-sanity-pro
+vider-dag-repair/dag-spec.json\
+nplanner_receipt: /home/graham/
+workspace/experiments/tau/exper
+iments/goal-locked-subagents/pr
+oofs/real-world-sanity/20260705
+T170855Z-tau-provider-live-broa
+d-after-hardening-20260705/adva
+nced-provider-runs/repair-loop/
+20260705T171250Z-rw-sanity-prov
+ider-dag-repair/planner-receipt
+.json\nfinal_receipt: /home/gra
+ham/workspace/experiments/tau/e
+xperiments/goal-locked-subagent
+s/proofs/real-world-sanity/2026
+0705T170855Z-tau-provider-live-
+broad-after-hardening-20260705/
+advanced-provider-runs/repair-l
+oop/20260705T171250Z-rw-sanity-
+provider-dag-repair/run-receipt
+.json\ncanonical truth: Tau JSO
+N receipts; this pane is human-
+visible telemetry.\n

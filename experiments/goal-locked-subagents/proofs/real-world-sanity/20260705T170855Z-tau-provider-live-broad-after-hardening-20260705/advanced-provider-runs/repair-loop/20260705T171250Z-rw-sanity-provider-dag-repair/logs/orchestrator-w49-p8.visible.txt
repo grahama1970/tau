@@ -1,0 +1,37 @@
+Z-tau-provider
+-live-broad-af
+ter-hardening-
+20260705/advan
+ced-provider-r
+uns/repair-loo
+p/20260705T171
+250Z-rw-sanity
+-provider-dag-
+repair/planner
+-receipt.json\
+nfinal_receipt
+: /home/graham
+/workspace/exp
+eriments/tau/e
+xperiments/goa
+l-locked-subag
+ents/proofs/re
+al-world-sanit
+y/20260705T170
+855Z-tau-provi
+der-live-broad
+-after-hardeni
+ng-20260705/ad
+vanced-provide
+r-runs/repair-
+loop/20260705T
+171250Z-rw-san
+ity-provider-d
+ag-repair/run-
+receipt.json\n
+canonical trut
+h: Tau JSON re
+ceipts; this p
+ane is human-v
+isible telemet
+ry.\n

@@ -1,0 +1,37 @@
+ofs/real-world-sanity/20260705T
+170855Z-tau-provider-live-broad
+-after-hardening-20260705/advan
+ced-provider-runs/invalid-model
+/20260705T171633Z-rw-sanity-pro
+vider-dag-invalid-model\ndag_sp
+ec: /home/graham/workspace/expe
+riments/tau/experiments/goal-lo
+cked-subagents/proofs/real-worl
+d-sanity/20260705T170855Z-tau-p
+rovider-live-broad-after-harden
+ing-20260705/advanced-provider-
+runs/invalid-model/20260705T171
+633Z-rw-sanity-provider-dag-inv
+alid-model/dag-spec.json\nplann
+er_receipt: /home/graham/worksp
+ace/experiments/tau/experiments
+/goal-locked-subagents/proofs/r
+eal-world-sanity/20260705T17085
+5Z-tau-provider-live-broad-afte
+r-hardening-20260705/advanced-p
+rovider-runs/invalid-model/2026
+0705T171633Z-rw-sanity-provider
+-dag-invalid-model/planner-rece
+ipt.json\nfinal_receipt: /home/
+graham/workspace/experiments/ta
+u/experiments/goal-locked-subag
+ents/proofs/real-world-sanity/2
+0260705T170855Z-tau-provider-li
+ve-broad-after-hardening-202607
+05/advanced-provider-runs/inval
+id-model/20260705T171633Z-rw-sa
+nity-provider-dag-invalid-model
+/run-receipt.json\ncanonical tr
+uth: Tau JSON receipts; this pa
+ne is human-visible telemetry.\
+n

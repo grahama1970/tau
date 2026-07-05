@@ -1,0 +1,37 @@
+ad-after-hardening-20260705/adv
+anced-generic-provider-dag-adap
+ter/provider-runs/20260705T1708
+56Z-rw-sanity-generic-provider-
+dag-adapter\ndag_spec: /home/gr
+aham/workspace/experiments/tau/
+experiments/goal-locked-subagen
+ts/proofs/real-world-sanity/202
+60705T170855Z-tau-provider-live
+-broad-after-hardening-20260705
+/advanced-generic-provider-dag-
+adapter/provider-runs/20260705T
+170856Z-rw-sanity-generic-provi
+der-dag-adapter/dag-spec.json\n
+planner_receipt: /home/graham/w
+orkspace/experiments/tau/experi
+ments/goal-locked-subagents/pro
+ofs/real-world-sanity/20260705T
+170855Z-tau-provider-live-broad
+-after-hardening-20260705/advan
+ced-generic-provider-dag-adapte
+r/provider-runs/20260705T170856
+Z-rw-sanity-generic-provider-da
+g-adapter/planner-receipt.json\
+nfinal_receipt: /home/graham/wo
+rkspace/experiments/tau/experim
+ents/goal-locked-subagents/proo
+fs/real-world-sanity/20260705T1
+70855Z-tau-provider-live-broad-
+after-hardening-20260705/advanc
+ed-generic-provider-dag-adapter
+/provider-runs/20260705T170856Z
+-rw-sanity-generic-provider-dag
+-adapter/run-receipt.json\ncano
+nical truth: Tau JSON receipts;
+ this pane is human-visible tel
+emetry.\n

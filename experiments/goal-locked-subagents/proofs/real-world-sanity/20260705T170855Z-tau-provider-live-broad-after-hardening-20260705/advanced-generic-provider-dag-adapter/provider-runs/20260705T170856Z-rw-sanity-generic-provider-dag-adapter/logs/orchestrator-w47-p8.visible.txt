@@ -1,0 +1,37 @@
+advanced-gener
+ic-provider-da
+g-adapter/prov
+ider-runs/2026
+0705T170856Z-r
+w-sanity-gener
+ic-provider-da
+g-adapter/plan
+ner-receipt.js
+on\nfinal_rece
+ipt: /home/gra
+ham/workspace/
+experiments/ta
+u/experiments/
+goal-locked-su
+bagents/proofs
+/real-world-sa
+nity/20260705T
+170855Z-tau-pr
+ovider-live-br
+oad-after-hard
+ening-20260705
+/advanced-gene
+ric-provider-d
+ag-adapter/pro
+vider-runs/202
+60705T170856Z-
+rw-sanity-gene
+ric-provider-d
+ag-adapter/run
+-receipt.json\
+ncanonical tru
+th: Tau JSON r
+eceipts; this
+pane is human-
+visible teleme
+try.\n

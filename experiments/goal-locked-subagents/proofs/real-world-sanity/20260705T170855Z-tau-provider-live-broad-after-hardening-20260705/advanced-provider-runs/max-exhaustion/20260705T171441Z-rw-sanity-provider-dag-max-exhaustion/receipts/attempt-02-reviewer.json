@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T171441Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:b6e385445098f8046b532fc7133637d5120fca030d8f0bddf02efc5dd82cc981",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w4A",
+  "pane_id": "w4A:p6",
+  "terminal_id": "term_655e04b45444e48b",
+  "work_order_sha256": "4107e4880b781bdeac2c461470420f673cc67b365bf12515e4163be4a865ba57",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work_order", "read target_file", "read coder_receipt", "ls scratch_worktree", "write reviewer_receipt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise triggered. Target file TODO line is removed and coder receipt is schema-valid, but the file content is minimal — only states 'completed implementation by deterministic visible coder attempt 2'. Next coder should expand message.txt to include: (1) the actual goal description, (2) attempt context showing progression, and (3) evidence of deterministic coder identity (provider_id, node_id). Also, coder receipt commands_run field contains a descriptive label 'python deterministic visible coder' instead of an actual shell command — next coder should log the real command executed.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,38 @@
+
+• Explored
+  └ Read message.txt
+
+• Ran jq -e '.schema ==
+  │ "tau.provider_dag_node_re
+  │ ceipt.v1" and .status ==
+  │ … +24 lines
+  └ true
+
+• Ran sha256sum /home/graham/
+  │ workspace/experiments/
+  │ tau/experiments/
+  │ … +13 lines
+  └ cc64654ec179e2aec86b1413b54
+    … +15 lines (ctrl + t to
+    view transcript)
+    work-orders/
+    attempt-01-coder.json
+
+───────────────────────────────
+
+• The verification parsed the
+  receipt successfully and
+  confirmed one changed file/
+  artifact with empty errors
+  and policy exceptions. I’m
+  updating the receipt’s
+  command log to include the
+  checks that were actually
+  run.
+
+• Working (1m 15s • esc to int…
+
+
+› Write tests for @filename
+
+  gpt-5.5 medium · ~/workspace…

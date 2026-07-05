@@ -1,0 +1,47 @@
+{
+  "attempt": 1,
+  "dag_id": "20260705T171049Z-rw-sanity-generic-provider-dag-adapter",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:586cd979249127e07ad371e61f3d7a59d4b456c30bfdd5df0557d23299a3d393",
+    "goal_id": "20260705T171049Z-rw-sanity-generic-provider-dag-adapter",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w48:p5",
+    "terminal_id": "term_655e03d5deeca475",
+    "workspace_id": "w48"
+  },
+  "max_attempts": 1,
+  "node": {
+    "agent": "coder",
+    "attempt": 1,
+    "max_attempts": 1,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "",
+  "run_id": "20260705T171049Z-rw-sanity-generic-provider-dag-adapter",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "bb7d61f1fdc31acc00d8088498f15f45e6969e1153db03344aaa79c15a5b3a2a"
+}

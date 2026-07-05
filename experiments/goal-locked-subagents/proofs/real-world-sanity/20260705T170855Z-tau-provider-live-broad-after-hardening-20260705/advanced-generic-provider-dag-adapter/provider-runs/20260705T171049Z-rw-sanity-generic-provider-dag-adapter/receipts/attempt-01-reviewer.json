@@ -1,0 +1,24 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T171049Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:586cd979249127e07ad371e61f3d7a59d4b456c30bfdd5df0557d23299a3d393",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w48",
+  "pane_id": "w48:p6",
+  "terminal_id": "term_655e03d66771c476",
+  "work_order_sha256": "03debe4b9abed03cc58bb85cf58abc594c65fae6ca91aaae0dcfff02991b241e",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["read work_order", "read target_file", "read coder_receipt", "write reviewer_receipt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T171049Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file message.txt has no remaining TODO line (now reads \"Completed implementation for the generic provider DAG adapter POC.\"). coder receipt is schema-valid tau.provider_dag_node_receipt.v1 JSON. force_revise is false, no issues found.",
+  "errors": [],
+  "policy_exceptions": []
+}

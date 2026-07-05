@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T171441Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:b6e385445098f8046b532fc7133637d5120fca030d8f0bddf02efc5dd82cc981",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w4A",
+  "pane_id": "w4A:p6",
+  "terminal_id": "term_655e04b45444e48b",
+  "work_order_sha256": "394ad8b7c2e8d70711e3a266bd603cf91f413eb1b1af77455502a6680b7e0d2d",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read target_file and coder receipt",
+    "verify scratch worktree exists",
+    "validate coder receipt schema"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170855Z-tau-provider-live-broad-after-hardening-20260705/advanced-provider-runs/max-exhaustion/20260705T171441Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. Target file message.txt contains a single bare-assertion line with no evidence of implementation steps, decision points, or exhaustive-search process expected for a max-exhaustion proof. Coder receipt is schema-valid (all required fields present, status=PASS) but the commands_run field ('python deterministic visible coder') is a vague label, not a re-runnable concrete command. For attempt 2: populate message.txt with substantive content documenting what the implementation involved, what alternatives were exhausted, and the outcome of each decision point.",
+  "errors": [],
+  "policy_exceptions": []
+}
