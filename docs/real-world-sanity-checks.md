@@ -113,6 +113,8 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.dag_expansion_apply_tampered_preview_fail_closed`: Tau validates and policy-checks an adaptive DAG expansion, then blocks `dag-expansion-apply` when the expanded preview artifact no longer matches the validation hash.
 - `advanced.dag_route_memory_dry_run_projects_documents`: Tau projects clean route-memory candidates into Memory document shape without writing to Memory.
 - `advanced.dag_route_memory_apply_requires_approval`: Tau projects route-memory candidates locally, then blocks Memory sync apply when no `memory_upsert` approval receipt is supplied.
+- `advanced.research_source_arxiv_packet_passes`: Tau accepts a source-bearing ArXiv research packet as review-required design input without treating research as closure proof.
+- `advanced.research_source_arxiv_metadata_fail_closed`: Tau rejects a packet that claims `method:"arxiv"` but cites a generic non-ArXiv source without an `arxiv_id`.
 - `advanced.github_apply_policy_missing_gates_fail_closed`: Tau blocks a GitHub apply projection when policy-required approval, preflight, and redaction gates are missing.
 - `advanced.github_apply_policy_all_gates_pass`: Tau allows a GitHub apply projection to pass local policy only when approval, preflight, and redaction evidence are all supplied; this is still non-mutating and does not post to GitHub.
 - `advanced.provider_readiness`: Herdr allocates visible Codex and OpenCode provider panes, writes structured `tau.provider_session_state.v1` lifecycle records, and records post-check cleanup when provider cleanup is enabled.
