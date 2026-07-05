@@ -1,4 +1,4 @@
-# T’au - Goal-Locked Agent Harness
+# T’au - Memory-First Zero-Trust Agent Harness
 
 <p align="center">
   <img
