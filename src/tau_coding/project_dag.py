@@ -71,6 +71,14 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.provider_work_order.sha256",
     },
+    "pointless_unit_test_drift": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.monitor_alerts.pointless_unit_test_drift",
+    },
+    "brave_search_required_after_two_attempts": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.retry_policy.brave_search_course_correction",
+    },
     "reviewer_goal_hash_mismatch": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_goal_hash",
@@ -423,6 +431,7 @@ def _run_bounded_ready_queue_project_dag(
     node_attempts: dict[str, int] = {}
     alerts: list[dict[str, Any]] = []
     errors: list[str] = []
+    course_correction_artifacts: list[str] = []
     intervals: list[tuple[float, float]] = []
     started_at = time.monotonic()
 
@@ -595,7 +604,68 @@ def _run_bounded_ready_queue_project_dag(
                             "ts": _utc_stamp(),
                         }
                     )
+                    drift_alert = _pointless_unit_test_drift_alert(
+                        node_id=node_id,
+                        node=contract.nodes[node_id],
+                        attempt=node_attempts[node_id],
+                        stop_reason=stop_reason,
+                        result=result,
+                    )
+                    if drift_alert is not None:
+                        artifact = _write_course_correction_receipt(
+                            contract=contract,
+                            receipt_dir=receipt_dir,
+                            node_id=node_id,
+                            node=contract.nodes[node_id],
+                            attempt=node_attempts[node_id],
+                            code="pointless_unit_test_drift",
+                            reason=drift_alert["message"],
+                            stop_reason=stop_reason,
+                            errors=[str(item) for item in result.get("errors", [])],
+                        )
+                        course_correction_artifacts.append(str(artifact))
+                        alerts.append(drift_alert)
+                        errors.extend(str(item) for item in result.get("errors", []))
+                        failed = True
+                        continue
                     if can_retry:
+                        if node_attempts[node_id] >= 2:
+                            artifact = _write_course_correction_receipt(
+                                contract=contract,
+                                receipt_dir=receipt_dir,
+                                node_id=node_id,
+                                node=contract.nodes[node_id],
+                                attempt=node_attempts[node_id],
+                                code="brave_search_required_after_two_attempts",
+                                reason=(
+                                    "Node has failed two attempts; require $brave-search "
+                                    "research before another retry."
+                                ),
+                                stop_reason=stop_reason,
+                                errors=[str(item) for item in result.get("errors", [])],
+                            )
+                            course_correction_artifacts.append(str(artifact))
+                            alerts.append(
+                                _alert(
+                                    "BLOCK",
+                                    "brave_search_required_after_two_attempts",
+                                    (
+                                        "Node reached two failed attempts and must use "
+                                        "$brave-search before retry."
+                                    ),
+                                    {
+                                        "node_id": node_id,
+                                        "agent": contract.nodes[node_id].agent,
+                                        "attempts": node_attempts[node_id],
+                                        "max_attempts": contract.nodes[node_id].max_attempts,
+                                        "stop_reason": stop_reason,
+                                        "course_correction_receipt": str(artifact),
+                                    },
+                                )
+                            )
+                            errors.extend(str(item) for item in result.get("errors", []))
+                            failed = True
+                            continue
                         continue
                     alerts.append(
                         _alert(
@@ -670,6 +740,7 @@ def _run_bounded_ready_queue_project_dag(
         max_observed_concurrency=_max_observed_concurrency(intervals),
         errors=errors,
         node_artifacts=node_artifacts,
+        course_correction_artifacts=course_correction_artifacts,
     )
     _write_json(receipt_dir / "dag-receipt.json", receipt)
     return receipt
@@ -1601,6 +1672,7 @@ def _ready_queue_receipt(
     max_observed_concurrency: int,
     errors: list[str],
     node_artifacts: dict[str, list[str]] | None = None,
+    course_correction_artifacts: list[str] | None = None,
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
@@ -1657,6 +1729,7 @@ def _ready_queue_receipt(
             if path.is_file() and path.name != "dag-receipt.json"
         ],
         "node_artifacts": node_artifacts or {},
+        "course_correction_artifacts": course_correction_artifacts or [],
         "proof_scope": {
             "mocked": False,
             "live": True,
@@ -1802,11 +1875,18 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         "missing_reviewer_verdict",
         "reviewer_target_mismatch",
         "missing_terminal_route",
+        "pointless_unit_test_drift",
     }:
         return {
             "type": "reroute",
             "next_agent": "reviewer",
             "reason": "Inspect missing or inconsistent evidence before normal continuation.",
+        }
+    if normalized == "brave_search_required_after_two_attempts":
+        return {
+            "type": "run_brave_search_then_retry",
+            "next_agent": "goal-guardian",
+            "reason": "Require $brave-search research before another attempt.",
         }
     if normalized in {
         "command_timeout",
@@ -1860,6 +1940,170 @@ def _command_spec_load_stop_reason(error: str) -> str:
     ):
         return "command_policy_rejected"
     return "node_dispatch_failed"
+
+
+def _pointless_unit_test_drift_alert(
+    *,
+    node_id: str,
+    node: ProjectDagNode,
+    attempt: int,
+    stop_reason: str,
+    result: dict[str, Any],
+) -> dict[str, Any] | None:
+    if stop_reason not in {"command_failed", "invalid_command_json", "node_dispatch_failed"}:
+        return None
+    text = _result_text(result).lower()
+    if not text:
+        return None
+    test_markers = (
+        "pytest",
+        "unittest",
+        "test session starts",
+        "collected ",
+        " tests/",
+        " test_",
+        "ruff check",
+        "mypy",
+    )
+    task_markers = (
+        "creator_artifact",
+        "reviewer_verdict",
+        "tau.agent_handoff.v1",
+        "wrote_receipt",
+        "changed_files",
+        "implementation",
+        "patch",
+    )
+    if not any(marker in text for marker in test_markers):
+        return None
+    if any(marker in text for marker in task_markers):
+        return None
+    return _alert(
+        "BLOCK",
+        "pointless_unit_test_drift",
+        "Node appears blocked but is producing test-only churn instead of task evidence.",
+        {
+            "node_id": node_id,
+            "agent": node.agent,
+            "attempt": attempt,
+            "stop_reason": stop_reason,
+            "detected_markers": [marker for marker in test_markers if marker in text],
+            "required_course_correction": "stop_test_churn_report_blocker_and_replan",
+        },
+    )
+
+
+def _write_course_correction_receipt(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    node_id: str,
+    node: ProjectDagNode,
+    attempt: int,
+    code: str,
+    reason: str,
+    stop_reason: str,
+    errors: list[str],
+) -> Path:
+    path = receipt_dir / "course-corrections" / f"{node_id}-attempt-{attempt:03d}-{code}.json"
+    query = _brave_search_query(contract, node_id, node, stop_reason, errors)
+    payload = {
+        "schema": "tau.course_correction.v1",
+        "ok": False,
+        "status": "REQUIRED",
+        "code": code,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "dag_id": contract.dag_id,
+        "goal_hash": contract.goal["goal_hash"],
+        "target": contract.target,
+        "node_id": node_id,
+        "agent": node.agent,
+        "attempt": attempt,
+        "stop_reason": stop_reason,
+        "reason": reason,
+        "required_action": {
+            "skill": "brave-search",
+            "skill_reference": "$brave-search",
+            "query": query,
+            "command": [
+                "python",
+                ".pi/skills/brave-search/brave_search.py",
+                "web",
+                query,
+                "--count",
+                "5",
+            ],
+            "receipt_required": True,
+        },
+        "blocked_report_required": {
+            "required": True,
+            "fields": [
+                "blocker_summary",
+                "attempted_fix",
+                "why_test_churn_is_not_progress",
+                "next_non_test_action",
+                "brave_search_receipt_path",
+            ],
+            "reason": (
+                "Blocked subagents must report the blocker and course correction "
+                "instead of continuing non-essential deterministic unit tests."
+            ),
+        },
+        "errors": errors,
+        "proof_scope": {
+            "proves": [
+                "Tau detected a subagent course-correction condition.",
+                "Tau stopped normal retry before expanding attempt count.",
+                "Tau wrote the Brave Search requirement as a durable artifact.",
+            ],
+            "does_not_prove": [
+                "Brave Search has been executed.",
+                "The next retry will pass.",
+                "Provider/model semantic quality.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    _write_json(path, payload)
+    return path
+
+
+def _brave_search_query(
+    contract: ProjectDagContract,
+    node_id: str,
+    node: ProjectDagNode,
+    stop_reason: str,
+    errors: list[str],
+) -> str:
+    target = str(contract.target.get("target") or contract.dag_id)
+    error_text = " ".join(errors)[:160]
+    parts = [
+        str(contract.target.get("repo") or "tau"),
+        target,
+        node_id,
+        node.agent,
+        stop_reason,
+        error_text,
+    ]
+    return " ".join(part for part in parts if part).strip()
+
+
+def _result_text(result: dict[str, Any]) -> str:
+    chunks: list[str] = []
+    for item in result.get("errors", []):
+        chunks.append(str(item))
+    dispatch = result.get("dispatch")
+    if isinstance(dispatch, dict):
+        for command_result in dispatch.get("command_results", []):
+            if not isinstance(command_result, dict):
+                continue
+            for key in ("stdout", "stderr"):
+                value = command_result.get(key)
+                if isinstance(value, str):
+                    chunks.append(value)
+    return "\n".join(chunks)
 
 
 def _observed_edges(contract: ProjectDagContract, loop_payload: dict[str, Any]) -> list[dict[str, Any]]:

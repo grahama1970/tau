@@ -500,6 +500,106 @@ def test_project_dag_bounded_ready_queue_blocks_after_max_retries(
     ]
 
 
+def test_project_dag_ready_queue_blocks_pointless_unit_test_drift(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["max_attempts"] = 3
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_pointless_unit_test_failure_spec(tmp_path, "coder")
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "POINTLESS_UNIT_TEST_DRIFT"
+    assert receipt["alerts"][0]["code"] == "pointless_unit_test_drift"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "reroute",
+        "next_agent": "reviewer",
+        "reason": "Inspect missing or inconsistent evidence before normal continuation.",
+    }
+    assert len(receipt["course_correction_artifacts"]) == 1
+    course_correction = json.loads(
+        Path(receipt["course_correction_artifacts"][0]).read_text(encoding="utf-8")
+    )
+    assert course_correction["code"] == "pointless_unit_test_drift"
+    assert course_correction["required_action"]["skill_reference"] == "$brave-search"
+    assert course_correction["blocked_report_required"] == {
+        "required": True,
+        "fields": [
+            "blocker_summary",
+            "attempted_fix",
+            "why_test_churn_is_not_progress",
+            "next_non_test_action",
+            "brave_search_receipt_path",
+        ],
+        "reason": (
+            "Blocked subagents must report the blocker and course correction "
+            "instead of continuing non-essential deterministic unit tests."
+        ),
+    }
+
+
+def test_project_dag_ready_queue_requires_brave_search_after_two_failed_attempts(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["max_attempts"] = 3
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_always_non_json_spec(tmp_path, "coder")
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+    assert receipt["node_attempts"]["coder"] == 2
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "run_brave_search_then_retry",
+        "next_agent": "goal-guardian",
+        "reason": "Require $brave-search research before another attempt.",
+    }
+    assert len(receipt["course_correction_artifacts"]) == 1
+    course_correction = json.loads(
+        Path(receipt["course_correction_artifacts"][0]).read_text(encoding="utf-8")
+    )
+    assert course_correction["schema"] == "tau.course_correction.v1"
+    assert course_correction["code"] == "brave_search_required_after_two_attempts"
+    assert course_correction["required_action"]["skill"] == "brave-search"
+    assert "brave_search.py" in course_correction["required_action"]["command"][1]
+    assert course_correction["blocked_report_required"]["required"] is True
+    assert "blocker_summary" in course_correction["blocked_report_required"]["fields"]
+
+
 def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -> None:
     contract_path = _write_parallel_contract(tmp_path)
     _write_response_spec(
@@ -1432,6 +1532,27 @@ def _write_always_non_json_spec(tmp_path: Path, agent: str) -> None:
         json.dumps(
             {
                 "command": [sys.executable, "-c", "print('not json')"],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_pointless_unit_test_failure_spec(tmp_path: Path, agent: str) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "print('pytest tests/test_unrelated.py -q\\ncollected 1 item\\nFAILED'); "
+                        "raise SystemExit(1)"
+                    ),
+                ],
                 "timeout_s": 5,
             }
         ),
