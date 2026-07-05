@@ -1,0 +1,71 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "errors": [],
+        "item_count": 1,
+        "live": true,
+        "manifest_sha256": "sha256:df51445c9fc15a509095d72c40be384c4c98ad21eeff36713fcc431f55f7552d",
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "schema": "tau.evidence_validation_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/advanced.evidence_manifest_validates_clean_artifact.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/advanced.evidence_manifest_validates_clean_artifact.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.evidence_manifest_validates_clean_artifact",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "evidence-validate",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/evidence-manifest-valid/evidence-manifest.json",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/evidence-manifest-valid/evidence-validation-receipt.json"
+  ],
+  "completed_at": "2026-07-05T22:01:18Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/evidence-manifest-valid/evidence-validation-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau validates a typed evidence manifest whose artifact hash, schema, validator namespace, and goal hash all match.",
+  "receipt_summary": {
+    "errors": [],
+    "item_count": 1,
+    "live": true,
+    "manifest_sha256": "sha256:df51445c9fc15a509095d72c40be384c4c98ad21eeff36713fcc431f55f7552d",
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "schema": "tau.evidence_validation_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:01:18Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/advanced.evidence_manifest_validates_clean_artifact.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/advanced.evidence_manifest_validates_clean_artifact.stdout.txt",
+  "timeout_seconds": 60
+}

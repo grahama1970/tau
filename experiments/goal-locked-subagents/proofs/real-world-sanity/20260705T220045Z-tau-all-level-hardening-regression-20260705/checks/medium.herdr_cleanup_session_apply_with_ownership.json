@@ -1,0 +1,177 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "applied_action_count": 2,
+        "candidate_count": 2,
+        "command_results": [
+          {
+            "argv": [
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+              "session",
+              "stop",
+              "session-rw-sanity-codex"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+          },
+          {
+            "argv": [
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+              "session",
+              "get",
+              "session-rw-sanity-codex"
+            ],
+            "returncode": 1,
+            "stderr": "",
+            "stdout": "{\"error\":{\"code\":\"session_not_found\",\"message\":\"session not found\"}}\n"
+          },
+          {
+            "argv": [
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+              "workspace",
+              "close",
+              "w-rw-sanity-session-cleanup"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+          },
+          {
+            "argv": [
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+              "workspace",
+              "get",
+              "w-rw-sanity-session-cleanup"
+            ],
+            "returncode": 1,
+            "stderr": "",
+            "stdout": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\n"
+          }
+        ],
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "post_verified_absent_count": 2,
+        "resource_count": 2,
+        "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/runtime-manifest.json",
+        "runtime_manifest_sha256": "ebfeff33a864c0c1512b65e57e0c1f574c52de7d725fa2310547e77f3ff87294",
+        "schema": "tau.herdr_cleanup_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.herdr_cleanup_session_apply_with_ownership.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.herdr_cleanup_session_apply_with_ownership.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.herdr_cleanup_session_apply_with_ownership",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "herdr-cleanup",
+    "apply",
+    "--run-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned",
+    "--workspace-lease",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/herdr-workspace-lease.json",
+    "--session-ownership",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/herdr-session-ownership.json",
+    "--herdr-bin",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session"
+  ],
+  "completed_at": "2026-07-05T22:01:00Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau stops owned Herdr sessions only when a session ownership receipt covers the recorded session candidate.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "applied_action_count": 2,
+    "candidate_count": 2,
+    "command_results": [
+      {
+        "argv": [
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+          "session",
+          "stop",
+          "session-rw-sanity-codex"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+      },
+      {
+        "argv": [
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+          "session",
+          "get",
+          "session-rw-sanity-codex"
+        ],
+        "returncode": 1,
+        "stderr": "",
+        "stdout": "{\"error\":{\"code\":\"session_not_found\",\"message\":\"session not found\"}}\n"
+      },
+      {
+        "argv": [
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+          "workspace",
+          "close",
+          "w-rw-sanity-session-cleanup"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+      },
+      {
+        "argv": [
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/fake-herdr-owned-session",
+          "workspace",
+          "get",
+          "w-rw-sanity-session-cleanup"
+        ],
+        "returncode": 1,
+        "stderr": "",
+        "stdout": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\n"
+      }
+    ],
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "post_verified_absent_count": 2,
+    "resource_count": 2,
+    "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-herdr-cleanup-session/owned/runtime-manifest.json",
+    "runtime_manifest_sha256": "ebfeff33a864c0c1512b65e57e0c1f574c52de7d725fa2310547e77f3ff87294",
+    "schema": "tau.herdr_cleanup_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:00:59Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.herdr_cleanup_session_apply_with_ownership.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.herdr_cleanup_session_apply_with_ownership.stdout.txt",
+  "timeout_seconds": 60
+}

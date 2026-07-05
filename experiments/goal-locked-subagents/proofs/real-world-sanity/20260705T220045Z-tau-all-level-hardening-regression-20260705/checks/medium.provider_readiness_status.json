@@ -1,0 +1,77 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_session_state_count": 2,
+        "runtime_manifest": {
+          "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-provider-readiness-status/events.jsonl",
+          "provider_session_state_count": 2,
+          "readiness_record_count": 2,
+          "run_id": "rw-sanity-provider-readiness-status",
+          "schema": "tau.provider_readiness_runtime_manifest.v1"
+        },
+        "schema": "tau.run_status.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.provider_readiness_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.provider_readiness_status.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.provider_readiness_status",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "run-status",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-provider-readiness-status"
+  ],
+  "completed_at": "2026-07-05T22:01:04Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 2,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau summarizes structured provider readiness records through the read-only run-status surface.",
+  "receipt_summary": {
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_session_state_count": 2,
+    "runtime_manifest": {
+      "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-provider-readiness-status/events.jsonl",
+      "provider_session_state_count": 2,
+      "readiness_record_count": 2,
+      "run_id": "rw-sanity-provider-readiness-status",
+      "schema": "tau.provider_readiness_runtime_manifest.v1"
+    },
+    "schema": "tau.run_status.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:01:03Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.provider_readiness_status.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.provider_readiness_status.stdout.txt",
+  "timeout_seconds": 60
+}
