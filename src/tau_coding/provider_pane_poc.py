@@ -32,6 +32,10 @@ class ProviderPane:
     role: str
     command: tuple[str, ...]
     split: str | None = None
+    dag_id: str | None = None
+    node_id: str | None = None
+    agent: str | None = None
+    attempt: int | None = None
 
 
 def run_provider_pane_poc(
@@ -170,7 +174,7 @@ def run_provider_pane_poc(
 
     pane_records: list[dict[str, Any]] = []
     for provider in providers:
-        agent_name = f"{run_id}-{provider.provider_id}"
+        agent_name = _provider_agent_name(run_id, provider)
         work_order_path = work_order_dir / f"{provider.provider_id}.json"
         _write_json(work_order_path, _work_order(run_id, provider, work_order_path))
         _append_event(
@@ -368,6 +372,8 @@ def inspect_provider_pane_run(run_dir: Path) -> dict[str, Any]:
             {
                 "provider_id": provider.get("provider_id"),
                 "role": provider.get("role"),
+                "agent_name": provider.get("agent_name"),
+                "dag": provider.get("dag"),
                 "pane_id": provider.get("pane_id"),
                 "terminal_id": provider.get("terminal_id"),
                 "work_order_path": provider.get("work_order_path"),
@@ -392,6 +398,7 @@ def run_provider_readiness_poc(
     herdr_bin: str = "herdr",
     session: str | None = None,
     install_integrations: bool = True,
+    provider_node_context: dict[str, dict[str, object]] | None = None,
 ) -> dict[str, Any]:
     """Launch provider panes and gate PASS on structured Herdr readiness state."""
 
@@ -410,7 +417,10 @@ def run_provider_readiness_poc(
         path.mkdir(parents=True, exist_ok=True)
     events_path = run_dir / "events.jsonl"
 
-    providers = _default_provider_panes(resolved_repo)
+    providers = _default_provider_panes(
+        resolved_repo,
+        provider_node_context=provider_node_context,
+    )
     _write_json(run_dir / "provider-readiness-spec.json", _provider_spec(run_id, label, providers))
     _append_event(events_path, "provider_readiness_spec_created", {"run_id": run_id})
 
@@ -510,7 +520,7 @@ def run_provider_readiness_poc(
     readiness_records: list[dict[str, Any]] = []
     session_state_records: list[dict[str, Any]] = []
     for provider in providers:
-        agent_name = f"{run_id}-{provider.provider_id}"
+        agent_name = _provider_agent_name(run_id, provider)
         work_order_path = work_order_dir / f"{provider.provider_id}.json"
         _write_json(work_order_path, _work_order(run_id, provider, work_order_path))
         start_args = [
@@ -786,6 +796,8 @@ def _provider_spec(
             {
                 "provider_id": provider.provider_id,
                 "role": provider.role,
+                "agent_name": _provider_agent_name(run_id, provider),
+                "dag": _provider_dag_fields(provider),
                 "command": list(provider.command),
                 "receipt_required": False,
                 "stop_conditions": ["pane_started", "blocked_with_reason"],
@@ -805,6 +817,8 @@ def _work_order(run_id: str, provider: ProviderPane, work_order_path: Path) -> d
         "run_id": run_id,
         "provider_id": provider.provider_id,
         "role": provider.role,
+        "agent_name": _provider_agent_name(run_id, provider),
+        "dag": _provider_dag_fields(provider),
         "summary": (
             "Provider pane launch smoke only. Do not modify files or claim task completion "
             "from this work order."
@@ -851,6 +865,8 @@ def _pane_record(
     return {
         "provider_id": provider.provider_id,
         "role": provider.role,
+        "agent_name": agent_name,
+        "dag": _provider_dag_fields(provider),
         "work_order_path": str(work_order_path),
         "pane_id": agent.get("pane_id"),
         "terminal_id": agent.get("terminal_id"),
@@ -916,20 +932,76 @@ def _ready_prompt_observed(provider_id: str, text: str) -> bool:
     return False
 
 
-def _default_provider_panes(repo: Path) -> tuple[ProviderPane, ...]:
+def _default_provider_panes(
+    repo: Path,
+    *,
+    provider_node_context: dict[str, dict[str, object]] | None = None,
+) -> tuple[ProviderPane, ...]:
+    provider_node_context = provider_node_context or {}
     return (
         ProviderPane(
             provider_id="codex",
             role="codex",
             command=("codex", "--cd", str(repo)),
+            **_provider_context_kwargs(provider_node_context.get("codex")),
         ),
         ProviderPane(
             provider_id="opencode",
             role="opencode",
             command=("opencode", str(repo)),
             split="right",
+            **_provider_context_kwargs(provider_node_context.get("opencode")),
         ),
     )
+
+
+def _provider_context_kwargs(context: dict[str, object] | None) -> dict[str, object]:
+    if not context:
+        return {}
+    result: dict[str, object] = {}
+    for key in ("dag_id", "node_id", "agent"):
+        value = context.get(key)
+        if isinstance(value, str) and value.strip():
+            result[key] = value
+    attempt = context.get("attempt")
+    if isinstance(attempt, int) and attempt > 0:
+        result["attempt"] = attempt
+    return result
+
+
+def _provider_agent_name(run_id: str, provider: ProviderPane) -> str:
+    if not any((provider.dag_id, provider.node_id, provider.agent, provider.attempt)):
+        return f"{run_id}-{provider.provider_id}"
+
+    raw_parts: list[str] = [
+        provider.dag_id or run_id,
+        provider.node_id or provider.role,
+    ]
+    if provider.agent and provider.agent != provider.node_id:
+        raw_parts.append(provider.agent)
+    raw_parts.append(provider.provider_id)
+    if provider.attempt is not None:
+        raw_parts.append(f"attempt-{provider.attempt:02d}")
+
+    parts: list[str] = []
+    for raw_part in raw_parts:
+        part = _slug(raw_part)
+        if not parts or parts[-1] != part:
+            parts.append(part)
+    return "-".join(parts)
+
+
+def _provider_dag_fields(provider: ProviderPane) -> dict[str, object]:
+    fields: dict[str, object] = {}
+    if provider.dag_id:
+        fields["dag_id"] = provider.dag_id
+    if provider.node_id:
+        fields["node_id"] = provider.node_id
+    if provider.agent:
+        fields["agent"] = provider.agent
+    if provider.attempt is not None:
+        fields["attempt"] = provider.attempt
+    return fields
 
 
 def _expected_provider_command(provider_id: str) -> str:

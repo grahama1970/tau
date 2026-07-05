@@ -12,7 +12,11 @@ from tau_coding.provider_dag_poc import (
     run_provider_dag_orchestrator,
 )
 from tau_coding.provider_pane_poc import (
+    ProviderPane,
     _compact_readiness_samples,
+    _default_provider_panes,
+    _pane_record,
+    _provider_agent_name,
     inspect_provider_pane_run,
     inspect_provider_readiness_run,
 )
@@ -89,6 +93,8 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
         {
             "provider_id": "codex",
             "role": "codex",
+            "agent_name": None,
+            "dag": None,
             "pane_id": "w1:p1",
             "terminal_id": "term_codex",
             "work_order_path": "/tmp/codex.json",
@@ -100,6 +106,8 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
         {
             "provider_id": "opencode",
             "role": "opencode",
+            "agent_name": None,
+            "dag": None,
             "pane_id": "w1:p2",
             "terminal_id": "term_opencode",
             "work_order_path": "/tmp/opencode.json",
@@ -109,6 +117,100 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
             "read_returncode": 0,
         },
     ]
+
+
+def test_provider_agent_name_keeps_run_provider_fallback() -> None:
+    provider = ProviderPane(
+        provider_id="codex",
+        role="codex",
+        command=("codex",),
+    )
+
+    assert _provider_agent_name("run-001", provider) == "run-001-codex"
+
+
+def test_provider_agent_name_uses_dag_node_context() -> None:
+    provider = ProviderPane(
+        provider_id="codex",
+        role="codex",
+        command=("codex",),
+        dag_id="tau-issue-47-script-contract",
+        node_id="script-writer",
+        agent="coder",
+    )
+
+    assert (
+        _provider_agent_name("run-001", provider)
+        == "tau-issue-47-script-contract-script-writer-coder-codex"
+    )
+
+
+def test_default_provider_panes_accept_dag_node_context(tmp_path: Path) -> None:
+    providers = _default_provider_panes(
+        tmp_path,
+        provider_node_context={
+            "codex": {
+                "dag_id": "tau-provider-dag",
+                "node_id": "coder",
+                "agent": "coder",
+            },
+            "opencode": {
+                "dag_id": "tau-provider-dag",
+                "node_id": "reviewer",
+                "agent": "reviewer",
+            },
+        },
+    )
+
+    names = {
+        provider.provider_id: _provider_agent_name("readiness-run", provider)
+        for provider in providers
+    }
+    assert names == {
+        "codex": "tau-provider-dag-coder-codex",
+        "opencode": "tau-provider-dag-reviewer-opencode",
+    }
+
+
+def test_pane_record_preserves_agent_name_and_dag_context(tmp_path: Path) -> None:
+    provider = ProviderPane(
+        provider_id="codex",
+        role="codex",
+        command=("codex",),
+        dag_id="tau-provider-dag",
+        node_id="coder",
+        agent="coder",
+    )
+    record = _pane_record(
+        provider,
+        tmp_path / "codex.json",
+        "tau-provider-dag-coder-codex",
+        {
+            "agents": {
+                "tau-provider-dag-coder-codex": {
+                    "last_start_result": {
+                        "returncode": 0,
+                        "parsed": {
+                            "result": {
+                                "agent": {
+                                    "pane_id": "pane-1",
+                                    "terminal_id": "term-1",
+                                    "workspace_id": "ws-1",
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+        },
+    )
+
+    assert record["agent_name"] == "tau-provider-dag-coder-codex"
+    assert record["dag"] == {
+        "dag_id": "tau-provider-dag",
+        "node_id": "coder",
+        "agent": "coder",
+    }
 
 
 def test_inspect_provider_readiness_run_summarizes_structured_records(tmp_path: Path) -> None:

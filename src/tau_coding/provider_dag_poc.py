@@ -216,6 +216,18 @@ def run_provider_dag_orchestrator(
         herdr_bin=herdr_bin,
         session=session,
         install_integrations=install_integrations,
+        provider_node_context={
+            "codex": {
+                "dag_id": run_id,
+                "node_id": "coder",
+                "agent": "coder",
+            },
+            "opencode": {
+                "dag_id": run_id,
+                "node_id": "reviewer",
+                "agent": "reviewer",
+            },
+        },
     )
     _write_json(run_dir / "provider-readiness-receipt.json", readiness)
     if readiness.get("ok") is not True:
