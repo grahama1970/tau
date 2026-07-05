@@ -1,0 +1,69 @@
+{
+  "alerts": [],
+  "applied_action_count": 0,
+  "applied_actions": [],
+  "approval_receipt": null,
+  "approval_receipt_sha256": null,
+  "approval_required": false,
+  "candidate_count": 0,
+  "candidates": [],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "list"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:list\",\"result\":{\"type\":\"workspace_list\",\"workspaces\":[{\"active_tab_id\":\"w11:t1\",\"agent_status\":\"done\",\"focused\":false,\"label\":\"chatterbox\",\"number\":1,\"pane_count\":6,\"tab_count\":6,\"workspace_id\":\"w11\"},{\"active_tab_id\":\"w4C:t1\",\"agent_status\":\"idle\",\"focused\":true,\"label\":\"rw-sanity-provider-dag-max-exhaustion-readiness\",\"number\":2,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w4C\"}]}}\n"
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "include_current_workspace": false,
+  "label_prefixes": [
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-"
+  ],
+  "live": false,
+  "mocked": false,
+  "mode": "dry-run",
+  "ok": true,
+  "post_verified_absent_count": 0,
+  "proof_scope": {
+    "does_not_prove": [
+      "Cleanup of arbitrary non-Tau Herdr workspaces.",
+      "Deletion of Git worktrees or local proof artifacts.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
+      "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
+      "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+      "Tau Herdr GC apply requires an explicit approval receipt before mutation.",
+      "Apply mode verifies closed workspaces are no longer addressable through Herdr."
+    ]
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-audit-after-broader-regression-20260705",
+  "schema": "tau.herdr_gc_receipt.v1",
+  "skipped": [
+    {
+      "agent_status": "idle",
+      "focused": true,
+      "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+      "pane_count": 8,
+      "reason": "focused_workspace",
+      "tab_count": 4,
+      "workspace_id": "w4C"
+    }
+  ],
+  "skipped_count": 1,
+  "status": "PASS",
+  "timestamp": "2026-07-05T21:59:46Z",
+  "workspace_count": 2
+}
