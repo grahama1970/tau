@@ -643,6 +643,106 @@ def test_run_status_summarizes_herdr_gc_receipt_over_approval(
     }
 
 
+def test_run_status_summarizes_route_memory_sync_over_approval(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "approval-gate-receipt.json",
+        {
+            "schema": "tau.approval_gate_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "approved": True,
+            "requested_action": "memory_upsert",
+            "approval_packet": str(tmp_path / "approval.json"),
+            "approval_packet_sha256": "sha256-approval",
+            "packet_summary": {"action": "memory_upsert"},
+            "errors": [],
+        },
+    )
+    _write_json(
+        tmp_path / "dag-route-memory-candidate-receipt.json",
+        {
+            "schema": "tau.dag_route_memory_candidate_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "dag_id": "dag-1",
+            "goal_hash": "sha256:goal",
+            "accepted_candidate_count": 1,
+            "rejected_candidate_count": 0,
+            "sync_status": "NOT_SYNCED",
+            "memory_sync": False,
+            "route_mutation": False,
+            "dag_mutation": False,
+            "provider_calls": False,
+            "alerts": [],
+        },
+    )
+    _write_json(
+        tmp_path / "dag-route-memory-sync-receipt.json",
+        {
+            "schema": "tau.dag_route_memory_sync_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "dag_id": "dag-1",
+            "goal_hash": "sha256:goal",
+            "collection": "tau_route_memory",
+            "memory_url": "http://127.0.0.1:8601",
+            "apply": True,
+            "memory_sync": True,
+            "sync_status": "SYNCED",
+            "projected_document_count": 1,
+            "memory_response": {
+                "collection": "tau_route_memory",
+                "inserted": 1,
+                "updated": 0,
+                "total": 1,
+                "errors": [],
+            },
+            "approval_receipt": str(tmp_path / "approval-gate-receipt.json"),
+            "approval_receipt_sha256": "sha256-gate",
+            "alerts": [],
+            "route_mutation": False,
+            "dag_mutation": False,
+            "provider_calls": False,
+        },
+    )
+    _write_json(
+        tmp_path / "memory-readback.json",
+        {
+            "schema": "tau.memory_readback_proof.v1",
+            "ok": True,
+            "status": "PASS",
+            "collection": "tau_route_memory",
+            "memory_url": "http://127.0.0.1:8601",
+            "endpoint": "POST /list",
+            "document_count_returned": 6,
+            "found_count": 1,
+            "missing_keys": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["detected_type"] == "route_memory"
+    assert status["missing_required_artifacts"] == []
+    assert status["approval_gate"]["requested_action"] == "memory_upsert"
+    assert status["route_memory"]["candidate"]["accepted_candidate_count"] == 1
+    assert status["route_memory"]["sync"]["sync_status"] == "SYNCED"
+    assert status["route_memory"]["sync"]["memory_sync"] is True
+    assert status["route_memory"]["sync"]["memory_response"] == {
+        "collection": "tau_route_memory",
+        "inserted": 1,
+        "updated": 0,
+        "total": 1,
+        "error_count": 0,
+    }
+    assert status["route_memory"]["readback"]["found_count"] == 1
+    assert status["route_memory"]["readback"]["missing_keys"] == []
+
+
 def test_run_status_summarizes_standalone_orchestration_evidence_receipt(
     tmp_path: Path,
 ) -> None:

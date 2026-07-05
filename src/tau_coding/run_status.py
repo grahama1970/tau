@@ -30,6 +30,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     browser_cdp_proof = _read_optional_json(artifacts["browser_cdp_proof"])
     dag_stress_suite = _read_optional_json(artifacts["dag_stress_suite"])
     dag_stress_campaign = _read_optional_json(artifacts["dag_stress_campaign"])
+    route_memory_candidate = _read_optional_json(artifacts["route_memory_candidate"])
+    route_memory_sync = _read_optional_json(artifacts["route_memory_sync"])
+    memory_readback = _read_optional_json(artifacts["memory_readback"])
     github_apply_policy = _read_optional_json(artifacts["github_apply_policy"])
     github_handoff_transport = _read_optional_json(artifacts["github_handoff_transport"])
     lifecycle_states = _load_lifecycle_states(resolved, runtime_manifest, run_receipt)
@@ -47,6 +50,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         browser_cdp_proof=browser_cdp_proof,
         dag_stress_suite=dag_stress_suite,
         dag_stress_campaign=dag_stress_campaign,
+        route_memory_candidate=route_memory_candidate,
+        route_memory_sync=route_memory_sync,
+        memory_readback=memory_readback,
         github_apply_policy=github_apply_policy,
         github_handoff_transport=github_handoff_transport,
     )
@@ -61,6 +67,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         browser_cdp_proof,
         dag_stress_suite,
         dag_stress_campaign,
+        route_memory_sync,
+        route_memory_candidate,
+        memory_readback,
         github_apply_policy,
         github_handoff_transport,
     )
@@ -89,6 +98,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             browser_cdp_proof,
             dag_stress_suite,
             dag_stress_campaign,
+            route_memory_sync,
+            route_memory_candidate,
+            memory_readback,
             github_apply_policy,
             github_handoff_transport,
         ),
@@ -122,6 +134,11 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "browser_cdp_proof": _browser_cdp_proof_summary(browser_cdp_proof),
         "dag_stress": _dag_stress_summary(dag_stress_suite),
         "dag_stress_campaign": _dag_stress_campaign_summary(dag_stress_campaign),
+        "route_memory": _route_memory_summary(
+            route_memory_candidate,
+            route_memory_sync,
+            memory_readback,
+        ),
         "github_apply_policy": _github_apply_policy_summary(github_apply_policy),
         "github_handoff_transport": _github_handoff_transport_summary(github_handoff_transport),
         "proof_scope": {
@@ -157,6 +174,9 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "browser_cdp_proof": run_dir / "browser-cdp-proof" / "browser-cdp-proof-receipt.json",
         "dag_stress_suite": run_dir / "suite-receipt.json",
         "dag_stress_campaign": run_dir / "campaign-receipt.json",
+        "route_memory_candidate": run_dir / "dag-route-memory-candidate-receipt.json",
+        "route_memory_sync": run_dir / "dag-route-memory-sync-receipt.json",
+        "memory_readback": run_dir / "memory-readback.json",
         "github_apply_policy": run_dir / "github-apply-policy-receipt.json",
         "github_handoff_transport": run_dir / "github-transport-missing-policy-receipt.json",
     }
@@ -178,6 +198,7 @@ def _missing_required_artifact(
         "dag_stress",
         "dag_stress_campaign",
         "herdr_gc",
+        "route_memory",
         "herdr_cleanup",
         "orchestration_evidence",
         "provider_dag_planner",
@@ -192,6 +213,7 @@ def _missing_required_artifact(
         "dag_stress",
         "dag_stress_campaign",
         "herdr_gc",
+        "route_memory",
         "generic_dag",
         "herdr_cleanup",
         "orchestration_evidence",
@@ -217,6 +239,9 @@ def _detected_type(
     browser_cdp_proof: dict[str, Any],
     dag_stress_suite: dict[str, Any],
     dag_stress_campaign: dict[str, Any],
+    route_memory_candidate: dict[str, Any],
+    route_memory_sync: dict[str, Any],
+    memory_readback: dict[str, Any],
     github_apply_policy: dict[str, Any],
     github_handoff_transport: dict[str, Any],
 ) -> str:
@@ -224,6 +249,9 @@ def _detected_type(
         run_receipt.get("schema")
         or herdr_gc.get("schema")
         or cleanup.get("schema")
+        or route_memory_sync.get("schema")
+        or route_memory_candidate.get("schema")
+        or memory_readback.get("schema")
         or approval_gate.get("schema")
         or orchestration_evidence.get("schema")
         or planner_receipt.get("schema")
@@ -261,6 +289,12 @@ def _detected_type(
         return "dag_stress"
     if schema == "tau.dag_stress_campaign_receipt.v1":
         return "dag_stress_campaign"
+    if schema in {
+        "tau.dag_route_memory_candidate_receipt.v1",
+        "tau.dag_route_memory_sync_receipt.v1",
+        "tau.memory_readback_proof.v1",
+    }:
+        return "route_memory"
     if schema == "tau.github_apply_policy_receipt.v1":
         return "github_apply_policy"
     if schema == "tau.github_handoff_transport_receipt.v1":
@@ -281,6 +315,9 @@ def _overall_status(
     browser_cdp_proof: dict[str, Any],
     dag_stress_suite: dict[str, Any],
     dag_stress_campaign: dict[str, Any],
+    route_memory_sync: dict[str, Any],
+    route_memory_candidate: dict[str, Any],
+    memory_readback: dict[str, Any],
     github_apply_policy: dict[str, Any],
     github_handoff_transport: dict[str, Any],
 ) -> str:
@@ -289,6 +326,9 @@ def _overall_status(
         checkpoint,
         herdr_gc,
         cleanup,
+        route_memory_sync,
+        route_memory_candidate,
+        memory_readback,
         approval_gate,
         orchestration_evidence,
         planner_receipt,
@@ -1020,6 +1060,86 @@ def _dag_stress_campaign_summary(payload: dict[str, Any]) -> dict[str, Any] | No
         "status_counts": payload.get("status_counts"),
         "verdict_counts": payload.get("verdict_counts"),
         "grading_dimensions": payload.get("grading_dimensions"),
+    }
+
+
+def _route_memory_summary(
+    candidate: dict[str, Any],
+    sync: dict[str, Any],
+    readback: dict[str, Any],
+) -> dict[str, Any] | None:
+    if not any((candidate, sync, readback)):
+        return None
+    candidate_ok = candidate.get("schema") == "tau.dag_route_memory_candidate_receipt.v1"
+    sync_ok = sync.get("schema") == "tau.dag_route_memory_sync_receipt.v1"
+    readback_ok = readback.get("schema") == "tau.memory_readback_proof.v1"
+    memory_response = sync.get("memory_response")
+    memory_response = memory_response if isinstance(memory_response, dict) else {}
+    return {
+        "candidate": (
+            {
+                "schema": candidate.get("schema"),
+                "status": candidate.get("status"),
+                "ok": candidate.get("ok"),
+                "dag_id": candidate.get("dag_id"),
+                "goal_hash": candidate.get("goal_hash"),
+                "accepted_candidate_count": candidate.get("accepted_candidate_count"),
+                "rejected_candidate_count": candidate.get("rejected_candidate_count"),
+                "sync_status": candidate.get("sync_status"),
+                "memory_sync": candidate.get("memory_sync"),
+                "route_mutation": candidate.get("route_mutation"),
+                "dag_mutation": candidate.get("dag_mutation"),
+                "provider_calls": candidate.get("provider_calls"),
+                "alert_count": _count(candidate.get("alerts")),
+            }
+            if candidate_ok
+            else None
+        ),
+        "sync": (
+            {
+                "schema": sync.get("schema"),
+                "status": sync.get("status"),
+                "ok": sync.get("ok"),
+                "dag_id": sync.get("dag_id"),
+                "goal_hash": sync.get("goal_hash"),
+                "collection": sync.get("collection"),
+                "memory_url": sync.get("memory_url"),
+                "apply": sync.get("apply"),
+                "memory_sync": sync.get("memory_sync"),
+                "sync_status": sync.get("sync_status"),
+                "projected_document_count": sync.get("projected_document_count"),
+                "memory_response": {
+                    "collection": memory_response.get("collection"),
+                    "inserted": memory_response.get("inserted"),
+                    "updated": memory_response.get("updated"),
+                    "total": memory_response.get("total"),
+                    "error_count": _count(memory_response.get("errors")),
+                },
+                "approval_receipt": sync.get("approval_receipt"),
+                "approval_receipt_sha256": sync.get("approval_receipt_sha256"),
+                "alert_count": _count(sync.get("alerts")),
+                "route_mutation": sync.get("route_mutation"),
+                "dag_mutation": sync.get("dag_mutation"),
+                "provider_calls": sync.get("provider_calls"),
+            }
+            if sync_ok
+            else None
+        ),
+        "readback": (
+            {
+                "schema": readback.get("schema"),
+                "status": readback.get("status"),
+                "ok": readback.get("ok"),
+                "collection": readback.get("collection"),
+                "memory_url": readback.get("memory_url"),
+                "endpoint": readback.get("endpoint"),
+                "document_count_returned": readback.get("document_count_returned"),
+                "found_count": readback.get("found_count"),
+                "missing_keys": readback.get("missing_keys"),
+            }
+            if readback_ok
+            else None
+        ),
     }
 
 
