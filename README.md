@@ -88,6 +88,8 @@ an agent DAG is trustworthy.
 
 The policy/data-boundary gate is documented in
 [Zero-Trust Policy/Data-Boundary Preflight](docs/zero-trust-policy.md).
+The adversarial model is documented in
+[Tau Zero-Trust Threat Model](docs/threat-model.md).
 
 ## Herdr-visible subagent monitoring
 
