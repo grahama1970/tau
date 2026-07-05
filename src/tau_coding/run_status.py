@@ -19,6 +19,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     run_receipt = _read_optional_json(artifacts["run_receipt"])
     if not run_receipt:
         run_receipt = _read_optional_json(artifacts["real_world_sanity_receipt"])
+    project_dag_receipt = _read_optional_json(artifacts["project_dag_receipt"])
+    evidence_validation = _read_optional_json(artifacts["evidence_validation"])
     runtime_manifest = _read_optional_json(artifacts["runtime_manifest"])
     checkpoint = _read_optional_json(artifacts["checkpoint"])
     current_state = _read_optional_json(artifacts["current_state"])
@@ -50,6 +52,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     events_count = _events_count(events_path)
     detected_type = _detected_type(
         run_receipt,
+        project_dag_receipt,
+        evidence_validation,
         runtime_manifest,
         approval_gate=approval_gate,
         cleanup=cleanup,
@@ -70,6 +74,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     )
     status = _overall_status(
         run_receipt,
+        project_dag_receipt,
+        evidence_validation,
         checkpoint,
         approval_gate,
         cleanup,
@@ -105,6 +111,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "mocked": False,
         "live": _live_value(
             run_receipt,
+            project_dag_receipt,
+            evidence_validation,
             cleanup,
             herdr_gc,
             approval_gate,
@@ -127,6 +135,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "artifacts": {name: str(path) for name, path in artifacts.items() if path.exists()},
         "missing_required_artifacts": missing,
         "run_receipt": _receipt_summary(run_receipt),
+        "project_dag": _project_dag_summary(project_dag_receipt),
+        "evidence_validation": _evidence_validation_summary(evidence_validation),
         "runtime_manifest": _manifest_summary(runtime_manifest),
         "checkpoint": _checkpoint_summary(checkpoint or current_state),
         "generic_dag": _generic_dag_summary(run_receipt),
@@ -168,6 +178,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             "proves": [
                 "Tau can summarize known run artifacts from one run directory",
                 "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+                "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests",
             ],
             "does_not_prove": [
                 "new provider execution",
@@ -185,6 +196,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
 def _artifact_paths(run_dir: Path) -> dict[str, Path]:
     return {
         "run_receipt": run_dir / "run-receipt.json",
+        "project_dag_receipt": run_dir / "dag-receipt.json",
+        "evidence_validation": run_dir / "evidence-validation-receipt.json",
         "runtime_manifest": run_dir / "runtime-manifest.json",
         "checkpoint": run_dir / "checkpoint.json",
         "current_state": run_dir / "current-state.json",
@@ -222,6 +235,8 @@ def _missing_required_artifact(
         return False
     if name == "run_receipt" and artifacts["real_world_sanity_receipt"].exists():
         return False
+    if name == "run_receipt" and artifacts["project_dag_receipt"].exists():
+        return False
     if name == "run_receipt" and detected_type in {
         "approval_gate",
         "dag_stress",
@@ -236,6 +251,7 @@ def _missing_required_artifact(
         "browser_cdp_proof",
         "github_apply_policy",
         "github_handoff_transport",
+        "project_dag",
     }:
         return False
     if name == "runtime_manifest" and detected_type in {
@@ -253,6 +269,7 @@ def _missing_required_artifact(
         "browser_cdp_proof",
         "github_apply_policy",
         "github_handoff_transport",
+        "project_dag",
     }:
         return False
     return True
@@ -260,6 +277,8 @@ def _missing_required_artifact(
 
 def _detected_type(
     run_receipt: dict[str, Any],
+    project_dag_receipt: dict[str, Any],
+    evidence_validation: dict[str, Any],
     runtime_manifest: dict[str, Any],
     *,
     approval_gate: dict[str, Any],
@@ -281,6 +300,8 @@ def _detected_type(
 ) -> str:
     schema = str(
         run_receipt.get("schema")
+        or project_dag_receipt.get("schema")
+        or evidence_validation.get("schema")
         or herdr_gc.get("schema")
         or cleanup.get("schema")
         or route_memory_sync.get("schema")
@@ -302,6 +323,8 @@ def _detected_type(
     )
     if schema == "tau.generic_dag_run_receipt.v1":
         return "generic_dag"
+    if schema in {"tau.dag_receipt.v1", "tau.evidence_validation_receipt.v1"}:
+        return "project_dag"
     if schema == "tau.provider_pane_run_receipt.v1":
         return "provider_pane"
     if schema == "tau.provider_readiness_run_receipt.v1":
@@ -349,6 +372,8 @@ def _detected_type(
 
 def _overall_status(
     run_receipt: dict[str, Any],
+    project_dag_receipt: dict[str, Any],
+    evidence_validation: dict[str, Any],
     checkpoint: dict[str, Any],
     approval_gate: dict[str, Any],
     cleanup: dict[str, Any],
@@ -369,6 +394,8 @@ def _overall_status(
 ) -> str:
     for payload in (
         run_receipt,
+        project_dag_receipt,
+        evidence_validation,
         checkpoint,
         herdr_gc,
         cleanup,
@@ -492,6 +519,55 @@ def _generic_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
             for node in nodes
             if isinstance(node, dict)
         ],
+    }
+
+
+def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.dag_receipt.v1":
+        return None
+    node_attempts = payload.get("node_attempts")
+    observed_edges = payload.get("observed_edges")
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "verdict": payload.get("verdict"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "dag_id": payload.get("dag_id"),
+        "goal_hash": payload.get("goal_hash"),
+        "target": payload.get("target"),
+        "entry_node": payload.get("entry_node"),
+        "terminal_nodes": payload.get("terminal_nodes"),
+        "observed_edge_count": _count(observed_edges),
+        "observed_edges": observed_edges if isinstance(observed_edges, list) else [],
+        "node_attempt_count": _count(node_attempts),
+        "node_attempts": node_attempts if isinstance(node_attempts, dict) else {},
+        "missing_required_evidence": payload.get("missing_required_evidence"),
+        "unexpected_edges": payload.get("unexpected_edges"),
+        "course_correction_path": payload.get("course_correction_path"),
+        "error_count": _count(payload.get("errors")),
+        "errors": payload.get("errors") if isinstance(payload.get("errors"), list) else [],
+    }
+
+
+def _evidence_validation_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.evidence_validation_receipt.v1":
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "dag_id": payload.get("dag_id"),
+        "manifest_path": payload.get("manifest_path"),
+        "manifest_sha256": payload.get("manifest_sha256"),
+        "item_count": payload.get("item_count"),
+        "valid_item_count": payload.get("valid_item_count"),
+        "invalid_item_count": payload.get("invalid_item_count"),
+        "error_count": _count(payload.get("errors")),
+        "errors": payload.get("errors") if isinstance(payload.get("errors"), list) else [],
     }
 
 

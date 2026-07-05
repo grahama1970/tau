@@ -1241,6 +1241,116 @@ def test_run_status_summarizes_github_handoff_transport_receipt(tmp_path: Path) 
     }
 
 
+def test_run_status_summarizes_project_dag_evidence_validation_failure(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path.parent / "evidence-manifest.json"
+    _write_json(
+        tmp_path / "dag-receipt.json",
+        {
+            "schema": "tau.dag_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "verdict": "EVIDENCE_MANIFEST_INVALID",
+            "mocked": False,
+            "live": True,
+            "dag_id": "project-dag-evidence-drift",
+            "goal_hash": "sha256:goal",
+            "observed_edges": [],
+            "node_attempts": {},
+            "errors": [
+                "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
+            ],
+        },
+    )
+    _write_json(
+        tmp_path / "evidence-validation-receipt.json",
+        {
+            "schema": "tau.evidence_validation_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": True,
+            "dag_id": "project-dag-evidence-drift",
+            "manifest_path": str(manifest),
+            "manifest_sha256": "sha256:manifest",
+            "item_count": 2,
+            "valid_item_count": 1,
+            "invalid_item_count": 1,
+            "errors": [
+                "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
+            ],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is False
+    assert status["status"] == "BLOCKED"
+    assert status["live"] is True
+    assert status["detected_type"] == "project_dag"
+    assert status["missing_required_artifacts"] == []
+    assert status["project_dag"]["verdict"] == "EVIDENCE_MANIFEST_INVALID"
+    assert status["project_dag"]["error_count"] == 1
+    assert status["project_dag"]["node_attempt_count"] == 0
+    assert status["evidence_validation"] == {
+        "schema": "tau.evidence_validation_receipt.v1",
+        "status": "BLOCKED",
+        "ok": False,
+        "mocked": False,
+        "live": True,
+        "dag_id": "project-dag-evidence-drift",
+        "manifest_path": str(manifest),
+        "manifest_sha256": "sha256:manifest",
+        "item_count": 2,
+        "valid_item_count": 1,
+        "invalid_item_count": 1,
+        "error_count": 1,
+        "errors": [
+            "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
+        ],
+    }
+
+
+def test_run_status_summarizes_project_dag_command_policy_rejection(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "dag-receipt.json",
+        {
+            "schema": "tau.dag_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "verdict": "COMMAND_POLICY_REJECTED",
+            "mocked": False,
+            "live": True,
+            "dag_id": "project-dag-command-policy-network",
+            "goal_hash": "sha256:goal",
+            "observed_edges": [],
+            "node_attempts": {},
+            "errors": [
+                "agent dispatch command spec /tmp/coder/tau-dispatch-command.json "
+                "requires network but command policy does not allow network"
+            ],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is False
+    assert status["status"] == "BLOCKED"
+    assert status["live"] is True
+    assert status["detected_type"] == "project_dag"
+    assert status["missing_required_artifacts"] == []
+    assert status["project_dag"]["verdict"] == "COMMAND_POLICY_REJECTED"
+    assert status["project_dag"]["error_count"] == 1
+    assert status["project_dag"]["errors"] == [
+        "agent dispatch command spec /tmp/coder/tau-dispatch-command.json "
+        "requires network but command policy does not allow network"
+    ]
+    assert status["evidence_validation"] is None
+
+
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
