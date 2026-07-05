@@ -494,7 +494,12 @@ def test_project_dag_bounded_ready_queue_blocks_after_max_retries(
         "next_agent": "goal-guardian",
         "reason": "Repair the node command or subagent response contract before retrying.",
     }
-    assert [event["retrying"] for event in receipt["scheduler_events"] if event["event"] == "node_attempt_failed"] == [
+    retrying = [
+        event["retrying"]
+        for event in receipt["scheduler_events"]
+        if event["event"] == "node_attempt_failed"
+    ]
+    assert retrying == [
         True,
         False,
     ]
@@ -632,6 +637,105 @@ def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -
     }
 
 
+def test_project_dag_zero_trust_blocks_missing_data_boundary(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_DATA_BOUNDARY"
+    assert receipt["alerts"][0]["code"] == "missing_data_boundary"
+    assert receipt["dag_error"]["schema"] == DAG_ERROR_SCHEMA
+    assert receipt["dag_error"]["failure_code"] == "missing_data_boundary"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_then_retry_or_reroute",
+        "next_agent": "goal-guardian",
+        "reason": "Repair zero-trust policy/data-boundary gates before DAG dispatch.",
+    }
+    assert Path(str(receipt["zero_trust_preflight_receipt"])).exists()
+
+
+def test_project_dag_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    boundary_path = _write_data_boundary(tmp_path, {"classification": None})
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["data_boundary"] = str(boundary_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["alerts"][0]["code"] == "missing_classification"
+    assert "classification must be one of" in receipt["errors"][0]
+
+
+def test_project_dag_zero_trust_allows_valid_public_boundary(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["data_boundary"] = _public_data_boundary()
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+
+
+def test_project_dag_zero_trust_blocks_external_provider_when_policy_denies(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["data_boundary"] = _public_data_boundary()
+    payload["nodes"][0]["provider"] = {"adapter": "generic-provider-dag-node"}
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["alerts"][0]["code"] == "external_provider_denied"
+
+
+def test_project_dag_legacy_contract_still_runs_without_policy_profile(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt.get("zero_trust_preflight_receipt") is None
+
+
 def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_path: Path) -> None:
     contract_path = tmp_path / "bad-project-dag.json"
     contract_path.write_text(
@@ -747,7 +851,10 @@ def test_cli_dag_run_unknown_fail_closed_code_returns_course_correction_json(
     assert result.exit_code == 1
     assert error_payload["schema"] == DAG_ERROR_SCHEMA
     assert error_payload["failure_code"] == "dag_contract_invalid"
-    assert "fail_closed_on contains unknown invariant code(s): nebulous_goal" in error_payload["message"]
+    assert (
+        "fail_closed_on contains unknown invariant code(s): nebulous_goal"
+        in error_payload["message"]
+    )
     assert "goal_hash_mismatch" in error_payload["message"]
     assert error_payload["recommended_action"]["next_agent"] == "goal-guardian"
 
@@ -1258,6 +1365,51 @@ fail_closed_on:
         encoding="utf-8",
     )
     return path
+
+
+def _write_zero_trust_policy(tmp_path: Path) -> Path:
+    path = tmp_path / "zero-trust-policy.json"
+    path.write_text(json.dumps(_zero_trust_policy()), encoding="utf-8")
+    return path
+
+
+def _write_data_boundary(tmp_path: Path, overrides: dict[str, object] | None = None) -> Path:
+    path = tmp_path / "data-boundary.json"
+    payload = _public_data_boundary()
+    if overrides:
+        payload.update(overrides)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _zero_trust_policy() -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "itar-zero-trust-local-only",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {"external_search": "deny", "manual_sanitized_receipt": "allow_with_review"},
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": [], "read_denylist": []},
+    }
+
+
+def _public_data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }
 
 
 def _write_parallel_contract(tmp_path: Path) -> Path:

@@ -125,6 +125,98 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert "Live provider/model semantic quality." in payload["proof_boundary"]["does_not_prove"]
 
 
+def test_cli_zero_trust_doctor_reports_policy_and_boundary_status(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "zero-trust-preflight.json"
+    result = CliRunner().invoke(
+        app,
+        [
+            "zero-trust-doctor",
+            "--policy-profile",
+            str(FIXTURES / "zero-trust-policy.json"),
+            "--data-boundary",
+            str(FIXTURES / "itar-data-boundary.json"),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload == receipt
+    assert payload["schema"] == "tau.zero_trust_preflight_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["mocked"] is False
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
+    assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
+    assert payload["data_boundary"]["schema"] == "tau.data_boundary.v1"
+    assert "ITAR compliance." in payload["proof_scope"]["does_not_prove"]
+
+
+def test_cli_dag_run_zero_trust_missing_boundary_returns_course_correction_json(
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "zero-trust-missing-boundary-dag.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_contract.v1",
+                "dag_id": "zero-trust-missing-boundary",
+                "goal": {
+                    "goal_id": "zero-trust",
+                    "goal_version": 1,
+                    "goal_hash": "sha256:active-goal",
+                },
+                "target": {"repo": "grahama1970/tau", "target": "scratch"},
+                "policy_profile": str(FIXTURES / "zero-trust-policy.json"),
+                "entry_node": "coder",
+                "terminal_nodes": ["human"],
+                "limits": {"max_total_attempts": 2},
+                "nodes": [
+                    {
+                        "id": "coder",
+                        "agent": "coder",
+                        "executor": "local",
+                        "max_attempts": 1,
+                        "command_spec": "coder/tau-dispatch-command.json",
+                        "required_evidence": [],
+                    }
+                ],
+                "edges": [{"from": "coder", "to": "human"}],
+                "required_evidence": [],
+                "fail_closed_on": ["goal_hash_mismatch"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.dag_receipt.v1"
+    assert payload["status"] == "BLOCKED"
+    assert payload["dag_error"]["schema"] == "tau.dag_error.v1"
+    assert payload["dag_error"]["failure_code"] == "missing_data_boundary"
+    assert payload["dag_error"]["recommended_action"] == {
+        "type": "repair_then_retry_or_reroute",
+        "next_agent": "goal-guardian",
+        "reason": "Repair zero-trust policy/data-boundary gates before DAG dispatch.",
+    }
+
+
 def test_cli_handoff_project_writes_dry_run_receipt(tmp_path: Path) -> None:
     handoff_path = tmp_path / "handoff.json"
     receipt_path = tmp_path / "projection" / "receipt.json"
@@ -2459,7 +2551,10 @@ def test_cli_persona_dream_panel_proof_accepts_source_panel_metadata(tmp_path: P
         json.dumps(
             {
                 "panel_id": "panel_source",
-                "action": "Embry examines SPARTA evidence cards while tea steam crosses the laptop glow.",
+                "action": (
+                    "Embry examines SPARTA evidence cards while tea steam crosses "
+                    "the laptop glow."
+                ),
                 "required_visible_entities": ["Embry", "SPARTA laptop", "evidence cards"],
                 "required_props": ["tea cup", "paper evidence cards"],
                 "required_dynamic_behaviors": ["tea steam curls through screen light"],

@@ -26,6 +26,17 @@ T’au does not hide orchestration inside model reasoning. Every handoff produce
 a local receipt, a schema-valid JSON block, or a GitHub-shaped projection that
 another agent or human can inspect, replay, or reject.
 
+## Zero-Trust Direction
+
+T’au is moving toward a memory-first zero-trust agent containment harness:
+agents produce claims, and Tau decides what counts. The first zero-trust slice
+is policy/data-boundary preflight, documented in
+[Zero-Trust Policy/Data-Boundary Preflight](docs/zero-trust-policy.md).
+
+That preflight is a gate, not compliance certification. It blocks missing or
+incompatible classification metadata before DAG dispatch. It does not prove ITAR
+compliance, sandbox isolation, signed provenance, or legal sufficiency.
+
 ## Research Influence: Adaptive DAGs
 
 T’au's adaptive DAG direction is inspired by graph reasoning, parallel tool

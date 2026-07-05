@@ -1,0 +1,15 @@
+{
+  "classification": "ITAR",
+  "export_controlled": true,
+  "external_provider_allowed": false,
+  "external_research_allowed": false,
+  "foreign_person_access": "prohibited",
+  "itar": true,
+  "notes": [
+    "Fixture for zero-trust local-only preflight tests.",
+    "Not a legal classification determination."
+  ],
+  "public_repo_allowed": false,
+  "schema": "tau.data_boundary.v1",
+  "technical_data": true
+}

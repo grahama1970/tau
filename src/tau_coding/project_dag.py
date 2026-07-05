@@ -18,6 +18,7 @@ from tau_coding.handoff_dispatch import (
     load_agent_dispatch_command_spec,
     write_agent_handoff_command_loop_receipt,
 )
+from tau_coding.policy_profile import zero_trust_preflight_receipt
 
 try:  # YAML is available in the project lock through docs tooling, but keep JSON first.
     import yaml
@@ -137,6 +138,8 @@ class ProjectDagContract:
     fail_closed_on: tuple[str, ...]
     evidence_manifest: str | None
     command_policy: str | None
+    policy_profile: str | dict[str, Any] | None
+    data_boundary: str | dict[str, Any] | None
 
 
 def run_project_dag_contract(
@@ -161,6 +164,24 @@ def run_project_dag_contract(
 
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    zero_trust_alerts, zero_trust_receipt = _zero_trust_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+        receipt_dir=resolved_receipt_dir,
+    )
+    if zero_trust_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(zero_trust_alerts[0]["code"]).upper(),
+            alerts=zero_trust_alerts,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     evidence_manifest_alerts, evidence_validation_receipt = _evidence_manifest_preflight(
         contract=contract,
         contract_path=resolved_contract_path,
@@ -175,6 +196,7 @@ def run_project_dag_contract(
             verdict=str(evidence_manifest_alerts[0]["code"]).upper(),
             alerts=evidence_manifest_alerts,
             evidence_validation_receipt=evidence_validation_receipt,
+            zero_trust_preflight_receipt=zero_trust_receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -211,7 +233,10 @@ def run_project_dag_contract(
         command_spec_root=compiled_spec_root,
         active_goal_hash=str(contract.goal["goal_hash"]),
         max_steps=max_steps,
-        command_policy_path=_contract_relative_path(contract.command_policy, resolved_contract_path),
+        command_policy_path=_contract_relative_path(
+            contract.command_policy,
+            resolved_contract_path,
+        ),
     )
     loop_payload = loop.as_dict()
     loop_receipt_path = loop_dir / "command-loop-receipt.json"
@@ -342,7 +367,10 @@ def dag_contract_error_payload(
         "recommended_action": {
             "type": "repair_then_retry_or_reroute",
             "next_agent": "goal-guardian",
-            "reason": "Repair the DAG contract so it satisfies tau.dag_contract.v1 before dispatch.",
+            "reason": (
+                "Repair the DAG contract so it satisfies tau.dag_contract.v1 "
+                "before dispatch."
+            ),
         },
         "evidence": {
             "primary_alert": {
@@ -501,7 +529,12 @@ def _run_bounded_ready_queue_project_dag(
                         if item in responses
                     ],
                 )
-                artifact_dir = receipt_dir / "ready-queue" / node_id / f"attempt-{node_attempts[node_id]:03d}"
+                artifact_dir = (
+                    receipt_dir
+                    / "ready-queue"
+                    / node_id
+                    / f"attempt-{node_attempts[node_id]:03d}"
+                )
                 future = executor.submit(
                     _dispatch_ready_node,
                     node=node,
@@ -711,7 +744,10 @@ def _run_bounded_ready_queue_project_dag(
                 "BLOCK",
                 "missing_terminal_route",
                 "Completed DAG nodes do not reach a declared terminal node.",
-                {"completed_nodes": sorted(completed), "terminal_nodes": list(contract.terminal_nodes)},
+                {
+                    "completed_nodes": sorted(completed),
+                    "terminal_nodes": list(contract.terminal_nodes),
+                },
             )
         )
     observed_edges = _ready_queue_observed_edges(contract, completed)
@@ -799,6 +835,14 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if command_policy is not None and not isinstance(command_policy, str):
         errors.append("command_policy must be a string path when provided")
         command_policy = None
+    policy_profile = payload.get("policy_profile")
+    if policy_profile is not None and not isinstance(policy_profile, (str, dict)):
+        errors.append("policy_profile must be a string path or object when provided")
+        policy_profile = None
+    data_boundary = payload.get("data_boundary")
+    if data_boundary is not None and not isinstance(data_boundary, (str, dict)):
+        errors.append("data_boundary must be a string path or object when provided")
+        data_boundary = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -828,6 +872,8 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         fail_closed_on=tuple(fail_closed_on),
         evidence_manifest=evidence_manifest,
         command_policy=command_policy,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
     )
 
 
@@ -934,7 +980,9 @@ def _evidence_manifest_preflight(
     covered_kinds = {
         item.get("kind")
         for item in receipt.get("checked_items", [])
-        if isinstance(item, dict) and item.get("valid") is True and isinstance(item.get("kind"), str)
+        if isinstance(item, dict)
+        and item.get("valid") is True
+        and isinstance(item.get("kind"), str)
     }
     missing = [item for item in contract.required_evidence if item not in covered_kinds]
     if missing:
@@ -963,6 +1011,74 @@ def _contract_relative_path(value: str | None, contract_path: Path) -> Path | No
     return contract_path.parent / path
 
 
+def _zero_trust_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    if contract.policy_profile is None:
+        return [], None
+    policy_profile, policy_path, policy_alerts = _resolve_policy_object(
+        contract.policy_profile,
+        contract_path=contract_path,
+        field_name="policy_profile",
+    )
+    data_boundary, boundary_path, boundary_alerts = _resolve_policy_object(
+        contract.data_boundary,
+        contract_path=contract_path,
+        field_name="data_boundary",
+    )
+    receipt = zero_trust_preflight_receipt(
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+        dag_contract=contract.payload,
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        dag_contract_path=contract_path,
+    )
+    alerts = [*policy_alerts, *boundary_alerts, *receipt["alerts"]]
+    if alerts != receipt["alerts"]:
+        receipt = {**receipt, "ok": False, "status": "BLOCKED", "alerts": alerts}
+        receipt["alert_codes"] = [alert["code"] for alert in alerts]
+    receipt_path = receipt_dir / "zero-trust-preflight-receipt.json"
+    receipt["receipt_path"] = str(receipt_path)
+    _write_json(receipt_path, receipt)
+    return alerts, receipt
+
+
+def _resolve_policy_object(
+    value: str | dict[str, Any] | None,
+    *,
+    contract_path: Path,
+    field_name: str,
+) -> tuple[dict[str, Any] | None, Path | None, list[dict[str, Any]]]:
+    if value is None:
+        return None, None, []
+    if isinstance(value, dict):
+        return value, None, []
+    path = _contract_relative_path(value, contract_path)
+    assert path is not None
+    try:
+        payload = _read_json_object(path.expanduser().resolve(), label=field_name)
+    except RuntimeError as exc:
+        return (
+            None,
+            path,
+            [
+                _alert(
+                    "BLOCK",
+                    f"invalid_{field_name}",
+                    f"Zero-trust {field_name} could not be read.",
+                    {"path": str(path), "errors": [str(exc)]},
+                )
+            ],
+        )
+    if not isinstance(payload, dict):
+        return None, path, []
+    return payload, path.expanduser().resolve(), []
+
+
 def _pre_dispatch_blocked_receipt(
     *,
     contract: ProjectDagContract,
@@ -972,8 +1088,14 @@ def _pre_dispatch_blocked_receipt(
     verdict: str,
     alerts: list[dict[str, Any]],
     evidence_validation_receipt: dict[str, Any] | None,
+    zero_trust_preflight_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
+    if isinstance(zero_trust_preflight_receipt, dict) and isinstance(
+        zero_trust_preflight_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(zero_trust_preflight_receipt["receipt_path"]))
     if isinstance(evidence_validation_receipt, dict) and isinstance(
         evidence_validation_receipt.get("receipt_path"),
         str,
@@ -1009,13 +1131,18 @@ def _pre_dispatch_blocked_receipt(
             if isinstance(evidence_validation_receipt, dict)
             else None
         ),
+        "zero_trust_preflight_receipt": (
+            zero_trust_preflight_receipt.get("receipt_path")
+            if isinstance(zero_trust_preflight_receipt, dict)
+            else None
+        ),
         "artifacts": artifacts,
         "proof_scope": {
             "mocked": False,
             "live": True,
             "proves": [
                 "DAG contract parsed and validated.",
-                "Tau inspected typed evidence manifest gates before dispatch.",
+                "Tau inspected pre-dispatch gates before dispatch.",
                 "No node command, provider, GitHub, Memory, or browser action was executed.",
             ],
             "does_not_prove": [
@@ -1328,7 +1455,9 @@ def _reviewer_alerts(
             )
         ]
     alerts: list[dict[str, Any]] = []
-    expected_reviewed = node.reviewer.get("reviews_node") if isinstance(node.reviewer, dict) else None
+    expected_reviewed = (
+        node.reviewer.get("reviews_node") if isinstance(node.reviewer, dict) else None
+    )
     for verdict in verdicts:
         if verdict.get("goal_hash") != contract.goal["goal_hash"]:
             alerts.append(
@@ -1416,21 +1545,24 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
             _alert(
                 "BLOCK",
                 "provider_node_not_allowed",
-                "Bounded ready-queue scheduler does not accept provider branches until branch locks exist.",
+                "Bounded ready-queue scheduler does not accept provider branches "
+                "until branch locks exist.",
                 {"node_ids": provider_nodes},
             )
         )
     mutating_nodes = [
         node.node_id
         for node in contract.nodes.values()
-        if bool(contract.payload.get("mutating")) or bool(_node_payload(contract, node.node_id).get("mutates"))
+        if bool(contract.payload.get("mutating"))
+        or bool(_node_payload(contract, node.node_id).get("mutates"))
     ]
     if mutating_nodes:
         alerts.append(
             _alert(
                 "BLOCK",
                 "mutating_node_not_allowed",
-                "Bounded ready-queue scheduler only accepts non-mutating local nodes in this slice.",
+                "Bounded ready-queue scheduler only accepts non-mutating local nodes "
+                "in this slice.",
                 {"node_ids": mutating_nodes},
             )
         )
@@ -1504,7 +1636,8 @@ def _terminal_reachable_from_completed(
     successors: dict[str, set[str]],
 ) -> bool:
     return any(
-        node_id in completed and any(target in contract.terminal_nodes for target in successors[node_id])
+        node_id in completed
+        and any(target in contract.terminal_nodes for target in successors[node_id])
         for node_id in completed
     )
 
@@ -1552,7 +1685,11 @@ def _node_start_handoff(
         evidence.extend(_result_evidence(response))
         context = response.get("context")
         if isinstance(context, dict):
-            artifacts.extend(str(item) for item in context.get("artifacts", []) if isinstance(item, str))
+            artifacts.extend(
+                str(item)
+                for item in context.get("artifacts", [])
+                if isinstance(item, str)
+            )
     context = _handoff_context(
         summary=f"Dispatch ready DAG node {node.node_id}.",
         artifacts=artifacts,
@@ -1676,7 +1813,8 @@ def _ready_queue_receipt(
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
-        "Bounded ready-queue scheduler preflight checked acyclicity, local-only execution, provider branches, and mutating branches.",
+        "Bounded ready-queue scheduler preflight checked acyclicity, local-only "
+        "execution, provider branches, and mutating branches.",
     ]
     if dispatches:
         proves.extend(
@@ -1868,7 +2006,10 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         return {
             "type": "repair_evidence_manifest",
             "next_agent": "reviewer",
-            "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+            "reason": (
+                "Repair or regenerate the typed evidence manifest before normal "
+                "continuation."
+            ),
         }
     if normalized in {
         "missing_required_evidence",
@@ -1910,6 +2051,26 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "reason": "Repair the command spec or trust policy before retrying the DAG.",
         }
     if normalized in {
+        "missing_policy_profile",
+        "invalid_policy_profile_schema",
+        "unsupported_default_decision",
+        "invalid_policy_profile",
+        "missing_data_boundary",
+        "invalid_data_boundary_schema",
+        "missing_classification",
+        "invalid_data_boundary",
+        "classified_not_allowed",
+        "external_provider_denied",
+        "external_research_denied",
+        "public_repo_denied",
+        "memory_write_requires_approval",
+    }:
+        return {
+            "type": "repair_then_retry_or_reroute",
+            "next_agent": "goal-guardian",
+            "reason": "Repair zero-trust policy/data-boundary gates before DAG dispatch.",
+        }
+    if normalized in {
         "non_local_ready_queue_node_not_allowed",
         "provider_node_not_allowed",
         "mutating_node_not_allowed",
@@ -1917,7 +2078,10 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         return {
             "type": "request_policy_gate",
             "next_agent": "goal-guardian",
-            "reason": "This branch requires an explicit policy or branch-lock gate before execution.",
+            "reason": (
+                "This branch requires an explicit policy or branch-lock gate before "
+                "execution."
+            ),
         }
     return {
         "type": "wait_for_human",
@@ -2106,7 +2270,10 @@ def _result_text(result: dict[str, Any]) -> str:
     return "\n".join(chunks)
 
 
-def _observed_edges(contract: ProjectDagContract, loop_payload: dict[str, Any]) -> list[dict[str, Any]]:
+def _observed_edges(
+    contract: ProjectDagContract,
+    loop_payload: dict[str, Any],
+) -> list[dict[str, Any]]:
     edges: list[dict[str, Any]] = []
     for dispatch in _dispatches(loop_payload):
         from_node = _node_for_agent(contract, str(dispatch.get("selected_agent")))

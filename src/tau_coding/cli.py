@@ -124,6 +124,7 @@ from tau_coding.persona_dream_panel_proof import (
 from tau_coding.persona_dream_panel_proof import (
     write_persona_dream_panel_proof,
 )
+from tau_coding.policy_profile import write_zero_trust_preflight_receipt
 from tau_coding.project_dag import (
     DAG_CONTRACT_SCHEMA,
     dag_contract_error_payload,
@@ -286,11 +287,17 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
         },
         "github_apply": {
             "ready": False,
-            "reason": "live GitHub mutation requires approval, preflight, redaction, and apply policy receipts",
+            "reason": (
+                "live GitHub mutation requires approval, preflight, redaction, "
+                "and apply policy receipts"
+            ),
         },
         "browser_cdp": {
             "ready": surf_ready,
-            "reason": "Surf wrapper or surf executable found; run tau browser-cdp-proof for screenshot proof"
+            "reason": (
+                "Surf wrapper or surf executable found; run tau browser-cdp-proof "
+                "for screenshot proof"
+            )
             if surf_ready
             else "Surf wrapper or surf executable not found",
         },
@@ -322,7 +329,8 @@ def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
             "proves": [
                 "Tau runtime import and CLI dispatch can emit a read-only preflight receipt.",
                 "Required local Tau runtime paths were checked.",
-                "Optional local executables for uv, git, gh, and Herdr were detected without side effects.",
+                "Optional local executables for uv, git, gh, and Herdr were detected "
+                "without side effects.",
                 "Configured provider entries were inspected without making provider/model calls.",
             ],
             "does_not_prove": [
@@ -643,6 +651,34 @@ def main(
         payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if not payload.get("ok"):
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "zero-trust-doctor":
+        try:
+            options = _parse_zero_trust_doctor_cli_args(positional_args[1:])
+            payload = write_zero_trust_preflight_receipt(
+                policy_profile_path=Path(str(options["policy_profile"])),
+                data_boundary_path=(
+                    Path(str(options["data_boundary"]))
+                    if options.get("data_boundary") is not None
+                    else None
+                ),
+                dag_contract_path=(
+                    Path(str(options["dag_contract"]))
+                    if options.get("dag_contract") is not None
+                    else None
+                ),
+                receipt_path=(
+                    Path(str(options["receipt"]))
+                    if options.get("receipt") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -2023,7 +2059,9 @@ def _parse_provider_pane_inspect_cli_args(args: list[str]) -> Path:
 def _parse_provider_readiness_poc_cli_args(args: list[str]) -> dict[str, object]:
     options = _parse_provider_pane_poc_cli_args(args)
     if options["run_root"] == Path("experiments/goal-locked-subagents/proofs/provider-pane-poc"):
-        options["run_root"] = Path("experiments/goal-locked-subagents/proofs/provider-readiness-poc")
+        options["run_root"] = Path(
+            "experiments/goal-locked-subagents/proofs/provider-readiness-poc"
+        )
     if options["label"] == "tau-provider-pane-poc":
         options["label"] = "tau-provider-readiness-poc"
     return options
@@ -2236,6 +2274,48 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
     }
 
 
+def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "policy_profile": None,
+        "data_boundary": None,
+        "dag_contract": None,
+        "receipt": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--policy-profile":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--policy-profile requires a value")
+            options["policy_profile"] = Path(args[index])
+        elif arg == "--data-boundary":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--data-boundary requires a value")
+            options["data_boundary"] = Path(args[index])
+        elif arg == "--dag-contract":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--dag-contract requires a value")
+            options["dag_contract"] = Path(args[index])
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            options["receipt"] = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown zero-trust-doctor option: {arg}")
+        index += 1
+    if options["policy_profile"] is None:
+        raise RuntimeError(
+            "Usage: tau zero-trust-doctor --policy-profile <policy.json> "
+            "[--data-boundary <boundary.json>] [--dag-contract <dag.json>] "
+            "[--receipt <receipt.json>]"
+        )
+    return options
+
+
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
@@ -2265,7 +2345,9 @@ def _parse_dag_signals_cli_args(args: list[str]) -> dict[str, object]:
 
 def _parse_evidence_validate_cli_args(args: list[str]) -> dict[str, object]:
     if not args:
-        raise RuntimeError("Usage: tau evidence-validate <evidence-manifest.json> [--receipt <path>]")
+        raise RuntimeError(
+            "Usage: tau evidence-validate <evidence-manifest.json> [--receipt <path>]"
+        )
     manifest = Path(args[0])
     receipt: Path | None = None
     index = 1
@@ -5898,7 +5980,9 @@ def _github_apply_policy_receipt_errors(
     receipt = _load_json_object(github_apply_policy_receipt, label="GitHub apply policy receipt")
     errors: list[str] = []
     if receipt.get("schema") != "tau.github_apply_policy_receipt.v1":
-        errors.append("GitHub apply policy receipt schema must be tau.github_apply_policy_receipt.v1")
+        errors.append(
+            "GitHub apply policy receipt schema must be tau.github_apply_policy_receipt.v1"
+        )
     if receipt.get("ok") is not True or receipt.get("status") != "PASS":
         errors.append("GitHub apply policy receipt must be PASS")
     if receipt.get("target") != projection.get("target"):
@@ -5911,7 +5995,11 @@ def _github_apply_policy_receipt_errors(
         errors.append("GitHub apply policy receipt has errors")
     required_actions = set(_github_projection_action_names(projection))
     receipt_actions = receipt.get("actions")
-    receipt_action_set = {str(action) for action in receipt_actions} if isinstance(receipt_actions, list) else set()
+    receipt_action_set = (
+        {str(action) for action in receipt_actions}
+        if isinstance(receipt_actions, list)
+        else set()
+    )
     if required_actions and not required_actions.issubset(receipt_action_set):
         missing = sorted(required_actions - receipt_action_set)
         errors.append(f"GitHub apply policy receipt is missing actions: {missing}")
@@ -5919,7 +6007,9 @@ def _github_apply_policy_receipt_errors(
     if not isinstance(requirements, dict) or not all(
         requirements.get(key) is True for key in ("approval_packet", "preflight", "redaction")
     ):
-        errors.append("GitHub apply policy receipt must show approval, preflight, and redaction gates")
+        errors.append(
+            "GitHub apply policy receipt must show approval, preflight, and redaction gates"
+        )
     return errors
 
 
@@ -6443,7 +6533,9 @@ def _fetch_github_issue(*, repo: str, issue: int) -> tuple[dict[str, object], di
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
         fetch["ok"] = False
-        raise RuntimeError(f"gh issue view returned invalid JSON for {repo}#{issue}: {exc}") from exc
+        raise RuntimeError(
+            f"gh issue view returned invalid JSON for {repo}#{issue}: {exc}"
+        ) from exc
     if not isinstance(payload, dict):
         fetch["ok"] = False
         raise RuntimeError(f"gh issue view returned non-object JSON for {repo}#{issue}")
@@ -6712,11 +6804,15 @@ def _self_fix_goal_helper_packet(
         "forbidden_drift": [
             "Do not edit application code as part of this intake proof.",
             "Do not mutate GitHub labels or comments in this slice.",
-            "Do not claim autonomous repair, cron, GitHub Actions, rollback, or Scillm quality unless separately proven.",
+            "Do not claim autonomous repair, cron, GitHub Actions, rollback, "
+            "or Scillm quality unless separately proven.",
         ],
         "retry_budget": {
             "max_live_attempts_before_escalation": 2,
-            "escalation": "Use WebGPT/create-architecture or ask the human if the live proof cannot be produced.",
+            "escalation": (
+                "Use WebGPT/create-architecture or ask the human if the live proof "
+                "cannot be produced."
+            ),
         },
         "stop_condition": (
             "Stop after one command-loop receipt, a human route, or a fail-closed receipt; "
@@ -6776,7 +6872,10 @@ def _self_fix_start_handoff(
         },
         "result": {
             "status": "REQUESTED",
-            "summary": "Human requested Tau to start the coder/reviewer self-fix loop for this issue.",
+            "summary": (
+                "Human requested Tau to start the coder/reviewer self-fix loop "
+                "for this issue."
+            ),
             "evidence": [
                 str(goal_helper_path.expanduser().resolve()),
             ],
@@ -6788,12 +6887,16 @@ def _self_fix_start_handoff(
         "next_agent": {
             "name": "coder",
             "executor": "local",
-            "reason": "Coder should perform the first bounded implementation analysis for the issue.",
+            "reason": (
+                "Coder should perform the first bounded implementation analysis "
+                "for the issue."
+            ),
         },
         "required_evidence": [
             "Coder emits a schema-valid tau.agent_handoff.v1 handoff.",
             "Reviewer emits a schema-valid tau.agent_handoff.v1 handoff.",
-            "Any code mutation in a later slice starts from a checkpoint commit and records rollback status.",
+            "Any code mutation in a later slice starts from a checkpoint commit "
+            "and records rollback status.",
         ],
         "stop_condition": (
             "Stop when reviewer routes to human/PASS, the command-loop hits max steps, "
@@ -6833,7 +6936,11 @@ def project_agent_self_fix_tick_command(
         query=issue_text,
         receipt_dir=resolved_receipt_dir,
     )
-    goal_hash = active_goal_hash or _self_fix_goal_hash(repo=repo, issue=issue, issue_text=issue_text)
+    goal_hash = active_goal_hash or _self_fix_goal_hash(
+        repo=repo,
+        issue=issue,
+        issue_text=issue_text,
+    )
     goal_helper = _self_fix_goal_helper_packet(
         repo=repo,
         issue=issue,
