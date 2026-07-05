@@ -72,6 +72,8 @@ def write_dag_expansion_validation_receipt(
     if expanded_preview is not None:
         validate_dag_contract(expanded_preview)
     status = "PASS" if not alerts else "BLOCKED"
+    if status == "PASS" and resolved_preview_path is not None and expanded_preview is not None:
+        _write_json(resolved_preview_path, expanded_preview)
     receipt = {
         "schema": DAG_EXPANSION_VALIDATION_RECEIPT_SCHEMA,
         "ok": status == "PASS",
@@ -119,8 +121,6 @@ def write_dag_expansion_validation_receipt(
         "timestamp": _utc_stamp(),
     }
     _write_json(resolved_receipt_path, receipt)
-    if status == "PASS" and resolved_preview_path is not None and expanded_preview is not None:
-        _write_json(resolved_preview_path, expanded_preview)
     return receipt
 
 
@@ -163,6 +163,7 @@ def write_dag_expansion_policy_receipt(
         "apply_allowed": status == "PASS",
         "recommended_next_command": (
             "tau dag-expansion-apply --validation-receipt <receipt> "
+            "--policy-receipt <policy-receipt.json> "
             "--out <expanded-dag.json> --receipt <apply-receipt.json>"
             if status == "PASS"
             else None
@@ -553,7 +554,79 @@ def _apply_alerts(
                     "BLOCK",
                     "policy_not_allowing_apply",
                     "Expansion policy receipt does not allow apply.",
-                    {"ok": policy.get("ok"), "status": policy.get("status"), "apply_allowed": policy.get("apply_allowed")},
+                    {
+                        "ok": policy.get("ok"),
+                        "status": policy.get("status"),
+                        "apply_allowed": policy.get("apply_allowed"),
+                    },
+                )
+            )
+        expected_validation_path = policy.get("validation_receipt")
+        if isinstance(expected_validation_path, str):
+            resolved_expected_validation_path = (
+                Path(expected_validation_path).expanduser().resolve()
+            )
+            if resolved_expected_validation_path != validation_receipt_path:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "policy_validation_receipt_mismatch",
+                        "Expansion policy receipt references a different validation receipt.",
+                        {
+                            "expected": str(validation_receipt_path),
+                            "observed": str(resolved_expected_validation_path),
+                        },
+                    )
+                )
+        expected_validation_sha = policy.get("validation_receipt_sha256")
+        observed_validation_sha = f"sha256:{_sha256(validation_receipt_path)}"
+        if expected_validation_sha != observed_validation_sha:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "policy_validation_hash_mismatch",
+                    "Expansion policy receipt is stale for the supplied validation receipt.",
+                    {"expected": expected_validation_sha, "observed": observed_validation_sha},
+                )
+            )
+    else:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_policy_receipt",
+                "Expansion apply requires a policy receipt so orchestration policy remains explicit.",
+                {},
+            )
+        )
+    expected_preview_sha = validation.get("preview_sha256")
+    preview_path = validation.get("preview_path")
+    if isinstance(preview_path, str) and preview_path:
+        resolved_preview_path = Path(preview_path).expanduser().resolve()
+        observed_preview_sha = (
+            f"sha256:{_sha256(resolved_preview_path)}"
+            if resolved_preview_path.is_file()
+            else None
+        )
+        if not isinstance(expected_preview_sha, str) or not expected_preview_sha:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_preview_hash",
+                    "Expansion apply requires validation receipt preview_sha256.",
+                    {"preview_path": preview_path},
+                )
+            )
+        elif observed_preview_sha != expected_preview_sha:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "preview_hash_mismatch",
+                    "Expanded DAG preview hash does not match the validation receipt.",
+                    {
+                        "preview_path": preview_path,
+                        "expected": expected_preview_sha,
+                        "observed": observed_preview_sha,
+                    },
                 )
             )
     return alerts

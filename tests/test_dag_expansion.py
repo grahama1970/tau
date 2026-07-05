@@ -43,6 +43,8 @@ def test_dag_expansion_validate_accepts_reviewer_validator_insert(
     assert receipt["provider_calls"] is False
     assert receipt["alerts"] == []
     assert receipt["preview_path"] == str(preview_path.resolve())
+    assert receipt["preview_sha256"] is not None
+    assert receipt["preview_sha256"].startswith("sha256:")
     assert len(preview["nodes"]) == 3
     assert any(node["id"] == "validator" for node in preview["nodes"])
     assert any(edge == {"from": "coder", "to": "validator"} for edge in preview["edges"])
@@ -325,6 +327,80 @@ def test_dag_expansion_apply_blocks_failed_policy(tmp_path: Path) -> None:
     assert receipt["status"] == "BLOCKED"
     assert receipt["expanded_dag"] is None
     assert any(alert["code"] == "policy_not_allowing_apply" for alert in receipt["alerts"])
+
+
+def test_dag_expansion_apply_requires_policy_receipt(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+
+    receipt = write_dag_expansion_apply_receipt(
+        validation_receipt_path=validation_path,
+        out_path=tmp_path / "expanded-dag.json",
+        receipt_path=tmp_path / "apply.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["expanded_dag"] is None
+    assert any(alert["code"] == "missing_policy_receipt" for alert in receipt["alerts"])
+
+
+def test_dag_expansion_apply_blocks_tampered_preview(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    policy_path = tmp_path / "policy.json"
+    write_dag_expansion_policy_receipt(
+        validation_receipt_path=validation_path,
+        receipt_path=policy_path,
+    )
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    preview_path = Path(validation["preview_path"])
+    preview = json.loads(preview_path.read_text(encoding="utf-8"))
+    preview["nodes"].append(
+        {
+            "id": "tampered",
+            "agent": "validator",
+            "executor": "local",
+            "max_attempts": 1,
+            "required_evidence": ["tampered"],
+        }
+    )
+    preview["edges"].append({"from": "validator", "to": "tampered"})
+    preview_path.write_text(json.dumps(preview), encoding="utf-8")
+
+    receipt = write_dag_expansion_apply_receipt(
+        validation_receipt_path=validation_path,
+        policy_receipt_path=policy_path,
+        out_path=tmp_path / "expanded-dag.json",
+        receipt_path=tmp_path / "apply.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["expanded_dag"] is None
+    assert any(alert["code"] == "preview_hash_mismatch" for alert in receipt["alerts"])
+
+
+def test_dag_expansion_apply_blocks_stale_policy_binding(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    policy_path = tmp_path / "policy.json"
+    write_dag_expansion_policy_receipt(
+        validation_receipt_path=validation_path,
+        receipt_path=policy_path,
+    )
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    validation["proposal_summary"]["proposal_id"] = "changed-after-policy"
+    validation_path.write_text(json.dumps(validation), encoding="utf-8")
+
+    receipt = write_dag_expansion_apply_receipt(
+        validation_receipt_path=validation_path,
+        policy_receipt_path=policy_path,
+        out_path=tmp_path / "expanded-dag.json",
+        receipt_path=tmp_path / "apply.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["expanded_dag"] is None
+    assert any(alert["code"] == "policy_validation_hash_mismatch" for alert in receipt["alerts"])
 
 
 def test_cli_dag_expansion_policy_and_apply_write_receipts(tmp_path: Path) -> None:

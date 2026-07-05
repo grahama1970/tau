@@ -230,6 +230,7 @@ def build_checks(
         scenario="command-policy-mutation",
         spec_flag="mutates",
     )
+    dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
     generic_dag_stale_work_order_spec = create_generic_dag_stale_work_order_fixture(run_dir)
@@ -1145,6 +1146,33 @@ def build_checks(
             expected_verdict="NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED",
         ),
         Check(
+            check_id="advanced.dag_expansion_apply_tampered_preview_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau validates an adaptive DAG expansion, records policy, then refuses "
+                "to apply a tampered preview whose sha256 no longer matches validation."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                dag_expansion_tamper_apply_command(
+                    uv_tau=uv_tau,
+                    contract=dag_expansion_tamper["contract"],
+                    proposal=dag_expansion_tamper["proposal"],
+                    validation_receipt=dag_expansion_tamper["validation_receipt"],
+                    policy_receipt=dag_expansion_tamper["policy_receipt"],
+                    apply_receipt=dag_expansion_tamper["apply_receipt"],
+                    preview=dag_expansion_tamper["preview"],
+                    out=dag_expansion_tamper["out"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="PREVIEW_HASH_MISMATCH",
+            output_receipt=dag_expansion_tamper["apply_receipt"],
+        ),
+        Check(
             check_id="advanced.provider_readiness",
             level="advanced",
             purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
@@ -1751,6 +1779,173 @@ def create_project_dag_command_policy_fixture(
     contract["command_policy"] = str(policy_path)
     write_json(contract_path, contract)
     return fixture
+
+
+def create_dag_expansion_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "dag-expansion-tampered-preview"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "rw-sanity-dag-expansion",
+        "goal": {
+            "goal_id": "rw-sanity-dag-expansion",
+            "goal_version": 1,
+            "goal_hash": "sha256:rw-sanity-dag-expansion",
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-dag-expansion",
+        },
+        "entry_node": "coder",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "coder",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": ["creator_artifact"],
+            },
+            {
+                "id": "reviewer",
+                "agent": "reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": ["reviewer_verdict"],
+            },
+        ],
+        "edges": [
+            {"from": "coder", "to": "reviewer"},
+            {"from": "reviewer", "to": "human"},
+        ],
+        "required_evidence": ["creator_artifact", "reviewer_verdict"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+        ],
+    }
+    proposal = {
+        "schema": "tau.dag_expansion_proposal.v1",
+        "proposal_id": "rw-sanity-expansion-proposal",
+        "parent_dag_id": contract["dag_id"],
+        "goal_hash": contract["goal"]["goal_hash"],
+        "proposed_by": "reviewer",
+        "reason": "Add deterministic validator before reviewer continuation.",
+        "new_nodes": [
+            {
+                "id": "validator",
+                "agent": "validator",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": ["validation_receipt"],
+            }
+        ],
+        "new_edges": [
+            {"from": "coder", "to": "validator"},
+            {"from": "validator", "to": "reviewer"},
+        ],
+    }
+    return {
+        "contract": write_json(fixture_dir / "dag-contract.json", contract),
+        "proposal": write_json(fixture_dir / "proposal.json", proposal),
+        "validation_receipt": fixture_dir / "validation-receipt.json",
+        "policy_receipt": fixture_dir / "policy-receipt.json",
+        "apply_receipt": fixture_dir / "apply-receipt.json",
+        "preview": fixture_dir / "expanded-dag.preview.json",
+        "out": fixture_dir / "expanded-dag.json",
+    }
+
+
+def dag_expansion_tamper_apply_command(
+    *,
+    uv_tau: list[str],
+    contract: Path,
+    proposal: Path,
+    validation_receipt: Path,
+    policy_receipt: Path,
+    apply_receipt: Path,
+    preview: Path,
+    out: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+contract = Path({str(contract)!r})
+proposal = Path({str(proposal)!r})
+validation_receipt = Path({str(validation_receipt)!r})
+policy_receipt = Path({str(policy_receipt)!r})
+apply_receipt = Path({str(apply_receipt)!r})
+preview = Path({str(preview)!r})
+out = Path({str(out)!r})
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-expansion-validate",
+    "--dag-contract",
+    str(contract),
+    "--proposal",
+    str(proposal),
+    "--receipt",
+    str(validation_receipt),
+    "--preview",
+    str(preview),
+], 0)
+run([
+    *uv_tau,
+    "dag-expansion-policy",
+    "--validation-receipt",
+    str(validation_receipt),
+    "--receipt",
+    str(policy_receipt),
+], 0)
+payload = json.loads(preview.read_text(encoding="utf-8"))
+payload["nodes"].append({{
+    "id": "tampered",
+    "agent": "validator",
+    "executor": "local",
+    "max_attempts": 1,
+    "required_evidence": ["tampered_receipt"],
+}})
+payload["edges"].append({{"from": "validator", "to": "tampered"}})
+preview.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+completed = run([
+    *uv_tau,
+    "dag-expansion-apply",
+    "--validation-receipt",
+    str(validation_receipt),
+    "--policy-receipt",
+    str(policy_receipt),
+    "--out",
+    str(out),
+    "--receipt",
+    str(apply_receipt),
+], 1)
+raise SystemExit(completed.returncode)
+"""
 
 
 def _simple_yaml(value: Any, *, indent: int = 0) -> str:

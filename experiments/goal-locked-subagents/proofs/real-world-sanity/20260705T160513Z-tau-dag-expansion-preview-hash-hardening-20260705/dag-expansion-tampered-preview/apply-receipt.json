@@ -1,0 +1,53 @@
+{
+  "alerts": [
+    {
+      "code": "preview_hash_mismatch",
+      "evidence": {
+        "expected": "sha256:33fd8f15035b6916f95df6ef227d225c5de5a241832d46226a776ddae9542858",
+        "observed": "sha256:dbed949012b0bb91f6b6b762c15cafa7804a086bbd757f2574d0fb8d411e61a6",
+        "preview_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T160513Z-tau-dag-expansion-preview-hash-hardening-20260705/dag-expansion-tampered-preview/expanded-dag.preview.json"
+      },
+      "message": "Expanded DAG preview hash does not match the validation receipt.",
+      "severity": "BLOCK"
+    }
+  ],
+  "applied": false,
+  "dag_id": "rw-sanity-dag-expansion",
+  "errors": [],
+  "expanded_dag": null,
+  "expanded_dag_sha256": null,
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": false,
+  "policy_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T160513Z-tau-dag-expansion-preview-hash-hardening-20260705/dag-expansion-tampered-preview/policy-receipt.json",
+  "policy_receipt_sha256": "sha256:132af3196bb5cfb268873e73d13273a7536b568977395ddc408f7f704565ec82",
+  "proof_scope": {
+    "does_not_prove": [
+      "Expanded DAG execution.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "Validated expansion preview was materialized as a new DAG contract artifact.",
+      "Source DAG contract was not mutated.",
+      "No running DAG route was mutated."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T160513Z-tau-dag-expansion-preview-hash-hardening-20260705/dag-expansion-tampered-preview/apply-receipt.json",
+  "rerun_command": null,
+  "resume_supported": null,
+  "runtime_route_mutation": false,
+  "schema": "tau.dag_expansion_apply_receipt.v1",
+  "source_dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T160513Z-tau-dag-expansion-preview-hash-hardening-20260705/dag-expansion-tampered-preview/dag-contract.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T16:05:15Z",
+  "validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T160513Z-tau-dag-expansion-preview-hash-hardening-20260705/dag-expansion-tampered-preview/validation-receipt.json",
+  "validation_receipt_sha256": "sha256:96ed1eaf411f62b335a8efd8b927e7fec1a66a446d118bd042dfab777f1d3626",
+  "verdict": "PREVIEW_HASH_MISMATCH"
+}
