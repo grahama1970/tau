@@ -169,6 +169,76 @@ def test_cli_init_zero_trust_blocks_existing_files(tmp_path: Path) -> None:
     assert ".tau/policy-profile.json" in payload["existing_files"]
 
 
+def test_cli_compliance_package_writes_review_bundle(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    out_dir = tmp_path / "package"
+    run_dir.mkdir()
+    contract_path = tmp_path / "dag-contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_contract.v1",
+                "dag_id": "cli-package-test",
+                "goal": {
+                    "goal_id": "cli-package-test",
+                    "goal_hash": "sha256:cli-package-test",
+                },
+                "policy_profile": {
+                    "schema": "tau.policy_profile.v1",
+                    "profile_id": "itar-zero-trust-local-only",
+                    "default_decision": "deny",
+                },
+                "data_boundary": {
+                    "schema": "tau.data_boundary.v1",
+                    "classification": "public",
+                    "export_controlled": False,
+                    "itar": False,
+                    "technical_data": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "dag-receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "contract_path": str(contract_path),
+                "zero_trust_preflight_receipt": str(
+                    run_dir / "zero-trust-preflight-receipt.json"
+                ),
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "zero-trust-preflight-receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.zero_trust_preflight_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["compliance-package", str(run_dir), "--out", str(out_dir)],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.compliance_evidence_package.v1"
+    assert payload["ok"] is True
+    assert (out_dir / "package-manifest.json").exists()
+    assert (out_dir / "dag-receipt.json").exists()
+    assert (out_dir / "dag-contract.json").exists()
+    assert (out_dir / "non-claims.md").exists()
+
+
 def test_cli_zero_trust_doctor_reports_policy_and_boundary_status(tmp_path: Path) -> None:
     receipt_path = tmp_path / "zero-trust-preflight.json"
     result = CliRunner().invoke(

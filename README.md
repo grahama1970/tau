@@ -46,6 +46,11 @@ pre-dispatch gate: Graph Memory `/intent` is a planner/routing artifact,
 high-stakes dispatch when policy-required memory intent or evidence-case
 artifacts are missing or incompatible.
 
+Once a run has receipts, `uv run tau compliance-package <run-dir> --out
+<package-dir>` collects the existing run evidence into a review package. See
+[Compliance Evidence Package](docs/compliance-package.md). The package is an
+audit aid, not compliance certification.
+
 To create a local zero-trust starter file set:
 
 ```bash
