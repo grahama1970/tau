@@ -1,0 +1,100 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "approval_packet_sha256": "9bc537c8d57bc0d001cae3dee3dde09c96b3307f749e6c4ee354961b7c1b1d92",
+        "approved": true,
+        "errors": [],
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "packet_summary": {
+          "action": "working_tree_mutation",
+          "actor_auth_method": "manual",
+          "actor_id": "human:graham",
+          "approved": true,
+          "evidence_count": 1,
+          "expires_at": null,
+          "human_id": "human:graham",
+          "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+          "schema": "tau.human_approval_packet.v1",
+          "signature_present": true,
+          "target_id": "scratch-working-tree"
+        },
+        "requested_action": "working_tree_mutation",
+        "schema": "tau.approval_gate_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.approval_gate_pass.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.approval_gate_pass.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.approval_gate_pass",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "approval-gate-check",
+    "--approval-packet",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/medium-approval-gates/working-tree-approval.json",
+    "--requested-action",
+    "working_tree_mutation",
+    "--run-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/medium-approval-gates/pass"
+  ],
+  "completed_at": "2026-07-05T21:41:49Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau accepts an explicit human approval packet before a gated working-tree mutation.",
+  "receipt_summary": {
+    "approval_packet_sha256": "9bc537c8d57bc0d001cae3dee3dde09c96b3307f749e6c4ee354961b7c1b1d92",
+    "approved": true,
+    "errors": [],
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "packet_summary": {
+      "action": "working_tree_mutation",
+      "actor_auth_method": "manual",
+      "actor_id": "human:graham",
+      "approved": true,
+      "evidence_count": 1,
+      "expires_at": null,
+      "human_id": "human:graham",
+      "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+      "schema": "tau.human_approval_packet.v1",
+      "signature_present": true,
+      "target_id": "scratch-working-tree"
+    },
+    "requested_action": "working_tree_mutation",
+    "schema": "tau.approval_gate_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T21:41:49Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.approval_gate_pass.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.approval_gate_pass.stdout.txt",
+  "timeout_seconds": 60
+}
