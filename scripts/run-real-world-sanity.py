@@ -217,6 +217,19 @@ def build_checks(
         scenario="ready-queue-provider-policy",
         mutation="provider",
     )
+    project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(
+        run_dir
+    )
+    project_dag_command_policy_network = create_project_dag_command_policy_fixture(
+        run_dir,
+        scenario="command-policy-network",
+        spec_flag="requires_network",
+    )
+    project_dag_command_policy_mutation = create_project_dag_command_policy_fixture(
+        run_dir,
+        scenario="command-policy-mutation",
+        spec_flag="mutates",
+    )
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
     generic_dag_stale_work_order_spec = create_generic_dag_stale_work_order_fixture(run_dir)
@@ -977,6 +990,69 @@ def build_checks(
             expected_verdict="DAG_CONTRACT_INVALID",
         ),
         Check(
+            check_id="advanced.project_dag_evidence_manifest_goal_hash_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when its typed evidence manifest "
+                "contains an artifact with a goal hash that differs from the immutable DAG goal."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_evidence_manifest_goal_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_evidence_manifest_goal_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_evidence_manifest_goal_drift["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="EVIDENCE_MANIFEST_INVALID",
+        ),
+        Check(
+            check_id="advanced.project_dag_command_policy_network_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau returns a project-agent-readable command_policy_rejected DAG error "
+                "when a command spec declares network use without policy approval."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_command_policy_network["contract"]),
+                "--receipt-dir",
+                str(project_dag_command_policy_network["run_dir"]),
+                "--agents-root",
+                str(project_dag_command_policy_network["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="COMMAND_POLICY_REJECTED",
+        ),
+        Check(
+            check_id="advanced.project_dag_command_policy_mutation_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau returns a project-agent-readable command_policy_rejected DAG error "
+                "when a command spec declares mutation without policy approval."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_command_policy_mutation["contract"]),
+                "--receipt-dir",
+                str(project_dag_command_policy_mutation["run_dir"]),
+                "--agents-root",
+                str(project_dag_command_policy_mutation["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="COMMAND_POLICY_REJECTED",
+        ),
+        Check(
             check_id="advanced.project_dag_ready_queue_cycle_fail_closed",
             level="advanced",
             purpose=(
@@ -1559,6 +1635,97 @@ def create_project_dag_policy_fixture(
                 node["provider"] = {"adapter": "generic-provider-dag-node"}
     else:  # pragma: no cover - fixture guard.
         raise AssertionError(f"unknown project DAG policy mutation: {mutation}")
+    write_json(contract_path, contract)
+    return fixture
+
+
+def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario="evidence-manifest-goal-drift",
+        goal_hash="sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    fixture_dir = contract_path.parent
+    evidence_dir = fixture_dir / "preflight-evidence"
+    creator_artifact = write_json(
+        evidence_dir / "creator-artifact.json",
+        {
+            "schema": "tau.creator_artifact.v1",
+            "goal_hash": contract["goal"]["goal_hash"],
+            "summary": "Preflight evidence manifest creator artifact.",
+        },
+    )
+    stale_reviewer_verdict = write_json(
+        evidence_dir / "reviewer-verdict.json",
+        {
+            "schema": "tau.reviewer_verdict.v1",
+            "goal_hash": "sha256:stale-rw-sanity-reviewer-goal",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS",
+        },
+    )
+    manifest = write_json(
+        fixture_dir / "evidence-manifest.json",
+        {
+            "schema": "tau.evidence_manifest.v1",
+            "dag_id": contract["dag_id"],
+            "goal_hash": contract["goal"]["goal_hash"],
+            "items": [
+                {
+                    "kind": "creator_artifact",
+                    "path": str(creator_artifact),
+                    "sha256": f"sha256:{sha256_file(creator_artifact)}",
+                    "schema": "tau.creator_artifact.v1",
+                    "validator": "tau evidence-validate creator-artifact",
+                    "valid": True,
+                },
+                {
+                    "kind": "reviewer_verdict",
+                    "path": str(stale_reviewer_verdict),
+                    "sha256": f"sha256:{sha256_file(stale_reviewer_verdict)}",
+                    "schema": "tau.reviewer_verdict.v1",
+                    "validator": "tau evidence-validate reviewer-verdict",
+                    "valid": True,
+                },
+            ],
+        },
+    )
+    contract["evidence_manifest"] = str(manifest)
+    write_json(contract_path, contract)
+    return fixture
+
+
+def create_project_dag_command_policy_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    spec_flag: str,
+) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario=scenario,
+        goal_hash=f"sha256:rw-sanity-project-dag-{scenario}",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    fixture_dir = contract_path.parent
+    policy_path = write_json(
+        fixture_dir / "command-policy.json",
+        {
+            "schema": "tau.command_spec_policy.v1",
+            "allowed_command_roots": ["python3"],
+            "allowed_cwd_roots": [str(fixture_dir)],
+            "allows_network": False,
+            "allows_mutation": False,
+        },
+    )
+    coder_spec_path = Path(contract["nodes"][0]["command_spec"])
+    coder_spec = read_json(coder_spec_path)
+    coder_spec[spec_flag] = True
+    write_json(coder_spec_path, coder_spec)
+    contract["command_policy"] = str(policy_path)
     write_json(contract_path, contract)
     return fixture
 

@@ -578,6 +578,10 @@ def _run_bounded_ready_queue_project_dag(
                     stop_reason = "node_dispatch_failed"
                     if isinstance(dispatch, dict):
                         stop_reason = str(dispatch.get("stop_reason") or stop_reason)
+                    elif result.get("errors"):
+                        stop_reason = _command_spec_load_stop_reason(
+                            "\n".join(str(item) for item in result.get("errors", []))
+                        )
                     can_retry = node_attempts[node_id] < contract.nodes[node_id].max_attempts
                     events.append(
                         {
@@ -1785,6 +1789,15 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "reason": "Reconcile DAG route, goal, or target drift before continuing.",
         }
     if normalized in {
+        "evidence_manifest_invalid",
+        "evidence_manifest_missing_required_evidence",
+    }:
+        return {
+            "type": "repair_evidence_manifest",
+            "next_agent": "reviewer",
+            "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+        }
+    if normalized in {
         "missing_required_evidence",
         "missing_reviewer_verdict",
         "reviewer_target_mismatch",
@@ -1810,6 +1823,12 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "next_agent": "goal-guardian",
             "reason": "Repair the node command or subagent response contract before retrying.",
         }
+    if normalized == "command_policy_rejected":
+        return {
+            "type": "repair_command_policy",
+            "next_agent": "goal-guardian",
+            "reason": "Repair the command spec or trust policy before retrying the DAG.",
+        }
     if normalized in {
         "non_local_ready_queue_node_not_allowed",
         "provider_node_not_allowed",
@@ -1825,6 +1844,22 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         "next_agent": "human",
         "reason": "Unhandled DAG failure requires human or orchestrator review.",
     }
+
+
+def _command_spec_load_stop_reason(error: str) -> str:
+    lower = error.lower()
+    if any(
+        marker in lower
+        for marker in (
+            "command policy",
+            "command spec policy",
+            "requires network",
+            "mutates state",
+            "clean worktree",
+        )
+    ):
+        return "command_policy_rejected"
+    return "node_dispatch_failed"
 
 
 def _observed_edges(contract: ProjectDagContract, loop_payload: dict[str, Any]) -> list[dict[str, Any]]:

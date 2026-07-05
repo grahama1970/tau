@@ -722,6 +722,11 @@ def test_project_dag_evidence_manifest_blocks_missing_required_kind(
     assert receipt["alerts"][0]["code"] == "evidence_manifest_missing_required_evidence"
     assert receipt["alerts"][0]["evidence"]["missing"] == ["reviewer_verdict"]
     assert receipt["dag_error"]["failure_code"] == "evidence_manifest_missing_required_evidence"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_evidence_manifest",
+        "next_agent": "reviewer",
+        "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+    }
     assert Path(str(receipt["evidence_validation_receipt"])).exists()
 
 
@@ -751,6 +756,11 @@ def test_project_dag_evidence_manifest_blocks_invalid_manifest_before_dispatch(
     assert receipt["alerts"][0]["code"] == "evidence_manifest_invalid"
     assert "items[1].sha256 mismatch" in receipt["alerts"][0]["evidence"]["errors"][0]
     assert receipt["dag_error"]["failure_code"] == "evidence_manifest_invalid"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_evidence_manifest",
+        "next_agent": "reviewer",
+        "reason": "Repair or regenerate the typed evidence manifest before normal continuation.",
+    }
 
 
 def test_project_dag_command_policy_records_hashes_in_command_results(
@@ -808,9 +818,14 @@ def test_project_dag_command_policy_blocks_denied_command_before_dispatch(
 
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
-    assert receipt["verdict"] == "MISSING_AGENT_COMMAND_SPEC"
+    assert receipt["verdict"] == "COMMAND_POLICY_REJECTED"
     assert "command is denied by command policy: rm" in "\n".join(receipt["errors"])
-    assert receipt["dag_error"]["failure_code"] == "missing_agent_command_spec"
+    assert receipt["dag_error"]["failure_code"] == "command_policy_rejected"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_command_policy",
+        "next_agent": "goal-guardian",
+        "reason": "Repair the command spec or trust policy before retrying the DAG.",
+    }
 
 
 def test_project_dag_ready_queue_command_policy_blocks_denied_command(
@@ -848,6 +863,7 @@ def test_project_dag_ready_queue_command_policy_blocks_denied_command(
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
     assert receipt["dag_error"]["failed_node"] == "coder"
+    assert receipt["dag_error"]["failure_code"] == "command_policy_rejected"
     assert "command is denied by command policy: rm" in "\n".join(receipt["errors"])
 
 

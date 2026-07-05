@@ -525,7 +525,7 @@ def run_agent_handoff_command_loop(
                 status="BLOCKED",
                 step_count=step,
                 terminal_agent=selected_agent,
-                stop_reason="missing_agent_command_spec",
+                stop_reason=_command_spec_load_stop_reason(str(exc)),
                 dispatches=tuple(dispatches),
                 errors=(str(exc),),
             )
@@ -900,6 +900,24 @@ def _command_with_goal_guardian_ticket_source(
         "--ticket-source",
         str(ticket_source.expanduser().resolve()),
     ]
+
+
+def _command_spec_load_stop_reason(error: str) -> str:
+    """Classify command-spec load failures for project-agent course correction."""
+
+    lower = error.lower()
+    if any(
+        marker in lower
+        for marker in (
+            "command policy",
+            "command spec policy",
+            "requires network",
+            "mutates state",
+            "clean worktree",
+        )
+    ):
+        return "command_policy_rejected"
+    return "missing_agent_command_spec"
 
 
 def _artifact_paths(root: Path | None) -> list[str]:
