@@ -193,6 +193,16 @@ not semantic model quality
 
 Receipts are useful, but unsigned JSON is weak for high-stakes review.
 
+Status: implemented as a local shared-key signing lane. Tau now writes
+`tau.actor_manifest.v1`, `tau.environment_manifest.v1`,
+`tau.signed_receipt.v1`, and `tau.signed_receipt_verification.v1`. The signing
+envelope uses HMAC-SHA256 over receipt input hashes and can detect changed
+signed inputs when verified with the same local key. This is local tamper
+detection and review provenance only; it is not public-key non-repudiation,
+human legal identity proof, US-person/export-control eligibility, ITAR
+compliance, runtime sandbox enforcement, or proof that the signed receipt claim
+is true.
+
 Build:
 
 ```text

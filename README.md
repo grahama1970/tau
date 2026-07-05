@@ -60,6 +60,14 @@ For local tool integration, `uv run tau serve --host 127.0.0.1 --port 8768`
 starts a minimal self-hosted API over existing doctor, preflight, run-status,
 DAG-run, receipt-listing, and package commands. See [Local API](docs/local-api.md).
 
+For provenance and local tamper detection, `uv run tau actor-manifest`, `uv run
+tau environment-manifest`, `uv run tau sign-receipt`, and `uv run tau
+verify-signed-receipt` write declared actor/environment manifests and a
+shared-key receipt signature envelope. See
+[Provenance and Receipt Signing](docs/provenance-and-signing.md). This is not
+public-key identity proof, legal attestation, ITAR compliance, or sandbox
+enforcement.
+
 To create a local zero-trust starter file set:
 
 ```bash
