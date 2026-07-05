@@ -1,0 +1,60 @@
+{
+  "schema": "tau.p1_runtime_module_integrity_receipt.v1",
+  "status": "PASS",
+  "mocked": "mixed",
+  "live": false,
+  "provider_live": false,
+  "timestamp": "2026-07-05T13:08:27Z",
+  "objective": "Ensure Tau CLI-imported runtime modules are tracked with focused deterministic proof.",
+  "changed_files": [
+    "src/tau_coding/orchestration_evidence.py",
+    "src/tau_coding/dag_stress_poc.py",
+    "src/tau_coding/media_explainer_orchestration.py",
+    "src/tau_coding/visible_dag_poc.py",
+    "src/tau_coding/visible_dag_worker.py",
+    "tests/test_orchestration_evidence.py",
+    "tests/test_dag_stress_poc.py",
+    "tests/test_media_explainer_orchestration.py",
+    "tests/test_visible_dag_poc.py"
+  ],
+  "commands_run": [
+    {
+      "command": "git ls-files src/tau_coding/orchestration_evidence.py src/tau_coding/dag_stress_poc.py src/tau_coding/media_explainer_orchestration.py src/tau_coding/visible_dag_poc.py src/tau_coding/visible_dag_worker.py tests/test_orchestration_evidence.py tests/test_dag_stress_poc.py tests/test_media_explainer_orchestration.py tests/test_visible_dag_poc.py tests/test_persona_dream_panel_agent.py scripts/run-real-world-sanity.sh",
+      "exit_code": 0,
+      "summary": "No matching tracked files were listed before this slice."
+    },
+    {
+      "command": "rg -n \"tau_coding\\.(orchestration_evidence|dag_stress_poc|media_explainer_orchestration|visible_dag_poc|visible_dag_worker)|from tau_coding\\.(orchestration_evidence|dag_stress_poc|media_explainer_orchestration|visible_dag_poc|visible_dag_worker)\" src tests scripts",
+      "exit_code": 0,
+      "summary": "Confirmed committed CLI/provider modules import these runtime files."
+    },
+    {
+      "command": "uv run pytest tests/test_orchestration_evidence.py tests/test_dag_stress_poc.py tests/test_media_explainer_orchestration.py tests/test_visible_dag_poc.py -q",
+      "exit_code": 0,
+      "summary": "16 passed in 0.69s"
+    },
+    {
+      "command": "uv run python -m compileall -q src/tau_coding/orchestration_evidence.py src/tau_coding/dag_stress_poc.py src/tau_coding/media_explainer_orchestration.py src/tau_coding/visible_dag_poc.py src/tau_coding/visible_dag_worker.py",
+      "exit_code": 0,
+      "summary": "Runtime modules compiled without output."
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/orchestration_evidence.py src/tau_coding/dag_stress_poc.py src/tau_coding/media_explainer_orchestration.py src/tau_coding/visible_dag_poc.py src/tau_coding/visible_dag_worker.py tests/test_orchestration_evidence.py tests/test_dag_stress_poc.py tests/test_media_explainer_orchestration.py tests/test_visible_dag_poc.py",
+      "exit_code": 0,
+      "summary": "All checks passed!"
+    }
+  ],
+  "proves": [
+    "The focused CLI-imported runtime modules import and compile in the current Tau environment.",
+    "The focused orchestration evidence, DAG stress, media explainer, and visible DAG tests pass deterministically.",
+    "The focused candidate files satisfy Ruff checks after formatting repair."
+  ],
+  "does_not_prove": [
+    "Live provider/model semantic quality.",
+    "Herdr-visible provider DAG execution for these modules.",
+    "GitHub mutation.",
+    "Browser/CDP UI proof.",
+    "Full WebGPT roadmap completion."
+  ],
+  "errors": []
+}
