@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -726,10 +727,13 @@ def test_provider_dag_work_orders_are_canonical_and_hash_bound(tmp_path: Path) -
     target_file = scratch / "message.txt"
     coder_receipt = receipt_dir / "coder.json"
     reviewer_receipt = receipt_dir / "reviewer.json"
+    visible_log = tmp_path / "codex.visible.txt"
+    visible_log.write_text("codex visible log\n", encoding="utf-8")
     provider_record = {
         "workspace_id": "w1",
         "pane_id": "w1:p3",
         "terminal_id": "term-coder",
+        "visible_log_path": str(visible_log),
     }
 
     coder = _coder_work_order(
@@ -797,6 +801,8 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
     receipt_dir.mkdir()
     target_file = scratch / "message.txt"
     target_file.write_text("completed\n", encoding="utf-8")
+    visible_log = tmp_path / "codex.visible.txt"
+    visible_log.write_text("codex visible log\n", encoding="utf-8")
     receipt_path = receipt_dir / "coder.json"
     work_order = _coder_work_order(
         run_id="run-001",
@@ -813,6 +819,7 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
             "workspace_id": "w1",
             "pane_id": "w1:p5",
             "terminal_id": "term-codex",
+            "visible_log_path": str(visible_log),
         },
     )
     work_order_path = tmp_path / "work-order.json"
@@ -827,6 +834,8 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
         "workspace_id": "w1",
         "pane_id": "w1:p5",
         "terminal_id": "term-codex",
+        "visible_log_path": str(visible_log),
+        "visible_log_sha256": hashlib.sha256(visible_log.read_bytes()).hexdigest(),
         "work_order_path": str(work_order_path),
         "work_order_sha256": work_order["work_order_sha256"],
         "status": "PASS",
@@ -856,6 +865,8 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
     stale_receipt = dict(receipt)
     stale_receipt["work_order_sha256"] = "stale"
     stale_receipt["pane_id"] = "wrong-pane"
+    stale_receipt["visible_log_path"] = "wrong-log"
+    stale_receipt["visible_log_sha256"] = "stale-log-sha"
     stale_errors = _validate_node_receipt(
         stale_receipt,
         expected_node_id="coder",
@@ -870,6 +881,8 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
 
     assert "work_order_sha256 must match the dispatched work order" in stale_errors
     assert "pane_id must be w1:p5" in stale_errors
+    assert f"visible_log_path must be {visible_log}" in stale_errors
+    assert "visible_log_sha256 must match visible_log_path contents" in stale_errors
 
 
 def test_plan_provider_dag_poc_records_forced_reviewer_revise_attempts(tmp_path: Path) -> None:

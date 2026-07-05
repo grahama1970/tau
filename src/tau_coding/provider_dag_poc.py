@@ -925,6 +925,7 @@ def _coder_work_order(
             "workspace_id": str(provider_record.get("workspace_id") or ""),
             "pane_id": str(provider_record.get("pane_id") or ""),
             "terminal_id": str(provider_record.get("terminal_id") or ""),
+            "visible_log_path": _provider_visible_log_path(provider_record),
         },
         "node_id": "coder",
         "provider_id": "codex",
@@ -983,6 +984,7 @@ def _reviewer_work_order(
             "workspace_id": str(provider_record.get("workspace_id") or ""),
             "pane_id": str(provider_record.get("pane_id") or ""),
             "terminal_id": str(provider_record.get("terminal_id") or ""),
+            "visible_log_path": _provider_visible_log_path(provider_record),
         },
         "node_id": "reviewer",
         "provider_id": "opencode",
@@ -1034,6 +1036,8 @@ Receipt JSON shape:
   "workspace_id": "{herdr.get("workspace_id")}",
   "pane_id": "{herdr.get("pane_id")}",
   "terminal_id": "{herdr.get("terminal_id")}",
+  "visible_log_path": "{herdr.get("visible_log_path")}",
+  "visible_log_sha256": "<sha256 of visible_log_path after your work>",
   "work_order_sha256": "{work_order["work_order_sha256"]}",
   "status": "PASS",
   "verdict": "PASS",
@@ -1079,6 +1083,8 @@ Receipt JSON shape:
   "workspace_id": "{herdr.get("workspace_id")}",
   "pane_id": "{herdr.get("pane_id")}",
   "terminal_id": "{herdr.get("terminal_id")}",
+  "visible_log_path": "{herdr.get("visible_log_path")}",
+  "visible_log_sha256": "<sha256 of visible_log_path after review>",
   "work_order_sha256": "{work_order["work_order_sha256"]}",
   "status": "PASS",
   "verdict": "PASS or REVISE",
@@ -1232,6 +1238,20 @@ def _validate_node_receipt(
             errors.append(f"expected {key} must be available from Herdr readiness")
         elif receipt.get(key) != expected:
             errors.append(f"{key} must be {expected}")
+    expected_visible_log_path = str(expected_herdr.get("visible_log_path") or "")
+    if not expected_visible_log_path:
+        errors.append("expected visible_log_path must be available from Herdr readiness")
+    elif receipt.get("visible_log_path") != expected_visible_log_path:
+        errors.append(f"visible_log_path must be {expected_visible_log_path}")
+    visible_log_sha256 = receipt.get("visible_log_sha256")
+    if not isinstance(visible_log_sha256, str) or not visible_log_sha256:
+        errors.append("visible_log_sha256 must be a non-empty string")
+    else:
+        expected_visible_log_sha256 = _file_sha256(Path(expected_visible_log_path))
+        if expected_visible_log_sha256 is None:
+            errors.append("visible_log_path must be readable for hash verification")
+        elif visible_log_sha256 != expected_visible_log_sha256:
+            errors.append("visible_log_sha256 must match visible_log_path contents")
     if str(receipt.get("status") or "").upper() not in {"PASS", "BLOCKED"}:
         errors.append("status must be PASS or BLOCKED")
     if str(receipt.get("verdict") or "").upper() not in {"PASS", "REVISE", "BLOCKED"}:
@@ -1242,6 +1262,25 @@ def _validate_node_receipt(
     if not isinstance(receipt.get("handoff_summary"), str) or not receipt.get("handoff_summary"):
         errors.append("handoff_summary must be a non-empty string")
     return errors
+
+
+def _provider_visible_log_path(provider_record: dict[str, Any]) -> str:
+    direct = provider_record.get("visible_log_path")
+    if isinstance(direct, str) and direct:
+        return direct
+    evidence = provider_record.get("evidence")
+    if isinstance(evidence, dict):
+        value = evidence.get("visible_log_path")
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def _file_sha256(path: Path) -> str | None:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
 
 
 def _validate_forced_revise_attempts(
@@ -1496,7 +1535,7 @@ def _start_visible_deterministic_coder_pane(
             "error": "missing codex workspace_id for deterministic coder pane",
         }
     script = (
-        "import json, sys; "
+        "import hashlib, json, sys; "
         "from pathlib import Path; "
         "wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); "
         "target=Path(wo['target_file']); "
@@ -1513,6 +1552,8 @@ def _start_visible_deterministic_coder_pane(
         "'workspace_id':wo['herdr']['workspace_id'],"
         "'pane_id':wo['herdr']['pane_id'],"
         "'terminal_id':wo['herdr']['terminal_id'],"
+        "'visible_log_path':wo['herdr'].get('visible_log_path'),"
+        "'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,"
         "'work_order_sha256':wo['work_order_sha256'],"
         "'status':'PASS',"
         "'verdict':'PASS',"
