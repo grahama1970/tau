@@ -51,6 +51,8 @@ def run_herdr_cleanup(
         candidates=candidates,
         mode=mode,
     )
+    session_alerts = _session_cleanup_alerts(candidates=candidates, mode=mode)
+    alerts = [*lease_alerts, *session_alerts]
     resolved_lease_path = (
         workspace_lease_path.expanduser().resolve()
         if workspace_lease_path is not None
@@ -60,7 +62,7 @@ def run_herdr_cleanup(
         lease_payload = _read_json_object(resolved_lease_path, label="workspace lease")
     command_results: list[dict[str, Any]] = []
     applied_actions: list[dict[str, Any]] = []
-    if mode == "apply" and not lease_alerts:
+    if mode == "apply" and not alerts:
         for candidate in candidates:
             if candidate["action"] != "workspace_close":
                 continue
@@ -92,7 +94,7 @@ def run_herdr_cleanup(
                     "post_verified_absent": post_verified_absent,
                 }
             )
-    ok = not lease_alerts and all(_applied_action_ok(action) for action in applied_actions)
+    ok = not alerts and all(_applied_action_ok(action) for action in applied_actions)
     receipt = {
         "schema": HERDR_CLEANUP_RECEIPT_SCHEMA,
         "ok": ok,
@@ -115,7 +117,7 @@ def run_herdr_cleanup(
         ),
         "workspace_lease_payload": lease_payload,
         "lease_required": mode == "apply",
-        "alerts": lease_alerts,
+        "alerts": alerts,
         "applied_actions": applied_actions,
         "command_results": command_results,
         "proof_scope": {
@@ -125,11 +127,12 @@ def run_herdr_cleanup(
                 "Tau refuses to close the current Herdr workspace unless explicitly allowed",
                 "Tau apply cleanup requires a Herdr workspace lease before mutation",
                 "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+                "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
             ],
             "does_not_prove": [
                 "global regex cleanup of unrelated Herdr resources",
                 "Git worktree deletion",
-                "session deletion for runs that did not record a session id",
+                "session deletion until Tau records stronger session ownership and implements session stop/delete",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -501,6 +504,33 @@ def _workspace_lease_alerts(
             )
         )
     return alerts
+
+
+def _session_cleanup_alerts(
+    *,
+    candidates: list[dict[str, Any]],
+    mode: str,
+) -> list[dict[str, Any]]:
+    if mode != "apply":
+        return []
+    session_candidates = [
+        candidate
+        for candidate in candidates
+        if candidate.get("action") == "session_stop" and candidate.get("session")
+    ]
+    if not session_candidates:
+        return []
+    return [
+        _alert(
+            "BLOCK",
+            "session_cleanup_not_supported",
+            "Apply cleanup cannot stop/delete Herdr sessions until session ownership is explicit.",
+            {
+                "sessions": [str(candidate["session"]) for candidate in session_candidates],
+                "required_next": "record tau.herdr_session_ownership.v1 before session cleanup apply",
+            },
+        )
+    ]
 
 
 def _lease_workspace_ids(lease: dict[str, Any]) -> list[str]:

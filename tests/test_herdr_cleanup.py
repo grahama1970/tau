@@ -335,6 +335,37 @@ def test_herdr_cleanup_collects_provider_session_state_paths(tmp_path: Path) -> 
     assert receipt["resources"][0]["sources"] == ["provider_session_states"]
 
 
+def test_herdr_cleanup_apply_blocks_recorded_session_candidates(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+    manifest_path = run_dir / "runtime-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["provider_sessions"]["codex"]["session"] = "session-codex"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    lease_path = _write_workspace_lease(run_dir)
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin="/tmp/should-not-run-herdr",
+        workspace_lease_path=lease_path,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["candidate_count"] == 2
+    assert {candidate["action"] for candidate in receipt["candidates"]} == {
+        "session_stop",
+        "workspace_close",
+    }
+    assert receipt["alerts"][0]["code"] == "session_cleanup_not_supported"
+    assert receipt["alerts"][0]["evidence"]["sessions"] == ["session-codex"]
+    assert receipt["applied_actions"] == []
+    assert receipt["command_results"] == []
+
+
 def test_herdr_gc_dry_run_selects_stale_tau_workspaces(
     tmp_path: Path,
     monkeypatch,

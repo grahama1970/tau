@@ -236,6 +236,7 @@ def build_checks(
     generic_dag_timeout_spec = create_generic_dag_timeout_fixture(run_dir)
     approval = create_approval_gate_fixtures(run_dir)
     cleanup = create_cleanup_status_fixture(run_dir)
+    cleanup_session = create_cleanup_session_fixture(run_dir)
     orchestration_evidence = create_orchestration_evidence_status_fixture(run_dir)
     provider_lifecycle = create_provider_lifecycle_status_fixture(run_dir)
     provider_readiness_status = create_provider_readiness_status_fixture(run_dir)
@@ -610,6 +611,28 @@ def build_checks(
             ],
             timeout_seconds=60,
             expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.herdr_cleanup_session_apply_fail_closed",
+            level="medium",
+            purpose=(
+                "Tau blocks Herdr cleanup apply when a run records a session candidate, "
+                "because session stop/delete is not supported without stronger session ownership."
+            ),
+            command=[
+                *uv_tau,
+                "herdr-cleanup",
+                "apply",
+                "--run-dir",
+                str(cleanup_session["run_dir"]),
+                "--workspace-lease",
+                str(cleanup_session["workspace_lease"]),
+                "--herdr-bin",
+                str(cleanup_session["blocked_herdr"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
         ),
         Check(
             check_id="medium.orchestration_evidence_status",
@@ -2205,6 +2228,45 @@ def create_cleanup_status_fixture(run_dir: Path) -> dict[str, Path]:
         },
     )
     return {"run_dir": fixture_dir}
+
+
+def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-herdr-cleanup-session"
+    manifest_path = write_json(
+        fixture_dir / "runtime-manifest.json",
+        {
+            "schema": "tau.provider_dag_runtime_manifest.v1",
+            "run_id": "rw-sanity-herdr-cleanup-session",
+            "provider_sessions": {
+                "codex": {
+                    "workspace_id": "w-rw-sanity-session-cleanup",
+                    "pane_id": "w-rw-sanity-session-cleanup:p5",
+                    "terminal_id": "term-codex",
+                    "session": "session-rw-sanity-codex",
+                }
+            },
+        },
+    )
+    now = datetime.now(UTC).replace(microsecond=0)
+    workspace_lease = write_json(
+        fixture_dir / "herdr-workspace-lease.json",
+        {
+            "schema": "tau.herdr_workspace_lease.v1",
+            "run_id": "rw-sanity-herdr-cleanup-session",
+            "dag_id": "rw-sanity-herdr-cleanup-session",
+            "owner": "tau-real-world-sanity",
+            "created_at": now.isoformat().replace("+00:00", "Z"),
+            "expires_at": (now + timedelta(days=1)).isoformat().replace("+00:00", "Z"),
+            "cleanup_policy": "apply",
+            "workspace_ids": ["w-rw-sanity-session-cleanup"],
+            "source_runtime_manifest": str(manifest_path),
+        },
+    )
+    return {
+        "run_dir": fixture_dir,
+        "workspace_lease": workspace_lease,
+        "blocked_herdr": fixture_dir / "should-not-run-herdr",
+    }
 
 
 def create_orchestration_evidence_status_fixture(run_dir: Path) -> dict[str, Path]:
