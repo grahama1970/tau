@@ -42,6 +42,30 @@ def test_research_source_receipt_blocks_missing_source_metadata(tmp_path: Path) 
     assert "sources[0].claims_supported must be a list of strings" in receipt["errors"]
 
 
+def test_research_source_receipt_blocks_arxiv_packet_without_arxiv_source(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "bad-arxiv-research-source-packet.json"
+    receipt_path = tmp_path / "research-source-receipt.json"
+    packet = _valid_source_packet()
+    packet["sources"] = [
+        {
+            "title": "Generic web article mislabeled as ArXiv",
+            "url": "https://example.com/research",
+            "relevance": "HIGH",
+            "claims_supported": ["generic claim"],
+        }
+    ]
+    source_path.write_text(json.dumps(packet), encoding="utf-8")
+
+    receipt = write_research_source_receipt(source_path=source_path, receipt_path=receipt_path)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert "sources[0].arxiv_id is required when method is arxiv" in receipt["errors"]
+    assert "sources[0].url must cite arxiv.org when method is arxiv" in receipt["errors"]
+
+
 def _valid_source_packet() -> dict:
     return {
         "schema": "tau.research_source_packet.v1",

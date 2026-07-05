@@ -1,0 +1,58 @@
+{
+  "arxiv_source_count": 2,
+  "classification": "design_input",
+  "errors": [],
+  "limitations": [
+    "Research is design input only.",
+    "Local Tau receipts and validators remain required before closure."
+  ],
+  "live": false,
+  "method": "arxiv",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "The cited sources are true.",
+      "The research was fetched live by this command.",
+      "The research is sufficient for implementation or closure.",
+      "Any Tau runtime behavior changed because of the research."
+    ],
+    "proves": [
+      "A research source packet was inspected deterministically.",
+      "Required source metadata, source URLs, relevance labels, and classifications were validated.",
+      "Research is marked review-required before it can affect Tau routing or implementation."
+    ]
+  },
+  "provider_live": false,
+  "query": "adaptive DAG multi-agent routing references for Tau",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/research-source-arxiv/research-source-receipt.json",
+  "retrieved_at": "2026-07-05T13:40:00Z",
+  "review_required": true,
+  "schema": "tau.research_source_receipt.v1",
+  "source_count": 2,
+  "source_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/research-source-arxiv/research-source-packet.json",
+  "source_packet_sha256": "c380264235c4afeb76481f6ac0d8092335d181fac0c8af43fcdba43839316e5c",
+  "source_type": "paper",
+  "sources": [
+    {
+      "arxiv_id": "2308.09687",
+      "claims_supported": [
+        "graph-structured reasoning inspiration"
+      ],
+      "relevance": "HIGH",
+      "title": "Graph of Thoughts: Solving Elaborate Problems with Large Language Models",
+      "url": "https://arxiv.org/abs/2308.09687"
+    },
+    {
+      "arxiv_id": "2502.05078",
+      "claims_supported": [
+        "bounded dynamic DAG expansion inspiration"
+      ],
+      "relevance": "HIGH",
+      "title": "Adaptive Graph of Thoughts: Test-Time Adaptive Reasoning",
+      "url": "https://arxiv.org/abs/2502.05078"
+    }
+  ],
+  "status": "PASS",
+  "summary": "Source-bearing ArXiv packet for Tau adaptive DAG design review."
+}

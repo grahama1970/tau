@@ -120,7 +120,7 @@ def _validate_source_packet(packet: Mapping[str, Any]) -> list[str]:
         if not isinstance(source, Mapping):
             errors.append(f"sources[{index}] must be an object")
             continue
-        _validate_source_entry(source, index=index, errors=errors)
+        _validate_source_entry(source, index=index, method=packet.get("method"), errors=errors)
     if not isinstance(packet.get("summary"), str) or not packet["summary"].strip():
         errors.append("summary must be a non-empty string")
     limitations = packet.get("limitations")
@@ -129,7 +129,13 @@ def _validate_source_packet(packet: Mapping[str, Any]) -> list[str]:
     return errors
 
 
-def _validate_source_entry(source: Mapping[str, Any], *, index: int, errors: list[str]) -> None:
+def _validate_source_entry(
+    source: Mapping[str, Any],
+    *,
+    index: int,
+    method: str | None = None,
+    errors: list[str],
+) -> None:
     prefix = f"sources[{index}]"
     _require_non_empty_string(source, "title", errors=errors, prefix=prefix)
     _require_non_empty_string(source, "url", errors=errors, prefix=prefix)
@@ -142,6 +148,12 @@ def _validate_source_entry(source: Mapping[str, Any], *, index: int, errors: lis
     arxiv_id = source.get("arxiv_id")
     if arxiv_id is not None and (not isinstance(arxiv_id, str) or not arxiv_id.strip()):
         errors.append(f"{prefix}.arxiv_id must be a non-empty string when present")
+    if method == "arxiv":
+        url = source.get("url")
+        if not isinstance(arxiv_id, str) or not arxiv_id.strip():
+            errors.append(f"{prefix}.arxiv_id is required when method is arxiv")
+        if not isinstance(url, str) or "arxiv.org/" not in url:
+            errors.append(f"{prefix}.url must cite arxiv.org when method is arxiv")
     for optional in ("doi", "version", "pdf_sha256", "html_sha256", "extraction_artifact"):
         value = source.get(optional)
         if value is not None and not isinstance(value, str):

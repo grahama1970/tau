@@ -269,6 +269,7 @@ def build_checks(
     dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
     dag_branch_locks = create_dag_branch_locks_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
+    research_source = create_research_source_fixture(run_dir)
     github_apply_policy = create_github_apply_policy_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
@@ -1539,6 +1540,45 @@ def build_checks(
             output_receipt=route_memory_apply["dry_run_sync_receipt"],
         ),
         Check(
+            check_id="advanced.research_source_arxiv_packet_passes",
+            level="advanced",
+            purpose=(
+                "Tau accepts a source-bearing ArXiv research packet as review-required "
+                "design input without treating it as closure proof."
+            ),
+            command=[
+                *uv_tau,
+                "research-source-receipt",
+                "--source",
+                str(research_source["valid_source"]),
+                "--receipt",
+                str(research_source["valid_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            output_receipt=research_source["valid_receipt"],
+        ),
+        Check(
+            check_id="advanced.research_source_arxiv_metadata_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a packet that claims method:arxiv but cites a generic "
+                "non-ArXiv source without an arxiv_id."
+            ),
+            command=[
+                *uv_tau,
+                "research-source-receipt",
+                "--source",
+                str(research_source["invalid_source"]),
+                "--receipt",
+                str(research_source["invalid_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=research_source["invalid_receipt"],
+        ),
+        Check(
             check_id="advanced.github_apply_policy_missing_gates_fail_closed",
             level="advanced",
             purpose=(
@@ -2788,6 +2828,62 @@ completed = run([
 ], 1)
 raise SystemExit(completed.returncode)
 """
+
+
+def create_research_source_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "research-source-arxiv"
+    invalid_dir = run_dir / "research-source-arxiv-invalid"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    invalid_dir.mkdir(parents=True, exist_ok=True)
+    valid_packet = {
+        "schema": "tau.research_source_packet.v1",
+        "source_type": "paper",
+        "method": "arxiv",
+        "query": "adaptive DAG multi-agent routing references for Tau",
+        "retrieved_at": "2026-07-05T13:40:00Z",
+        "classification": "design_input",
+        "sources": [
+            {
+                "title": "Graph of Thoughts: Solving Elaborate Problems with Large Language Models",
+                "url": "https://arxiv.org/abs/2308.09687",
+                "arxiv_id": "2308.09687",
+                "relevance": "HIGH",
+                "claims_supported": ["graph-structured reasoning inspiration"],
+            },
+            {
+                "title": "Adaptive Graph of Thoughts: Test-Time Adaptive Reasoning",
+                "url": "https://arxiv.org/abs/2502.05078",
+                "arxiv_id": "2502.05078",
+                "relevance": "HIGH",
+                "claims_supported": ["bounded dynamic DAG expansion inspiration"],
+            },
+        ],
+        "summary": "Source-bearing ArXiv packet for Tau adaptive DAG design review.",
+        "limitations": [
+            "Research is design input only.",
+            "Local Tau receipts and validators remain required before closure.",
+        ],
+    }
+    invalid_packet = {
+        **valid_packet,
+        "sources": [
+            {
+                "title": "Generic web article mislabeled as ArXiv",
+                "url": "https://example.com/not-arxiv",
+                "relevance": "HIGH",
+                "claims_supported": ["generic distributed-agent claim"],
+            }
+        ],
+    }
+    return {
+        "valid_source": write_json(fixture_dir / "research-source-packet.json", valid_packet),
+        "valid_receipt": fixture_dir / "research-source-receipt.json",
+        "invalid_source": write_json(
+            invalid_dir / "research-source-packet.json",
+            invalid_packet,
+        ),
+        "invalid_receipt": invalid_dir / "research-source-receipt.json",
+    }
 
 
 def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:

@@ -1,0 +1,74 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "errors": [
+          "sources[0].arxiv_id is required when method is arxiv",
+          "sources[0].url must cite arxiv.org when method is arxiv"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "schema": "tau.research_source_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/logs/advanced.research_source_arxiv_metadata_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/logs/advanced.research_source_arxiv_metadata_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.research_source_arxiv_metadata_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "research-source-receipt",
+    "--source",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/research-source-arxiv-invalid/research-source-packet.json",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/research-source-arxiv-invalid/research-source-receipt.json"
+  ],
+  "completed_at": "2026-07-05T23:55:48Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/research-source-arxiv-invalid/research-source-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau rejects a packet that claims method:arxiv but cites a generic non-ArXiv source without an arxiv_id.",
+  "receipt_summary": {
+    "errors": [
+      "sources[0].arxiv_id is required when method is arxiv",
+      "sources[0].url must cite arxiv.org when method is arxiv"
+    ],
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "provider_live": false,
+    "schema": "tau.research_source_receipt.v1",
+    "status": "BLOCKED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T23:55:48Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/logs/advanced.research_source_arxiv_metadata_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T235547Z-tau-research-source-arxiv-hardening-20260705/logs/advanced.research_source_arxiv_metadata_fail_closed.stdout.txt",
+  "timeout_seconds": 60
+}
