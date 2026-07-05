@@ -88,6 +88,46 @@ def test_summarize_receipt_includes_cleanup_apply_absence_counts() -> None:
     }
 
 
+def test_summarize_receipt_includes_herdr_gc_surface_boundary() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.herdr_gc_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "mode": "apply",
+            "herdr_bin": "/tmp/fake-herdr",
+            "herdr_surface": "fixture",
+            "workspace_count": 1,
+            "candidate_count": 1,
+            "applied_actions": [
+                {
+                    "workspace_id": "w1",
+                    "applied": True,
+                    "post_verified_absent": True,
+                }
+            ],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.herdr_gc_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "herdr_bin": "/tmp/fake-herdr",
+        "herdr_surface": "fixture",
+        "workspace_count": 1,
+        "candidate_count": 1,
+        "applied_action_count": 1,
+        "post_verified_absent_count": 1,
+    }
+
+
 def test_summarize_receipt_includes_generic_dag_node_timing() -> None:
     module = _load_runner_module()
 

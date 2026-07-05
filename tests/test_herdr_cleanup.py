@@ -113,7 +113,8 @@ def test_herdr_cleanup_apply_uses_herdr_workspace_close(
     )
 
     assert receipt["ok"] is True
-    assert receipt["live"] is True
+    assert receipt["live"] is False
+    assert receipt["herdr_surface"] == "fixture"
     assert receipt["workspace_lease"] == str(lease_path.resolve())
     assert receipt["workspace_lease_sha256"] == hashlib.sha256(lease_path.read_bytes()).hexdigest()
     assert receipt["applied_actions"] == [
@@ -452,6 +453,7 @@ def test_herdr_gc_dry_run_selects_stale_tau_workspaces(
     assert receipt["schema"] == "tau.herdr_gc_receipt.v1"
     assert receipt["ok"] is True
     assert receipt["live"] is False
+    assert receipt["herdr_surface"] == "fixture"
     assert receipt["mode"] == "dry-run"
     assert receipt["workspace_count"] == 7
     assert [item["workspace_id"] for item in receipt["candidates"]] == ["w-old", "w-generic"]
@@ -480,7 +482,8 @@ def test_herdr_gc_apply_closes_and_verifies_absence(
     )
 
     assert receipt["ok"] is True
-    assert receipt["live"] is True
+    assert receipt["live"] is False
+    assert receipt["herdr_surface"] == "fixture"
     assert receipt["mode"] == "apply"
     assert receipt["approval_receipt"] == str(approval_path.resolve())
     assert receipt["approval_receipt_sha256"] == (

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -156,9 +157,11 @@ def run_herdr_cleanup(
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": mode == "apply",
+        "live": mode == "apply" and _herdr_surface(herdr_bin) == "real",
         "mode": mode,
         "run_dir": str(resolved_run_dir),
+        "herdr_bin": herdr_bin,
+        "herdr_surface": _herdr_surface(herdr_bin),
         "runtime_manifest": str(resolved_run_dir / "runtime-manifest.json"),
         "runtime_manifest_sha256": _file_sha256(resolved_run_dir / "runtime-manifest.json"),
         "resource_count": len(resources),
@@ -270,6 +273,7 @@ def run_herdr_gc(
         approval_receipt_path=resolved_approval_path,
         apply=apply,
     )
+    herdr_surface = _herdr_surface(herdr_bin)
     applied_actions: list[dict[str, Any]] = []
     if apply and not approval_alerts:
         for candidate in candidates:
@@ -309,10 +313,11 @@ def run_herdr_gc(
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": apply,
+        "live": herdr_surface == "real" and list_result.returncode == 0,
         "mode": "apply" if apply else "dry-run",
         "run_dir": str(resolved_run_dir),
         "herdr_bin": herdr_bin,
+        "herdr_surface": herdr_surface,
         "approval_receipt": str(resolved_approval_path) if resolved_approval_path else None,
         "approval_receipt_sha256": (
             f"sha256:{_file_sha256(resolved_approval_path)}"
@@ -353,6 +358,20 @@ def run_herdr_gc(
     }
     _write_json(resolved_run_dir / "herdr-gc-receipt.json", receipt)
     return receipt
+
+
+def _herdr_surface(herdr_bin: str) -> str:
+    discovered = shutil.which("herdr")
+    if not discovered:
+        return "fixture"
+    try:
+        if Path(herdr_bin).name == herdr_bin:
+            candidate = Path(discovered).resolve()
+        else:
+            candidate = Path(herdr_bin).expanduser().resolve()
+        return "real" if candidate == Path(discovered).resolve() else "fixture"
+    except OSError:
+        return "fixture"
 
 
 def _load_runtime_manifest(run_dir: Path) -> dict[str, Any]:

@@ -1,0 +1,40 @@
+{
+  "approval_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224145Z-tau-herdr-gc-surface-boundary-v3-20260705/medium-herdr-gc-approval/herdr-gc-approval.json",
+  "approval_packet_sha256": "99a8f0e3fa7167f15dbac1dfab2356157d19d4f3d44820ab2fd80227702d3af5",
+  "approved": true,
+  "errors": [],
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "packet_summary": {
+    "action": "herdr_gc_apply",
+    "actor_auth_method": "manual",
+    "actor_id": "human:graham",
+    "approved": true,
+    "evidence_count": 1,
+    "expires_at": null,
+    "human_id": "human:graham",
+    "nonce": "real-world-sanity:herdr_gc_apply:rw-sanity-provider-readiness-gc",
+    "schema": "tau.human_approval_packet.v1",
+    "signature_present": true,
+    "target_id": "rw-sanity-provider-readiness-gc"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "the gated mutation was executed",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "cryptographic signature validity beyond requiring a signature field"
+    ],
+    "proves": [
+      "Tau can fail closed before mutation or closure without a valid human approval packet",
+      "Tau can validate explicit human approval for a requested gated action",
+      "Tau writes a durable approval-gate receipt before any gated mutation command"
+    ]
+  },
+  "requested_action": "herdr_gc_apply",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T224145Z-tau-herdr-gc-surface-boundary-v3-20260705/medium-herdr-gc-approval/approval",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:41:46Z"
+}
