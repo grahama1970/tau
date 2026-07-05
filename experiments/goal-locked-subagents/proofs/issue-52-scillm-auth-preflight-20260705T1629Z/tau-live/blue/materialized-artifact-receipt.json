@@ -1,0 +1,12 @@
+{
+  "artifact_type": "blue_patch",
+  "parsed_keys": [
+    "app_py",
+    "artifact_type",
+    "rationale"
+  ],
+  "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/blue/app.py",
+  "rationale": "Prevents Zip Slip by rejecting absolute paths, dot/dot-dot traversal, backslash separator bypasses, and symlink entries before writing files under the resolved destination.",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "status": "PASS"
+}

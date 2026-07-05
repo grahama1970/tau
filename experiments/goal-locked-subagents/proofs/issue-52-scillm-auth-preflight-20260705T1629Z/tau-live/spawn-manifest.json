@@ -1,0 +1,102 @@
+{
+  "battle_id": "battle-004",
+  "claims": {
+    "does_not_prove": [
+      "Blue kill, fastest crash, or promotion.",
+      "Judge replay of the child lane."
+    ],
+    "proves": [
+      "Tau spawned a receipt-backed Red child lane from an explicit parent subagent receipt."
+    ]
+  },
+  "duration_seconds": 26.516075,
+  "lineage_spawns": [
+    {
+      "battle_id": "battle-004",
+      "child_lane_id": "payload-857-red-1",
+      "child_payload_id": "payload-857-red-1",
+      "child_subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/tau-subagent-receipt.json",
+      "child_tau_subagent_id": "red-1",
+      "child_worker_id": "red-1",
+      "child_x_start": 62,
+      "generation": 2,
+      "goal": "Spawn child Red lane from receipt-backed parent handoff.",
+      "inherited_context": [
+        "parent_worker=red-0",
+        "parent_lane=payload-857-receipt",
+        "ZIP_SLIP_CONFIRMED"
+      ],
+      "label": "SPAWN CHILD",
+      "leased_task": "Continue Zip Slip exploit from parent useful signal after Blue block/handoff.",
+      "parent_lane_id": "payload-857-receipt",
+      "parent_subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/tau-subagent-receipt.json",
+      "parent_tau_subagent_id": "red-0",
+      "parent_worker_id": "red-0",
+      "receipt_id": "lineage-spawn-payload-857-receipt-to-payload-857-red-1",
+      "receipt_path": "lineage/lineage-spawn-payload-857-receipt-to-payload-857-red-1.json",
+      "run_id": "arena-parent-spawn-20260705T163055Z",
+      "schema": "battle.lineage_spawn_receipt.v1",
+      "status": "PASS",
+      "time_label": "handoff",
+      "x": 58
+    }
+  ],
+  "live": true,
+  "mocked": false,
+  "run_id": "arena-parent-spawn-20260705T163055Z",
+  "scenario_id": "arena-zip-slip-import-001",
+  "schema": "tau.battle_spawn_child_proof.v1",
+  "scillm_auth_preflight": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/scillm-auth-preflight.json",
+  "spawn_receipt_path": "lineage/lineage-spawn-payload-857-receipt-to-payload-857-red-1.json",
+  "status": "PASS",
+  "teams": [
+    {
+      "error": null,
+      "handoff": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/handoff.json",
+      "http_status": 200,
+      "inherited_context": [
+        "parent_worker=red-0",
+        "parent_lane=payload-857-receipt",
+        "ZIP_SLIP_CONFIRMED"
+      ],
+      "lane_id": "payload-857-red-1",
+      "materialized": {
+        "artifact_type": "red_exploit",
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale"
+        ],
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/red_exploit_submission.py",
+        "rationale": "The public app.py joins each zip member name directly to the destination and writes it without validating that the resolved target remains inside the destination. This script creates a zip containing ../arena_escape.txt, calls import_zip directly, and confirms the file is written outside the import workspace.",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "PASS"
+      },
+      "materialized_artifact": {
+        "artifact_type": "red_exploit",
+        "parsed_keys": [
+          "artifact_type",
+          "exploit_py",
+          "rationale"
+        ],
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/red_exploit_submission.py",
+        "rationale": "The public app.py joins each zip member name directly to the destination and writes it without validating that the resolved target remains inside the destination. This script creates a zip containing ../arena_escape.txt, calls import_zip directly, and confirms the file is written outside the import workspace.",
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "PASS"
+      },
+      "model": "gpt-5.5",
+      "parent_lane_id": "payload-857-receipt",
+      "parent_worker_id": "red-0",
+      "persona": "battle-red-public-auditor-variant-1",
+      "scillm_call": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/scillm-call-receipt.json",
+      "status": "PASS",
+      "subagent_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/tau-subagent-receipt.json",
+      "surface": "scillm.chat_completions",
+      "team": "red",
+      "validation": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/workers/red-1/validation.json",
+      "validation_ok": true,
+      "worker_id": "red-1",
+      "worker_index": 1
+    }
+  ]
+}

@@ -1,735 +1,881 @@
-"""Battle Red/Blue live Tau handoff bridge through Scillm.
+"""Run bounded Tau handoffs for Battle Red and Blue teams.
 
-This module is intentionally narrow. Battle owns Docker execution and scoring;
-Tau owns the Red/Blue handoff-to-subagent-receipt boundary and the Scillm call
-used to replace Battle's deterministic local provider for one bounded proof
-rung.
+The command writes Tau handoff, Scillm-call, materialization, validation, and
+subagent receipts. It supports one or more bounded Red and Blue workers. Each
+worker is a separate Tau subagent receipt. Worker 0 also writes the legacy
+team-level paths used by the current visibility checks.
+
+The harness exits successfully when it recorded receipts. BLOCKED materialization
+does not become proof. Downstream Battle Judge must require materialized
+executable artifact paths before claiming PASS.
 """
 
 from __future__ import annotations
 
 import argparse
-import asyncio
+import ast
 import json
-import os
-import subprocess
-import sys
+import py_compile
 import time
 from pathlib import Path
 from typing import Any
 
-from tau_coding.battle_scillm import call_scillm_async
-from tau_coding.battle_worker_specs import build_handoff_specs
-from tau_coding.subagent_receipt import validate_subagent_receipt
-
-SCHEMA = "tau.battle_live_handoff_proof.v1"
+from .battle_scillm import call_battle_subagent, parse_json_object, preflight_battle_scillm_auth
 
 
-def write_battle_live_handoff_proof(
-    *,
-    out_dir: Path,
-    battle_id: str,
-    run_id: str,
-    scenario_id: str,
-    red_persona: str,
-    blue_persona: str,
-    model: str = "gpt-5.5",
-    scillm_base_url: str = "http://localhost:4001",
-    timeout_s: float = 90.0,
-    api_key: str | None = None,
-    battle_context_json: Path | None = None,
-    handoff_granularity: str = "team",
-    max_live_handoffs: int = 64,
-) -> dict[str, Any]:
-    """Write Red/Blue Tau handoffs, Scillm call receipts, and Tau subagent receipts."""
-
+def main() -> None:
+    """CLI entry point for `python -m tau_coding.battle_live_handoff`."""
+    args = _parse_args()
+    out_dir = args.out_dir.expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    goal = _goal_payload(battle_id=battle_id, scenario_id=scenario_id)
-    auth = _resolve_api_key(api_key)
-    battle_context = _load_battle_context_bundle(battle_context_json)
-    handoff_specs = build_handoff_specs(
-        teams=(("red", red_persona), ("blue", blue_persona)),
-        battle_context=battle_context,
-        handoff_granularity=handoff_granularity,
-    )
-    if len(handoff_specs) > max_live_handoffs:
-        manifest = _backpressure_manifest(
-            battle_id=battle_id,
-            run_id=run_id,
-            scenario_id=scenario_id,
-            red_persona=red_persona,
-            blue_persona=blue_persona,
-            model=model,
-            scillm_base_url=scillm_base_url,
-            battle_context=battle_context,
-            handoff_granularity=handoff_granularity,
-            handoff_count=len(handoff_specs),
-            max_live_handoffs=max_live_handoffs,
-        )
-        _write_json(out_dir / "manifest.json", manifest)
-        return manifest
-
-    team_results = asyncio.run(
-        _write_team_handoffs_concurrently(
+    started = time.time()
+    scillm_auth_preflight = _run_auth_preflight(args)
+    if scillm_auth_preflight.get("ok") is not True:
+        _write_auth_blocked_manifest(
             out_dir=out_dir,
-            goal=goal,
-            battle_id=battle_id,
-            run_id=run_id,
-            scenario_id=scenario_id,
-            handoff_specs=handoff_specs,
-            model=model,
-            scillm_base_url=scillm_base_url,
-            timeout_s=timeout_s,
-            api_key=auth["api_key"],
-            api_key_source=auth["source"],
-            battle_context=battle_context,
+            args=args,
+            started=started,
+            scillm_auth_preflight=scillm_auth_preflight,
+            spawn_child=args.spawn_red_child,
         )
-    )
+        return
+    scillm_auth_preflight_path = out_dir / "scillm-auth-preflight.json"
+    _write_json(scillm_auth_preflight_path, scillm_auth_preflight)
 
-    status = (
-        "PASS"
-        if all(item["status"] == "PASS" and item["validation_ok"] for item in team_results)
-        else "BLOCKED"
-    )
+    if args.spawn_red_child:
+        if args.parent_subagent_receipt is None:
+            raise ValueError("--parent-subagent-receipt is required with --spawn-red-child")
+        context = _read_context(args.battle_context_json)
+        parent_receipt = _read_json(args.parent_subagent_receipt)
+        parent_receipt["receipt_path"] = str(args.parent_subagent_receipt.expanduser().resolve())
+        child = _run_spawned_red_child(
+            out_dir=out_dir,
+            battle_id=args.battle_id,
+            run_id=args.run_id,
+            scenario_id=args.scenario_id,
+            persona=_persona_for_worker(args.red_persona, args.child_worker_index),
+            model=args.model,
+            scillm_base_url=args.scillm_base_url,
+            timeout_s=args.timeout_s,
+            context=context,
+            parent_receipt=parent_receipt,
+            worker_id=args.child_worker_id,
+            worker_index=args.child_worker_index,
+            lane_id=args.child_lane_id,
+        )
+        spawn_receipt = _write_spawn_receipt(
+            out_dir=out_dir,
+            parent_receipt=parent_receipt,
+            child=child,
+            battle_id=args.battle_id,
+            run_id=args.run_id,
+        )
+        manifest = {
+            "schema": "tau.battle_spawn_child_proof.v1",
+            "battle_id": args.battle_id,
+            "run_id": args.run_id,
+            "scenario_id": args.scenario_id,
+            "status": child.get("status"),
+            "mocked": False,
+            "live": True,
+            "duration_seconds": round(time.time() - started, 6),
+            "teams": [child],
+            "scillm_auth_preflight": str(scillm_auth_preflight_path),
+            "lineage_spawns": [spawn_receipt["spawn"]],
+            "spawn_receipt_path": spawn_receipt["path"],
+            "claims": {
+                "proves": [
+                    "Tau spawned a receipt-backed Red child lane from an explicit parent subagent receipt.",
+                ],
+                "does_not_prove": [
+                    "Blue kill, fastest crash, or promotion.",
+                    "Judge replay of the child lane.",
+                ],
+            },
+        }
+        _write_json(out_dir / "spawn-manifest.json", manifest)
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+        return
+
+    context = _read_context(args.battle_context_json)
+
+    teams: list[dict[str, Any]] = []
+    for index in range(args.red_workers):
+        teams.append(
+            _run_team(
+                out_dir=out_dir,
+                battle_id=args.battle_id,
+                run_id=args.run_id,
+                scenario_id=args.scenario_id,
+                team="red",
+                persona=_persona_for_worker(args.red_persona, index),
+                model=args.model,
+                scillm_base_url=args.scillm_base_url,
+                timeout_s=args.timeout_s,
+                context=context,
+                worker_index=index,
+            )
+        )
+    for index in range(args.blue_workers):
+        teams.append(
+            _run_team(
+                out_dir=out_dir,
+                battle_id=args.battle_id,
+                run_id=args.run_id,
+                scenario_id=args.scenario_id,
+                team="blue",
+                persona=_persona_for_worker(args.blue_persona, index),
+                model=args.model,
+                scillm_base_url=args.scillm_base_url,
+                timeout_s=args.timeout_s,
+                context=context,
+                worker_index=index,
+            )
+        )
+
+    red_pass_count = _count_pass(teams, "red")
+    blue_pass_count = _count_pass(teams, "blue")
+    status = "PASS" if red_pass_count > 0 and blue_pass_count > 0 else "BLOCKED"
     manifest = {
-        "schema": SCHEMA,
-        "battle_id": battle_id,
-        "run_id": run_id,
-        "scenario_id": scenario_id,
+        "schema": "tau.battle_live_handoff_proof.v1",
+        "battle_id": args.battle_id,
+        "run_id": args.run_id,
+        "scenario_id": args.scenario_id,
         "status": status,
         "mocked": False,
         "live": True,
-        "model": model,
         "surface": "scillm.chat_completions",
-        "scillm_base_url": scillm_base_url,
-        "battle_context": battle_context["manifest_summary"] if battle_context else None,
-        "scheduling": {
-            "mode": "asyncio.as_completed",
-            "granularity": handoff_granularity,
-            "team_count": len({item["team"] for item in team_results}),
-            "handoff_count": len(team_results),
-            "worker_count": sum(1 for item in team_results if item.get("worker_id")),
-            "completion_order": [
-                {
-                    "team": item["team"],
-                    "persona": item["persona"],
-                    "worker_id": item.get("worker_id"),
-                    "combination_id": item.get("combination_id"),
-                    "completed_at_seconds": item["completed_at_seconds"],
-                }
-                for item in team_results
-            ],
+        "model": args.model,
+        "scillm_base_url": args.scillm_base_url,
+        "duration_seconds": round(time.time() - started, 6),
+        "handoff_topology": "bounded_worker_matrix",
+        "requested_workers": {
+            "red": args.red_workers,
+            "blue": args.blue_workers,
         },
-        "teams": team_results,
+        "materialized_counts": {
+            "red": red_pass_count,
+            "blue": blue_pass_count,
+        },
+        "scillm_auth_preflight": str(scillm_auth_preflight_path),
         "claims": {
             "proves": [
-                f"Tau consumed Battle handoffs at {handoff_granularity} granularity.",
-                "Tau attempted streaming Scillm chat-completions calls for each scheduled handoff.",
-                "Tau wrote tau.subagent_receipt.v1 artifacts for each scheduled handoff.",
+                "Tau consumed bounded Battle Red and Blue handoffs.",
+                "Tau attempted Scillm chat-completions calls for each requested worker.",
+                "Tau wrote tau.subagent_receipt.v1 artifacts for each requested worker.",
+                "Each worker has its own materialization receipt.",
             ],
             "does_not_prove": [
-                "Battle Docker scorekeeper PASS unless Battle consumes this manifest.",
+                "Battle Docker scorekeeper PASS unless Battle consumes this manifest and Judge receipts.",
                 "Unbounded Battle swarm execution.",
-                "Scillm delegate/batch/tool execution; this rung uses chat completions.",
+                "Child-spawn lineage; this rung uses bounded independent workers.",
+                "Blue kill, fastest crash, or promotion.",
             ],
         },
+        "teams": teams,
     }
     _write_json(out_dir / "manifest.json", manifest)
-    return manifest
+    print(json.dumps(manifest, indent=2, sort_keys=True))
 
 
-def _backpressure_manifest(
-    *,
-    battle_id: str,
-    run_id: str,
-    scenario_id: str,
-    red_persona: str,
-    blue_persona: str,
-    model: str,
-    scillm_base_url: str,
-    battle_context: dict[str, Any] | None,
-    handoff_granularity: str,
-    handoff_count: int,
-    max_live_handoffs: int,
-) -> dict[str, Any]:
-    worker_count = handoff_count if handoff_granularity == "worker" else 0
-    return {
-        "schema": SCHEMA,
-        "battle_id": battle_id,
-        "run_id": run_id,
-        "scenario_id": scenario_id,
-        "status": "BACKPRESSURE",
-        "reason": "tau_live_handoff_backpressure",
-        "mocked": False,
-        "live": True,
-        "model": model,
-        "surface": "scillm.chat_completions",
-        "scillm_base_url": scillm_base_url,
-        "battle_context": battle_context["manifest_summary"] if battle_context else None,
-        "scheduling": {
-            "mode": "preflight_backpressure",
-            "granularity": handoff_granularity,
-            "team_count": 2,
-            "handoff_count": handoff_count,
-            "worker_count": worker_count,
-            "completion_order": [],
-        },
-        "teams": [],
-        "backpressure": {
-            "schema": "tau.battle_live_backpressure.v1",
-            "reason": "requested_live_handoff_count_exceeds_configured_safe_limit",
-            "requested_handoff_count": handoff_count,
-            "max_live_handoffs": max_live_handoffs,
-            "suggested_safe_handoff_count": max_live_handoffs,
-            "retry_after_s": 60,
-            "degrade_strategy": (
-                "rerun Battle Tau live with fewer Red/Blue workers or a lower --max-attempts value"
-            ),
-            "would_start_scillm_calls": False,
-            "error_family": "tau_live_backpressure",
-            "retryable": True,
-        },
-        "claims": {
-            "proves": [
-                "Tau refused unsafe live Scillm fanout before starting worker calls.",
-                "Tau wrote a structured backpressure receipt for Battle degradation.",
-            ],
-            "does_not_prove": [
-                "128-worker Scillm live completion.",
-                "Battle Docker scorekeeper PASS.",
-                "Unbounded Battle swarm execution.",
-            ],
-        },
-    }
-
-
-async def _write_team_handoffs_concurrently(
-    *,
-    out_dir: Path,
-    goal: dict[str, Any],
-    battle_id: str,
-    run_id: str,
-    scenario_id: str,
-    handoff_specs: list[dict[str, Any]],
-    model: str,
-    scillm_base_url: str,
-    timeout_s: float,
-    api_key: str | None,
-    api_key_source: str,
-    battle_context: dict[str, Any] | None,
-) -> list[dict[str, Any]]:
-    started = time.monotonic()
-    tasks = [
-        asyncio.create_task(
-            _write_one_team_handoff(
-                out_dir=out_dir,
-                goal=goal,
-                battle_id=battle_id,
-                run_id=run_id,
-                scenario_id=scenario_id,
-                team=team,
-                persona=persona,
-                model=model,
-                scillm_base_url=scillm_base_url,
-                timeout_s=timeout_s,
-                api_key=api_key,
-                api_key_source=api_key_source,
-                battle_context=battle_context,
-                worker_context=spec.get("worker_context"),
-                batch_started=started,
-            )
-        )
-        for spec in handoff_specs
-        for team, persona in [(str(spec["team"]), str(spec["persona"]))]
-    ]
-    results: list[dict[str, Any]] = []
-    for task in asyncio.as_completed(tasks):
-        results.append(await task)
-    return results
-
-
-async def _write_one_team_handoff(
-    *,
-    out_dir: Path,
-    goal: dict[str, Any],
-    battle_id: str,
-    run_id: str,
-    scenario_id: str,
-    team: str,
-    persona: str,
-    model: str,
-    scillm_base_url: str,
-    timeout_s: float,
-    api_key: str | None,
-    api_key_source: str,
-    battle_context: dict[str, Any] | None,
-    worker_context: dict[str, Any] | None,
-    batch_started: float,
-) -> dict[str, Any]:
-    handoff_name = _handoff_dir_name(team, worker_context)
-    team_dir = out_dir / handoff_name
-    team_dir.mkdir(parents=True, exist_ok=True)
-    handoff = _handoff_payload(
-        goal=goal,
-        battle_id=battle_id,
-        run_id=run_id,
-        scenario_id=scenario_id,
-        team=team,
-        persona=persona,
-        battle_context=battle_context,
-        worker_context=worker_context,
-    )
-    handoff_path = _write_json(team_dir / "handoff.json", handoff)
-    events_path = team_dir / "scillm-events.jsonl"
-    scillm_call = await call_scillm_async(
-        handoff=handoff,
-        team=team,
-        persona=persona,
-        worker_context=worker_context,
-        model=model,
-        scillm_base_url=scillm_base_url,
-        timeout_s=timeout_s,
-        api_key=api_key,
-        api_key_source=api_key_source,
-        events_path=events_path,
-    )
-    scillm_path = _write_json(team_dir / "scillm-call-receipt.json", scillm_call)
-    receipt_artifacts = [str(handoff_path), str(scillm_path)]
-    if worker_context:
-        receipt_artifacts = _unique_strings(
-            receipt_artifacts + list(worker_context.get("source_artifacts") or [])
-        )
-    receipt = build_subagent_receipt(
-        goal=goal,
-        run_id=run_id,
-        battle_id=battle_id,
-        scenario_id=scenario_id,
-        team=team,
-        persona=persona,
-        worker_context=worker_context,
-        scillm_call=scillm_call,
-        artifacts=receipt_artifacts,
-    )
-    receipt_path = _write_json(team_dir / "tau-subagent-receipt.json", receipt)
-    validation = validate_subagent_receipt(receipt, active_goal_hash=goal["goal_hash"])
-    validation_payload = {
-        "schema": "tau.subagent_receipt_validation.v1",
-        "ok": validation.ok,
-        "next_subagent": validation.next_subagent,
-        "errors": list(validation.errors),
-    }
-    validation_path = _write_json(team_dir / "validation.json", validation_payload)
-    return {
-        "team": team,
-        "persona": persona,
-        "worker_id": _worker_field(worker_context, "worker_id"),
-        "combination_id": _worker_field(worker_context, "combination_id"),
-        "status": receipt["result"]["status"],
-        "handoff": str(handoff_path),
-        "scillm_call": str(scillm_path),
-        "subagent_receipt": str(receipt_path),
-        "validation": str(validation_path),
-        "validation_ok": validation.ok,
-        "model": scillm_call.get("model"),
-        "surface": "scillm.chat_completions",
-        "http_status": scillm_call.get("http_status"),
-        "error": scillm_call.get("error"),
-        "events": str(events_path),
-        "started_at_seconds": scillm_call.get("started_at_seconds"),
-        "completed_at_seconds": round(time.monotonic() - batch_started, 6),
-        "duration_seconds": scillm_call.get("duration_seconds"),
-    }
-
-
-def build_subagent_receipt(
-    *,
-    goal: dict[str, Any],
-    run_id: str,
-    battle_id: str,
-    scenario_id: str,
-    team: str,
-    persona: str,
-    scillm_call: dict[str, Any],
-    artifacts: list[str],
-    worker_context: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Build one Tau subagent receipt from a Battle Scillm call receipt."""
-
-    passed = scillm_call.get("status") == "PASS"
-    status = "PASS" if passed else "BLOCKED"
-    next_subagent = "battle-scorekeeper" if passed else "human"
-    summary = (
-        f"Battle {team} persona {persona} produced a live Scillm response."
-        if passed
-        else f"Battle {team} persona {persona} could not obtain a live Scillm response."
-    )
-    return {
-        "schema": "tau.subagent_receipt.v1",
-        "goal": {**goal, "immutable_goal_preserved": True},
-        "context": {
-            "run_id": run_id,
-            "subagent": _subagent_name(team, worker_context),
-            "actor_type": "tau",
-            "artifacts_read": artifacts,
-            "assumptions": [
-                "Battle owns Docker execution and scorekeeping; Tau owns this handoff receipt."
-            ],
-            "unknowns": [] if passed else ["Scillm live response unavailable for this team."],
-            "battle": {
-                "battle_id": battle_id,
-                "scenario_id": scenario_id,
-                "team": team,
-                "persona": persona,
-                "worker": worker_context,
-            },
-        },
-        "result": {
-            "status": status,
-            "summary": summary,
-            "mocked": False,
-            "live": True,
-            "artifacts": artifacts,
-            "commands_run": [],
-            "model": scillm_call.get("model"),
-            "surface": "scillm.chat_completions",
-        },
-        "rationale": (
-            "Battle requested one bounded Tau/Scillm handoff receipt before Docker scorekeeping."
-        ),
-        "evidence": artifacts,
-        "next": {
-            "subagent": next_subagent,
-            "reason": "Scillm handoff receipt is ready for Battle scorekeeper."
-            if passed
-            else "Scillm live handoff is blocked and needs operator repair.",
-            "executor": "local" if passed else "human",
-        },
-        "stop_condition": "Battle scorekeeper consumes Red/Blue receipts."
-        if passed
-        else "Repair Scillm reachability/auth and rerun the Battle Tau live proof.",
-    }
-
-
-def _goal_payload(*, battle_id: str, scenario_id: str) -> dict[str, Any]:
-    goal_id = f"goal-battle-{battle_id}-tau-live"
-    seed = f"{goal_id}:{scenario_id}".encode()
-    import hashlib
-
-    return {
-        "goal_id": goal_id,
-        "goal_version": 1,
-        "goal_hash": f"sha256:{hashlib.sha256(seed).hexdigest()}",
-    }
-
-
-def _load_battle_context_bundle(path: Path | None) -> dict[str, Any] | None:
-    if path is None:
-        return None
-    resolved = path.expanduser().resolve()
-    payload = _read_json(resolved)
-    if not isinstance(payload, dict):
-        raise ValueError(f"Battle context bundle must be a JSON object: {resolved}")
-    artifacts = _extract_context_artifact_paths(payload)
-    artifacts.insert(0, str(resolved))
-    artifacts = _unique_strings(artifacts)
-    return {
-        "path": str(resolved),
-        "payload": payload,
-        "artifacts": artifacts,
-        "manifest_summary": _summarize_context_manifest(payload, artifacts),
-    }
-
-
-def _read_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _extract_context_artifact_paths(payload: dict[str, Any]) -> list[str]:
-    raw_artifacts = payload.get("artifacts")
-    if isinstance(raw_artifacts, list):
-        return [str(item) for item in raw_artifacts if isinstance(item, str) and item]
-    if isinstance(raw_artifacts, dict):
-        return [str(value) for value in raw_artifacts.values() if isinstance(value, str) and value]
-    raw_artifact_paths = payload.get("artifact_paths")
-    if isinstance(raw_artifact_paths, list):
-        return [str(item) for item in raw_artifact_paths if isinstance(item, str) and item]
-    if isinstance(raw_artifact_paths, dict):
-        return [
-            str(value) for value in raw_artifact_paths.values() if isinstance(value, str) and value
-        ]
-    return []
-
-
-def _unique_strings(items: list[str]) -> list[str]:
-    seen: set[str] = set()
-    unique: list[str] = []
-    for item in items:
-        if item in seen:
-            continue
-        seen.add(item)
-        unique.append(item)
-    return unique
-
-
-def _summarize_context_manifest(payload: dict[str, Any], artifacts: list[str]) -> dict[str, Any]:
-    summary = payload.get("summary")
-    if not isinstance(summary, dict):
-        summary = {}
-    return {
-        "schema": payload.get("schema"),
-        "bundle_path": payload.get("bundle_path"),
-        "artifact_count": len(artifacts),
-        "run_receipt_status": _nested(summary, "run_receipt", "status"),
-        "tau_live_manifest_status": _nested(summary, "tau_live_manifest", "status"),
-        "research_broker_status": _nested(summary, "research_broker", "status"),
-        "research_broker_passed_lane_count": _nested(
-            summary, "research_broker", "passed_lane_count"
-        ),
-        "warm_pond_status": _nested(summary, "warm_pond", "status"),
-        "warm_pond_research_weighted_candidate_count": _nested(
-            summary,
-            "warm_pond",
-            "research_weighted_candidate_count",
-        ),
-        "teams": summary.get("teams") if isinstance(summary.get("teams"), dict) else {},
-    }
-
-
-def _nested(payload: dict[str, Any], *keys: str) -> Any:
-    current: Any = payload
-    for key in keys:
-        if not isinstance(current, dict):
-            return None
-        current = current.get(key)
-    return current
-
-
-def _battle_context_artifacts(battle_context: dict[str, Any] | None) -> list[str]:
-    if not battle_context:
-        return []
-    return list(battle_context.get("artifacts") or [])
-
-
-def _worker_field(worker_context: dict[str, Any] | None, field: str) -> Any:
-    if not worker_context:
-        return None
-    return worker_context.get(field)
-
-
-def _handoff_dir_name(team: str, worker_context: dict[str, Any] | None) -> str:
-    worker_id = _worker_field(worker_context, "worker_id")
-    if isinstance(worker_id, str) and worker_id:
-        return f"{team}/workers/{_safe_path_name(worker_id)}"
-    return team
-
-
-def _subagent_name(team: str, worker_context: dict[str, Any] | None) -> str:
-    worker_id = _worker_field(worker_context, "worker_id")
-    if isinstance(worker_id, str) and worker_id:
-        return f"battle-{worker_id}"
-    return f"battle-{team}"
-
-
-def _safe_path_name(value: str) -> str:
-    return "".join(ch if ch.isalnum() or ch in ("-", "_", ".") else "-" for ch in value)
-
-
-def _team_battle_context_summary(
-    battle_context: dict[str, Any] | None,
-    team: str,
-) -> dict[str, Any] | None:
-    if not battle_context:
-        return None
-    manifest_summary = dict(battle_context.get("manifest_summary") or {})
-    teams = manifest_summary.get("teams")
-    team_summary = teams.get(team) if isinstance(teams, dict) else None
-    return {
-        "bundle_path": battle_context.get("path"),
-        "artifact_count": manifest_summary.get("artifact_count"),
-        "run_receipt_status": manifest_summary.get("run_receipt_status"),
-        "tau_live_manifest_status": manifest_summary.get("tau_live_manifest_status"),
-        "research_broker_status": manifest_summary.get("research_broker_status"),
-        "research_broker_passed_lane_count": manifest_summary.get(
-            "research_broker_passed_lane_count"
-        ),
-        "warm_pond_status": manifest_summary.get("warm_pond_status"),
-        "warm_pond_research_weighted_candidate_count": manifest_summary.get(
-            "warm_pond_research_weighted_candidate_count"
-        ),
-        "team": team,
-        "team_summary": team_summary if isinstance(team_summary, dict) else {},
-    }
-
-
-def _handoff_payload(
-    *,
-    goal: dict[str, Any],
-    battle_id: str,
-    run_id: str,
-    scenario_id: str,
-    team: str,
-    persona: str,
-    battle_context: dict[str, Any] | None = None,
-    worker_context: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    context_artifacts = _battle_context_artifacts(battle_context)
-    if worker_context:
-        context_artifacts = _unique_strings(
-            context_artifacts + list(worker_context.get("source_artifacts") or [])
-        )
-    context_summary = f"Battle {team} persona handoff for {battle_id}."
-    battle_context_summary = _team_battle_context_summary(battle_context, team)
-    worker_id = _worker_field(worker_context, "worker_id")
-    if battle_context_summary:
-        context_summary = (
-            f"{context_summary} Battle artifact context is attached with "
-            f"{len(context_artifacts)} artifact reference(s)."
-        )
-    if worker_id:
-        context_summary = f"{context_summary} Worker {worker_id} is scheduled independently."
-    return {
-        "schema": "tau.agent_handoff.v1",
-        "github": {"repo": "grahama1970/tau", "target": "issue#22"},
-        "goal": goal,
-        "previous_subagent": "battle-orchestrator",
-        "context": {
-            "summary": context_summary,
-            "artifacts": context_artifacts,
-            "battle": {
-                "battle_id": battle_id,
-                "run_id": run_id,
-                "scenario_id": scenario_id,
-                "team": team,
-                "persona": persona,
-                "worker_id": worker_id,
-                "combination_id": _worker_field(worker_context, "combination_id"),
-            },
-            "battle_context": battle_context_summary,
-            "worker_context": worker_context,
-        },
-        "result": {
-            "status": "READY",
-            "summary": "Battle requested one bounded Tau/Scillm action-selection turn.",
-            "evidence": [],
-        },
-        "rationale": "Battle needs Red and Blue Tau receipts before scorekeeper proof.",
-        "next_agent": {
-            "name": _subagent_name(team, worker_context),
-            "executor": "local",
-            "reason": "Run one bounded Battle persona action through Tau/Scillm.",
-        },
-        "required_evidence": [
-            f"{_handoff_dir_name(team, worker_context)}/tau-subagent-receipt.json"
-        ],
-        "stop_condition": "Tau writes a tau.subagent_receipt.v1 or a structured BLOCKED receipt.",
-    }
-
-
-def _resolve_api_key(explicit: str | None) -> dict[str, str | None]:
-    if explicit is not None:
-        return {"api_key": explicit, "source": "argument"}
-    for name in ("SCILLM_API_KEY", "SCILLM_MASTER_KEY"):
-        value = os.environ.get(name)
-        if value:
-            return {"api_key": value, "source": f"env:{name}"}
-    docker_key = _scillm_key_from_docker()
-    if docker_key:
-        return {"api_key": docker_key, "source": "docker:scillm-proxy:SCILLM_MASTER_KEY"}
-    return {"api_key": "sk-dev-proxy-123", "source": "default-dev-proxy-key"}
-
-
-def _scillm_key_from_docker() -> str | None:
-    try:
-        ps = subprocess.run(
-            ["docker", "ps", "--filter", "name=scillm-proxy", "--format", "{{.Names}}"],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=5,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if ps.returncode != 0:
-        return None
-    names = [line.strip() for line in ps.stdout.splitlines() if line.strip()]
-    if not names:
-        return None
-    try:
-        env = subprocess.run(
-            ["docker", "exec", names[0], "printenv", "SCILLM_MASTER_KEY"],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=5,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if env.returncode != 0:
-        return None
-    value = env.stdout.strip()
-    return value or None
-
-
-def _write_json(path: Path, payload: dict[str, Any]) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return path
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out-dir", required=True, type=Path)
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run bounded Battle Tau live handoffs.")
+    parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--battle-id", required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--scenario-id", required=True)
     parser.add_argument("--red-persona", required=True)
     parser.add_argument("--blue-persona", required=True)
-    parser.add_argument("--model", default=os.environ.get("TAU_BATTLE_SCILLM_MODEL", "gpt-5.5"))
-    parser.add_argument(
-        "--scillm-base-url", default=os.environ.get("SCILLM_BASE_URL", "http://localhost:4001")
-    )
-    parser.add_argument("--timeout-s", type=float, default=90.0)
-    parser.add_argument(
-        "--max-live-handoffs",
-        type=int,
-        default=int(os.environ.get("TAU_BATTLE_MAX_LIVE_HANDOFFS", "64")),
-        help="Refuse larger live Scillm fanout with a structured BACKPRESSURE manifest.",
-    )
-    parser.add_argument(
-        "--handoff-granularity",
-        choices=("team", "worker"),
-        default=os.environ.get("TAU_BATTLE_HANDOFF_GRANULARITY", "team"),
-        help="Emit one handoff per team or one handoff per source Battle worker.",
-    )
-    parser.add_argument(
-        "--battle-context-json",
-        "--context-artifact",
-        dest="battle_context_json",
-        type=Path,
-        help="Artifact-backed Battle context bundle to include in Red/Blue Tau handoffs.",
-    )
-    args = parser.parse_args(argv)
-    manifest = write_battle_live_handoff_proof(
-        out_dir=args.out_dir,
-        battle_id=args.battle_id,
-        run_id=args.run_id,
-        scenario_id=args.scenario_id,
-        red_persona=args.red_persona,
-        blue_persona=args.blue_persona,
-        model=args.model,
+    parser.add_argument("--model", required=True)
+    parser.add_argument("--scillm-base-url", required=True)
+    parser.add_argument("--timeout-s", type=float, default=120.0)
+    parser.add_argument("--battle-context-json", type=Path, default=None)
+    parser.add_argument("--red-workers", type=int, default=1)
+    parser.add_argument("--blue-workers", type=int, default=1)
+    parser.add_argument("--spawn-red-child", action="store_true", help="Run one spawned Red child from a parent subagent receipt.")
+    parser.add_argument("--parent-subagent-receipt", type=Path, default=None)
+    parser.add_argument("--child-worker-id", default="red-1")
+    parser.add_argument("--child-worker-index", type=int, default=1)
+    parser.add_argument("--child-lane-id", default="payload-857-red-1")
+    args = parser.parse_args()
+    if args.red_workers < 1:
+        raise ValueError("--red-workers must be >= 1")
+    if args.blue_workers < 1 and not args.spawn_red_child:
+        raise ValueError("--blue-workers must be >= 1 unless --spawn-red-child is set")
+    return args
+
+
+def _run_auth_preflight(args: argparse.Namespace) -> dict[str, Any]:
+    return preflight_battle_scillm_auth(
         scillm_base_url=args.scillm_base_url,
-        timeout_s=args.timeout_s,
-        battle_context_json=args.battle_context_json,
-        handoff_granularity=args.handoff_granularity,
-        max_live_handoffs=args.max_live_handoffs,
+        model=args.model,
     )
+
+
+def _write_auth_blocked_manifest(
+    *,
+    out_dir: Path,
+    args: argparse.Namespace,
+    started: float,
+    scillm_auth_preflight: dict[str, Any],
+    spawn_child: bool,
+) -> None:
+    preflight_path = out_dir / "scillm-auth-preflight.json"
+    _write_json(preflight_path, scillm_auth_preflight)
+    if spawn_child:
+        manifest = {
+            "schema": "tau.battle_spawn_child_proof.v1",
+            "battle_id": args.battle_id,
+            "run_id": args.run_id,
+            "scenario_id": args.scenario_id,
+            "status": "BLOCKED",
+            "reason": scillm_auth_preflight.get("reason") or "scillm_auth_preflight_failed",
+            "mocked": False,
+            "live": True,
+            "duration_seconds": round(time.time() - started, 6),
+            "teams": [],
+            "scillm_auth_preflight": str(preflight_path),
+            "claims": {
+                "proves": [
+                    "Tau checked Scillm auth before Battle spawned-child materialization.",
+                    "Tau did not dispatch a worker after auth preflight failed.",
+                ],
+                "does_not_prove": [
+                    "Worker materialization.",
+                    "Battle Docker scorekeeper PASS.",
+                ],
+            },
+        }
+        _write_json(out_dir / "spawn-manifest.json", manifest)
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+        return
+
+    manifest = {
+        "schema": "tau.battle_live_handoff_proof.v1",
+        "battle_id": args.battle_id,
+        "run_id": args.run_id,
+        "scenario_id": args.scenario_id,
+        "status": "BLOCKED",
+        "reason": scillm_auth_preflight.get("reason") or "scillm_auth_preflight_failed",
+        "mocked": False,
+        "live": True,
+        "surface": "scillm.chat_completions",
+        "model": args.model,
+        "scillm_base_url": args.scillm_base_url,
+        "duration_seconds": round(time.time() - started, 6),
+        "handoff_topology": "bounded_worker_matrix",
+        "requested_workers": {
+            "red": args.red_workers,
+            "blue": args.blue_workers,
+        },
+        "materialized_counts": {
+            "red": 0,
+            "blue": 0,
+        },
+        "scillm_auth_preflight": str(preflight_path),
+        "claims": {
+            "proves": [
+                "Tau checked Scillm auth before Battle worker materialization.",
+                "Tau did not dispatch Battle workers after auth preflight failed.",
+            ],
+            "does_not_prove": [
+                "Worker materialization.",
+                "Battle Docker scorekeeper PASS.",
+            ],
+        },
+        "teams": [],
+    }
+    _write_json(out_dir / "manifest.json", manifest)
     print(json.dumps(manifest, indent=2, sort_keys=True))
-    if manifest["status"] == "PASS":
-        return 0
-    if manifest["status"] == "BACKPRESSURE":
-        return 0
-    return 2
+
+
+def _run_team(
+    *,
+    out_dir: Path,
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    team: str,
+    persona: str,
+    model: str,
+    scillm_base_url: str,
+    timeout_s: float,
+    context: dict[str, Any],
+    worker_index: int,
+) -> dict[str, Any]:
+    worker_id = f"{team}-{worker_index}"
+    lane_id = "payload-857-receipt" if team == "red" and worker_index == 0 else f"payload-857-{worker_id}"
+    team_dir = _worker_dir(out_dir=out_dir, team=team, worker_index=worker_index, worker_id=worker_id)
+    team_dir.mkdir(parents=True, exist_ok=True)
+
+    handoff = _handoff(
+        battle_id=battle_id,
+        run_id=run_id,
+        scenario_id=scenario_id,
+        team=team,
+        persona=persona,
+        context=context,
+        worker_id=worker_id,
+        worker_index=worker_index,
+        lane_id=lane_id,
+    )
+    handoff_path = team_dir / "handoff.json"
+    _write_json(handoff_path, handoff)
+
+    scillm_call = call_battle_subagent(
+        handoff=handoff,
+        team=team,
+        persona=persona,
+        model=model,
+        scillm_base_url=scillm_base_url,
+        timeout_s=timeout_s,
+    )
+    scillm_call_path = team_dir / "scillm-call-receipt.json"
+    _write_json(scillm_call_path, scillm_call)
+
+    materialized = _materialize_team_artifact(team_dir=team_dir, team=team, scillm_call=scillm_call)
+    materialized_path = team_dir / "materialized-artifact-receipt.json"
+    _write_json(materialized_path, materialized)
+
+    subagent_receipt = _subagent_receipt(
+        battle_id=battle_id,
+        run_id=run_id,
+        scenario_id=scenario_id,
+        team=team,
+        persona=persona,
+        model=model,
+        handoff_path=handoff_path,
+        scillm_call_path=scillm_call_path,
+        materialized_path=materialized_path,
+        materialized=materialized,
+        worker_id=worker_id,
+        lane_id=lane_id,
+    )
+    subagent_receipt_path = team_dir / "tau-subagent-receipt.json"
+    _write_json(subagent_receipt_path, subagent_receipt)
+
+    validation = _validation_receipt(
+        battle_id=battle_id,
+        run_id=run_id,
+        team=team,
+        worker_id=worker_id,
+        handoff_path=handoff_path,
+        scillm_call_path=scillm_call_path,
+        subagent_receipt_path=subagent_receipt_path,
+        materialized=materialized,
+    )
+    validation_path = team_dir / "validation.json"
+    _write_json(validation_path, validation)
+
+    return {
+        "team": team,
+        "worker_id": worker_id,
+        "worker_index": worker_index,
+        "lane_id": lane_id if team == "red" else None,
+        "persona": persona,
+        "status": materialized["status"],
+        "error": None if materialized["status"] == "PASS" else materialized.get("reason"),
+        "model": model,
+        "surface": "scillm.chat_completions",
+        "http_status": scillm_call.get("http_status"),
+        "handoff": str(handoff_path),
+        "scillm_call": str(scillm_call_path),
+        "subagent_receipt": str(subagent_receipt_path),
+        "validation": str(validation_path),
+        "validation_ok": validation["status"] == "PASS",
+        "materialized": materialized,
+        "materialized_artifact": materialized,
+    }
+
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _run_spawned_red_child(
+    *,
+    out_dir: Path,
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    persona: str,
+    model: str,
+    scillm_base_url: str,
+    timeout_s: float,
+    context: dict[str, Any],
+    parent_receipt: dict[str, Any],
+    worker_id: str,
+    worker_index: int,
+    lane_id: str,
+) -> dict[str, Any]:
+    parent_worker_id = _first_str(parent_receipt.get("worker_id"), parent_receipt.get("subagent_id"), "red-0")
+    parent_lane_id = _first_str(parent_receipt.get("lane_id"), "payload-857-receipt")
+    inherited_context = [
+        f"parent_worker={parent_worker_id}",
+        f"parent_lane={parent_lane_id}",
+        "ZIP_SLIP_CONFIRMED",
+    ]
+    spawn_context = dict(context)
+    spawn_context["spawn"] = {
+        "parent_worker_id": parent_worker_id,
+        "parent_lane_id": parent_lane_id,
+        "parent_subagent_receipt": str(parent_receipt.get("receipt_path") or parent_receipt.get("path") or ""),
+        "inherited_context": inherited_context,
+        "leased_task": "Continue Zip Slip exploit from parent useful signal after Blue block/handoff.",
+    }
+    team_dir = _worker_dir(out_dir=out_dir, team="red", worker_index=worker_index, worker_id=worker_id)
+    handoff = _handoff(
+        battle_id=battle_id,
+        run_id=run_id,
+        scenario_id=scenario_id,
+        team="red",
+        persona=persona,
+        context=spawn_context,
+        worker_id=worker_id,
+        worker_index=worker_index,
+        lane_id=lane_id,
+    )
+    handoff["schema"] = "tau.battle_spawn_handoff.v1"
+    handoff["spawn"] = spawn_context["spawn"]
+    handoff_path = team_dir / "handoff.json"
+    _write_json(handoff_path, handoff)
+
+    scillm_call = call_battle_subagent(
+        handoff=handoff,
+        team="red",
+        persona=persona,
+        model=model,
+        scillm_base_url=scillm_base_url,
+        timeout_s=timeout_s,
+    )
+    scillm_call_path = team_dir / "scillm-call-receipt.json"
+    _write_json(scillm_call_path, scillm_call)
+
+    materialized = _materialize_team_artifact(team_dir=team_dir, team="red", scillm_call=scillm_call)
+    materialized_path = team_dir / "materialized-artifact-receipt.json"
+    _write_json(materialized_path, materialized)
+
+    subagent_receipt = _subagent_receipt(
+        battle_id=battle_id,
+        run_id=run_id,
+        scenario_id=scenario_id,
+        team="red",
+        persona=persona,
+        model=model,
+        handoff_path=handoff_path,
+        scillm_call_path=scillm_call_path,
+        materialized_path=materialized_path,
+        materialized=materialized,
+        worker_id=worker_id,
+        lane_id=lane_id,
+    )
+    subagent_receipt["parent_worker_id"] = parent_worker_id
+    subagent_receipt["parent_lane_id"] = parent_lane_id
+    subagent_receipt["spawned_from_receipt"] = True
+    subagent_receipt_path = team_dir / "tau-subagent-receipt.json"
+    _write_json(subagent_receipt_path, subagent_receipt)
+
+    validation = _validation_receipt(
+        battle_id=battle_id,
+        run_id=run_id,
+        team="red",
+        worker_id=worker_id,
+        handoff_path=handoff_path,
+        scillm_call_path=scillm_call_path,
+        subagent_receipt_path=subagent_receipt_path,
+        materialized=materialized,
+    )
+    validation_path = team_dir / "validation.json"
+    _write_json(validation_path, validation)
+
+    return {
+        "team": "red",
+        "worker_id": worker_id,
+        "worker_index": worker_index,
+        "lane_id": lane_id,
+        "parent_worker_id": parent_worker_id,
+        "parent_lane_id": parent_lane_id,
+        "persona": persona,
+        "status": materialized["status"],
+        "error": None if materialized["status"] == "PASS" else materialized.get("reason"),
+        "model": model,
+        "surface": "scillm.chat_completions",
+        "http_status": scillm_call.get("http_status"),
+        "handoff": str(handoff_path),
+        "scillm_call": str(scillm_call_path),
+        "subagent_receipt": str(subagent_receipt_path),
+        "validation": str(validation_path),
+        "validation_ok": validation["status"] == "PASS",
+        "materialized": materialized,
+        "materialized_artifact": materialized,
+        "inherited_context": inherited_context,
+    }
+
+
+def _write_spawn_receipt(
+    *,
+    out_dir: Path,
+    parent_receipt: dict[str, Any],
+    child: dict[str, Any],
+    battle_id: str,
+    run_id: str,
+) -> dict[str, Any]:
+    lineage_dir = out_dir / "lineage"
+    lineage_dir.mkdir(parents=True, exist_ok=True)
+    parent_lane_id = _first_str(parent_receipt.get("lane_id"), child.get("parent_lane_id"), "payload-857-receipt")
+    child_lane_id = _first_str(child.get("lane_id"), "payload-857-red-1")
+    receipt_id = f"lineage-spawn-{parent_lane_id}-to-{child_lane_id}"
+    rel_path = f"lineage/{receipt_id}.json"
+    spawn = {
+        "schema": "battle.lineage_spawn_receipt.v1",
+        "status": "PASS" if child.get("status") == "PASS" else "BLOCKED",
+        "battle_id": battle_id,
+        "run_id": run_id,
+        "receipt_id": receipt_id,
+        "parent_lane_id": parent_lane_id,
+        "child_lane_id": child_lane_id,
+        "parent_worker_id": _first_str(parent_receipt.get("worker_id"), "red-0"),
+        "child_worker_id": _first_str(child.get("worker_id"), "red-1"),
+        "parent_tau_subagent_id": _first_str(parent_receipt.get("subagent_id"), parent_receipt.get("worker_id"), "red-0"),
+        "child_tau_subagent_id": _first_str(child.get("worker_id"), "red-1"),
+        "child_payload_id": child_lane_id.replace("-receipt", "").replace("payload-857", "payload-857"),
+        "inherited_context": child.get("inherited_context") or ["ZIP_SLIP_CONFIRMED"],
+        "leased_task": "Continue Zip Slip exploit from parent useful signal after Blue block/handoff.",
+        "goal": "Spawn child Red lane from receipt-backed parent handoff.",
+        "x": 58,
+        "child_x_start": 62,
+        "generation": 2,
+        "label": "SPAWN CHILD",
+        "time_label": "handoff",
+        "receipt_path": rel_path,
+        "parent_subagent_receipt": str(parent_receipt.get("receipt_path") or parent_receipt.get("path") or ""),
+        "child_subagent_receipt": str(child.get("subagent_receipt") or ""),
+    }
+    path = out_dir / rel_path
+    _write_json(path, spawn)
+    return {"path": rel_path, "spawn": spawn}
+
+
+def _first_str(*values: Any) -> str:
+    for value in values:
+        if value is None:
+            continue
+        text = str(value)
+        if text:
+            return text
+    return ""
+
+
+def _worker_dir(*, out_dir: Path, team: str, worker_index: int, worker_id: str) -> Path:
+    if worker_index == 0:
+        return out_dir / team
+    return out_dir / team / "workers" / worker_id
+
+
+def _handoff(
+    *,
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    team: str,
+    persona: str,
+    context: dict[str, Any],
+    worker_id: str,
+    worker_index: int,
+    lane_id: str,
+) -> dict[str, Any]:
+    return {
+        "schema": "tau.battle_team_handoff.v1",
+        "battle_id": battle_id,
+        "run_id": run_id,
+        "scenario_id": scenario_id,
+        "team": team,
+        "worker_id": worker_id,
+        "worker_index": worker_index,
+        "lane_id": lane_id,
+        "persona": persona,
+        "visibility_model": "team_public_only",
+        "public_context": context,
+        "instructions": {
+            "red": (
+                "Return a JSON object with artifact_type=red_exploit and exploit_py. "
+                "The exploit_py script is executed by Battle Judge as: "
+                "python red_exploit_submission.py --expect-vulnerable inside a local Docker workspace containing app.py. "
+                "Use Python standard library only. Do not import requests, httpx, flask, fastapi, urllib, socket, or any network/HTTP package. "
+                "Do not assume a web server or localhost:8000. "
+                "The script must import import_zip from local app.py, create a temporary zip file with a path traversal entry such as ../arena_escape.txt, "
+                "call import_zip(zip_path, destination) directly, and verify that the escape file was written outside the destination. "
+                "When --expect-vulnerable is passed and the vulnerable write succeeds, print RED_EXPLOIT_CONFIRMED and exit 0. "
+                "When --expect-vulnerable is passed and the write does not occur, exit nonzero. "
+                "The script must contain RED_EXPLOIT_CONFIRMED."
+            ),
+            "blue": (
+                "Return a JSON object with artifact_type=blue_patch and app_py. "
+                "The app_py value must be a complete replacement application file."
+            ),
+        }[team],
+    }
+
+
+def _materialize_team_artifact(*, team_dir: Path, team: str, scillm_call: dict[str, Any]) -> dict[str, Any]:
+    parsed = scillm_call.get("parsed_json")
+    if not isinstance(parsed, dict):
+        parsed = parse_json_object(str(scillm_call.get("response_content") or ""))
+    if not isinstance(parsed, dict):
+        return {
+            "schema": "tau.battle_materialized_artifact_receipt.v1",
+            "status": "BLOCKED",
+            "reason": "scillm_response_not_json_object",
+            "path": None,
+            "parsed_keys": [],
+        }
+
+    if team == "red":
+        return _materialize_red(team_dir=team_dir, parsed=parsed)
+    if team == "blue":
+        return _materialize_blue(team_dir=team_dir, parsed=parsed)
+    return {
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "BLOCKED",
+        "reason": f"unsupported_team:{team}",
+        "path": None,
+        "parsed_keys": sorted(parsed),
+    }
+
+
+def _materialize_red(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, Any]:
+    script = parsed.get("exploit_py")
+    if not isinstance(script, str) or not script.strip():
+        return _blocked_materialization("red_exploit_py_missing", parsed)
+    if "```" in script:
+        return _blocked_materialization("red_exploit_py_contains_markdown_fence", parsed)
+    if "RED_EXPLOIT_CONFIRMED" not in script:
+        return _blocked_materialization("red_exploit_py_missing_success_marker", parsed)
+    contract_error = _red_contract_error(script)
+    if contract_error:
+        return _blocked_materialization(contract_error, parsed)
+
+    path = team_dir / "red_exploit_submission.py"
+    path.write_text(script, encoding="utf-8")
+    compile_error = _compile_python(path)
+    if compile_error:
+        return {
+            **_blocked_materialization("red_exploit_py_compile_failed", parsed),
+            "diagnostic_path": str(path),
+            "compile_error": compile_error,
+        }
+
+    return {
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "PASS",
+        "artifact_type": "red_exploit",
+        "path": str(path),
+        "parsed_keys": sorted(parsed),
+        "rationale": parsed.get("rationale"),
+    }
+
+
+def _red_contract_error(script: str) -> str | None:
+    """Return a fail-closed materialization reason for non-Judge-compatible Red code."""
+    banned_imports = {
+        "requests",
+        "httpx",
+        "flask",
+        "fastapi",
+        "urllib",
+        "socket",
+        "aiohttp",
+    }
+    try:
+        tree = ast.parse(script)
+    except SyntaxError:
+        return None
+
+    imports: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imports.update(alias.name.split(".", 1)[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imports.add(node.module.split(".", 1)[0])
+
+    if imports & banned_imports:
+        return "red_artifact_not_local_stdlib_exploit"
+    if "from app import import_zip" not in script and "import app" not in script:
+        return "red_artifact_missing_local_app_import"
+    if "import_zip(" not in script:
+        return "red_artifact_does_not_call_import_zip"
+    if "--expect-vulnerable" not in script:
+        return "red_artifact_missing_expect_vulnerable_arg"
+    return None
+
+
+def _materialize_blue(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, Any]:
+    app_py = parsed.get("app_py")
+    if not isinstance(app_py, str) or not app_py.strip():
+        return _blocked_materialization("blue_app_py_missing", parsed)
+    if "```" in app_py:
+        return _blocked_materialization("blue_app_py_contains_markdown_fence", parsed)
+
+    path = team_dir / "app.py"
+    path.write_text(app_py, encoding="utf-8")
+    compile_error = _compile_python(path)
+    if compile_error:
+        return {
+            **_blocked_materialization("blue_app_py_compile_failed", parsed),
+            "diagnostic_path": str(path),
+            "compile_error": compile_error,
+        }
+
+    return {
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "PASS",
+        "artifact_type": "blue_patch",
+        "path": str(path),
+        "parsed_keys": sorted(parsed),
+        "rationale": parsed.get("rationale"),
+    }
+
+
+def _blocked_materialization(reason: str, parsed: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema": "tau.battle_materialized_artifact_receipt.v1",
+        "status": "BLOCKED",
+        "reason": reason,
+        "path": None,
+        "parsed_keys": sorted(parsed),
+    }
+
+
+def _compile_python(path: Path) -> str | None:
+    try:
+        py_compile.compile(str(path), doraise=True)
+        return None
+    except py_compile.PyCompileError as exc:
+        return str(exc)
+
+
+def _subagent_receipt(
+    *,
+    battle_id: str,
+    run_id: str,
+    scenario_id: str,
+    team: str,
+    persona: str,
+    model: str,
+    handoff_path: Path,
+    scillm_call_path: Path,
+    materialized_path: Path,
+    materialized: dict[str, Any],
+    worker_id: str,
+    lane_id: str,
+) -> dict[str, Any]:
+    return {
+        "schema": "tau.subagent_receipt.v1",
+        "context": {
+            "actor_type": "tau",
+            "battle": {
+                "battle_id": battle_id,
+                "team": team,
+                "worker_id": worker_id,
+                "lane_id": lane_id,
+                "persona": persona,
+                "scenario_id": scenario_id,
+            },
+            "run_id": run_id,
+            "subagent": f"battle-{team}-{worker_id}",
+            "artifacts_read": [str(handoff_path)],
+            "assumptions": [
+                "Battle owns Docker execution and scorekeeping; Tau owns this handoff and artifact materialization receipt."
+            ],
+            "unknowns": [],
+        },
+        "goal": {
+            "goal_id": f"goal-battle-{battle_id}-tau-public-only",
+            "goal_version": 1,
+            "immutable_goal_preserved": True,
+        },
+        "rationale": "Battle requested one bounded Tau/Scillm public-only handoff receipt before Judge replay.",
+        "result": {
+            "status": materialized["status"],
+            "live": True,
+            "mocked": False,
+            "model": model,
+            "surface": "scillm.chat_completions",
+            "summary": _result_summary(team, materialized),
+            "artifacts": [str(scillm_call_path), str(materialized_path)],
+            "commands_run": [],
+        },
+        "evidence": [str(handoff_path), str(scillm_call_path), str(materialized_path)],
+        "next": {
+            "subagent": "battle-scorekeeper",
+            "executor": "local",
+            "reason": "Battle Judge may consume materialized paths only when materialization status is PASS.",
+        },
+        "stop_condition": "Battle Judge consumes Red/Blue materialized artifacts or records INSUFFICIENT_EVIDENCE.",
+    }
+
+
+def _validation_receipt(
+    *,
+    battle_id: str,
+    run_id: str,
+    team: str,
+    worker_id: str,
+    handoff_path: Path,
+    scillm_call_path: Path,
+    subagent_receipt_path: Path,
+    materialized: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema": "tau.battle_handoff_validation.v1",
+        "battle_id": battle_id,
+        "run_id": run_id,
+        "team": team,
+        "worker_id": worker_id,
+        "status": "PASS",
+        "mocked": False,
+        "live": True,
+        "checks": {
+            "handoff_written": handoff_path.exists(),
+            "scillm_call_receipt_written": scillm_call_path.exists(),
+            "subagent_receipt_written": subagent_receipt_path.exists(),
+            "materialization_status": materialized["status"],
+        },
+    }
+
+
+def _result_summary(team: str, materialized: dict[str, Any]) -> str:
+    if materialized["status"] == "PASS":
+        return f"Battle {team} produced a materialized executable artifact."
+    return f"Battle {team} Scillm response was recorded but artifact materialization is BLOCKED: {materialized.get('reason')}"
+
+
+def _persona_for_worker(base: str, index: int) -> str:
+    if index == 0:
+        return base
+    return f"{base}-variant-{index}"
+
+
+def _count_pass(teams: list[dict[str, Any]], team: str) -> int:
+    return sum(1 for item in teams if item.get("team") == team and item.get("materialized", {}).get("status") == "PASS")
+
+
+def _read_context(path: Path | None) -> dict[str, Any]:
+    if path is None:
+        return {}
+    if not path.exists():
+        raise FileNotFoundError(f"battle context JSON not found: {path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"battle context JSON must be an object: {path}")
+    return data
+
+
+def _write_json(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    main()

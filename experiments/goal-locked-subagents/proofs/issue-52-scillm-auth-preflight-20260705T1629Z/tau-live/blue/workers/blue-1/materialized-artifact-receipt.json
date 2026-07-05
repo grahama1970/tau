@@ -1,0 +1,12 @@
+{
+  "artifact_type": "blue_patch",
+  "parsed_keys": [
+    "app_py",
+    "artifact_type",
+    "rationale"
+  ],
+  "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/blue/workers/blue-1/app.py",
+  "rationale": "Hardens archive extraction by validating every ZIP member as a safe relative path, rejecting traversal/absolute/Windows-drive paths and symlinks, and confirming resolved targets remain under the destination before writing.",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "status": "PASS"
+}

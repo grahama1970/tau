@@ -1,0 +1,12 @@
+{
+  "artifact_type": "red_exploit",
+  "parsed_keys": [
+    "artifact_type",
+    "exploit_py",
+    "rationale"
+  ],
+  "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-52-scillm-auth-preflight-20260705T1629Z/tau-live/red/red_exploit_submission.py",
+  "rationale": "Creates a zip containing ../arena_escape.txt, invokes app.import_zip directly, and confirms the vulnerable implementation writes the payload outside the destination directory.",
+  "schema": "tau.battle_materialized_artifact_receipt.v1",
+  "status": "PASS"
+}
