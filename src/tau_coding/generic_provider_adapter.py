@@ -250,6 +250,8 @@ def _provider_binding(
         )
     if attempt is None:
         errors.append("work_order_missing_attempt")
+    elif attempt < 1:
+        errors.append("work_order_invalid_attempt")
     if max_attempts is None:
         errors.append("work_order_missing_max_attempts")
     elif max_attempts < 1:

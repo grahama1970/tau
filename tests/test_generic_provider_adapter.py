@@ -191,6 +191,43 @@ def test_build_generic_provider_node_receipt_blocks_incomplete_canonical_work_or
     assert "work_order_missing_work_order_sha256" in receipt["errors"]
 
 
+def test_build_generic_provider_node_receipt_blocks_invalid_attempt(
+    tmp_path: Path,
+) -> None:
+    visible_log = tmp_path / "coder.visible.txt"
+    visible_log.write_text("visible provider output\n", encoding="utf-8")
+    work_order = tmp_path / "work-order.json"
+    payload = _canonical_work_order_payload(node_id="provider-task")
+    node = payload["node"]
+    assert isinstance(node, dict)
+    node["attempt"] = 0
+    payload["work_order_sha256"] = _canonical_payload_sha256(payload)
+    _write_json(work_order, payload)
+
+    receipt = build_generic_provider_node_receipt(
+        node_id="provider-task",
+        provider_receipt={
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "live": True,
+            "visible_subagents": {
+                "coder": {
+                    "workspace_id": "w1",
+                    "pane_id": "w1:p3",
+                    "terminal_id": "term-coder",
+                    "visible_log_path": str(visible_log),
+                }
+            },
+        },
+        work_order_path=work_order,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["provider_binding"]["status"] == "BLOCKED"
+    assert "work_order_invalid_attempt" in receipt["errors"]
+
+
 def test_build_generic_provider_node_receipt_blocks_work_order_hash_mismatch(
     tmp_path: Path,
 ) -> None:

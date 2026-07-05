@@ -1,0 +1,48 @@
+{
+  "changed_files": [
+    "src/tau_coding/generic_provider_adapter.py",
+    "tests/test_generic_provider_adapter.py"
+  ],
+  "check_count": 4,
+  "checks": [
+    {
+      "command": "uv run pytest tests/test_generic_provider_adapter.py tests/test_generic_dag.py -q",
+      "name": "focused_pytest",
+      "result": "23 passed"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/generic_provider_adapter.py tests/test_generic_provider_adapter.py --select F,I",
+      "name": "ruff_f_i",
+      "result": "pass"
+    },
+    {
+      "command": "uv run python -m compileall -q src/tau_coding/generic_provider_adapter.py",
+      "name": "compileall",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/generic_provider_adapter.py tests/test_generic_provider_adapter.py",
+      "name": "diff_check",
+      "result": "pass"
+    }
+  ],
+  "failed_check_count": 0,
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Live provider execution.",
+      "Herdr pane readiness.",
+      "Provider/model semantic quality.",
+      "Every future provider work-order invariant."
+    ],
+    "proves": [
+      "Canonical provider work orders with node.attempt < 1 are rejected during provider binding.",
+      "The failure is exposed as work_order_invalid_attempt before provider-live evidence is accepted."
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.provider_binding_invalid_attempt_proof.v1",
+  "status": "PASS"
+}
