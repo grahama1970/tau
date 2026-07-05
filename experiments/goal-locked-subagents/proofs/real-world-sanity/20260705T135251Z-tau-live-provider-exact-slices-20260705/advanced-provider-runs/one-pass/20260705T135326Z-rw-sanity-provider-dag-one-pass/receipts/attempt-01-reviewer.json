@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order/attempt-01-reviewer.json",
+    "read scratch-worktree/message.txt",
+    "read receipts/attempt-01-coder.json",
+    "ls receipts/"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no remaining TODO — contains 'Completed implementation for the Tau provider DAG coder node.' Coder receipt is schema-valid (tau.provider_dag_node_receipt.v1) with status PASS, 1 changed file, 8 commands run, no errors. force_revise is false. All required evidence satisfied.",
+  "errors": [],
+  "policy_exceptions": []
+}

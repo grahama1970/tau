@@ -1,0 +1,20 @@
+
+╭──────────────────────────────
+───────────╮
+│ >_ OpenAI Codex (v0.142.5)
+          │
+│
+          │
+│ model:       loading   /model
+to change │
+│ directory:   ~/…/tau
+          │
+│ permissions: YOLO mode
+          │
+╰──────────────────────────────
+───────────╯
+
+
+› Use /skills to list availabl
+
+  gpt-5.5 default · ~/workspac…

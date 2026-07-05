@@ -1,0 +1,32 @@
+{
+  "active_node_id": null,
+  "blocked_nodes": [],
+  "completed_nodes": [
+    "provider_task"
+  ],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/events.jsonl",
+  "node_statuses": {
+    "provider_task": {
+      "attempt_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/receipts/provider-task.json",
+      "resumed": false,
+      "status": "PASS",
+      "verdict": "PASS"
+    }
+  },
+  "ready_nodes": [],
+  "resume": {
+    "enabled_by_default": true,
+    "receipt_paths": {
+      "provider_task": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/receipts/provider-task.json"
+    },
+    "will_reuse_valid_pass_receipts": true
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter",
+  "run_id": "rw-sanity-generic-provider-dag-adapter",
+  "schema": "tau.generic_dag_checkpoint.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/dag-spec.json",
+  "status": "PASS",
+  "timestamp": "2026-07-05T14:10:30Z",
+  "verdict": "PASS"
+}

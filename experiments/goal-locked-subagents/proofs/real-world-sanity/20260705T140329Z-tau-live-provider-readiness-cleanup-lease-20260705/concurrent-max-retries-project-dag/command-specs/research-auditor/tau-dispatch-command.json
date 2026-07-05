@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/concurrent-max-retries-project-dag/project_dag_worker.py",
+    "--role",
+    "research-auditor",
+    "--scenario",
+    "concurrent-max-retries"
+  ],
+  "timeout_s": 20
+}

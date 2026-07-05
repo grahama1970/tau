@@ -1,0 +1,37 @@
+ace/experiments/tau/experiments
+/goal-locked-subagents/proofs/r
+eal-world-sanity/20260705T14055
+3Z-tau-live-provider-exact-slic
+es-final-20260705/advanced-prov
+ider-runs/one-pass/20260705T140
+629Z-rw-sanity-provider-dag-one
+-pass\ndag_spec: /home/graham/w
+orkspace/experiments/tau/experi
+ments/goal-locked-subagents/pro
+ofs/real-world-sanity/20260705T
+140553Z-tau-live-provider-exact
+-slices-final-20260705/advanced
+-provider-runs/one-pass/2026070
+5T140629Z-rw-sanity-provider-da
+g-one-pass/dag-spec.json\nplann
+er_receipt: /home/graham/worksp
+ace/experiments/tau/experiments
+/goal-locked-subagents/proofs/r
+eal-world-sanity/20260705T14055
+3Z-tau-live-provider-exact-slic
+es-final-20260705/advanced-prov
+ider-runs/one-pass/20260705T140
+629Z-rw-sanity-provider-dag-one
+-pass/planner-receipt.json\nfin
+al_receipt: /home/graham/worksp
+ace/experiments/tau/experiments
+/goal-locked-subagents/proofs/r
+eal-world-sanity/20260705T14055
+3Z-tau-live-provider-exact-slic
+es-final-20260705/advanced-prov
+ider-runs/one-pass/20260705T140
+629Z-rw-sanity-provider-dag-one
+-pass/run-receipt.json\ncanonic
+al truth: Tau JSON receipts; th
+is pane is human-visible teleme
+try.\n

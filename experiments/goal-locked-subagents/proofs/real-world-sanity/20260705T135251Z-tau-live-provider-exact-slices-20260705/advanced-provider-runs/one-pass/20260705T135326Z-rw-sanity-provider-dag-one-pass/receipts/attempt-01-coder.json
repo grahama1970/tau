@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "pwd",
+    "sed -n '1,120p' message.txt",
+    "ls -la",
+    "apply_patch update message.txt",
+    "sed -n '1,20p' message.txt",
+    "ls -ld /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/receipts",
+    "apply_patch add receipts/attempt-01-coder.json",
+    "jq -e . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json",
+    "wc -l message.txt",
+    "sed -n '1,20p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json",
+    "apply_patch update receipts/attempt-01-coder.json",
+    "jq -e . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/one-pass/20260705T135326Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135958Z-tau-live-provider-exact-slices-retry-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140036Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135958Z-tau-live-provider-exact-slices-retry-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140036Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135958Z-tau-live-provider-exact-slices-retry-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140036Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "pwd",
+    "nl -ba message.txt",
+    "find . -maxdepth 2 -type f | sort",
+    "nl -ba message.txt",
+    "rg -n \"TODO\" message.txt || true",
+    "find . -maxdepth 2 -type f | sort | wc -l",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135958Z-tau-live-provider-exact-slices-retry-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140036Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json; echo $?",
+    "jq -e '.schema == \"tau.provider_dag_node_receipt.v1\" and .status == \"PASS\" and .verdict == \"PASS\" and (.changed_files | length == 1) and (.errors | length == 0) and (.policy_exceptions | length == 0)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135958Z-tau-live-provider-exact-slices-retry-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140036Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+    "nl -ba message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135958Z-tau-live-provider-exact-slices-retry-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140036Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

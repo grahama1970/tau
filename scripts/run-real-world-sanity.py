@@ -15,7 +15,7 @@ import os
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -2879,6 +2879,9 @@ def run_post_check_cleanup(
         provider_run_dir = repo / provider_run_dir
     cleanup_stdout = run_dir / "logs" / f"{check.check_id}.cleanup.stdout.txt"
     cleanup_stderr = run_dir / "logs" / f"{check.check_id}.cleanup.stderr.txt"
+    workspace_lease = None
+    if check.post_cleanup_mode == "apply":
+        workspace_lease = write_post_cleanup_workspace_lease(provider_run_dir, cleanup_mode="apply")
     command = [
         check.post_cleanup_uv_bin,
         "run",
@@ -2892,6 +2895,8 @@ def run_post_check_cleanup(
         "--herdr-bin",
         check.post_cleanup_herdr_bin,
     ]
+    if workspace_lease is not None:
+        command.extend(["--workspace-lease", str(workspace_lease)])
     completed = subprocess.run(
         command,
         cwd=repo,
@@ -2926,6 +2931,48 @@ def run_post_check_cleanup(
         "receipt_path": str(provider_run_dir / "herdr-cleanup-receipt.json"),
         "errors": errors,
     }
+
+
+def write_post_cleanup_workspace_lease(provider_run_dir: Path, *, cleanup_mode: str) -> Path:
+    manifest_path = provider_run_dir / "runtime-manifest.json"
+    manifest = read_json(manifest_path)
+    workspace_ids = sorted(_cleanup_workspace_ids(manifest))
+    now = datetime.now(UTC).replace(microsecond=0)
+    lease = {
+        "schema": "tau.herdr_workspace_lease.v1",
+        "run_id": manifest.get("run_id"),
+        "dag_id": manifest.get("label") or manifest.get("run_id"),
+        "owner": "tau-real-world-sanity",
+        "created_at": now.isoformat().replace("+00:00", "Z"),
+        "expires_at": (now + timedelta(days=1)).isoformat().replace("+00:00", "Z"),
+        "cleanup_policy": cleanup_mode,
+        "workspace_ids": workspace_ids,
+        "source_runtime_manifest": str(manifest_path),
+    }
+    lease_path = provider_run_dir / "real-world-sanity-herdr-workspace-lease.json"
+    write_json(lease_path, lease)
+    return lease_path
+
+
+def _cleanup_workspace_ids(manifest: dict[str, Any]) -> set[str]:
+    workspace_ids: set[str] = set()
+    for records_key in ("provider_sessions", "visible_subagents"):
+        records = manifest.get(records_key)
+        if not isinstance(records, dict):
+            continue
+        for record in records.values():
+            if isinstance(record, dict) and record.get("workspace_id"):
+                workspace_ids.add(str(record["workspace_id"]))
+    for path_text in manifest.get("provider_session_states", []):
+        if not isinstance(path_text, str):
+            continue
+        try:
+            record = read_json(Path(path_text))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if record.get("workspace_id"):
+            workspace_ids.add(str(record["workspace_id"]))
+    return workspace_ids
 
 
 def run_check_attempt(

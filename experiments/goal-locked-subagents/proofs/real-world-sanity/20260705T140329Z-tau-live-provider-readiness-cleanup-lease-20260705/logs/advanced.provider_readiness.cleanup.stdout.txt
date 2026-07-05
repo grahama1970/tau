@@ -1,0 +1,129 @@
+{
+  "alerts": [],
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w3Q:p5",
+        "w3Q:p6"
+      ],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "workspace_id": "w3Q"
+    }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w3Q:p5",
+        "w3Q:p6"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "workspace_id": "w3Q"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w3Q"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w3Q"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w3Q not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w3Q:p5",
+        "w3Q:p6"
+      ],
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "sources": [
+        "provider_session_states",
+        "readiness_records"
+      ],
+      "terminal_ids": [
+        "term_655dd9f782a333d4",
+        "term_655dd9f80b1783d5"
+      ],
+      "workspace_id": "w3Q"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/advanced-provider-runs/readiness/20260705T140330Z-rw-sanity-provider-readiness",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/advanced-provider-runs/readiness/20260705T140330Z-rw-sanity-provider-readiness/runtime-manifest.json",
+  "runtime_manifest_sha256": "a7064cac8b2d242eab89962dd5f7c4e8c558b05b8fb7f2adcdb04a85be63b843",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T14:04:05Z",
+  "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/advanced-provider-runs/readiness/20260705T140330Z-rw-sanity-provider-readiness/real-world-sanity-herdr-workspace-lease.json",
+  "workspace_lease_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-05T14:04:04Z",
+    "dag_id": "rw-sanity-provider-readiness",
+    "expires_at": "2026-07-06T14:04:04Z",
+    "owner": "tau-real-world-sanity",
+    "run_id": "20260705T140330Z-rw-sanity-provider-readiness",
+    "schema": "tau.herdr_workspace_lease.v1",
+    "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/advanced-provider-runs/readiness/20260705T140330Z-rw-sanity-provider-readiness/runtime-manifest.json",
+    "workspace_ids": [
+      "w3Q"
+    ]
+  },
+  "workspace_lease_sha256": "5450bc25e812ffab316ce1a1b86f874412cc16118852ee4db265cfd9783c6b13"
+}

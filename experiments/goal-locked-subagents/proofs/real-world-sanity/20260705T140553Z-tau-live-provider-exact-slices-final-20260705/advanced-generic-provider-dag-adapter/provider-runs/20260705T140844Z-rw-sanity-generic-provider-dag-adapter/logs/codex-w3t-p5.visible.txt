@@ -1,0 +1,38 @@
+final-20260705/advanced-
+generic-provider-dag-adapter/
+provider-runs/20260705T140844Z-
+rw-sanity-generic-provider-dag-
+adapter/receipts/attempt-01-
+coder.json (+2 -1)
+    15      "find /home/graham/
+        workspace/experiments/t
+        au/experiments/goal-loc
+        ked-subagents/proofs/re
+        al-world-sanity/2026070
+        5T140553Z-tau-live-prov
+        ider-exact-slices-final
+        -20260705/advanced-gene
+        ric-provider-dag-adapte
+        r/provider-runs/2026070
+        5T140844Z-rw-sanity-gen
+        eric-provider-dag-adapt
+        er/scratch-worktree -ma
+        xdepth 2 -type f -print
+        ",
+    16 -    "apply_patch: updat
+        e target_file and write
+         receipt"
+    16 +    "apply_patch: updat
+        e target_file and write
+         receipt",
+    17 +    "python3 receipt/ta
+        rget validation and rg
+        TODO absence check"
+    18    ],
+
+• Working (1m 10s • esc to int…
+
+
+› Run /review on my current ch
+
+  gpt-5.5 medium · ~/workspace…

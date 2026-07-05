@@ -1,0 +1,37 @@
+s\nrun_dir: /home/graham/worksp
+ace/experiments/tau/experiments
+/goal-locked-subagents/proofs/r
+eal-world-sanity/20260705T13525
+1Z-tau-live-provider-exact-slic
+es-20260705/advanced-provider-r
+uns/one-pass/20260705T135326Z-r
+w-sanity-provider-dag-one-pass\
+ndag_spec: /home/graham/workspa
+ce/experiments/tau/experiments/
+goal-locked-subagents/proofs/re
+al-world-sanity/20260705T135251
+Z-tau-live-provider-exact-slice
+s-20260705/advanced-provider-ru
+ns/one-pass/20260705T135326Z-rw
+-sanity-provider-dag-one-pass/d
+ag-spec.json\nplanner_receipt:
+/home/graham/workspace/experime
+nts/tau/experiments/goal-locked
+-subagents/proofs/real-world-sa
+nity/20260705T135251Z-tau-live-
+provider-exact-slices-20260705/
+advanced-provider-runs/one-pass
+/20260705T135326Z-rw-sanity-pro
+vider-dag-one-pass/planner-rece
+ipt.json\nfinal_receipt: /home/
+graham/workspace/experiments/ta
+u/experiments/goal-locked-subag
+ents/proofs/real-world-sanity/2
+0260705T135251Z-tau-live-provid
+er-exact-slices-20260705/advanc
+ed-provider-runs/one-pass/20260
+705T135326Z-rw-sanity-provider-
+dag-one-pass/run-receipt.json\n
+canonical truth: Tau JSON recei
+pts; this pane is human-visible
+ telemetry.\n

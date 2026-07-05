@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-provider-runs/one-pass/20260705T140629Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-provider-runs/one-pass/20260705T140629Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-provider-runs/one-pass/20260705T140629Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "sed -n '1,120p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-provider-runs/one-pass/20260705T140629Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-provider-runs/one-pass/20260705T140629Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json; printf '%s\\n' \"$?\""
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-provider-runs/one-pass/20260705T140629Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

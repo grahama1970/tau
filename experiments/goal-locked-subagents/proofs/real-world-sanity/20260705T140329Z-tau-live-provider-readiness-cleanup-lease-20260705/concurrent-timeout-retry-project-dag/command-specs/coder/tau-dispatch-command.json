@@ -1,0 +1,8 @@
+{
+  "command": [
+    "python3",
+    "-c",
+    "\nimport runpy\nimport sys\nfrom pathlib import Path\n\nstate = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/concurrent-timeout-retry-project-dag/command-specs/coder/attempt-count.txt')\nstate.parent.mkdir(parents=True, exist_ok=True)\ncount = int(state.read_text() or '0') if state.exists() else 0\nstate.write_text(str(count + 1))\nif count == 0:\n    import time; time.sleep(5)\nelse:\n    sys.argv = ['/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/concurrent-timeout-retry-project-dag/project_dag_worker.py', '--role', 'coder', '--scenario', 'concurrent-timeout-retry']\n    runpy.run_path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140329Z-tau-live-provider-readiness-cleanup-lease-20260705/concurrent-timeout-retry-project-dag/project_dag_worker.py', run_name='__main__')\n"
+  ],
+  "timeout_s": 1
+}

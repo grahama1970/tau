@@ -52,9 +52,71 @@ def test_build_generic_provider_node_receipt_carries_work_order_hash(tmp_path: P
     )
 
     expected = hashlib.sha256(work_order.read_bytes()).hexdigest()
+    assert receipt["status"] == "BLOCKED"
     assert receipt["work_order_path"] == str(work_order.resolve())
     assert receipt["work_order_sha256"] == expected
-    assert receipt["provider_binding"]["status"] == "LEGACY_UNBOUND"
+    assert receipt["provider_binding"]["status"] == "BLOCKED"
+    assert "provider_subrun_missing_run_dir" in receipt["errors"]
+
+
+def test_build_generic_provider_node_receipt_binds_adapter_subrun(
+    tmp_path: Path,
+) -> None:
+    visible_log = tmp_path / "logs" / "codex.visible.txt"
+    visible_log.parent.mkdir(parents=True, exist_ok=True)
+    visible_log.write_text("visible provider output\n", encoding="utf-8")
+    run_dir = tmp_path / "provider-run"
+    run_dir.mkdir()
+    runtime_manifest = run_dir / "runtime-manifest.json"
+    runtime_manifest.write_text('{"schema":"tau.provider_dag_runtime_manifest.v1"}\n', encoding="utf-8")
+    dag_spec = run_dir / "dag-spec.json"
+    dag_spec.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_run_spec.v1",
+                "goal": {"goal_hash": "sha256:subrun-goal"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    work_order = tmp_path / "generic-adapter-work-order.json"
+    work_order.write_text(
+        json.dumps({"schema": "tau.generic_provider_adapter_work_order.v1"}),
+        encoding="utf-8",
+    )
+
+    receipt = build_generic_provider_node_receipt(
+        node_id="provider-task",
+        provider_receipt={
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "live": True,
+            "run_id": "provider-run-001",
+            "run_dir": str(run_dir),
+            "runtime_manifest": str(runtime_manifest),
+            "dag_spec": str(dag_spec),
+            "attempts": [{"attempt": 1}],
+            "max_attempts": 1,
+            "provider_sessions": {
+                "codex": {
+                    "workspace_id": "w1",
+                    "pane_id": "w1:p3",
+                    "terminal_id": "term-coder",
+                    "visible_log_path": str(visible_log),
+                }
+            },
+        },
+        work_order_path=work_order,
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["provider_binding"]["status"] == "PASS"
+    assert receipt["provider_binding"]["binding_source"] == "provider_subrun"
+    assert receipt["goal_hash"] == "sha256:subrun-goal"
+    assert receipt["attempt"] == 1
+    assert receipt["workspace_id"] == "w1"
+    assert receipt["visible_log_sha256"] == hashlib.sha256(visible_log.read_bytes()).hexdigest()
 
 
 def test_build_generic_provider_node_receipt_binds_canonical_work_order(

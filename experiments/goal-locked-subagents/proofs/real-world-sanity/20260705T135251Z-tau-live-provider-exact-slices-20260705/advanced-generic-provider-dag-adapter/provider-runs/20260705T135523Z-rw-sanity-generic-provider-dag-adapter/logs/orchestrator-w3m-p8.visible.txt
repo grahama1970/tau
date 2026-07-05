@@ -1,0 +1,37 @@
+lices-20260705
+/advanced-gene
+ric-provider-d
+ag-adapter/pro
+vider-runs/202
+60705T135523Z-
+rw-sanity-gene
+ric-provider-d
+ag-adapter/pla
+nner-receipt.j
+son\nfinal_rec
+eipt: /home/gr
+aham/workspace
+/experiments/t
+au/experiments
+/goal-locked-s
+ubagents/proof
+s/real-world-s
+anity/20260705
+T135251Z-tau-l
+ive-provider-e
+xact-slices-20
+260705/advance
+d-generic-prov
+ider-dag-adapt
+er/provider-ru
+ns/20260705T13
+5523Z-rw-sanit
+y-generic-prov
+ider-dag-adapt
+er/run-receipt
+.json\ncanonic
+al truth: Tau
+JSON receipts;
+ this pane is
+human-visible
+telemetry.\n

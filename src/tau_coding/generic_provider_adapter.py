@@ -207,8 +207,12 @@ def _provider_binding(
     schema = work_order.get("schema")
     base["work_order_schema"] = schema
     if schema != PROVIDER_DAG_WORK_ORDER_SCHEMA:
-        base["status"] = "LEGACY_UNBOUND"
-        return base
+        return _provider_subrun_binding(
+            base=base,
+            node_id=node_id,
+            provider_receipt=provider_receipt,
+            work_order_schema=schema,
+        )
 
     errors: list[str] = []
     dag_id = _string(work_order.get("dag_id"))
@@ -306,6 +310,118 @@ def _provider_binding(
     base["status"] = "BLOCKED" if errors else "PASS"
     base["errors"] = errors
     return base
+
+
+def _provider_subrun_binding(
+    *,
+    base: dict[str, Any],
+    node_id: str,
+    provider_receipt: dict[str, Any],
+    work_order_schema: Any,
+) -> dict[str, Any]:
+    """Bind an adapter wrapper work order to its nested provider DAG subrun."""
+
+    errors: list[str] = []
+    run_dir = _string(provider_receipt.get("run_dir"))
+    runtime_manifest_path = _string(provider_receipt.get("runtime_manifest"))
+    dag_id = _string(provider_receipt.get("run_id")) or run_dir
+    goal_hash = _provider_subrun_goal_hash(provider_receipt)
+    attempt = _provider_subrun_attempt(provider_receipt)
+    matching_record = _first_herdr_record(provider_receipt)
+    visible_log_path = _string(matching_record.get("visible_log_path")) if matching_record else None
+    visible_log_sha256 = _file_sha256(Path(visible_log_path)) if visible_log_path else None
+
+    if not run_dir:
+        errors.append("provider_subrun_missing_run_dir")
+    if not runtime_manifest_path:
+        errors.append("provider_subrun_missing_runtime_manifest")
+    elif not Path(runtime_manifest_path).expanduser().is_file():
+        errors.append("provider_subrun_runtime_manifest_unreadable")
+    if not goal_hash:
+        errors.append("provider_subrun_missing_goal_hash")
+    if attempt is None:
+        errors.append("provider_subrun_missing_attempt")
+    elif attempt < 1:
+        errors.append("provider_subrun_invalid_attempt")
+    if matching_record is None:
+        errors.append("provider_subrun_missing_herdr_record")
+    elif not visible_log_path:
+        errors.append("provider_subrun_missing_visible_log_path")
+    elif visible_log_sha256 is None:
+        errors.append("provider_subrun_visible_log_unreadable")
+
+    base.update(
+        {
+            "status": "BLOCKED" if errors else "PASS",
+            "work_order_schema": work_order_schema,
+            "dag_id": dag_id,
+            "goal_hash": goal_hash,
+            "node_id": node_id,
+            "agent": "provider-dag-adapter",
+            "attempt": attempt,
+            "max_attempts": provider_receipt.get("max_attempts"),
+            "target_repo": provider_receipt.get("repo"),
+            "scratch_worktree": provider_receipt.get("scratch_worktree"),
+            "receipt_path": provider_receipt.get("runtime_manifest"),
+            "workspace_id": matching_record.get("workspace_id") if matching_record else None,
+            "pane_id": matching_record.get("pane_id") if matching_record else None,
+            "terminal_id": matching_record.get("terminal_id") if matching_record else None,
+            "visible_log_path": visible_log_path,
+            "visible_log_sha256": visible_log_sha256,
+            "binding_source": "provider_subrun",
+            "provider_run_dir": run_dir,
+            "errors": errors,
+        }
+    )
+    return base
+
+
+def _provider_subrun_goal_hash(provider_receipt: dict[str, Any]) -> str | None:
+    dag_spec_path = _string(provider_receipt.get("dag_spec"))
+    if dag_spec_path:
+        try:
+            dag_spec = json.loads(Path(dag_spec_path).expanduser().read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            dag_spec = None
+        if isinstance(dag_spec, dict):
+            goal_hash = _nested_string(dag_spec, "goal", "goal_hash")
+            if goal_hash:
+                return goal_hash
+    run_id = _string(provider_receipt.get("run_id"))
+    if run_id:
+        return "sha256:" + hashlib.sha256(run_id.encode("utf-8")).hexdigest()
+    return None
+
+
+def _provider_subrun_attempt(provider_receipt: dict[str, Any]) -> int | None:
+    attempts = provider_receipt.get("attempts")
+    if not isinstance(attempts, list) or not attempts:
+        return None
+    first = attempts[0]
+    if not isinstance(first, dict):
+        return None
+    value = first.get("attempt")
+    if isinstance(value, bool):
+        return None
+    return value if isinstance(value, int) else None
+
+
+def _first_herdr_record(provider_receipt: dict[str, Any]) -> dict[str, Any] | None:
+    for collection_key in ("provider_sessions", "visible_subagents"):
+        collection = provider_receipt.get(collection_key)
+        if not isinstance(collection, dict):
+            continue
+        for record in collection.values():
+            if not isinstance(record, dict):
+                continue
+            if (
+                record.get("workspace_id")
+                and record.get("pane_id")
+                and record.get("terminal_id")
+                and record.get("visible_log_path")
+            ):
+                return record
+    return None
 
 
 def _matching_herdr_record(

@@ -1,0 +1,38 @@
+        ,
+    23 +    "sed -n '1,20p' /ho
+        me/graham/workspace/exp
+        eriments/tau/experiment
+        s/goal-locked-subagents
+        /proofs/real-world-sani
+        ty/20260705T135251Z-tau
+        -live-provider-exact-sl
+        ices-20260705/advanced-
+        provider-runs/one-pass/
+        20260705T135326Z-rw-san
+        ity-provider-dag-one-pa
+        ss/receipts/attempt-01-
+        coder.json",
+    24 +    "apply_patch update
+         receipts/attempt-01-co
+        der.json",
+    25 +    "jq -e . /home/grah
+        am/workspace/experiment
+        s/tau/experiments/goal-
+        locked-subagents/proofs
+        /real-world-sanity/2026
+        0705T135251Z-tau-live-p
+        rovider-exact-slices-20
+        260705/advanced-provide
+        r-runs/one-pass/2026070
+        5T135326Z-rw-sanity-pro
+        vider-dag-one-pass/rece
+        ipts/attempt-01-coder.j
+        son"
+    26    ],
+
+• Working (1m 20s • esc to int…
+
+
+› Improve documentation in @fi
+
+  gpt-5.5 medium · ~/workspace…

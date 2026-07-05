@@ -1,0 +1,37 @@
+0705/advanced-
+generic-provid
+er-dag-adapter
+/provider-runs
+/20260705T1400
+36Z-rw-sanity-
+generic-provid
+er-dag-adapter
+/planner-recei
+pt.json\nfinal
+_receipt: /hom
+e/graham/works
+pace/experimen
+ts/tau/experim
+ents/goal-lock
+ed-subagents/p
+roofs/real-wor
+ld-sanity/2026
+0705T135958Z-t
+au-live-provid
+er-exact-slice
+s-retry-202607
+05/advanced-ge
+neric-provider
+-dag-adapter/p
+rovider-runs/2
+0260705T140036
+Z-rw-sanity-ge
+neric-provider
+-dag-adapter/r
+un-receipt.jso
+n\ncanonical t
+ruth: Tau JSON
+ receipts; thi
+s pane is huma
+n-visible tele
+metry.\n

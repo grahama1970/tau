@@ -1,0 +1,153 @@
+{
+  "alerts": [],
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w3T:p5",
+        "w3T:p6",
+        "w3T:p8",
+        "w3T:p7",
+        "w3T:p9"
+      ],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w3T"
+    }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w3T:p5",
+        "w3T:p6",
+        "w3T:p8",
+        "w3T:p7",
+        "w3T:p9"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w3T"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w3T"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w3T"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w3T not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w3T:p5",
+        "w3T:p6",
+        "w3T:p8",
+        "w3T:p7",
+        "w3T:p9"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655ddb23769453e9",
+        "term_655ddb240589e3ea",
+        "term_655ddb42a014b3ec",
+        "term_655ddb4235d0f3eb",
+        "term_655ddb6b2c1b23ed"
+      ],
+      "workspace_id": "w3T"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140844Z-rw-sanity-generic-provider-dag-adapter",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140844Z-rw-sanity-generic-provider-dag-adapter/runtime-manifest.json",
+  "runtime_manifest_sha256": "f08180d9a88837456c4b58e7e88cac6dbe112e955996ccd7042460043fd75260",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T14:10:30Z",
+  "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140844Z-rw-sanity-generic-provider-dag-adapter/herdr-workspace-lease.json",
+  "workspace_lease_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-05T14:10:29Z",
+    "dag_id": "rw-sanity-generic-provider-dag-adapter",
+    "expires_at": "2026-07-06T14:10:29Z",
+    "owner": "tau-orchestrator",
+    "run_id": "20260705T140844Z-rw-sanity-generic-provider-dag-adapter",
+    "schema": "tau.herdr_workspace_lease.v1",
+    "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T140844Z-rw-sanity-generic-provider-dag-adapter/runtime-manifest.json",
+    "workspace_ids": [
+      "w3T"
+    ]
+  },
+  "workspace_lease_sha256": "3a08e7a707c1f5a16f23a309a446958650535898cb1873da4b0ae71a1e56a773"
+}

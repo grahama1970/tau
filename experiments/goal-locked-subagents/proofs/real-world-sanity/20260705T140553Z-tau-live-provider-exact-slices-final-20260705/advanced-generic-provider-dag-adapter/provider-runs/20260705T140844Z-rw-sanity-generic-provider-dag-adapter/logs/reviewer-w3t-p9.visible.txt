@@ -1,0 +1,36 @@
+0705T1
+40844Z
+-rw-sa
+nity-g
+eneric
+-provi
+der-da
+g-adap
+ter/re
+ceipts
+/attem
+pt-01-
+review
+er.jso
+n
+Wrote
+file s
+uccess
+fully.
+
+Both c
+onditi
+ons pa
+ss: `t
+arget_
+file`
+has no
+ TODO
+line a
+nd the
+ coder
+ recei
+pt is
+schema
+-valid
+.

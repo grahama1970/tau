@@ -1,0 +1,37 @@
+5T140553Z-tau-
+live-provider-
+exact-slices-f
+inal-20260705/
+advanced-provi
+der-runs/one-p
+ass/20260705T1
+40629Z-rw-sani
+ty-provider-da
+g-one-pass/pla
+nner-receipt.j
+son\nfinal_rec
+eipt: /home/gr
+aham/workspace
+/experiments/t
+au/experiments
+/goal-locked-s
+ubagents/proof
+s/real-world-s
+anity/20260705
+T140553Z-tau-l
+ive-provider-e
+xact-slices-fi
+nal-20260705/a
+dvanced-provid
+er-runs/one-pa
+ss/20260705T14
+0629Z-rw-sanit
+y-provider-dag
+-one-pass/run-
+receipt.json\n
+canonical trut
+h: Tau JSON re
+ceipts; this p
+ane is human-v
+isible telemet
+ry.\n

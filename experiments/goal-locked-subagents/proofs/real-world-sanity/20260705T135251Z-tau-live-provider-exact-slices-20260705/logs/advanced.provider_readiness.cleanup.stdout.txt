@@ -1,0 +1,85 @@
+{
+  "alerts": [
+    {
+      "code": "missing_workspace_lease",
+      "evidence": {
+        "workspace_ids": [
+          "w3J"
+        ]
+      },
+      "message": "Apply cleanup requires a Herdr workspace lease.",
+      "severity": "BLOCK"
+    }
+  ],
+  "applied_actions": [],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w3J:p5",
+        "w3J:p6"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "workspace_id": "w3J"
+    }
+  ],
+  "command_results": [],
+  "current_workspace": "w11",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion for runs that did not record a session id"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w3J:p5",
+        "w3J:p6"
+      ],
+      "roles": [
+        "codex",
+        "opencode"
+      ],
+      "sources": [
+        "provider_session_states",
+        "readiness_records"
+      ],
+      "terminal_ids": [
+        "term_655dd797297493ad",
+        "term_655dd797910ac3ae"
+      ],
+      "workspace_id": "w3J"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/readiness/20260705T135252Z-rw-sanity-provider-readiness",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-provider-runs/readiness/20260705T135252Z-rw-sanity-provider-readiness/runtime-manifest.json",
+  "runtime_manifest_sha256": "67735083b0997a69700cfbadcf6554c8cb21a28211ed8af6c083a529543f1a16",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T13:53:26Z",
+  "workspace_lease": null,
+  "workspace_lease_payload": null,
+  "workspace_lease_sha256": null
+}

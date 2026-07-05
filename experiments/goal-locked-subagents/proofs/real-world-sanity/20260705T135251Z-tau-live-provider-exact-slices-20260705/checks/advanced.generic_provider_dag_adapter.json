@@ -1,0 +1,132 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [
+        "exit_code 1 not in expected [0]",
+        "receipt status 'BLOCKED', expected 'PASS'",
+        "receipt provider_live False, expected True"
+      ],
+      "exit_code": 1,
+      "receipt_summary": {
+        "blocked_node_count": 1,
+        "completed_node_count": 0,
+        "dispatched_node_count": 1,
+        "live": false,
+        "mocked": false,
+        "node_attempt_counts": {
+          "provider_task": 1
+        },
+        "node_count": 1,
+        "node_duration_seconds_max": 119.633,
+        "node_duration_seconds_total": 119.633,
+        "node_durations_seconds": {
+          "provider_task": 119.633
+        },
+        "node_error_counts": {
+          "provider_task": 8
+        },
+        "node_statuses": {
+          "provider_task": "BLOCKED"
+        },
+        "node_verdicts": {
+          "provider_task": "INVALID_RECEIPT"
+        },
+        "ok": false,
+        "provider_live": false,
+        "resume_requested": false,
+        "resume_source": {
+          "mode": "spec_path",
+          "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-generic-provider-dag-adapter/dag-spec.json"
+        },
+        "resumed_node_count": 0,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-generic-provider-dag-adapter/dag-spec.json",
+        "status": "BLOCKED",
+        "timed_node_count": 1,
+        "verdict": "INVALID_RECEIPT"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/logs/advanced.generic_provider_dag_adapter.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/logs/advanced.generic_provider_dag_adapter.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.generic_provider_dag_adapter",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-generic-provider-dag-adapter/dag-spec.json",
+    "--no-resume"
+  ],
+  "completed_at": "2026-07-05T13:57:22Z",
+  "errors": [
+    "exit_code 1 not in expected [0]",
+    "receipt status 'BLOCKED', expected 'PASS'",
+    "receipt provider_live False, expected True"
+  ],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": false,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Generic DAG executes a provider-backed adapter node and carries provider_live evidence.",
+  "receipt_summary": {
+    "blocked_node_count": 1,
+    "completed_node_count": 0,
+    "dispatched_node_count": 1,
+    "live": false,
+    "mocked": false,
+    "node_attempt_counts": {
+      "provider_task": 1
+    },
+    "node_count": 1,
+    "node_duration_seconds_max": 119.633,
+    "node_duration_seconds_total": 119.633,
+    "node_durations_seconds": {
+      "provider_task": 119.633
+    },
+    "node_error_counts": {
+      "provider_task": 8
+    },
+    "node_statuses": {
+      "provider_task": "BLOCKED"
+    },
+    "node_verdicts": {
+      "provider_task": "INVALID_RECEIPT"
+    },
+    "ok": false,
+    "provider_live": false,
+    "resume_requested": false,
+    "resume_source": {
+      "mode": "spec_path",
+      "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-generic-provider-dag-adapter/dag-spec.json"
+    },
+    "resumed_node_count": 0,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/advanced-generic-provider-dag-adapter/dag-spec.json",
+    "status": "BLOCKED",
+    "timed_node_count": 1,
+    "verdict": "INVALID_RECEIPT"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T13:55:22Z",
+  "status": "BLOCKED",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/logs/advanced.generic_provider_dag_adapter.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T135251Z-tau-live-provider-exact-slices-20260705/logs/advanced.generic_provider_dag_adapter.stdout.txt",
+  "timeout_seconds": 540
+}

@@ -1,0 +1,38 @@
+  and command results, submit
+  an evidence bundle via $surf
+  webgpt.submit with sentinel
+  metadata for external review,
+  or downgrade the conclusion
+  to blocked/pending. WebGPT
+  review is not closure proof
+  by itself; closure still
+  needs deterministic local
+  artifacts. For $hack, raw
+  ledgers/proof artifacts are
+  required before closure
+  claims.
+
+───────────────────────────────
+
+• Status/Phase: PASS receipt
+  written with deterministic
+  local proof.
+
+  Now/current file-command-
+  artifact:
+  Target artifact: /home/
+  graham/.../scratch-worktree/
+  message.txt
+  Receipt artifact: /home/
+  graham/.../receipts/attempt-
+  01-coder.json
+
+  Evidence:
+  sed -n '1,20p' message.txt
+  exited 0 and returned:
+
+
+
+› Implement {feature}
+
+  gpt-5.5 medium · ~/workspace…

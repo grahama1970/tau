@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T140553Z-tau-live-provider-exact-slices-final-20260705/simple-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "simple"
+  ],
+  "timeout_s": 20
+}
