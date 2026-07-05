@@ -232,6 +232,7 @@ def build_checks(
     )
     dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
+    github_apply_policy = create_github_apply_policy_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
     generic_dag_stale_work_order_spec = create_generic_dag_stale_work_order_fixture(run_dir)
@@ -1197,6 +1198,28 @@ def build_checks(
             output_receipt=route_memory_apply["sync_receipt"],
         ),
         Check(
+            check_id="advanced.github_apply_policy_missing_gates_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a GitHub apply projection when policy-required "
+                "approval, preflight, and redaction gates are missing."
+            ),
+            command=[
+                *uv_tau,
+                "github-apply-policy-check",
+                "--projection",
+                str(github_apply_policy["projection"]),
+                "--policy",
+                str(github_apply_policy["policy"]),
+                "--receipt",
+                str(github_apply_policy["receipt"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=github_apply_policy["receipt"],
+        ),
+        Check(
             check_id="advanced.provider_readiness",
             level="advanced",
             purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
@@ -2060,6 +2083,41 @@ completed = run([
 ], 1)
 raise SystemExit(completed.returncode)
 """
+
+
+def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "github-apply-policy-missing-gates"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    projection = {
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "ok": True,
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "issue#47",
+        },
+        "comment": {
+            "body": "## Tau Agent Handoff\n\nDry-run projection for policy gate sanity.",
+        },
+        "labels": {
+            "add": ["agent-work"],
+            "remove": ["agent-active"],
+        },
+        "errors": [],
+    }
+    policy = {
+        "schema": "tau.github_apply_policy.v1",
+        "allowed_repos": ["grahama1970/tau"],
+        "allowed_actions": ["comment", "label"],
+        "denied_actions": ["close", "merge", "release"],
+        "requires_approval_packet": True,
+        "requires_preflight": True,
+        "requires_redaction": True,
+    }
+    return {
+        "projection": write_json(fixture_dir / "projection.json", projection),
+        "policy": write_json(fixture_dir / "github-apply-policy.json", policy),
+        "receipt": fixture_dir / "github-apply-policy-receipt.json",
+    }
 
 
 def _simple_yaml(value: Any, *, indent: int = 0) -> str:
