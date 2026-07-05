@@ -13,6 +13,7 @@ from typing import Any
 HERDR_CLEANUP_RECEIPT_SCHEMA = "tau.herdr_cleanup_receipt.v1"
 HERDR_GC_RECEIPT_SCHEMA = "tau.herdr_gc_receipt.v1"
 HERDR_WORKSPACE_LEASE_SCHEMA = "tau.herdr_workspace_lease.v1"
+HERDR_SESSION_OWNERSHIP_SCHEMA = "tau.herdr_session_ownership.v1"
 APPROVAL_GATE_RECEIPT_SCHEMA = "tau.approval_gate_receipt.v1"
 HERDR_GC_APPROVAL_ACTION = "herdr_gc_apply"
 DEFAULT_GC_LABEL_PREFIXES = (
@@ -32,6 +33,7 @@ def run_herdr_cleanup(
     herdr_bin: str = "herdr",
     include_current_workspace: bool = False,
     workspace_lease_path: Path | None = None,
+    session_ownership_path: Path | None = None,
 ) -> dict[str, Any]:
     """Audit, dry-run, or apply cleanup for Herdr resources recorded by one Tau run."""
 
@@ -53,7 +55,12 @@ def run_herdr_cleanup(
         candidates=candidates,
         mode=mode,
     )
-    session_alerts = _session_cleanup_alerts(candidates=candidates, mode=mode)
+    session_alerts = _session_cleanup_alerts(
+        session_ownership_path=session_ownership_path,
+        manifest=manifest,
+        candidates=candidates,
+        mode=mode,
+    )
     alerts = [*lease_alerts, *session_alerts]
     resolved_lease_path = (
         workspace_lease_path.expanduser().resolve()
@@ -62,40 +69,87 @@ def run_herdr_cleanup(
     )
     if resolved_lease_path is not None and resolved_lease_path.is_file():
         lease_payload = _read_json_object(resolved_lease_path, label="workspace lease")
+    resolved_session_ownership_path = (
+        session_ownership_path.expanduser().resolve()
+        if session_ownership_path is not None
+        else None
+    )
+    session_ownership_payload: dict[str, Any] | None = None
+    if (
+        resolved_session_ownership_path is not None
+        and resolved_session_ownership_path.is_file()
+    ):
+        session_ownership_payload = _read_json_object(
+            resolved_session_ownership_path,
+            label="session ownership",
+        )
     command_results: list[dict[str, Any]] = []
     applied_actions: list[dict[str, Any]] = []
     if mode == "apply" and not alerts:
         for candidate in candidates:
-            if candidate["action"] != "workspace_close":
-                continue
-            workspace_id = candidate["workspace_id"]
-            result = subprocess.run(
-                [herdr_bin, "workspace", "close", workspace_id],
-                cwd=str(resolved_run_dir),
-                text=True,
-                capture_output=True,
-            )
-            command_results.append(_command_result_dict(result))
-            verify_result = subprocess.run(
-                [herdr_bin, "workspace", "get", workspace_id],
-                cwd=str(resolved_run_dir),
-                text=True,
-                capture_output=True,
-            )
-            command_results.append(_command_result_dict(verify_result))
-            verify_error_code = _json_error_code(verify_result)
-            post_verified_absent = verify_result.returncode != 0 and verify_error_code == "workspace_not_found"
-            applied_actions.append(
-                {
-                    **candidate,
-                    "returncode": result.returncode,
-                    "applied": result.returncode == 0,
-                    "post_verify_action": "workspace_get",
-                    "post_verify_returncode": verify_result.returncode,
-                    "post_verify_error_code": verify_error_code,
-                    "post_verified_absent": post_verified_absent,
-                }
-            )
+            if candidate["action"] == "workspace_close":
+                workspace_id = candidate["workspace_id"]
+                result = subprocess.run(
+                    [herdr_bin, "workspace", "close", workspace_id],
+                    cwd=str(resolved_run_dir),
+                    text=True,
+                    capture_output=True,
+                )
+                command_results.append(_command_result_dict(result))
+                verify_result = subprocess.run(
+                    [herdr_bin, "workspace", "get", workspace_id],
+                    cwd=str(resolved_run_dir),
+                    text=True,
+                    capture_output=True,
+                )
+                command_results.append(_command_result_dict(verify_result))
+                verify_error_code = _json_error_code(verify_result)
+                post_verified_absent = (
+                    verify_result.returncode != 0
+                    and verify_error_code == "workspace_not_found"
+                )
+                applied_actions.append(
+                    {
+                        **candidate,
+                        "returncode": result.returncode,
+                        "applied": result.returncode == 0,
+                        "post_verify_action": "workspace_get",
+                        "post_verify_returncode": verify_result.returncode,
+                        "post_verify_error_code": verify_error_code,
+                        "post_verified_absent": post_verified_absent,
+                    }
+                )
+            elif candidate["action"] == "session_stop":
+                session = candidate["session"]
+                result = subprocess.run(
+                    [herdr_bin, "session", "stop", session],
+                    cwd=str(resolved_run_dir),
+                    text=True,
+                    capture_output=True,
+                )
+                command_results.append(_command_result_dict(result))
+                verify_result = subprocess.run(
+                    [herdr_bin, "session", "get", session],
+                    cwd=str(resolved_run_dir),
+                    text=True,
+                    capture_output=True,
+                )
+                command_results.append(_command_result_dict(verify_result))
+                verify_error_code = _json_error_code(verify_result)
+                post_verified_absent = (
+                    verify_result.returncode != 0 and verify_error_code == "session_not_found"
+                )
+                applied_actions.append(
+                    {
+                        **candidate,
+                        "returncode": result.returncode,
+                        "applied": result.returncode == 0,
+                        "post_verify_action": "session_get",
+                        "post_verify_returncode": verify_result.returncode,
+                        "post_verify_error_code": verify_error_code,
+                        "post_verified_absent": post_verified_absent,
+                    }
+                )
     ok = not alerts and all(_applied_action_ok(action) for action in applied_actions)
     receipt = {
         "schema": HERDR_CLEANUP_RECEIPT_SCHEMA,
@@ -118,6 +172,15 @@ def run_herdr_cleanup(
             _file_sha256(resolved_lease_path) if resolved_lease_path else None
         ),
         "workspace_lease_payload": lease_payload,
+        "session_ownership": (
+            str(resolved_session_ownership_path) if resolved_session_ownership_path else None
+        ),
+        "session_ownership_sha256": (
+            _file_sha256(resolved_session_ownership_path)
+            if resolved_session_ownership_path
+            else None
+        ),
+        "session_ownership_payload": session_ownership_payload,
         "lease_required": mode == "apply",
         "alerts": alerts,
         "applied_actions": applied_actions,
@@ -130,11 +193,12 @@ def run_herdr_cleanup(
                 "Tau apply cleanup requires a Herdr workspace lease before mutation",
                 "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
                 "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
+                "Tau apply cleanup requires explicit session ownership before stopping recorded sessions",
             ],
             "does_not_prove": [
                 "global regex cleanup of unrelated Herdr resources",
                 "Git worktree deletion",
-                "session deletion until Tau records stronger session ownership and implements session stop/delete",
+                "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -400,8 +464,6 @@ def _candidate_actions(
                     "session": resource["session"],
                     "roles": resource.get("roles", []),
                     "reason": "run-owned session recorded in runtime manifest",
-                    "applied": False,
-                    "note": "session stop/delete is not applied until Tau records session ownership in run manifests",
                 }
             )
     return candidates
@@ -529,6 +591,8 @@ def _workspace_lease_alerts(
 
 def _session_cleanup_alerts(
     *,
+    session_ownership_path: Path | None,
+    manifest: dict[str, Any],
     candidates: list[dict[str, Any]],
     mode: str,
 ) -> list[dict[str, Any]]:
@@ -541,17 +605,111 @@ def _session_cleanup_alerts(
     ]
     if not session_candidates:
         return []
-    return [
-        _alert(
-            "BLOCK",
-            "session_cleanup_not_supported",
-            "Apply cleanup cannot stop/delete Herdr sessions until session ownership is explicit.",
-            {
-                "sessions": [str(candidate["session"]) for candidate in session_candidates],
-                "required_next": "record tau.herdr_session_ownership.v1 before session cleanup apply",
-            },
+    candidate_sessions = [str(candidate["session"]) for candidate in session_candidates]
+    if session_ownership_path is None:
+        return [
+            _alert(
+                "BLOCK",
+                "missing_session_ownership",
+                "Apply cleanup requires explicit Herdr session ownership before stopping sessions.",
+                {
+                    "sessions": candidate_sessions,
+                    "required_next": "record tau.herdr_session_ownership.v1 before session cleanup apply",
+                },
+            )
+        ]
+    resolved_path = session_ownership_path.expanduser().resolve()
+    try:
+        ownership = _read_json_object(resolved_path, label="session ownership")
+    except RuntimeError as exc:
+        return [
+            _alert(
+                "BLOCK",
+                "session_ownership_unreadable",
+                "Herdr session ownership could not be read.",
+                {"session_ownership": str(resolved_path), "error": str(exc)},
+            )
+        ]
+    alerts: list[dict[str, Any]] = []
+    if ownership.get("schema") != HERDR_SESSION_OWNERSHIP_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_session_ownership_schema",
+                "Herdr session ownership schema is not supported.",
+                {"schema": ownership.get("schema")},
+            )
         )
-    ]
+    if not ownership.get("owner"):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_session_ownership_owner",
+                "Herdr session ownership must include an owner.",
+                {"session_ownership": str(resolved_path)},
+            )
+        )
+    expected_run_id = manifest.get("run_id")
+    if expected_run_id and ownership.get("run_id") != expected_run_id:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "session_ownership_run_id_mismatch",
+                "Herdr session ownership run_id does not match the runtime manifest.",
+                {"expected": expected_run_id, "observed": ownership.get("run_id")},
+            )
+        )
+    cleanup_policy = ownership.get("cleanup_policy")
+    if cleanup_policy not in {"audit", "dry-run", "apply"}:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_session_ownership_cleanup_policy",
+                "Herdr session ownership cleanup_policy is not supported.",
+                {"cleanup_policy": cleanup_policy},
+            )
+        )
+    elif mode == "apply" and cleanup_policy != "apply":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "session_ownership_policy_not_apply",
+                "Herdr session ownership does not authorize apply cleanup.",
+                {"cleanup_policy": cleanup_policy},
+            )
+        )
+    owned_sessions = _session_ownership_ids(ownership)
+    missing = sorted(set(candidate_sessions) - set(owned_sessions))
+    if missing:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "session_ownership_missing_session",
+                "Herdr session ownership does not cover every cleanup candidate.",
+                {"missing_sessions": missing, "owned_sessions": owned_sessions},
+            )
+        )
+    expires_at = ownership.get("expires_at")
+    parsed_expiry = _parse_timestamp(expires_at)
+    if parsed_expiry is None:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_session_ownership_expiry",
+                "Herdr session ownership expires_at must be an ISO-8601 timestamp.",
+                {"expires_at": expires_at},
+            )
+        )
+    elif parsed_expiry <= datetime.now(UTC):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "session_ownership_expired",
+                "Herdr session ownership has expired.",
+                {"expires_at": expires_at},
+            )
+        )
+    return alerts
 
 
 def _approval_receipt_alerts(
@@ -634,6 +792,26 @@ def _lease_workspace_ids(lease: dict[str, Any]) -> list[str]:
     return workspace_ids
 
 
+def _session_ownership_ids(ownership: dict[str, Any]) -> list[str]:
+    session_ids: list[str] = []
+    _append_unique(session_ids, str(ownership.get("session") or ""))
+    _append_unique(session_ids, str(ownership.get("session_id") or ""))
+    value = ownership.get("sessions")
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                _append_unique(session_ids, item)
+            elif isinstance(item, dict):
+                _append_unique(session_ids, str(item.get("session") or ""))
+                _append_unique(session_ids, str(item.get("session_id") or ""))
+    value = ownership.get("session_ids")
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                _append_unique(session_ids, item)
+    return session_ids
+
+
 def _parse_timestamp(value: object) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
@@ -678,9 +856,9 @@ def _workspace_list_from_result(result: subprocess.CompletedProcess[str]) -> lis
 
 
 def _applied_action_ok(action: dict[str, Any]) -> bool:
-    if action.get("action") != "workspace_close":
-        return True
-    return action.get("applied") is True and action.get("post_verified_absent") is True
+    if action.get("action") in {"workspace_close", "session_stop"}:
+        return action.get("applied") is True and action.get("post_verified_absent") is True
+    return True
 
 
 def _json_error_code(result: subprocess.CompletedProcess[str]) -> str | None:

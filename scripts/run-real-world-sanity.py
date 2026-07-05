@@ -627,22 +627,45 @@ def build_checks(
             level="medium",
             purpose=(
                 "Tau blocks Herdr cleanup apply when a run records a session candidate, "
-                "because session stop/delete is not supported without stronger session ownership."
+                "because session stop/delete requires explicit session ownership."
             ),
             command=[
                 *uv_tau,
                 "herdr-cleanup",
                 "apply",
                 "--run-dir",
-                str(cleanup_session["run_dir"]),
+                str(cleanup_session["blocked_run_dir"]),
                 "--workspace-lease",
-                str(cleanup_session["workspace_lease"]),
+                str(cleanup_session["blocked_workspace_lease"]),
                 "--herdr-bin",
                 str(cleanup_session["blocked_herdr"]),
             ],
             timeout_seconds=60,
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.herdr_cleanup_session_apply_with_ownership",
+            level="medium",
+            purpose=(
+                "Tau stops owned Herdr sessions only when a session ownership receipt "
+                "covers the recorded session candidate."
+            ),
+            command=[
+                *uv_tau,
+                "herdr-cleanup",
+                "apply",
+                "--run-dir",
+                str(cleanup_session["owned_run_dir"]),
+                "--workspace-lease",
+                str(cleanup_session["owned_workspace_lease"]),
+                "--session-ownership",
+                str(cleanup_session["session_ownership"]),
+                "--herdr-bin",
+                str(cleanup_session["owned_herdr"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
         ),
         Check(
             check_id="medium.herdr_gc_apply_requires_approval",
@@ -2921,9 +2944,7 @@ def create_cleanup_status_fixture(run_dir: Path) -> dict[str, Path]:
 
 def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "medium-herdr-cleanup-session"
-    manifest_path = write_json(
-        fixture_dir / "runtime-manifest.json",
-        {
+    manifest_payload = {
             "schema": "tau.provider_dag_runtime_manifest.v1",
             "run_id": "rw-sanity-herdr-cleanup-session",
             "provider_sessions": {
@@ -2934,27 +2955,83 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
                     "session": "session-rw-sanity-codex",
                 }
             },
+    }
+    blocked_dir = fixture_dir / "blocked"
+    owned_dir = fixture_dir / "owned"
+    blocked_manifest_path = write_json(blocked_dir / "runtime-manifest.json", manifest_payload)
+    owned_manifest_path = write_json(owned_dir / "runtime-manifest.json", manifest_payload)
+    now = datetime.now(UTC).replace(microsecond=0)
+    lease_payload = {
+        "schema": "tau.herdr_workspace_lease.v1",
+        "run_id": "rw-sanity-herdr-cleanup-session",
+        "dag_id": "rw-sanity-herdr-cleanup-session",
+        "owner": "tau-real-world-sanity",
+        "created_at": now.isoformat().replace("+00:00", "Z"),
+        "expires_at": (now + timedelta(days=1)).isoformat().replace("+00:00", "Z"),
+        "cleanup_policy": "apply",
+        "workspace_ids": ["w-rw-sanity-session-cleanup"],
+    }
+    blocked_workspace_lease = write_json(
+        blocked_dir / "herdr-workspace-lease.json",
+        {
+            **lease_payload,
+            "source_runtime_manifest": str(blocked_manifest_path),
         },
     )
-    now = datetime.now(UTC).replace(microsecond=0)
-    workspace_lease = write_json(
-        fixture_dir / "herdr-workspace-lease.json",
+    owned_workspace_lease = write_json(
+        owned_dir / "herdr-workspace-lease.json",
         {
-            "schema": "tau.herdr_workspace_lease.v1",
+            **lease_payload,
+            "source_runtime_manifest": str(owned_manifest_path),
+        },
+    )
+    session_ownership = write_json(
+        owned_dir / "herdr-session-ownership.json",
+        {
+            "schema": "tau.herdr_session_ownership.v1",
             "run_id": "rw-sanity-herdr-cleanup-session",
             "dag_id": "rw-sanity-herdr-cleanup-session",
             "owner": "tau-real-world-sanity",
             "created_at": now.isoformat().replace("+00:00", "Z"),
             "expires_at": (now + timedelta(days=1)).isoformat().replace("+00:00", "Z"),
             "cleanup_policy": "apply",
-            "workspace_ids": ["w-rw-sanity-session-cleanup"],
-            "source_runtime_manifest": str(manifest_path),
+            "session_ids": ["session-rw-sanity-codex"],
+            "source_runtime_manifest": str(owned_manifest_path),
         },
     )
+    owned_herdr = owned_dir / "fake-herdr-owned-session"
+    owned_herdr_calls = owned_dir / "owned-herdr-calls.jsonl"
+    owned_herdr.write_text(
+        "#!/usr/bin/env bash\n"
+        f"CALLS={json.dumps(str(owned_herdr_calls))}\n"
+        "printf '{\"argv\":[' >> \"$CALLS\"\n"
+        "first=1\n"
+        "for arg in \"$@\"; do\n"
+        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$CALLS\"; fi\n"
+        "  first=0\n"
+        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$CALLS\"\n"
+        "done\n"
+        "printf ']}\\n' >> \"$CALLS\"\n"
+        "if [ \"$1 $2 $3\" = \"session get session-rw-sanity-codex\" ]; then\n"
+        "  printf '{\"error\":{\"code\":\"session_not_found\",\"message\":\"session not found\"}}\\n'\n"
+        "  exit 1\n"
+        "fi\n"
+        "if [ \"$1 $2 $3\" = \"workspace get w-rw-sanity-session-cleanup\" ]; then\n"
+        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\\n'\n"
+        "  exit 1\n"
+        "fi\n"
+        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
+        encoding="utf-8",
+    )
+    owned_herdr.chmod(0o755)
     return {
-        "run_dir": fixture_dir,
-        "workspace_lease": workspace_lease,
-        "blocked_herdr": fixture_dir / "should-not-run-herdr",
+        "blocked_run_dir": blocked_dir,
+        "owned_run_dir": owned_dir,
+        "blocked_workspace_lease": blocked_workspace_lease,
+        "owned_workspace_lease": owned_workspace_lease,
+        "session_ownership": session_ownership,
+        "blocked_herdr": blocked_dir / "should-not-run-herdr",
+        "owned_herdr": owned_herdr,
     }
 
 

@@ -360,10 +360,81 @@ def test_herdr_cleanup_apply_blocks_recorded_session_candidates(
         "session_stop",
         "workspace_close",
     }
-    assert receipt["alerts"][0]["code"] == "session_cleanup_not_supported"
+    assert receipt["alerts"][0]["code"] == "missing_session_ownership"
     assert receipt["alerts"][0]["evidence"]["sessions"] == ["session-codex"]
     assert receipt["applied_actions"] == []
     assert receipt["command_results"] == []
+
+
+def test_herdr_cleanup_apply_stops_owned_sessions(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+    manifest_path = run_dir / "runtime-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["run_id"] = "run-session"
+    manifest["provider_sessions"]["codex"]["session"] = "session-codex"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    lease_path = _write_workspace_lease(run_dir, run_id="run-session")
+    ownership_path = _write_session_ownership(run_dir, run_id="run-session")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    calls_path = tmp_path / "calls.jsonl"
+    fake_herdr = bin_dir / "herdr"
+    fake_herdr.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '{\"argv\":[' >> \"$HERDR_CALLS\"\n"
+        "first=1\n"
+        "for arg in \"$@\"; do\n"
+        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$HERDR_CALLS\"; fi\n"
+        "  first=0\n"
+        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$HERDR_CALLS\"\n"
+        "done\n"
+        "printf ']}\\n' >> \"$HERDR_CALLS\"\n"
+        "if [ \"$1 $2 $3\" = \"workspace get w-run\" ]; then\n"
+        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w-run not found\"}}\\n'\n"
+        "  exit 1\n"
+        "fi\n"
+        "if [ \"$1 $2 $3\" = \"session get session-codex\" ]; then\n"
+        "  printf '{\"error\":{\"code\":\"session_not_found\",\"message\":\"session session-codex not found\"}}\\n'\n"
+        "  exit 1\n"
+        "fi\n"
+        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
+        encoding="utf-8",
+    )
+    fake_herdr.chmod(0o755)
+    monkeypatch.setenv("HERDR_CALLS", str(calls_path))
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin=str(fake_herdr),
+        workspace_lease_path=lease_path,
+        session_ownership_path=ownership_path,
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["session_ownership"] == str(ownership_path.resolve())
+    assert receipt["session_ownership_sha256"] == hashlib.sha256(
+        ownership_path.read_bytes()
+    ).hexdigest()
+    assert [action["action"] for action in receipt["applied_actions"]] == [
+        "session_stop",
+        "workspace_close",
+    ]
+    assert receipt["applied_actions"][0]["session"] == "session-codex"
+    assert receipt["applied_actions"][0]["post_verify_action"] == "session_get"
+    assert receipt["applied_actions"][0]["post_verify_error_code"] == "session_not_found"
+    assert receipt["applied_actions"][0]["post_verified_absent"] is True
+    calls = [json.loads(line) for line in calls_path.read_text(encoding="utf-8").splitlines()]
+    assert calls == [
+        {"argv": ["session", "stop", "session-codex"]},
+        {"argv": ["session", "get", "session-codex"]},
+        {"argv": ["workspace", "close", "w-run"]},
+        {"argv": ["workspace", "get", "w-run"]},
+    ]
 
 
 def test_herdr_gc_dry_run_selects_stale_tau_workspaces(
@@ -619,6 +690,7 @@ def _write_gc_approval_receipt(
 def _write_workspace_lease(
     run_dir: Path,
     *,
+    run_id: str | None = None,
     workspace_ids: list[str] | None = None,
     expires_at: str = "2099-01-01T00:00:00Z",
     cleanup_policy: str = "apply",
@@ -628,7 +700,7 @@ def _write_workspace_lease(
         json.dumps(
             {
                 "schema": "tau.herdr_workspace_lease.v1",
-                "run_id": None,
+                "run_id": run_id,
                 "dag_id": "test-dag",
                 "owner": "tau-orchestrator",
                 "created_at": "2026-07-05T00:00:00Z",
@@ -640,3 +712,30 @@ def _write_workspace_lease(
         encoding="utf-8",
     )
     return lease_path
+
+
+def _write_session_ownership(
+    run_dir: Path,
+    *,
+    run_id: str | None = None,
+    session_ids: list[str] | None = None,
+    expires_at: str = "2099-01-01T00:00:00Z",
+    cleanup_policy: str = "apply",
+) -> Path:
+    ownership_path = run_dir / "herdr-session-ownership.json"
+    ownership_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.herdr_session_ownership.v1",
+                "run_id": run_id,
+                "dag_id": "test-dag",
+                "owner": "tau-orchestrator",
+                "created_at": "2026-07-05T00:00:00Z",
+                "expires_at": expires_at,
+                "cleanup_policy": cleanup_policy,
+                "session_ids": session_ids or ["session-codex"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return ownership_path

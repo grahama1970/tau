@@ -614,6 +614,10 @@ def test_run_status_summarizes_standalone_cleanup_receipt(tmp_path: Path) -> Non
             "runtime_manifest_sha256": "manifest-sha-test",
             "resource_count": 1,
             "candidate_count": 1,
+            "workspace_lease": str(tmp_path / "herdr-workspace-lease.json"),
+            "workspace_lease_sha256": "workspace-lease-sha-test",
+            "session_ownership": str(tmp_path / "herdr-session-ownership.json"),
+            "session_ownership_sha256": "session-ownership-sha-test",
             "applied_actions": [{"post_verified_absent": True}],
         },
     )
@@ -628,6 +632,15 @@ def test_run_status_summarizes_standalone_cleanup_receipt(tmp_path: Path) -> Non
     assert status["cleanup"]["runtime_manifest"] == str(tmp_path / "runtime-manifest.json")
     assert status["cleanup"]["runtime_manifest_sha256"] == "manifest-sha-test"
     assert status["cleanup"]["candidate_count"] == 1
+    assert status["cleanup"]["workspace_lease"] == str(tmp_path / "herdr-workspace-lease.json")
+    assert status["cleanup"]["workspace_lease_sha256"] == "workspace-lease-sha-test"
+    assert status["cleanup"]["session_ownership"] == str(
+        tmp_path / "herdr-session-ownership.json"
+    )
+    assert status["cleanup"]["session_ownership_sha256"] == "session-ownership-sha-test"
+    assert status["cleanup"]["applied_action_count"] == 1
+    assert status["cleanup"]["applied_session_stop_count"] == 0
+    assert status["cleanup"]["applied_workspace_close_count"] == 0
     assert status["cleanup"]["post_verified_absent_count"] == 1
 
 

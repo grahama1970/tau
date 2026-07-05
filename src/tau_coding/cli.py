@@ -1255,6 +1255,7 @@ def main(
             if options.pop("gc"):
                 options.pop("mode", None)
                 options.pop("workspace_lease_path", None)
+                options.pop("session_ownership_path", None)
                 payload = run_herdr_gc(**options)
             else:
                 options.pop("apply", None)
@@ -2734,7 +2735,8 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
     if not args or args[0] not in {"audit", "dry-run", "apply", "gc"}:
         raise RuntimeError(
             "Usage: tau herdr-cleanup audit|dry-run|apply --run-dir <run-dir> "
-            "[--workspace-lease <lease.json>] [--herdr-bin herdr] "
+            "[--workspace-lease <lease.json>] "
+            "[--session-ownership <ownership.json>] [--herdr-bin herdr] "
             "[--include-current-workspace]\n"
             "       tau herdr-cleanup gc --run-dir <receipt-dir> "
             "[--apply --approval-receipt <receipt.json>] [--herdr-bin herdr] "
@@ -2745,6 +2747,7 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
     herdr_bin = "herdr"
     include_current_workspace = False
     workspace_lease_path: Path | None = None
+    session_ownership_path: Path | None = None
     approval_receipt_path: Path | None = None
     apply_gc = False
     index = 1
@@ -2771,6 +2774,13 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             workspace_lease_path = Path(args[index])
         elif arg.startswith("--workspace-lease="):
             workspace_lease_path = Path(arg.partition("=")[2])
+        elif arg == "--session-ownership":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--session-ownership requires a value")
+            session_ownership_path = Path(args[index])
+        elif arg.startswith("--session-ownership="):
+            session_ownership_path = Path(arg.partition("=")[2])
         elif arg == "--approval-receipt":
             index += 1
             if index >= len(args):
@@ -2794,6 +2804,7 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
         "herdr_bin": herdr_bin,
         "include_current_workspace": include_current_workspace,
         "workspace_lease_path": workspace_lease_path,
+        "session_ownership_path": session_ownership_path,
         "approval_receipt_path": approval_receipt_path,
         "gc": mode == "gc",
     }

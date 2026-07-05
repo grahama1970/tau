@@ -972,6 +972,10 @@ def _provider_state_summary(payload: dict[str, Any]) -> dict[str, Any]:
 def _cleanup_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
     if not payload:
         return None
+    applied_actions = payload.get("applied_actions")
+    applied_actions = applied_actions if isinstance(applied_actions, list) else []
+    alerts = payload.get("alerts")
+    alerts = alerts if isinstance(alerts, list) else []
     return {
         "schema": payload.get("schema"),
         "status": payload.get("status"),
@@ -983,8 +987,36 @@ def _cleanup_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "runtime_manifest_sha256": payload.get("runtime_manifest_sha256"),
         "resource_count": payload.get("resource_count"),
         "candidate_count": payload.get("candidate_count"),
-        "applied_action_count": _count(payload.get("applied_actions")),
-        "post_verified_absent_count": _post_verified_absent_count(payload.get("applied_actions")),
+        "workspace_lease": payload.get("workspace_lease"),
+        "workspace_lease_sha256": payload.get("workspace_lease_sha256"),
+        "session_ownership": payload.get("session_ownership"),
+        "session_ownership_sha256": payload.get("session_ownership_sha256"),
+        "alert_count": len(alerts),
+        "alerts": [
+            {
+                "code": alert.get("code"),
+                "severity": alert.get("severity"),
+                "message": alert.get("message"),
+            }
+            for alert in alerts
+            if isinstance(alert, dict)
+        ],
+        "applied_action_count": len(applied_actions),
+        "applied_session_stop_count": len(
+            [
+                action
+                for action in applied_actions
+                if isinstance(action, dict) and action.get("action") == "session_stop"
+            ]
+        ),
+        "applied_workspace_close_count": len(
+            [
+                action
+                for action in applied_actions
+                if isinstance(action, dict) and action.get("action") == "workspace_close"
+            ]
+        ),
+        "post_verified_absent_count": _post_verified_absent_count(applied_actions),
     }
 
 
