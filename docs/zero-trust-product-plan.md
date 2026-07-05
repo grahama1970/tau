@@ -400,6 +400,12 @@ non-claims
 
 ### B5. Local API
 
+Status: implemented as `tau serve --host 127.0.0.1 --port 8768`. The API is a
+local/self-hosted adapter over existing Tau doctor, preflight, DAG-run,
+run-status, receipt listing, and compliance-package functions. It does not add
+authentication, RBAC, tenant isolation, production deployment readiness, or new
+trust semantics.
+
 Build:
 
 ```text
