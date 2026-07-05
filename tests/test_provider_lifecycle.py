@@ -41,6 +41,19 @@ def test_provider_session_state_preserves_interstitial_state() -> None:
     assert state["interstitial"]["kind"] == "hook_trust"
 
 
+def test_provider_session_state_blocks_visible_initializing_provider() -> None:
+    readiness = _readiness()
+    readiness["diagnostics"]["provider_initializing_visible"] = True
+
+    state = build_provider_session_state(
+        readiness,
+        visible_text="OpenAI Codex\nmodel:       loading\n\n› Explain this codebase",
+    )
+
+    assert state["state"] == "blocked"
+    assert state["ready"] is False
+
+
 def test_provider_session_state_classifies_crashed_process() -> None:
     readiness = _readiness()
     readiness["state"] = "crashed"

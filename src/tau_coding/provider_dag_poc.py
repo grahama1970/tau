@@ -374,6 +374,9 @@ def run_provider_dag_orchestrator(
             expected_goal_hash=str(spec["goal"]["goal_hash"]),
             expected_dag_id=run_id,
             timeout_seconds=receipt_timeout_seconds,
+            herdr_bin=herdr_bin,
+            cwd=resolved_repo,
+            command_results=command_results,
         )
         if coder_errors:
             attempts.append(
@@ -463,6 +466,9 @@ def run_provider_dag_orchestrator(
             expected_goal_hash=str(spec["goal"]["goal_hash"]),
             expected_dag_id=run_id,
             timeout_seconds=receipt_timeout_seconds,
+            herdr_bin=herdr_bin,
+            cwd=resolved_repo,
+            command_results=command_results,
         )
         if reviewer_errors:
             attempts.append(
@@ -1120,19 +1126,13 @@ def _send_pane_prompt(
     cwd: Path,
     timeout_seconds: float,
 ) -> list[subprocess.CompletedProcess[str]]:
-    send_text = _run_pane_command(
-        [herdr_bin, "pane", "send-text", pane_id, text + "\n"],
+    payload = text if text.endswith("\n") else f"{text}\n"
+    send_prompt = _run_pane_command(
+        [herdr_bin, "agent", "send", pane_id, payload],
         cwd=cwd,
         timeout_seconds=timeout_seconds,
     )
-    if send_text.returncode != 0:
-        return [send_text]
-    send_enter = _run_pane_command(
-        [herdr_bin, "pane", "send-keys", pane_id, "enter"],
-        cwd=cwd,
-        timeout_seconds=timeout_seconds,
-    )
-    return [send_text, send_enter]
+    return [send_prompt]
 
 
 def _run_pane_command(
@@ -1186,6 +1186,9 @@ def _wait_for_node_receipt(
     expected_goal_hash: str,
     expected_dag_id: str,
     timeout_seconds: float,
+    herdr_bin: str | None = None,
+    cwd: Path | None = None,
+    command_results: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     deadline = time.monotonic() + timeout_seconds
     last_errors: list[str] = [f"receipt did not appear: {path}"]
@@ -1213,6 +1216,12 @@ def _wait_for_node_receipt(
         except RuntimeError as exc:
             return {}, [str(exc)]
         return receipt, last_errors
+    refreshed_herdr = _refresh_expected_visible_log(
+        expected_herdr,
+        herdr_bin=herdr_bin,
+        cwd=cwd,
+        command_results=command_results,
+    )
     return {}, _missing_receipt_errors(
         receipt_path=path,
         expected_node_id=expected_node_id,
@@ -1220,8 +1229,32 @@ def _wait_for_node_receipt(
         expected_attempt=expected_attempt,
         work_order_path=work_order_path,
         work_order_sha256=work_order_sha256,
-        expected_herdr=expected_herdr,
+        expected_herdr=refreshed_herdr,
     )
+
+
+def _refresh_expected_visible_log(
+    expected_herdr: dict[str, Any],
+    *,
+    herdr_bin: str | None,
+    cwd: Path | None,
+    command_results: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    visible_log_path = str(expected_herdr.get("visible_log_path") or "")
+    pane_id = str(expected_herdr.get("pane_id") or "")
+    if not herdr_bin or cwd is None or not visible_log_path or not pane_id:
+        return expected_herdr
+    read = _run_pane_command(
+        [herdr_bin, "pane", "read", pane_id, "--source", "visible", "--lines", "160"],
+        cwd=cwd,
+        timeout_seconds=10.0,
+    )
+    if command_results is not None:
+        command_results.append(_command_result_dict(read))
+    visible_path = Path(visible_log_path)
+    if read.returncode == 0:
+        visible_path.write_text(read.stdout, encoding="utf-8")
+    return expected_herdr
 
 
 def _receipt_failure_verdict(
@@ -1267,12 +1300,36 @@ def _missing_receipt_errors(
     except OSError as exc:
         errors.append(f"visible_log_unreadable: {exc}")
         return errors
-    if str(work_order_path) not in visible_text and work_order_sha256 not in visible_text:
+    if _work_order_delivery_observed(
+        visible_text,
+        work_order_path=work_order_path,
+        work_order_sha256=work_order_sha256,
+    ):
+        errors.append(
+            "work_order_delivered_but_receipt_missing: visible log contains the "
+            "dispatched work_order_path or work_order_sha256"
+        )
+    else:
         errors.append(
             "work_order_delivery_not_observed: visible log does not contain the "
             "dispatched work_order_path or work_order_sha256"
         )
     return errors
+
+
+def _work_order_delivery_observed(
+    visible_text: str,
+    *,
+    work_order_path: Path,
+    work_order_sha256: str,
+) -> bool:
+    if str(work_order_path) in visible_text or work_order_sha256 in visible_text:
+        return True
+    return (
+        work_order_path.name in visible_text
+        and "Receipt JSON shape" in visible_text
+        and PROVIDER_DAG_NODE_RECEIPT_SCHEMA in visible_text
+    )
 
 
 def _validate_node_receipt(

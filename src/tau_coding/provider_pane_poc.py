@@ -899,6 +899,11 @@ def _settle_provider_pane(
         text = read.stdout
         ready_prompt_observed = _ready_prompt_observed(provider_id, text)
         if ready_prompt_observed:
+            if _provider_initializing_visible(provider_id, text):
+                if "provider_initializing_visible" not in actions:
+                    actions.append("provider_initializing_visible")
+                time.sleep(0.5)
+                continue
             break
         if provider_id == "codex" and "Update available" in text and "Skip" in text:
             send = _run_command([herdr_bin, "pane", "send-text", pane_id, "2\n"], cwd=cwd)
@@ -930,6 +935,13 @@ def _ready_prompt_observed(provider_id: str, text: str) -> bool:
     if provider_id == "opencode":
         return "Ask" in text and "anything" in text
     return False
+
+
+def _provider_initializing_visible(provider_id: str, text: str) -> bool:
+    if provider_id != "codex":
+        return False
+    lowered = " ".join(text.lower().split())
+    return "model:" in lowered and "loading" in lowered
 
 
 def _default_provider_panes(
@@ -1074,6 +1086,9 @@ def _probe_provider_readiness(
     process_alive = best_sample.get("process_alive") is True
     foreground_command = str(argv[0]) if argv else str(foreground_process.get("name") or "")
     state = str(best_sample.get("state") or "unknown")
+    initializing_visible = _provider_initializing_visible(provider_id, visible_text)
+    if state == "ready" and initializing_visible:
+        state = "blocked"
     ready = state == "ready"
     visible_prompt_observed = _ready_prompt_observed(provider_id, visible_text)
     interstitial_visible = _known_interstitial_visible(provider_id, visible_text)
@@ -1106,6 +1121,7 @@ def _probe_provider_readiness(
             "visible_prompt_observed": visible_prompt_observed,
             "visible_prompt_is_gate": False,
             "interstitial_visible": interstitial_visible,
+            "provider_initializing_visible": initializing_visible,
             "readiness_actions": readiness_actions,
         },
     }

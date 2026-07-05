@@ -1,5 +1,6 @@
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 from tau_coding.cli import _parse_provider_dag_poc_cli_args
@@ -7,6 +8,7 @@ from tau_coding.provider_dag_poc import (
     _coder_work_order,
     _reviewer_work_order,
     _run_provider_dag_cleanup,
+    _send_pane_prompt,
     _validate_node_receipt,
     _wait_for_node_receipt,
     inspect_provider_dag_run,
@@ -19,6 +21,7 @@ from tau_coding.provider_pane_poc import (
     _default_provider_panes,
     _pane_record,
     _provider_agent_name,
+    _provider_initializing_visible,
     inspect_provider_pane_run,
     inspect_provider_readiness_run,
 )
@@ -504,6 +507,17 @@ def test_compact_readiness_samples_preserves_probe_attempts() -> None:
     ]
 
 
+def test_codex_model_loading_visible_is_provider_initializing() -> None:
+    assert (
+        _provider_initializing_visible(
+            "codex",
+            "OpenAI Codex\nmodel:       loading   /model to change\n\n› Explain this codebase",
+        )
+        is True
+    )
+    assert _provider_initializing_visible("opencode", "model: loading") is False
+
+
 def test_inspect_provider_dag_run_summarizes_attempts(tmp_path: Path) -> None:
     events = tmp_path / "events.jsonl"
     events.write_text(
@@ -920,6 +934,77 @@ def test_provider_node_receipt_timeout_reports_delivery_diagnostics(tmp_path: Pa
         error.startswith("work_order_delivery_not_observed: visible log does not contain")
         for error in errors
     )
+
+
+def test_provider_node_receipt_timeout_reports_delivered_work_order(tmp_path: Path) -> None:
+    work_order_path = tmp_path / "work-orders" / "attempt-01-coder.json"
+    work_order_path.parent.mkdir()
+    work_order_path.write_text('{"schema":"tau.provider_dag_work_order.v1"}\n', encoding="utf-8")
+    visible_log = tmp_path / "codex.visible.txt"
+    visible_log.write_text(
+        "› provider-runs/run/work-orders/attempt-01-coder.json\n"
+        "Receipt JSON shape:\n"
+        '{"schema":"tau.provider_dag_node_receipt.v1"}\n',
+        encoding="utf-8",
+    )
+    missing_receipt = tmp_path / "receipts" / "attempt-01-coder.json"
+
+    receipt, errors = _wait_for_node_receipt(
+        missing_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256="sha256:work-order",
+        expected_herdr={
+            "workspace_id": "w1",
+            "pane_id": "w1:p5",
+            "terminal_id": "term-codex",
+            "visible_log_path": str(visible_log),
+        },
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+        timeout_seconds=0.01,
+    )
+
+    assert receipt == {}
+    assert any(
+        error.startswith("work_order_delivered_but_receipt_missing: visible log contains")
+        for error in errors
+    )
+    assert not any(error.startswith("work_order_delivery_not_observed") for error in errors)
+
+
+def test_provider_prompt_send_uses_herdr_agent_send(monkeypatch, tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run_pane_command(argv, *, cwd, timeout_seconds):
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(
+        "tau_coding.provider_dag_poc._run_pane_command",
+        fake_run_pane_command,
+    )
+
+    results = _send_pane_prompt(
+        herdr_bin="herdr",
+        pane_id="w1:p5",
+        text="Read work order /tmp/work-order.json",
+        cwd=tmp_path,
+        timeout_seconds=5,
+    )
+
+    assert len(results) == 1
+    assert calls == [
+        [
+            "herdr",
+            "agent",
+            "send",
+            "w1:p5",
+            "Read work order /tmp/work-order.json\n",
+        ]
+    ]
 
 
 def test_plan_provider_dag_poc_records_forced_reviewer_revise_attempts(tmp_path: Path) -> None:
