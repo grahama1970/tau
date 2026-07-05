@@ -2669,16 +2669,16 @@ def create_generic_provider_adapter_fixture(
     receipt_path = fixture_dir / "receipts" / "provider-task.json"
     provider_run_root = fixture_dir / "provider-runs"
     work_order_path = fixture_dir / "work-orders" / "provider-task.json"
-    write_json(
-        work_order_path,
-        {
-            "schema": "tau.generic_provider_adapter_work_order.v1",
-            "purpose": (
-                "Exercise generic DAG -> provider adapter -> visible provider DAG "
-                "-> generic node receipt."
-            ),
-        },
-    )
+    adapter_work_order = {
+        "schema": "tau.generic_provider_adapter_work_order.v1",
+        "node_id": "provider_task",
+        "purpose": (
+            "Exercise generic DAG -> provider adapter -> visible provider DAG "
+            "-> generic node receipt."
+        ),
+    }
+    adapter_work_order["work_order_sha256"] = canonical_payload_sha256(adapter_work_order)
+    write_json(work_order_path, adapter_work_order)
     spec_path = fixture_dir / "dag-spec.json"
     write_json(
         spec_path,
@@ -3525,6 +3525,13 @@ def write_text(path: Path, text: str) -> Path:
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def canonical_payload_sha256(payload: dict[str, Any]) -> str:
+    canonical = dict(payload)
+    canonical.pop("work_order_sha256", None)
+    data = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
 
 
 def utc_stamp() -> str:

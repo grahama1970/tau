@@ -1,0 +1,46 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter/events.jsonl",
+  "nodes": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "generic-provider-dag-node",
+        "--node-id",
+        "provider_task",
+        "--receipt-path",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter/receipts/provider-task.json",
+        "--work-order-path",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter/work-orders/provider-task.json",
+        "--provider-run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter/provider-runs",
+        "--repo",
+        "/home/graham/workspace/experiments/tau",
+        "--label",
+        "rw-sanity-generic-provider-dag-adapter",
+        "--max-attempts",
+        "1",
+        "--receipt-timeout-seconds",
+        "300",
+        "--herdr-bin",
+        "herdr",
+        "--no-install-integrations",
+        "--cleanup-mode",
+        "apply"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "provider_task",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter/receipts/provider-task.json",
+      "role": "provider_dag_adapter",
+      "timeout_seconds": 480,
+      "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter/work-orders/provider-task.json"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T155429Z-tau-generic-provider-adapter-work-order-hardening-20260705/advanced-generic-provider-dag-adapter",
+  "run_id": "rw-sanity-generic-provider-dag-adapter",
+  "schema": "tau.generic_dag_spec.v1"
+}

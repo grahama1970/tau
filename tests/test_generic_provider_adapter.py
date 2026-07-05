@@ -5,6 +5,7 @@ from pathlib import Path
 from tau_coding.cli import _parse_generic_provider_dag_node_cli_args
 from tau_coding.generic_dag import GENERIC_DAG_NODE_RECEIPT_SCHEMA
 from tau_coding.generic_provider_adapter import (
+    GENERIC_PROVIDER_ADAPTER_WORK_ORDER_SCHEMA,
     PROVIDER_DAG_WORK_ORDER_SCHEMA,
     build_generic_provider_node_receipt,
     run_generic_provider_dag_node,
@@ -80,10 +81,7 @@ def test_build_generic_provider_node_receipt_binds_adapter_subrun(
         encoding="utf-8",
     )
     work_order = tmp_path / "generic-adapter-work-order.json"
-    work_order.write_text(
-        json.dumps({"schema": "tau.generic_provider_adapter_work_order.v1"}),
-        encoding="utf-8",
-    )
+    _write_adapter_work_order(work_order, node_id="provider-task")
 
     receipt = build_generic_provider_node_receipt(
         node_id="provider-task",
@@ -117,6 +115,86 @@ def test_build_generic_provider_node_receipt_binds_adapter_subrun(
     assert receipt["attempt"] == 1
     assert receipt["workspace_id"] == "w1"
     assert receipt["visible_log_sha256"] == hashlib.sha256(visible_log.read_bytes()).hexdigest()
+
+
+def test_build_generic_provider_node_receipt_blocks_adapter_work_order_hash_mismatch(
+    tmp_path: Path,
+) -> None:
+    visible_log = tmp_path / "logs" / "codex.visible.txt"
+    visible_log.parent.mkdir(parents=True, exist_ok=True)
+    visible_log.write_text("visible provider output\n", encoding="utf-8")
+    run_dir = tmp_path / "provider-run"
+    run_dir.mkdir()
+    runtime_manifest = run_dir / "runtime-manifest.json"
+    runtime_manifest.write_text('{"schema":"tau.provider_dag_runtime_manifest.v1"}\n', encoding="utf-8")
+    work_order = tmp_path / "generic-adapter-work-order.json"
+    _write_adapter_work_order(work_order, node_id="provider-task", work_order_sha256="stale")
+
+    receipt = build_generic_provider_node_receipt(
+        node_id="provider-task",
+        provider_receipt={
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "live": True,
+            "run_dir": str(run_dir),
+            "runtime_manifest": str(runtime_manifest),
+            "attempts": [{"attempt": 1}],
+            "provider_sessions": {
+                "codex": {
+                    "workspace_id": "w1",
+                    "pane_id": "w1:p3",
+                    "terminal_id": "term-coder",
+                    "visible_log_path": str(visible_log),
+                }
+            },
+        },
+        work_order_path=work_order,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "adapter_work_order_sha256_mismatch" in receipt["errors"]
+
+
+def test_build_generic_provider_node_receipt_blocks_adapter_node_mismatch(
+    tmp_path: Path,
+) -> None:
+    visible_log = tmp_path / "logs" / "codex.visible.txt"
+    visible_log.parent.mkdir(parents=True, exist_ok=True)
+    visible_log.write_text("visible provider output\n", encoding="utf-8")
+    run_dir = tmp_path / "provider-run"
+    run_dir.mkdir()
+    runtime_manifest = run_dir / "runtime-manifest.json"
+    runtime_manifest.write_text('{"schema":"tau.provider_dag_runtime_manifest.v1"}\n', encoding="utf-8")
+    work_order = tmp_path / "generic-adapter-work-order.json"
+    _write_adapter_work_order(work_order, node_id="other-node")
+
+    receipt = build_generic_provider_node_receipt(
+        node_id="provider-task",
+        provider_receipt={
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "live": True,
+            "run_dir": str(run_dir),
+            "runtime_manifest": str(runtime_manifest),
+            "attempts": [{"attempt": 1}],
+            "provider_sessions": {
+                "codex": {
+                    "workspace_id": "w1",
+                    "pane_id": "w1:p3",
+                    "terminal_id": "term-coder",
+                    "visible_log_path": str(visible_log),
+                }
+            },
+        },
+        work_order_path=work_order,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "adapter_work_order_node_id_mismatch: expected 'provider-task', got 'other-node'" in receipt[
+        "errors"
+    ]
 
 
 def test_build_generic_provider_node_receipt_binds_canonical_work_order(
@@ -423,6 +501,23 @@ def test_parse_generic_provider_dag_node_accepts_work_order_path(tmp_path: Path)
 
 def _write_canonical_work_order(path: Path, *, node_id: str) -> None:
     _write_json(path, _canonical_work_order_payload(node_id=node_id))
+
+
+def _write_adapter_work_order(
+    path: Path,
+    *,
+    node_id: str,
+    work_order_sha256: str | None = None,
+) -> None:
+    payload: dict[str, object] = {
+        "schema": GENERIC_PROVIDER_ADAPTER_WORK_ORDER_SCHEMA,
+        "node_id": node_id,
+        "purpose": "Exercise generic DAG to provider adapter binding.",
+    }
+    payload["work_order_sha256"] = (
+        work_order_sha256 if work_order_sha256 is not None else _canonical_payload_sha256(payload)
+    )
+    _write_json(path, payload)
 
 
 def _canonical_work_order_payload(*, node_id: str) -> dict[str, object]:

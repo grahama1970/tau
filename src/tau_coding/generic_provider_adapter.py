@@ -12,6 +12,7 @@ from tau_coding.generic_dag import GENERIC_DAG_NODE_RECEIPT_SCHEMA
 from tau_coding.provider_dag_poc import run_provider_dag_poc
 
 PROVIDER_DAG_WORK_ORDER_SCHEMA = "tau.provider_dag_work_order.v1"
+GENERIC_PROVIDER_ADAPTER_WORK_ORDER_SCHEMA = "tau.generic_provider_adapter_work_order.v1"
 
 
 def run_generic_provider_dag_node(
@@ -211,6 +212,7 @@ def _provider_binding(
             base=base,
             node_id=node_id,
             provider_receipt=provider_receipt,
+            work_order=work_order,
             work_order_schema=schema,
         )
 
@@ -317,11 +319,14 @@ def _provider_subrun_binding(
     base: dict[str, Any],
     node_id: str,
     provider_receipt: dict[str, Any],
+    work_order: dict[str, Any],
     work_order_schema: Any,
 ) -> dict[str, Any]:
     """Bind an adapter wrapper work order to its nested provider DAG subrun."""
 
     errors: list[str] = []
+    declared_node_id = _string(work_order.get("node_id"))
+    declared_work_order_sha256 = _string(work_order.get("work_order_sha256"))
     run_dir = _string(provider_receipt.get("run_dir"))
     runtime_manifest_path = _string(provider_receipt.get("runtime_manifest"))
     dag_id = _string(provider_receipt.get("run_id")) or run_dir
@@ -333,6 +338,16 @@ def _provider_subrun_binding(
 
     if not run_dir:
         errors.append("provider_subrun_missing_run_dir")
+    if work_order_schema != GENERIC_PROVIDER_ADAPTER_WORK_ORDER_SCHEMA:
+        errors.append(f"unsupported_work_order_schema: {work_order_schema!r}")
+    if declared_node_id != node_id:
+        errors.append(
+            f"adapter_work_order_node_id_mismatch: expected {node_id!r}, got {declared_node_id!r}"
+        )
+    if not declared_work_order_sha256:
+        errors.append("adapter_work_order_missing_work_order_sha256")
+    elif declared_work_order_sha256 != _canonical_work_order_payload_sha256(work_order):
+        errors.append("adapter_work_order_sha256_mismatch")
     if not runtime_manifest_path:
         errors.append("provider_subrun_missing_runtime_manifest")
     elif not Path(runtime_manifest_path).expanduser().is_file():
