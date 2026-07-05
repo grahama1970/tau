@@ -42,6 +42,7 @@ def validate_policy_profile(payload: Mapping[str, Any]) -> list[str]:
     _validate_decision(payload, "research", "manual_sanitized_receipt", errors=errors)
     _validate_decision(payload, "memory", "read", errors=errors)
     _validate_decision(payload, "memory", "write", errors=errors)
+    _validate_memory_gate_policy(payload, errors=errors)
     _validate_decision(payload, "github", "public_mutation", errors=errors)
     _validate_decision(payload, "github", "dry_run_projection", errors=errors)
     filesystem = payload.get("filesystem")
@@ -339,6 +340,25 @@ def _validate_decision(
         return
     if section.get(key) not in DECISIONS:
         errors.append(f"{section_name}.{key} must be one of {sorted(DECISIONS)}")
+
+
+def _validate_memory_gate_policy(payload: Mapping[str, Any], *, errors: list[str]) -> None:
+    memory = payload.get("memory")
+    if not isinstance(memory, Mapping):
+        return
+    for key in ("intent_required", "clarify_blocks_dispatch", "deflect_blocks_dispatch"):
+        if key in memory and not isinstance(memory.get(key), bool):
+            errors.append(f"memory.{key} must be a boolean when present")
+    if "min_intent_confidence" in memory:
+        confidence = memory.get("min_intent_confidence")
+        if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+            errors.append("memory.min_intent_confidence must be a number between 0 and 1")
+        elif confidence < 0 or confidence > 1:
+            errors.append("memory.min_intent_confidence must be a number between 0 and 1")
+    if "evidence_case_required_for" in memory and not _is_string_list(
+        memory.get("evidence_case_required_for")
+    ):
+        errors.append("memory.evidence_case_required_for must be a list of strings when present")
 
 
 def _section_value(payload: Mapping[str, Any], section_name: str, key: str) -> object:
