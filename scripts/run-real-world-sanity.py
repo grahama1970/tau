@@ -181,6 +181,16 @@ def build_checks(
         scenario="concurrent-max-retries",
         goal_hash="sha256:rw-sanity-project-dag-concurrent-max-retries",
     )
+    project_dag_concurrent_pointless_test_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-pointless-test-drift",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-pointless-test-drift",
+    )
+    project_dag_concurrent_brave_required = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-brave-required",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-brave-required",
+    )
     project_dag_complex = create_project_dag_fixture(
         run_dir,
         scenario="complex",
@@ -992,6 +1002,52 @@ def build_checks(
             expected_verdict="INVALID_COMMAND_JSON",
         ),
         Check(
+            check_id="advanced.project_dag_ready_queue_pointless_test_drift_course_correction",
+            level="advanced",
+            purpose=(
+                "Tau blocks a ready-queue subagent that emits test-only churn instead of "
+                "task evidence and writes a course-correction artifact."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_pointless_test_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_pointless_test_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_pointless_test_drift["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="POINTLESS_UNIT_TEST_DRIFT",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_brave_required_after_two_attempts",
+            level="advanced",
+            purpose=(
+                "Tau stops normal retry after two failed ready-queue attempts and requires "
+                "$brave-search before a third attempt can proceed."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_brave_required["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_brave_required["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_brave_required["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
+        ),
+        Check(
             check_id="advanced.project_dag_reviewer_goal_drift_fail_closed",
             level="advanced",
             purpose=(
@@ -1708,6 +1764,8 @@ def create_project_dag_fixture(
         "concurrent-timeout-retry",
         "concurrent-non-json-retry",
         "concurrent-max-retries",
+        "concurrent-pointless-test-drift",
+        "concurrent-brave-required",
         "ready-queue-cycle",
         "ready-queue-mutating",
         "ready-queue-provider-policy",
@@ -1752,6 +1810,21 @@ def create_project_dag_fixture(
         elif scenario == "concurrent-max-retries" and agent == "coder":
             command = ["python3", "-c", "print('not json')"]
             timeout_s = 20
+        elif scenario == "concurrent-pointless-test-drift" and agent == "coder":
+            command = [
+                "python3",
+                "-c",
+                (
+                    "print('============================= test session starts ============================='); "
+                    "print('collected 12 items'); "
+                    "print('tests/test_probe.py ....'); "
+                    "raise SystemExit(1)"
+                ),
+            ]
+            timeout_s = 20
+        elif scenario == "concurrent-brave-required" and agent == "coder":
+            command = ["python3", "-c", "print('not json')"]
+            timeout_s = 20
         elif scenario == "non-json" and agent == "reviewer":
             command = ["python3", "-c", "print('not json')"]
             timeout_s = 20
@@ -1778,6 +1851,8 @@ def create_project_dag_fixture(
         max_attempts = 2
     node_max_attempts = 2 if scenario in {"medium", *concurrent_scenarios} else 1
     if scenario == "max-steps":
+        node_max_attempts = 3
+    if scenario == "concurrent-brave-required":
         node_max_attempts = 3
     nodes = [
         {
@@ -4572,6 +4647,12 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         summary["alert_count"] = len(alerts)
         summary["alert_codes"] = [
             item.get("code") for item in alerts if isinstance(item, dict) and item.get("code")
+        ]
+    course_corrections = payload.get("course_correction_artifacts")
+    if isinstance(course_corrections, list):
+        summary["course_correction_artifact_count"] = len(course_corrections)
+        summary["course_correction_artifacts"] = [
+            str(item) for item in course_corrections if isinstance(item, str)
         ]
     applied_actions = payload.get("applied_actions")
     if isinstance(applied_actions, list):

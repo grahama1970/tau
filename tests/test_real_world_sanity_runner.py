@@ -130,6 +130,27 @@ def test_summarize_receipt_includes_herdr_gc_surface_boundary() -> None:
     }
 
 
+def test_summarize_receipt_includes_course_correction_artifacts() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.dag_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
+            "course_correction_artifacts": [
+                "/tmp/run/course-corrections/coder-attempt-002-brave.json"
+            ],
+        }
+    )
+
+    assert summary["course_correction_artifact_count"] == 1
+    assert summary["course_correction_artifacts"] == [
+        "/tmp/run/course-corrections/coder-attempt-002-brave.json"
+    ]
+
+
 def test_summarize_receipt_includes_generic_dag_node_timing() -> None:
     module = _load_runner_module()
 

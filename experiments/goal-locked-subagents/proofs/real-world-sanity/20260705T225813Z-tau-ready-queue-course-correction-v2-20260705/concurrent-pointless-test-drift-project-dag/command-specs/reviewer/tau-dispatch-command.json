@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225813Z-tau-ready-queue-course-correction-v2-20260705/concurrent-pointless-test-drift-project-dag/project_dag_worker.py",
+    "--role",
+    "reviewer",
+    "--scenario",
+    "concurrent-pointless-test-drift"
+  ],
+  "timeout_s": 20
+}
