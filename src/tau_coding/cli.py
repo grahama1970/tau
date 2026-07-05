@@ -191,6 +191,143 @@ app = typer.Typer(
 )
 
 
+def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
+    """Return a read-only Tau runtime preflight receipt."""
+
+    root = (repo_root or Path(__file__).resolve().parents[2]).resolve()
+    pyproject = root / "pyproject.toml"
+    cli_path = root / "src" / "tau_coding" / "cli.py"
+    proofs_root = root / "experiments" / "goal-locked-subagents" / "proofs"
+    chat_contract = root / "ui" / "tau-chat-contract.json"
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    required_paths = {
+        "repo_root": root,
+        "pyproject": pyproject,
+        "cli": cli_path,
+    }
+    for name, path in required_paths.items():
+        if not path.exists():
+            errors.append(f"missing required path: {name}={path}")
+
+    command_paths = {
+        "python": sys.executable,
+        "uv": which("uv"),
+        "git": which("git"),
+        "gh": which("gh"),
+        "herdr": which("herdr"),
+    }
+
+    provider_payload: dict[str, object]
+    try:
+        settings = load_provider_settings()
+        credential_reader = FileCredentialStore()
+        provider_payload = {
+            "default_provider": settings.default_provider,
+            "provider_count": len(settings.providers),
+            "providers": [
+                {
+                    "name": item.name,
+                    "kind": provider_kind(item),
+                    "credential": _provider_credential_status(
+                        item,
+                        credential_reader=credential_reader,
+                    ),
+                }
+                for item in settings.providers
+            ],
+        }
+    except Exception as exc:  # pragma: no cover - defensive preflight fallback
+        provider_payload = {
+            "default_provider": None,
+            "provider_count": 0,
+            "providers": [],
+            "error": str(exc),
+        }
+        warnings.append(f"provider settings could not be loaded: {exc}")
+
+    herdr_ready = command_paths["herdr"] is not None
+    gh_ready = command_paths["gh"] is not None
+
+    lanes = {
+        "local_cli": {
+            "ready": len(errors) == 0,
+            "reason": "required Tau runtime files are present"
+            if len(errors) == 0
+            else "required Tau runtime files are missing",
+        },
+        "local_sanity": {
+            "ready": command_paths["uv"] is not None and pyproject.exists(),
+            "reason": "uv and pyproject.toml are available"
+            if command_paths["uv"] is not None and pyproject.exists()
+            else "uv or pyproject.toml is unavailable",
+        },
+        "herdr": {
+            "ready": herdr_ready,
+            "reason": "herdr executable found"
+            if herdr_ready
+            else "herdr executable not found on PATH",
+        },
+        "provider_live": {
+            "ready": False,
+            "reason": "doctor does not allocate provider panes or call model providers",
+        },
+        "github_dry_run": {
+            "ready": gh_ready,
+            "reason": "gh executable found" if gh_ready else "gh executable not found on PATH",
+        },
+        "github_apply": {
+            "ready": False,
+            "reason": "live GitHub mutation requires approval, preflight, redaction, and apply policy receipts",
+        },
+        "browser_cdp": {
+            "ready": False,
+            "reason": "browser/CDP proof requires an explicit UI proof command and screenshot artifacts",
+        },
+    }
+
+    ok = len(errors) == 0
+    return {
+        "schema": "tau.doctor.v1",
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "checked_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "version": __version__,
+        "repo_root": str(root),
+        "commands": command_paths,
+        "paths": {
+            "pyproject": {"path": str(pyproject), "exists": pyproject.exists()},
+            "cli": {"path": str(cli_path), "exists": cli_path.exists()},
+            "proofs_root": {"path": str(proofs_root), "exists": proofs_root.exists()},
+            "chat_contract": {"path": str(chat_contract), "exists": chat_contract.exists()},
+        },
+        "lanes": lanes,
+        "provider_settings": provider_payload,
+        "errors": errors,
+        "warnings": warnings,
+        "proof_boundary": {
+            "proves": [
+                "Tau runtime import and CLI dispatch can emit a read-only preflight receipt.",
+                "Required local Tau runtime paths were checked.",
+                "Optional local executables for uv, git, gh, and Herdr were detected without side effects.",
+                "Configured provider entries were inspected without making provider/model calls.",
+            ],
+            "does_not_prove": [
+                "Herdr pane readiness.",
+                "Live provider/model semantic quality.",
+                "Provider DAG execution.",
+                "GitHub live mutation.",
+                "Browser/CDP UI proof.",
+                "Full hardening roadmap completion.",
+            ],
+        },
+    }
+
+
 def providers_command() -> None:
     """List configured model providers."""
     render_provider_settings(load_provider_settings(), credential_reader=FileCredentialStore())
@@ -491,6 +628,13 @@ def main(
 
     if prompt_option is None and command == "providers" and len(positional_args) == 1:
         providers_command()
+        raise typer.Exit()
+
+    if prompt_option is None and command == "doctor" and len(positional_args) == 1:
+        payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if not payload.get("ok"):
+            raise typer.Exit(1)
         raise typer.Exit()
 
     if prompt_option is None and command == "setup" and len(positional_args) == 1:

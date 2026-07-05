@@ -103,6 +103,27 @@ def test_version_command() -> None:
     assert result.stdout.strip() == "tau 0.1.0"
 
 
+def test_doctor_command_reports_read_only_runtime_preflight() -> None:
+    result = CliRunner().invoke(app, ["doctor"])
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.doctor.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["mocked"] is False
+    assert payload["live"] is True
+    assert payload["provider_live"] is False
+    assert payload["paths"]["pyproject"]["exists"] is True
+    assert payload["paths"]["cli"]["exists"] is True
+    assert payload["lanes"]["local_cli"]["ready"] is True
+    assert payload["lanes"]["provider_live"]["ready"] is False
+    assert isinstance(payload["provider_settings"]["provider_count"], int)
+    assert "providers" in payload["provider_settings"]
+    assert "Herdr pane readiness." in payload["proof_boundary"]["does_not_prove"]
+    assert "Live provider/model semantic quality." in payload["proof_boundary"]["does_not_prove"]
+
+
 def test_cli_handoff_project_writes_dry_run_receipt(tmp_path: Path) -> None:
     handoff_path = tmp_path / "handoff.json"
     receipt_path = tmp_path / "projection" / "receipt.json"

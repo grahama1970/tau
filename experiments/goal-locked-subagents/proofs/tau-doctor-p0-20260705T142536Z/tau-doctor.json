@@ -1,0 +1,120 @@
+{
+  "checked_at": "2026-07-05T14:25:52.470165Z",
+  "commands": {
+    "gh": "/usr/bin/gh",
+    "git": "/usr/bin/git",
+    "herdr": "/home/graham/.local/share/mise/installs/herdr/latest/herdr",
+    "python": "/home/graham/workspace/experiments/tau/.venv/bin/python3",
+    "uv": "/home/graham/.local/bin/uv"
+  },
+  "errors": [],
+  "lanes": {
+    "browser_cdp": {
+      "ready": false,
+      "reason": "browser/CDP proof requires an explicit UI proof command and screenshot artifacts"
+    },
+    "github_apply": {
+      "ready": false,
+      "reason": "live GitHub mutation requires approval, preflight, redaction, and apply policy receipts"
+    },
+    "github_dry_run": {
+      "ready": true,
+      "reason": "gh executable found"
+    },
+    "herdr": {
+      "ready": true,
+      "reason": "herdr executable found"
+    },
+    "local_cli": {
+      "ready": true,
+      "reason": "required Tau runtime files are present"
+    },
+    "local_sanity": {
+      "ready": true,
+      "reason": "uv and pyproject.toml are available"
+    },
+    "provider_live": {
+      "ready": false,
+      "reason": "doctor does not allocate provider panes or call model providers"
+    }
+  },
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "paths": {
+    "chat_contract": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/ui/tau-chat-contract.json"
+    },
+    "cli": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/src/tau_coding/cli.py"
+    },
+    "proofs_root": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs"
+    },
+    "pyproject": {
+      "exists": true,
+      "path": "/home/graham/workspace/experiments/tau/pyproject.toml"
+    }
+  },
+  "proof_boundary": {
+    "does_not_prove": [
+      "Herdr pane readiness.",
+      "Live provider/model semantic quality.",
+      "Provider DAG execution.",
+      "GitHub live mutation.",
+      "Browser/CDP UI proof.",
+      "Full hardening roadmap completion."
+    ],
+    "proves": [
+      "Tau runtime import and CLI dispatch can emit a read-only preflight receipt.",
+      "Required local Tau runtime paths were checked.",
+      "Optional local executables for uv, git, gh, and Herdr were detected without side effects.",
+      "Configured provider entries were inspected without making provider/model calls."
+    ]
+  },
+  "provider_live": false,
+  "provider_settings": {
+    "default_provider": "openai",
+    "provider_count": 6,
+    "providers": [
+      {
+        "credential": "missing",
+        "kind": "openai-compatible",
+        "name": "openai"
+      },
+      {
+        "credential": "missing",
+        "kind": "openai-codex",
+        "name": "openai-codex"
+      },
+      {
+        "credential": "missing",
+        "kind": "anthropic",
+        "name": "anthropic"
+      },
+      {
+        "credential": "missing",
+        "kind": "openai-compatible",
+        "name": "openrouter"
+      },
+      {
+        "credential": "missing",
+        "kind": "openai-compatible",
+        "name": "huggingface"
+      },
+      {
+        "credential": "env:CHUTES_API_TOKEN",
+        "kind": "openai-compatible",
+        "name": "chutes"
+      }
+    ]
+  },
+  "repo_root": "/home/graham/workspace/experiments/tau",
+  "schema": "tau.doctor.v1",
+  "status": "PASS",
+  "version": "0.1.0",
+  "warnings": []
+}
