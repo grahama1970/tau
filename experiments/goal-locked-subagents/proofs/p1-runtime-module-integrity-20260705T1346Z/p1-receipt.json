@@ -1,0 +1,54 @@
+{
+  "schema": "tau.p1_hardening_receipt.v1",
+  "slice": "runtime_module_integrity",
+  "status": "PASS",
+  "mocked": false,
+  "live": false,
+  "provider_live": false,
+  "changed_files": [
+    "src/tau_coding/generic_dag.py",
+    "src/tau_coding/provider_lifecycle.py",
+    "src/tau_coding/provider_pane_poc.py",
+    "src/tau_coding/run_status.py",
+    "tests/test_generic_dag.py",
+    "tests/test_provider_lifecycle.py",
+    "tests/test_run_status.py",
+    "docs/generic-dag-runner.md",
+    "docs/provider-lifecycle-state.md",
+    "docs/run-status.md"
+  ],
+  "commands_run": [
+    {
+      "command": "git ls-files src/tau_coding/generic_dag.py src/tau_coding/provider_pane_poc.py src/tau_coding/provider_lifecycle.py src/tau_coding/run_status.py tests/test_generic_dag.py tests/test_provider_lifecycle.py tests/test_run_status.py",
+      "exit_code": 0,
+      "result": "Before this slice, these runtime modules and tests were not tracked even though committed Tau modules imported them."
+    },
+    {
+      "command": "uv run pytest tests/test_generic_dag.py tests/test_provider_lifecycle.py tests/test_provider_pane_poc.py tests/test_run_status.py tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "57 passed in 1.11s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/generic_dag.py src/tau_coding/provider_lifecycle.py src/tau_coding/provider_pane_poc.py src/tau_coding/run_status.py tests/test_generic_dag.py tests/test_provider_lifecycle.py tests/test_provider_pane_poc.py tests/test_run_status.py tests/test_generic_provider_adapter.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    }
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-runtime-module-integrity-20260705T1346Z/p1-receipt.json"
+  ],
+  "proves": [
+    "Committed Tau imports for generic DAG, provider lifecycle, provider pane readiness, and run-status now have tracked runtime modules.",
+    "The focused runtime/test set for those modules imports and executes successfully in the current project environment.",
+    "Generic DAG, provider lifecycle normalization, provider pane proof helpers, run-status summaries, and generic provider adapter tests pass together."
+  ],
+  "does_not_prove": [
+    "live provider allocation",
+    "provider/model semantic quality",
+    "GitHub mutation",
+    "browser/CDP UI proof",
+    "full P1/P2/P3 roadmap completion"
+  ],
+  "errors": [],
+  "policy_exceptions": []
+}

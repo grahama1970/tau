@@ -1,0 +1,1020 @@
+"""Unified read-only Tau run status surface."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+RUN_STATUS_SCHEMA = "tau.run_status.v1"
+
+
+def build_run_status(run_dir: Path) -> dict[str, Any]:
+    """Summarize known Tau run artifacts without mutating them."""
+
+    resolved = run_dir.expanduser().resolve()
+    artifacts = _artifact_paths(resolved)
+    run_receipt = _read_optional_json(artifacts["run_receipt"])
+    if not run_receipt:
+        run_receipt = _read_optional_json(artifacts["real_world_sanity_receipt"])
+    runtime_manifest = _read_optional_json(artifacts["runtime_manifest"])
+    checkpoint = _read_optional_json(artifacts["checkpoint"])
+    current_state = _read_optional_json(artifacts["current_state"])
+    cleanup = _read_optional_json(artifacts["cleanup"])
+    approval_gate = _read_optional_json(artifacts["approval_gate"])
+    orchestration_evidence = _read_optional_json(artifacts["orchestration_evidence"])
+    planner_receipt = _read_optional_json(artifacts["planner_receipt"])
+    dag_stress_suite = _read_optional_json(artifacts["dag_stress_suite"])
+    dag_stress_campaign = _read_optional_json(artifacts["dag_stress_campaign"])
+    lifecycle_states = _load_lifecycle_states(resolved, runtime_manifest, run_receipt)
+    readiness_records = _load_readiness_records(resolved, runtime_manifest, run_receipt)
+    events_path = _event_path(resolved, run_receipt, runtime_manifest)
+    events_count = _events_count(events_path)
+    detected_type = _detected_type(
+        run_receipt,
+        runtime_manifest,
+        approval_gate=approval_gate,
+        cleanup=cleanup,
+        orchestration_evidence=orchestration_evidence,
+        planner_receipt=planner_receipt,
+        dag_stress_suite=dag_stress_suite,
+        dag_stress_campaign=dag_stress_campaign,
+    )
+    status = _overall_status(
+        run_receipt,
+        checkpoint,
+        approval_gate,
+        cleanup,
+        orchestration_evidence,
+        planner_receipt,
+        dag_stress_suite,
+        dag_stress_campaign,
+    )
+    missing = [
+        name
+        for name, path in artifacts.items()
+        if name in {"run_receipt", "runtime_manifest"} and _missing_required_artifact(
+            name,
+            path,
+            artifacts=artifacts,
+            detected_type=detected_type,
+        )
+    ]
+    receipt = {
+        "schema": RUN_STATUS_SCHEMA,
+        "ok": status not in {"BLOCKED", "FAIL", "FAILED", "MISSING"},
+        "status": status,
+        "mocked": False,
+        "live": _live_value(
+            run_receipt,
+            cleanup,
+            approval_gate,
+            orchestration_evidence,
+            planner_receipt,
+            dag_stress_suite,
+            dag_stress_campaign,
+        ),
+        "run_dir": str(resolved),
+        "detected_type": detected_type,
+        "artifacts": {name: str(path) for name, path in artifacts.items() if path.exists()},
+        "missing_required_artifacts": missing,
+        "run_receipt": _receipt_summary(run_receipt),
+        "runtime_manifest": _manifest_summary(runtime_manifest),
+        "checkpoint": _checkpoint_summary(checkpoint or current_state),
+        "generic_dag": _generic_dag_summary(run_receipt),
+        "provider_pane": _provider_pane_summary(run_receipt, runtime_manifest),
+        "provider_readiness": _provider_readiness_summary(
+            run_receipt,
+            runtime_manifest,
+            readiness_records,
+            lifecycle_states,
+        ),
+        "provider_dag": _provider_dag_summary(run_receipt),
+        "provider_dag_planner": _provider_dag_planner_summary(planner_receipt),
+        "events": {
+            "path": str(events_path) if events_path else None,
+            "count": events_count,
+        },
+        "provider_session_states": [_provider_state_summary(state) for state in lifecycle_states],
+        "cleanup": _cleanup_summary(cleanup),
+        "real_world_sanity": _real_world_sanity_summary(run_receipt),
+        "approval_gate": _approval_summary(approval_gate),
+        "orchestration_evidence": _orchestration_summary(orchestration_evidence),
+        "dag_stress": _dag_stress_summary(dag_stress_suite),
+        "dag_stress_campaign": _dag_stress_campaign_summary(dag_stress_campaign),
+        "proof_scope": {
+            "proves": [
+                "Tau can summarize known run artifacts from one run directory",
+                "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+            ],
+            "does_not_prove": [
+                "new provider execution",
+                "Herdr workspace cleanup unless a cleanup receipt is present",
+                "GitHub ticket closure",
+                "production repository mutation",
+                "browser/CDP UI rendering",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    return receipt
+
+
+def _artifact_paths(run_dir: Path) -> dict[str, Path]:
+    return {
+        "run_receipt": run_dir / "run-receipt.json",
+        "runtime_manifest": run_dir / "runtime-manifest.json",
+        "checkpoint": run_dir / "checkpoint.json",
+        "current_state": run_dir / "current-state.json",
+        "cleanup": run_dir / "herdr-cleanup-receipt.json",
+        "approval_gate": run_dir / "approval-gate-receipt.json",
+        "orchestration_evidence": run_dir / "orchestration-evidence-receipt.json",
+        "planner_receipt": run_dir / "planner-receipt.json",
+        "real_world_sanity_receipt": run_dir / "real-world-sanity-receipt.json",
+        "dag_stress_suite": run_dir / "suite-receipt.json",
+        "dag_stress_campaign": run_dir / "campaign-receipt.json",
+    }
+
+
+def _missing_required_artifact(
+    name: str,
+    path: Path,
+    *,
+    artifacts: dict[str, Path],
+    detected_type: str,
+) -> bool:
+    if path.exists():
+        return False
+    if name == "run_receipt" and artifacts["real_world_sanity_receipt"].exists():
+        return False
+    if name == "run_receipt" and detected_type in {
+        "approval_gate",
+        "dag_stress",
+        "dag_stress_campaign",
+        "herdr_cleanup",
+        "orchestration_evidence",
+        "provider_dag_planner",
+        "real_world_sanity",
+    }:
+        return False
+    if name == "runtime_manifest" and detected_type in {
+        "approval_gate",
+        "dag_stress",
+        "dag_stress_campaign",
+        "generic_dag",
+        "herdr_cleanup",
+        "orchestration_evidence",
+        "provider_dag_planner",
+        "real_world_sanity",
+    }:
+        return False
+    return True
+
+
+def _detected_type(
+    run_receipt: dict[str, Any],
+    runtime_manifest: dict[str, Any],
+    *,
+    approval_gate: dict[str, Any],
+    cleanup: dict[str, Any],
+    orchestration_evidence: dict[str, Any],
+    planner_receipt: dict[str, Any],
+    dag_stress_suite: dict[str, Any],
+    dag_stress_campaign: dict[str, Any],
+) -> str:
+    schema = str(
+        run_receipt.get("schema")
+        or approval_gate.get("schema")
+        or cleanup.get("schema")
+        or orchestration_evidence.get("schema")
+        or planner_receipt.get("schema")
+        or dag_stress_suite.get("schema")
+        or dag_stress_campaign.get("schema")
+        or runtime_manifest.get("schema")
+        or ""
+    )
+    if schema == "tau.generic_dag_run_receipt.v1":
+        return "generic_dag"
+    if schema == "tau.provider_pane_run_receipt.v1":
+        return "provider_pane"
+    if schema == "tau.provider_readiness_run_receipt.v1":
+        return "provider_readiness"
+    if schema == "tau.dag_run_receipt.v1":
+        return "provider_dag"
+    if schema == "tau.real_world_sanity_suite_receipt.v1":
+        return "real_world_sanity"
+    if schema == "tau.approval_gate_receipt.v1":
+        return "approval_gate"
+    if schema == "tau.herdr_cleanup_receipt.v1":
+        return "herdr_cleanup"
+    if schema == "tau.orchestration_evidence_receipt.v1":
+        return "orchestration_evidence"
+    if schema == "tau.dag_planner_receipt.v1":
+        return "provider_dag_planner"
+    if schema == "tau.dag_stress_suite_receipt.v1":
+        return "dag_stress"
+    if schema == "tau.dag_stress_campaign_receipt.v1":
+        return "dag_stress_campaign"
+    if schema:
+        return schema.removeprefix("tau.").removesuffix(".v1")
+    return "unknown"
+
+
+def _overall_status(
+    run_receipt: dict[str, Any],
+    checkpoint: dict[str, Any],
+    approval_gate: dict[str, Any],
+    cleanup: dict[str, Any],
+    orchestration_evidence: dict[str, Any],
+    planner_receipt: dict[str, Any],
+    dag_stress_suite: dict[str, Any],
+    dag_stress_campaign: dict[str, Any],
+) -> str:
+    for payload in (
+        run_receipt,
+        checkpoint,
+        approval_gate,
+        cleanup,
+        orchestration_evidence,
+        planner_receipt,
+        dag_stress_suite,
+        dag_stress_campaign,
+    ):
+        status = payload.get("status")
+        if isinstance(status, str) and status:
+            return status
+    return "MISSING"
+
+
+def _live_value(*payloads: dict[str, Any]) -> Any:
+    values = [payload.get("live") for payload in payloads if "live" in payload]
+    if any(value is True for value in values):
+        return True
+    if values:
+        if any(value == "mixed" for value in values):
+            return "mixed"
+        return False
+    return False
+
+
+def _receipt_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if not payload:
+        return None
+    keys = (
+        "schema",
+        "ok",
+        "status",
+        "verdict",
+        "mocked",
+        "live",
+        "run_id",
+        "attempt_count",
+        "max_attempts",
+        "node_count",
+        "completed_node_count",
+        "all_provider_structured_ready",
+        "check_count",
+        "failed_check_count",
+    )
+    return {key: payload.get(key) for key in keys if key in payload}
+
+
+def _manifest_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if not payload:
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "run_id": payload.get("run_id"),
+        "events_jsonl": payload.get("events_jsonl"),
+        "provider_session_state_count": _count(payload.get("provider_session_states")),
+        "readiness_record_count": _count(payload.get("readiness_records")),
+    }
+
+
+def _checkpoint_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if not payload:
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "verdict": payload.get("verdict"),
+        "active_node_id": payload.get("active_node_id"),
+        "completed_nodes": payload.get("completed_nodes"),
+        "ready_nodes": payload.get("ready_nodes"),
+        "blocked_nodes": payload.get("blocked_nodes"),
+    }
+
+
+def _generic_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.generic_dag_run_receipt.v1":
+        return None
+    raw_nodes = payload.get("nodes")
+    nodes = raw_nodes if isinstance(raw_nodes, list) else []
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "verdict": payload.get("verdict"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "spec_path": payload.get("spec_path"),
+        "resume_requested": payload.get("resume_requested"),
+        "resume_source": payload.get("resume_source"),
+        "node_count": payload.get("node_count"),
+        "completed_node_count": payload.get("completed_node_count"),
+        "resumed_node_count": len(
+            [node for node in nodes if isinstance(node, dict) and node.get("resumed") is True]
+        ),
+        "dispatched_node_count": len(
+            [
+                node
+                for node in nodes
+                if isinstance(node, dict) and int(node.get("attempt_count") or 0) > 0
+            ]
+        ),
+        "blocked_node_count": len(
+            [
+                node
+                for node in nodes
+                if isinstance(node, dict) and str(node.get("status") or "").upper() == "BLOCKED"
+            ]
+        ),
+        "nodes": [
+            _generic_dag_node_summary(node)
+            for node in nodes
+            if isinstance(node, dict)
+        ],
+    }
+
+
+def _generic_dag_node_summary(node: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "node_id": node.get("node_id"),
+        "role": node.get("role"),
+        "status": node.get("status"),
+        "verdict": node.get("verdict"),
+        "attempt_count": node.get("attempt_count"),
+        "resumed": node.get("resumed"),
+        "live": node.get("live"),
+        "provider_live": node.get("provider_live"),
+        "provider_status": node.get("provider_status"),
+        "provider_verdict": node.get("provider_verdict"),
+        "started_at": node.get("started_at"),
+        "finished_at": node.get("finished_at"),
+        "duration_seconds": node.get("duration_seconds"),
+        "receipt_path": node.get("receipt_path"),
+        "work_order_path": node.get("work_order_path"),
+        "work_order_sha256": node.get("work_order_sha256"),
+        "artifact_count": _count(node.get("artifacts")),
+        "artifacts": _artifact_summary_map(node.get("artifacts")),
+        "error_count": _count(node.get("errors")),
+        "errors": node.get("errors") if isinstance(node.get("errors"), list) else [],
+    }
+
+
+def _provider_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.dag_run_receipt.v1":
+        return None
+    attempts = payload.get("attempts")
+    attempt_records = attempts if isinstance(attempts, list) else []
+    provider_sessions = payload.get("provider_sessions")
+    visible_subagents = payload.get("visible_subagents")
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "verdict": payload.get("verdict"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "run_id": payload.get("run_id"),
+        "scratch_worktree": payload.get("scratch_worktree"),
+        "attempt_count": payload.get("attempt_count"),
+        "max_attempts": payload.get("max_attempts"),
+        "provider_session_count": _count(provider_sessions),
+        "visible_subagent_count": _count(visible_subagents),
+        "visible_subagents": _role_summary_map(visible_subagents),
+        "provider_sessions": _role_summary_map(provider_sessions),
+        "attempts": [
+            _provider_dag_attempt_summary(attempt)
+            for attempt in attempt_records
+            if isinstance(attempt, dict)
+        ],
+        "herdr_cleanup_receipt": payload.get("herdr_cleanup_receipt"),
+        "herdr_cleanup": _embedded_cleanup_summary(payload.get("herdr_cleanup")),
+        "orchestration_evidence_receipt": payload.get("orchestration_evidence_receipt"),
+        "orchestration_evidence": _embedded_orchestration_summary(
+            payload.get("orchestration_evidence")
+        ),
+    }
+
+
+def _provider_pane_summary(
+    run_receipt: dict[str, Any],
+    runtime_manifest: dict[str, Any],
+) -> dict[str, Any] | None:
+    if run_receipt.get("schema") != "tau.provider_pane_run_receipt.v1":
+        return None
+    providers_raw = runtime_manifest.get("providers")
+    providers = providers_raw if isinstance(providers_raw, list) else []
+    ready_prompt_count = len(
+        [
+            provider
+            for provider in providers
+            if isinstance(provider, dict) and provider.get("ready_prompt_observed") is True
+        ]
+    )
+    return {
+        "schema": run_receipt.get("schema"),
+        "status": run_receipt.get("status"),
+        "ok": run_receipt.get("ok"),
+        "mocked": run_receipt.get("mocked"),
+        "live": run_receipt.get("live"),
+        "run_id": runtime_manifest.get("run_id") or run_receipt.get("run_id"),
+        "provider_count": len([provider for provider in providers if isinstance(provider, dict)]),
+        "ready_prompt_observed_count": ready_prompt_count,
+        "visible_prompt_is_gate": True,
+        "workstation_manifest": runtime_manifest.get("workstation_manifest"),
+        "inspect_path": runtime_manifest.get("inspect_path"),
+        "providers": [
+            _provider_pane_record_summary(provider)
+            for provider in providers
+            if isinstance(provider, dict)
+        ],
+    }
+
+
+def _provider_pane_record_summary(provider: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "provider_id": provider.get("provider_id"),
+        "role": provider.get("role"),
+        "pane_id": provider.get("pane_id"),
+        "terminal_id": provider.get("terminal_id"),
+        "work_order_path": provider.get("work_order_path"),
+        "ready_prompt_observed": provider.get("ready_prompt_observed"),
+        "readiness_actions": provider.get("readiness_actions"),
+        "visible_log": provider.get("visible_log"),
+        "read_returncode": provider.get("read_returncode"),
+    }
+
+
+def _provider_readiness_summary(
+    run_receipt: dict[str, Any],
+    runtime_manifest: dict[str, Any],
+    readiness_records: list[dict[str, Any]],
+    lifecycle_states: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    if run_receipt.get("schema") != "tau.provider_readiness_run_receipt.v1":
+        return None
+    state_values = [
+        str(record.get("state") or "unknown")
+        for record in readiness_records
+        if isinstance(record, dict)
+    ]
+    if not state_values:
+        state_values = [
+            str(record.get("state") or "unknown")
+            for record in lifecycle_states
+            if isinstance(record, dict)
+        ]
+    return {
+        "schema": run_receipt.get("schema"),
+        "status": run_receipt.get("status"),
+        "ok": run_receipt.get("ok"),
+        "mocked": run_receipt.get("mocked"),
+        "live": run_receipt.get("live"),
+        "provider_live": run_receipt.get("provider_live"),
+        "run_id": runtime_manifest.get("run_id") or run_receipt.get("run_id"),
+        "all_provider_structured_ready": run_receipt.get("all_provider_structured_ready"),
+        "readiness_record_count": len(readiness_records),
+        "provider_session_state_count": len(lifecycle_states),
+        "ready_count": len(
+            [
+                record
+                for record in readiness_records
+                if isinstance(record, dict) and record.get("ready") is True
+            ]
+        ),
+        "state_counts": _value_counts(state_values),
+        "workstation_manifest": runtime_manifest.get("workstation_manifest"),
+        "inspect_path": runtime_manifest.get("inspect_path"),
+        "readiness": [
+            _provider_readiness_record_summary(record)
+            for record in readiness_records
+            if isinstance(record, dict)
+        ],
+    }
+
+
+def _provider_readiness_record_summary(record: dict[str, Any]) -> dict[str, Any]:
+    diagnostics = record.get("diagnostics") if isinstance(record.get("diagnostics"), dict) else {}
+    evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+    return {
+        "provider_id": record.get("provider_id"),
+        "state": record.get("state"),
+        "ready": record.get("ready"),
+        "source": record.get("source"),
+        "workspace_id": record.get("workspace_id"),
+        "pane_id": record.get("pane_id"),
+        "terminal_id": record.get("terminal_id"),
+        "visible_prompt_observed": diagnostics.get("visible_prompt_observed"),
+        "visible_prompt_is_gate": diagnostics.get("visible_prompt_is_gate"),
+        "provider_readiness_path": evidence.get("provider_readiness_path"),
+        "provider_readiness_sha256": record.get("_source_sha256")
+        or _path_sha256(evidence.get("provider_readiness_path")),
+        "provider_session_state_path": evidence.get("provider_session_state_path"),
+        "provider_session_state_sha256": _path_sha256(evidence.get("provider_session_state_path")),
+    }
+
+
+def _provider_dag_planner_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.dag_planner_receipt.v1":
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "run_id": payload.get("run_id"),
+        "repo": payload.get("repo"),
+        "dag_spec": payload.get("dag_spec"),
+        "events_jsonl": payload.get("events_jsonl"),
+        "scratch_worktree": payload.get("scratch_worktree"),
+        "target_file": payload.get("target_file"),
+        "max_attempts": payload.get("max_attempts"),
+        "proof_controls": payload.get("proof_controls"),
+    }
+
+
+def _provider_dag_attempt_summary(attempt: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "attempt": attempt.get("attempt"),
+        "coder_status": attempt.get("coder_status"),
+        "coder_verdict": attempt.get("coder_verdict"),
+        "reviewer_status": attempt.get("reviewer_status"),
+        "reviewer_verdict": attempt.get("reviewer_verdict"),
+        "errors": attempt.get("errors"),
+    }
+
+
+def _role_summary_map(value: Any) -> dict[str, dict[str, Any]]:
+    if not isinstance(value, dict):
+        return {}
+    result: dict[str, dict[str, Any]] = {}
+    for key, raw in value.items():
+        if not isinstance(raw, dict):
+            continue
+        result[str(key)] = {
+            "role": raw.get("role"),
+            "provider_id": raw.get("provider_id"),
+            "workspace_id": raw.get("workspace_id"),
+            "pane_id": raw.get("pane_id"),
+            "terminal_id": raw.get("terminal_id"),
+            "visible": raw.get("visible"),
+            "ready": raw.get("ready"),
+            "state": raw.get("state"),
+        }
+    return result
+
+
+def _artifact_summary_map(value: Any) -> dict[str, str]:
+    if not isinstance(value, list):
+        return {}
+    artifacts: dict[str, str] = {}
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        kind = item.get("kind")
+        path = item.get("path")
+        if isinstance(kind, str) and kind and isinstance(path, str) and path:
+            artifacts[kind] = path
+    return artifacts
+
+
+def _embedded_cleanup_summary(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    applied_action_count = value.get("applied_action_count")
+    if applied_action_count is None:
+        applied_action_count = _count(value.get("applied_actions"))
+    post_verified_absent_count = value.get("post_verified_absent_count")
+    if post_verified_absent_count is None:
+        post_verified_absent_count = _post_verified_absent_count(value.get("applied_actions"))
+    return {
+        "status": value.get("status"),
+        "mocked": value.get("mocked"),
+        "live": value.get("live"),
+        "mode": value.get("mode"),
+        "ok": value.get("ok"),
+        "resource_count": value.get("resource_count"),
+        "candidate_count": value.get("candidate_count"),
+        "applied_action_count": applied_action_count,
+        "post_verified_absent_count": post_verified_absent_count,
+    }
+
+
+def _embedded_orchestration_summary(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    return {
+        "status": value.get("status"),
+        "mocked": value.get("mocked"),
+        "live": value.get("live"),
+        "provider_live": value.get("provider_live"),
+        "feature_counts": value.get("feature_counts"),
+    }
+
+
+def _provider_state_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    process = payload.get("process") if isinstance(payload.get("process"), dict) else {}
+    evidence = payload.get("evidence") if isinstance(payload.get("evidence"), dict) else {}
+    auth = payload.get("auth") if isinstance(payload.get("auth"), dict) else {}
+    interstitial = (
+        payload.get("interstitial") if isinstance(payload.get("interstitial"), dict) else {}
+    )
+    provider_api = (
+        payload.get("provider_api") if isinstance(payload.get("provider_api"), dict) else {}
+    )
+    return {
+        "schema": payload.get("schema"),
+        "provider_id": payload.get("provider_id"),
+        "workspace_id": payload.get("workspace_id"),
+        "pane_id": payload.get("pane_id"),
+        "terminal_id": payload.get("terminal_id"),
+        "state": payload.get("state"),
+        "ready": payload.get("ready"),
+        "source": payload.get("source"),
+        "observed_at": payload.get("observed_at"),
+        "process_alive": process.get("alive"),
+        "foreground_command": process.get("command"),
+        "auth_status": auth.get("status"),
+        "interstitial_present": interstitial.get("present"),
+        "interstitial_kind": interstitial.get("kind"),
+        "provider_api_available": provider_api.get("available"),
+        "visible_log_path": evidence.get("visible_log_path"),
+        "provider_readiness_path": evidence.get("provider_readiness_path"),
+        "provider_readiness_sha256": _path_sha256(evidence.get("provider_readiness_path")),
+        "provider_session_state_path": payload.get("_source_path"),
+        "provider_session_state_sha256": payload.get("_source_sha256"),
+        "provider_event_log_path": evidence.get("provider_event_log_path"),
+    }
+
+
+def _cleanup_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if not payload:
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "mode": payload.get("mode"),
+        "runtime_manifest": payload.get("runtime_manifest"),
+        "runtime_manifest_sha256": payload.get("runtime_manifest_sha256"),
+        "resource_count": payload.get("resource_count"),
+        "candidate_count": payload.get("candidate_count"),
+        "applied_action_count": _count(payload.get("applied_actions")),
+        "post_verified_absent_count": _post_verified_absent_count(payload.get("applied_actions")),
+    }
+
+
+def _post_verified_absent_count(value: Any) -> int:
+    if not isinstance(value, list):
+        return 0
+    return sum(1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True)
+
+
+def _real_world_sanity_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.real_world_sanity_suite_receipt.v1":
+        return None
+    checks = payload.get("checks")
+    check_records = checks if isinstance(checks, list) else []
+    post_cleanup_records = [
+        check.get("post_cleanup")
+        for check in check_records
+        if isinstance(check, dict) and isinstance(check.get("post_cleanup"), dict)
+    ]
+    live_cleanup_records = [
+        cleanup
+        for cleanup in post_cleanup_records
+        if isinstance(cleanup, dict) and cleanup.get("live") is True
+    ]
+    failed_checks = [
+        check.get("check_id")
+        for check in check_records
+        if isinstance(check, dict) and check.get("status") != "PASS"
+    ]
+    receipt_summaries = [
+        check.get("receipt_summary")
+        for check in check_records
+        if isinstance(check, dict) and isinstance(check.get("receipt_summary"), dict)
+    ]
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "check_count": payload.get("check_count"),
+        "failed_check_count": payload.get("failed_check_count"),
+        "completed_at": payload.get("completed_at"),
+        "checks": [
+            _real_world_sanity_check_summary(check)
+            for check in check_records
+            if isinstance(check, dict)
+        ],
+        "post_cleanup_count": len(post_cleanup_records),
+        "live_post_cleanup_count": len(live_cleanup_records),
+        "failed_checks": [check_id for check_id in failed_checks if isinstance(check_id, str)],
+        "generic_dag_node_totals": _real_world_sanity_generic_node_totals(receipt_summaries),
+    }
+
+
+def _real_world_sanity_check_summary(check: dict[str, Any]) -> dict[str, Any]:
+    cleanup = check.get("post_cleanup")
+    return {
+        "check_id": check.get("check_id"),
+        "level": check.get("level"),
+        "status": check.get("status"),
+        "ok": check.get("ok"),
+        "mocked": check.get("mocked"),
+        "live": check.get("live"),
+        "provider_live": check.get("provider_live"),
+        "attempt_count": check.get("attempt_count"),
+        "receipt_summary": check.get("receipt_summary"),
+        "post_cleanup": _post_cleanup_summary(cleanup) if isinstance(cleanup, dict) else None,
+    }
+
+
+def _real_world_sanity_generic_node_totals(
+    receipt_summaries: list[dict[str, Any]],
+) -> dict[str, Any]:
+    totals = {
+        "node_count": 0,
+        "completed_node_count": 0,
+        "resumed_node_count": 0,
+        "dispatched_node_count": 0,
+        "blocked_node_count": 0,
+        "timed_node_count": 0,
+        "node_error_count": 0,
+        "checks_with_blocked_nodes": [],
+        "checks_with_errors": [],
+    }
+    for summary in receipt_summaries:
+        schema = summary.get("schema")
+        if schema != "tau.generic_dag_run_receipt.v1":
+            continue
+        totals["node_count"] += _int_value(summary.get("node_count"))
+        totals["completed_node_count"] += _int_value(summary.get("completed_node_count"))
+        totals["resumed_node_count"] += _int_value(summary.get("resumed_node_count"))
+        totals["dispatched_node_count"] += _int_value(summary.get("dispatched_node_count"))
+        totals["blocked_node_count"] += _int_value(summary.get("blocked_node_count"))
+        totals["timed_node_count"] += _int_value(summary.get("timed_node_count"))
+        node_error_counts = summary.get("node_error_counts")
+        if isinstance(node_error_counts, dict):
+            error_total = sum(_int_value(value) for value in node_error_counts.values())
+            totals["node_error_count"] += error_total
+        else:
+            error_total = 0
+        if _int_value(summary.get("blocked_node_count")) > 0:
+            totals["checks_with_blocked_nodes"].append(summary.get("spec_path"))
+        if error_total > 0:
+            totals["checks_with_errors"].append(summary.get("spec_path"))
+    totals["checks_with_blocked_nodes"] = [
+        value for value in totals["checks_with_blocked_nodes"] if isinstance(value, str)
+    ]
+    totals["checks_with_errors"] = [
+        value for value in totals["checks_with_errors"] if isinstance(value, str)
+    ]
+    return totals
+
+
+def _post_cleanup_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    receipt_summary = payload.get("receipt_summary")
+    receipt_summary = receipt_summary if isinstance(receipt_summary, dict) else {}
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "mode": payload.get("mode"),
+        "run_dir": payload.get("run_dir"),
+        "receipt_path": payload.get("receipt_path"),
+        "receipt_summary": payload.get("receipt_summary"),
+        "cleanup_applied_action_count": receipt_summary.get("applied_action_count"),
+        "cleanup_post_verified_absent_count": receipt_summary.get("post_verified_absent_count"),
+        "errors": payload.get("errors"),
+    }
+
+
+def _approval_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if not payload:
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "approved": payload.get("approved"),
+        "requested_action": payload.get("requested_action"),
+        "approval_packet": payload.get("approval_packet"),
+        "approval_packet_sha256": payload.get("approval_packet_sha256"),
+        "packet_summary": payload.get("packet_summary"),
+        "errors": payload.get("errors"),
+    }
+
+
+def _orchestration_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if not payload:
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "feature_counts": payload.get("feature_counts"),
+    }
+
+
+def _dag_stress_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.dag_stress_suite_receipt.v1":
+        return None
+    rungs = payload.get("rungs")
+    rung_records = rungs if isinstance(rungs, list) else []
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "execution": payload.get("execution"),
+        "rung_count": payload.get("rung_count"),
+        "passed_rungs": payload.get("passed_rungs"),
+        "expected_blocked_rungs": payload.get("expected_blocked_rungs"),
+        "unexpected_rungs": payload.get("unexpected_rungs"),
+        "blocked_rung_count": len(
+            [
+                rung
+                for rung in rung_records
+                if isinstance(rung, dict) and str(rung.get("status") or "").upper() == "BLOCKED"
+            ]
+        ),
+        "rungs": [
+            _dag_stress_rung_summary(rung)
+            for rung in rung_records
+            if isinstance(rung, dict)
+        ],
+    }
+
+
+def _dag_stress_rung_summary(rung: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "rung_id": rung.get("rung_id"),
+        "status": rung.get("status"),
+        "expected_status": rung.get("expected_status"),
+        "verdict": rung.get("verdict"),
+        "attempt_count": rung.get("attempt_count"),
+        "event_count": rung.get("event_count"),
+    }
+
+
+def _dag_stress_campaign_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.dag_stress_campaign_receipt.v1":
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "execution": payload.get("execution"),
+        "max_budget": payload.get("max_budget"),
+        "repetitions": payload.get("repetitions"),
+        "suite_count": payload.get("suite_count"),
+        "total_rungs": payload.get("total_rungs"),
+        "failed_suite_count": payload.get("failed_suite_count"),
+        "status_counts": payload.get("status_counts"),
+        "verdict_counts": payload.get("verdict_counts"),
+        "grading_dimensions": payload.get("grading_dimensions"),
+    }
+
+
+def _load_lifecycle_states(
+    run_dir: Path,
+    runtime_manifest: dict[str, Any],
+    run_receipt: dict[str, Any],
+) -> list[dict[str, Any]]:
+    states: list[dict[str, Any]] = []
+    for item in runtime_manifest.get("provider_session_states", []):
+        loaded = _load_path_or_object(item, base=run_dir)
+        if loaded:
+            states.append(loaded)
+    if not states:
+        for item in run_receipt.get("provider_session_states", []):
+            if isinstance(item, dict):
+                states.append(item)
+    return states
+
+
+def _load_readiness_records(
+    run_dir: Path,
+    runtime_manifest: dict[str, Any],
+    run_receipt: dict[str, Any],
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for item in runtime_manifest.get("readiness_records", []):
+        loaded = _load_path_or_object(item, base=run_dir)
+        if loaded:
+            records.append(loaded)
+    if not records:
+        for item in run_receipt.get("readiness_records", []):
+            if isinstance(item, dict):
+                records.append(item)
+    return records
+
+
+def _load_path_or_object(value: Any, *, base: Path) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    if not isinstance(value, str) or not value:
+        return {}
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = base / path
+    payload = _read_optional_json(path)
+    if payload:
+        payload["_source_path"] = str(path)
+        payload["_source_sha256"] = _file_sha256(path)
+    return payload
+
+
+def _event_path(
+    run_dir: Path,
+    run_receipt: dict[str, Any],
+    runtime_manifest: dict[str, Any],
+) -> Path | None:
+    value = run_receipt.get("events_jsonl") or runtime_manifest.get("events_jsonl")
+    if not isinstance(value, str) or not value:
+        return None
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = run_dir / path
+    return path
+
+
+def _events_count(path: Path | None) -> int:
+    if path is None or not path.exists():
+        return 0
+    return len([line for line in path.read_text(encoding="utf-8").splitlines() if line.strip()])
+
+
+def _count(value: Any) -> int:
+    return len(value) if isinstance(value, (dict, list)) else 0
+
+
+def _int_value(value: Any) -> int:
+    return value if isinstance(value, int) else 0
+
+
+def _path_sha256(value: Any) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+    return _file_sha256(Path(value).expanduser())
+
+
+def _file_sha256(path: Path) -> str | None:
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    return hashlib.sha256(data).hexdigest()
+
+
+def _value_counts(values: list[str]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for value in values:
+        counts[value] = counts.get(value, 0) + 1
+    return counts
+
+
+def _read_optional_json(path: Path) -> dict[str, Any]:
+    if not path.exists() or not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _utc_stamp() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
