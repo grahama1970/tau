@@ -230,6 +230,11 @@ def build_checks(
     project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(
         run_dir
     )
+    project_dag_memory_evidence_valid = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-valid",
+        mutation="valid",
+    )
     project_dag_memory_evidence_inline = create_project_dag_memory_evidence_fixture(
         run_dir,
         scenario="memory-evidence-inline",
@@ -1199,6 +1204,28 @@ def build_checks(
             timeout_seconds=60,
             expected_status="PASS",
             output_receipt=evidence_manifest_valid["receipt"],
+        ),
+        Check(
+            check_id="advanced.project_dag_memory_evidence_gate_valid_dispatches",
+            level="advanced",
+            purpose=(
+                "Tau accepts valid Memory intent plus separate evidence case "
+                "and still dispatches the project DAG to coder and reviewer."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_valid["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_valid["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_valid["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(0,),
+            expected_status="PASS",
+            expected_verdict="PASS",
+            output_receipt=project_dag_memory_evidence_valid["run_dir"] / "dag-receipt.json",
         ),
         Check(
             check_id="advanced.project_dag_memory_evidence_gate_inline_evidence_fail_closed",
@@ -2249,7 +2276,9 @@ def create_project_dag_memory_evidence_fixture(
         "target": contract["target"],
         "support_artifacts": [],
     }
-    if mutation == "inline_evidence":
+    if mutation == "valid":
+        pass
+    elif mutation == "inline_evidence":
         memory_intent["evidence"] = [
             {
                 "statement": "Inline evidence must be rejected; use a separate evidence case.",

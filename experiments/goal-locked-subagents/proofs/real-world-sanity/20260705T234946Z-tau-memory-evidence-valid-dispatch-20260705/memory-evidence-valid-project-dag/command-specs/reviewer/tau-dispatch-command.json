@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/project_dag_worker.py",
+    "--role",
+    "reviewer",
+    "--scenario",
+    "memory-evidence-valid"
+  ],
+  "timeout_s": 20
+}
