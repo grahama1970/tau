@@ -1227,6 +1227,26 @@ def build_checks(
             expected_status="BLOCKED",
             expected_verdict="REVIEWER_RECEIPT_INVALID",
         ),
+        Check(
+            check_id="advanced.browser_cdp_proof",
+            level="advanced",
+            purpose=(
+                "Tau opens a local proof page through Surf browser transport, observes "
+                "required Tau proof text, and records a screenshot artifact."
+            ),
+            command=[
+                *uv_tau,
+                "browser-cdp-proof",
+                "--out-dir",
+                str(run_dir / "browser-cdp-proof"),
+                "--run-id",
+                f"{run_dir.name}-browser-cdp-proof",
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+            expected_provider_live=False,
+        ),
     ]
 
 
@@ -3130,12 +3150,13 @@ def write_suite_receipt(
                 "Tau can run a real local handoff command loop",
                 "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
                 "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+                "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
                 "Tau fail-closed negative controls preserve typed BLOCKED receipts",
             ],
             "does_not_prove": [
                 "GitHub ticket closure",
                 "remote Tailscale monitoring",
-                "browser/CDP chat UI rendering",
+                "production browser/chat UI rendering",
                 "production repository mutation",
             ],
         },

@@ -12,6 +12,7 @@ Run selected levels or checks:
 scripts/run-real-world-sanity.sh --levels simple,medium
 scripts/run-real-world-sanity.sh --levels advanced --checks advanced.provider_readiness
 scripts/run-real-world-sanity.sh --levels advanced --checks advanced.provider_readiness --provider-cleanup-mode apply
+scripts/run-real-world-sanity.sh --levels advanced --checks advanced.browser_cdp_proof
 ```
 
 The runner writes a receipt to:
@@ -102,8 +103,9 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.provider_dag_repair_loop`: reviewer returns `REVISE`, coder retries, reviewer returns `PASS`.
 - `advanced.provider_dag_max_attempts_fail_closed`: reviewer revisions exhaust max attempts and Tau blocks with verdict `REVISE`.
 - `advanced.provider_dag_invalid_model_fail_closed`: invalid reviewer model blocks with verdict `REVIEWER_RECEIPT_INVALID`.
+- `advanced.browser_cdp_proof`: Surf opens a local Tau proof page, Tau observes required proof text, captures a PNG screenshot, and writes `tau.browser_cdp_proof.v1`.
 
 ## Boundaries
 
 This suite does not prove GitHub ticket closure, remote Tailscale monitoring,
-browser/CDP chat UI rendering, or production repository mutation.
+production browser/chat UI rendering, or production repository mutation.

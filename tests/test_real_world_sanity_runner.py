@@ -317,6 +317,39 @@ def test_summarize_receipt_includes_provider_lifecycle_probe_state() -> None:
     }
 
 
+def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
+    module = _load_runner_module()
+
+    checks = module.build_checks(
+        repo=Path(__file__).resolve().parents[1],
+        run_dir=tmp_path,
+        uv_bin="uv",
+        herdr_bin="herdr",
+        receipt_timeout_seconds=120,
+        provider_cleanup_mode="off",
+    )
+
+    check = next(item for item in checks if item.check_id == "advanced.browser_cdp_proof")
+    assert check.level == "advanced"
+    assert check.expected_status == "PASS"
+    assert check.expected_verdict == "PASS"
+    assert check.expected_provider_live is False
+    assert "browser-cdp-proof" in check.command
+    assert "--out-dir" in check.command
+    assert str(tmp_path / "browser-cdp-proof") in check.command
+
+    receipt = module.write_suite_receipt(
+        repo=Path(__file__).resolve().parents[1],
+        run_dir=tmp_path,
+        run_id="browser-proof-suite",
+        records=[],
+        selected_levels=["advanced"],
+        complete=True,
+    )
+    assert "Surf-backed browser proof checks" in " ".join(receipt["proof_scope"]["proves"])
+    assert "production browser/chat UI rendering" in receipt["proof_scope"]["does_not_prove"]
+
+
 def _load_runner_module() -> ModuleType:
     path = Path(__file__).resolve().parents[1] / "scripts" / "run-real-world-sanity.py"
     spec = importlib.util.spec_from_file_location("run_real_world_sanity", path)
