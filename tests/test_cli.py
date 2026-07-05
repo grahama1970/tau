@@ -467,6 +467,90 @@ def test_cli_github_redact_projection_writes_receipt_and_redacted_artifact(
     assert redacted["credentials"] == "<redacted:credentials>"
 
 
+def test_cli_github_apply_policy_check_writes_policy_receipt(tmp_path: Path) -> None:
+    projection_path = tmp_path / "projection.json"
+    redacted_path = tmp_path / "projection.redacted.json"
+    policy_path = tmp_path / "github-apply-policy.json"
+    redaction_receipt_path = tmp_path / "github-redaction-receipt.json"
+    approval_receipt_path = tmp_path / "approval-gate-receipt.json"
+    receipt_path = tmp_path / "github-apply-policy-receipt.json"
+    projection = {
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "ok": True,
+        "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+        "comment": {"body": "## Tau Agent Handoff\n"},
+        "labels": {"add": ["agent-work"], "remove": ["agent-active"]},
+        "errors": [],
+    }
+    policy = {
+        "schema": "tau.github_apply_policy.v1",
+        "allowed_repos": ["grahama1970/tau"],
+        "allowed_actions": ["comment", "label"],
+        "denied_actions": ["close", "merge", "release"],
+        "requires_approval_packet": True,
+        "requires_preflight": True,
+        "requires_redaction": True,
+    }
+    projection_path.write_text(json.dumps(projection), encoding="utf-8")
+    redacted_path.write_text(json.dumps(projection), encoding="utf-8")
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    redaction_receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.github_projection_redaction_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "projection": str(projection_path.resolve()),
+                "redacted_projection": str(redacted_path.resolve()),
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    approval_receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "approved": True,
+                "requested_action": "github_apply",
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "github-apply-policy-check",
+            "--projection",
+            str(projection_path),
+            "--policy",
+            str(policy_path),
+            "--receipt",
+            str(receipt_path),
+            "--approval-receipt",
+            str(approval_receipt_path),
+            "--redaction-receipt",
+            str(redaction_receipt_path),
+            "--preflight-ready",
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload == receipt
+    assert payload["schema"] == "tau.github_apply_policy_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["actions"] == ["comment", "label"]
+    assert payload["requirements"]["approval_packet"] is True
+    assert payload["requirements"]["redaction"] is True
+    assert payload["requirements"]["preflight"] is True
+
+
 def test_cli_generated_ticket_github_create_defaults_to_dry_run(tmp_path: Path) -> None:
     ticket_path = tmp_path / "generated-ticket.json"
     receipt_path = tmp_path / "generated-ticket-transport" / "receipt.json"

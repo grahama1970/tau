@@ -67,6 +67,7 @@ from tau_coding.generic_dag import (
     run_generic_dag,
 )
 from tau_coding.generic_provider_adapter import run_generic_provider_dag_node
+from tau_coding.github_apply_policy import write_github_apply_policy_receipt
 from tau_coding.github_handoff import (
     fetch_goal_guardian_ticket_source_from_github,
     redact_github_projection,
@@ -1194,6 +1195,17 @@ def main(
                 output_path=output_path,
                 receipt_path=receipt_path,
             )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "github-apply-policy-check":
+        try:
+            options = _parse_github_apply_policy_check_args(positional_args[1:])
+            payload = write_github_apply_policy_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2880,6 +2892,76 @@ def _parse_github_redact_projection_args(args: list[str]) -> tuple[Path, Path, P
     if output_path is None:
         raise RuntimeError("--out requires a value")
     return projection_path, output_path, receipt_path
+
+
+def _parse_github_apply_policy_check_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau github-apply-policy-check --projection <projection.json> "
+            "--policy <policy.json> --receipt <receipt.json> "
+            "[--approval-receipt <approval-receipt.json>] "
+            "[--redaction-receipt <redaction-receipt.json>] [--preflight-ready]"
+        )
+    projection_path: Path | None = None
+    policy_path: Path | None = None
+    receipt_path: Path | None = None
+    approval_receipt_path: Path | None = None
+    redaction_receipt_path: Path | None = None
+    preflight_ready = False
+    index = 0
+    path_options = {
+        "--projection",
+        "--policy",
+        "--receipt",
+        "--approval-receipt",
+        "--redaction-receipt",
+    }
+    while index < len(args):
+        arg = args[index]
+        if arg in path_options:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = Path(args[index])
+            if arg == "--projection":
+                projection_path = value
+            elif arg == "--policy":
+                policy_path = value
+            elif arg == "--receipt":
+                receipt_path = value
+            elif arg == "--approval-receipt":
+                approval_receipt_path = value
+            else:
+                redaction_receipt_path = value
+        elif arg.startswith("--projection="):
+            projection_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--policy="):
+            policy_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--approval-receipt="):
+            approval_receipt_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--redaction-receipt="):
+            redaction_receipt_path = Path(arg.partition("=")[2])
+        elif arg == "--preflight-ready":
+            preflight_ready = True
+        else:
+            raise RuntimeError(f"Unknown github-apply-policy-check option: {arg}")
+        index += 1
+    if projection_path is None:
+        raise RuntimeError("--projection requires a value")
+    if policy_path is None:
+        raise RuntimeError("--policy requires a value")
+    if receipt_path is None:
+        raise RuntimeError("--receipt requires a value")
+    return {
+        "projection_path": projection_path,
+        "policy_path": policy_path,
+        "receipt_path": receipt_path,
+        "approval_receipt_path": approval_receipt_path,
+        "redaction_receipt_path": redaction_receipt_path,
+        "preflight_ready": preflight_ready,
+    }
 
 
 def _parse_generated_ticket_github_create_cli_args(
