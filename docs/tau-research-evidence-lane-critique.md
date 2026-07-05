@@ -84,6 +84,9 @@ This documentation patch adds:
 - README section: `Research Influence: Adaptive DAGs`.
 - Dedicated reference file:
   `docs/adaptive-dag-research-references.md`.
+- Runtime receipt command: `tau research-source-receipt`, which validates a
+  `tau.research_source_packet.v1` source packet and writes
+  `tau.research_source_receipt.v1`.
 
 The new reference surface cites:
 
@@ -99,6 +102,11 @@ The Tau mapping is explicit: graph reasoning becomes receipt-backed DAG nodes;
 adaptive expansion remains bounded and validated; parallel scheduling stays
 dependency-aware; route reinforcement becomes local signal receipts; and
 unstructured swarm consensus is not proof.
+
+The runtime receipt lane is intentionally validation-only. It does not fetch
+papers, call WebGPT/Dogpile/ArXiv, or allow research to mutate a DAG. It makes
+research source metadata durable and review-required before a reviewer or
+research-auditor can use it as design input.
 
 ## Remaining Gap
 

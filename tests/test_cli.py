@@ -551,6 +551,56 @@ def test_cli_github_apply_policy_check_writes_policy_receipt(tmp_path: Path) -> 
     assert payload["requirements"]["preflight"] is True
 
 
+def test_cli_research_source_receipt_writes_review_required_receipt(tmp_path: Path) -> None:
+    source_path = tmp_path / "research-source-packet.json"
+    receipt_path = tmp_path / "research-source-receipt.json"
+    source_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.research_source_packet.v1",
+                "source_type": "paper",
+                "method": "arxiv",
+                "query": "adaptive DAG references",
+                "retrieved_at": "2026-07-05T13:40:00Z",
+                "classification": "design_input",
+                "sources": [
+                    {
+                        "title": "Graph of Thoughts",
+                        "url": "https://arxiv.org/abs/2308.09687",
+                        "arxiv_id": "2308.09687",
+                        "relevance": "HIGH",
+                        "claims_supported": ["graph reasoning inspiration"],
+                    }
+                ],
+                "summary": "ArXiv reference packet for Tau adaptive DAG critique.",
+                "limitations": ["Design input only."],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "research-source-receipt",
+            "--source",
+            str(source_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload == receipt
+    assert payload["schema"] == "tau.research_source_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["review_required"] is True
+    assert payload["source_count"] == 1
+    assert payload["arxiv_source_count"] == 1
+
+
 def test_cli_generated_ticket_github_create_defaults_to_dry_run(tmp_path: Path) -> None:
     ticket_path = tmp_path / "generated-ticket.json"
     receipt_path = tmp_path / "generated-ticket-transport" / "receipt.json"

@@ -1,0 +1,79 @@
+{
+  "classification": "design_input",
+  "limitations": [
+    "Research references are architecture inspiration only.",
+    "Local Tau receipts and tests remain required before runtime or closure claims.",
+    "The YouTube inspiration is not cited because the title was not verified locally."
+  ],
+  "method": "arxiv",
+  "query": "adaptive DAG graph reasoning parallel scheduling multi-agent routing receipts Tau",
+  "retrieved_at": "2026-07-05T13:36:12Z",
+  "schema": "tau.research_source_packet.v1",
+  "source_type": "paper",
+  "sources": [
+    {
+      "arxiv_id": "2308.09687",
+      "claims_supported": [
+        "graph-structured reasoning inspiration"
+      ],
+      "relevance": "HIGH",
+      "title": "Graph of Thoughts: Solving Elaborate Problems with Large Language Models",
+      "url": "https://arxiv.org/abs/2308.09687"
+    },
+    {
+      "arxiv_id": "2502.05078",
+      "claims_supported": [
+        "bounded dynamic DAG expansion inspiration"
+      ],
+      "relevance": "HIGH",
+      "title": "Adaptive Graph of Thoughts: Test-Time Adaptive Reasoning Unifying Chain, Tree, and Graph Structures",
+      "url": "https://arxiv.org/abs/2502.05078"
+    },
+    {
+      "arxiv_id": "2312.04511",
+      "claims_supported": [
+        "dependency-aware parallel function scheduling inspiration"
+      ],
+      "relevance": "HIGH",
+      "title": "An LLM Compiler for Parallel Function Calling",
+      "url": "https://arxiv.org/abs/2312.04511"
+    },
+    {
+      "arxiv_id": "2308.00352",
+      "claims_supported": [
+        "structured role workflow and intermediate verification inspiration"
+      ],
+      "relevance": "MEDIUM",
+      "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+      "url": "https://arxiv.org/abs/2308.00352"
+    },
+    {
+      "arxiv_id": "2510.10047",
+      "claims_supported": [
+        "explorer worker validator and pheromone-inspired route signal inspiration"
+      ],
+      "relevance": "MEDIUM",
+      "title": "SwarmSys: Decentralized Swarm-Inspired Agents for Scalable and Adaptive Reasoning",
+      "url": "https://arxiv.org/abs/2510.10047"
+    },
+    {
+      "arxiv_id": "2603.12933",
+      "claims_supported": [
+        "quality-gated multi-agent routing memory inspiration"
+      ],
+      "relevance": "MEDIUM",
+      "title": "Efficient and Interpretable Multi-Agent LLM Routing via Ant Colony Optimization",
+      "url": "https://arxiv.org/abs/2603.12933"
+    },
+    {
+      "arxiv_id": "2605.10698",
+      "claims_supported": [
+        "caution against unstructured multi-agent consensus as proof"
+      ],
+      "relevance": "HIGH",
+      "title": "The Bystander Effect in Multi-Agent Reasoning: Quantifying Cognitive Loafing in Collaborative Interactions",
+      "url": "https://arxiv.org/abs/2605.10698"
+    }
+  ],
+  "summary": "Source packet for Tau adaptive DAG and distributed-intelligence references. These sources motivate bounded DAG contracts, receipts, validators, route signals, and caution against unstructured agent swarms."
+}

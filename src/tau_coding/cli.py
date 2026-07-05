@@ -153,6 +153,7 @@ from tau_coding.provider_pane_poc import (
 )
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
+from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
 from tau_coding.run_status import build_run_status
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
@@ -1206,6 +1207,20 @@ def main(
         try:
             options = _parse_github_apply_policy_check_args(positional_args[1:])
             payload = write_github_apply_policy_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "research-source-receipt":
+        try:
+            source_path, receipt_path = _parse_research_source_receipt_args(positional_args[1:])
+            payload = write_research_source_receipt(
+                source_path=source_path,
+                receipt_path=receipt_path,
+            )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2962,6 +2977,39 @@ def _parse_github_apply_policy_check_args(args: list[str]) -> dict[str, object]:
         "redaction_receipt_path": redaction_receipt_path,
         "preflight_ready": preflight_ready,
     }
+
+
+def _parse_research_source_receipt_args(args: list[str]) -> tuple[Path, Path]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau research-source-receipt --source <source-packet.json> "
+            "--receipt <receipt.json>"
+        )
+    source_path: Path | None = None
+    receipt_path: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--source", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--source":
+                source_path = Path(args[index])
+            else:
+                receipt_path = Path(args[index])
+        elif arg.startswith("--source="):
+            source_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown research-source-receipt option: {arg}")
+        index += 1
+    if source_path is None:
+        raise RuntimeError("--source requires a value")
+    if receipt_path is None:
+        raise RuntimeError("--receipt requires a value")
+    return source_path, receipt_path
 
 
 def _parse_generated_ticket_github_create_cli_args(
