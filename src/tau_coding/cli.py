@@ -134,6 +134,11 @@ from tau_coding.project_dag import (
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
+from tau_coding.provenance import (
+    build_actor_manifest,
+    build_environment_manifest,
+    parse_actor_spec,
+)
 from tau_coding.provider_config import (
     DEFAULT_MODEL,
     DEFAULT_PROVIDER_NAME,
@@ -161,6 +166,7 @@ from tau_coding.provider_pane_poc import (
     run_provider_readiness_poc,
 )
 from tau_coding.provider_runtime import create_model_provider
+from tau_coding.receipt_signing import sign_receipt, verify_signed_receipt
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
@@ -1352,6 +1358,90 @@ def main(
                 run_dir=Path(str(options["run_dir"])),
                 out_dir=Path(str(options["out"])),
                 force=bool(options["force"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "actor-manifest":
+        try:
+            options = _parse_actor_manifest_cli_args(positional_args[1:])
+            payload = build_actor_manifest(
+                run_id=str(options["run_id"]),
+                actors=[parse_actor_spec(str(spec)) for spec in options["actors"]],
+                output_path=Path(str(options["out"])) if options.get("out") is not None else None,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "environment-manifest":
+        try:
+            options = _parse_environment_manifest_cli_args(positional_args[1:])
+            payload = build_environment_manifest(
+                run_id=str(options["run_id"]),
+                network_policy=str(options["network_policy"]),
+                provider_access=str(options["provider_access"]),
+                mounted_paths=[str(item) for item in options["mounted_paths"]],
+                secrets_visible=[str(item) for item in options["secrets_visible"]],
+                tool_versions=dict(options["tool_versions"]),
+                policy_profile=(
+                    str(options["policy_profile"])
+                    if options.get("policy_profile") is not None
+                    else None
+                ),
+                data_boundary=(
+                    str(options["data_boundary"])
+                    if options.get("data_boundary") is not None
+                    else None
+                ),
+                output_path=Path(str(options["out"])) if options.get("out") is not None else None,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "sign-receipt":
+        try:
+            options = _parse_sign_receipt_cli_args(positional_args[1:])
+            payload = sign_receipt(
+                receipt_path=Path(str(options["receipt"])),
+                key_path=Path(str(options["key"])),
+                output_path=Path(str(options["out"])) if options.get("out") is not None else None,
+                actor_manifest_path=(
+                    Path(str(options["actor_manifest"]))
+                    if options.get("actor_manifest") is not None
+                    else None
+                ),
+                environment_manifest_path=(
+                    Path(str(options["environment_manifest"]))
+                    if options.get("environment_manifest") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "verify-signed-receipt":
+        try:
+            options = _parse_verify_signed_receipt_cli_args(positional_args[1:])
+            payload = verify_signed_receipt(
+                signed_receipt_path=Path(str(options["signed_receipt"])),
+                key_path=Path(str(options["key"])),
+                output_path=Path(str(options["out"])) if options.get("out") is not None else None,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3091,6 +3181,230 @@ def _parse_compliance_package_cli_args(args: list[str]) -> dict[str, object]:
     return options
 
 
+def _parse_actor_manifest_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_id": None,
+        "actors": [],
+        "out": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-id":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-id requires a value")
+            options["run_id"] = args[index]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg == "--actor":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--actor requires a value")
+            cast_actors = options["actors"]
+            if isinstance(cast_actors, list):
+                cast_actors.append(args[index])
+        elif arg.startswith("--actor="):
+            cast_actors = options["actors"]
+            if isinstance(cast_actors, list):
+                cast_actors.append(arg.partition("=")[2])
+        elif arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown actor-manifest option: {arg}")
+        index += 1
+    if not options["run_id"]:
+        raise RuntimeError("Usage: tau actor-manifest --run-id <id> --actor <id:type:roles>")
+    if not options["actors"]:
+        raise RuntimeError("Usage: tau actor-manifest --run-id <id> --actor <id:type:roles>")
+    return options
+
+
+def _parse_environment_manifest_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_id": None,
+        "network_policy": "unknown",
+        "provider_access": "unknown",
+        "mounted_paths": [],
+        "secrets_visible": [],
+        "tool_versions": {},
+        "policy_profile": None,
+        "data_boundary": None,
+        "out": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-id":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-id requires a value")
+            options["run_id"] = args[index]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg == "--network-policy":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--network-policy requires a value")
+            options["network_policy"] = args[index]
+        elif arg.startswith("--network-policy="):
+            options["network_policy"] = arg.partition("=")[2]
+        elif arg == "--provider-access":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--provider-access requires a value")
+            options["provider_access"] = args[index]
+        elif arg.startswith("--provider-access="):
+            options["provider_access"] = arg.partition("=")[2]
+        elif arg == "--mounted-path":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--mounted-path requires a value")
+            _append_option(options, "mounted_paths", args[index])
+        elif arg.startswith("--mounted-path="):
+            _append_option(options, "mounted_paths", arg.partition("=")[2])
+        elif arg == "--secret-visible":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--secret-visible requires a value")
+            _append_option(options, "secrets_visible", args[index])
+        elif arg.startswith("--secret-visible="):
+            _append_option(options, "secrets_visible", arg.partition("=")[2])
+        elif arg == "--tool-version":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--tool-version requires name=value")
+            _set_tool_version(options, args[index])
+        elif arg.startswith("--tool-version="):
+            _set_tool_version(options, arg.partition("=")[2])
+        elif arg == "--policy-profile":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--policy-profile requires a value")
+            options["policy_profile"] = args[index]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg == "--data-boundary":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--data-boundary requires a value")
+            options["data_boundary"] = args[index]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown environment-manifest option: {arg}")
+        index += 1
+    if not options["run_id"]:
+        raise RuntimeError("Usage: tau environment-manifest --run-id <id>")
+    return options
+
+
+def _parse_sign_receipt_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "receipt": None,
+        "key": None,
+        "out": None,
+        "actor_manifest": None,
+        "environment_manifest": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            options["receipt"] = Path(args[index])
+        elif arg.startswith("--receipt="):
+            options["receipt"] = Path(arg.partition("=")[2])
+        elif arg == "--key":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--key requires a value")
+            options["key"] = Path(args[index])
+        elif arg.startswith("--key="):
+            options["key"] = Path(arg.partition("=")[2])
+        elif arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg == "--actor-manifest":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--actor-manifest requires a value")
+            options["actor_manifest"] = Path(args[index])
+        elif arg.startswith("--actor-manifest="):
+            options["actor_manifest"] = Path(arg.partition("=")[2])
+        elif arg == "--environment-manifest":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--environment-manifest requires a value")
+            options["environment_manifest"] = Path(args[index])
+        elif arg.startswith("--environment-manifest="):
+            options["environment_manifest"] = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown sign-receipt option: {arg}")
+        index += 1
+    if options["receipt"] is None or options["key"] is None:
+        raise RuntimeError("Usage: tau sign-receipt --receipt <json> --key <key> [--out <json>]")
+    return options
+
+
+def _parse_verify_signed_receipt_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "signed_receipt": None,
+        "key": None,
+        "out": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--signed-receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--signed-receipt requires a value")
+            options["signed_receipt"] = Path(args[index])
+        elif arg.startswith("--signed-receipt="):
+            options["signed_receipt"] = Path(arg.partition("=")[2])
+        elif arg == "--key":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--key requires a value")
+            options["key"] = Path(args[index])
+        elif arg.startswith("--key="):
+            options["key"] = Path(arg.partition("=")[2])
+        elif arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown verify-signed-receipt option: {arg}")
+        index += 1
+    if options["signed_receipt"] is None or options["key"] is None:
+        raise RuntimeError(
+            "Usage: tau verify-signed-receipt --signed-receipt <json> --key <key>"
+        )
+    return options
+
+
 def _parse_report_cli_args(args: list[str]) -> dict[str, object]:
     if not args:
         raise RuntimeError("Usage: tau report <run-dir> --out <report.html> [--force]")
@@ -3149,6 +3463,21 @@ def _parse_serve_cli_args(args: list[str]) -> dict[str, object]:
     if int(options["port"]) < 1 or int(options["port"]) > 65535:
         raise RuntimeError("--port must be between 1 and 65535")
     return options
+
+
+def _append_option(options: dict[str, object], key: str, value: str) -> None:
+    current = options[key]
+    if isinstance(current, list):
+        current.append(value)
+
+
+def _set_tool_version(options: dict[str, object], value: str) -> None:
+    name, separator, version = value.partition("=")
+    if not separator or not name or not version:
+        raise RuntimeError("--tool-version requires name=value")
+    current = options["tool_versions"]
+    if isinstance(current, dict):
+        current[name] = version
 
 
 def _parse_dag_fail_closed_registry_args(args: list[str]) -> Path | None:

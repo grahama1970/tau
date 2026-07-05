@@ -239,6 +239,102 @@ def test_cli_compliance_package_writes_review_bundle(tmp_path: Path) -> None:
     assert (out_dir / "non-claims.md").exists()
 
 
+def test_cli_actor_and_environment_manifests_write_files(tmp_path: Path) -> None:
+    actor_path = tmp_path / "actor-manifest.json"
+    environment_path = tmp_path / "environment-manifest.json"
+
+    actor_result = CliRunner().invoke(
+        app,
+        [
+            "actor-manifest",
+            "--run-id",
+            "cli-provenance",
+            "--actor",
+            "coder:agent:worker",
+            "--actor",
+            "graham:human:approver",
+            "--out",
+            str(actor_path),
+        ],
+    )
+    environment_result = CliRunner().invoke(
+        app,
+        [
+            "environment-manifest",
+            "--run-id",
+            "cli-provenance",
+            "--network-policy",
+            "deny",
+            "--provider-access",
+            "denied",
+            "--mounted-path",
+            "/tmp/tau-run",
+            "--tool-version",
+            "tau=0.1.0",
+            "--out",
+            str(environment_path),
+        ],
+    )
+    actor_payload = json.loads(actor_result.output)
+    environment_payload = json.loads(environment_result.output)
+
+    assert actor_result.exit_code == 0
+    assert actor_payload["schema"] == "tau.actor_manifest.v1"
+    assert actor_payload["actors"][0]["trusted"] is False
+    assert actor_path.exists()
+    assert environment_result.exit_code == 0
+    assert environment_payload["schema"] == "tau.environment_manifest.v1"
+    assert environment_payload["network_policy"] == "deny"
+    assert environment_path.exists()
+
+
+def test_cli_sign_and_verify_receipt(tmp_path: Path) -> None:
+    receipt = tmp_path / "receipt.json"
+    key = tmp_path / "key.txt"
+    signed = tmp_path / "signed-receipt.json"
+    verification = tmp_path / "verification.json"
+    receipt.write_text(
+        json.dumps({"schema": "tau.test_receipt.v1", "ok": True, "status": "PASS"}),
+        encoding="utf-8",
+    )
+    key.write_text("cli-local-key", encoding="utf-8")
+
+    sign_result = CliRunner().invoke(
+        app,
+        [
+            "sign-receipt",
+            "--receipt",
+            str(receipt),
+            "--key",
+            str(key),
+            "--out",
+            str(signed),
+        ],
+    )
+    verify_result = CliRunner().invoke(
+        app,
+        [
+            "verify-signed-receipt",
+            "--signed-receipt",
+            str(signed),
+            "--key",
+            str(key),
+            "--out",
+            str(verification),
+        ],
+    )
+    sign_payload = json.loads(sign_result.output)
+    verify_payload = json.loads(verify_result.output)
+
+    assert sign_result.exit_code == 0
+    assert sign_payload["schema"] == "tau.signed_receipt.v1"
+    assert signed.exists()
+    assert verify_result.exit_code == 0
+    assert verify_payload["schema"] == "tau.signed_receipt_verification.v1"
+    assert verify_payload["ok"] is True
+    assert verification.exists()
+
+
 def test_cli_report_writes_static_html_report(tmp_path: Path) -> None:
     run_dir = tmp_path / "run"
     report_path = tmp_path / "report.html"
