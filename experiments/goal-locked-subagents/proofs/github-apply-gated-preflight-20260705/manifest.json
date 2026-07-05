@@ -13,6 +13,8 @@
     "uv run tau github-redact-projection --projection experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json --out experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.redacted.json --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-redaction-receipt.json",
     "uv run tau approval-gate-check --approval-packet experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-approval-packet.json --requested-action github_apply --run-dir experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705 --output experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-approval-gate-receipt.json",
     "uv run tau github-apply-policy-check --projection experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-projection.json --policy experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-policy.json --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-apply-policy-receipt.json --approval-receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-approval-gate-receipt.json --redaction-receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-redaction-receipt.json --preflight-ready",
+    "uv run tau handoff-github-transport experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-github-issue-47.json --active-goal-hash sha256:tau-broader-hardening-20260705 --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-apply-missing-policy-receipt.json --apply",
+    "uv run tau handoff-github-transport experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/handoff-github-issue-47.json --active-goal-hash sha256:tau-broader-hardening-20260705 --receipt experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-dry-run-after-policy-enforcement-receipt.json",
     "gh auth status --hostname github.com",
     "gh issue view 47 --repo grahama1970/tau --json number,title,state,url"
   ],
@@ -23,6 +25,8 @@
     "github-redaction-receipt.json",
     "github-approval-gate-receipt.json",
     "github-apply-policy-receipt.json",
+    "github-transport-apply-missing-policy-receipt.json",
+    "github-transport-dry-run-after-policy-enforcement-receipt.json",
     "gh-auth-status.txt",
     "gh-issue-47-view.json"
   ],
@@ -31,12 +35,14 @@
     "Tau redaction inspected the projection and wrote a redacted projection artifact.",
     "Tau validated a github_apply approval-gate receipt for the target.",
     "Tau apply-policy checks accepted repo/action allowlist, denylist, approval, redaction, and preflight requirements.",
+    "Tau handoff-github-transport --apply fails closed without a PASS github apply-policy receipt and runs no gh commands.",
+    "Tau handoff-github-transport dry-run still renders the expected issue comment and label commands after policy enforcement was added.",
     "Read-only gh auth and issue-view commands succeeded."
   ],
   "does_not_prove": [
     "Live GitHub mutation.",
     "A public issue comment was posted.",
     "Human acceptance of the comment content.",
-    "The transport command internally enforces github-apply-policy-check before --apply."
+    "A full live handoff-github-transport --apply run with a policy receipt."
   ]
 }

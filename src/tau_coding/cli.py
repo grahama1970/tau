@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from os import environ
 from pathlib import Path
 from shutil import which
-from typing import Annotated
+from typing import Annotated, Any
 
 import anyio
 import httpx
@@ -1356,15 +1356,21 @@ def main(
 
     if prompt_option is None and command == "handoff-github-transport":
         try:
-            handoff_path, active_goal_hash, receipt_path, agents_root, apply_github = (
-                _parse_handoff_github_transport_cli_args(positional_args[1:])
-            )
+            (
+                handoff_path,
+                active_goal_hash,
+                receipt_path,
+                agents_root,
+                apply_github,
+                github_apply_policy_receipt,
+            ) = _parse_handoff_github_transport_cli_args(positional_args[1:])
             ok = transport_agent_handoff_to_github_command(
                 handoff_path,
                 active_goal_hash=active_goal_hash,
                 receipt_path=receipt_path,
                 agents_root=agents_root,
                 apply_github=apply_github,
+                github_apply_policy_receipt=github_apply_policy_receipt,
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3092,18 +3098,20 @@ def _parse_handoff_project_cli_args(
 
 def _parse_handoff_github_transport_cli_args(
     args: list[str],
-) -> tuple[Path, str | None, Path | None, Path | None, bool]:
+) -> tuple[Path, str | None, Path | None, Path | None, bool, Path | None]:
     if not args:
         raise RuntimeError(
             "Usage: tau handoff-github-transport <handoff.json> "
             "[--active-goal-hash <hash>] [--agents-root <dir>] "
-            "[--receipt <receipt.json>] [--apply]"
+            "[--receipt <receipt.json>] [--apply] "
+            "[--github-apply-policy-receipt <receipt.json>]"
         )
     handoff_path = Path(args[0])
     active_goal_hash: str | None = None
     receipt_path: Path | None = None
     agents_root: Path | None = None
     apply_github = False
+    github_apply_policy_receipt: Path | None = None
     index = 1
     while index < len(args):
         arg = args[index]
@@ -3128,12 +3136,26 @@ def _parse_handoff_github_transport_cli_args(
             agents_root = Path(args[index])
         elif arg.startswith("--agents-root="):
             agents_root = Path(arg.partition("=")[2])
+        elif arg == "--github-apply-policy-receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--github-apply-policy-receipt requires a value")
+            github_apply_policy_receipt = Path(args[index])
+        elif arg.startswith("--github-apply-policy-receipt="):
+            github_apply_policy_receipt = Path(arg.partition("=")[2])
         elif arg == "--apply":
             apply_github = True
         else:
             raise RuntimeError(f"Unknown handoff-github-transport option: {arg}")
         index += 1
-    return handoff_path, active_goal_hash, receipt_path, agents_root, apply_github
+    return (
+        handoff_path,
+        active_goal_hash,
+        receipt_path,
+        agents_root,
+        apply_github,
+        github_apply_policy_receipt,
+    )
 
 
 def _parse_github_redact_projection_args(args: list[str]) -> tuple[Path, Path, Path | None]:
@@ -5772,6 +5794,7 @@ def transport_agent_handoff_to_github_command(
     receipt_path: Path | None,
     agents_root: Path | None,
     apply_github: bool,
+    github_apply_policy_receipt: Path | None = None,
 ) -> bool:
     """Render or apply GitHub transport for one validated handoff."""
 
@@ -5803,6 +5826,34 @@ def transport_agent_handoff_to_github_command(
         typer.echo(json.dumps(transport_receipt, indent=2, sort_keys=True))
         return False
 
+    policy_errors = _github_apply_policy_receipt_errors(
+        projection=projection.as_dict(),
+        apply_github=apply_github,
+        github_apply_policy_receipt=github_apply_policy_receipt,
+    )
+    if policy_errors:
+        transport_receipt = {
+            "schema": "tau.github_handoff_transport_receipt.v1",
+            "ok": False,
+            "dry_run": False,
+            "applied": False,
+            "target": projection.target,
+            "commands": [],
+            "command_results": [],
+            "preflight_results": [],
+            "receipt_path": str(receipt_path.expanduser().resolve()) if receipt_path else None,
+            "errors": policy_errors,
+        }
+        if receipt_path is not None:
+            resolved = receipt_path.expanduser().resolve()
+            resolved.parent.mkdir(parents=True, exist_ok=True)
+            resolved.write_text(
+                json.dumps(transport_receipt, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        typer.echo(json.dumps(transport_receipt, indent=2, sort_keys=True))
+        return False
+
     transport = transport_handoff_projection_to_github(
         projection.as_dict(),
         apply=apply_github,
@@ -5810,6 +5861,61 @@ def transport_agent_handoff_to_github_command(
     )
     typer.echo(json.dumps(transport.as_dict(), indent=2, sort_keys=True))
     return transport.ok
+
+
+def _github_apply_policy_receipt_errors(
+    *,
+    projection: dict[str, Any],
+    apply_github: bool,
+    github_apply_policy_receipt: Path | None,
+) -> list[str]:
+    if not apply_github:
+        return []
+    if github_apply_policy_receipt is None:
+        return [
+            "GitHub --apply requires --github-apply-policy-receipt "
+            "with a PASS tau.github_apply_policy_receipt.v1 receipt."
+        ]
+    receipt = _load_json_object(github_apply_policy_receipt, label="GitHub apply policy receipt")
+    errors: list[str] = []
+    if receipt.get("schema") != "tau.github_apply_policy_receipt.v1":
+        errors.append("GitHub apply policy receipt schema must be tau.github_apply_policy_receipt.v1")
+    if receipt.get("ok") is not True or receipt.get("status") != "PASS":
+        errors.append("GitHub apply policy receipt must be PASS")
+    if receipt.get("target") != projection.get("target"):
+        errors.append("GitHub apply policy receipt target must match the handoff projection target")
+    failed_checks = receipt.get("failed_checks")
+    if isinstance(failed_checks, list) and failed_checks:
+        errors.append("GitHub apply policy receipt has failed_checks")
+    receipt_errors = receipt.get("errors")
+    if isinstance(receipt_errors, list) and receipt_errors:
+        errors.append("GitHub apply policy receipt has errors")
+    required_actions = set(_github_projection_action_names(projection))
+    receipt_actions = receipt.get("actions")
+    receipt_action_set = {str(action) for action in receipt_actions} if isinstance(receipt_actions, list) else set()
+    if required_actions and not required_actions.issubset(receipt_action_set):
+        missing = sorted(required_actions - receipt_action_set)
+        errors.append(f"GitHub apply policy receipt is missing actions: {missing}")
+    requirements = receipt.get("requirements")
+    if not isinstance(requirements, dict) or not all(
+        requirements.get(key) is True for key in ("approval_packet", "preflight", "redaction")
+    ):
+        errors.append("GitHub apply policy receipt must show approval, preflight, and redaction gates")
+    return errors
+
+
+def _github_projection_action_names(projection: dict[str, Any]) -> list[str]:
+    actions: list[str] = []
+    comment = projection.get("comment")
+    if isinstance(comment, dict) and str(comment.get("body") or "").strip():
+        actions.append("comment")
+    labels = projection.get("labels")
+    if isinstance(labels, dict):
+        add = labels.get("add")
+        remove = labels.get("remove")
+        if (isinstance(add, list) and add) or (isinstance(remove, list) and remove):
+            actions.append("label")
+    return actions
 
 
 def transport_generated_ticket_to_github_command(

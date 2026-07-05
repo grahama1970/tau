@@ -23,6 +23,7 @@ from tau_coding import (
     LoopReceiptValidationResult,
     SessionManager,
     cli,
+    github_handoff,
 )
 from tau_coding.cli import app, run_print_mode
 from tau_coding.paths import TauPaths
@@ -408,6 +409,100 @@ def test_cli_handoff_github_transport_defaults_to_dry_run(tmp_path: Path) -> Non
     assert payload["applied"] is False
     assert payload["commands"][0][:3] == ["gh", "issue", "comment"]
     assert payload["commands"][1][:3] == ["gh", "issue", "edit"]
+    assert receipt == payload
+
+
+def test_cli_handoff_github_transport_apply_requires_policy_receipt(tmp_path: Path) -> None:
+    handoff_path = tmp_path / "handoff.json"
+    receipt_path = tmp_path / "github-transport" / "receipt.json"
+    handoff_path.write_text(json.dumps(_valid_cli_handoff_payload()), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-github-transport",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+            "--apply",
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.github_handoff_transport_receipt.v1"
+    assert payload["ok"] is False
+    assert payload["applied"] is False
+    assert payload["commands"] == []
+    assert payload["command_results"] == []
+    assert "--github-apply-policy-receipt" in "\n".join(payload["errors"])
+    assert receipt == payload
+
+
+def test_cli_handoff_github_transport_apply_accepts_policy_receipt(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handoff_path = tmp_path / "handoff.json"
+    receipt_path = tmp_path / "github-transport" / "receipt.json"
+    policy_receipt_path = tmp_path / "github-policy-receipt.json"
+    handoff_path.write_text(json.dumps(_valid_cli_handoff_payload()), encoding="utf-8")
+    policy_receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.github_apply_policy_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "target": {
+                    "repo": "grahama1970/chatgpt-lab",
+                    "target": "issue#123",
+                },
+                "actions": ["comment", "label"],
+                "requirements": {
+                    "approval_packet": True,
+                    "preflight": True,
+                    "redaction": True,
+                },
+                "failed_checks": [],
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    commands: list[list[str]] = []
+
+    def fake_run(command: list[str], stdin: str | None) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0, "{}", "")
+
+    monkeypatch.setattr(github_handoff, "_run_gh_command", fake_run)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-github-transport",
+            str(handoff_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--receipt",
+            str(receipt_path),
+            "--apply",
+            "--github-apply-policy-receipt",
+            str(policy_receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text())
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert payload["dry_run"] is False
+    assert payload["applied"] is True
+    assert payload["commands"] == commands
+    assert len(payload["command_results"]) == 2
     assert receipt == payload
 
 

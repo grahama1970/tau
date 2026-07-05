@@ -1,0 +1,17 @@
+{
+  "applied": false,
+  "command_results": [],
+  "commands": [],
+  "dry_run": false,
+  "errors": [
+    "GitHub --apply requires --github-apply-policy-receipt with a PASS tau.github_apply_policy_receipt.v1 receipt."
+  ],
+  "ok": false,
+  "preflight_results": [],
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/github-apply-gated-preflight-20260705/github-transport-apply-missing-policy-receipt.json",
+  "schema": "tau.github_handoff_transport_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}
