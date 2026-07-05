@@ -90,6 +90,8 @@ The policy/data-boundary gate is documented in
 [Zero-Trust Policy/Data-Boundary Preflight](docs/zero-trust-policy.md).
 The adversarial model is documented in
 [Tau Zero-Trust Threat Model](docs/threat-model.md).
+The local API hardening path is documented in
+[Tau Local API Hardening Roadmap](docs/api-hardening-roadmap.md).
 
 ## Herdr-visible subagent monitoring
 
