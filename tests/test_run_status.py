@@ -572,6 +572,77 @@ def test_run_status_summarizes_standalone_cleanup_receipt(tmp_path: Path) -> Non
     assert status["cleanup"]["post_verified_absent_count"] == 1
 
 
+def test_run_status_summarizes_herdr_gc_receipt_over_approval(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "approval-gate-receipt.json",
+        {
+            "schema": "tau.approval_gate_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "approved": True,
+            "requested_action": "herdr_gc_apply",
+            "approval_packet": str(tmp_path / "approval.json"),
+            "approval_packet_sha256": "sha256-approval",
+            "packet_summary": {"action": "herdr_gc_apply"},
+            "errors": [],
+        },
+    )
+    _write_json(
+        tmp_path / "herdr-gc-receipt.json",
+        {
+            "schema": "tau.herdr_gc_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "mode": "apply",
+            "run_dir": str(tmp_path),
+            "herdr_bin": "herdr",
+            "approval_required": True,
+            "approval_receipt": str(tmp_path / "approval-gate-receipt.json"),
+            "approval_receipt_sha256": "sha256-gate",
+            "workspace_count": 1,
+            "candidate_count": 0,
+            "skipped_count": 0,
+            "applied_action_count": 0,
+            "post_verified_absent_count": 0,
+            "command_results": [{"argv": ["herdr", "workspace", "list"], "returncode": 0}],
+            "alerts": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["live"] is True
+    assert status["detected_type"] == "herdr_gc"
+    assert status["missing_required_artifacts"] == []
+    assert status["approval_gate"]["requested_action"] == "herdr_gc_apply"
+    assert status["herdr_gc"] == {
+        "schema": "tau.herdr_gc_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": True,
+        "mode": "apply",
+        "run_dir": str(tmp_path),
+        "herdr_bin": "herdr",
+        "approval_required": True,
+        "approval_receipt": str(tmp_path / "approval-gate-receipt.json"),
+        "approval_receipt_sha256": "sha256-gate",
+        "workspace_count": 1,
+        "candidate_count": 0,
+        "skipped_count": 0,
+        "applied_action_count": 0,
+        "post_verified_absent_count": 0,
+        "command_result_count": 1,
+        "alerts": [],
+    }
+
+
 def test_run_status_summarizes_standalone_orchestration_evidence_receipt(
     tmp_path: Path,
 ) -> None:

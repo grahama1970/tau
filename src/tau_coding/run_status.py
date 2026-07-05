@@ -23,6 +23,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     checkpoint = _read_optional_json(artifacts["checkpoint"])
     current_state = _read_optional_json(artifacts["current_state"])
     cleanup = _read_optional_json(artifacts["cleanup"])
+    herdr_gc = _read_optional_json(artifacts["herdr_gc"])
     approval_gate = _read_optional_json(artifacts["approval_gate"])
     orchestration_evidence = _read_optional_json(artifacts["orchestration_evidence"])
     planner_receipt = _read_optional_json(artifacts["planner_receipt"])
@@ -40,6 +41,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         runtime_manifest,
         approval_gate=approval_gate,
         cleanup=cleanup,
+        herdr_gc=herdr_gc,
         orchestration_evidence=orchestration_evidence,
         planner_receipt=planner_receipt,
         browser_cdp_proof=browser_cdp_proof,
@@ -53,6 +55,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         checkpoint,
         approval_gate,
         cleanup,
+        herdr_gc,
         orchestration_evidence,
         planner_receipt,
         browser_cdp_proof,
@@ -79,6 +82,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "live": _live_value(
             run_receipt,
             cleanup,
+            herdr_gc,
             approval_gate,
             orchestration_evidence,
             planner_receipt,
@@ -111,6 +115,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         },
         "provider_session_states": [_provider_state_summary(state) for state in lifecycle_states],
         "cleanup": _cleanup_summary(cleanup),
+        "herdr_gc": _herdr_gc_summary(herdr_gc),
         "real_world_sanity": _real_world_sanity_summary(run_receipt),
         "approval_gate": _approval_summary(approval_gate),
         "orchestration_evidence": _orchestration_summary(orchestration_evidence),
@@ -144,6 +149,7 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "checkpoint": run_dir / "checkpoint.json",
         "current_state": run_dir / "current-state.json",
         "cleanup": run_dir / "herdr-cleanup-receipt.json",
+        "herdr_gc": run_dir / "herdr-gc-receipt.json",
         "approval_gate": run_dir / "approval-gate-receipt.json",
         "orchestration_evidence": run_dir / "orchestration-evidence-receipt.json",
         "planner_receipt": run_dir / "planner-receipt.json",
@@ -171,6 +177,7 @@ def _missing_required_artifact(
         "approval_gate",
         "dag_stress",
         "dag_stress_campaign",
+        "herdr_gc",
         "herdr_cleanup",
         "orchestration_evidence",
         "provider_dag_planner",
@@ -184,6 +191,7 @@ def _missing_required_artifact(
         "approval_gate",
         "dag_stress",
         "dag_stress_campaign",
+        "herdr_gc",
         "generic_dag",
         "herdr_cleanup",
         "orchestration_evidence",
@@ -203,6 +211,7 @@ def _detected_type(
     *,
     approval_gate: dict[str, Any],
     cleanup: dict[str, Any],
+    herdr_gc: dict[str, Any],
     orchestration_evidence: dict[str, Any],
     planner_receipt: dict[str, Any],
     browser_cdp_proof: dict[str, Any],
@@ -213,8 +222,9 @@ def _detected_type(
 ) -> str:
     schema = str(
         run_receipt.get("schema")
-        or approval_gate.get("schema")
+        or herdr_gc.get("schema")
         or cleanup.get("schema")
+        or approval_gate.get("schema")
         or orchestration_evidence.get("schema")
         or planner_receipt.get("schema")
         or browser_cdp_proof.get("schema")
@@ -239,6 +249,8 @@ def _detected_type(
         return "approval_gate"
     if schema == "tau.herdr_cleanup_receipt.v1":
         return "herdr_cleanup"
+    if schema == "tau.herdr_gc_receipt.v1":
+        return "herdr_gc"
     if schema == "tau.orchestration_evidence_receipt.v1":
         return "orchestration_evidence"
     if schema == "tau.dag_planner_receipt.v1":
@@ -263,6 +275,7 @@ def _overall_status(
     checkpoint: dict[str, Any],
     approval_gate: dict[str, Any],
     cleanup: dict[str, Any],
+    herdr_gc: dict[str, Any],
     orchestration_evidence: dict[str, Any],
     planner_receipt: dict[str, Any],
     browser_cdp_proof: dict[str, Any],
@@ -274,8 +287,9 @@ def _overall_status(
     for payload in (
         run_receipt,
         checkpoint,
-        approval_gate,
+        herdr_gc,
         cleanup,
+        approval_gate,
         orchestration_evidence,
         planner_receipt,
         browser_cdp_proof,
@@ -721,6 +735,31 @@ def _cleanup_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "candidate_count": payload.get("candidate_count"),
         "applied_action_count": _count(payload.get("applied_actions")),
         "post_verified_absent_count": _post_verified_absent_count(payload.get("applied_actions")),
+    }
+
+
+def _herdr_gc_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.herdr_gc_receipt.v1":
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "mode": payload.get("mode"),
+        "run_dir": payload.get("run_dir"),
+        "herdr_bin": payload.get("herdr_bin"),
+        "approval_required": payload.get("approval_required"),
+        "approval_receipt": payload.get("approval_receipt"),
+        "approval_receipt_sha256": payload.get("approval_receipt_sha256"),
+        "workspace_count": payload.get("workspace_count"),
+        "candidate_count": payload.get("candidate_count"),
+        "skipped_count": payload.get("skipped_count"),
+        "applied_action_count": payload.get("applied_action_count"),
+        "post_verified_absent_count": payload.get("post_verified_absent_count"),
+        "command_result_count": _count(payload.get("command_results")),
+        "alerts": payload.get("alerts"),
     }
 
 
