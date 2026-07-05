@@ -238,6 +238,11 @@ def _gate_candidates(
     rejected: list[dict[str, Any]] = []
     for candidate in _dict_list(signal.get("route_reinforcement_candidates")):
         confidence = _float_or_zero(candidate.get("confidence"))
+        missing_route_fields = [
+            key
+            for key in ("from_node", "to_node", "from_agent", "to_agent")
+            if not isinstance(candidate.get(key), str) or not candidate.get(key)
+        ]
         route = {
             "route_key": _route_key(candidate),
             "from_node": candidate.get("from_node"),
@@ -252,17 +257,24 @@ def _gate_candidates(
             "sync_status": "NOT_SYNCED",
             "sync_reason": "local_candidate_receipt_only",
         }
-        if confidence >= min_confidence and candidate.get("sync_status") == "NOT_SYNCED":
+        if (
+            not missing_route_fields
+            and confidence >= min_confidence
+            and candidate.get("sync_status") == "NOT_SYNCED"
+        ):
             accepted.append(route)
         else:
+            if missing_route_fields:
+                rejection_reason = "missing_route_fields"
+            elif confidence < min_confidence:
+                rejection_reason = "confidence_below_threshold"
+            else:
+                rejection_reason = "candidate_already_synced_or_unknown_sync_state"
             rejected.append(
                 {
                     **route,
-                    "rejection_reason": (
-                        "confidence_below_threshold"
-                        if confidence < min_confidence
-                        else "candidate_already_synced_or_unknown_sync_state"
-                    ),
+                    "missing_route_fields": missing_route_fields,
+                    "rejection_reason": rejection_reason,
                 }
             )
     return accepted, rejected

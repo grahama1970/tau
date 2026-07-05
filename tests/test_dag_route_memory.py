@@ -85,6 +85,23 @@ def test_route_memory_candidates_reject_low_confidence(tmp_path: Path) -> None:
     assert receipt["rejected_candidates"][0]["rejection_reason"] == "confidence_below_threshold"
 
 
+def test_route_memory_candidates_reject_missing_route_fields(tmp_path: Path) -> None:
+    payload = _signal_receipt()
+    del payload["route_reinforcement_candidates"][1]["to_node"]
+    signal_path = _write_signal(tmp_path, payload)
+
+    receipt = write_dag_route_memory_candidate_receipt(
+        signal_receipt_path=signal_path,
+        receipt_path=tmp_path / "route-memory.json",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["accepted_candidate_count"] == 1
+    assert receipt["rejected_candidate_count"] == 1
+    assert receipt["rejected_candidates"][0]["rejection_reason"] == "missing_route_fields"
+    assert receipt["rejected_candidates"][0]["missing_route_fields"] == ["to_node"]
+
+
 def test_route_memory_candidates_block_when_no_candidate_meets_gate(tmp_path: Path) -> None:
     payload = _signal_receipt()
     for candidate in payload["route_reinforcement_candidates"]:
