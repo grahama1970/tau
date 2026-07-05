@@ -164,6 +164,7 @@ from tau_coding.provider_runtime import create_model_provider
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
+from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_run_status
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
@@ -1349,6 +1350,21 @@ def main(
             payload = build_compliance_evidence_package(
                 run_dir=Path(str(options["run_dir"])),
                 out_dir=Path(str(options["out"])),
+                force=bool(options["force"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "report":
+        try:
+            options = _parse_report_cli_args(positional_args[1:])
+            payload = write_run_report(
+                run_dir=Path(str(options["run_dir"])),
+                out_path=Path(str(options["out"])),
                 force=bool(options["force"]),
             )
         except RuntimeError as exc:
@@ -3035,6 +3051,34 @@ def _parse_compliance_package_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if options["out"] is None:
         raise RuntimeError("Usage: tau compliance-package <run-dir> --out <package-dir> [--force]")
+    return options
+
+
+def _parse_report_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau report <run-dir> --out <report.html> [--force]")
+    options: dict[str, object] = {
+        "run_dir": Path(args[0]),
+        "out": None,
+        "force": False,
+    }
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg == "--force":
+            options["force"] = True
+        else:
+            raise RuntimeError(f"unknown report option: {arg}")
+        index += 1
+    if options["out"] is None:
+        raise RuntimeError("Usage: tau report <run-dir> --out <report.html> [--force]")
     return options
 
 
