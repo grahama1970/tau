@@ -286,7 +286,7 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
         sleep_seconds=0.25,
     )
     _write_response_spec(
@@ -308,7 +308,7 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     assert receipt["status"] == "PASS"
     assert receipt["scheduler"] == "bounded-ready-queue"
     assert receipt["max_observed_concurrency"] >= 2
-    assert set(receipt["selected_agents"]) == {"research", "coder", "reviewer"}
+    assert set(receipt["selected_agents"]) == {"research-auditor", "coder", "reviewer"}
     assert receipt["node_attempts"] == {
         "coder": 1,
         "research": 1,
@@ -339,7 +339,7 @@ def test_project_dag_ready_queue_propagates_node_context_to_command_stdin(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
     )
     _write_stdin_capture_response_spec(
         tmp_path,
@@ -385,7 +385,7 @@ def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
         sleep_seconds=0.25,
     )
     _write_flaky_response_spec(
@@ -427,7 +427,7 @@ def test_project_dag_bounded_ready_queue_recovers_after_non_json_retry(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
     )
     _write_flaky_response_spec(
         tmp_path,
@@ -466,7 +466,7 @@ def test_project_dag_bounded_ready_queue_blocks_after_max_retries(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
     )
     _write_always_non_json_spec(tmp_path, "coder")
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
@@ -505,7 +505,7 @@ def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
     )
     _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
@@ -597,6 +597,10 @@ def test_fail_closed_registry_payload_names_executable_invariants() -> None:
     assert payload["invariants"]["unexpected_edge"] == {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.observed_edges",
+    }
+    assert payload["invariants"]["reviewer_goal_hash_mismatch"] == {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_goal_hash",
     }
     assert payload["invariants"]["missing_work_order_sha256"] == {
         "severity": "BLOCK",
@@ -824,7 +828,7 @@ def test_project_dag_ready_queue_command_policy_blocks_denied_command(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research", "human", [{"kind": "source_summary"}]),
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
     )
     _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))

@@ -71,6 +71,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.provider_work_order.sha256",
     },
+    "reviewer_goal_hash_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.reviewer_goal_hash",
+    },
     "target_changed": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.handoff.github_target",
@@ -1480,6 +1484,8 @@ def _node_start_handoff(
         contract_context=contract.context,
         node_context=node.context,
     )
+    context["dag_node_id"] = node.node_id
+    context["dag_agent_role"] = node.agent
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -1496,9 +1502,9 @@ def _node_start_handoff(
         },
         "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
         "next_agent": {
-            "name": node.node_id,
+            "name": node.agent,
             "executor": node.executor,
-            "reason": f"Ready node for DAG {contract.dag_id} using role {node.agent}.",
+            "reason": f"Ready DAG node {node.node_id} in {contract.dag_id}.",
         },
         "required_evidence": list(node.required_evidence),
         "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation.",
