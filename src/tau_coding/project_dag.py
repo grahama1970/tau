@@ -18,6 +18,11 @@ from tau_coding.handoff_dispatch import (
     load_agent_dispatch_command_spec,
     write_agent_handoff_command_loop_receipt,
 )
+from tau_coding.memory_evidence_gate import (
+    read_gate_payload,
+    write_evidence_case_gate_receipt,
+    write_memory_intent_gate_receipt,
+)
 from tau_coding.policy_profile import zero_trust_preflight_receipt
 
 try:  # YAML is available in the project lock through docs tooling, but keep JSON first.
@@ -140,6 +145,8 @@ class ProjectDagContract:
     command_policy: str | None
     policy_profile: str | dict[str, Any] | None
     data_boundary: str | dict[str, Any] | None
+    memory_intent: str | dict[str, Any] | None
+    evidence_case: str | dict[str, Any] | None
 
 
 def run_project_dag_contract(
@@ -177,6 +184,28 @@ def run_project_dag_contract(
             scheduler=scheduler,
             verdict=str(zero_trust_alerts[0]["code"]).upper(),
             alerts=zero_trust_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+    memory_alerts, memory_receipt, evidence_case_receipt = _memory_evidence_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+        receipt_dir=resolved_receipt_dir,
+    )
+    if memory_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(memory_alerts[0]["code"]).upper(),
+            alerts=memory_alerts,
+            memory_intent_gate_receipt=memory_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=zero_trust_receipt,
         )
@@ -195,6 +224,8 @@ def run_project_dag_contract(
             scheduler=scheduler,
             verdict=str(evidence_manifest_alerts[0]["code"]).upper(),
             alerts=evidence_manifest_alerts,
+            memory_intent_gate_receipt=memory_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
             evidence_validation_receipt=evidence_validation_receipt,
             zero_trust_preflight_receipt=zero_trust_receipt,
         )
@@ -282,9 +313,29 @@ def run_project_dag_contract(
             if isinstance(evidence_validation_receipt, dict)
             else None
         ),
+        "memory_intent_gate_receipt": (
+            memory_receipt.get("receipt_path") if isinstance(memory_receipt, dict) else None
+        ),
+        "evidence_case_gate_receipt": (
+            evidence_case_receipt.get("receipt_path")
+            if isinstance(evidence_case_receipt, dict)
+            else None
+        ),
         "artifacts": [
             str(start_path),
             str(loop_receipt_path),
+            *(
+                [str(memory_receipt["receipt_path"])]
+                if isinstance(memory_receipt, dict)
+                and isinstance(memory_receipt.get("receipt_path"), str)
+                else []
+            ),
+            *(
+                [str(evidence_case_receipt["receipt_path"])]
+                if isinstance(evidence_case_receipt, dict)
+                and isinstance(evidence_case_receipt.get("receipt_path"), str)
+                else []
+            ),
             *(
                 [str(evidence_validation_receipt["receipt_path"])]
                 if isinstance(evidence_validation_receipt, dict)
@@ -843,6 +894,14 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if data_boundary is not None and not isinstance(data_boundary, (str, dict)):
         errors.append("data_boundary must be a string path or object when provided")
         data_boundary = None
+    memory_intent = payload.get("memory_intent")
+    if memory_intent is not None and not isinstance(memory_intent, (str, dict)):
+        errors.append("memory_intent must be a string path or object when provided")
+        memory_intent = None
+    evidence_case = payload.get("evidence_case")
+    if evidence_case is not None and not isinstance(evidence_case, (str, dict)):
+        errors.append("evidence_case must be a string path or object when provided")
+        evidence_case = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -874,6 +933,8 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         command_policy=command_policy,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        memory_intent=memory_intent,
+        evidence_case=evidence_case,
     )
 
 
@@ -1002,6 +1063,46 @@ def _evidence_manifest_preflight(
     return alerts, receipt
 
 
+def _memory_evidence_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None, dict[str, Any] | None]:
+    if contract.memory_intent is None and contract.evidence_case is None:
+        return [], None, None
+    memory_intent, memory_path, memory_read_alerts = read_gate_payload(
+        contract.memory_intent,
+        contract_path=contract_path,
+        label="memory_intent",
+    )
+    memory_receipt = write_memory_intent_gate_receipt(
+        memory_intent=memory_intent,
+        memory_intent_path=memory_path,
+        dag_contract=contract.payload,
+        receipt_path=receipt_dir / "memory-intent-gate-receipt.json",
+    )
+    evidence_case, evidence_case_path, evidence_read_alerts = read_gate_payload(
+        contract.evidence_case,
+        contract_path=contract_path,
+        label="evidence_case",
+    )
+    evidence_case_receipt = write_evidence_case_gate_receipt(
+        evidence_case=evidence_case,
+        evidence_case_path=evidence_case_path,
+        dag_contract=contract.payload,
+        memory_intent_receipt=memory_receipt,
+        receipt_path=receipt_dir / "evidence-case-gate-receipt.json",
+    )
+    alerts = [
+        *memory_read_alerts,
+        *memory_receipt.get("alerts", []),
+        *evidence_read_alerts,
+        *evidence_case_receipt.get("alerts", []),
+    ]
+    return alerts, memory_receipt, evidence_case_receipt
+
+
 def _contract_relative_path(value: str | None, contract_path: Path) -> Path | None:
     if value is None:
         return None
@@ -1087,6 +1188,8 @@ def _pre_dispatch_blocked_receipt(
     scheduler: str,
     verdict: str,
     alerts: list[dict[str, Any]],
+    memory_intent_gate_receipt: dict[str, Any] | None,
+    evidence_case_gate_receipt: dict[str, Any] | None,
     evidence_validation_receipt: dict[str, Any] | None,
     zero_trust_preflight_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -1101,6 +1204,16 @@ def _pre_dispatch_blocked_receipt(
         str,
     ):
         artifacts.append(str(evidence_validation_receipt["receipt_path"]))
+    if isinstance(memory_intent_gate_receipt, dict) and isinstance(
+        memory_intent_gate_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(memory_intent_gate_receipt["receipt_path"]))
+    if isinstance(evidence_case_gate_receipt, dict) and isinstance(
+        evidence_case_gate_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(evidence_case_gate_receipt["receipt_path"]))
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": False,
@@ -1129,6 +1242,16 @@ def _pre_dispatch_blocked_receipt(
         "evidence_validation_receipt": (
             evidence_validation_receipt.get("receipt_path")
             if isinstance(evidence_validation_receipt, dict)
+            else None
+        ),
+        "memory_intent_gate_receipt": (
+            memory_intent_gate_receipt.get("receipt_path")
+            if isinstance(memory_intent_gate_receipt, dict)
+            else None
+        ),
+        "evidence_case_gate_receipt": (
+            evidence_case_gate_receipt.get("receipt_path")
+            if isinstance(evidence_case_gate_receipt, dict)
             else None
         ),
         "zero_trust_preflight_receipt": (
@@ -2010,6 +2133,41 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
                 "Repair or regenerate the typed evidence manifest before normal "
                 "continuation."
             ),
+        }
+    if normalized in {
+        "missing_memory_intent",
+        "invalid_memory_intent_schema",
+        "memory_first_required",
+        "missing_memory_route",
+        "memory_route_not_dispatchable",
+        "memory_intent_low_confidence",
+        "memory_intent_goal_hash_mismatch",
+        "memory_intent_target_mismatch",
+        "inline_memory_evidence_rejected",
+        "memory_intent_unreadable",
+    }:
+        return {
+            "type": "repair_memory_intent",
+            "next_agent": "goal-guardian",
+            "reason": "Repair or regenerate the Memory intent gate before DAG dispatch.",
+        }
+    if normalized in {
+        "missing_evidence_case",
+        "invalid_evidence_case_schema",
+        "missing_evidence_case_id",
+        "missing_evidence_case_hash",
+        "evidence_case_goal_hash_mismatch",
+        "evidence_case_target_mismatch",
+        "missing_evidence_case_data_boundary_hash",
+        "missing_evidence_case_policy_hash",
+        "invalid_evidence_case_support_artifacts",
+        "memory_intent_gate_not_passed",
+        "evidence_case_unreadable",
+    }:
+        return {
+            "type": "repair_evidence_case",
+            "next_agent": "reviewer",
+            "reason": "Repair or regenerate the evidence case before DAG dispatch.",
         }
     if normalized in {
         "missing_required_evidence",

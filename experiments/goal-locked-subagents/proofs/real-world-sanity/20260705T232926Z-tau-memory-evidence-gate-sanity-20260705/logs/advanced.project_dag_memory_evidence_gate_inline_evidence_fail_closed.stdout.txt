@@ -1,0 +1,123 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-inline",
+  "alerts": [
+    {
+      "code": "inline_memory_evidence_rejected",
+      "evidence": {
+        "inline_evidence_count": 1
+      },
+      "message": "Memory intent must route; evidence belongs in a separate evidence_case.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "memory_intent_gate_not_passed",
+      "evidence": {
+        "memory_intent_status": "BLOCKED"
+      },
+      "message": "Evidence case cannot pass until memory_intent gate passes.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/dag-contract.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run/memory-intent-gate-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run/evidence-case-gate-receipt.json"
+  ],
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:bb25776ee23f940891b24464a0bbb4e4a65bd0bfe173426c83008e06d61bc176",
+  "dag_error": {
+    "active_goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-inline",
+    "dag_id": "rw-sanity-project-dag-memory-evidence-inline",
+    "evidence": {
+      "alert_codes": [
+        "inline_memory_evidence_rejected",
+        "memory_intent_gate_not_passed"
+      ],
+      "alert_count": 2,
+      "errors": [],
+      "primary_alert": {
+        "code": "inline_memory_evidence_rejected",
+        "evidence": {
+          "inline_evidence_count": 1
+        },
+        "message": "Memory intent must route; evidence belongs in a separate evidence_case.",
+        "severity": "BLOCK"
+      }
+    },
+    "failure_code": "inline_memory_evidence_rejected",
+    "message": "Memory intent must route; evidence belongs in a separate evidence_case.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "goal-guardian",
+      "reason": "Repair or regenerate the Memory intent gate before DAG dispatch.",
+      "type": "repair_memory_intent"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run",
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-memory-evidence-inline"
+    },
+    "verdict": "INLINE_MEMORY_EVIDENCE_REJECTED"
+  },
+  "dag_id": "rw-sanity-project-dag-memory-evidence-inline",
+  "edge_count": 3,
+  "entry_node": "coder",
+  "errors": [],
+  "evidence_case_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run/evidence-case-gate-receipt.json",
+  "evidence_validation_receipt": null,
+  "execution": "project_agent_dag_pre_dispatch_validation",
+  "live": true,
+  "memory_intent_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run/memory-intent-gate-receipt.json",
+  "mocked": false,
+  "node_attempts": {},
+  "node_count": 2,
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The repaired DAG contract will pass.",
+      "Provider/model semantic quality.",
+      "Runtime route mutation or GitHub side effects."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Tau inspected pre-dispatch gates before dispatch.",
+      "No node command, provider, GitHub, Memory, or browser action was executed."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T232926Z-tau-memory-evidence-gate-sanity-20260705/memory-evidence-inline-project-dag/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-inline"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-05T23:29:27Z",
+  "verdict": "INLINE_MEMORY_EVIDENCE_REJECTED",
+  "zero_trust_preflight_receipt": null
+}

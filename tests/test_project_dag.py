@@ -721,6 +721,83 @@ def test_project_dag_zero_trust_blocks_external_provider_when_policy_denies(
     assert receipt["alerts"][0]["code"] == "external_provider_denied"
 
 
+def test_project_dag_memory_evidence_gate_allows_valid_artifacts(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(tmp_path)
+    evidence_case_path = _write_evidence_case(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert Path(tmp_path / "run" / "memory-intent-gate-receipt.json").exists()
+    assert Path(tmp_path / "run" / "evidence-case-gate-receipt.json").exists()
+
+
+def test_project_dag_memory_evidence_gate_blocks_inline_evidence(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(
+        tmp_path,
+        overrides={"evidence": [{"statement": "inline evidence must not dispatch"}]},
+    )
+    evidence_case_path = _write_evidence_case(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INLINE_MEMORY_EVIDENCE_REJECTED"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "inline_memory_evidence_rejected"
+    assert receipt["memory_intent_gate_receipt"] == str(
+        tmp_path / "run" / "memory-intent-gate-receipt.json"
+    )
+    assert receipt["evidence_case_gate_receipt"] == str(
+        tmp_path / "run" / "evidence-case-gate-receipt.json"
+    )
+    assert receipt["dag_error"]["recommended_action"]["type"] == "repair_memory_intent"
+
+
+def test_project_dag_memory_evidence_gate_blocks_missing_case_hash(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(tmp_path)
+    evidence_case_path = _write_evidence_case(tmp_path, overrides={"case_sha256": None})
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_EVIDENCE_CASE_HASH"
+    assert receipt["alerts"][0]["code"] == "missing_evidence_case_hash"
+    assert receipt["dag_error"]["recommended_action"]["type"] == "repair_evidence_case"
+
+
 def test_project_dag_legacy_contract_still_runs_without_policy_profile(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
@@ -1408,6 +1485,46 @@ def _write_data_boundary(tmp_path: Path, overrides: dict[str, object] | None = N
     payload = _public_data_boundary()
     if overrides:
         payload.update(overrides)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _write_memory_intent(
+    tmp_path: Path,
+    *,
+    overrides: dict[str, object] | None = None,
+) -> Path:
+    payload: dict[str, object] = {
+        "schema": "memory.intent.v1",
+        "memory_first": True,
+        "route": "ANSWER",
+        "confidence": 0.91,
+        "goal_hash": "sha256:active-goal",
+        "target": {"repo": "grahama1970/tau", "target": "scratch-creator-reviewer"},
+    }
+    if overrides:
+        payload.update(overrides)
+    path = tmp_path / "memory-intent.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _write_evidence_case(
+    tmp_path: Path,
+    *,
+    overrides: dict[str, object | None] | None = None,
+) -> Path:
+    payload: dict[str, object | None] = {
+        "schema": "tau.evidence_case.v1",
+        "case_id": "case-001",
+        "case_sha256": "sha256:" + ("1" * 64),
+        "goal_hash": "sha256:active-goal",
+        "target": {"repo": "grahama1970/tau", "target": "scratch-creator-reviewer"},
+        "support_artifacts": [],
+    }
+    if overrides:
+        payload.update(overrides)
+    path = tmp_path / "evidence-case.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 

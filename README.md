@@ -70,6 +70,8 @@ Implemented local gates and receipt surfaces in this checkout include:
 - `tau.policy_profile.v1`
 - `tau.data_boundary.v1`
 - `tau.zero_trust_preflight_receipt.v1`
+- `tau.memory_intent_gate_receipt.v1`
+- `tau.evidence_case_gate_receipt.v1`
 - `tau.evidence_manifest.v1`
 - `tau.command_spec_policy.v1`
 - `tau.github_apply_policy.v1`
@@ -118,7 +120,7 @@ work-order hash, and evidence artifacts.
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
-| Memory/evidence-case gate | Partial | Memory-first routes exist; a dedicated `tau.memory_intent_gate_receipt.v1` surface is not present in this checkout. |
+| Memory/evidence-case gate | Initial DAG pre-dispatch gate implemented | Validates observable Memory intent and separate evidence-case payloads; does not prove Memory truth. |
 | `tau run` convenience command | Implemented | Convenience alias for the current DAG execution path. |
 | Copyable examples | Initial examples implemented | `zero-trust-basic` and `herdr-visible-provider` cover first runnable lanes only. |
 

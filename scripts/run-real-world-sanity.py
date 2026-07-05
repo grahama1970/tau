@@ -230,6 +230,11 @@ def build_checks(
     project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(
         run_dir
     )
+    project_dag_memory_evidence_inline = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-inline",
+        mutation="inline_evidence",
+    )
     evidence_manifest_valid = create_evidence_manifest_valid_fixture(run_dir)
     project_dag_command_policy_network = create_project_dag_command_policy_fixture(
         run_dir,
@@ -1186,6 +1191,28 @@ def build_checks(
             output_receipt=evidence_manifest_valid["receipt"],
         ),
         Check(
+            check_id="advanced.project_dag_memory_evidence_gate_inline_evidence_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when Memory intent "
+                "contains inline evidence instead of a separate evidence case."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_inline["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_inline["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_inline["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="INLINE_MEMORY_EVIDENCE_REJECTED",
+            output_receipt=project_dag_memory_evidence_inline["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
             check_id="advanced.project_dag_command_policy_network_fail_closed",
             level="advanced",
             purpose=(
@@ -2133,6 +2160,53 @@ def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Pat
         },
     )
     contract["evidence_manifest"] = str(manifest)
+    write_json(contract_path, contract)
+    return fixture
+
+
+def create_project_dag_memory_evidence_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    mutation: str,
+) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario=scenario,
+        goal_hash=f"sha256:rw-sanity-project-dag-{scenario}",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    fixture_dir = contract_path.parent
+    memory_intent = {
+        "schema": "memory.intent.v1",
+        "memory_first": True,
+        "route": "ANSWER",
+        "confidence": 0.91,
+        "goal_hash": contract["goal"]["goal_hash"],
+        "target": contract["target"],
+        "summary": "Memory intent routes the DAG to deterministic local execution.",
+    }
+    evidence_case = {
+        "schema": "tau.evidence_case.v1",
+        "case_id": f"{scenario}-case",
+        "case_sha256": "sha256:" + ("1" * 64),
+        "goal_hash": contract["goal"]["goal_hash"],
+        "target": contract["target"],
+        "support_artifacts": [],
+    }
+    if mutation == "inline_evidence":
+        memory_intent["evidence"] = [
+            {
+                "statement": "Inline evidence must be rejected; use a separate evidence case.",
+            }
+        ]
+    else:  # pragma: no cover - fixture guard.
+        raise AssertionError(f"unknown project DAG memory/evidence mutation: {mutation}")
+    memory_intent_path = write_json(fixture_dir / "memory-intent.json", memory_intent)
+    evidence_case_path = write_json(fixture_dir / "evidence-case.json", evidence_case)
+    contract["memory_intent"] = str(memory_intent_path)
+    contract["evidence_case"] = str(evidence_case_path)
     write_json(contract_path, contract)
     return fixture
 

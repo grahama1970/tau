@@ -98,6 +98,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.project_dag_bad_contract_course_correction`: Tau rejects an invalid project DAG contract and emits a `tau.dag_error.v1` course-correction JSON payload for project agents.
 - `advanced.project_dag_evidence_manifest_goal_hash_fail_closed`: Tau rejects a project DAG before dispatch when a typed evidence manifest contains an artifact whose goal hash differs from the immutable DAG goal.
 - `advanced.evidence_manifest_validates_clean_artifact`: Tau validates a typed evidence manifest whose artifact hash, schema, validator namespace, and goal hash all match.
+- `advanced.project_dag_memory_evidence_gate_inline_evidence_fail_closed`: Tau rejects a project DAG before dispatch when Memory intent carries inline evidence instead of routing to a separate evidence case; the DAG error recommends repairing the Memory intent before dispatch.
 - `advanced.project_dag_command_policy_network_fail_closed`: Tau emits a project-agent-readable `command_policy_rejected` DAG error when a command spec declares network use without policy approval.
 - `advanced.project_dag_command_policy_allows_local_spec`: Tau runs a project DAG through a command-spec trust policy when the local command root and cwd are allowed.
 - `advanced.project_dag_command_policy_mutation_fail_closed`: Tau emits a project-agent-readable `command_policy_rejected` DAG error when a command spec declares mutation without policy approval.
