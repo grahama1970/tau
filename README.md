@@ -116,7 +116,7 @@ work-order hash, and evidence artifacts.
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
 | Memory/evidence-case gate | Partial | Memory-first routes exist; a dedicated `tau.memory_intent_gate_receipt.v1` surface is not present in this checkout. |
 | `tau run` convenience command | Implemented | Convenience alias for the current DAG execution path. |
-| Copyable examples | Planned gap | No `examples/` directory is present in this checkout. |
+| Copyable examples | Initial examples implemented | `zero-trust-basic` and `herdr-visible-provider` cover first runnable lanes only. |
 
 ## Positioning
 

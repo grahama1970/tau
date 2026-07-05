@@ -1,0 +1,11 @@
+{
+  "schema": "tau.data_boundary.v1",
+  "classification": "public",
+  "export_controlled": false,
+  "itar": false,
+  "technical_data": false,
+  "foreign_person_access": "allowed",
+  "external_provider_allowed": false,
+  "external_research_allowed": false,
+  "public_repo_allowed": false
+}

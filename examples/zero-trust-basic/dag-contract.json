@@ -1,0 +1,43 @@
+{
+  "schema": "tau.dag_contract.v1",
+  "dag_id": "zero-trust-basic-example",
+  "goal": {
+    "goal_id": "zero-trust-basic-example",
+    "goal_version": 1,
+    "goal_hash": "sha256:zero-trust-basic-example"
+  },
+  "target": {
+    "repo": "local",
+    "target": "zero-trust-basic-example"
+  },
+  "policy_profile": "policy-profile.json",
+  "data_boundary": "data-boundary.json",
+  "entry_node": "reviewer",
+  "terminal_nodes": [
+    "human"
+  ],
+  "limits": {
+    "max_total_attempts": 1
+  },
+  "nodes": [
+    {
+      "id": "reviewer",
+      "agent": "reviewer",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "reviewer",
+      "to": "human"
+    }
+  ],
+  "required_evidence": [],
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "missing_required_evidence"
+  ]
+}

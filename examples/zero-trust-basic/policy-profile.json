@@ -1,0 +1,30 @@
+{
+  "schema": "tau.policy_profile.v1",
+  "profile_id": "zero-trust-basic-local-only",
+  "default_decision": "deny",
+  "requires_data_boundary": true,
+  "network": {
+    "default": "deny",
+    "allowed_domains": []
+  },
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow_with_approval"
+  },
+  "research": {
+    "external_search": "deny",
+    "manual_sanitized_receipt": "allow_with_review"
+  },
+  "memory": {
+    "read": "allow",
+    "write": "approval_required"
+  },
+  "github": {
+    "dry_run_projection": "allow",
+    "public_mutation": "deny"
+  },
+  "filesystem": {
+    "write_allowlist": [],
+    "read_denylist": []
+  }
+}
