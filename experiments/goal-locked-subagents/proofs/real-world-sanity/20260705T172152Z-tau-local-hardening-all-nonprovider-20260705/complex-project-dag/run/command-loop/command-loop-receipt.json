@@ -1,0 +1,179 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-loop-step-001.receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-loop-step-002.receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json"
+  ],
+  "dispatches": [
+    {
+      "artifacts": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json"
+      ],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/project_dag_worker.py",
+            "--role",
+            "coder",
+            "--scenario",
+            "complex"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:aa17163279a0bcd918b69d8aa35c7db5c26162b0ee0fd3ad6211e4c131932b3a",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"], \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-complex\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-complex\", \"goal_id\": \"rw-sanity-project-dag-complex\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"local\", \"name\": \"reviewer\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"coder\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"attempt\": 1, \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\", \"kind\": \"creator_artifact\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"}], \"status\": \"PASS\", \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "loop_step": 1,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Creator produced attempt 1 artifact for reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n    ],\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-complex\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\",\n    \"goal_id\": \"rw-sanity-project-dag-complex\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:reviewer",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "reviewer",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-complex"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "coder",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_DISPATCH_REQUESTED`\n- Summary: Tau is dispatching entry node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/dag-contract.json\"\n    ],\n    \"summary\": \"Dispatch DAG contract rw-sanity-project-dag-complex.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-complex\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\",\n    \"goal_id\": \"rw-sanity-project-dag-complex\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Entry node for DAG rw-sanity-project-dag-complex using role coder.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:12cf6a53aa2a2d62dee552fdcb942a75ea9f8e19c2f73cd918adbc2dae38747e\"\n      }\n    ],\n    \"status\": \"DAG_DISPATCH_REQUESTED\",\n    \"summary\": \"Tau is dispatching entry node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:coder",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "coder",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-complex"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    },
+    {
+      "artifacts": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json"
+      ],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/project_dag_worker.py",
+            "--role",
+            "reviewer",
+            "--scenario",
+            "complex"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:b16caffdce2f1f364c24c186fb3981e99ddf4b0b39d92218b1fb489dc831af13",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\"], \"summary\": \"Reviewer returned PASS for creator attempt 1.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-complex\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-complex\", \"goal_id\": \"rw-sanity-project-dag-complex\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"human\", \"name\": \"human\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"reviewer\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"creator_attempt\": 1, \"goal_hash\": \"sha256:stale-reviewer-goal\", \"kind\": \"reviewer_verdict\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\", \"reviewed_node_id\": \"coder\", \"verdict\": \"PASS\"}], \"status\": \"PASS\", \"summary\": \"Reviewer returned PASS for creator attempt 1.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "loop_step": 2,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Reviewer returned PASS for creator attempt 1.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\"\n    ],\n    \"summary\": \"Reviewer returned PASS for creator attempt 1.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-complex\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\",\n    \"goal_id\": \"rw-sanity-project-dag-complex\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"creator_attempt\": 1,\n        \"goal_hash\": \"sha256:stale-reviewer-goal\",\n        \"kind\": \"reviewer_verdict\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\",\n        \"reviewed_node_id\": \"coder\",\n        \"verdict\": \"PASS\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Reviewer returned PASS for creator attempt 1.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:human",
+            "executor:human"
+          ],
+          "remove": []
+        },
+        "next_agent": "human",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-complex"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "reviewer",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Creator produced attempt 1 artifact for reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n    ],\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-complex\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\",\n    \"goal_id\": \"rw-sanity-project-dag-complex\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-complex\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:reviewer",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "reviewer",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-complex"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/complex-project-dag/run/command-loop",
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.agent_handoff_command_loop_receipt.v1",
+  "status": "WAITING",
+  "step_count": 2,
+  "stop_reason": "next_agent_is_human",
+  "terminal_agent": "human"
+}

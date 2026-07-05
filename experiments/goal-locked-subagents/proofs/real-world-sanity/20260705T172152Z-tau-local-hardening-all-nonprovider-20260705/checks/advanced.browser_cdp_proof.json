@@ -1,0 +1,70 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "schema": "tau.browser_cdp_proof.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/logs/advanced.browser_cdp_proof.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/logs/advanced.browser_cdp_proof.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.browser_cdp_proof",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "browser-cdp-proof",
+    "--out-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/browser-cdp-proof",
+    "--run-id",
+    "20260705T172152Z-tau-local-hardening-all-nonprovider-20260705-browser-cdp-proof"
+  ],
+  "completed_at": "2026-07-05T17:22:13Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": "PASS",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau opens a local proof page through Surf browser transport, observes required Tau proof text, and records a screenshot artifact.",
+  "receipt_summary": {
+    "errors": [],
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "schema": "tau.browser_cdp_proof.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T17:22:11Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/logs/advanced.browser_cdp_proof.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T172152Z-tau-local-hardening-all-nonprovider-20260705/logs/advanced.browser_cdp_proof.stdout.txt",
+  "timeout_seconds": 90
+}
