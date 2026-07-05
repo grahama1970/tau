@@ -38,6 +38,7 @@ def write_dag_branch_lock_validation_receipt(
     alerts = _lock_alerts(
         contract_payload=contract.payload,
         locks_payload=locks_payload,
+        locks_dir=resolved_locks_path.parent,
         required_locks=required_locks,
     )
     status = "PASS" if not alerts else "BLOCKED"
@@ -103,6 +104,7 @@ def _lock_alerts(
     *,
     contract_payload: dict[str, Any],
     locks_payload: dict[str, Any],
+    locks_dir: Path,
     required_locks: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
@@ -136,6 +138,7 @@ def _lock_alerts(
             )
         )
     locks = _dict_list(locks_payload.get("locks"))
+    approval_packet_hashes = _approval_packet_hashes(locks_payload, locks_dir=locks_dir)
     lock_index = {(lock.get("node_id"), lock.get("branch_type")): lock for lock in locks}
     for required in required_locks:
         key = (required["node_id"], required["branch_type"])
@@ -150,7 +153,13 @@ def _lock_alerts(
                 )
             )
             continue
-        alerts.extend(_branch_lock_field_alerts(lock=lock, required=required))
+        alerts.extend(
+            _branch_lock_field_alerts(
+                lock=lock,
+                required=required,
+                approval_packet_hashes=approval_packet_hashes,
+            )
+        )
     return alerts
 
 
@@ -158,6 +167,7 @@ def _branch_lock_field_alerts(
     *,
     lock: dict[str, Any],
     required: dict[str, Any],
+    approval_packet_hashes: set[str] | None,
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     node_id = str(required["node_id"])
@@ -199,6 +209,18 @@ def _branch_lock_field_alerts(
                 "invalid_approval_packet_sha256",
                 "Branch lock approval_packet_sha256 must be a sha256-prefixed digest.",
                 evidence,
+            )
+        )
+    elif (
+        approval_packet_hashes is not None
+        and approval_packet_sha256 not in approval_packet_hashes
+    ):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_packet_hash_not_bound",
+                "Branch lock approval_packet_sha256 does not match any supplied approval packet.",
+                {**evidence, "approval_packet_sha256": approval_packet_sha256},
             )
         )
     allowed_paths = lock.get("allowed_paths")
@@ -261,6 +283,30 @@ def _branch_lock_field_alerts(
             )
         )
     return alerts
+
+
+def _approval_packet_hashes(
+    locks_payload: dict[str, Any],
+    *,
+    locks_dir: Path,
+) -> set[str] | None:
+    approval_packets = locks_payload.get("approval_packets")
+    if approval_packets is None:
+        return None
+    hashes: set[str] = set()
+    if not isinstance(approval_packets, list):
+        return hashes
+    for item in approval_packets:
+        if not isinstance(item, str) or not item:
+            continue
+        path = Path(item).expanduser()
+        if not path.is_absolute():
+            path = locks_dir / path
+        try:
+            hashes.add(f"sha256:{_sha256(path.resolve())}")
+        except OSError:
+            continue
+    return hashes
 
 
 def _load_object(path: Path, *, label: str) -> dict[str, Any]:

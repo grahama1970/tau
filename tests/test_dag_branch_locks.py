@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -145,6 +146,48 @@ def test_branch_locks_validate_blocks_invalid_side_effect_policy(
     assert "invalid_rollback_policy" in alert_codes
 
 
+def test_branch_locks_validate_binds_approval_packet_hashes(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    locks = _locks()
+    provider_packet = _write_approval_packet(tmp_path, "provider-approval.json")
+    mutating_packet = _write_approval_packet(tmp_path, "mutating-approval.json")
+    locks["approval_packets"] = [str(provider_packet), str(mutating_packet)]
+    locks["locks"][0]["approval_packet_sha256"] = _sha256(provider_packet)  # type: ignore[index]
+    locks["locks"][1]["approval_packet_sha256"] = _sha256(mutating_packet)  # type: ignore[index]
+    locks_path = _write_locks(tmp_path, locks)
+
+    receipt = write_dag_branch_lock_validation_receipt(
+        dag_contract_path=contract_path,
+        locks_path=locks_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+
+
+def test_branch_locks_validate_blocks_unbound_approval_packet_hash(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    locks = _locks()
+    locks["approval_packets"] = [str(_write_approval_packet(tmp_path, "provider-approval.json"))]
+    locks["locks"][1]["approval_packet_sha256"] = "sha256:not-bound"  # type: ignore[index]
+    locks_path = _write_locks(tmp_path, locks)
+
+    receipt = write_dag_branch_lock_validation_receipt(
+        dag_contract_path=contract_path,
+        locks_path=locks_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert any(
+        alert["code"] == "approval_packet_hash_not_bound"
+        for alert in receipt["alerts"]
+    )
+
+
 def test_cli_branch_locks_validate_writes_receipt(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     locks_path = _write_locks(tmp_path, _locks())
@@ -222,6 +265,31 @@ def _write_locks(tmp_path: Path, locks: dict[str, object]) -> Path:
     path = tmp_path / "locks.json"
     path.write_text(json.dumps(locks), encoding="utf-8")
     return path
+
+
+def _write_approval_packet(tmp_path: Path, name: str) -> Path:
+    path = tmp_path / name
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.human_approval_packet.v1",
+                "approved": True,
+                "actor": {"id": "human:graham", "auth_method": "manual"},
+                "action": "provider_branch_scheduling",
+                "target": {"id": "branch-lock-test"},
+                "reason": "Approve branch lock fixture.",
+                "evidence": ["dag-receipt.json"],
+                "nonce": name,
+                "signature": "manual-test-signature",
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _sha256(path: Path) -> str:
+    return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
 
 
 def _locks() -> dict[str, object]:

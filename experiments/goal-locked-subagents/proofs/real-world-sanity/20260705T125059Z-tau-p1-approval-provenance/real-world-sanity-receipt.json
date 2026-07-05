@@ -1,0 +1,413 @@
+{
+  "check_count": 4,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "approval_packet_sha256": "9bc537c8d57bc0d001cae3dee3dde09c96b3307f749e6c4ee354961b7c1b1d92",
+            "approved": true,
+            "errors": [],
+            "live": false,
+            "mocked": false,
+            "ok": true,
+            "packet_summary": {
+              "action": "working_tree_mutation",
+              "actor_auth_method": "manual",
+              "actor_id": "human:graham",
+              "approved": true,
+              "evidence_count": 1,
+              "expires_at": null,
+              "human_id": "human:graham",
+              "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+              "schema": "tau.human_approval_packet.v1",
+              "signature_present": true,
+              "target_id": "scratch-working-tree"
+            },
+            "requested_action": "working_tree_mutation",
+            "schema": "tau.approval_gate_receipt.v1",
+            "status": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_pass.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_pass.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.approval_gate_pass",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "approval-gate-check",
+        "--approval-packet",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/working-tree-approval.json",
+        "--requested-action",
+        "working_tree_mutation",
+        "--run-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/pass"
+      ],
+      "completed_at": "2026-07-05T12:50:59Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau accepts an explicit human approval packet before a gated working-tree mutation.",
+      "receipt_summary": {
+        "approval_packet_sha256": "9bc537c8d57bc0d001cae3dee3dde09c96b3307f749e6c4ee354961b7c1b1d92",
+        "approved": true,
+        "errors": [],
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "packet_summary": {
+          "action": "working_tree_mutation",
+          "actor_auth_method": "manual",
+          "actor_id": "human:graham",
+          "approved": true,
+          "evidence_count": 1,
+          "expires_at": null,
+          "human_id": "human:graham",
+          "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+          "schema": "tau.human_approval_packet.v1",
+          "signature_present": true,
+          "target_id": "scratch-working-tree"
+        },
+        "requested_action": "working_tree_mutation",
+        "schema": "tau.approval_gate_receipt.v1",
+        "status": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T12:50:59Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_pass.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_pass.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "approval_packet_sha256": "3c75337e9fd547e0e44c5fac753b4a088b55897d019d063a04c76bc2169b5008",
+            "approved": false,
+            "errors": [
+              "action must match requested_action github_ticket_closure"
+            ],
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "packet_summary": {
+              "action": "working_tree_mutation",
+              "actor_auth_method": "manual",
+              "actor_id": "human:graham",
+              "approved": true,
+              "evidence_count": 1,
+              "expires_at": null,
+              "human_id": "human:graham",
+              "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+              "schema": "tau.human_approval_packet.v1",
+              "signature_present": true,
+              "target_id": "github-ticket-closure"
+            },
+            "requested_action": "github_ticket_closure",
+            "schema": "tau.approval_gate_receipt.v1",
+            "status": "BLOCKED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.approval_gate_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "approval-gate-check",
+        "--approval-packet",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/closure-mismatch-approval.json",
+        "--requested-action",
+        "github_ticket_closure",
+        "--run-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/blocked"
+      ],
+      "completed_at": "2026-07-05T12:51:00Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a GitHub ticket-closure gate when the human approval packet names a different action.",
+      "receipt_summary": {
+        "approval_packet_sha256": "3c75337e9fd547e0e44c5fac753b4a088b55897d019d063a04c76bc2169b5008",
+        "approved": false,
+        "errors": [
+          "action must match requested_action github_ticket_closure"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "packet_summary": {
+          "action": "working_tree_mutation",
+          "actor_auth_method": "manual",
+          "actor_id": "human:graham",
+          "approved": true,
+          "evidence_count": 1,
+          "expires_at": null,
+          "human_id": "human:graham",
+          "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+          "schema": "tau.human_approval_packet.v1",
+          "signature_present": true,
+          "target_id": "github-ticket-closure"
+        },
+        "requested_action": "github_ticket_closure",
+        "schema": "tau.approval_gate_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T12:50:59Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "approval_packet_sha256": "c0e1326d4abf0410429ff8ef9508e5e3c248f527753f1786241196fe7562ca1b",
+            "approved": false,
+            "errors": [
+              "approval packet expired"
+            ],
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "packet_summary": {
+              "action": "working_tree_mutation",
+              "actor_auth_method": "manual",
+              "actor_id": "human:graham",
+              "approved": true,
+              "evidence_count": 1,
+              "expires_at": "2000-01-01T00:00:00Z",
+              "human_id": "human:graham",
+              "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+              "schema": "tau.human_approval_packet.v1",
+              "signature_present": true,
+              "target_id": "scratch-working-tree"
+            },
+            "requested_action": "working_tree_mutation",
+            "schema": "tau.approval_gate_receipt.v1",
+            "status": "BLOCKED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_expired_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_expired_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.approval_gate_expired_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "approval-gate-check",
+        "--approval-packet",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/expired-working-tree-approval.json",
+        "--requested-action",
+        "working_tree_mutation",
+        "--run-dir",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/expired"
+      ],
+      "completed_at": "2026-07-05T12:51:00Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a gated mutation when the human approval packet is expired.",
+      "receipt_summary": {
+        "approval_packet_sha256": "c0e1326d4abf0410429ff8ef9508e5e3c248f527753f1786241196fe7562ca1b",
+        "approved": false,
+        "errors": [
+          "approval packet expired"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "packet_summary": {
+          "action": "working_tree_mutation",
+          "actor_auth_method": "manual",
+          "actor_id": "human:graham",
+          "approved": true,
+          "evidence_count": 1,
+          "expires_at": "2000-01-01T00:00:00Z",
+          "human_id": "human:graham",
+          "nonce": "real-world-sanity:working_tree_mutation:scratch-working-tree",
+          "schema": "tau.human_approval_packet.v1",
+          "signature_present": true,
+          "target_id": "scratch-working-tree"
+        },
+        "requested_action": "working_tree_mutation",
+        "schema": "tau.approval_gate_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T12:51:00Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_expired_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_expired_fail_closed.stdout.txt",
+      "timeout_seconds": 60
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "provider_session_state_count": 0,
+            "runtime_manifest": null,
+            "schema": "tau.run_status.v1",
+            "status": "BLOCKED"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_status.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_status.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "medium.approval_gate_status",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "run-status",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/blocked"
+      ],
+      "completed_at": "2026-07-05T12:51:01Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "medium",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": null,
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau summarizes the blocked approval-gate receipt through the read-only run-status surface.",
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "provider_session_state_count": 0,
+        "runtime_manifest": null,
+        "schema": "tau.run_status.v1",
+        "status": "BLOCKED"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T12:51:00Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/logs/medium.approval_gate_status.stdout.txt",
+      "timeout_seconds": 60
+    }
+  ],
+  "completed_at": "2026-07-05T12:51:01Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "medium": {
+      "PASS": 4
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "browser/CDP chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance",
+  "run_id": "20260705T125059Z-tau-p1-approval-provenance",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "medium"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-05T12:51:01Z"
+}

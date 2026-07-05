@@ -1,0 +1,65 @@
+{
+  "schema": "tau.p1_hardening_receipt.v1",
+  "slice": "approval_provenance",
+  "status": "PASS",
+  "mocked": false,
+  "live": "mixed",
+  "provider_live": false,
+  "changed_files": [
+    "src/tau_coding/approval_gate.py",
+    "src/tau_coding/dag_branch_locks.py",
+    "scripts/run-real-world-sanity.py",
+    "tests/test_approval_gate.py",
+    "tests/test_dag_branch_locks.py",
+    "docs/approval-gates.md"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_approval_gate.py tests/test_dag_branch_locks.py -q",
+      "exit_code": 0,
+      "result": "16 passed in 0.61s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/approval_gate.py src/tau_coding/dag_branch_locks.py scripts/run-real-world-sanity.py tests/test_approval_gate.py tests/test_dag_branch_locks.py tests/test_real_world_sanity_runner.py tests/test_run_status.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_approval_gate.py tests/test_dag_branch_locks.py tests/test_real_world_sanity_runner.py tests/test_run_status.py -q",
+      "exit_code": 0,
+      "result": "35 passed in 0.56s"
+    },
+    {
+      "command": "scripts/run-real-world-sanity.sh --levels medium --checks medium.approval_gate_pass,medium.approval_gate_fail_closed,medium.approval_gate_expired_fail_closed,medium.approval_gate_status --label tau-p1-approval-provenance --receipt-timeout-seconds 90",
+      "exit_code": 0,
+      "result": "4 checks, 0 failed checks"
+    }
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-approval-provenance-20260705T125059Z/p1-receipt.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/real-world-sanity-receipt.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/checks/medium.approval_gate_pass.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/checks/medium.approval_gate_fail_closed.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/checks/medium.approval_gate_expired_fail_closed.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/checks/medium.approval_gate_status.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/pass/approval-gate-receipt.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/blocked/approval-gate-receipt.json",
+    "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/expired/approval-gate-receipt.json"
+  ],
+  "proves": [
+    "Tau approval packets require actor.id, actor.auth_method, nonce, and signature fields before gated actions pass.",
+    "Tau approval packets fail closed when provenance fields are missing.",
+    "Tau branch-lock validation can bind lock approval_packet_sha256 values to supplied approval packet files.",
+    "Tau branch-lock validation blocks approval_packet_sha256 values that do not match supplied approval packet files.",
+    "The local real-world approval sanity lane exercises pass, action mismatch fail-closed, expiry fail-closed, and run-status summary paths."
+  ],
+  "does_not_prove": [
+    "cryptographic signature verification",
+    "live GitHub mutation",
+    "live provider branch scheduling",
+    "production identity verification",
+    "full P1 roadmap completion"
+  ],
+  "errors": [],
+  "policy_exceptions": []
+}

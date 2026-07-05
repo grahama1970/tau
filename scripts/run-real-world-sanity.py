@@ -2460,10 +2460,12 @@ def approval_packet(*, action: str, target_id: str, reason: str) -> dict[str, An
         "schema": "tau.human_approval_packet.v1",
         "approved": True,
         "action": action,
-        "human": {"id": "human:graham"},
+        "actor": {"id": "human:graham", "auth_method": "manual"},
         "target": {"id": target_id},
         "reason": reason,
         "evidence": ["real-world-sanity approval fixture"],
+        "nonce": f"real-world-sanity:{action}:{target_id}",
+        "signature": "manual-real-world-sanity-fixture",
     }
 
 

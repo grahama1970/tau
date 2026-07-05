@@ -1,0 +1,42 @@
+{
+  "approval_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/closure-mismatch-approval.json",
+  "approval_packet_sha256": "3c75337e9fd547e0e44c5fac753b4a088b55897d019d063a04c76bc2169b5008",
+  "approved": false,
+  "errors": [
+    "action must match requested_action github_ticket_closure"
+  ],
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "packet_summary": {
+    "action": "working_tree_mutation",
+    "actor_auth_method": "manual",
+    "actor_id": "human:graham",
+    "approved": true,
+    "evidence_count": 1,
+    "expires_at": null,
+    "human_id": "human:graham",
+    "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+    "schema": "tau.human_approval_packet.v1",
+    "signature_present": true,
+    "target_id": "github-ticket-closure"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "the gated mutation was executed",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "cryptographic signature validity beyond requiring a signature field"
+    ],
+    "proves": [
+      "Tau can fail closed before mutation or closure without a valid human approval packet",
+      "Tau can validate explicit human approval for a requested gated action",
+      "Tau writes a durable approval-gate receipt before any gated mutation command"
+    ]
+  },
+  "requested_action": "github_ticket_closure",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T125059Z-tau-p1-approval-provenance/medium-approval-gates/blocked",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T12:51:00Z"
+}
