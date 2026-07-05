@@ -6,6 +6,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
+from tau_coding.handoff_dispatch import TAU_COMMAND_SPEC_POLICY_SCHEMA
 from tau_coding.project_dag import (
     DAG_ERROR_SCHEMA,
     DAG_RECEIPT_SCHEMA,
@@ -655,6 +656,104 @@ def test_project_dag_evidence_manifest_blocks_invalid_manifest_before_dispatch(
     assert receipt["dag_error"]["failure_code"] == "evidence_manifest_invalid"
 
 
+def test_project_dag_command_policy_records_hashes_in_command_results(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    policy_path = _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["command_policy"] = str(policy_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+    loop_receipt = json.loads(
+        Path(str(receipt["command_loop_receipt"])).read_text(encoding="utf-8")
+    )
+    command_result = loop_receipt["dispatches"][0]["command_results"][0]
+
+    assert receipt["ok"] is True
+    assert command_result["command_policy_path"] == str(policy_path.resolve())
+    assert str(command_result["command_policy_sha256"]).startswith("sha256:")
+    assert str(command_result["command_spec_sha256"]).startswith("sha256:")
+
+
+def test_project_dag_command_policy_blocks_denied_command_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    policy_path = _write_command_policy(
+        tmp_path,
+        allowed_roots=[Path(sys.executable).name, "rm"],
+        denied=["rm"],
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["command_policy"] = str(policy_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+    coder_spec = tmp_path / "specs" / "coder" / "tau-dispatch-command.json"
+    coder_spec.write_text(
+        json.dumps({"command": ["rm", "-rf", "/tmp/tau-denied"], "timeout_s": 5}),
+        encoding="utf-8",
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_AGENT_COMMAND_SPEC"
+    assert "command is denied by command policy: rm" in "\n".join(receipt["errors"])
+    assert receipt["dag_error"]["failure_code"] == "missing_agent_command_spec"
+
+
+def test_project_dag_ready_queue_command_policy_blocks_denied_command(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    policy_path = _write_command_policy(
+        tmp_path,
+        allowed_roots=[Path(sys.executable).name, "rm"],
+        denied=["rm"],
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["command_policy"] = str(policy_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+    coder_spec = tmp_path / "specs" / "coder" / "tau-dispatch-command.json"
+    coder_spec.write_text(
+        json.dumps({"command": ["rm", "-rf", "/tmp/tau-denied"], "timeout_s": 5}),
+        encoding="utf-8",
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_error"]["failed_node"] == "coder"
+    assert "command is denied by command policy: rm" in "\n".join(receipt["errors"])
+
+
 def test_project_dag_blocks_missing_required_evidence_with_reviewer_action(
     tmp_path: Path,
 ) -> None:
@@ -1005,6 +1104,27 @@ def _write_evidence_manifest(
         encoding="utf-8",
     )
     return manifest_path
+
+
+def _write_command_policy(
+    tmp_path: Path,
+    *,
+    allowed_roots: list[str],
+    denied: list[str] | None = None,
+) -> Path:
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": allowed_roots,
+                "denied_commands": denied or [],
+                "allowed_cwd_roots": [str(tmp_path)],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return policy_path
 
 
 def _write_response_spec(

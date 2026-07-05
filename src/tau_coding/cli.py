@@ -1367,6 +1367,7 @@ def main(
                 receipt_dir,
                 agents_root,
                 command_spec_root,
+                command_policy_path,
                 goal_guardian_ticket_source,
                 max_steps,
             ) = _parse_handoff_command_loop_cli_args(positional_args[1:])
@@ -1376,6 +1377,7 @@ def main(
                 receipt_dir=receipt_dir,
                 agents_root=agents_root,
                 command_spec_root=command_spec_root,
+                command_policy_path=command_policy_path,
                 goal_guardian_ticket_source=goal_guardian_ticket_source,
                 max_steps=max_steps,
             )
@@ -3297,12 +3299,13 @@ def _parse_handoff_dispatch_agent_command_cli_args(
 
 def _parse_handoff_command_loop_cli_args(
     args: list[str],
-) -> tuple[Path, str | None, Path, Path, Path | None, Path | None, int]:
+) -> tuple[Path, str | None, Path, Path, Path | None, Path | None, Path | None, int]:
     start_path: Path | None = None
     active_goal_hash: str | None = None
     receipt_dir: Path | None = None
     agents_root: Path | None = None
     command_spec_root: Path | None = None
+    command_policy_path: Path | None = None
     goal_guardian_ticket_source: Path | None = None
     max_steps = 5
     index = 0
@@ -3343,6 +3346,13 @@ def _parse_handoff_command_loop_cli_args(
             command_spec_root = Path(args[index])
         elif arg.startswith("--command-spec-root="):
             command_spec_root = Path(arg.partition("=")[2])
+        elif arg == "--command-policy":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-policy requires a value")
+            command_policy_path = Path(args[index])
+        elif arg.startswith("--command-policy="):
+            command_policy_path = Path(arg.partition("=")[2])
         elif arg == "--goal-guardian-ticket-source":
             index += 1
             if index >= len(args):
@@ -3372,6 +3382,7 @@ def _parse_handoff_command_loop_cli_args(
         receipt_dir,
         agents_root,
         command_spec_root,
+        command_policy_path,
         goal_guardian_ticket_source,
         max_steps,
     )
@@ -5740,6 +5751,7 @@ def project_agent_handoff_command_loop_command(
     receipt_dir: Path,
     agents_root: Path,
     command_spec_root: Path | None,
+    command_policy_path: Path | None,
     goal_guardian_ticket_source: Path | None,
     max_steps: int,
 ) -> bool:
@@ -5751,6 +5763,7 @@ def project_agent_handoff_command_loop_command(
         receipt_dir.expanduser().resolve(),
         agent_registry_root=agents_root,
         command_spec_root=command_spec_root,
+        command_policy_path=command_policy_path,
         active_goal_hash=active_goal_hash,
         goal_guardian_ticket_source=goal_guardian_ticket_source,
         max_steps=max_steps,

@@ -124,6 +124,7 @@ class ProjectDagContract:
     required_evidence: tuple[str, ...]
     fail_closed_on: tuple[str, ...]
     evidence_manifest: str | None
+    command_policy: str | None
 
 
 def run_project_dag_contract(
@@ -194,6 +195,7 @@ def run_project_dag_contract(
         command_spec_root=compiled_spec_root,
         active_goal_hash=str(contract.goal["goal_hash"]),
         max_steps=max_steps,
+        command_policy_path=_contract_relative_path(contract.command_policy, resolved_contract_path),
     )
     loop_payload = loop.as_dict()
     loop_receipt_path = loop_dir / "command-loop-receipt.json"
@@ -489,6 +491,10 @@ def _run_bounded_ready_queue_project_dag(
                     agents_root=agents_root,
                     command_spec_root=command_spec_root,
                     artifact_dir=artifact_dir,
+                    command_policy_path=_contract_relative_path(
+                        contract.command_policy,
+                        contract_path,
+                    ),
                 )
                 futures[future] = node_id
                 events.append(
@@ -705,6 +711,10 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if evidence_manifest is not None and not isinstance(evidence_manifest, str):
         errors.append("evidence_manifest must be a string path when provided")
         evidence_manifest = None
+    command_policy = payload.get("command_policy")
+    if command_policy is not None and not isinstance(command_policy, str):
+        errors.append("command_policy must be a string path when provided")
+        command_policy = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -739,6 +749,7 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         required_evidence=tuple(required_evidence),
         fail_closed_on=tuple(fail_closed_on),
         evidence_manifest=evidence_manifest,
+        command_policy=command_policy,
     )
 
 
@@ -832,6 +843,15 @@ def _evidence_manifest_preflight(
             )
         )
     return alerts, receipt
+
+
+def _contract_relative_path(value: str | None, contract_path: Path) -> Path | None:
+    if value is None:
+        return None
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    return contract_path.parent / path
 
 
 def _pre_dispatch_blocked_receipt(
@@ -1432,6 +1452,7 @@ def _dispatch_ready_node(
     agents_root: Path,
     command_spec_root: Path | None,
     artifact_dir: Path,
+    command_policy_path: Path | None = None,
 ) -> dict[str, Any]:
     started = time.monotonic()
     try:
@@ -1439,6 +1460,7 @@ def _dispatch_ready_node(
             agents_root,
             node.agent,
             command_spec_root=command_spec_root,
+            command_policy_path=command_policy_path,
         )
         dispatch = dispatch_agent_handoff_command_once(
             start_payload,
@@ -1448,6 +1470,7 @@ def _dispatch_ready_node(
             active_goal_hash=str(start_payload["goal"]["goal_hash"]),
             agent_registry_root=agents_root,
             artifact_dir=artifact_dir,
+            command_spec_metadata=spec,
         )
         dispatch_payload = dispatch.as_dict()
         response = _response_payload(dispatch_payload)

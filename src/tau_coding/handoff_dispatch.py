@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -15,6 +16,7 @@ from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
 TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.v1"
 TAU_AGENT_HANDOFF_COMMAND_LOOP_RECEIPT_SCHEMA = "tau.agent_handoff_command_loop_receipt.v1"
 TAU_AGENT_DISPATCH_COMMAND_FILENAME = "tau-dispatch-command.json"
+TAU_COMMAND_SPEC_POLICY_SCHEMA = "tau.command_spec_policy.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -230,6 +232,7 @@ def dispatch_agent_handoff_command_once(
     active_goal_hash: str | None = None,
     agent_registry_root: Path | None = None,
     artifact_dir: Path | None = None,
+    command_spec_metadata: Mapping[str, Any] | None = None,
 ) -> AgentHandoffDispatchResult:
     """Run one bounded local command and validate its stdout handoff response."""
 
@@ -321,6 +324,21 @@ def dispatch_agent_handoff_command_once(
         "stdout": completed.stdout,
         "stderr": completed.stderr,
     }
+    if command_spec_metadata is not None:
+        command_result.update(
+            {
+                key: value
+                for key, value in command_spec_metadata.items()
+                if key
+                in {
+                    "command_spec_path",
+                    "command_spec_sha256",
+                    "command_policy_path",
+                    "command_policy_sha256",
+                }
+                and isinstance(value, str)
+            }
+        )
     if completed.returncode != 0:
         return AgentHandoffDispatchResult(
             ok=False,
@@ -444,6 +462,7 @@ def run_agent_handoff_command_loop(
     goal_guardian_ticket_source: Path | None = None,
     max_steps: int = 5,
     artifact_root: Path | None = None,
+    command_policy_path: Path | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Run selected agent commands until the route reaches human or fails closed."""
 
@@ -498,6 +517,7 @@ def run_agent_handoff_command_loop(
                 agent_registry_root,
                 selected_agent,
                 command_spec_root=command_spec_root,
+                command_policy_path=command_policy_path,
             )
         except ValueError as exc:
             return AgentHandoffCommandLoopResult(
@@ -526,6 +546,7 @@ def run_agent_handoff_command_loop(
                 if artifact_root is not None
                 else None
             ),
+            command_spec_metadata=spec,
         )
         dispatch_payload = dispatch.as_dict()
         dispatch_payload["loop_step"] = step
@@ -629,6 +650,7 @@ def write_agent_handoff_command_loop_receipt(
     active_goal_hash: str | None = None,
     goal_guardian_ticket_source: Path | None = None,
     max_steps: int = 5,
+    command_policy_path: Path | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Write one command-backed loop receipt plus per-step dispatch artifacts."""
 
@@ -641,6 +663,7 @@ def write_agent_handoff_command_loop_receipt(
         goal_guardian_ticket_source=goal_guardian_ticket_source,
         max_steps=max_steps,
         artifact_root=receipt_dir / "command-artifacts",
+        command_policy_path=command_policy_path,
     )
     artifacts: list[str] = []
     for dispatch in loop.dispatches:
@@ -673,6 +696,7 @@ def load_agent_dispatch_command_spec(
     agent_id: str,
     *,
     command_spec_root: Path | None = None,
+    command_policy_path: Path | None = None,
 ) -> dict[str, object]:
     """Load an opt-in Tau command dispatch spec for one validated registry entry."""
 
@@ -698,7 +722,21 @@ def load_agent_dispatch_command_spec(
         raise ValueError(f"agent dispatch command spec unreadable: {spec_path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise ValueError(f"agent dispatch command spec root must be an object: {spec_path}")
-    return validate_command_dispatch_spec(payload, label=f"agent dispatch command spec {spec_path}")
+    spec = validate_command_dispatch_spec(payload, label=f"agent dispatch command spec {spec_path}")
+    spec["command_spec_path"] = str(spec_path)
+    spec["command_spec_sha256"] = f"sha256:{_sha256(spec_path)}"
+    if command_policy_path is not None:
+        policy_path = command_policy_path.expanduser().resolve()
+        policy = load_command_spec_policy(policy_path)
+        validate_command_dispatch_spec_policy(
+            spec,
+            policy,
+            policy_dir=policy_path.parent,
+            label=f"agent dispatch command spec {spec_path}",
+        )
+        spec["command_policy_path"] = str(policy_path)
+        spec["command_policy_sha256"] = f"sha256:{_sha256(policy_path)}"
+    return spec
 
 
 def validate_command_dispatch_spec(
@@ -724,6 +762,86 @@ def validate_command_dispatch_spec(
     cwd_value = payload.get("cwd")
     cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
     return {"command": command, "timeout_s": timeout_s, "cwd": cwd}
+
+
+def load_command_spec_policy(path: Path) -> dict[str, object]:
+    """Load a command-spec trust policy."""
+
+    try:
+        payload = json.loads(path.expanduser().resolve().read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"command spec policy unreadable: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"command spec policy root must be an object: {path}")
+    if payload.get("schema") != TAU_COMMAND_SPEC_POLICY_SCHEMA:
+        raise ValueError(f"command spec policy schema must be {TAU_COMMAND_SPEC_POLICY_SCHEMA}")
+    return payload
+
+
+def validate_command_dispatch_spec_policy(
+    spec: Mapping[str, Any],
+    policy: Mapping[str, Any],
+    *,
+    policy_dir: Path,
+    label: str = "handoff command spec",
+) -> None:
+    """Validate a command spec against an opt-in trust policy."""
+
+    command = spec.get("command")
+    if (
+        not isinstance(command, list)
+        or not command
+        or not all(isinstance(item, str) for item in command)
+    ):
+        raise ValueError(f"{label} command must be validated before policy checks")
+    command_root = Path(command[0]).name
+    command_line = " ".join(command)
+    allowed_roots = _string_list(policy.get("allowed_command_roots"))
+    if allowed_roots and command[0] not in allowed_roots and command_root not in allowed_roots:
+        raise ValueError(
+            f"{label} command root {command[0]!r} is not allowed by command policy"
+        )
+    for denied in _string_list(policy.get("denied_commands")):
+        if (
+            command_root == denied
+            or command_line == denied
+            or command_line.startswith(f"{denied} ")
+            or f" {denied} " in command_line
+        ):
+            raise ValueError(f"{label} command is denied by command policy: {denied}")
+    cwd = spec.get("cwd")
+    allowed_cwd_roots = _string_list(policy.get("allowed_cwd_roots"))
+    if cwd is not None and allowed_cwd_roots:
+        resolved_cwd = _resolve_policy_path(Path(cwd), policy_dir)
+        allowed = [_resolve_policy_path(Path(root), policy_dir) for root in allowed_cwd_roots]
+        if not any(_is_relative_to(resolved_cwd, root) for root in allowed):
+            raise ValueError(
+                f"{label} cwd {resolved_cwd} is outside allowed command policy cwd roots"
+            )
+
+
+def _string_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str) and item]
+
+
+def _resolve_policy_path(path: Path, policy_dir: Path) -> Path:
+    if path.is_absolute():
+        return path.expanduser().resolve()
+    return (policy_dir / path).expanduser().resolve()
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.expanduser().resolve().read_bytes()).hexdigest()
 
 
 def _command_with_goal_guardian_ticket_source(

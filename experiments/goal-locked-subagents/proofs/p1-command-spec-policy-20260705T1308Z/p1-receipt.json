@@ -1,0 +1,56 @@
+{
+  "schema": "tau.p1_command_spec_policy_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "slice": "P1 command-spec trust boundary",
+  "changed_files": [
+    "src/tau_coding/cli.py",
+    "src/tau_coding/handoff_dispatch.py",
+    "src/tau_coding/project_dag.py",
+    "tests/test_handoff_dispatch.py",
+    "tests/test_project_dag.py"
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-command-spec-policy-20260705T1308Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_handoff_dispatch.py tests/test_project_dag.py -q",
+      "exit_code": 0,
+      "result": "51 passed in 3.40s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/handoff_dispatch.py src/tau_coding/project_dag.py src/tau_coding/cli.py tests/test_handoff_dispatch.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_handoff_dispatch.py tests/test_project_dag.py tests/test_evidence_manifest.py tests/test_generic_dag.py tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "75 passed in 3.78s"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/handoff_dispatch.py src/tau_coding/project_dag.py src/tau_coding/cli.py tests/test_handoff_dispatch.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "no whitespace errors"
+    }
+  ],
+  "proves": [
+    "Tau command dispatch specs can be checked against tau.command_spec_policy.v1 before subprocess execution.",
+    "Allowed command roots, denied commands, and allowed cwd roots are enforced for command-loop dispatch.",
+    "Command-loop receipts include command_spec_path, command_spec_sha256, command_policy_path, and command_policy_sha256 when a policy is supplied.",
+    "Project DAG contracts can reference a command_policy artifact and pass it through both handoff-loop and bounded-ready-queue execution paths.",
+    "The tau handoff-command-loop CLI accepts --command-policy and records policy hashes in command results."
+  ],
+  "does_not_prove": [
+    "Production route-learning policy.",
+    "Provider/model semantic quality.",
+    "Live GitHub mutation safety.",
+    "Memory sync safety.",
+    "Full P1 schema hardening beyond the command-spec trust boundary."
+  ],
+  "errors": [],
+  "next_recommended_route": "Continue P1 with Herdr workspace lease receipts, evidence validators expansion, or branch-lock side-effect authorization."
+}

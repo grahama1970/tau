@@ -2,8 +2,12 @@ import json
 import sys
 from pathlib import Path
 
+from typer.testing import CliRunner
+
+from tau_coding.cli import app
 from tau_coding.handoff_dispatch import (
     TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
+    TAU_COMMAND_SPEC_POLICY_SCHEMA,
     dispatch_agent_handoff_command_once,
     dispatch_agent_handoff_once,
     load_agent_dispatch_command_spec,
@@ -252,6 +256,126 @@ def test_load_agent_dispatch_command_spec_from_registry(tmp_path: Path) -> None:
     assert spec["cwd"] is None
 
 
+def test_load_agent_dispatch_command_spec_records_policy_hashes(tmp_path: Path) -> None:
+    agent_dir = tmp_path / "reviewer"
+    allowed_cwd = tmp_path / "allowed"
+    allowed_cwd.mkdir()
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    spec_path = agent_dir / "tau-dispatch-command.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('{}')"],
+                "cwd": str(allowed_cwd),
+                "timeout_s": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+                "allowed_cwd_roots": [str(allowed_cwd)],
+                "denied_commands": ["rm"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    spec = load_agent_dispatch_command_spec(
+        tmp_path,
+        "reviewer",
+        command_policy_path=policy_path,
+    )
+
+    assert spec["command_spec_path"] == str(spec_path)
+    assert str(spec["command_spec_sha256"]).startswith("sha256:")
+    assert spec["command_policy_path"] == str(policy_path.resolve())
+    assert str(spec["command_policy_sha256"]).startswith("sha256:")
+
+
+def test_load_agent_dispatch_command_spec_blocks_denied_policy_command(
+    tmp_path: Path,
+) -> None:
+    agent_dir = tmp_path / "reviewer"
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    (agent_dir / "tau-dispatch-command.json").write_text(
+        json.dumps({"command": ["rm", "-rf", "/tmp/target"], "timeout_s": 3}),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": ["rm"],
+                "denied_commands": ["rm"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_agent_dispatch_command_spec(
+            tmp_path,
+            "reviewer",
+            command_policy_path=policy_path,
+        )
+    except ValueError as exc:
+        assert "command is denied by command policy: rm" in str(exc)
+    else:
+        raise AssertionError("denied policy command should fail closed")
+
+
+def test_load_agent_dispatch_command_spec_blocks_cwd_outside_policy_root(
+    tmp_path: Path,
+) -> None:
+    agent_dir = tmp_path / "reviewer"
+    allowed_cwd = tmp_path / "allowed"
+    outside_cwd = tmp_path / "outside"
+    allowed_cwd.mkdir()
+    outside_cwd.mkdir()
+    agent_dir.mkdir()
+    (agent_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    (agent_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('{}')"],
+                "cwd": str(outside_cwd),
+                "timeout_s": 3,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+                "allowed_cwd_roots": [str(allowed_cwd)],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_agent_dispatch_command_spec(
+            tmp_path,
+            "reviewer",
+            command_policy_path=policy_path,
+        )
+    except ValueError as exc:
+        assert "is outside allowed command policy cwd roots" in str(exc)
+    else:
+        raise AssertionError("cwd outside policy root should fail closed")
+
+
 def test_load_agent_dispatch_command_spec_from_overlay_requires_registry_entry(
     tmp_path: Path,
 ) -> None:
@@ -458,6 +582,145 @@ def test_run_agent_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
     ]
     assert all(dispatch["mocked"] is False for dispatch in result.dispatches)
     assert all(dispatch["live"] is True for dispatch in result.dispatches)
+
+
+def test_run_agent_handoff_command_loop_records_command_policy_hash(
+    tmp_path: Path,
+) -> None:
+    start = _valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Check goal preservation first.",
+    }
+    guardian_response = _valid_handoff()
+    guardian_response["previous_subagent"] = "goal-guardian"
+    guardian_response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    guardian_spec_dir = spec_root / "goal-guardian"
+    agents_root.mkdir()
+    guardian_spec_dir.mkdir(parents=True)
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"print({json.dumps(json.dumps(guardian_response))})",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+                "denied_commands": ["rm"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_agent_handoff_command_loop(
+        start,
+        agent_registry_root=agents_root,
+        command_spec_root=spec_root,
+        command_policy_path=policy_path,
+        active_goal_hash="sha256:active-goal",
+        max_steps=2,
+    )
+    command_result = result.dispatches[0]["command_results"][0]
+
+    assert result.ok is True
+    assert command_result["command_policy_path"] == str(policy_path.resolve())
+    assert str(command_result["command_policy_sha256"]).startswith("sha256:")
+    assert str(command_result["command_spec_sha256"]).startswith("sha256:")
+
+
+def test_cli_handoff_command_loop_accepts_command_policy(tmp_path: Path) -> None:
+    start = _valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Check goal preservation first.",
+    }
+    guardian_response = _valid_handoff()
+    guardian_response["previous_subagent"] = "goal-guardian"
+    guardian_response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+    start_path = tmp_path / "start-handoff.json"
+    start_path.write_text(json.dumps(start), encoding="utf-8")
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    guardian_spec_dir = spec_root / "goal-guardian"
+    agents_root.mkdir()
+    guardian_spec_dir.mkdir(parents=True)
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"print({json.dumps(json.dumps(guardian_response))})",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    policy_path = tmp_path / "command-policy.json"
+    policy_path.write_text(
+        json.dumps(
+            {
+                "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+                "allowed_command_roots": [Path(sys.executable).name],
+                "denied_commands": ["rm"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "handoff-command-loop",
+            "--start",
+            str(start_path),
+            "--receipt-dir",
+            str(tmp_path / "cli-loop"),
+            "--agents-root",
+            str(agents_root),
+            "--command-spec-root",
+            str(spec_root),
+            "--command-policy",
+            str(policy_path),
+            "--active-goal-hash",
+            "sha256:active-goal",
+            "--max-steps",
+            "2",
+        ],
+    )
+    payload = json.loads(result.output)
+    command_result = payload["dispatches"][0]["command_results"][0]
+
+    assert result.exit_code == 0
+    assert payload["ok"] is True
+    assert command_result["command_policy_path"] == str(policy_path.resolve())
+    assert str(command_result["command_policy_sha256"]).startswith("sha256:")
 
 
 def test_run_agent_handoff_command_loop_appends_goal_guardian_ticket_source(
