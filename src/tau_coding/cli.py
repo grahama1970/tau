@@ -91,6 +91,7 @@ from tau_coding.handoff_dispatch import (
 )
 from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
+from tau_coding.init_project import initialize_tau_project
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -651,6 +652,21 @@ def main(
         payload = doctor_command(repo_root=Path(__file__).resolve().parents[2])
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if not payload.get("ok"):
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "init":
+        try:
+            options = _parse_init_cli_args(positional_args[1:])
+            payload = initialize_tau_project(
+                out_dir=Path(str(options["out"])),
+                profile=str(options["profile"]),
+                force=bool(options["force"]),
+            )
+        except (RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -2272,6 +2288,35 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
         "command_spec_root": command_spec_root,
         "scheduler": scheduler,
     }
+
+
+def _parse_init_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "profile": None,
+        "out": Path.cwd(),
+        "force": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--profile":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--profile requires a value")
+            options["profile"] = args[index]
+        elif arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg == "--force":
+            options["force"] = True
+        else:
+            raise RuntimeError(f"unknown init option: {arg}")
+        index += 1
+    if options["profile"] is None:
+        raise RuntimeError("Usage: tau init --profile zero-trust [--out <dir>] [--force]")
+    return options
 
 
 def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:

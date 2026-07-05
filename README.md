@@ -39,6 +39,15 @@ That preflight is a gate, not compliance certification. It blocks missing or
 incompatible classification metadata before DAG dispatch. It does not prove ITAR
 compliance, sandbox isolation, signed provenance, or legal sufficiency.
 
+To create a local zero-trust starter file set:
+
+```bash
+uv run tau init --profile zero-trust --out /tmp/tau-init-zero-trust
+```
+
+This writes `.tau/policy-profile.json`, `.tau/data-boundary.json`,
+`.tau/command-policy.json`, `.tau/dag-template.json`, and `.tau/README.md`.
+
 ## Research Influence: Adaptive DAGs
 
 T’au's adaptive DAG direction is inspired by graph reasoning, parallel tool

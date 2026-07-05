@@ -278,6 +278,8 @@ the zero-trust difference without knowing internal proof directories.
 
 ### B1. Init
 
+Status: implemented as the first basic product-parity slice.
+
 Build:
 
 ```text
@@ -301,6 +303,10 @@ Creates:
   dag-template.json
   README.md
 ```
+
+This starter creates local files only. It does not prove the generated DAG has
+been dispatched, does not enforce sandbox isolation, and does not certify the
+data boundary.
 
 ### B2. Run
 
@@ -403,7 +409,7 @@ POST /runs/{id}/compliance-package
 
 1. Agent-skills wrapper and `proof-status`: complete in `agent-skills`.
 2. Agent-skills Tau zero-trust contract: complete in `agent-skills`.
-3. Add `tau init --profile zero-trust`.
+3. Add `tau init --profile zero-trust`: implemented.
 4. Add `examples/zero-trust-basic`.
 
 ### Phase 2: The Memory-First Wedge

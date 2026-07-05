@@ -125,6 +125,50 @@ def test_doctor_command_reports_read_only_runtime_preflight() -> None:
     assert "Live provider/model semantic quality." in payload["proof_boundary"]["does_not_prove"]
 
 
+def test_cli_init_zero_trust_creates_starter_files(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "init",
+            "--profile",
+            "zero-trust",
+            "--out",
+            str(tmp_path),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.init_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert len(payload["created_files"]) == 5
+    assert (tmp_path / ".tau" / "policy-profile.json").exists()
+    assert (tmp_path / ".tau" / "data-boundary.json").exists()
+    assert (tmp_path / ".tau" / "command-policy.json").exists()
+    assert (tmp_path / ".tau" / "dag-template.json").exists()
+    assert (tmp_path / ".tau" / "README.md").exists()
+
+
+def test_cli_init_zero_trust_blocks_existing_files(tmp_path: Path) -> None:
+    first = CliRunner().invoke(
+        app,
+        ["init", "--profile", "zero-trust", "--out", str(tmp_path)],
+    )
+    second = CliRunner().invoke(
+        app,
+        ["init", "--profile", "zero-trust", "--out", str(tmp_path)],
+    )
+    payload = json.loads(second.output)
+
+    assert first.exit_code == 0
+    assert second.exit_code == 1
+    assert payload["schema"] == "tau.init_receipt.v1"
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert ".tau/policy-profile.json" in payload["existing_files"]
+
+
 def test_cli_zero_trust_doctor_reports_policy_and_boundary_status(tmp_path: Path) -> None:
     receipt_path = tmp_path / "zero-trust-preflight.json"
     result = CliRunner().invoke(
