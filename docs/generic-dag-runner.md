@@ -6,11 +6,15 @@ without baking Codex/OpenCode or coder/reviewer assumptions into the scheduler.
 ## CLI
 
 ```bash
+uv run tau run path/to/dag-spec.json
 uv run tau dag-run path/to/dag-spec.json
 uv run tau dag-inspect path/to/run-dir
 uv run tau dag-resume path/to/run-dir
 uv run tau generic-provider-dag-node --node-id provider-task --receipt-path /tmp/node.json --provider-run-root /tmp/provider-runs
 ```
+
+`run` is the product-facing convenience command for DAG execution. `dag-run` is
+the explicit implementation command and accepts the same DAG execution options.
 
 Use `--no-resume` with `dag-run` to force commands to execute even when a valid
 node receipt already exists.

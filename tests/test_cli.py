@@ -217,6 +217,62 @@ def test_cli_dag_run_zero_trust_missing_boundary_returns_course_correction_json(
     }
 
 
+def test_cli_run_alias_uses_dag_run_zero_trust_gate(tmp_path: Path) -> None:
+    contract_path = tmp_path / "zero-trust-missing-boundary-dag.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_contract.v1",
+                "dag_id": "zero-trust-run-alias",
+                "goal": {
+                    "goal_id": "zero-trust",
+                    "goal_version": 1,
+                    "goal_hash": "sha256:active-goal",
+                },
+                "target": {"repo": "grahama1970/tau", "target": "scratch"},
+                "policy_profile": str(FIXTURES / "zero-trust-policy.json"),
+                "entry_node": "coder",
+                "terminal_nodes": ["human"],
+                "limits": {"max_total_attempts": 2},
+                "nodes": [
+                    {
+                        "id": "coder",
+                        "agent": "coder",
+                        "executor": "local",
+                        "max_attempts": 1,
+                        "command_spec": "coder/tau-dispatch-command.json",
+                        "required_evidence": [],
+                    }
+                ],
+                "edges": [{"from": "coder", "to": "human"}],
+                "required_evidence": [],
+                "fail_closed_on": ["goal_hash_mismatch"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.dag_receipt.v1"
+    assert payload["status"] == "BLOCKED"
+    assert payload["dag_error"]["schema"] == "tau.dag_error.v1"
+    assert payload["dag_error"]["failure_code"] == "missing_data_boundary"
+    assert payload["dag_error"]["recommended_action"]["next_agent"] == "goal-guardian"
+
+
 def test_cli_handoff_project_writes_dry_run_receipt(tmp_path: Path) -> None:
     handoff_path = tmp_path / "handoff.json"
     receipt_path = tmp_path / "projection" / "receipt.json"

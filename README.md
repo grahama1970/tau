@@ -115,7 +115,7 @@ work-order hash, and evidence artifacts.
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
 | Memory/evidence-case gate | Partial | Memory-first routes exist; a dedicated `tau.memory_intent_gate_receipt.v1` surface is not present in this checkout. |
-| `tau run` convenience command | Planned gap | Use `tau dag-run` until implemented. |
+| `tau run` convenience command | Implemented | Convenience alias for the current DAG execution path. |
 | Copyable examples | Planned gap | No `examples/` directory is present in this checkout. |
 
 ## Positioning
@@ -351,15 +351,15 @@ uv run tau zero-trust-doctor \
   --data-boundary experiments/goal-locked-subagents/fixtures/itar-data-boundary.json
 ```
 
-Run a bounded DAG through the current product command:
+Run a bounded DAG through the product command:
 
 ```bash
-uv run tau dag-run <dag-spec.json>
+uv run tau run <dag-spec.json>
 uv run tau run-status <run-dir>
 ```
 
-The shorter product command `uv run tau run <dag-spec.json>` is a planned gap;
-use `dag-run` until it exists.
+Use `uv run tau dag-run <dag-spec.json>` when you want the explicit
+implementation command.
 
 For a quick non-mutating regression surface, run:
 

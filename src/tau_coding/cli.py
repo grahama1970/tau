@@ -1011,31 +1011,9 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-run":
+    if prompt_option is None and command in {"dag-run", "run"}:
         try:
-            options = _parse_generic_dag_run_cli_args(positional_args[1:])
-            spec_path = options["spec_path"]
-            if _dag_run_schema(Path(spec_path)) == DAG_CONTRACT_SCHEMA:
-                try:
-                    payload = run_project_dag_contract(
-                        contract_path=Path(spec_path),
-                        receipt_dir=options.get("receipt_dir"),
-                        agents_root=Path(str(options["agents_root"])),
-                        command_spec_root=options.get("command_spec_root"),
-                        scheduler=str(options["scheduler"]),
-                    )
-                except RuntimeError as exc:
-                    payload = dag_contract_error_payload(
-                        contract_path=Path(spec_path),
-                        receipt_dir=options.get("receipt_dir"),
-                        error=str(exc),
-                        scheduler=str(options["scheduler"]),
-                    )
-            else:
-                payload = run_generic_dag(
-                    spec_path=Path(spec_path),
-                    resume=bool(options["resume"]),
-                )
+            payload = _run_dag_cli_command(positional_args[1:], command_name=str(command))
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2218,10 +2196,39 @@ def _parse_orchestration_evidence_cli_args(args: list[str]) -> Path:
     return Path(args[0])
 
 
-def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
+def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, object]:
+    options = _parse_generic_dag_run_cli_args(args, command_name=command_name)
+    spec_path = Path(str(options["spec_path"]))
+    if _dag_run_schema(spec_path) == DAG_CONTRACT_SCHEMA:
+        try:
+            return run_project_dag_contract(
+                contract_path=spec_path,
+                receipt_dir=options.get("receipt_dir"),
+                agents_root=Path(str(options["agents_root"])),
+                command_spec_root=options.get("command_spec_root"),
+                scheduler=str(options["scheduler"]),
+            )
+        except RuntimeError as exc:
+            return dag_contract_error_payload(
+                contract_path=spec_path,
+                receipt_dir=options.get("receipt_dir"),
+                error=str(exc),
+                scheduler=str(options["scheduler"]),
+            )
+    return run_generic_dag(
+        spec_path=spec_path,
+        resume=bool(options["resume"]),
+    )
+
+
+def _parse_generic_dag_run_cli_args(
+    args: list[str],
+    *,
+    command_name: str = "dag-run",
+) -> dict[str, object]:
     if not args:
         raise RuntimeError(
-            "Usage: tau dag-run <dag-spec> [--no-resume] "
+            f"Usage: tau {command_name} <dag-spec> [--no-resume] "
             "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>] "
             "[--scheduler <handoff-loop|bounded-ready-queue>]"
         )
@@ -2262,7 +2269,7 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
                 raise RuntimeError("--scheduler requires a value")
             scheduler = args[index]
         else:
-            raise RuntimeError(f"unknown dag-run option: {arg}")
+            raise RuntimeError(f"unknown {command_name} option: {arg}")
         index += 1
     return {
         "spec_path": spec_path,
