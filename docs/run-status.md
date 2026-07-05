@@ -64,6 +64,9 @@ The command prints `tau.run_status.v1` JSON with:
 - real-world sanity suite checks and nested post-cleanup summaries when present
 - real-world sanity generic-DAG node totals, including aggregate dispatched,
   resumed, blocked, timed, and errored node counts across suite checks
+- browser/CDP proof summaries when `browser-cdp-proof/browser-cdp-proof-receipt.json`
+  is present, including screenshot path, SHA-256, dimensions, transport metadata,
+  and visible assertion counts
 
 The command exits non-zero for `BLOCKED`, `FAIL`, `FAILED`, or `MISSING` status.
 
@@ -72,4 +75,4 @@ The command exits non-zero for `BLOCKED`, `FAIL`, `FAILED`, or `MISSING` status.
 This command proves only that Tau can inspect already-written artifacts. It does
 not prove new provider execution, semantic task completion, Herdr cleanup unless
 a cleanup receipt is present, GitHub ticket closure, production repo mutation,
-or browser/CDP UI rendering.
+or production browser/chat UI rendering.

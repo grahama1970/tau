@@ -26,6 +26,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     approval_gate = _read_optional_json(artifacts["approval_gate"])
     orchestration_evidence = _read_optional_json(artifacts["orchestration_evidence"])
     planner_receipt = _read_optional_json(artifacts["planner_receipt"])
+    browser_cdp_proof = _read_optional_json(artifacts["browser_cdp_proof"])
     dag_stress_suite = _read_optional_json(artifacts["dag_stress_suite"])
     dag_stress_campaign = _read_optional_json(artifacts["dag_stress_campaign"])
     lifecycle_states = _load_lifecycle_states(resolved, runtime_manifest, run_receipt)
@@ -39,6 +40,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         cleanup=cleanup,
         orchestration_evidence=orchestration_evidence,
         planner_receipt=planner_receipt,
+        browser_cdp_proof=browser_cdp_proof,
         dag_stress_suite=dag_stress_suite,
         dag_stress_campaign=dag_stress_campaign,
     )
@@ -49,6 +51,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         cleanup,
         orchestration_evidence,
         planner_receipt,
+        browser_cdp_proof,
         dag_stress_suite,
         dag_stress_campaign,
     )
@@ -73,6 +76,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             approval_gate,
             orchestration_evidence,
             planner_receipt,
+            browser_cdp_proof,
             dag_stress_suite,
             dag_stress_campaign,
         ),
@@ -102,6 +106,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "real_world_sanity": _real_world_sanity_summary(run_receipt),
         "approval_gate": _approval_summary(approval_gate),
         "orchestration_evidence": _orchestration_summary(orchestration_evidence),
+        "browser_cdp_proof": _browser_cdp_proof_summary(browser_cdp_proof),
         "dag_stress": _dag_stress_summary(dag_stress_suite),
         "dag_stress_campaign": _dag_stress_campaign_summary(dag_stress_campaign),
         "proof_scope": {
@@ -114,7 +119,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
                 "Herdr workspace cleanup unless a cleanup receipt is present",
                 "GitHub ticket closure",
                 "production repository mutation",
-                "browser/CDP UI rendering",
+                "production browser/chat UI rendering",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -133,6 +138,7 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "orchestration_evidence": run_dir / "orchestration-evidence-receipt.json",
         "planner_receipt": run_dir / "planner-receipt.json",
         "real_world_sanity_receipt": run_dir / "real-world-sanity-receipt.json",
+        "browser_cdp_proof": run_dir / "browser-cdp-proof" / "browser-cdp-proof-receipt.json",
         "dag_stress_suite": run_dir / "suite-receipt.json",
         "dag_stress_campaign": run_dir / "campaign-receipt.json",
     }
@@ -157,6 +163,7 @@ def _missing_required_artifact(
         "orchestration_evidence",
         "provider_dag_planner",
         "real_world_sanity",
+        "browser_cdp_proof",
     }:
         return False
     if name == "runtime_manifest" and detected_type in {
@@ -168,6 +175,7 @@ def _missing_required_artifact(
         "orchestration_evidence",
         "provider_dag_planner",
         "real_world_sanity",
+        "browser_cdp_proof",
     }:
         return False
     return True
@@ -181,6 +189,7 @@ def _detected_type(
     cleanup: dict[str, Any],
     orchestration_evidence: dict[str, Any],
     planner_receipt: dict[str, Any],
+    browser_cdp_proof: dict[str, Any],
     dag_stress_suite: dict[str, Any],
     dag_stress_campaign: dict[str, Any],
 ) -> str:
@@ -190,6 +199,7 @@ def _detected_type(
         or cleanup.get("schema")
         or orchestration_evidence.get("schema")
         or planner_receipt.get("schema")
+        or browser_cdp_proof.get("schema")
         or dag_stress_suite.get("schema")
         or dag_stress_campaign.get("schema")
         or runtime_manifest.get("schema")
@@ -213,6 +223,8 @@ def _detected_type(
         return "orchestration_evidence"
     if schema == "tau.dag_planner_receipt.v1":
         return "provider_dag_planner"
+    if schema == "tau.browser_cdp_proof.v1":
+        return "browser_cdp_proof"
     if schema == "tau.dag_stress_suite_receipt.v1":
         return "dag_stress"
     if schema == "tau.dag_stress_campaign_receipt.v1":
@@ -229,6 +241,7 @@ def _overall_status(
     cleanup: dict[str, Any],
     orchestration_evidence: dict[str, Any],
     planner_receipt: dict[str, Any],
+    browser_cdp_proof: dict[str, Any],
     dag_stress_suite: dict[str, Any],
     dag_stress_campaign: dict[str, Any],
 ) -> str:
@@ -239,6 +252,7 @@ def _overall_status(
         cleanup,
         orchestration_evidence,
         planner_receipt,
+        browser_cdp_proof,
         dag_stress_suite,
         dag_stress_campaign,
     ):
@@ -250,11 +264,11 @@ def _overall_status(
 
 def _live_value(*payloads: dict[str, Any]) -> Any:
     values = [payload.get("live") for payload in payloads if "live" in payload]
+    if any(value == "mixed" for value in values):
+        return "mixed"
     if any(value is True for value in values):
         return True
     if values:
-        if any(value == "mixed" for value in values):
-            return "mixed"
         return False
     return False
 
@@ -840,6 +854,40 @@ def _orchestration_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "live": payload.get("live"),
         "provider_live": payload.get("provider_live"),
         "feature_counts": payload.get("feature_counts"),
+    }
+
+
+def _browser_cdp_proof_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.browser_cdp_proof.v1":
+        return None
+    screenshot = payload.get("screenshot")
+    screenshot = screenshot if isinstance(screenshot, dict) else {}
+    assertions = payload.get("visible_assertions")
+    assertions = assertions if isinstance(assertions, dict) else {}
+    artifacts = payload.get("artifacts")
+    artifacts = artifacts if isinstance(artifacts, dict) else {}
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "verdict": payload.get("verdict"),
+        "surface": payload.get("surface"),
+        "transport": payload.get("transport"),
+        "screenshot_path": screenshot.get("path"),
+        "screenshot_sha256": screenshot.get("sha256"),
+        "screenshot_width": screenshot.get("width"),
+        "screenshot_height": screenshot.get("height"),
+        "screenshot_size_bytes": screenshot.get("size_bytes"),
+        "visible_assertions": assertions,
+        "visible_assertion_count": len(assertions),
+        "visible_assertion_pass_count": sum(1 for value in assertions.values() if value is True),
+        "html_artifact": artifacts.get("html"),
+        "receipt_artifact": artifacts.get("receipt"),
+        "screenshot_artifact": artifacts.get("screenshot_png"),
+        "errors": payload.get("errors"),
     }
 
 

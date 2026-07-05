@@ -693,6 +693,41 @@ def test_run_status_reports_missing_required_artifacts(tmp_path: Path) -> None:
 def test_run_status_summarizes_real_world_sanity_post_cleanup(tmp_path: Path) -> None:
     provider_run_dir = tmp_path / "provider-run"
     cleanup_receipt = provider_run_dir / "herdr-cleanup-receipt.json"
+    browser_screenshot = tmp_path / "browser-cdp-proof" / "tau-browser-cdp-proof.png"
+    browser_screenshot.parent.mkdir(parents=True, exist_ok=True)
+    browser_screenshot.write_bytes(b"\x89PNG\r\n\x1a\n")
+    _write_json(
+        tmp_path / "browser-cdp-proof" / "browser-cdp-proof-receipt.json",
+        {
+            "schema": "tau.browser_cdp_proof.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "verdict": "PASS",
+            "surface": "local Tau browser proof page",
+            "transport": {"kind": "surf", "tab_id": "837357620"},
+            "artifacts": {
+                "html": str(tmp_path / "browser-cdp-proof" / "tau-browser-cdp-proof.html"),
+                "receipt": str(tmp_path / "browser-cdp-proof" / "browser-cdp-proof-receipt.json"),
+                "screenshot_png": str(browser_screenshot),
+            },
+            "screenshot": {
+                "path": str(browser_screenshot),
+                "sha256": "sha256:browser-proof",
+                "width": 1200,
+                "height": 596,
+                "size_bytes": 8,
+            },
+            "visible_assertions": {
+                "page_text_contains_handoff_schema": True,
+                "page_text_contains_receipt_schema": True,
+                "screenshot_nonempty": True,
+            },
+            "errors": [],
+        },
+    )
     _write_json(
         tmp_path / "real-world-sanity-receipt.json",
         {
@@ -702,7 +737,7 @@ def test_run_status_summarizes_real_world_sanity_post_cleanup(tmp_path: Path) ->
             "mocked": False,
             "live": "mixed",
             "provider_live": True,
-            "check_count": 2,
+            "check_count": 3,
             "failed_check_count": 0,
             "completed_at": "2026-07-03T21:03:02Z",
             "checks": [
@@ -762,6 +797,25 @@ def test_run_status_summarizes_real_world_sanity_post_cleanup(tmp_path: Path) ->
                     },
                     "post_cleanup": None,
                 },
+                {
+                    "check_id": "advanced.browser_cdp_proof",
+                    "level": "advanced",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": False,
+                    "attempt_count": 1,
+                    "receipt_summary": {
+                        "schema": "tau.browser_cdp_proof.v1",
+                        "status": "PASS",
+                        "ok": True,
+                        "mocked": False,
+                        "live": True,
+                        "provider_live": False,
+                    },
+                    "post_cleanup": None,
+                },
             ],
         },
     )
@@ -773,7 +827,7 @@ def test_run_status_summarizes_real_world_sanity_post_cleanup(tmp_path: Path) ->
     assert status["live"] == "mixed"
     assert status["detected_type"] == "real_world_sanity"
     assert status["missing_required_artifacts"] == []
-    assert status["real_world_sanity"]["check_count"] == 2
+    assert status["real_world_sanity"]["check_count"] == 3
     assert status["real_world_sanity"]["post_cleanup_count"] == 1
     assert status["real_world_sanity"]["live_post_cleanup_count"] == 1
     assert status["real_world_sanity"]["generic_dag_node_totals"] == {
@@ -793,6 +847,13 @@ def test_run_status_summarizes_real_world_sanity_post_cleanup(tmp_path: Path) ->
     assert check["post_cleanup"]["receipt_path"] == str(cleanup_receipt)
     assert check["post_cleanup"]["cleanup_applied_action_count"] == 1
     assert check["post_cleanup"]["cleanup_post_verified_absent_count"] == 1
+    assert status["browser_cdp_proof"]["status"] == "PASS"
+    assert status["browser_cdp_proof"]["screenshot_path"] == str(browser_screenshot)
+    assert status["browser_cdp_proof"]["screenshot_sha256"] == "sha256:browser-proof"
+    assert status["browser_cdp_proof"]["screenshot_width"] == 1200
+    assert status["browser_cdp_proof"]["screenshot_height"] == 596
+    assert status["browser_cdp_proof"]["visible_assertion_count"] == 3
+    assert status["browser_cdp_proof"]["visible_assertion_pass_count"] == 3
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
