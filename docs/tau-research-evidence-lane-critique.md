@@ -16,11 +16,12 @@ It is no longer accurate to say Tau has no direct ArXiv references after the
 current patch. The README now links to primary ArXiv references and points to
 `docs/adaptive-dag-research-references.md` as a dedicated critique surface.
 
-The YouTube video remains unresolved: no verified title or durable citation has
-been added because the video ID alone is not enough local evidence. If the video
-is intended to be a formal design reference, Tau should add it only with the
-exact title, URL, retrieval date, and a short mapping from video concepts to Tau
-design constraints.
+The YouTube video has a conservative design-reference entry now:
+`Distributed Cognition: The New Science of Non-Biological Intelligence`
+at `https://www.youtube.com/watch?v=DsfxdwZdNf0`. Tau records the title and URL
+as design context only. Transcript-specific claims, channel/date metadata, and
+detailed concept extraction still require a separate transcript/source receipt
+before they can be used as implementation evidence.
 
 ## What Was Missing
 
@@ -36,7 +37,7 @@ Present:
 - Agent-skills tooling for paper/video/web research, including `arxiv` and
   `dogpile`.
 
-Missing:
+Missing before remediation:
 
 - Concrete README citations for the ArXiv papers that shaped the adaptive DAG
   direction.
@@ -110,22 +111,26 @@ research-auditor can use it as design input.
 
 ## Remaining Gap
 
-Add the YouTube video as a formal design reference only after its metadata is
-verified:
+The YouTube video is now recorded as design context with title and URL. It still
+needs transcript/source verification before Tau should cite specific claims from
+the video:
 
 ```text
-title:
-url:
+title: Distributed Cognition: The New Science of Non-Biological Intelligence
+url: https://www.youtube.com/watch?v=DsfxdwZdNf0
 video_id: DsfxdwZdNf0
-retrieved_at:
+retrieved_at: 2026-07-05
 inspired_concepts:
-  - ...
+  - distributed cognition framing for role-separated orchestration
 tau_mapping:
-  - ...
+  - planner/worker/reviewer/route-memory/human-goal separation
+  - explicit receipts and validators remain required
 does_not_prove:
   - runtime correctness
   - implementation readiness
   - closure
+  - transcript-specific factual claims
 ```
 
-Until then, Tau should not cite the video as evidence.
+Until transcript/source evidence exists, Tau should not cite detailed video
+claims as evidence.

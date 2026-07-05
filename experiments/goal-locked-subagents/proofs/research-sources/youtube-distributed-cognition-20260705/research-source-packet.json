@@ -1,0 +1,27 @@
+{
+  "classification": "design_input",
+  "limitations": [
+    "Video is design context only.",
+    "Title and URL were recorded from web search metadata on 2026-07-05.",
+    "Transcript-specific claims require a separate transcript or extraction receipt.",
+    "Channel/date metadata require a separate source verification receipt.",
+    "Local Tau tests and receipts remain required before implementation or closure claims."
+  ],
+  "method": "manual",
+  "query": "DsfxdwZdNf0 YouTube",
+  "retrieved_at": "2026-07-05T18:50:00Z",
+  "schema": "tau.research_source_packet.v1",
+  "source_type": "video",
+  "sources": [
+    {
+      "claims_supported": [
+        "design-context citation for distributed cognition framing",
+        "role-separated orchestration inspiration"
+      ],
+      "relevance": "MEDIUM",
+      "title": "Distributed Cognition: The New Science of Non-Biological Intelligence",
+      "url": "https://www.youtube.com/watch?v=DsfxdwZdNf0"
+    }
+  ],
+  "summary": "Conservative YouTube design-context reference for Tau adaptive DAG and role-separated orchestration documentation."
+}

@@ -1,0 +1,52 @@
+{
+  "arxiv_source_count": 0,
+  "classification": "design_input",
+  "errors": [],
+  "limitations": [
+    "Video is design context only.",
+    "Title and URL were recorded from web search metadata on 2026-07-05.",
+    "Transcript-specific claims require a separate transcript or extraction receipt.",
+    "Channel/date metadata require a separate source verification receipt.",
+    "Local Tau tests and receipts remain required before implementation or closure claims."
+  ],
+  "live": false,
+  "method": "manual",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "The cited sources are true.",
+      "The research was fetched live by this command.",
+      "The research is sufficient for implementation or closure.",
+      "Any Tau runtime behavior changed because of the research."
+    ],
+    "proves": [
+      "A research source packet was inspected deterministically.",
+      "Required source metadata, source URLs, relevance labels, and classifications were validated.",
+      "Research is marked review-required before it can affect Tau routing or implementation."
+    ]
+  },
+  "provider_live": false,
+  "query": "DsfxdwZdNf0 YouTube",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/research-sources/youtube-distributed-cognition-20260705/research-source-receipt.json",
+  "retrieved_at": "2026-07-05T18:50:00Z",
+  "review_required": true,
+  "schema": "tau.research_source_receipt.v1",
+  "source_count": 1,
+  "source_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/research-sources/youtube-distributed-cognition-20260705/research-source-packet.json",
+  "source_packet_sha256": "6d18cc45798c906b6c033e4df6c9a4f32e8c39c76d0ff83c5a1fc7a0ca63c8cc",
+  "source_type": "video",
+  "sources": [
+    {
+      "claims_supported": [
+        "design-context citation for distributed cognition framing",
+        "role-separated orchestration inspiration"
+      ],
+      "relevance": "MEDIUM",
+      "title": "Distributed Cognition: The New Science of Non-Biological Intelligence",
+      "url": "https://www.youtube.com/watch?v=DsfxdwZdNf0"
+    }
+  ],
+  "status": "PASS",
+  "summary": "Conservative YouTube design-context reference for Tau adaptive DAG and role-separated orchestration documentation."
+}

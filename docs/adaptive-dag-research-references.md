@@ -36,6 +36,12 @@ in the papers.
 - [Efficient and Interpretable Multi-Agent LLM Routing via Ant Colony Optimization](https://arxiv.org/abs/2603.12933) models multi-agent routing as semantic-conditioned path selection with quality-gated routing-memory updates.
   - Tau interpretation: route memory updates should be quality-gated and auditable, with dry-run/proposal modes before persistent Memory sync.
 
+## Video Design Context
+
+- [Distributed Cognition: The New Science of Non-Biological Intelligence](https://www.youtube.com/watch?v=DsfxdwZdNf0) is recorded as a design-context video reference, not as closure proof.
+  - Tau interpretation: distributed cognition is useful framing for separating planner, worker, reviewer, route-memory, and human-goal roles, but Tau still requires explicit DAG contracts, receipts, validators, and deterministic local proof.
+  - Boundary: title and URL are recorded; transcript-specific claims, channel/date metadata, and detailed concept extraction require a separate transcript or source receipt before being used as implementation evidence.
+
 ## Cautionary Constraint
 
 - [The Bystander Effect in Multi-Agent Reasoning: Quantifying Cognitive Loafing in Collaborative Interactions](https://arxiv.org/abs/2605.10698) warns that unstructured multi-agent interaction can degrade independent reasoning under social pressure.
