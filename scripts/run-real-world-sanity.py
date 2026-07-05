@@ -220,6 +220,7 @@ def build_checks(
     project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(
         run_dir
     )
+    evidence_manifest_valid = create_evidence_manifest_valid_fixture(run_dir)
     project_dag_command_policy_network = create_project_dag_command_policy_fixture(
         run_dir,
         scenario="command-policy-network",
@@ -1082,6 +1083,24 @@ def build_checks(
             expected_verdict="EVIDENCE_MANIFEST_INVALID",
         ),
         Check(
+            check_id="advanced.evidence_manifest_validates_clean_artifact",
+            level="advanced",
+            purpose=(
+                "Tau validates a typed evidence manifest whose artifact hash, schema, "
+                "validator namespace, and goal hash all match."
+            ),
+            command=[
+                *uv_tau,
+                "evidence-validate",
+                str(evidence_manifest_valid["manifest"]),
+                "--receipt",
+                str(evidence_manifest_valid["receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            output_receipt=evidence_manifest_valid["receipt"],
+        ),
+        Check(
             check_id="advanced.project_dag_command_policy_network_fail_closed",
             level="advanced",
             purpose=(
@@ -1827,6 +1846,45 @@ def create_project_dag_policy_fixture(
         raise AssertionError(f"unknown project DAG policy mutation: {mutation}")
     write_json(contract_path, contract)
     return fixture
+
+
+def create_evidence_manifest_valid_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "evidence-manifest-valid"
+    evidence_dir = fixture_dir / "evidence"
+    goal_hash = "sha256:rw-sanity-evidence-manifest-valid"
+    artifact = write_json(
+        evidence_dir / "reviewer-verdict.json",
+        {
+            "schema": "tau.reviewer_verdict.v1",
+            "goal_hash": goal_hash,
+            "reviewed_node_id": "coder",
+            "verdict": "PASS",
+        },
+    )
+    manifest = write_json(
+        fixture_dir / "evidence-manifest.json",
+        {
+            "schema": "tau.evidence_manifest.v1",
+            "run_id": "rw-sanity-evidence-manifest-valid",
+            "dag_id": "rw-sanity-evidence-manifest-valid",
+            "goal_hash": goal_hash,
+            "items": [
+                {
+                    "kind": "reviewer_verdict",
+                    "path": str(artifact),
+                    "sha256": f"sha256:{sha256_file(artifact)}",
+                    "schema": "tau.reviewer_verdict.v1",
+                    "validator": "tau evidence-validate reviewer-verdict",
+                    "valid": True,
+                }
+            ],
+        },
+    )
+    return {
+        "manifest": manifest,
+        "artifact": artifact,
+        "receipt": fixture_dir / "evidence-validation-receipt.json",
+    }
 
 
 def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Path]:
@@ -4108,6 +4166,8 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "suite_count",
         "total_rungs",
         "feature_counts",
+        "item_count",
+        "manifest_sha256",
         "provider_session_state_count",
         "scheduler",
         "max_concurrency",

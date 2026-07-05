@@ -1,0 +1,23 @@
+{
+  "dag_id": "rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "items": [
+    {
+      "kind": "creator_artifact",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170414Z-tau-evidence-manifest-positive-negative-20260705/evidence-manifest-goal-drift-project-dag/preflight-evidence/creator-artifact.json",
+      "schema": "tau.creator_artifact.v1",
+      "sha256": "sha256:86c32c4a0a3bbab58c59f86dc671851a42260874fd6af8132b0345268bc2d096",
+      "valid": true,
+      "validator": "tau evidence-validate creator-artifact"
+    },
+    {
+      "kind": "reviewer_verdict",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170414Z-tau-evidence-manifest-positive-negative-20260705/evidence-manifest-goal-drift-project-dag/preflight-evidence/reviewer-verdict.json",
+      "schema": "tau.reviewer_verdict.v1",
+      "sha256": "sha256:41b0eb9cddd19c2dec199cc9a4a2d216a1c58d430f2e0b9ad600aae54f0f6173",
+      "valid": true,
+      "validator": "tau evidence-validate reviewer-verdict"
+    }
+  ],
+  "schema": "tau.evidence_manifest.v1"
+}
