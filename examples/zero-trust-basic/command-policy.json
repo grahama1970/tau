@@ -1,0 +1,21 @@
+{
+  "allowed_command_roots": [
+    "python",
+    "python3",
+    "uv"
+  ],
+  "allowed_cwd_roots": [
+    "."
+  ],
+  "allows_mutation": false,
+  "allows_network": false,
+  "denied_commands": [
+    "curl",
+    "wget",
+    "ssh",
+    "scp",
+    "gh"
+  ],
+  "requires_clean_worktree": false,
+  "schema": "tau.command_spec_policy.v1"
+}
