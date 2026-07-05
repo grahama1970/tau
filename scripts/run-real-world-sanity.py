@@ -660,6 +660,29 @@ def build_checks(
             expected_status="BLOCKED",
         ),
         Check(
+            check_id="medium.herdr_gc_apply_with_approval",
+            level="medium",
+            purpose=(
+                "Tau allows broad Herdr GC apply only after a generated approval "
+                "receipt authorizes label-based workspace cleanup."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                herdr_gc_apply_with_approval_command(
+                    uv_tau=uv_tau,
+                    fixture_dir=cleanup_gc["run_dir"],
+                    herdr_bin=cleanup_gc["herdr_bin"],
+                    approval_packet_path=cleanup_gc["approval_packet"],
+                    approval_run_dir=cleanup_gc["approval_run_dir"],
+                    receipt_path=cleanup_gc["run_dir"] / "herdr-gc-receipt.json",
+                ),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            output_receipt=cleanup_gc["run_dir"] / "herdr-gc-receipt.json",
+        ),
+        Check(
             check_id="medium.orchestration_evidence_status",
             level="medium",
             purpose="Tau summarizes a standalone orchestration evidence receipt through the read-only run-status surface.",
@@ -2680,6 +2703,14 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
     )
     calls_path = fixture_dir / "herdr-calls.jsonl"
     herdr_bin = fixture_dir / "fake-herdr"
+    approval_packet_path = write_json(
+        fixture_dir / "herdr-gc-approval.json",
+        approval_packet(
+            action="herdr_gc_apply",
+            target_id="rw-sanity-provider-readiness-gc",
+            reason="Authorize fake-Herdr GC apply for real-world sanity proof.",
+        ),
+    )
     herdr_bin.write_text(
         "#!/usr/bin/env bash\n"
         f"HERDR_GC_CALLS={str(calls_path)!r}\n"
@@ -2696,6 +2727,10 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
         "  cat \"$HERDR_GC_WORKSPACES\"\n"
         "  exit 0\n"
         "fi\n"
+        "if [ \"$1 $2\" = \"workspace get\" ]; then\n"
+        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\\n'\n"
+        "  exit 1\n"
+        "fi\n"
         "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
         encoding="utf-8",
     )
@@ -2705,7 +2740,75 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
         "herdr_bin": herdr_bin,
         "workspaces": workspaces_path,
         "calls": calls_path,
+        "approval_packet": approval_packet_path,
+        "approval_run_dir": fixture_dir / "approval",
     }
+
+
+def herdr_gc_apply_with_approval_command(
+    *,
+    uv_tau: list[str],
+    fixture_dir: Path,
+    herdr_bin: Path,
+    approval_packet_path: Path,
+    approval_run_dir: Path,
+    receipt_path: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+fixture_dir = Path({str(fixture_dir)!r})
+herdr_bin = Path({str(herdr_bin)!r})
+approval_packet_path = Path({str(approval_packet_path)!r})
+approval_run_dir = Path({str(approval_run_dir)!r})
+receipt_path = Path({str(receipt_path)!r})
+approval_receipt = approval_run_dir / "approval-gate-receipt.json"
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "approval-gate-check",
+    "--approval-packet",
+    str(approval_packet_path),
+    "--requested-action",
+    "herdr_gc_apply",
+    "--run-dir",
+    str(approval_run_dir),
+], 0)
+completed = run([
+    *uv_tau,
+    "herdr-cleanup",
+    "gc",
+    "--run-dir",
+    str(fixture_dir),
+    "--apply",
+    "--approval-receipt",
+    str(approval_receipt),
+    "--herdr-bin",
+    str(herdr_bin),
+], 0)
+payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+if payload.get("applied_action_count") != 1:
+    raise SystemExit("expected exactly one applied action")
+if payload.get("post_verified_absent_count") != 1:
+    raise SystemExit("expected exactly one post-verified absent workspace")
+raise SystemExit(completed.returncode)
+"""
 
 
 def create_orchestration_evidence_status_fixture(run_dir: Path) -> dict[str, Path]:

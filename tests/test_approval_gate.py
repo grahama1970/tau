@@ -31,6 +31,23 @@ def test_approval_gate_passes_valid_human_packet(tmp_path: Path) -> None:
     assert (tmp_path / "run" / "approval-gate-receipt.json").exists()
 
 
+def test_approval_gate_passes_herdr_gc_apply_packet(tmp_path: Path) -> None:
+    packet = tmp_path / "approval.json"
+    _write_packet(packet, action="herdr_gc_apply")
+
+    receipt = evaluate_approval_gate(
+        approval_packet=packet,
+        requested_action="herdr_gc_apply",
+        run_dir=tmp_path / "run",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["approved"] is True
+    assert receipt["requested_action"] == "herdr_gc_apply"
+    assert receipt["packet_summary"]["action"] == "herdr_gc_apply"
+
+
 def test_approval_gate_blocks_missing_packet(tmp_path: Path) -> None:
     receipt = evaluate_approval_gate(
         approval_packet=tmp_path / "missing.json",

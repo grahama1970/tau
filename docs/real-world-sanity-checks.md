@@ -77,6 +77,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `medium.herdr_cleanup_status`: Tau summarizes a standalone Herdr cleanup receipt through the read-only `tau run-status` surface.
 - `medium.herdr_cleanup_session_apply_fail_closed`: Tau blocks Herdr cleanup apply when a run records a Herdr session candidate, because session stop/delete remains unsupported until Tau records stronger session ownership.
 - `medium.herdr_gc_apply_requires_approval`: Tau blocks broad Herdr GC apply when no approval receipt authorizes label-based workspace cleanup.
+- `medium.herdr_gc_apply_with_approval`: Tau generates an approval-gate receipt for `herdr_gc_apply`, then applies broad Herdr GC against a fake Herdr CLI and verifies the workspace is absent afterward.
 - `medium.orchestration_evidence_status`: Tau summarizes a standalone orchestration evidence receipt through the read-only `tau run-status` surface.
 - `medium.provider_lifecycle_status`: Tau summarizes provider lifecycle state artifacts through the read-only `tau run-status` surface.
 - `medium.provider_lifecycle_crashed_ready_fail_closed`: Tau normalizes a provider readiness record that claims ready but has no live foreground process as crashed, not schedulable.

@@ -15,6 +15,7 @@ ALLOWED_ACTIONS = {
     "github_apply",
     "github_ticket_closure",
     "herdr_cleanup_apply",
+    "herdr_gc_apply",
     "memory_upsert",
     "provider_branch_scheduling",
     "working_tree_mutation",
