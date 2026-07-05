@@ -6,6 +6,7 @@ from tau_coding.provider_dag_poc import (
     _coder_work_order,
     _reviewer_work_order,
     _run_provider_dag_cleanup,
+    _validate_node_receipt,
     inspect_provider_dag_run,
     plan_provider_dag_poc,
     run_provider_dag_orchestrator,
@@ -681,6 +682,92 @@ def test_provider_dag_work_orders_are_canonical_and_hash_bound(tmp_path: Path) -
     assert reviewer["required_evidence"] == ["coder_receipt_reviewed", "target_file_reviewed"]
     assert reviewer["herdr"]["terminal_id"] == "term-reviewer"
     assert reviewer["work_order_sha256"] == _canonical_work_order_sha256(reviewer)
+
+
+def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    scratch = tmp_path / "scratch-worktree"
+    receipt_dir = tmp_path / "receipts"
+    repo.mkdir()
+    scratch.mkdir()
+    receipt_dir.mkdir()
+    target_file = scratch / "message.txt"
+    target_file.write_text("completed\n", encoding="utf-8")
+    receipt_path = receipt_dir / "coder.json"
+    work_order = _coder_work_order(
+        run_id="run-001",
+        dag_id="dag-001",
+        goal_hash="sha256:goal",
+        attempt=1,
+        max_attempts=2,
+        repo=repo,
+        scratch_dir=scratch,
+        target_file=target_file,
+        receipt_path=receipt_path,
+        reviewer_feedback="",
+        provider_record={
+            "workspace_id": "w1",
+            "pane_id": "w1:p5",
+            "terminal_id": "term-codex",
+        },
+    )
+    work_order_path = tmp_path / "work-order.json"
+    work_order_path.write_text(json.dumps(work_order), encoding="utf-8")
+    receipt = {
+        "schema": "tau.provider_dag_node_receipt.v1",
+        "dag_id": "dag-001",
+        "goal_hash": "sha256:goal",
+        "node_id": "coder",
+        "provider_id": "codex",
+        "attempt": 1,
+        "workspace_id": "w1",
+        "pane_id": "w1:p5",
+        "terminal_id": "term-codex",
+        "work_order_path": str(work_order_path),
+        "work_order_sha256": work_order["work_order_sha256"],
+        "status": "PASS",
+        "verdict": "PASS",
+        "changed_files": [str(target_file)],
+        "commands_run": ["test"],
+        "artifacts": [str(target_file)],
+        "handoff_summary": "Coder updated the target file.",
+        "errors": [],
+        "policy_exceptions": [],
+    }
+
+    errors = _validate_node_receipt(
+        receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256=str(work_order["work_order_sha256"]),
+        expected_herdr=work_order["herdr"],
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+    )
+
+    assert errors == []
+
+    stale_receipt = dict(receipt)
+    stale_receipt["work_order_sha256"] = "stale"
+    stale_receipt["pane_id"] = "wrong-pane"
+    stale_errors = _validate_node_receipt(
+        stale_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256=str(work_order["work_order_sha256"]),
+        expected_herdr=work_order["herdr"],
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+    )
+
+    assert "work_order_sha256 must match the dispatched work order" in stale_errors
+    assert "pane_id must be w1:p5" in stale_errors
 
 
 def test_plan_provider_dag_poc_records_forced_reviewer_revise_attempts(tmp_path: Path) -> None:

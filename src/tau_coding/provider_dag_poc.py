@@ -291,6 +291,7 @@ def run_provider_dag_orchestrator(
             provider_record=provider_map["codex"],
         )
         _write_json(coder_work_order_path, coder_work_order)
+        coder_work_order_sha256 = str(coder_work_order["work_order_sha256"])
         _append_event(
             events_path,
             "coder_dispatch",
@@ -353,7 +354,13 @@ def run_provider_dag_orchestrator(
         coder_receipt, coder_errors = _wait_for_node_receipt(
             coder_receipt_path,
             expected_node_id="coder",
+            expected_provider_id="codex",
             expected_attempt=attempt,
+            work_order_path=coder_work_order_path,
+            work_order_sha256=coder_work_order_sha256,
+            expected_herdr=coder_work_order["herdr"],
+            expected_goal_hash=str(spec["goal"]["goal_hash"]),
+            expected_dag_id=run_id,
             timeout_seconds=receipt_timeout_seconds,
         )
         if coder_errors:
@@ -391,6 +398,7 @@ def run_provider_dag_orchestrator(
             provider_record=provider_map["opencode"],
         )
         _write_json(reviewer_work_order_path, reviewer_work_order)
+        reviewer_work_order_sha256 = str(reviewer_work_order["work_order_sha256"])
         _append_event(
             events_path,
             "reviewer_dispatch",
@@ -431,7 +439,13 @@ def run_provider_dag_orchestrator(
         reviewer_receipt, reviewer_errors = _wait_for_node_receipt(
             reviewer_receipt_path,
             expected_node_id="reviewer",
+            expected_provider_id="opencode",
             expected_attempt=attempt,
+            work_order_path=reviewer_work_order_path,
+            work_order_sha256=reviewer_work_order_sha256,
+            expected_herdr=reviewer_work_order["herdr"],
+            expected_goal_hash=str(spec["goal"]["goal_hash"]),
+            expected_dag_id=run_id,
             timeout_seconds=receipt_timeout_seconds,
         )
         if reviewer_errors:
@@ -980,6 +994,8 @@ def _reviewer_work_order(
 
 
 def _coder_prompt(work_order_path: Path, receipt_path: Path) -> str:
+    work_order = _read_json_object(work_order_path, label="coder work order")
+    herdr = work_order.get("herdr") if isinstance(work_order.get("herdr"), dict) else {}
     return f"""
 Tau provider DAG POC coder task.
 
@@ -998,9 +1014,15 @@ Rules:
 Receipt JSON shape:
 {{
   "schema": "{PROVIDER_DAG_NODE_RECEIPT_SCHEMA}",
+  "dag_id": "{work_order["dag_id"]}",
+  "goal_hash": "{work_order["goal"]["goal_hash"]}",
   "node_id": "coder",
   "provider_id": "codex",
-  "attempt": <attempt number>,
+  "attempt": {work_order["attempt"]},
+  "workspace_id": "{herdr.get("workspace_id")}",
+  "pane_id": "{herdr.get("pane_id")}",
+  "terminal_id": "{herdr.get("terminal_id")}",
+  "work_order_sha256": "{work_order["work_order_sha256"]}",
   "status": "PASS",
   "verdict": "PASS",
   "work_order_path": "{work_order_path}",
@@ -1015,6 +1037,8 @@ Receipt JSON shape:
 
 
 def _reviewer_prompt(work_order_path: Path, receipt_path: Path) -> str:
+    work_order = _read_json_object(work_order_path, label="reviewer work order")
+    herdr = work_order.get("herdr") if isinstance(work_order.get("herdr"), dict) else {}
     return f"""
 Tau provider DAG POC reviewer task.
 
@@ -1035,9 +1059,15 @@ Rules:
 Receipt JSON shape:
 {{
   "schema": "{PROVIDER_DAG_NODE_RECEIPT_SCHEMA}",
+  "dag_id": "{work_order["dag_id"]}",
+  "goal_hash": "{work_order["goal"]["goal_hash"]}",
   "node_id": "reviewer",
   "provider_id": "opencode",
-  "attempt": <attempt number>,
+  "attempt": {work_order["attempt"]},
+  "workspace_id": "{herdr.get("workspace_id")}",
+  "pane_id": "{herdr.get("pane_id")}",
+  "terminal_id": "{herdr.get("terminal_id")}",
+  "work_order_sha256": "{work_order["work_order_sha256"]}",
   "status": "PASS",
   "verdict": "PASS or REVISE",
   "work_order_path": "{work_order_path}",
@@ -1117,7 +1147,13 @@ def _wait_for_node_receipt(
     path: Path,
     *,
     expected_node_id: str,
+    expected_provider_id: str,
     expected_attempt: int,
+    work_order_path: Path,
+    work_order_sha256: str,
+    expected_herdr: dict[str, Any],
+    expected_goal_hash: str,
+    expected_dag_id: str,
     timeout_seconds: float,
 ) -> tuple[dict[str, Any], list[str]]:
     deadline = time.monotonic() + timeout_seconds
@@ -1125,7 +1161,17 @@ def _wait_for_node_receipt(
     while time.monotonic() < deadline:
         if path.exists():
             receipt = _read_json_object(path, label=f"{expected_node_id} receipt")
-            errors = _validate_node_receipt(receipt, expected_node_id, expected_attempt)
+            errors = _validate_node_receipt(
+                receipt,
+                expected_node_id=expected_node_id,
+                expected_provider_id=expected_provider_id,
+                expected_attempt=expected_attempt,
+                work_order_path=work_order_path,
+                work_order_sha256=work_order_sha256,
+                expected_herdr=expected_herdr,
+                expected_goal_hash=expected_goal_hash,
+                expected_dag_id=expected_dag_id,
+            )
             if not errors:
                 return receipt, []
             last_errors = errors
@@ -1141,16 +1187,39 @@ def _wait_for_node_receipt(
 
 def _validate_node_receipt(
     receipt: dict[str, Any],
+    *,
     expected_node_id: str,
+    expected_provider_id: str,
     expected_attempt: int,
+    work_order_path: Path,
+    work_order_sha256: str,
+    expected_herdr: dict[str, Any],
+    expected_goal_hash: str,
+    expected_dag_id: str,
 ) -> list[str]:
     errors: list[str] = []
     if receipt.get("schema") != PROVIDER_DAG_NODE_RECEIPT_SCHEMA:
         errors.append(f"schema must be {PROVIDER_DAG_NODE_RECEIPT_SCHEMA}")
+    if receipt.get("dag_id") != expected_dag_id:
+        errors.append(f"dag_id must be {expected_dag_id}")
+    if receipt.get("goal_hash") != expected_goal_hash:
+        errors.append(f"goal_hash must be {expected_goal_hash}")
     if receipt.get("node_id") != expected_node_id:
         errors.append(f"node_id must be {expected_node_id}")
+    if receipt.get("provider_id") != expected_provider_id:
+        errors.append(f"provider_id must be {expected_provider_id}")
     if receipt.get("attempt") != expected_attempt:
         errors.append(f"attempt must be {expected_attempt}")
+    if receipt.get("work_order_path") != str(work_order_path):
+        errors.append(f"work_order_path must be {work_order_path}")
+    if receipt.get("work_order_sha256") != work_order_sha256:
+        errors.append("work_order_sha256 must match the dispatched work order")
+    for key in ("workspace_id", "pane_id", "terminal_id"):
+        expected = str(expected_herdr.get(key) or "")
+        if not expected:
+            errors.append(f"expected {key} must be available from Herdr readiness")
+        elif receipt.get(key) != expected:
+            errors.append(f"{key} must be {expected}")
     if str(receipt.get("status") or "").upper() not in {"PASS", "BLOCKED"}:
         errors.append("status must be PASS or BLOCKED")
     if str(receipt.get("verdict") or "").upper() not in {"PASS", "REVISE", "BLOCKED"}:
@@ -1424,9 +1493,15 @@ def _start_visible_deterministic_coder_pane(
         "receipt.parent.mkdir(parents=True, exist_ok=True); "
         "payload={"
         f"'schema':{PROVIDER_DAG_NODE_RECEIPT_SCHEMA!r},"
+        "'dag_id':wo['dag_id'],"
+        "'goal_hash':wo['goal']['goal_hash'],"
         "'node_id':'coder',"
-        "'provider_id':'tau-deterministic-visible',"
+        "'provider_id':wo['provider_id'],"
         "'attempt':wo['attempt'],"
+        "'workspace_id':wo['herdr']['workspace_id'],"
+        "'pane_id':wo['herdr']['pane_id'],"
+        "'terminal_id':wo['herdr']['terminal_id'],"
+        "'work_order_sha256':wo['work_order_sha256'],"
         "'status':'PASS',"
         "'verdict':'PASS',"
         "'work_order_path':str(Path(sys.argv[1])),"
