@@ -902,6 +902,31 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
     assert f"visible_log_path must be {visible_log}" in stale_errors
     assert "visible_log_sha256 must match visible_log_path contents" in stale_errors
 
+    out_of_scope = tmp_path / "outside.txt"
+    out_of_scope.write_text("outside\n", encoding="utf-8")
+    unsafe_receipt = dict(receipt)
+    unsafe_receipt["changed_files"] = [str(target_file), str(out_of_scope)]
+    unsafe_receipt["artifacts"] = [str(out_of_scope)]
+    unsafe_receipt["errors"] = ["ignored error"]
+    unsafe_receipt["policy_exceptions"] = ["ignored policy exception"]
+    unsafe_errors = _validate_node_receipt(
+        unsafe_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256=str(work_order["work_order_sha256"]),
+        expected_herdr=work_order["herdr"],
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+        allowed_paths=[Path(path) for path in work_order["target"]["allowed_paths"]],
+    )
+
+    assert f"changed_files entry is outside work order allowed_paths: {out_of_scope}" in unsafe_errors
+    assert f"artifacts entry is outside work order allowed_paths: {out_of_scope}" in unsafe_errors
+    assert "PASS receipt errors must be empty" in unsafe_errors
+    assert "PASS receipt policy_exceptions must be empty" in unsafe_errors
+
 
 def test_provider_node_receipt_timeout_reports_delivery_diagnostics(tmp_path: Path) -> None:
     visible_log = tmp_path / "codex.visible.txt"

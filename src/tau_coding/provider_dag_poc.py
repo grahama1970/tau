@@ -1220,6 +1220,7 @@ def _wait_for_node_receipt(
                 expected_herdr=expected_herdr,
                 expected_goal_hash=expected_goal_hash,
                 expected_dag_id=expected_dag_id,
+                allowed_paths=_work_order_allowed_paths(work_order_path),
             )
             if not errors:
                 return receipt, []
@@ -1358,6 +1359,7 @@ def _validate_node_receipt(
     expected_herdr: dict[str, Any],
     expected_goal_hash: str,
     expected_dag_id: str,
+    allowed_paths: list[Path] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     if receipt.get("schema") != PROVIDER_DAG_NODE_RECEIPT_SCHEMA:
@@ -1403,9 +1405,62 @@ def _validate_node_receipt(
     for key in ("changed_files", "commands_run", "artifacts", "errors", "policy_exceptions"):
         if not isinstance(receipt.get(key), list):
             errors.append(f"{key} must be a list")
+    if allowed_paths is None:
+        allowed_paths = _work_order_allowed_paths(work_order_path)
+    allowed_path_errors = _receipt_allowed_path_errors(
+        receipt,
+        allowed_paths=allowed_paths,
+    )
+    errors.extend(allowed_path_errors)
+    if str(receipt.get("status") or "").upper() == "PASS":
+        if receipt.get("errors"):
+            errors.append("PASS receipt errors must be empty")
+        if receipt.get("policy_exceptions"):
+            errors.append("PASS receipt policy_exceptions must be empty")
     if not isinstance(receipt.get("handoff_summary"), str) or not receipt.get("handoff_summary"):
         errors.append("handoff_summary must be a non-empty string")
     return errors
+
+
+def _work_order_allowed_paths(work_order_path: Path) -> list[Path]:
+    try:
+        work_order = _read_json_object(work_order_path, label="provider DAG work order")
+    except RuntimeError:
+        return []
+    target = work_order.get("target")
+    if not isinstance(target, dict):
+        return []
+    raw_paths = target.get("allowed_paths")
+    if not isinstance(raw_paths, list):
+        return []
+    return [Path(path) for path in raw_paths if isinstance(path, str) and path]
+
+
+def _receipt_allowed_path_errors(
+    receipt: dict[str, Any],
+    *,
+    allowed_paths: list[Path],
+) -> list[str]:
+    errors: list[str] = []
+    normalized_allowed = {_normalize_receipt_path(path) for path in allowed_paths}
+    if not normalized_allowed:
+        errors.append("work order target.allowed_paths must include at least one path")
+        return errors
+    for key in ("changed_files", "artifacts"):
+        value = receipt.get(key)
+        if not isinstance(value, list):
+            continue
+        for item in value:
+            if not isinstance(item, str) or not item:
+                errors.append(f"{key} entries must be non-empty strings")
+                continue
+            if _normalize_receipt_path(Path(item)) not in normalized_allowed:
+                errors.append(f"{key} entry is outside work order allowed_paths: {item}")
+    return errors
+
+
+def _normalize_receipt_path(path: Path) -> str:
+    return str(path.expanduser().resolve(strict=False))
 
 
 def _provider_visible_log_path(provider_record: dict[str, Any]) -> str:
