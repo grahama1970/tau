@@ -138,6 +138,12 @@ uv run pytest tests/test_memory_evidence_gate.py tests/test_project_dag.py tests
 Build this after memory/evidence gating exists. The package must consume
 receipts; it must not invent validation fields.
 
+Status: implemented as `tau compliance-package <run-dir> --out <package-dir>`.
+The package copies or derives review artifacts from existing run receipts,
+writes `tau.compliance_evidence_package.v1`, records item/source hashes, and
+preserves explicit non-claims. It does not revalidate evidence sufficiency,
+sign receipts, prove sandbox enforcement, or certify compliance.
+
 Build:
 
 ```text

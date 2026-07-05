@@ -38,6 +38,7 @@ from tau_coding.browser_cdp_proof import (
     DEFAULT_SURF_WRAPPER,
     write_browser_cdp_proof,
 )
+from tau_coding.compliance_package import build_compliance_evidence_package
 from tau_coding.credentials import FileCredentialStore
 from tau_coding.dag_branch_locks import write_dag_branch_lock_validation_receipt
 from tau_coding.dag_expansion import (
@@ -1335,6 +1336,21 @@ def main(
         try:
             run_dir = _parse_run_status_cli_args(positional_args[1:])
             payload = build_run_status(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "compliance-package":
+        try:
+            options = _parse_compliance_package_cli_args(positional_args[1:])
+            payload = build_compliance_evidence_package(
+                run_dir=Path(str(options["run_dir"])),
+                out_dir=Path(str(options["out"])),
+                force=bool(options["force"]),
+            )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2992,6 +3008,34 @@ def _parse_run_status_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau run-status <run-dir>")
     return Path(args[0])
+
+
+def _parse_compliance_package_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau compliance-package <run-dir> --out <package-dir> [--force]")
+    options: dict[str, object] = {
+        "run_dir": Path(args[0]),
+        "out": None,
+        "force": False,
+    }
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg == "--force":
+            options["force"] = True
+        else:
+            raise RuntimeError(f"unknown compliance-package option: {arg}")
+        index += 1
+    if options["out"] is None:
+        raise RuntimeError("Usage: tau compliance-package <run-dir> --out <package-dir> [--force]")
+    return options
 
 
 def _parse_dag_fail_closed_registry_args(args: list[str]) -> Path | None:
