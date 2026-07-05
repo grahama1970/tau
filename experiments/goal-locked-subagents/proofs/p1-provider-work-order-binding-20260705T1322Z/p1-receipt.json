@@ -1,0 +1,63 @@
+{
+  "schema": "tau.p1_hardening_receipt.v1",
+  "slice": "provider_work_order_binding",
+  "status": "PASS",
+  "mocked": false,
+  "live": "mixed",
+  "provider_live": false,
+  "changed_files": [
+    "src/tau_coding/generic_provider_adapter.py",
+    "tests/test_generic_provider_adapter.py"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "10 passed in 0.40s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/generic_provider_adapter.py tests/test_generic_provider_adapter.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_generic_provider_adapter.py tests/test_generic_dag.py tests/test_provider_pane_poc.py tests/test_run_status.py -q",
+      "exit_code": 0,
+      "result": "51 passed in 1.09s"
+    },
+    {
+      "command": "uv run python - <<'PY' ... build_generic_provider_node_receipt canonical pass/block proof ... PY",
+      "exit_code": 0,
+      "result": "binding-proof-summary.json ok=true; blocked_errors=[work_order_sha256_mismatch]"
+    },
+    {
+      "command": "for f in experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/*.json; do uv run python -m json.tool \"$f\" >/tmp/$(basename \"$f\"); done",
+      "exit_code": 0,
+      "result": "all proof JSON files parsed"
+    }
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/p1-receipt.json",
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/binding-proof-summary.json",
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-work-order.json",
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-work-order-bad-hash.json",
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-binding-pass-receipt.json",
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-binding-blocked-receipt.json",
+    "experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/coder.visible.txt"
+  ],
+  "proves": [
+    "Canonical tau.provider_dag_work_order.v1 bindings now require agent, max_attempts, target repo, scratch worktree, receipt path, allowed paths, required evidence, forbidden actions, and embedded canonical work_order_sha256.",
+    "A complete canonical provider work order plus matching Herdr-visible provider record produces a PASS generic provider node receipt.",
+    "A canonical provider work order with a mismatched embedded work_order_sha256 produces a BLOCKED generic provider node receipt.",
+    "Legacy non-canonical adapter work orders remain explicitly LEGACY_UNBOUND for compatibility."
+  ],
+  "does_not_prove": [
+    "live provider model semantic quality",
+    "live Herdr pane allocation",
+    "production provider branch scheduling",
+    "GitHub mutation",
+    "full P1 roadmap completion"
+  ],
+  "errors": [],
+  "policy_exceptions": []
+}

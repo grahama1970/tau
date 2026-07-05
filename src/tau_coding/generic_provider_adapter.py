@@ -173,7 +173,12 @@ def _provider_binding(
         "dag_id": None,
         "goal_hash": None,
         "node_id": node_id,
+        "agent": None,
         "attempt": None,
+        "max_attempts": None,
+        "target_repo": None,
+        "scratch_worktree": None,
+        "receipt_path": None,
         "workspace_id": None,
         "pane_id": None,
         "terminal_id": None,
@@ -209,17 +214,27 @@ def _provider_binding(
     dag_id = _string(work_order.get("dag_id"))
     goal_hash = _nested_string(work_order, "goal", "goal_hash")
     work_order_node_id = _nested_string(work_order, "node", "node_id")
+    agent = _nested_string(work_order, "node", "agent")
     attempt = _nested_int(work_order, "node", "attempt")
+    max_attempts = _nested_int(work_order, "node", "max_attempts")
+    target_repo = _nested_string(work_order, "target", "repo")
+    scratch_worktree = _nested_string(work_order, "target", "scratch_worktree")
     workspace_id = _nested_string(work_order, "herdr", "workspace_id")
     pane_id = _nested_string(work_order, "herdr", "pane_id")
     terminal_id = _nested_string(work_order, "herdr", "terminal_id")
+    receipt_path = _string(work_order.get("receipt_path"))
 
     base.update(
         {
             "dag_id": dag_id,
             "goal_hash": goal_hash,
             "node_id": work_order_node_id or node_id,
+            "agent": agent,
             "attempt": attempt,
+            "max_attempts": max_attempts,
+            "target_repo": target_repo,
+            "scratch_worktree": scratch_worktree,
+            "receipt_path": receipt_path,
             "workspace_id": workspace_id,
             "pane_id": pane_id,
             "terminal_id": terminal_id,
@@ -235,6 +250,30 @@ def _provider_binding(
         )
     if attempt is None:
         errors.append("work_order_missing_attempt")
+    if max_attempts is None:
+        errors.append("work_order_missing_max_attempts")
+    elif max_attempts < 1:
+        errors.append("work_order_invalid_max_attempts")
+    if not agent:
+        errors.append("work_order_missing_agent")
+    if not target_repo:
+        errors.append("work_order_missing_target_repo")
+    if not scratch_worktree:
+        errors.append("work_order_missing_scratch_worktree")
+    if not receipt_path:
+        errors.append("work_order_missing_receipt_path")
+    for field_name, value in (
+        ("allowed_paths", _target_allowed_paths(work_order)),
+        ("required_evidence", work_order.get("required_evidence")),
+        ("forbidden_actions", work_order.get("forbidden_actions")),
+    ):
+        if not isinstance(value, list):
+            errors.append(f"work_order_missing_{field_name}")
+    declared_work_order_sha256 = _string(work_order.get("work_order_sha256"))
+    if not declared_work_order_sha256:
+        errors.append("work_order_missing_work_order_sha256")
+    elif declared_work_order_sha256 != _canonical_work_order_payload_sha256(work_order):
+        errors.append("work_order_sha256_mismatch")
     for field_name, value in (
         ("workspace_id", workspace_id),
         ("pane_id", pane_id),
@@ -290,6 +329,13 @@ def _matching_herdr_record(
     return None
 
 
+def _target_allowed_paths(work_order: dict[str, Any]) -> Any:
+    target = work_order.get("target")
+    if not isinstance(target, dict):
+        return None
+    return target.get("allowed_paths")
+
+
 def _nested_string(data: dict[str, Any], parent: str, child: str) -> str | None:
     parent_value = data.get(parent)
     if not isinstance(parent_value, dict):
@@ -339,6 +385,13 @@ def _file_sha256(path: Path) -> str | None:
         data = path.expanduser().resolve().read_bytes()
     except OSError:
         return None
+    return hashlib.sha256(data).hexdigest()
+
+
+def _canonical_work_order_payload_sha256(payload: dict[str, Any]) -> str:
+    canonical = dict(payload)
+    canonical.pop("work_order_sha256", None)
+    data = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(data).hexdigest()
 
 

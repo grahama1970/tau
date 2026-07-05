@@ -1,0 +1,29 @@
+{
+  "dag_id": "dag-proof-001",
+  "forbidden_actions": [],
+  "goal": {
+    "goal_hash": "sha256:goal",
+    "goal_id": "goal",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w1:p3",
+    "terminal_id": "term-coder",
+    "workspace_id": "w1"
+  },
+  "node": {
+    "agent": "coder",
+    "attempt": 1,
+    "max_attempts": 2,
+    "node_id": "provider-task"
+  },
+  "receipt_path": "/tmp/provider-task-receipt.json",
+  "required_evidence": [],
+  "schema": "tau.provider_dag_work_order.v1",
+  "target": {
+    "allowed_paths": [],
+    "repo": "grahama1970/tau",
+    "scratch_worktree": "/tmp/tau-scratch"
+  },
+  "work_order_sha256": "wrong-hash"
+}

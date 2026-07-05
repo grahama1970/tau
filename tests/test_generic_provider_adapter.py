@@ -1,4 +1,5 @@
 import hashlib
+import json
 from pathlib import Path
 
 from tau_coding.cli import _parse_generic_provider_dag_node_cli_args
@@ -62,37 +63,9 @@ def test_build_generic_provider_node_receipt_binds_canonical_work_order(
     visible_log = tmp_path / "coder.visible.txt"
     visible_log.write_text("visible provider output\n", encoding="utf-8")
     work_order = tmp_path / "work-order.json"
-    work_order.write_text(
-        """{
-  "schema": "tau.provider_dag_work_order.v1",
-  "dag_id": "dag-001",
-  "goal": {
-    "goal_id": "goal",
-    "goal_version": 1,
-    "goal_hash": "sha256:goal"
-  },
-  "node": {
-    "node_id": "provider-task",
-    "agent": "coder",
-    "attempt": 1,
-    "max_attempts": 2
-  },
-  "target": {
-    "repo": "grahama1970/tau",
-    "allowed_paths": [],
-    "scratch_worktree": "/tmp/tau-scratch"
-  },
-  "herdr": {
-    "workspace_id": "w1",
-    "pane_id": "w1:p3",
-    "terminal_id": "term-coder"
-  },
-  "required_evidence": [],
-  "forbidden_actions": [],
-  "receipt_path": "/tmp/provider-task-receipt.json"
-}
-""",
-        encoding="utf-8",
+    _write_canonical_work_order(
+        work_order,
+        node_id="provider-task",
     )
 
     receipt = build_generic_provider_node_receipt(
@@ -126,7 +99,12 @@ def test_build_generic_provider_node_receipt_binds_canonical_work_order(
         "dag_id": "dag-001",
         "goal_hash": "sha256:goal",
         "node_id": "provider-task",
+        "agent": "coder",
         "attempt": 1,
+        "max_attempts": 2,
+        "target_repo": "grahama1970/tau",
+        "scratch_worktree": "/tmp/tau-scratch",
+        "receipt_path": "/tmp/provider-task-receipt.json",
         "workspace_id": "w1",
         "pane_id": "w1:p3",
         "terminal_id": "term-coder",
@@ -147,26 +125,7 @@ def test_build_generic_provider_node_receipt_blocks_work_order_node_mismatch(
     visible_log = tmp_path / "coder.visible.txt"
     visible_log.write_text("visible provider output\n", encoding="utf-8")
     work_order = tmp_path / "work-order.json"
-    work_order.write_text(
-        """{
-  "schema": "tau.provider_dag_work_order.v1",
-  "dag_id": "dag-001",
-  "goal": {
-    "goal_hash": "sha256:goal"
-  },
-  "node": {
-    "node_id": "other-node",
-    "attempt": 1
-  },
-  "herdr": {
-    "workspace_id": "w1",
-    "pane_id": "w1:p3",
-    "terminal_id": "term-coder"
-  }
-}
-""",
-        encoding="utf-8",
-    )
+    _write_canonical_work_order(work_order, node_id="other-node")
 
     receipt = build_generic_provider_node_receipt(
         node_id="provider-task",
@@ -190,35 +149,86 @@ def test_build_generic_provider_node_receipt_blocks_work_order_node_mismatch(
     assert receipt["status"] == "BLOCKED"
     assert receipt["verdict"] == "BLOCKED"
     assert receipt["provider_binding"]["status"] == "BLOCKED"
-    assert receipt["errors"] == [
-        "work_order_node_id_mismatch: expected 'provider-task', got 'other-node'"
+    assert "work_order_node_id_mismatch: expected 'provider-task', got 'other-node'" in receipt[
+        "errors"
     ]
+
+
+def test_build_generic_provider_node_receipt_blocks_incomplete_canonical_work_order(
+    tmp_path: Path,
+) -> None:
+    visible_log = tmp_path / "coder.visible.txt"
+    visible_log.write_text("visible provider output\n", encoding="utf-8")
+    work_order = tmp_path / "work-order.json"
+    payload = _canonical_work_order_payload(node_id="provider-task")
+    payload["target"].pop("scratch_worktree")  # type: ignore[index, union-attr]
+    payload.pop("required_evidence")
+    payload.pop("work_order_sha256", None)
+    _write_json(work_order, payload)
+
+    receipt = build_generic_provider_node_receipt(
+        node_id="provider-task",
+        provider_receipt={
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "live": True,
+            "visible_subagents": {
+                "coder": {
+                    "workspace_id": "w1",
+                    "pane_id": "w1:p3",
+                    "terminal_id": "term-coder",
+                    "visible_log_path": str(visible_log),
+                }
+            },
+        },
+        work_order_path=work_order,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "work_order_missing_scratch_worktree" in receipt["errors"]
+    assert "work_order_missing_required_evidence" in receipt["errors"]
+    assert "work_order_missing_work_order_sha256" in receipt["errors"]
+
+
+def test_build_generic_provider_node_receipt_blocks_work_order_hash_mismatch(
+    tmp_path: Path,
+) -> None:
+    visible_log = tmp_path / "coder.visible.txt"
+    visible_log.write_text("visible provider output\n", encoding="utf-8")
+    work_order = tmp_path / "work-order.json"
+    payload = _canonical_work_order_payload(node_id="provider-task")
+    payload["work_order_sha256"] = "not-the-canonical-hash"
+    _write_json(work_order, payload)
+
+    receipt = build_generic_provider_node_receipt(
+        node_id="provider-task",
+        provider_receipt={
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "live": True,
+            "provider_sessions": {
+                "codex": {
+                    "workspace_id": "w1",
+                    "pane_id": "w1:p3",
+                    "terminal_id": "term-coder",
+                    "visible_log_path": str(visible_log),
+                }
+            },
+        },
+        work_order_path=work_order,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "work_order_sha256_mismatch" in receipt["errors"]
 
 
 def test_build_generic_provider_node_receipt_blocks_missing_visible_log(
     tmp_path: Path,
 ) -> None:
     work_order = tmp_path / "work-order.json"
-    work_order.write_text(
-        """{
-  "schema": "tau.provider_dag_work_order.v1",
-  "dag_id": "dag-001",
-  "goal": {
-    "goal_hash": "sha256:goal"
-  },
-  "node": {
-    "node_id": "provider-task",
-    "attempt": 1
-  },
-  "herdr": {
-    "workspace_id": "w1",
-    "pane_id": "w1:p3",
-    "terminal_id": "term-coder"
-  }
-}
-""",
-        encoding="utf-8",
-    )
+    _write_canonical_work_order(work_order, node_id="provider-task")
 
     receipt = build_generic_provider_node_receipt(
         node_id="provider-task",
@@ -310,3 +320,51 @@ def test_parse_generic_provider_dag_node_accepts_work_order_path(tmp_path: Path)
     )
 
     assert options["work_order_path"] == tmp_path / "work-order.json"
+
+
+def _write_canonical_work_order(path: Path, *, node_id: str) -> None:
+    _write_json(path, _canonical_work_order_payload(node_id=node_id))
+
+
+def _canonical_work_order_payload(*, node_id: str) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema": "tau.provider_dag_work_order.v1",
+        "dag_id": "dag-001",
+        "goal": {
+            "goal_id": "goal",
+            "goal_version": 1,
+            "goal_hash": "sha256:goal",
+        },
+        "node": {
+            "node_id": node_id,
+            "agent": "coder",
+            "attempt": 1,
+            "max_attempts": 2,
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "allowed_paths": [],
+            "scratch_worktree": "/tmp/tau-scratch",
+        },
+        "herdr": {
+            "workspace_id": "w1",
+            "pane_id": "w1:p3",
+            "terminal_id": "term-coder",
+        },
+        "required_evidence": [],
+        "forbidden_actions": [],
+        "receipt_path": "/tmp/provider-task-receipt.json",
+    }
+    payload["work_order_sha256"] = _canonical_payload_sha256(payload)
+    return payload
+
+
+def _canonical_payload_sha256(payload: dict[str, object]) -> str:
+    canonical = dict(payload)
+    canonical.pop("work_order_sha256", None)
+    data = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
+
+
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

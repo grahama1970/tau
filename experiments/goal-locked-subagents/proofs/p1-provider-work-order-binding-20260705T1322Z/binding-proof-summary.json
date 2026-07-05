@@ -1,0 +1,12 @@
+{
+  "blocked_errors": [
+    "work_order_sha256_mismatch"
+  ],
+  "blocked_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-binding-blocked-receipt.json",
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "pass_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-binding-pass-receipt.json",
+  "provider_live": false,
+  "schema": "tau.p1_provider_work_order_binding_proof.v1"
+}

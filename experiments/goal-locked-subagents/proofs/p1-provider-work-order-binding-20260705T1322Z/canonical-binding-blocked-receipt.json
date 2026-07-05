@@ -1,0 +1,47 @@
+{
+  "artifacts": [],
+  "commands_run": [
+    "tau provider-dag-poc via tau generic-provider-dag-node"
+  ],
+  "errors": [
+    "work_order_sha256_mismatch"
+  ],
+  "handoff_summary": "Provider DAG subrun passed and was translated into a generic DAG node receipt.",
+  "live": true,
+  "mocked": false,
+  "node_id": "provider-task",
+  "policy_exceptions": [],
+  "provider_binding": {
+    "agent": "coder",
+    "attempt": 1,
+    "dag_id": "dag-proof-001",
+    "errors": [
+      "work_order_sha256_mismatch"
+    ],
+    "goal_hash": "sha256:goal",
+    "max_attempts": 2,
+    "node_id": "provider-task",
+    "pane_id": "w1:p3",
+    "receipt_path": "/tmp/provider-task-receipt.json",
+    "schema": "tau.provider_dag_node_binding.v1",
+    "scratch_worktree": "/tmp/tau-scratch",
+    "status": "BLOCKED",
+    "target_repo": "grahama1970/tau",
+    "terminal_id": "term-coder",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/coder.visible.txt",
+    "visible_log_sha256": "893c119f1a914ea88b78d63b4768eb17633e1a50b855ea48813a2cc331e12bc0",
+    "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-work-order-bad-hash.json",
+    "work_order_schema": "tau.provider_dag_work_order.v1",
+    "work_order_sha256": "55c6d4c4b64df0f474490170f3d7f5b8453390a56596a9d7e07f678760fc9012",
+    "workspace_id": "w1"
+  },
+  "provider_live": true,
+  "provider_status": "PASS",
+  "provider_verdict": "PASS",
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T12:56:55Z",
+  "verdict": "BLOCKED",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-provider-work-order-binding-20260705T1322Z/canonical-work-order-bad-hash.json",
+  "work_order_sha256": "55c6d4c4b64df0f474490170f3d7f5b8453390a56596a9d7e07f678760fc9012"
+}
