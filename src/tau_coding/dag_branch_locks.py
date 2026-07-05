@@ -35,7 +35,11 @@ def write_dag_branch_lock_validation_receipt(
     contract = validate_dag_contract(contract_payload)
     locks_payload = _load_object(resolved_locks_path, label="DAG branch locks")
     required_locks = _required_locks(contract.payload)
-    alerts = _lock_alerts(contract_payload=contract.payload, locks_payload=locks_payload, required_locks=required_locks)
+    alerts = _lock_alerts(
+        contract_payload=contract.payload,
+        locks_payload=locks_payload,
+        required_locks=required_locks,
+    )
     status = "PASS" if not alerts else "BLOCKED"
     receipt = {
         "schema": DAG_BRANCH_LOCK_VALIDATION_RECEIPT_SCHEMA,
@@ -64,13 +68,14 @@ def write_dag_branch_lock_validation_receipt(
             "proves": [
                 "DAG contract was inspected for provider and mutating branches.",
                 "Branch-lock metadata was checked against required provider/mutating nodes.",
+                "Side-effect authorization metadata was checked before scheduling.",
                 "No provider branch, mutating branch, route mutation, or DAG mutation was executed.",
             ],
             "does_not_prove": [
                 "Provider branch safety after execution.",
                 "GitHub mutation safety.",
                 "Concurrent scheduling of provider or mutating branches.",
-                "Human authorization for external side effects.",
+                "That the approval packet hash corresponds to a valid human approval packet.",
             ],
         },
         "errors": [],
@@ -144,15 +149,117 @@ def _lock_alerts(
                     required,
                 )
             )
-        elif not lock.get("lock_id") or not lock.get("owner"):
-            alerts.append(
-                _alert(
-                    "BLOCK",
-                    "incomplete_branch_lock",
-                    "Branch lock must include lock_id and owner.",
-                    {"node_id": required["node_id"], "branch_type": required["branch_type"]},
-                )
+            continue
+        alerts.extend(_branch_lock_field_alerts(lock=lock, required=required))
+    return alerts
+
+
+def _branch_lock_field_alerts(
+    *,
+    lock: dict[str, Any],
+    required: dict[str, Any],
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    node_id = str(required["node_id"])
+    branch_type = str(required["branch_type"])
+    evidence = {"node_id": node_id, "branch_type": branch_type}
+
+    missing = [
+        key
+        for key in (
+            "lock_id",
+            "owner",
+            "actor_identity",
+            "approval_packet_sha256",
+            "allowed_paths",
+            "side_effect_class",
+            "expires_at",
+            "rollback_policy",
+        )
+        if not lock.get(key)
+    ]
+    if missing:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "incomplete_branch_lock",
+                "Branch lock is missing required authorization fields.",
+                {**evidence, "missing_fields": missing},
             )
+        )
+    approval_packet_sha256 = lock.get("approval_packet_sha256")
+    if not (
+        isinstance(approval_packet_sha256, str)
+        and approval_packet_sha256.startswith("sha256:")
+        and len(approval_packet_sha256) > len("sha256:")
+    ):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_approval_packet_sha256",
+                "Branch lock approval_packet_sha256 must be a sha256-prefixed digest.",
+                evidence,
+            )
+        )
+    allowed_paths = lock.get("allowed_paths")
+    if not _string_list(allowed_paths):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_allowed_paths",
+                "Branch lock must name the paths allowed for the side-effecting branch.",
+                evidence,
+            )
+        )
+    side_effect_class = lock.get("side_effect_class")
+    allowed_side_effect_classes = {"filesystem", "github", "memory", "provider"}
+    if side_effect_class not in allowed_side_effect_classes:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_side_effect_class",
+                "Branch lock side_effect_class is not supported.",
+                {**evidence, "side_effect_class": side_effect_class},
+            )
+        )
+    if branch_type == "provider" and not lock.get("workspace_lease"):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_workspace_lease",
+                "Provider branch locks require a Herdr workspace lease reference.",
+                evidence,
+            )
+        )
+    if lock.get("rollback_policy") != "required":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_rollback_policy",
+                "Branch lock rollback_policy must be 'required'.",
+                {**evidence, "rollback_policy": lock.get("rollback_policy")},
+            )
+        )
+    expires_at = lock.get("expires_at")
+    parsed_expiry = _parse_timestamp(expires_at)
+    if parsed_expiry is None:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_lock_expiry",
+                "Branch lock expires_at must be an ISO-8601 timestamp.",
+                {**evidence, "expires_at": expires_at},
+            )
+        )
+    elif parsed_expiry <= datetime.now(UTC):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "branch_lock_expired",
+                "Branch lock has expired.",
+                {**evidence, "expires_at": expires_at},
+            )
+        )
     return alerts
 
 
@@ -180,6 +287,24 @@ def _dict_list(value: object) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, dict)]
+
+
+def _string_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str) and item]
+
+
+def _parse_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def _alert(severity: str, code: str, message: str, evidence: dict[str, Any]) -> dict[str, Any]:

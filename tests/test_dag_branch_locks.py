@@ -64,6 +64,87 @@ def test_branch_locks_validate_blocks_goal_hash_mismatch(tmp_path: Path) -> None
     assert receipt["alerts"][0]["code"] == "goal_hash_mismatch"
 
 
+def test_branch_locks_validate_blocks_missing_authorization_fields(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    locks = _locks()
+    locks["locks"][0].pop("actor_identity")  # type: ignore[index,union-attr]
+    locks["locks"][0].pop("approval_packet_sha256")  # type: ignore[index,union-attr]
+    locks_path = _write_locks(tmp_path, locks)
+
+    receipt = write_dag_branch_lock_validation_receipt(
+        dag_contract_path=contract_path,
+        locks_path=locks_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert any(alert["code"] == "incomplete_branch_lock" for alert in receipt["alerts"])
+    assert any(
+        alert["code"] == "invalid_approval_packet_sha256"
+        for alert in receipt["alerts"]
+    )
+
+
+def test_branch_locks_validate_blocks_missing_provider_workspace_lease(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    locks = _locks()
+    locks["locks"][0].pop("workspace_lease")  # type: ignore[index,union-attr]
+    locks_path = _write_locks(tmp_path, locks)
+
+    receipt = write_dag_branch_lock_validation_receipt(
+        dag_contract_path=contract_path,
+        locks_path=locks_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert any(alert["code"] == "missing_workspace_lease" for alert in receipt["alerts"])
+
+
+def test_branch_locks_validate_blocks_expired_lock(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    locks = _locks()
+    locks["locks"][1]["expires_at"] = "2000-01-01T00:00:00Z"  # type: ignore[index]
+    locks_path = _write_locks(tmp_path, locks)
+
+    receipt = write_dag_branch_lock_validation_receipt(
+        dag_contract_path=contract_path,
+        locks_path=locks_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert any(alert["code"] == "branch_lock_expired" for alert in receipt["alerts"])
+
+
+def test_branch_locks_validate_blocks_invalid_side_effect_policy(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    locks = _locks()
+    locks["locks"][1]["side_effect_class"] = "unknown"  # type: ignore[index]
+    locks["locks"][1]["allowed_paths"] = []  # type: ignore[index]
+    locks["locks"][1]["rollback_policy"] = "optional"  # type: ignore[index]
+    locks_path = _write_locks(tmp_path, locks)
+
+    receipt = write_dag_branch_lock_validation_receipt(
+        dag_contract_path=contract_path,
+        locks_path=locks_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+    alert_codes = {alert["code"] for alert in receipt["alerts"]}
+
+    assert receipt["ok"] is False
+    assert "invalid_side_effect_class" in alert_codes
+    assert "missing_allowed_paths" in alert_codes
+    assert "invalid_rollback_policy" in alert_codes
+
+
 def test_cli_branch_locks_validate_writes_receipt(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     locks_path = _write_locks(tmp_path, _locks())
@@ -154,12 +235,25 @@ def _locks() -> dict[str, object]:
                 "branch_type": "provider",
                 "lock_id": "lock-provider-001",
                 "owner": "goal-guardian",
+                "actor_identity": "human:graham",
+                "approval_packet_sha256": "sha256:approval-provider",
+                "allowed_paths": ["experiments/goal-locked-subagents/proofs/provider/**"],
+                "side_effect_class": "provider",
+                "workspace_lease": "lease-provider-001",
+                "expires_at": "2099-01-01T00:00:00Z",
+                "rollback_policy": "required",
             },
             {
                 "node_id": "mutating-node",
                 "branch_type": "mutating",
                 "lock_id": "lock-mutating-001",
                 "owner": "goal-guardian",
+                "actor_identity": "human:graham",
+                "approval_packet_sha256": "sha256:approval-mutating",
+                "allowed_paths": ["src/tau_coding/example.py"],
+                "side_effect_class": "filesystem",
+                "expires_at": "2099-01-01T00:00:00Z",
+                "rollback_policy": "required",
             },
         ],
     }

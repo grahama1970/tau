@@ -1,0 +1,53 @@
+{
+  "schema": "tau.p1_branch_lock_authorization_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "slice": "P1 branch-lock side-effect authorization",
+  "changed_files": [
+    "src/tau_coding/dag_branch_locks.py",
+    "tests/test_dag_branch_locks.py"
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-branch-lock-authorization-20260705T124202Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_dag_branch_locks.py -q",
+      "exit_code": 0,
+      "result": "8 passed in 0.40s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/dag_branch_locks.py tests/test_dag_branch_locks.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_dag_branch_locks.py tests/test_dag_expansion.py tests/test_dag_route_memory.py tests/test_project_dag.py -q",
+      "exit_code": 0,
+      "result": "62 passed in 1.57s"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/dag_branch_locks.py tests/test_dag_branch_locks.py",
+      "exit_code": 0,
+      "result": "no whitespace errors"
+    }
+  ],
+  "proves": [
+    "tau.dag_branch_locks.v1 validation rejects provider or mutating branches whose locks omit authorization metadata.",
+    "Branch locks now require actor_identity, approval_packet_sha256, allowed_paths, side_effect_class, expires_at, and rollback_policy before scheduling.",
+    "Provider branch locks require a workspace_lease reference.",
+    "Expired locks, unsupported side_effect_class values, missing allowed_paths, and rollback_policy values other than 'required' fail closed.",
+    "The slice does not execute provider branches, mutating branches, route mutation, DAG mutation, or Memory sync."
+  ],
+  "does_not_prove": [
+    "That approval_packet_sha256 points to a valid human approval packet.",
+    "Provider branch safety after execution.",
+    "GitHub mutation safety.",
+    "Concurrent scheduling of provider or mutating branches.",
+    "Herdr workspace lease creation or cleanup."
+  ],
+  "errors": [],
+  "next_recommended_route": "Continue P1 with explicit Herdr workspace lease receipts or approval-packet hash binding."
+}
