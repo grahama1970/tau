@@ -1,0 +1,503 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-concurrent-non-json-retry",
+  "alerts": [],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/research/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/dag-agent-registry/coder/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/dag-agent-registry/research/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/dag-agent-registry/reviewer/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/dag-agent-registry/start/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-001/dispatch-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/dispatch-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/dispatch-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/dispatch-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json"
+  ],
+  "command_spec_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs",
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:2061099b8407be4c0f2d9da0ce99040a53877ade276bb6f48c62f2bbe75af62c",
+  "dag_id": "rw-sanity-project-dag-concurrent-non-json-retry",
+  "dispatches": [
+    {
+      "artifacts": [],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "-c",
+            "\nimport runpy\nimport sys\nfrom pathlib import Path\n\nstate = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/command-specs/coder/attempt-count.txt')\nstate.parent.mkdir(parents=True, exist_ok=True)\ncount = int(state.read_text() or '0') if state.exists() else 0\nstate.write_text(str(count + 1))\nif count == 0:\n    print('not json')\nelse:\n    sys.argv = ['/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/project_dag_worker.py', '--role', 'coder', '--scenario', 'concurrent-non-json-retry']\n    runpy.run_path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/project_dag_worker.py', run_name='__main__')\n"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:03cf7f7b913b683f622e3e05113a17cc66bd235640515462bbc4fbc2d1afbb9a",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "not json\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "live": false,
+      "mocked": true,
+      "ok": false,
+      "receipt_dir": null,
+      "response_projection": null,
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "coder",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-non-json-retry.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:2061099b8407be4c0f2d9da0ce99040a53877ade276bb6f48c62f2bbe75af62c\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:coder",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "coder",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "status": "BLOCKED",
+      "stop_reason": "invalid_command_json"
+    },
+    {
+      "artifacts": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json"
+      ],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/project_dag_worker.py",
+            "--role",
+            "research-auditor",
+            "--scenario",
+            "concurrent-non-json-retry"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/research/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:cc090034436aa482ab5f504342da7b0bd993188ad5d440a6750495e2e4b05988",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json\"], \"summary\": \"Research branch produced source summary evidence.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-concurrent-non-json-retry\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\", \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"human\", \"name\": \"human\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"research-auditor\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\", \"kind\": \"source_summary\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json\"}], \"status\": \"PASS\", \"summary\": \"Research branch produced source summary evidence.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Research branch produced source summary evidence.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json\"\n    ],\n    \"summary\": \"Research branch produced source summary evidence.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"research-auditor\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n        \"kind\": \"source_summary\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Research branch produced source summary evidence.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:human",
+            "executor:human"
+          ],
+          "remove": []
+        },
+        "next_agent": "human",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "research-auditor",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node research.\n- Next agent: `research-auditor`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"research-auditor\",\n    \"dag_node_id\": \"research\",\n    \"summary\": \"Dispatch ready DAG node research.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"research-auditor\",\n    \"reason\": \"Ready DAG node research in rw-sanity-project-dag-concurrent-non-json-retry.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"source_summary\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:2061099b8407be4c0f2d9da0ce99040a53877ade276bb6f48c62f2bbe75af62c\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node research.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:research-auditor",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "research-auditor",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    },
+    {
+      "artifacts": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json"
+      ],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "-c",
+            "\nimport runpy\nimport sys\nfrom pathlib import Path\n\nstate = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/command-specs/coder/attempt-count.txt')\nstate.parent.mkdir(parents=True, exist_ok=True)\ncount = int(state.read_text() or '0') if state.exists() else 0\nstate.write_text(str(count + 1))\nif count == 0:\n    print('not json')\nelse:\n    sys.argv = ['/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/project_dag_worker.py', '--role', 'coder', '--scenario', 'concurrent-non-json-retry']\n    runpy.run_path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/project_dag_worker.py', run_name='__main__')\n"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:03cf7f7b913b683f622e3e05113a17cc66bd235640515462bbc4fbc2d1afbb9a",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"], \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-concurrent-non-json-retry\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\", \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"local\", \"name\": \"reviewer\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"coder\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"attempt\": 1, \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\", \"kind\": \"creator_artifact\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"}], \"status\": \"PASS\", \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Creator produced attempt 1 artifact for reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"\n    ],\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:reviewer",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "reviewer",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "coder",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-non-json-retry.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:2061099b8407be4c0f2d9da0ce99040a53877ade276bb6f48c62f2bbe75af62c\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:coder",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "coder",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    },
+    {
+      "artifacts": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json"
+      ],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/project_dag_worker.py",
+            "--role",
+            "reviewer",
+            "--scenario",
+            "concurrent-non-json-retry"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:dcc4fa80af8046c93bc722d9a748e70d39cd0cbff353ad26b6d8be81042fec9a",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json\"], \"summary\": \"Reviewer returned PASS for creator attempt 1.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-concurrent-non-json-retry\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\", \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"human\", \"name\": \"human\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"reviewer\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"creator_attempt\": 1, \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\", \"kind\": \"reviewer_verdict\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json\", \"reviewed_node_id\": \"coder\", \"verdict\": \"PASS\"}], \"status\": \"PASS\", \"summary\": \"Reviewer returned PASS for creator attempt 1.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [],
+      "live": true,
+      "mocked": false,
+      "ok": true,
+      "receipt_dir": null,
+      "response_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Reviewer returned PASS for creator attempt 1.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json\"\n    ],\n    \"summary\": \"Reviewer returned PASS for creator attempt 1.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"creator_attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n        \"kind\": \"reviewer_verdict\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json\",\n        \"reviewed_node_id\": \"coder\",\n        \"verdict\": \"PASS\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Reviewer returned PASS for creator attempt 1.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:human",
+            "executor:human"
+          ],
+          "remove": []
+        },
+        "next_agent": "human",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "reviewer",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\",\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json\"\n    ],\n    \"dag_agent_role\": \"reviewer\",\n    \"dag_node_id\": \"reviewer\",\n    \"summary\": \"Dispatch ready DAG node reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-non-json-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-non-json-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Ready DAG node reviewer in rw-sanity-project-dag-concurrent-non-json-retry.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:2061099b8407be4c0f2d9da0ce99040a53877ade276bb6f48c62f2bbe75af62c\"\n      },\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"\n      },\n      {\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-non-json-retry\",\n        \"kind\": \"source_summary\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:reviewer",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "reviewer",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-non-json-retry"
+        }
+      },
+      "status": "COMPLETED",
+      "stop_reason": "response_consumed"
+    }
+  ],
+  "edge_count": 5,
+  "entry_node": "start",
+  "errors": [],
+  "execution": "project_agent_dag_bounded_ready_queue",
+  "execution_seconds": 0.516185,
+  "live": true,
+  "max_concurrency": 2,
+  "max_observed_concurrency": 2,
+  "max_steps": 4,
+  "mocked": false,
+  "node_artifacts": {
+    "coder": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-001/dispatch-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/coder/attempt-002/dispatch-receipt.json"
+    ],
+    "research": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/dispatch-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/research/attempt-001/source-summary.json"
+    ],
+    "reviewer": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/dispatch-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json"
+    ]
+  },
+  "node_attempts": {
+    "coder": 2,
+    "research": 1,
+    "reviewer": 1
+  },
+  "node_count": 4,
+  "observed_edges": [
+    {
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "to_agent": "research-auditor",
+      "to_node": "research"
+    },
+    {
+      "from_agent": "goal-guardian",
+      "from_node": "start",
+      "to_agent": "coder",
+      "to_node": "coder"
+    },
+    {
+      "from_agent": "research-auditor",
+      "from_node": "research",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "from_agent": "coder",
+      "from_node": "coder",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "from_agent": "reviewer",
+      "from_node": "reviewer",
+      "to_agent": "human",
+      "to_node": "human"
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "GitHub mutation or ticket closure.",
+      "Mutating branch safety.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Bounded ready-queue scheduler preflight checked acyclicity, local-only execution, provider branches, and mutating branches.",
+      "Ready nodes were dispatched by the bounded ready-queue scheduler.",
+      "Independent ready nodes can run concurrently when dependencies are satisfied.",
+      "Each dispatched node used the real local command subprocess runner.",
+      "Node evidence and reviewer verdicts were checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [
+    {
+      "creator_attempt": 1,
+      "goal_hash": "sha256:rw-sanity-project-dag-concurrent-non-json-retry",
+      "kind": "reviewer_verdict",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run/ready-queue/reviewer/attempt-001/reviewer-verdict-attempt-1.json",
+      "reviewed_node_id": "coder",
+      "verdict": "PASS"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/concurrent-non-json-retry-project-dag/run",
+  "scheduler": "bounded-ready-queue",
+  "scheduler_events": [
+    {
+      "agent": "goal-guardian",
+      "event": "virtual_node_completed",
+      "node_id": "start",
+      "ts": "2026-07-05T17:20:01Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "coder",
+      "ts": "2026-07-05T17:20:01Z"
+    },
+    {
+      "agent": "research-auditor",
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "research",
+      "ts": "2026-07-05T17:20:01Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "coder",
+      "ok": false,
+      "ts": "2026-07-05T17:20:01Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 1,
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "event": "node_attempt_failed",
+      "node_id": "coder",
+      "retrying": true,
+      "stop_reason": "invalid_command_json",
+      "ts": "2026-07-05T17:20:01Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 2,
+      "event": "node_started",
+      "node_id": "coder",
+      "ts": "2026-07-05T17:20:01Z"
+    },
+    {
+      "agent": "research-auditor",
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "research",
+      "ok": true,
+      "ts": "2026-07-05T17:20:02Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 2,
+      "event": "node_completed",
+      "node_id": "coder",
+      "ok": true,
+      "ts": "2026-07-05T17:20:02Z"
+    },
+    {
+      "agent": "reviewer",
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "reviewer",
+      "ts": "2026-07-05T17:20:02Z"
+    },
+    {
+      "agent": "reviewer",
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "reviewer",
+      "ok": true,
+      "ts": "2026-07-05T17:20:02Z"
+    }
+  ],
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [
+    "coder",
+    "research-auditor",
+    "coder",
+    "reviewer"
+  ],
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-concurrent-non-json-retry"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-05T17:20:02Z",
+  "verdict": "PASS"
+}

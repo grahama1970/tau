@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/ready-queue-cycle-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "ready-queue-cycle"
+  ],
+  "timeout_s": 20
+}

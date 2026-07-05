@@ -1,0 +1,257 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "max_steps_exhausted"
+        ],
+        "alert_count": 1,
+        "dag_error": {
+          "active_goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+          "dag_id": "rw-sanity-project-dag-max-steps",
+          "evidence": {
+            "alert_codes": [
+              "max_steps_exhausted"
+            ],
+            "alert_count": 1,
+            "errors": [
+              "command handoff loop exceeded max_steps=2"
+            ],
+            "primary_alert": {
+              "code": "max_steps_exhausted",
+              "evidence": {
+                "errors": [
+                  "command handoff loop exceeded max_steps=2"
+                ]
+              },
+              "message": "Underlying handoff command loop did not pass.",
+              "severity": "BLOCK"
+            }
+          },
+          "failure_code": "max_steps_exhausted",
+          "message": "Underlying handoff command loop did not pass.",
+          "proof_scope": {
+            "does_not_prove": [
+              "The recommended action has been executed.",
+              "The project agent accepted or applied the course correction.",
+              "Provider/model semantic quality."
+            ],
+            "proves": [
+              "Tau detected a blocked DAG execution.",
+              "Tau packaged the primary failure as a project-agent course-correction payload.",
+              "No DAG route, goal, target, or handoff was mutated by this error contract."
+            ]
+          },
+          "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run/dag-receipt.json",
+          "recommended_action": {
+            "next_agent": "human",
+            "reason": "Unhandled DAG failure requires human or orchestrator review.",
+            "type": "wait_for_human"
+          },
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run",
+          "scheduler": "handoff-loop",
+          "schema": "tau.dag_error.v1",
+          "severity": "BLOCK",
+          "status": "BLOCKED",
+          "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-project-dag-max-steps"
+          },
+          "verdict": "MAX_STEPS_EXHAUSTED"
+        },
+        "errors": [
+          "command handoff loop exceeded max_steps=2"
+        ],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 1,
+          "reviewer": 1
+        },
+        "node_count": 2,
+        "observed_edges": [
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "coder",
+            "to_node": "coder"
+          }
+        ],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "REVISE"
+          }
+        ],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "reviewer"
+        ],
+        "status": "BLOCKED",
+        "verdict": "MAX_STEPS_EXHAUSTED"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_max_steps_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/agents"
+  ],
+  "completed_at": "2026-07-05T17:20:05Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "MAX_STEPS_EXHAUSTED",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks a project-agent DAG when a reviewer keeps routing back and the DAG max_total_attempts budget is exhausted.",
+  "receipt_summary": {
+    "alert_codes": [
+      "max_steps_exhausted"
+    ],
+    "alert_count": 1,
+    "dag_error": {
+      "active_goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+      "dag_id": "rw-sanity-project-dag-max-steps",
+      "evidence": {
+        "alert_codes": [
+          "max_steps_exhausted"
+        ],
+        "alert_count": 1,
+        "errors": [
+          "command handoff loop exceeded max_steps=2"
+        ],
+        "primary_alert": {
+          "code": "max_steps_exhausted",
+          "evidence": {
+            "errors": [
+              "command handoff loop exceeded max_steps=2"
+            ]
+          },
+          "message": "Underlying handoff command loop did not pass.",
+          "severity": "BLOCK"
+        }
+      },
+      "failure_code": "max_steps_exhausted",
+      "message": "Underlying handoff command loop did not pass.",
+      "proof_scope": {
+        "does_not_prove": [
+          "The recommended action has been executed.",
+          "The project agent accepted or applied the course correction.",
+          "Provider/model semantic quality."
+        ],
+        "proves": [
+          "Tau detected a blocked DAG execution.",
+          "Tau packaged the primary failure as a project-agent course-correction payload.",
+          "No DAG route, goal, target, or handoff was mutated by this error contract."
+        ]
+      },
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run/dag-receipt.json",
+      "recommended_action": {
+        "next_agent": "human",
+        "reason": "Unhandled DAG failure requires human or orchestrator review.",
+        "type": "wait_for_human"
+      },
+      "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run",
+      "scheduler": "handoff-loop",
+      "schema": "tau.dag_error.v1",
+      "severity": "BLOCK",
+      "status": "BLOCKED",
+      "target": {
+        "repo": "grahama1970/tau",
+        "target": "scratch-project-dag-max-steps"
+      },
+      "verdict": "MAX_STEPS_EXHAUSTED"
+    },
+    "errors": [
+      "command handoff loop exceeded max_steps=2"
+    ],
+    "live": true,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 1,
+      "reviewer": 1
+    },
+    "node_count": 2,
+    "observed_edges": [
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "coder",
+        "to_node": "coder"
+      }
+    ],
+    "ok": false,
+    "provider_live": false,
+    "reviewer_verdicts": [
+      {
+        "creator_attempt": 1,
+        "goal_hash": "sha256:rw-sanity-project-dag-max-steps",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/max-steps-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+        "reviewed_node_id": "coder",
+        "verdict": "REVISE"
+      }
+    ],
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "coder",
+      "reviewer"
+    ],
+    "status": "BLOCKED",
+    "verdict": "MAX_STEPS_EXHAUSTED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T17:20:05Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T171959Z-tau-failure-recovery-stress-20260705/logs/advanced.project_dag_max_steps_fail_closed.stdout.txt",
+  "timeout_seconds": 90
+}
