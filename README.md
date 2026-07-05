@@ -26,6 +26,36 @@ T’au does not hide orchestration inside model reasoning. Every handoff produce
 a local receipt, a schema-valid JSON block, or a GitHub-shaped projection that
 another agent or human can inspect, replay, or reject.
 
+## Research Influence: Adaptive DAGs
+
+T’au's adaptive DAG direction is inspired by graph reasoning, parallel tool
+scheduling, structured multi-agent workflows, and bounded swarm/stigmergy
+research. The implementation deliberately translates those ideas into Tau-native
+constraints: DAG contracts, receipts, validators, route signals, and human
+control of immutable goal changes.
+
+Primary references for critique and follow-up are collected in
+[Adaptive DAG Research References](docs/adaptive-dag-research-references.md).
+The most relevant papers are:
+
+- [Graph of Thoughts](https://arxiv.org/abs/2308.09687), for graph-structured
+  reasoning as an inspiration for explicit DAG work/evidence nodes.
+- [Adaptive Graph of Thoughts](https://arxiv.org/abs/2502.05078), for bounded
+  dynamic DAG expansion ideas.
+- [An LLM Compiler for Parallel Function Calling](https://arxiv.org/abs/2312.04511),
+  for ready-node scheduling with dependency-aware parallel execution.
+- [MetaGPT](https://arxiv.org/abs/2308.00352), for role workflows and
+  intermediate verification.
+- [SwarmSys](https://arxiv.org/abs/2510.10047) and
+  [AMRO-S](https://arxiv.org/abs/2603.12933), for receipt-derived route signals
+  and quality-gated routing-memory inspiration.
+- [The Bystander Effect in Multi-Agent Reasoning](https://arxiv.org/abs/2605.10698),
+  as a caution against unstructured agent swarms and consensus-as-proof.
+
+These papers are references, not closure evidence. Tau's claims still come from
+local tests, live/non-mocked receipts, committed artifacts, and explicit
+`proof_scope` boundaries.
+
 ## What it does
 
 T’au provides two layers plus one opt-in orchestration mode:
