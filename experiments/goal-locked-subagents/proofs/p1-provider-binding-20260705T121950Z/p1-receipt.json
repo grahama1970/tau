@@ -1,0 +1,64 @@
+{
+  "schema": "tau.p1_provider_binding_proof_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "timestamp": "2026-07-05T12:19:50Z",
+  "goal": {
+    "summary": "Implement the bounded P1 provider work-order and receipt binding slice.",
+    "scope": [
+      "src/tau_coding/generic_provider_adapter.py",
+      "tests/test_generic_provider_adapter.py"
+    ]
+  },
+  "changed_files": [
+    "src/tau_coding/generic_provider_adapter.py",
+    "tests/test_generic_provider_adapter.py",
+    "experiments/goal-locked-subagents/proofs/p1-provider-binding-20260705T121950Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "8 passed in 0.44s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/generic_provider_adapter.py tests/test_generic_provider_adapter.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "uv run pytest tests/test_generic_dag.py tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "19 passed in 0.90s"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/generic_provider_adapter.py tests/test_generic_provider_adapter.py",
+      "exit_code": 0,
+      "result": "No whitespace errors reported for tracked diffs"
+    }
+  ],
+  "what_changed": [
+    "Generic provider node receipts now include a tau.provider_dag_node_binding.v1 subreceipt.",
+    "Canonical tau.provider_dag_work_order.v1 inputs are checked for node id, DAG id, goal hash, attempt, Herdr workspace, pane, terminal, and visible log hash binding.",
+    "Canonical binding failures block the generic provider node receipt even when the provider DAG status claims PASS.",
+    "Legacy non-canonical work orders remain hash-carried as LEGACY_UNBOUND for backward compatibility."
+  ],
+  "proves": [
+    "The generic provider adapter deterministically accepts a canonical work order when matching Herdr record and visible log evidence are present.",
+    "The adapter blocks a canonical work order with a mismatched node_id.",
+    "The adapter blocks a canonical work order when the matching Herdr provider record lacks a visible_log_path.",
+    "The adjacent generic DAG and provider adapter tests pass locally."
+  ],
+  "does_not_prove": [
+    "Live provider/model semantic quality.",
+    "A real Herdr workspace or pane was created during this proof.",
+    "Full P1 Herdr provider work-order schema enforcement across every runtime entrypoint.",
+    "Provider branch locks, route mutation, Memory sync, GitHub mutation, or browser UI proof."
+  ],
+  "next_recommended_route": {
+    "agent": "coder",
+    "reason": "Extend canonical provider work-order requirements from the adapter boundary into the provider DAG runtime entrypoints and real-world sanity fixtures."
+  }
+}
