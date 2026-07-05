@@ -1128,7 +1128,7 @@ def _send_pane_prompt(
 ) -> list[subprocess.CompletedProcess[str]]:
     payload = text if text.endswith("\n") else f"{text}\n"
     send_prompt = _run_pane_command(
-        [herdr_bin, "agent", "send", pane_id, payload],
+        [herdr_bin, "pane", "run", pane_id, payload],
         cwd=cwd,
         timeout_seconds=timeout_seconds,
     )

@@ -975,7 +975,7 @@ def test_provider_node_receipt_timeout_reports_delivered_work_order(tmp_path: Pa
     assert not any(error.startswith("work_order_delivery_not_observed") for error in errors)
 
 
-def test_provider_prompt_send_uses_herdr_agent_send(monkeypatch, tmp_path: Path) -> None:
+def test_provider_prompt_send_uses_herdr_pane_run(monkeypatch, tmp_path: Path) -> None:
     calls: list[list[str]] = []
 
     def fake_run_pane_command(argv, *, cwd, timeout_seconds):
@@ -999,8 +999,8 @@ def test_provider_prompt_send_uses_herdr_agent_send(monkeypatch, tmp_path: Path)
     assert calls == [
         [
             "herdr",
-            "agent",
-            "send",
+            "pane",
+            "run",
             "w1:p5",
             "Read work order /tmp/work-order.json\n",
         ]
