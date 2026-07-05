@@ -1,0 +1,11 @@
+{
+  "allowed_command_roots": [
+    "python3"
+  ],
+  "allowed_cwd_roots": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170630Z-tau-command-policy-positive-negative-20260705/command-policy-network-project-dag"
+  ],
+  "allows_mutation": false,
+  "allows_network": false,
+  "schema": "tau.command_spec_policy.v1"
+}

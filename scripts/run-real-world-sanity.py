@@ -231,6 +231,11 @@ def build_checks(
         scenario="command-policy-mutation",
         spec_flag="mutates",
     )
+    project_dag_command_policy_allowed = create_project_dag_command_policy_fixture(
+        run_dir,
+        scenario="command-policy-allowed",
+        spec_flag=None,
+    )
     dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
     github_apply_policy = create_github_apply_policy_fixture(run_dir)
@@ -1122,6 +1127,25 @@ def build_checks(
             expected_verdict="COMMAND_POLICY_REJECTED",
         ),
         Check(
+            check_id="advanced.project_dag_command_policy_allows_local_spec",
+            level="advanced",
+            purpose=(
+                "Tau runs a project DAG through a command-spec trust policy when the "
+                "local command root and cwd are allowed."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_command_policy_allowed["contract"]),
+                "--receipt-dir",
+                str(project_dag_command_policy_allowed["run_dir"]),
+                "--agents-root",
+                str(project_dag_command_policy_allowed["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+        ),
+        Check(
             check_id="advanced.project_dag_command_policy_mutation_fail_closed",
             level="advanced",
             purpose=(
@@ -1949,7 +1973,7 @@ def create_project_dag_command_policy_fixture(
     run_dir: Path,
     *,
     scenario: str,
-    spec_flag: str,
+    spec_flag: str | None,
 ) -> dict[str, Path]:
     fixture = create_project_dag_fixture(
         run_dir,
@@ -1970,9 +1994,10 @@ def create_project_dag_command_policy_fixture(
         },
     )
     coder_spec_path = Path(contract["nodes"][0]["command_spec"])
-    coder_spec = read_json(coder_spec_path)
-    coder_spec[spec_flag] = True
-    write_json(coder_spec_path, coder_spec)
+    if spec_flag is not None:
+        coder_spec = read_json(coder_spec_path)
+        coder_spec[spec_flag] = True
+        write_json(coder_spec_path, coder_spec)
     contract["command_policy"] = str(policy_path)
     write_json(contract_path, contract)
     return fixture

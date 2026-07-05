@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170630Z-tau-command-policy-positive-negative-20260705/command-policy-network-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "command-policy-network"
+  ],
+  "requires_network": true,
+  "timeout_s": 20
+}

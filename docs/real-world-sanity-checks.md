@@ -99,6 +99,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.project_dag_evidence_manifest_goal_hash_fail_closed`: Tau rejects a project DAG before dispatch when a typed evidence manifest contains an artifact whose goal hash differs from the immutable DAG goal.
 - `advanced.evidence_manifest_validates_clean_artifact`: Tau validates a typed evidence manifest whose artifact hash, schema, validator namespace, and goal hash all match.
 - `advanced.project_dag_command_policy_network_fail_closed`: Tau emits a project-agent-readable `command_policy_rejected` DAG error when a command spec declares network use without policy approval.
+- `advanced.project_dag_command_policy_allows_local_spec`: Tau runs a project DAG through a command-spec trust policy when the local command root and cwd are allowed.
 - `advanced.project_dag_command_policy_mutation_fail_closed`: Tau emits a project-agent-readable `command_policy_rejected` DAG error when a command spec declares mutation without policy approval.
 - `advanced.project_dag_ready_queue_cycle_fail_closed`: Tau blocks a bounded ready-queue project DAG when the declared graph contains a cycle.
 - `advanced.project_dag_ready_queue_mutating_branch_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares mutating behavior before branch locks exist.
