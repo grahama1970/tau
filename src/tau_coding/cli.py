@@ -124,6 +124,7 @@ from tau_coding.project_dag import (
     dag_contract_error_payload,
     load_dag_contract_payload,
     run_project_dag_contract,
+    write_fail_closed_registry_receipt,
 )
 from tau_coding.provider_config import (
     DEFAULT_MODEL,
@@ -1107,6 +1108,17 @@ def main(
         try:
             run_dir = _parse_run_status_cli_args(positional_args[1:])
             payload = build_run_status(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-fail-closed-registry":
+        try:
+            output_path = _parse_dag_fail_closed_registry_args(positional_args[1:])
+            payload = write_fail_closed_registry_receipt(output_path=output_path)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2644,6 +2656,24 @@ def _parse_run_status_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau run-status <run-dir>")
     return Path(args[0])
+
+
+def _parse_dag_fail_closed_registry_args(args: list[str]) -> Path | None:
+    output_path: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            output_path = Path(args[index])
+        elif arg.startswith("--out="):
+            output_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown dag-fail-closed-registry option: {arg}")
+        index += 1
+    return output_path
 
 
 def _parse_tui_proof_cli_args(args: list[str]) -> dict[str, str | Path]:

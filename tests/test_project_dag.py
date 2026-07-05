@@ -13,6 +13,7 @@ from tau_coding.project_dag import (
     FAIL_CLOSED_REGISTRY_SCHEMA,
     fail_closed_registry_payload,
     run_project_dag_contract,
+    write_fail_closed_registry_receipt,
 )
 
 
@@ -583,7 +584,12 @@ def test_fail_closed_registry_payload_names_executable_invariants() -> None:
     payload = fail_closed_registry_payload()
 
     assert payload["schema"] == FAIL_CLOSED_REGISTRY_SCHEMA
+    assert payload["ok"] is True
     assert payload["status"] == "ACTIVE"
+    assert payload["mocked"] is False
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
+    assert payload["invariant_count"] == len(payload["invariants"])
     assert payload["invariants"]["goal_hash_mismatch"] == {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.handoff.active_goal_hash",
@@ -596,6 +602,21 @@ def test_fail_closed_registry_payload_names_executable_invariants() -> None:
         "severity": "BLOCK",
         "implemented_by": "tau.validators.provider_work_order.sha256",
     }
+    assert "Unknown fail_closed_on codes fail closed" in payload["proof_scope"]["proves"][2]
+
+
+def test_fail_closed_registry_receipt_can_be_written(tmp_path: Path) -> None:
+    output_path = tmp_path / "fail-closed-registry.json"
+
+    payload = write_fail_closed_registry_receipt(output_path)
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert payload == written
+    assert payload["schema"] == FAIL_CLOSED_REGISTRY_SCHEMA
+    assert payload["receipt_path"] == str(output_path.resolve())
+    assert payload["invariants"]["target_changed"]["implemented_by"] == (
+        "tau.validators.handoff.github_target"
+    )
 
 
 def test_cli_dag_run_unknown_fail_closed_code_returns_course_correction_json(

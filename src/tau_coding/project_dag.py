@@ -757,7 +757,12 @@ def fail_closed_registry_payload() -> dict[str, Any]:
 
     return {
         "schema": FAIL_CLOSED_REGISTRY_SCHEMA,
+        "ok": True,
         "status": "ACTIVE",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "invariant_count": len(FAIL_CLOSED_REGISTRY),
         "invariants": {
             code: {
                 "severity": meta["severity"],
@@ -765,7 +770,33 @@ def fail_closed_registry_payload() -> dict[str, Any]:
             }
             for code, meta in sorted(FAIL_CLOSED_REGISTRY.items())
         },
+        "proof_scope": {
+            "proves": [
+                "Tau exposes the fail_closed_on invariant codes accepted by tau.dag_contract.v1.",
+                "Each listed invariant has an implemented_by validator binding.",
+                "Unknown fail_closed_on codes fail closed during DAG contract validation.",
+            ],
+            "does_not_prove": [
+                "A particular DAG contract was executed.",
+                "Every possible future invariant is implemented.",
+                "Provider/model semantic quality.",
+            ],
+        },
     }
+
+
+def write_fail_closed_registry_receipt(output_path: Path | None = None) -> dict[str, Any]:
+    """Return and optionally write the fail-closed invariant registry receipt."""
+
+    payload = fail_closed_registry_payload()
+    if output_path is not None:
+        resolved_output = output_path.expanduser().resolve()
+        resolved_output.parent.mkdir(parents=True, exist_ok=True)
+        payload["receipt_path"] = str(resolved_output)
+        _write_json(resolved_output, payload)
+    else:
+        payload["receipt_path"] = None
+    return payload
 
 
 def _validate_fail_closed_on_registry(values: list[str], errors: list[str]) -> None:

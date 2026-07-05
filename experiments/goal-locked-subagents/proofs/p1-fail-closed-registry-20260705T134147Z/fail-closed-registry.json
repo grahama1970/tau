@@ -1,0 +1,80 @@
+{
+  "invariant_count": 14,
+  "invariants": {
+    "branch_goal_hash_divergence": {
+      "implemented_by": "tau.validators.dag.branch_goal_hash_divergence",
+      "severity": "BLOCK"
+    },
+    "branch_target_divergence": {
+      "implemented_by": "tau.validators.dag.branch_target_divergence",
+      "severity": "BLOCK"
+    },
+    "cleanup_apply_without_absence_proof": {
+      "implemented_by": "tau.validators.provider_cleanup.absence_proof",
+      "severity": "BLOCK"
+    },
+    "goal_hash_mismatch": {
+      "implemented_by": "tau.validators.handoff.active_goal_hash",
+      "severity": "BLOCK"
+    },
+    "invalid_provider_receipt": {
+      "implemented_by": "tau.validators.provider_receipt.schema_and_binding",
+      "severity": "BLOCK"
+    },
+    "malformed_handoff": {
+      "implemented_by": "tau.validators.handoff.schema",
+      "severity": "BLOCK"
+    },
+    "max_attempts_exceeded": {
+      "implemented_by": "tau.validators.dag.node_attempts",
+      "severity": "BLOCK"
+    },
+    "missing_required_evidence": {
+      "implemented_by": "tau.validators.dag.required_evidence",
+      "severity": "BLOCK"
+    },
+    "missing_required_join": {
+      "implemented_by": "tau.validators.dag.required_join",
+      "severity": "BLOCK"
+    },
+    "missing_work_order_sha256": {
+      "implemented_by": "tau.validators.provider_work_order.sha256",
+      "severity": "BLOCK"
+    },
+    "target_changed": {
+      "implemented_by": "tau.validators.handoff.github_target",
+      "severity": "BLOCK"
+    },
+    "unexpected_edge": {
+      "implemented_by": "tau.validators.dag.observed_edges",
+      "severity": "BLOCK"
+    },
+    "unexpected_node": {
+      "implemented_by": "tau.validators.dag.observed_nodes",
+      "severity": "BLOCK"
+    },
+    "unresolved_block_alert": {
+      "implemented_by": "tau.validators.monitor_alerts.unresolved_block",
+      "severity": "BLOCK"
+    }
+  },
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "A particular DAG contract was executed.",
+      "Every possible future invariant is implemented.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau exposes the fail_closed_on invariant codes accepted by tau.dag_contract.v1.",
+      "Each listed invariant has an implemented_by validator binding.",
+      "Unknown fail_closed_on codes fail closed during DAG contract validation."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p1-fail-closed-registry-20260705T134147Z/fail-closed-registry.json",
+  "schema": "tau.fail_closed_registry.v1",
+  "status": "ACTIVE"
+}

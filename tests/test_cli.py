@@ -420,6 +420,32 @@ def test_cli_handoff_github_transport_refuses_invalid_projection(tmp_path: Path)
     assert receipt == payload
 
 
+def test_cli_dag_fail_closed_registry_writes_registry_receipt(tmp_path: Path) -> None:
+    output_path = tmp_path / "fail-closed-registry.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-fail-closed-registry",
+            "--out",
+            str(output_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    written = json.loads(output_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload == written
+    assert payload["schema"] == "tau.fail_closed_registry.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "ACTIVE"
+    assert payload["receipt_path"] == str(output_path.resolve())
+    assert payload["invariants"]["goal_hash_mismatch"]["severity"] == "BLOCK"
+    assert payload["invariants"]["missing_work_order_sha256"]["implemented_by"] == (
+        "tau.validators.provider_work_order.sha256"
+    )
+
+
 def test_cli_github_redact_projection_writes_receipt_and_redacted_artifact(
     tmp_path: Path,
 ) -> None:
