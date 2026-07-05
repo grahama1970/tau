@@ -1,0 +1,46 @@
+{
+  "schema": "tau.p1_hardening_receipt.v1",
+  "slice": "dag_node_addressed_routing",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "changed_files": [
+    "src/tau_coding/project_dag.py",
+    "tests/test_project_dag.py"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_project_dag.py -q",
+      "exit_code": 0,
+      "result": "27 passed in 1.64s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/project_dag.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_project_dag.py tests/test_handoff_dispatch.py tests/test_generated_ticket.py tests/test_generic_dag.py tests/test_run_status.py -q",
+      "exit_code": 0,
+      "result": "101 passed in 3.94s"
+    }
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-dag-node-addressed-routing-20260705T1335Z/p1-receipt.json"
+  ],
+  "proves": [
+    "DAG contracts can reuse the same agent role across multiple node IDs.",
+    "Tau writes a run-local DAG agent registry so node IDs are routable without relaxing the global agent registry.",
+    "Handoff-loop DAG dispatch addresses command specs by node ID while retaining node.agent as the role recorded in observed edges.",
+    "Bounded ready-queue dispatch also addresses nodes by node ID and preserves role metadata in receipts."
+  ],
+  "does_not_prove": [
+    "provider-backed repeated-role DAG execution",
+    "live GitHub mutation",
+    "semantic reviewer quality beyond declared reviewer_verdict evidence",
+    "full P1 roadmap completion"
+  ],
+  "errors": [],
+  "policy_exceptions": []
+}

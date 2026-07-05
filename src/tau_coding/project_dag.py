@@ -181,6 +181,10 @@ def run_project_dag_contract(
         receipt_dir=resolved_receipt_dir,
         fallback_root=command_spec_root,
     )
+    dag_agent_registry = _write_dag_agent_registry(
+        contract=contract,
+        receipt_dir=resolved_receipt_dir,
+    )
 
     start_handoff = _start_handoff(contract, contract_path=resolved_contract_path)
     start_path = resolved_receipt_dir / "start-handoff.json"
@@ -191,7 +195,7 @@ def run_project_dag_contract(
     loop = write_agent_handoff_command_loop_receipt(
         start_handoff,
         loop_dir,
-        agent_registry_root=agents_root.expanduser().resolve(),
+        agent_registry_root=dag_agent_registry,
         command_spec_root=compiled_spec_root,
         active_goal_hash=str(contract.goal["goal_hash"]),
         max_steps=max_steps,
@@ -396,6 +400,7 @@ def _run_bounded_ready_queue_project_dag(
         receipt_dir=receipt_dir,
         fallback_root=command_spec_root,
     )
+    dag_agent_registry = _write_dag_agent_registry(contract=contract, receipt_dir=receipt_dir)
 
     max_concurrency = _max_concurrency(contract)
     runnable_nodes = {
@@ -488,7 +493,7 @@ def _run_bounded_ready_queue_project_dag(
                     _dispatch_ready_node,
                     node=node,
                     start_payload=start_payload,
-                    agents_root=agents_root,
+                    agents_root=dag_agent_registry,
                     command_spec_root=command_spec_root,
                     artifact_dir=artifact_dir,
                     command_policy_path=_contract_relative_path(
@@ -727,12 +732,6 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
             errors.append(f"edge.to is not a declared node or terminal node: {edge.target}")
     if terminal_nodes and not any(edge.target in terminal_nodes for edge in edges):
         errors.append("at least one edge must route to a terminal node")
-    agent_to_nodes: dict[str, list[str]] = {}
-    for node in nodes.values():
-        agent_to_nodes.setdefault(node.agent, []).append(node.node_id)
-    ambiguous_agents = {agent: ids for agent, ids in agent_to_nodes.items() if len(ids) > 1}
-    if ambiguous_agents:
-        errors.append(f"node.agent values must be unique for handoff routing: {ambiguous_agents}")
     if errors:
         raise RuntimeError("; ".join(errors))
     return ProjectDagContract(
@@ -1034,19 +1033,49 @@ def _compile_command_specs(
             source = source / "tau-dispatch-command.json"
         if not source.is_file():
             raise RuntimeError(f"command_spec for node {node.node_id} does not exist: {source}")
-        target = compiled_root / node.agent / "tau-dispatch-command.json"
+        target = compiled_root / node.node_id / "tau-dispatch-command.json"
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, target)
     if fallback_root is not None:
         for node in contract.nodes.values():
             if node.command_spec:
                 continue
-            source = fallback_root.expanduser().resolve() / node.agent / "tau-dispatch-command.json"
+            resolved_fallback_root = fallback_root.expanduser().resolve()
+            source = resolved_fallback_root / node.node_id / "tau-dispatch-command.json"
+            if not source.is_file():
+                source = resolved_fallback_root / node.agent / "tau-dispatch-command.json"
             if source.is_file():
-                target = compiled_root / node.agent / "tau-dispatch-command.json"
+                target = compiled_root / node.node_id / "tau-dispatch-command.json"
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
     return compiled_root
+
+
+def _write_dag_agent_registry(*, contract: ProjectDagContract, receipt_dir: Path) -> Path:
+    registry_root = receipt_dir / "dag-agent-registry"
+    for node in contract.nodes.values():
+        node_dir = registry_root / node.node_id
+        node_dir.mkdir(parents=True, exist_ok=True)
+        agents_md = node_dir / "AGENTS.md"
+        agents_md.write_text(
+            "\n".join(
+                [
+                    "---",
+                    f"id: {node.node_id}",
+                    "active: true",
+                    f"tau_role: {node.agent}",
+                    f"tau_executor: {node.executor}",
+                    "---",
+                    "",
+                    f"# DAG node {node.node_id}",
+                    "",
+                    f"Role: `{node.agent}`.",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+    return registry_root
 
 
 def _start_handoff(contract: ProjectDagContract, *, contract_path: Path) -> dict[str, Any]:
@@ -1080,9 +1109,9 @@ def _start_handoff(contract: ProjectDagContract, *, contract_path: Path) -> dict
         },
         "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
         "next_agent": {
-            "name": entry.agent,
+            "name": entry.node_id,
             "executor": entry.executor,
-            "reason": f"Entry node for DAG {contract.dag_id}.",
+            "reason": f"Entry node for DAG {contract.dag_id} using role {entry.agent}.",
         },
         "required_evidence": list(contract.required_evidence),
         "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation.",
@@ -1110,14 +1139,14 @@ def _evaluate_loop_against_contract(
         return alerts
 
     selected = [str(dispatch.get("selected_agent")) for dispatch in dispatches]
-    expected_entry_agent = contract.nodes[contract.entry_node].agent
-    if selected[0] != expected_entry_agent:
+    expected_entry_node = contract.nodes[contract.entry_node].node_id
+    if selected[0] != expected_entry_node:
         alerts.append(
             _alert(
                 "BLOCK",
                 "entry_node_mismatch",
                 "First selected agent does not match DAG entry node.",
-                {"expected": expected_entry_agent, "observed": selected[0]},
+                {"expected": expected_entry_node, "observed": selected[0]},
             )
         )
     for edge in _observed_edges(contract, loop_payload):
@@ -1436,9 +1465,9 @@ def _node_start_handoff(
         },
         "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
         "next_agent": {
-            "name": node.agent,
+            "name": node.node_id,
             "executor": node.executor,
-            "reason": f"Ready node for DAG {contract.dag_id}.",
+            "reason": f"Ready node for DAG {contract.dag_id} using role {node.agent}.",
         },
         "required_evidence": list(node.required_evidence),
         "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation.",
@@ -1458,7 +1487,7 @@ def _dispatch_ready_node(
     try:
         spec = load_agent_dispatch_command_spec(
             agents_root,
-            node.agent,
+            node.node_id,
             command_spec_root=command_spec_root,
             command_policy_path=command_policy_path,
         )
@@ -1770,12 +1799,13 @@ def _observed_edges(contract: ProjectDagContract, loop_payload: dict[str, Any]) 
             continue
         to_agent = response_projection.get("next_agent")
         to_node = _node_id_for_agent_or_terminal(contract, str(to_agent))
+        target_node = contract.nodes.get(to_node)
         edges.append(
             {
                 "from_node": from_node.node_id,
                 "from_agent": from_node.agent,
                 "to_node": to_node,
-                "to_agent": to_agent,
+                "to_agent": target_node.agent if target_node else to_agent,
             }
         )
     return edges

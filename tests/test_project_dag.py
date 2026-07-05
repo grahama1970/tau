@@ -58,6 +58,78 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     assert Path(str(receipt["command_loop_receipt"])).exists()
 
 
+def test_project_dag_allows_repeated_agent_roles_with_node_addressing(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_repeated_reviewer_contract(tmp_path)
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _repeated_reviewer_handoff("coder", "reviewer-a", _creator_evidence()),
+    )
+    _write_response_spec(
+        tmp_path,
+        "reviewer-a",
+        _repeated_reviewer_handoff(
+            "reviewer-a",
+            "reviewer-b",
+            [
+                {
+                    "kind": "reviewer_verdict",
+                    "reviewed_node_id": "coder",
+                    "goal_hash": "sha256:active-goal",
+                    "verdict": "PASS",
+                }
+            ],
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "reviewer-b",
+        _repeated_reviewer_handoff(
+            "reviewer-b",
+            "human",
+            [
+                {
+                    "kind": "reviewer_verdict",
+                    "reviewed_node_id": "coder",
+                    "goal_hash": "sha256:active-goal",
+                    "verdict": "PASS",
+                }
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["selected_agents"] == ["coder", "reviewer-a", "reviewer-b"]
+    assert receipt["observed_edges"] == [
+        {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer-a",
+        },
+        {
+            "from_agent": "reviewer",
+            "from_node": "reviewer-a",
+            "to_agent": "reviewer",
+            "to_node": "reviewer-b",
+        },
+        {
+            "from_agent": "reviewer",
+            "from_node": "reviewer-b",
+            "to_agent": "human",
+            "to_node": "human",
+        },
+    ]
+
+
 def test_project_dag_blocks_unexpected_edge(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
@@ -213,7 +285,7 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
         sleep_seconds=0.25,
     )
     _write_response_spec(
@@ -235,7 +307,7 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     assert receipt["status"] == "PASS"
     assert receipt["scheduler"] == "bounded-ready-queue"
     assert receipt["max_observed_concurrency"] >= 2
-    assert set(receipt["selected_agents"]) == {"research-auditor", "coder", "reviewer"}
+    assert set(receipt["selected_agents"]) == {"research", "coder", "reviewer"}
     assert receipt["node_attempts"] == {
         "coder": 1,
         "research": 1,
@@ -266,7 +338,7 @@ def test_project_dag_ready_queue_propagates_node_context_to_command_stdin(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
     )
     _write_stdin_capture_response_spec(
         tmp_path,
@@ -312,7 +384,7 @@ def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
         sleep_seconds=0.25,
     )
     _write_flaky_response_spec(
@@ -354,7 +426,7 @@ def test_project_dag_bounded_ready_queue_recovers_after_non_json_retry(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
     )
     _write_flaky_response_spec(
         tmp_path,
@@ -393,7 +465,7 @@ def test_project_dag_bounded_ready_queue_blocks_after_max_retries(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
     )
     _write_always_non_json_spec(tmp_path, "coder")
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
@@ -432,7 +504,7 @@ def test_project_dag_bounded_ready_queue_blocks_provider_nodes(tmp_path: Path) -
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
     )
     _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
@@ -731,7 +803,7 @@ def test_project_dag_ready_queue_command_policy_blocks_denied_command(
     _write_response_spec(
         tmp_path,
         "research-auditor",
-        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+        _handoff("research", "human", [{"kind": "source_summary"}]),
     )
     _write_response_spec(tmp_path, "coder", _handoff("coder", "human", _creator_evidence()))
     _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
@@ -905,6 +977,83 @@ def _write_contract(tmp_path: Path) -> Path:
         ],
     }
     path = tmp_path / "dag-contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _write_repeated_reviewer_contract(tmp_path: Path) -> Path:
+    (tmp_path / "agents").mkdir()
+    spec_root = tmp_path / "specs"
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "repeated-reviewer-test",
+        "goal": {
+            "goal_id": "repeated-reviewer-test",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-repeated-reviewer",
+        },
+        "entry_node": "coder",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 4,
+        },
+        "nodes": [
+            {
+                "id": "coder",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "coder" / "tau-dispatch-command.json"),
+                "required_evidence": ["creator_artifact"],
+            },
+            {
+                "id": "reviewer-a",
+                "agent": "reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "reviewer-a" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "coder",
+                    "requires_goal_hash": True,
+                },
+            },
+            {
+                "id": "reviewer-b",
+                "agent": "reviewer",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "reviewer-b" / "tau-dispatch-command.json"),
+                "required_evidence": ["reviewer_verdict"],
+                "reviewer": {
+                    "reviews_node": "coder",
+                    "requires_goal_hash": True,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "coder", "to": "reviewer-a"},
+            {"from": "reviewer-a", "to": "reviewer-b"},
+            {"from": "reviewer-b", "to": "human"},
+        ],
+        "required_evidence": ["creator_artifact", "reviewer_verdict"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = tmp_path / "repeated-reviewer-dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
     return path
 
@@ -1284,6 +1433,24 @@ def _handoff(
         "required_evidence": ["creator_artifact", "reviewer_verdict"],
         "stop_condition": "Stop at human.",
     }
+
+
+def _repeated_reviewer_handoff(
+    previous_subagent: str,
+    next_agent: str,
+    evidence: list[object],
+) -> dict[str, object]:
+    payload = _handoff(previous_subagent, next_agent, evidence)
+    payload["github"] = {
+        "repo": "grahama1970/tau",
+        "target": "scratch-repeated-reviewer",
+    }
+    payload["goal"] = {
+        "goal_id": "repeated-reviewer-test",
+        "goal_version": 1,
+        "goal_hash": "sha256:active-goal",
+    }
+    return payload
 
 
 def _creator_evidence() -> list[object]:
