@@ -1579,7 +1579,7 @@ def build_checks(
             timeout_seconds=180,
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
-            expected_verdict="REVIEWER_RECEIPT_INVALID",
+            expected_verdict="REVIEWER_SEND_FAILED",
         ),
         Check(
             check_id="advanced.browser_cdp_proof",

@@ -471,6 +471,14 @@ def run_provider_dag_orchestrator(
             command_results=command_results,
         )
         if reviewer_errors:
+            reviewer_worker_exit_errors = _visible_worker_exit_errors(
+                reviewer_worker,
+                herdr_bin=herdr_bin,
+                cwd=resolved_repo,
+                command_results=command_results,
+            )
+            if reviewer_worker_exit_errors:
+                reviewer_errors.extend(reviewer_worker_exit_errors)
             attempts.append(
                 _attempt_record(
                     attempt=attempt,
@@ -481,11 +489,14 @@ def run_provider_dag_orchestrator(
                     errors=reviewer_errors,
                 )
             )
-            final_verdict = _receipt_failure_verdict(
-                role="REVIEWER",
-                receipt=reviewer_receipt,
-                errors=reviewer_errors,
-            )
+            if reviewer_worker_exit_errors and not reviewer_receipt:
+                final_verdict = "REVIEWER_SEND_FAILED"
+            else:
+                final_verdict = _receipt_failure_verdict(
+                    role="REVIEWER",
+                    receipt=reviewer_receipt,
+                    errors=reviewer_errors,
+                )
             break
         reached.add("reviewer_receipt_validated")
         _append_event(
@@ -1043,6 +1054,8 @@ Rules:
 - Modify only target_file.
 - Write a JSON receipt exactly here:
 {receipt_path}
+- Copy the exact work_order_sha256 field from the work order into the receipt.
+  Do not replace it with sha256sum output for the work-order file.
 
 Receipt JSON shape:
 {{
@@ -1090,6 +1103,8 @@ Rules:
   concrete feedback for the next coder attempt.
 - Write a JSON receipt exactly here:
 {receipt_path}
+- Copy the exact work_order_sha256 field from the work order into the receipt.
+  Do not replace it with sha256sum output for the work-order file.
 
 Receipt JSON shape:
 {{
@@ -1862,7 +1877,7 @@ def _start_visible_opencode_run_pane(
     agent = payload.get("result", {}).get("agent", {}) if isinstance(payload, dict) else {}
     if not isinstance(agent, dict):
         agent = {}
-    return {
+    record = {
         "role": "reviewer",
         "provider_id": "opencode",
         "workspace_id": agent.get("workspace_id") or workspace_id,
@@ -1874,6 +1889,83 @@ def _start_visible_opencode_run_pane(
         "reviewer_model": model,
         "readiness_pane_id": provider_record.get("pane_id"),
     }
+    startup_error = _probe_visible_worker_startup(
+        record,
+        herdr_bin=herdr_bin,
+        cwd=repo,
+        command_results=command_results,
+    )
+    if startup_error:
+        record["visible"] = False
+        record["error"] = startup_error
+    return record
+
+
+def _probe_visible_worker_startup(
+    record: dict[str, Any],
+    *,
+    herdr_bin: str,
+    cwd: Path,
+    command_results: list[dict[str, Any]],
+) -> str:
+    pane_id = str(record.get("pane_id") or "")
+    if not pane_id:
+        return "provider worker did not report a pane_id"
+    time.sleep(1.0)
+    read = _run_pane_command(
+        [herdr_bin, "pane", "read", pane_id, "--source", "visible", "--lines", "80"],
+        cwd=cwd,
+        timeout_seconds=10.0,
+    )
+    command_results.append(_command_result_dict(read))
+    if read.returncode != 0:
+        detail = (read.stderr or read.stdout or "no output").strip()
+        return f"provider worker exited before receipt wait: {detail}"
+    visible = read.stdout or ""
+    if _provider_startup_failure_observed(visible):
+        return f"provider worker reported startup failure: {_compact_error_text(visible)}"
+    return ""
+
+
+def _provider_startup_failure_observed(visible_text: str) -> bool:
+    lower = visible_text.lower()
+    markers = (
+        "invalid model",
+        "model not found",
+        "model_not_found",
+        "not-a-real-model",
+        "unknown model",
+    )
+    return any(marker in lower for marker in markers)
+
+
+def _visible_worker_exit_errors(
+    record: dict[str, Any],
+    *,
+    herdr_bin: str,
+    cwd: Path,
+    command_results: list[dict[str, Any]],
+) -> list[str]:
+    pane_id = str(record.get("pane_id") or "")
+    if not pane_id:
+        return []
+    read = _run_pane_command(
+        [herdr_bin, "pane", "read", pane_id, "--source", "visible", "--lines", "120"],
+        cwd=cwd,
+        timeout_seconds=10.0,
+    )
+    command_results.append(_command_result_dict(read))
+    if read.returncode == 0:
+        return []
+    detail = (read.stderr or read.stdout or "no output").strip()
+    return [f"provider_worker_exited_before_receipt: {detail}"]
+
+
+def _compact_error_text(text: str, *, limit: int = 240) -> str:
+    compact = " ".join(line.strip() for line in text.splitlines() if line.strip())
+    if len(compact) <= limit:
+        return compact
+    return f"{compact[: limit - 3]}..."
 
 
 def _capture_visible_logs(
