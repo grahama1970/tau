@@ -1243,6 +1243,27 @@ def build_checks(
             output_receipt=route_memory_apply["sync_receipt"],
         ),
         Check(
+            check_id="advanced.dag_route_memory_dry_run_projects_documents",
+            level="advanced",
+            purpose=(
+                "Tau projects clean route-memory candidates into Memory document shape "
+                "without writing to Memory."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                route_memory_dry_run_command(
+                    uv_tau=uv_tau,
+                    signal=route_memory_apply["signal"],
+                    candidate_receipt=route_memory_apply["dry_run_candidate_receipt"],
+                    sync_receipt=route_memory_apply["dry_run_sync_receipt"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            output_receipt=route_memory_apply["dry_run_sync_receipt"],
+        ),
+        Check(
             check_id="advanced.github_apply_policy_missing_gates_fail_closed",
             level="advanced",
             purpose=(
@@ -2103,7 +2124,58 @@ def create_route_memory_fixture(run_dir: Path) -> dict[str, Path]:
         "signal": write_json(fixture_dir / "dag-signal-receipt.json", signal),
         "candidate_receipt": fixture_dir / "candidate-receipt.json",
         "sync_receipt": fixture_dir / "sync-receipt.json",
+        "dry_run_candidate_receipt": fixture_dir / "dry-run-candidate-receipt.json",
+        "dry_run_sync_receipt": fixture_dir / "dry-run-sync-receipt.json",
     }
+
+
+def route_memory_dry_run_command(
+    *,
+    uv_tau: list[str],
+    signal: Path,
+    candidate_receipt: Path,
+    sync_receipt: Path,
+) -> str:
+    return f"""
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+signal = Path({str(signal)!r})
+candidate_receipt = Path({str(candidate_receipt)!r})
+sync_receipt = Path({str(sync_receipt)!r})
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-route-memory-candidates",
+    "--signal-receipt",
+    str(signal),
+    "--receipt",
+    str(candidate_receipt),
+], 0)
+completed = run([
+    *uv_tau,
+    "dag-route-memory-sync",
+    "--candidate-receipt",
+    str(candidate_receipt),
+    "--receipt",
+    str(sync_receipt),
+], 0)
+raise SystemExit(completed.returncode)
+"""
 
 
 def route_memory_apply_without_approval_command(
@@ -4055,6 +4127,9 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "observed_edges",
         "node_attempts",
         "reviewer_verdicts",
+        "memory_sync",
+        "sync_status",
+        "projected_document_count",
         "actions",
         "requirements",
         "preflight_ready",

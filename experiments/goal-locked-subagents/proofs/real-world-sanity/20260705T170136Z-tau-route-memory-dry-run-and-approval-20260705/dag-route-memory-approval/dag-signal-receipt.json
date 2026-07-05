@@ -1,0 +1,30 @@
+{
+  "dag_id": "rw-sanity-route-memory",
+  "goal_hash": "sha256:rw-sanity-route-memory",
+  "live": true,
+  "mocked": false,
+  "negative_signals": [],
+  "ok": true,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dag-signal-receipt.json",
+  "route_reinforcement_candidates": [
+    {
+      "confidence": 1.0,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "memory_sync_candidate": true,
+      "source": "deterministic_dag_receipt_pass",
+      "sync_reason": "first_slice_local_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    }
+  ],
+  "scheduler": "bounded-ready-queue",
+  "schema": "tau.dag_signal_receipt.v1",
+  "source_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dag-receipt.json",
+  "source_ok": true,
+  "source_status": "PASS",
+  "source_verdict": "PASS",
+  "status": "PASS"
+}

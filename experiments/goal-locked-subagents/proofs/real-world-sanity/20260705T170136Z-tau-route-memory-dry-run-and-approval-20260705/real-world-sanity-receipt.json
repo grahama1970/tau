@@ -1,0 +1,191 @@
+{
+  "check_count": 2,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "alert_codes": [
+              "missing_approval_receipt"
+            ],
+            "alert_count": 1,
+            "errors": [],
+            "live": true,
+            "memory_sync": false,
+            "mocked": false,
+            "ok": false,
+            "projected_document_count": 0,
+            "provider_live": false,
+            "schema": "tau.dag_route_memory_sync_receipt.v1",
+            "status": "BLOCKED",
+            "sync_status": "BLOCKED",
+            "verdict": "MISSING_APPROVAL_RECEIPT"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.dag_route_memory_apply_requires_approval",
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\nsignal = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dag-signal-receipt.json')\ncandidate_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/candidate-receipt.json')\nsync_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/sync-receipt.json')\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"dag-route-memory-candidates\",\n    \"--signal-receipt\",\n    str(signal),\n    \"--receipt\",\n    str(candidate_receipt),\n], 0)\ncompleted = run([\n    *uv_tau,\n    \"dag-route-memory-sync\",\n    \"--candidate-receipt\",\n    str(candidate_receipt),\n    \"--receipt\",\n    str(sync_receipt),\n    \"--apply\",\n], 1)\nraise SystemExit(completed.returncode)\n"
+      ],
+      "completed_at": "2026-07-05T17:01:37Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": "MISSING_APPROVAL_RECEIPT",
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/sync-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau projects route-memory candidates locally, then blocks Memory sync apply when no memory_upsert approval receipt is supplied.",
+      "receipt_summary": {
+        "alert_codes": [
+          "missing_approval_receipt"
+        ],
+        "alert_count": 1,
+        "errors": [],
+        "live": true,
+        "memory_sync": false,
+        "mocked": false,
+        "ok": false,
+        "projected_document_count": 0,
+        "provider_live": false,
+        "schema": "tau.dag_route_memory_sync_receipt.v1",
+        "status": "BLOCKED",
+        "sync_status": "BLOCKED",
+        "verdict": "MISSING_APPROVAL_RECEIPT"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T17:01:36Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_apply_requires_approval.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "alert_codes": [],
+            "alert_count": 0,
+            "errors": [],
+            "live": true,
+            "memory_sync": false,
+            "mocked": false,
+            "ok": true,
+            "projected_document_count": 1,
+            "provider_live": false,
+            "schema": "tau.dag_route_memory_sync_receipt.v1",
+            "status": "PASS",
+            "sync_status": "DRY_RUN",
+            "verdict": "PASS"
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_dry_run_projects_documents.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_dry_run_projects_documents.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.dag_route_memory_dry_run_projects_documents",
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\nsignal = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dag-signal-receipt.json')\ncandidate_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dry-run-candidate-receipt.json')\nsync_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dry-run-sync-receipt.json')\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"dag-route-memory-candidates\",\n    \"--signal-receipt\",\n    str(signal),\n    \"--receipt\",\n    str(candidate_receipt),\n], 0)\ncompleted = run([\n    *uv_tau,\n    \"dag-route-memory-sync\",\n    \"--candidate-receipt\",\n    str(candidate_receipt),\n    \"--receipt\",\n    str(sync_receipt),\n], 0)\nraise SystemExit(completed.returncode)\n"
+      ],
+      "completed_at": "2026-07-05T17:01:38Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": true,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dry-run-sync-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau projects clean route-memory candidates into Memory document shape without writing to Memory.",
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "live": true,
+        "memory_sync": false,
+        "mocked": false,
+        "ok": true,
+        "projected_document_count": 1,
+        "provider_live": false,
+        "schema": "tau.dag_route_memory_sync_receipt.v1",
+        "status": "PASS",
+        "sync_status": "DRY_RUN",
+        "verdict": "PASS"
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T17:01:37Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_dry_run_projects_documents.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_dry_run_projects_documents.stdout.txt",
+      "timeout_seconds": 90
+    }
+  ],
+  "completed_at": "2026-07-05T17:01:38Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 2
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705",
+  "run_id": "20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-05T17:01:38Z"
+}

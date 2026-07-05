@@ -1,0 +1,50 @@
+{
+  "alerts": [
+    {
+      "code": "missing_approval_receipt",
+      "evidence": {},
+      "message": "Route-memory apply requires a PASS approval receipt for memory_upsert.",
+      "severity": "BLOCK"
+    }
+  ],
+  "apply": true,
+  "approval_receipt": null,
+  "approval_receipt_sha256": null,
+  "candidate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/candidate-receipt.json",
+  "candidate_receipt_sha256": "sha256:03b1c4a20babfa8e9c1e9c2f733c88205368a660cfdd3a54ced430bb929ea47e",
+  "collection": "tau_route_memory",
+  "dag_id": "rw-sanity-route-memory",
+  "dag_mutation": false,
+  "documents": [],
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-route-memory",
+  "live": true,
+  "memory_response": null,
+  "memory_sync": false,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": false,
+  "projected_document_count": 0,
+  "proof_scope": {
+    "does_not_prove": [
+      "Future route correctness.",
+      "Runtime route mutation.",
+      "Adaptive DAG expansion application.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Route-memory candidate receipt was inspected deterministically.",
+      "Accepted candidates were projected into Memory /upsert document shape.",
+      "No Memory write was attempted in dry-run mode."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/sync-receipt.json",
+  "route_mutation": false,
+  "schema": "tau.dag_route_memory_sync_receipt.v1",
+  "status": "BLOCKED",
+  "sync_status": "BLOCKED",
+  "timestamp": "2026-07-05T17:01:37Z",
+  "verdict": "MISSING_APPROVAL_RECEIPT"
+}

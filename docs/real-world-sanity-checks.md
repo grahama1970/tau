@@ -103,6 +103,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.project_dag_ready_queue_mutating_branch_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares mutating behavior before branch locks exist.
 - `advanced.project_dag_ready_queue_provider_policy_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares provider-live behavior before provider branch policy exists.
 - `advanced.dag_expansion_apply_tampered_preview_fail_closed`: Tau validates and policy-checks an adaptive DAG expansion, then blocks `dag-expansion-apply` when the expanded preview artifact no longer matches the validation hash.
+- `advanced.dag_route_memory_dry_run_projects_documents`: Tau projects clean route-memory candidates into Memory document shape without writing to Memory.
 - `advanced.dag_route_memory_apply_requires_approval`: Tau projects route-memory candidates locally, then blocks Memory sync apply when no `memory_upsert` approval receipt is supplied.
 - `advanced.github_apply_policy_missing_gates_fail_closed`: Tau blocks a GitHub apply projection when policy-required approval, preflight, and redaction gates are missing.
 - `advanced.github_apply_policy_all_gates_pass`: Tau allows a GitHub apply projection to pass local policy only when approval, preflight, and redaction evidence are all supplied; this is still non-mutating and does not post to GitHub.

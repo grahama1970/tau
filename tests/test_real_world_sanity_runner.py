@@ -207,6 +207,38 @@ def test_summarize_receipt_includes_github_apply_policy_fields() -> None:
     }
 
 
+def test_summarize_receipt_includes_route_memory_sync_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.dag_route_memory_sync_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "memory_sync": False,
+            "sync_status": "DRY_RUN",
+            "projected_document_count": 2,
+            "errors": [],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.dag_route_memory_sync_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "memory_sync": False,
+        "sync_status": "DRY_RUN",
+        "projected_document_count": 2,
+        "errors": [],
+    }
+
+
 def test_summarize_receipt_includes_project_dag_fields() -> None:
     module = _load_runner_module()
 
