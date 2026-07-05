@@ -32,6 +32,8 @@ T’au is moving toward a memory-first zero-trust agent containment harness:
 agents produce claims, and Tau decides what counts. The first zero-trust slice
 is policy/data-boundary preflight, documented in
 [Zero-Trust Policy/Data-Boundary Preflight](docs/zero-trust-policy.md).
+The broader execution sequence is tracked in
+[Zero-Trust Product Execution Plan](docs/zero-trust-product-plan.md).
 
 That preflight is a gate, not compliance certification. It blocks missing or
 incompatible classification metadata before DAG dispatch. It does not prove ITAR
