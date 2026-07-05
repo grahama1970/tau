@@ -1,0 +1,253 @@
+"""Fail-closed local sandbox execution for zero-trust Tau runs."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import shutil
+import subprocess
+from collections.abc import Mapping, Sequence
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from tau_coding.sandbox_policy import SANDBOX_RUN_RECEIPT_SCHEMA, sandbox_policy_alerts
+
+SUPPORTED_BACKENDS = {"bwrap"}
+
+
+def run_sandboxed_command(
+    *,
+    command: Sequence[str],
+    policy_profile_path: Path,
+    data_boundary_path: Path,
+    receipt_path: Path | None = None,
+    timeout_seconds: float = 30.0,
+    backend: str = "bwrap",
+) -> dict[str, Any]:
+    """Run a command only when Tau can establish the requested sandbox boundary."""
+
+    resolved_policy = policy_profile_path.expanduser().resolve()
+    resolved_boundary = data_boundary_path.expanduser().resolve()
+    policy_profile = _read_json_object(resolved_policy)
+    data_boundary = _read_json_object(resolved_boundary)
+    alerts = sandbox_policy_alerts(policy_profile=policy_profile, data_boundary=data_boundary)
+    backend_info = _backend_info(backend)
+    command_result: dict[str, Any] | None = None
+
+    if not command:
+        alerts.append(_alert("missing_command", "sandbox-run requires a command after --."))
+    if backend not in SUPPORTED_BACKENDS:
+        alerts.append(_alert("unsupported_backend", f"Unsupported sandbox backend: {backend}"))
+
+    if not alerts and backend == "bwrap":
+        probe = _probe_bwrap(backend_info["path"])
+        backend_info["probe"] = probe
+        if probe["ok"] is not True:
+            alerts.append(
+                _alert(
+                    "sandbox_backend_unavailable",
+                    "Bubblewrap could not create the required network-isolated sandbox.",
+                    errors=[str(probe.get("stderr") or probe.get("error") or "")],
+                )
+            )
+
+    if not alerts and backend == "bwrap":
+        command_result = _run_bwrap_command(
+            list(command),
+            backend_path=Path(str(backend_info["path"])),
+            timeout_seconds=timeout_seconds,
+        )
+        if command_result["returncode"] != 0:
+            alerts.append(
+                _alert(
+                    "sandboxed_command_failed",
+                    "Sandboxed command returned non-zero.",
+                    errors=[str(command_result.get("stderr") or "")],
+                )
+            )
+
+    ok = not alerts
+    receipt = {
+        "schema": SANDBOX_RUN_RECEIPT_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "checked_at": _utc_stamp(),
+        "backend": backend_info,
+        "policy_profile": {
+            "path": str(resolved_policy),
+            "sha256": f"sha256:{_sha256(resolved_policy)}",
+            "schema": policy_profile.get("schema"),
+        },
+        "data_boundary": {
+            "path": str(resolved_boundary),
+            "sha256": f"sha256:{_sha256(resolved_boundary)}",
+            "schema": data_boundary.get("schema"),
+        },
+        "network_egress": "denied",
+        "provider_access": "denied",
+        "external_research": "denied",
+        "public_github_mutation": "denied",
+        "command": list(command),
+        "command_executed": command_result is not None,
+        "command_result": command_result,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau checked zero-trust sandbox policy before command execution.",
+                "Tau blocked command execution when sandbox isolation could not be established.",
+                "When PASS, Tau executed the command through the recorded sandbox backend.",
+            ],
+            "does_not_prove": [
+                "ITAR compliance.",
+                "Export-control legal sufficiency.",
+                "Human identity verification.",
+                "Provider/model semantic safety.",
+                "Security against kernel, backend, or host escape vulnerabilities.",
+                "Network isolation unless this receipt status is PASS and backend probe passed.",
+            ],
+        },
+    }
+    if receipt_path is not None:
+        _write_json(receipt_path, receipt)
+    return receipt
+
+
+def _backend_info(backend: str) -> dict[str, Any]:
+    path = shutil.which(backend) if backend else None
+    return {
+        "name": backend,
+        "path": path,
+        "available": path is not None,
+    }
+
+
+def _probe_bwrap(backend_path: str | None) -> dict[str, Any]:
+    if backend_path is None:
+        return {"ok": False, "error": "bwrap executable not found"}
+    probe_command = _bwrap_command(
+        ["/usr/bin/python3", "-c", "print('tau-sandbox-probe')"],
+        backend_path=Path(backend_path),
+    )
+    try:
+        result = subprocess.run(
+            probe_command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {
+            "ok": False,
+            "command": probe_command,
+            "error": str(exc),
+        }
+    return {
+        "ok": result.returncode == 0,
+        "command": probe_command,
+        "returncode": result.returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def _run_bwrap_command(
+    command: list[str],
+    *,
+    backend_path: Path,
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    sandbox_command = _bwrap_command(command, backend_path=backend_path)
+    try:
+        result = subprocess.run(
+            sandbox_command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "command": sandbox_command,
+            "returncode": 124,
+            "stdout": exc.stdout or "",
+            "stderr": str(exc),
+            "timed_out": True,
+        }
+    return {
+        "command": sandbox_command,
+        "returncode": result.returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+        "timed_out": False,
+    }
+
+
+def _bwrap_command(command: list[str], *, backend_path: Path) -> list[str]:
+    binds: list[str] = []
+    for path in ("/usr", "/bin", "/lib", "/lib64"):
+        host_path = Path(path)
+        if host_path.exists():
+            binds.extend(["--ro-bind", path, path])
+    return [
+        str(backend_path),
+        "--unshare-net",
+        "--die-with-parent",
+        *binds,
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--tmpfs",
+        "/tmp",
+        "--dir",
+        "/work",
+        "--chdir",
+        "/work",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        *command,
+    ]
+
+
+def _read_json_object(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"file does not exist: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"file is not valid JSON: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"file must contain a JSON object: {path}")
+    return payload
+
+
+def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
+    resolved = path.expanduser().resolve()
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _alert(code: str, message: str, errors: list[str] | None = None) -> dict[str, Any]:
+    alert: dict[str, Any] = {
+        "code": code,
+        "severity": "BLOCK",
+        "message": message,
+    }
+    if errors:
+        alert["errors"] = errors
+    return alert
+
+
+def _utc_stamp() -> str:
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")

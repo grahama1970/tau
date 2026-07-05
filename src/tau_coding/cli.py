@@ -172,6 +172,7 @@ from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
 from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_run_status
+from tau_coding.sandbox_run import run_sandboxed_command
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.self_fix_ticket_repair import run_ticket_repair
@@ -1442,6 +1443,24 @@ def main(
                 signed_receipt_path=Path(str(options["signed_receipt"])),
                 key_path=Path(str(options["key"])),
                 output_path=Path(str(options["out"])) if options.get("out") is not None else None,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "sandbox-run":
+        try:
+            options = _parse_sandbox_run_cli_args(positional_args[1:])
+            payload = run_sandboxed_command(
+                command=[str(item) for item in options["command"]],
+                policy_profile_path=Path(str(options["policy_profile"])),
+                data_boundary_path=Path(str(options["data_boundary"])),
+                receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
+                timeout_seconds=float(options["timeout_seconds"]),
+                backend=str(options["backend"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3402,6 +3421,72 @@ def _parse_verify_signed_receipt_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError(
             "Usage: tau verify-signed-receipt --signed-receipt <json> --key <key>"
         )
+    return options
+
+
+def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "policy_profile": None,
+        "data_boundary": None,
+        "out": None,
+        "timeout_seconds": 30.0,
+        "backend": "bwrap",
+        "command": [],
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--":
+            options["command"] = args[index + 1 :]
+            break
+        if arg == "--policy-profile":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--policy-profile requires a value")
+            options["policy_profile"] = Path(args[index])
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = Path(arg.partition("=")[2])
+        elif arg == "--data-boundary":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--data-boundary requires a value")
+            options["data_boundary"] = Path(args[index])
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = Path(arg.partition("=")[2])
+        elif arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = Path(args[index])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg == "--timeout-seconds":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--timeout-seconds requires a value")
+            options["timeout_seconds"] = float(args[index])
+        elif arg.startswith("--timeout-seconds="):
+            options["timeout_seconds"] = float(arg.partition("=")[2])
+        elif arg == "--backend":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--backend requires a value")
+            options["backend"] = args[index]
+        elif arg.startswith("--backend="):
+            options["backend"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown sandbox-run option: {arg}")
+        index += 1
+    if options["policy_profile"] is None or options["data_boundary"] is None:
+        raise RuntimeError(
+            "Usage: tau sandbox-run --policy-profile <policy.json> "
+            "--data-boundary <boundary.json> [--out <receipt.json>] -- <command...>"
+        )
+    if not options["command"]:
+        raise RuntimeError("sandbox-run requires a command after --")
+    timeout = float(options["timeout_seconds"])
+    if timeout <= 0:
+        raise RuntimeError("--timeout-seconds must be positive")
     return options
 
 

@@ -38,6 +38,7 @@ approval-receipts/
 herdr-lease-receipts/
 github-apply-policy-receipts/
 browser-cdp-proof-receipts/
+sandbox-receipts/
 non-claims.md
 ```
 

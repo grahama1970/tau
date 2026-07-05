@@ -68,6 +68,13 @@ shared-key receipt signature envelope. See
 public-key identity proof, legal attestation, ITAR compliance, or sandbox
 enforcement.
 
+For local command containment, `uv run tau sandbox-run --policy-profile
+<policy.json> --data-boundary <boundary.json> -- <command...>` checks
+zero-trust local-only policy and then requires a working Bubblewrap network
+namespace before executing the command. See [Sandbox Run](docs/sandbox-run.md).
+If the host cannot establish the boundary, Tau writes a blocked receipt and
+does not execute the payload.
+
 To create a local zero-trust starter file set:
 
 ```bash
