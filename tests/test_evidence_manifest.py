@@ -62,6 +62,42 @@ def test_evidence_manifest_validation_blocks_schema_mismatch(tmp_path: Path) -> 
     ]
 
 
+def test_evidence_manifest_validation_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
+    evidence = _write_evidence(
+        tmp_path,
+        schema="tau.reviewer_verdict.v1",
+        goal_hash="sha256:other-goal",
+    )
+    manifest = _write_manifest(tmp_path, evidence, schema="tau.reviewer_verdict.v1")
+
+    receipt = write_evidence_validation_receipt(manifest_path=manifest)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["checked_items"][0]["observed_goal_hash"] == "sha256:other-goal"
+    assert receipt["errors"] == [
+        "items[0].goal_hash mismatch: expected sha256:active-goal, observed sha256:other-goal"
+    ]
+
+
+def test_evidence_manifest_validation_blocks_non_tau_validator(tmp_path: Path) -> None:
+    evidence = _write_evidence(tmp_path, schema="tau.reviewer_verdict.v1")
+    manifest = _write_manifest(
+        tmp_path,
+        evidence,
+        schema="tau.reviewer_verdict.v1",
+        validator="external validator",
+    )
+
+    receipt = write_evidence_validation_receipt(manifest_path=manifest)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["errors"] == [
+        "items[0].validator must use tau evidence-validate, observed external validator"
+    ]
+
+
 def test_cli_evidence_validate_writes_receipt(tmp_path: Path) -> None:
     evidence = _write_evidence(tmp_path, schema="tau.reviewer_verdict.v1")
     manifest = _write_manifest(tmp_path, evidence, schema="tau.reviewer_verdict.v1")
@@ -74,16 +110,22 @@ def test_cli_evidence_validate_writes_receipt(tmp_path: Path) -> None:
     assert payload["schema"] == EVIDENCE_VALIDATION_RECEIPT_SCHEMA
     assert payload["ok"] is True
     assert out.exists()
-    assert json.loads(out.read_text(encoding="utf-8"))["schema"] == EVIDENCE_VALIDATION_RECEIPT_SCHEMA
+    persisted = json.loads(out.read_text(encoding="utf-8"))
+    assert persisted["schema"] == EVIDENCE_VALIDATION_RECEIPT_SCHEMA
 
 
-def _write_evidence(tmp_path: Path, *, schema: str) -> Path:
+def _write_evidence(
+    tmp_path: Path,
+    *,
+    schema: str,
+    goal_hash: str = "sha256:active-goal",
+) -> Path:
     evidence = tmp_path / "reviewer-verdict.json"
     evidence.write_text(
         json.dumps(
             {
                 "schema": schema,
-                "goal_hash": "sha256:active-goal",
+                "goal_hash": goal_hash,
                 "verdict": "PASS",
             }
         ),
@@ -98,6 +140,7 @@ def _write_manifest(
     *,
     schema: str,
     sha256: str | None = None,
+    validator: str = "tau evidence-validate reviewer-verdict",
 ) -> Path:
     digest = sha256 or f"sha256:{hashlib.sha256(evidence.read_bytes()).hexdigest()}"
     manifest = tmp_path / "evidence-manifest.json"
@@ -114,7 +157,7 @@ def _write_manifest(
                         "path": str(evidence),
                         "sha256": digest,
                         "schema": schema,
-                        "validator": "tau evidence-validate reviewer-verdict",
+                        "validator": validator,
                         "valid": True,
                     }
                 ],

@@ -39,7 +39,14 @@ def write_evidence_validation_receipt(
         items = []
 
     for index, item in enumerate(items):
-        checked_items.append(_validate_item(index, item, manifest_path=resolved_manifest))
+        checked_items.append(
+            _validate_item(
+                index,
+                item,
+                manifest_path=resolved_manifest,
+                manifest_goal_hash=goal_hash,
+            )
+        )
 
     for item in checked_items:
         errors.extend(item["errors"])
@@ -69,7 +76,8 @@ def write_evidence_validation_receipt(
             "proves": [
                 "Tau inspected a typed evidence manifest.",
                 "Every listed evidence item was checked for path existence and sha256 match.",
-                "JSON evidence items with declared schemas were checked against their root schema field.",
+                "JSON evidence items with declared schemas were checked against their root schema "
+                "field and goal hash.",
             ],
             "does_not_prove": [
                 "Semantic correctness of the artifact contents beyond declared schema/hash checks.",
@@ -80,11 +88,20 @@ def write_evidence_validation_receipt(
         "timestamp": _utc_stamp(),
     }
     resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
-    resolved_receipt.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    resolved_receipt.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return receipt
 
 
-def _validate_item(index: int, item: object, *, manifest_path: Path) -> dict[str, Any]:
+def _validate_item(
+    index: int,
+    item: object,
+    *,
+    manifest_path: Path,
+    manifest_goal_hash: str | None,
+) -> dict[str, Any]:
     result: dict[str, Any] = {
         "index": index,
         "kind": None,
@@ -147,10 +164,22 @@ def _validate_item(index: int, item: object, *, manifest_path: Path) -> dict[str
             result["observed_schema"] = observed_schema
             if observed_schema != expected_schema:
                 errors.append(
-                    f"items[{index}].schema mismatch: expected {expected_schema}, observed {observed_schema}"
+                    f"items[{index}].schema mismatch: expected {expected_schema}, "
+                    f"observed {observed_schema}"
+                )
+            observed_goal_hash = payload.get("goal_hash")
+            result["observed_goal_hash"] = observed_goal_hash
+            if observed_goal_hash != manifest_goal_hash:
+                errors.append(
+                    f"items[{index}].goal_hash mismatch: expected {manifest_goal_hash}, "
+                    f"observed {observed_goal_hash}"
                 )
     if validator and declared_valid is not True:
         errors.append(f"items[{index}].valid must be true when validator is declared")
+    if validator and not validator.startswith("tau evidence-validate "):
+        errors.append(
+            f"items[{index}].validator must use tau evidence-validate, observed {validator}"
+        )
     result["valid"] = not errors
     return result
 
