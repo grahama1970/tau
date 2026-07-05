@@ -1925,6 +1925,7 @@ def create_evidence_manifest_valid_fixture(run_dir: Path) -> dict[str, Path]:
         evidence_dir / "reviewer-verdict.json",
         {
             "schema": "tau.reviewer_verdict.v1",
+            "kind": "reviewer_verdict",
             "goal_hash": goal_hash,
             "reviewed_node_id": "coder",
             "verdict": "PASS",
@@ -1970,6 +1971,7 @@ def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Pat
         evidence_dir / "creator-artifact.json",
         {
             "schema": "tau.creator_artifact.v1",
+            "kind": "creator_artifact",
             "goal_hash": contract["goal"]["goal_hash"],
             "summary": "Preflight evidence manifest creator artifact.",
         },
@@ -1978,6 +1980,7 @@ def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Pat
         evidence_dir / "reviewer-verdict.json",
         {
             "schema": "tau.reviewer_verdict.v1",
+            "kind": "reviewer_verdict",
             "goal_hash": "sha256:stale-rw-sanity-reviewer-goal",
             "reviewed_node_id": "coder",
             "verdict": "PASS",

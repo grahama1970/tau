@@ -29,6 +29,7 @@ def test_evidence_manifest_validation_passes_for_hash_and_schema(
     assert receipt["item_count"] == 1
     assert receipt["checked_items"][0]["valid"] is True
     assert receipt["checked_items"][0]["observed_schema"] == "tau.reviewer_verdict.v1"
+    assert receipt["checked_items"][0]["observed_kind"] == "reviewer_verdict"
     assert Path(str(receipt["receipt_path"])).exists()
 
 
@@ -80,6 +81,24 @@ def test_evidence_manifest_validation_blocks_goal_hash_mismatch(tmp_path: Path) 
     ]
 
 
+def test_evidence_manifest_validation_blocks_kind_mismatch(tmp_path: Path) -> None:
+    evidence = _write_evidence(
+        tmp_path,
+        schema="tau.reviewer_verdict.v1",
+        kind="creator_artifact",
+    )
+    manifest = _write_manifest(tmp_path, evidence, schema="tau.reviewer_verdict.v1")
+
+    receipt = write_evidence_validation_receipt(manifest_path=manifest)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["checked_items"][0]["observed_kind"] == "creator_artifact"
+    assert receipt["errors"] == [
+        "items[0].kind mismatch: expected reviewer_verdict, observed creator_artifact"
+    ]
+
+
 def test_evidence_manifest_validation_blocks_non_tau_validator(tmp_path: Path) -> None:
     evidence = _write_evidence(tmp_path, schema="tau.reviewer_verdict.v1")
     manifest = _write_manifest(
@@ -119,12 +138,14 @@ def _write_evidence(
     *,
     schema: str,
     goal_hash: str = "sha256:active-goal",
+    kind: str = "reviewer_verdict",
 ) -> Path:
     evidence = tmp_path / "reviewer-verdict.json"
     evidence.write_text(
         json.dumps(
             {
                 "schema": schema,
+                "kind": kind,
                 "goal_hash": goal_hash,
                 "verdict": "PASS",
             }

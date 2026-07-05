@@ -174,6 +174,12 @@ def _validate_item(
                     f"items[{index}].goal_hash mismatch: expected {manifest_goal_hash}, "
                     f"observed {observed_goal_hash}"
                 )
+            observed_kind = payload.get("kind")
+            result["observed_kind"] = observed_kind
+            if observed_kind != kind:
+                errors.append(
+                    f"items[{index}].kind mismatch: expected {kind}, observed {observed_kind}"
+                )
     if validator and declared_valid is not True:
         errors.append(f"items[{index}].valid must be true when validator is declared")
     if validator and not validator.startswith("tau evidence-validate "):
