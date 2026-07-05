@@ -1,0 +1,66 @@
+{
+  "schema": "tau.p1_evidence_manifest_proof_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "timestamp": "2026-07-05T12:35:00Z",
+  "goal": {
+    "summary": "Continue P1 Tau hardening with typed evidence manifest validation.",
+    "scope": [
+      "src/tau_coding/evidence_manifest.py",
+      "src/tau_coding/cli.py",
+      "tests/test_evidence_manifest.py"
+    ]
+  },
+  "changed_files": [
+    "src/tau_coding/evidence_manifest.py",
+    "src/tau_coding/cli.py",
+    "tests/test_evidence_manifest.py",
+    "experiments/goal-locked-subagents/proofs/p1-evidence-manifest-20260705T1235Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_evidence_manifest.py -q",
+      "exit_code": 0,
+      "result": "4 passed in 0.43s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/evidence_manifest.py src/tau_coding/cli.py tests/test_evidence_manifest.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "uv run pytest tests/test_evidence_manifest.py tests/test_project_dag.py tests/test_generic_dag.py tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "43 passed in 2.06s"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/evidence_manifest.py src/tau_coding/cli.py tests/test_evidence_manifest.py",
+      "exit_code": 0,
+      "result": "No whitespace errors reported for tracked diffs"
+    }
+  ],
+  "what_changed": [
+    "Added tau.evidence_manifest.v1 validation support.",
+    "Added tau.evidence_validation_receipt.v1 receipts for path, sha256, JSON root schema, and declared validator/valid checks.",
+    "Added tau evidence-validate <evidence-manifest.json> [--receipt <path>] CLI support.",
+    "Added focused tests for PASS, sha mismatch BLOCKED, schema mismatch BLOCKED, and CLI receipt writing."
+  ],
+  "proves": [
+    "Tau can deterministically validate a typed evidence manifest and write a receipt.",
+    "Tau blocks evidence items with sha256 mismatches.",
+    "Tau blocks JSON evidence items whose root schema differs from the manifest declaration.",
+    "The evidence validation CLI writes the requested receipt path and exits successfully for valid evidence."
+  ],
+  "does_not_prove": [
+    "Semantic correctness of artifact contents beyond declared schema/hash checks.",
+    "Runtime integration that makes every DAG required_evidence item mandatory through evidence_manifest validation.",
+    "Provider/model quality, live Herdr behavior, GitHub mutation, Memory sync, or browser UI proof.",
+    "Full WebGPT roadmap completion."
+  ],
+  "next_recommended_route": {
+    "agent": "coder",
+    "reason": "Wire evidence manifests into project DAG required_evidence gates or continue P1 command-spec trust policy."
+  }
+}

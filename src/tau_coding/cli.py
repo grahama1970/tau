@@ -52,6 +52,7 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_campaign,
     run_dag_stress_poc,
 )
+from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
     load_generated_ticket,
     project_agent_handoff,
@@ -840,6 +841,20 @@ def main(
             payload = write_dag_signal_receipt(
                 Path(str(options["source"])),
                 receipt_path=options.get("receipt_path"),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "evidence-validate":
+        try:
+            options = _parse_evidence_validate_cli_args(positional_args[1:])
+            payload = write_evidence_validation_receipt(
+                manifest_path=Path(str(options["manifest"])),
+                receipt_path=options.get("receipt"),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -2005,6 +2020,25 @@ def _parse_dag_signals_cli_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"unknown dag-signals option: {arg}")
         index += 1
     return {"source": source, "receipt_path": receipt_path}
+
+
+def _parse_evidence_validate_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau evidence-validate <evidence-manifest.json> [--receipt <path>]")
+    manifest = Path(args[0])
+    receipt: Path | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt = Path(args[index])
+        else:
+            raise RuntimeError(f"unknown evidence-validate option: {arg}")
+        index += 1
+    return {"manifest": manifest, "receipt": receipt}
 
 
 def _parse_dag_expansion_validate_cli_args(args: list[str]) -> dict[str, object]:
