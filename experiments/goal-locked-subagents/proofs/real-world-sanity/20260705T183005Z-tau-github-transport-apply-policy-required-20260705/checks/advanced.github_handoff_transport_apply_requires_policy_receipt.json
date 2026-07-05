@@ -1,0 +1,90 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [
+        "receipt mocked field is None, expected false"
+      ],
+      "exit_code": 1,
+      "receipt_summary": {
+        "applied": false,
+        "command_results": [],
+        "commands": [],
+        "dry_run": false,
+        "errors": [
+          "GitHub --apply requires --github-apply-policy-receipt with a PASS tau.github_apply_policy_receipt.v1 receipt."
+        ],
+        "ok": false,
+        "preflight_results": [],
+        "schema": "tau.github_handoff_transport_receipt.v1",
+        "status": "BLOCKED",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue#47"
+        }
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.github_handoff_transport_apply_requires_policy_receipt",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "handoff-github-transport",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/github-handoff-transport-apply-missing-policy/handoff.json",
+    "--active-goal-hash",
+    "sha256:rw-sanity-github-apply-policy",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/github-handoff-transport-apply-missing-policy/github-transport-missing-policy-receipt.json",
+    "--apply"
+  ],
+  "completed_at": "2026-07-05T18:30:06Z",
+  "errors": [
+    "receipt mocked field is None, expected false"
+  ],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": "command",
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": false,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/github-handoff-transport-apply-missing-policy/github-transport-missing-policy-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks handoff-github-transport --apply before running gh commands when no PASS GitHub apply-policy receipt is supplied.",
+  "receipt_summary": {
+    "applied": false,
+    "command_results": [],
+    "commands": [],
+    "dry_run": false,
+    "errors": [
+      "GitHub --apply requires --github-apply-policy-receipt with a PASS tau.github_apply_policy_receipt.v1 receipt."
+    ],
+    "ok": false,
+    "preflight_results": [],
+    "schema": "tau.github_handoff_transport_receipt.v1",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue#47"
+    }
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T18:30:05Z",
+  "status": "BLOCKED",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183005Z-tau-github-transport-apply-policy-required-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stdout.txt",
+  "timeout_seconds": 90
+}

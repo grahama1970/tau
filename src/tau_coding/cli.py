@@ -5808,6 +5808,10 @@ def transport_agent_handoff_to_github_command(
         transport_receipt = {
             "schema": "tau.github_handoff_transport_receipt.v1",
             "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
             "dry_run": not apply_github,
             "applied": False,
             "target": projection.target,
@@ -5835,6 +5839,10 @@ def transport_agent_handoff_to_github_command(
         transport_receipt = {
             "schema": "tau.github_handoff_transport_receipt.v1",
             "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
             "dry_run": False,
             "applied": False,
             "target": projection.target,

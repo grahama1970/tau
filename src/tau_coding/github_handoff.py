@@ -51,6 +51,10 @@ class GitHubHandoffTransportResult:
         return {
             "schema": self.schema,
             "ok": self.ok,
+            "status": "PASS" if self.ok else "BLOCKED",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
             "dry_run": self.dry_run,
             "applied": self.applied,
             "target": self.target,

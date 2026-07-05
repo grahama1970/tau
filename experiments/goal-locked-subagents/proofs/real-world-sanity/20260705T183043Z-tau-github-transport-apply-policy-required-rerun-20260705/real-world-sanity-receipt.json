@@ -1,0 +1,133 @@
+{
+  "check_count": 1,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "applied": false,
+            "command_results": [],
+            "commands": [],
+            "dry_run": false,
+            "errors": [
+              "GitHub --apply requires --github-apply-policy-receipt with a PASS tau.github_apply_policy_receipt.v1 receipt."
+            ],
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "preflight_results": [],
+            "provider_live": false,
+            "schema": "tau.github_handoff_transport_receipt.v1",
+            "status": "BLOCKED",
+            "target": {
+              "repo": "grahama1970/tau",
+              "target": "issue#47"
+            }
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.github_handoff_transport_apply_requires_policy_receipt",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "handoff-github-transport",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/github-handoff-transport-apply-missing-policy/handoff.json",
+        "--active-goal-hash",
+        "sha256:rw-sanity-github-apply-policy",
+        "--receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/github-handoff-transport-apply-missing-policy/github-transport-missing-policy-receipt.json",
+        "--apply"
+      ],
+      "completed_at": "2026-07-05T18:30:44Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/github-handoff-transport-apply-missing-policy/github-transport-missing-policy-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks handoff-github-transport --apply before running gh commands when no PASS GitHub apply-policy receipt is supplied.",
+      "receipt_summary": {
+        "applied": false,
+        "command_results": [],
+        "commands": [],
+        "dry_run": false,
+        "errors": [
+          "GitHub --apply requires --github-apply-policy-receipt with a PASS tau.github_apply_policy_receipt.v1 receipt."
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "preflight_results": [],
+        "provider_live": false,
+        "schema": "tau.github_handoff_transport_receipt.v1",
+        "status": "BLOCKED",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue#47"
+        }
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-05T18:30:43Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705/logs/advanced.github_handoff_transport_apply_requires_policy_receipt.stdout.txt",
+      "timeout_seconds": 90
+    }
+  ],
+  "completed_at": "2026-07-05T18:30:44Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 1
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705",
+  "run_id": "20260705T183043Z-tau-github-transport-apply-policy-required-rerun-20260705",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-05T18:30:44Z"
+}

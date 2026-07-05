@@ -405,6 +405,10 @@ def test_cli_handoff_github_transport_defaults_to_dry_run(tmp_path: Path) -> Non
     assert result.exit_code == 0
     assert payload["schema"] == "tau.github_handoff_transport_receipt.v1"
     assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["mocked"] is False
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
     assert payload["dry_run"] is True
     assert payload["applied"] is False
     assert payload["commands"][0][:3] == ["gh", "issue", "comment"]
@@ -435,6 +439,10 @@ def test_cli_handoff_github_transport_apply_requires_policy_receipt(tmp_path: Pa
     assert result.exit_code == 1
     assert payload["schema"] == "tau.github_handoff_transport_receipt.v1"
     assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["mocked"] is False
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
     assert payload["applied"] is False
     assert payload["commands"] == []
     assert payload["command_results"] == []
@@ -499,6 +507,10 @@ def test_cli_handoff_github_transport_apply_accepts_policy_receipt(
 
     assert result.exit_code == 0
     assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["mocked"] is False
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
     assert payload["dry_run"] is False
     assert payload["applied"] is True
     assert payload["commands"] == commands
@@ -529,6 +541,10 @@ def test_cli_handoff_github_transport_refuses_invalid_projection(tmp_path: Path)
 
     assert result.exit_code == 1
     assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["mocked"] is False
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
     assert payload["applied"] is False
     assert payload["commands"] == []
     assert payload["command_results"] == []

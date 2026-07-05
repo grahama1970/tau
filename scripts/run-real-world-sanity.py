@@ -1355,6 +1355,28 @@ def build_checks(
             output_receipt=github_apply_policy["positive_receipt"],
         ),
         Check(
+            check_id="advanced.github_handoff_transport_apply_requires_policy_receipt",
+            level="advanced",
+            purpose=(
+                "Tau blocks handoff-github-transport --apply before running gh commands "
+                "when no PASS GitHub apply-policy receipt is supplied."
+            ),
+            command=[
+                *uv_tau,
+                "handoff-github-transport",
+                str(github_apply_policy["handoff"]),
+                "--active-goal-hash",
+                str(github_apply_policy["handoff_goal_hash"]),
+                "--receipt",
+                str(github_apply_policy["transport_missing_policy_receipt"]),
+                "--apply",
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=github_apply_policy["transport_missing_policy_receipt"],
+        ),
+        Check(
             check_id="advanced.provider_readiness",
             level="advanced",
             purpose="Herdr allocates visible Codex and OpenCode provider panes and Tau records structured readiness.",
@@ -2314,8 +2336,11 @@ raise SystemExit(completed.returncode)
 def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "github-apply-policy-missing-gates"
     positive_dir = run_dir / "github-apply-policy-all-gates"
+    transport_dir = run_dir / "github-handoff-transport-apply-missing-policy"
     fixture_dir.mkdir(parents=True, exist_ok=True)
     positive_dir.mkdir(parents=True, exist_ok=True)
+    transport_dir.mkdir(parents=True, exist_ok=True)
+    goal_hash = "sha256:rw-sanity-github-apply-policy"
     projection = {
         "schema": "tau.agent_handoff_projection_receipt.v1",
         "ok": True,
@@ -2364,6 +2389,36 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "redaction_count": 1,
         "errors": [],
     }
+    handoff = {
+        "schema": "tau.agent_handoff.v1",
+        "github": {
+            "repo": "grahama1970/tau",
+            "target": "issue#47",
+        },
+        "goal": {
+            "goal_id": "rw-sanity-github-apply-policy",
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "previous_subagent": "coder",
+        "context": {
+            "summary": "Real-world sanity GitHub transport apply policy fixture.",
+            "artifacts": [],
+        },
+        "result": {
+            "status": "COMPLETED",
+            "summary": "Projection is intentionally used to prove apply fails closed without policy receipt.",
+            "evidence": ["github transport missing policy negative control"],
+        },
+        "rationale": "GitHub mutation must remain policy-gated.",
+        "next_agent": {
+            "name": "reviewer",
+            "executor": "local",
+            "reason": "Reviewer route is valid for the handoff projection.",
+        },
+        "required_evidence": ["github apply policy receipt before live apply"],
+        "stop_condition": "Stop before live apply without policy receipt.",
+    }
     return {
         "projection": write_json(fixture_dir / "projection.json", projection),
         "policy": write_json(fixture_dir / "github-apply-policy.json", policy),
@@ -2380,6 +2435,10 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
             redaction_receipt,
         ),
         "positive_receipt": positive_dir / "github-apply-policy-receipt.json",
+        "handoff": write_json(transport_dir / "handoff.json", handoff),
+        "handoff_goal_hash": goal_hash,
+        "transport_missing_policy_receipt": transport_dir
+        / "github-transport-missing-policy-receipt.json",
     }
 
 
@@ -4218,6 +4277,12 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "actions",
         "requirements",
         "preflight_ready",
+        "dry_run",
+        "applied",
+        "target",
+        "commands",
+        "command_results",
+        "preflight_results",
         "dag_error",
         "errors",
     )

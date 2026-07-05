@@ -207,6 +207,48 @@ def test_summarize_receipt_includes_github_apply_policy_fields() -> None:
     }
 
 
+def test_summarize_receipt_includes_github_transport_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.github_handoff_transport_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dry_run": False,
+            "applied": False,
+            "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+            "commands": [],
+            "command_results": [],
+            "preflight_results": [],
+            "errors": [
+                "GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."
+            ],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.github_handoff_transport_receipt.v1",
+        "ok": False,
+        "status": "BLOCKED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "dry_run": False,
+        "applied": False,
+        "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+        "commands": [],
+        "command_results": [],
+        "preflight_results": [],
+        "errors": [
+            "GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."
+        ],
+    }
+
+
 def test_summarize_receipt_includes_route_memory_sync_fields() -> None:
     module = _load_runner_module()
 
