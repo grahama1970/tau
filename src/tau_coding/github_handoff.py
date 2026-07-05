@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 import subprocess
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -10,6 +12,22 @@ from pathlib import Path
 from typing import Any
 
 CommandRunner = Callable[[list[str], str | None], subprocess.CompletedProcess[str]]
+
+GITHUB_PROJECTION_REDACTION_RECEIPT_SCHEMA = "tau.github_projection_redaction_receipt.v1"
+_SENSITIVE_KEYS = {
+    "api_key",
+    "apikey",
+    "authorization",
+    "credential",
+    "credentials",
+    "password",
+    "secret",
+    "token",
+}
+_LOCAL_PATH_PATTERN = re.compile(r"/home/[^\s\"'`<>),\]]+")
+_TOKEN_PATTERN = re.compile(
+    r"(gh[pousr]_[A-Za-z0-9_]{8,}|github_pat_[A-Za-z0-9_]+|sk-[A-Za-z0-9]{8,})"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -276,6 +294,68 @@ def transport_handoff_projection_to_github(
         preflight_results=tuple(preflight_results),
     )
     return _write_transport_receipt(result, receipt_path)
+
+
+def redact_github_projection(
+    *,
+    projection_path: Path,
+    output_path: Path,
+    receipt_path: Path | None = None,
+) -> dict[str, Any]:
+    """Write a redacted projection artifact and receipt before public GitHub transport."""
+
+    resolved_projection = projection_path.expanduser().resolve()
+    resolved_output = output_path.expanduser().resolve()
+    projection = _read_json_object(resolved_projection, label="GitHub projection")
+    redactions: list[dict[str, str]] = []
+    redacted_projection = _redact_value(projection, path="$", redactions=redactions)
+    resolved_output.parent.mkdir(parents=True, exist_ok=True)
+    resolved_output.write_text(
+        json.dumps(redacted_projection, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    receipt = {
+        "schema": GITHUB_PROJECTION_REDACTION_RECEIPT_SCHEMA,
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "projection": str(resolved_projection),
+        "projection_sha256": _file_sha256(resolved_projection),
+        "redacted_projection": str(resolved_output),
+        "redacted_projection_sha256": _file_sha256(resolved_output),
+        "redaction_count": len(redactions),
+        "redactions": redactions,
+        "review_required": bool(redactions),
+        "proof_scope": {
+            "proves": [
+                "A GitHub projection artifact was inspected deterministically.",
+                "Sensitive-key values, local absolute paths, and known token patterns "
+                "were redacted.",
+                "A separate redacted projection artifact was written for public GitHub "
+                "transport review.",
+            ],
+            "does_not_prove": [
+                "Live GitHub mutation.",
+                "Human approval for posting.",
+                "Semantic safety of the public comment body.",
+                "Exhaustive secret detection beyond the configured redaction patterns.",
+            ],
+        },
+        "errors": [],
+    }
+    if receipt_path is not None:
+        resolved_receipt = receipt_path.expanduser().resolve()
+        resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
+        receipt["receipt_path"] = str(resolved_receipt)
+        resolved_receipt.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    else:
+        receipt["receipt_path"] = None
+    return receipt
 
 
 def transport_generated_ticket_to_github(
@@ -772,6 +852,55 @@ def _ticket_source_from_gh_issues(issues: list[object]) -> dict[str, Any]:
             }
         )
     return {"schema": "tau.goal_guardian_ticket_source.v1", "tickets": tickets}
+
+
+def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} is unreadable: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} root must be a JSON object: {path}")
+    return payload
+
+
+def _redact_value(value: Any, *, path: str, redactions: list[dict[str, str]]) -> Any:
+    if isinstance(value, Mapping):
+        redacted: dict[str, Any] = {}
+        for key, child in value.items():
+            key_text = str(key)
+            child_path = f"{path}.{key_text}"
+            if _is_sensitive_key(key_text):
+                redactions.append({"path": child_path, "kind": "sensitive_key"})
+                redacted[key_text] = f"<redacted:{key_text}>"
+            else:
+                redacted[key_text] = _redact_value(
+                    child,
+                    path=child_path,
+                    redactions=redactions,
+                )
+        return redacted
+    if isinstance(value, list):
+        return [
+            _redact_value(item, path=f"{path}[{index}]", redactions=redactions)
+            for index, item in enumerate(value)
+        ]
+    if isinstance(value, str):
+        redacted_value = _TOKEN_PATTERN.sub("<redacted-token>", value)
+        redacted_value = _LOCAL_PATH_PATTERN.sub("<redacted-local-path>", redacted_value)
+        if redacted_value != value:
+            redactions.append({"path": path, "kind": "string_pattern"})
+        return redacted_value
+    return value
+
+
+def _is_sensitive_key(key: str) -> bool:
+    normalized = key.lower().replace("-", "_")
+    return normalized in _SENSITIVE_KEYS or normalized.endswith("_token")
+
+
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _stdin_for_command(command: list[str], projection: Mapping[str, Any]) -> str | None:

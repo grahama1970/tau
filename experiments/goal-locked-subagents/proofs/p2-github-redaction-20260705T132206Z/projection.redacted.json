@@ -1,0 +1,24 @@
+{
+  "comment": {
+    "body": "Review local artifact <redacted-local-path> with token <redacted-token> before posting."
+  },
+  "context": {
+    "api_key": "<redacted:api_key>",
+    "safe_note": "This field should remain public."
+  },
+  "errors": [],
+  "labels": {
+    "add": [
+      "agent-work",
+      "next:human"
+    ],
+    "remove": []
+  },
+  "next_agent": "human",
+  "ok": true,
+  "schema": "tau.agent_handoff_projection_receipt.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}

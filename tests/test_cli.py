@@ -1,5 +1,5 @@
-import json
 import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -418,6 +418,53 @@ def test_cli_handoff_github_transport_refuses_invalid_projection(tmp_path: Path)
     assert payload["command_results"] == []
     assert "next_agent.name must be one of" in "\n".join(payload["errors"])
     assert receipt == payload
+
+
+def test_cli_github_redact_projection_writes_receipt_and_redacted_artifact(
+    tmp_path: Path,
+) -> None:
+    projection_path = tmp_path / "projection.json"
+    redacted_path = tmp_path / "projection.redacted.json"
+    receipt_path = tmp_path / "redaction-receipt.json"
+    projection = {
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "ok": True,
+        "target": {"repo": "grahama1970/tau", "target": "issue#47"},
+        "comment": {
+            "body": (
+                "Inspect /home/graham/workspace/experiments/tau/private.txt "
+                "with token github_pat_abcdefghijklmnopqrstuvwxyz"
+            )
+        },
+        "labels": {"add": ["agent-work"], "remove": []},
+        "credentials": {"token": "ghp_abcdefghijklmnopqrstuvwxyz"},
+    }
+    projection_path.write_text(json.dumps(projection), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "github-redact-projection",
+            "--projection",
+            str(projection_path),
+            "--out",
+            str(redacted_path),
+            "--receipt",
+            str(receipt_path),
+        ],
+    )
+    payload = json.loads(result.output)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    redacted = json.loads(redacted_path.read_text(encoding="utf-8"))
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.github_projection_redaction_receipt.v1"
+    assert payload["ok"] is True
+    assert payload == receipt
+    assert payload["redaction_count"] == 2
+    assert "<redacted-local-path>" in redacted["comment"]["body"]
+    assert "<redacted-token>" in redacted["comment"]["body"]
+    assert redacted["credentials"] == "<redacted:credentials>"
 
 
 def test_cli_generated_ticket_github_create_defaults_to_dry_run(tmp_path: Path) -> None:

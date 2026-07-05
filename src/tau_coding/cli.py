@@ -69,6 +69,7 @@ from tau_coding.generic_dag import (
 from tau_coding.generic_provider_adapter import run_generic_provider_dag_node
 from tau_coding.github_handoff import (
     fetch_goal_guardian_ticket_source_from_github,
+    redact_github_projection,
     transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
     transport_goal_guardian_reconciliation_to_github,
@@ -1180,6 +1181,23 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "github-redact-projection":
+        try:
+            projection_path, output_path, receipt_path = _parse_github_redact_projection_args(
+                positional_args[1:]
+            )
+            payload = redact_github_projection(
+                projection_path=projection_path,
+                output_path=output_path,
+                receipt_path=receipt_path,
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -2823,6 +2841,45 @@ def _parse_handoff_github_transport_cli_args(
             raise RuntimeError(f"Unknown handoff-github-transport option: {arg}")
         index += 1
     return handoff_path, active_goal_hash, receipt_path, agents_root, apply_github
+
+
+def _parse_github_redact_projection_args(args: list[str]) -> tuple[Path, Path, Path | None]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau github-redact-projection --projection <projection.json> "
+            "--out <redacted-projection.json> [--receipt <receipt.json>]"
+        )
+    projection_path: Path | None = None
+    output_path: Path | None = None
+    receipt_path: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--projection", "--out", "--receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = Path(args[index])
+            if arg == "--projection":
+                projection_path = value
+            elif arg == "--out":
+                output_path = value
+            else:
+                receipt_path = value
+        elif arg.startswith("--projection="):
+            projection_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--out="):
+            output_path = Path(arg.partition("=")[2])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown github-redact-projection option: {arg}")
+        index += 1
+    if projection_path is None:
+        raise RuntimeError("--projection requires a value")
+    if output_path is None:
+        raise RuntimeError("--out requires a value")
+    return projection_path, output_path, receipt_path
 
 
 def _parse_generated_ticket_github_create_cli_args(

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from tau_coding.github_handoff import (
     fetch_goal_guardian_ticket_source_from_github,
+    redact_github_projection,
     transport_command_loop_terminal_to_github,
     transport_generated_ticket_to_github,
     transport_goal_guardian_reconciliation_to_github,
@@ -43,6 +44,44 @@ def test_github_handoff_transport_dry_run_renders_comment_and_label_commands() -
             "agent-active,agent-blocked",
         ],
     )
+
+
+def test_github_projection_redaction_writes_redacted_artifact_and_receipt(
+    tmp_path: Path,
+) -> None:
+    projection_path = tmp_path / "projection.json"
+    output_path = tmp_path / "projection.redacted.json"
+    receipt_path = tmp_path / "redaction-receipt.json"
+    projection = _valid_projection()
+    projection["comment"]["body"] = (
+        "Path /home/graham/workspace/experiments/tau/private.txt "
+        "token ghp_abcdefghijklmnopqrstuvwxyz"
+    )
+    projection["context"] = {
+        "api_key": "sk-abc123456789",
+        "safe": "keep me",
+    }
+    projection_path.write_text(json.dumps(projection), encoding="utf-8")
+
+    receipt = redact_github_projection(
+        projection_path=projection_path,
+        output_path=output_path,
+        receipt_path=receipt_path,
+    )
+    redacted = json.loads(output_path.read_text(encoding="utf-8"))
+    written_receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    assert receipt["schema"] == "tau.github_projection_redaction_receipt.v1"
+    assert receipt["ok"] is True
+    assert receipt["redaction_count"] == 2
+    assert receipt["review_required"] is True
+    assert written_receipt == receipt
+    assert "<redacted-local-path>" in redacted["comment"]["body"]
+    assert "<redacted-token>" in redacted["comment"]["body"]
+    assert "/home/graham" not in redacted["comment"]["body"]
+    assert "ghp_" not in redacted["comment"]["body"]
+    assert redacted["context"]["api_key"] == "<redacted:api_key>"
+    assert redacted["context"]["safe"] == "keep me"
 
 
 def test_github_handoff_transport_apply_uses_runner_with_comment_stdin() -> None:

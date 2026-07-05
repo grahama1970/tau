@@ -1,0 +1,24 @@
+{
+  "schema": "tau.agent_handoff_projection_receipt.v1",
+  "ok": true,
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  },
+  "next_agent": "human",
+  "comment": {
+    "body": "Review local artifact /home/graham/workspace/experiments/tau/private-proof.json with token github_pat_abcdefghijklmnopqrstuvwxyz before posting."
+  },
+  "labels": {
+    "add": [
+      "agent-work",
+      "next:human"
+    ],
+    "remove": []
+  },
+  "context": {
+    "api_key": "sk-abc123456789",
+    "safe_note": "This field should remain public."
+  },
+  "errors": []
+}

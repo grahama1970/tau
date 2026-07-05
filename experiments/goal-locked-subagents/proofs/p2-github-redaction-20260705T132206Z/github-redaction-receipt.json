@@ -1,0 +1,39 @@
+{
+  "errors": [],
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p2-github-redaction-20260705T132206Z/projection.json",
+  "projection_sha256": "e2b641b1b9ac9f0e71eecac76734fb844a2a83102323800a7816a36e5964b9ae",
+  "proof_scope": {
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "Human approval for posting.",
+      "Semantic safety of the public comment body.",
+      "Exhaustive secret detection beyond the configured redaction patterns."
+    ],
+    "proves": [
+      "A GitHub projection artifact was inspected deterministically.",
+      "Sensitive-key values, local absolute paths, and known token patterns were redacted.",
+      "A separate redacted projection artifact was written for public GitHub transport review."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p2-github-redaction-20260705T132206Z/github-redaction-receipt.json",
+  "redacted_projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/p2-github-redaction-20260705T132206Z/projection.redacted.json",
+  "redacted_projection_sha256": "dbeba5110f37738de7003ec38041a93e3023211230771f6a6fb7c48e81a7da9f",
+  "redaction_count": 2,
+  "redactions": [
+    {
+      "kind": "string_pattern",
+      "path": "$.comment.body"
+    },
+    {
+      "kind": "sensitive_key",
+      "path": "$.context.api_key"
+    }
+  ],
+  "review_required": true,
+  "schema": "tau.github_projection_redaction_receipt.v1",
+  "status": "PASS"
+}
