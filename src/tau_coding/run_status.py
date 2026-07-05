@@ -33,6 +33,15 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     route_memory_candidate = _read_optional_json(artifacts["route_memory_candidate"])
     route_memory_sync = _read_optional_json(artifacts["route_memory_sync"])
     memory_readback = _read_optional_json(artifacts["memory_readback"])
+    dag_expansion_validation = _read_optional_json(
+        artifacts["dag_expansion_validation"]
+    ) or _read_optional_json(artifacts["dag_expansion_validation_short"])
+    dag_expansion_policy = _read_optional_json(
+        artifacts["dag_expansion_policy"]
+    ) or _read_optional_json(artifacts["dag_expansion_policy_short"])
+    dag_expansion_apply = _read_optional_json(
+        artifacts["dag_expansion_apply"]
+    ) or _read_optional_json(artifacts["dag_expansion_apply_short"])
     github_apply_policy = _read_optional_json(artifacts["github_apply_policy"])
     github_handoff_transport = _read_optional_json(artifacts["github_handoff_transport"])
     lifecycle_states = _load_lifecycle_states(resolved, runtime_manifest, run_receipt)
@@ -53,6 +62,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         route_memory_candidate=route_memory_candidate,
         route_memory_sync=route_memory_sync,
         memory_readback=memory_readback,
+        dag_expansion_validation=dag_expansion_validation,
+        dag_expansion_policy=dag_expansion_policy,
+        dag_expansion_apply=dag_expansion_apply,
         github_apply_policy=github_apply_policy,
         github_handoff_transport=github_handoff_transport,
     )
@@ -70,6 +82,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         route_memory_sync,
         route_memory_candidate,
         memory_readback,
+        dag_expansion_apply,
+        dag_expansion_policy,
+        dag_expansion_validation,
         github_apply_policy,
         github_handoff_transport,
     )
@@ -101,6 +116,9 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             route_memory_sync,
             route_memory_candidate,
             memory_readback,
+            dag_expansion_apply,
+            dag_expansion_policy,
+            dag_expansion_validation,
             github_apply_policy,
             github_handoff_transport,
         ),
@@ -138,6 +156,11 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             route_memory_candidate,
             route_memory_sync,
             memory_readback,
+        ),
+        "dag_expansion": _dag_expansion_summary(
+            dag_expansion_validation,
+            dag_expansion_policy,
+            dag_expansion_apply,
         ),
         "github_apply_policy": _github_apply_policy_summary(github_apply_policy),
         "github_handoff_transport": _github_handoff_transport_summary(github_handoff_transport),
@@ -177,6 +200,12 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "route_memory_candidate": run_dir / "dag-route-memory-candidate-receipt.json",
         "route_memory_sync": run_dir / "dag-route-memory-sync-receipt.json",
         "memory_readback": run_dir / "memory-readback.json",
+        "dag_expansion_validation": run_dir / "dag-expansion-validation-receipt.json",
+        "dag_expansion_validation_short": run_dir / "validation-receipt.json",
+        "dag_expansion_policy": run_dir / "dag-expansion-policy-receipt.json",
+        "dag_expansion_policy_short": run_dir / "policy-receipt.json",
+        "dag_expansion_apply": run_dir / "dag-expansion-apply-receipt.json",
+        "dag_expansion_apply_short": run_dir / "apply-receipt.json",
         "github_apply_policy": run_dir / "github-apply-policy-receipt.json",
         "github_handoff_transport": run_dir / "github-transport-missing-policy-receipt.json",
     }
@@ -199,6 +228,7 @@ def _missing_required_artifact(
         "dag_stress_campaign",
         "herdr_gc",
         "route_memory",
+        "dag_expansion",
         "herdr_cleanup",
         "orchestration_evidence",
         "provider_dag_planner",
@@ -214,6 +244,7 @@ def _missing_required_artifact(
         "dag_stress_campaign",
         "herdr_gc",
         "route_memory",
+        "dag_expansion",
         "generic_dag",
         "herdr_cleanup",
         "orchestration_evidence",
@@ -242,6 +273,9 @@ def _detected_type(
     route_memory_candidate: dict[str, Any],
     route_memory_sync: dict[str, Any],
     memory_readback: dict[str, Any],
+    dag_expansion_validation: dict[str, Any],
+    dag_expansion_policy: dict[str, Any],
+    dag_expansion_apply: dict[str, Any],
     github_apply_policy: dict[str, Any],
     github_handoff_transport: dict[str, Any],
 ) -> str:
@@ -252,6 +286,9 @@ def _detected_type(
         or route_memory_sync.get("schema")
         or route_memory_candidate.get("schema")
         or memory_readback.get("schema")
+        or dag_expansion_apply.get("schema")
+        or dag_expansion_policy.get("schema")
+        or dag_expansion_validation.get("schema")
         or approval_gate.get("schema")
         or orchestration_evidence.get("schema")
         or planner_receipt.get("schema")
@@ -295,6 +332,12 @@ def _detected_type(
         "tau.memory_readback_proof.v1",
     }:
         return "route_memory"
+    if schema in {
+        "tau.dag_expansion_validation_receipt.v1",
+        "tau.dag_expansion_policy_receipt.v1",
+        "tau.dag_expansion_apply_receipt.v1",
+    }:
+        return "dag_expansion"
     if schema == "tau.github_apply_policy_receipt.v1":
         return "github_apply_policy"
     if schema == "tau.github_handoff_transport_receipt.v1":
@@ -318,6 +361,9 @@ def _overall_status(
     route_memory_sync: dict[str, Any],
     route_memory_candidate: dict[str, Any],
     memory_readback: dict[str, Any],
+    dag_expansion_apply: dict[str, Any],
+    dag_expansion_policy: dict[str, Any],
+    dag_expansion_validation: dict[str, Any],
     github_apply_policy: dict[str, Any],
     github_handoff_transport: dict[str, Any],
 ) -> str:
@@ -329,6 +375,9 @@ def _overall_status(
         route_memory_sync,
         route_memory_candidate,
         memory_readback,
+        dag_expansion_apply,
+        dag_expansion_policy,
+        dag_expansion_validation,
         approval_gate,
         orchestration_evidence,
         planner_receipt,
@@ -1140,6 +1189,68 @@ def _route_memory_summary(
             if readback_ok
             else None
         ),
+    }
+
+
+def _dag_expansion_summary(
+    validation: dict[str, Any],
+    policy: dict[str, Any],
+    apply: dict[str, Any],
+) -> dict[str, Any] | None:
+    if not any((validation, policy, apply)):
+        return None
+    return {
+        "validation": _dag_expansion_receipt_summary(
+            validation,
+            expected_schema="tau.dag_expansion_validation_receipt.v1",
+        ),
+        "policy": _dag_expansion_receipt_summary(
+            policy,
+            expected_schema="tau.dag_expansion_policy_receipt.v1",
+        ),
+        "apply": _dag_expansion_receipt_summary(
+            apply,
+            expected_schema="tau.dag_expansion_apply_receipt.v1",
+        ),
+    }
+
+
+def _dag_expansion_receipt_summary(
+    payload: dict[str, Any],
+    *,
+    expected_schema: str,
+) -> dict[str, Any] | None:
+    if payload.get("schema") != expected_schema:
+        return None
+    alerts = payload.get("alerts")
+    alert_records = alerts if isinstance(alerts, list) else []
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "verdict": payload.get("verdict"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "dag_id": payload.get("dag_id"),
+        "goal_hash": payload.get("goal_hash"),
+        "proposal": payload.get("proposal"),
+        "proposal_sha256": payload.get("proposal_sha256"),
+        "validation_receipt": payload.get("validation_receipt"),
+        "validation_receipt_sha256": payload.get("validation_receipt_sha256"),
+        "policy_receipt": payload.get("policy_receipt"),
+        "policy_receipt_sha256": payload.get("policy_receipt_sha256"),
+        "preview_path": payload.get("preview_path"),
+        "preview_sha256": payload.get("preview_sha256"),
+        "expanded_dag": payload.get("expanded_dag"),
+        "expanded_dag_sha256": payload.get("expanded_dag_sha256"),
+        "alert_count": len(alert_records),
+        "alert_codes": [
+            alert.get("code")
+            for alert in alert_records
+            if isinstance(alert, dict) and isinstance(alert.get("code"), str)
+        ],
+        "errors": payload.get("errors"),
     }
 
 

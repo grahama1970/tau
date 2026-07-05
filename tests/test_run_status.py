@@ -743,6 +743,114 @@ def test_run_status_summarizes_route_memory_sync_over_approval(
     assert status["route_memory"]["readback"]["missing_keys"] == []
 
 
+def test_run_status_summarizes_dag_expansion_apply_receipts(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "dag-expansion-validation-receipt.json",
+        {
+            "schema": "tau.dag_expansion_validation_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "dag-1",
+            "goal_hash": "sha256:goal",
+            "proposal": str(tmp_path / "proposal.json"),
+            "proposal_sha256": "sha256-proposal",
+            "preview_path": str(tmp_path / "expanded-dag.preview.json"),
+            "preview_sha256": "sha256-preview",
+            "alerts": [],
+            "errors": [],
+        },
+    )
+    _write_json(
+        tmp_path / "dag-expansion-policy-receipt.json",
+        {
+            "schema": "tau.dag_expansion_policy_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "dag-1",
+            "goal_hash": "sha256:goal",
+            "validation_receipt": str(tmp_path / "dag-expansion-validation-receipt.json"),
+            "validation_receipt_sha256": "sha256-validation",
+            "alerts": [],
+            "errors": [],
+        },
+    )
+    _write_json(
+        tmp_path / "dag-expansion-apply-receipt.json",
+        {
+            "schema": "tau.dag_expansion_apply_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "dag-1",
+            "goal_hash": "sha256:goal",
+            "validation_receipt": str(tmp_path / "dag-expansion-validation-receipt.json"),
+            "validation_receipt_sha256": "sha256-validation",
+            "policy_receipt": str(tmp_path / "dag-expansion-policy-receipt.json"),
+            "policy_receipt_sha256": "sha256-policy",
+            "expanded_dag": str(tmp_path / "expanded-dag.applied.json"),
+            "expanded_dag_sha256": "sha256-expanded",
+            "alerts": [],
+            "errors": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["detected_type"] == "dag_expansion"
+    assert status["missing_required_artifacts"] == []
+    assert status["dag_expansion"]["validation"]["preview_sha256"] == "sha256-preview"
+    assert status["dag_expansion"]["policy"]["validation_receipt_sha256"] == "sha256-validation"
+    assert status["dag_expansion"]["apply"]["policy_receipt_sha256"] == "sha256-policy"
+    assert status["dag_expansion"]["apply"]["expanded_dag_sha256"] == "sha256-expanded"
+
+
+def test_run_status_summarizes_short_dag_expansion_apply_receipt(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "apply-receipt.json",
+        {
+            "schema": "tau.dag_expansion_apply_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "verdict": "PREVIEW_HASH_MISMATCH",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "dag-1",
+            "goal_hash": "sha256:goal",
+            "preview_path": str(tmp_path / "expanded-dag.preview.json"),
+            "preview_sha256": "sha256-original",
+            "alerts": [{"code": "preview_hash_mismatch", "severity": "BLOCK"}],
+            "errors": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is False
+    assert status["status"] == "BLOCKED"
+    assert status["detected_type"] == "dag_expansion"
+    assert status["missing_required_artifacts"] == []
+    assert status["dag_expansion"]["apply"]["verdict"] == "PREVIEW_HASH_MISMATCH"
+    assert status["dag_expansion"]["apply"]["alert_codes"] == ["preview_hash_mismatch"]
+
+
 def test_run_status_summarizes_standalone_orchestration_evidence_receipt(
     tmp_path: Path,
 ) -> None:
