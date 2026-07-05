@@ -39,6 +39,13 @@ That preflight is a gate, not compliance certification. It blocks missing or
 incompatible classification metadata before DAG dispatch. It does not prove ITAR
 compliance, sandbox isolation, signed provenance, or legal sufficiency.
 
+Tau also treats agent DAGs as containment maps, not proof. The
+[Memory/Evidence-Case Gate](docs/memory-evidence-gate.md) documents the next
+pre-dispatch gate: Graph Memory `/intent` is a planner/routing artifact,
+`/create-evidence-case` is a separate support artifact, and Tau blocks
+high-stakes dispatch when policy-required memory intent or evidence-case
+artifacts are missing or incompatible.
+
 To create a local zero-trust starter file set:
 
 ```bash

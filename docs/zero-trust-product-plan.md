@@ -70,6 +70,15 @@ needed to expose Tau's zero-trust difference.
 Goal: high-stakes DAG dispatch must require Graph Memory intent and, when
 policy requires it, a separate evidence case.
 
+Status: implemented as a deterministic pre-dispatch gate for DAGs that opt into
+`policy_profile` memory controls. Tau now emits
+`tau.memory_intent_gate_receipt.v1` and
+`tau.evidence_case_gate_receipt.v1`, blocks missing or incompatible
+policy-required memory artifacts before dispatch, and returns a
+`repair_memory_evidence_gate` course correction. This remains a validator of
+artifacts, not proof that Memory facts are true or that a DAG/swarm is
+trustworthy.
+
 The dispatch pipeline should become:
 
 ```text

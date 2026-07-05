@@ -18,6 +18,11 @@ from tau_coding.handoff_dispatch import (
     load_agent_dispatch_command_spec,
     write_agent_handoff_command_loop_receipt,
 )
+from tau_coding.memory_evidence_gate import (
+    evaluate_memory_evidence_gate,
+    load_memory_gate_object,
+    write_memory_evidence_gate_receipts,
+)
 from tau_coding.policy_profile import zero_trust_preflight_receipt
 
 try:  # YAML is available in the project lock through docs tooling, but keep JSON first.
@@ -80,6 +85,46 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.retry_policy.brave_search_course_correction",
     },
+    "evidence_case_boundary_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_boundary",
+    },
+    "evidence_case_hash_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_hash",
+    },
+    "evidence_case_policy_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_policy",
+    },
+    "intent_clarify_required": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.intent_route",
+    },
+    "intent_contains_inline_evidence": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.no_inline_evidence",
+    },
+    "intent_deflected": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.intent_route",
+    },
+    "intent_not_planner_only": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.planner_only",
+    },
+    "memory_first_not_true": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.memory_first",
+    },
+    "missing_evidence_case": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_required",
+    },
+    "missing_memory_intent": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.intent_required",
+    },
     "reviewer_goal_hash_mismatch": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_goal_hash",
@@ -140,6 +185,8 @@ class ProjectDagContract:
     command_policy: str | None
     policy_profile: str | dict[str, Any] | None
     data_boundary: str | dict[str, Any] | None
+    memory_intent: str | dict[str, Any] | None
+    evidence_case: str | dict[str, Any] | None
 
 
 def run_project_dag_contract(
@@ -179,6 +226,28 @@ def run_project_dag_contract(
             alerts=zero_trust_alerts,
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=zero_trust_receipt,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+    memory_alerts, memory_intent_receipt, evidence_case_receipt = _memory_evidence_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+        receipt_dir=resolved_receipt_dir,
+    )
+    if memory_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(memory_alerts[0]["code"]).upper(),
+            alerts=memory_alerts,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -197,6 +266,8 @@ def run_project_dag_contract(
             alerts=evidence_manifest_alerts,
             evidence_validation_receipt=evidence_validation_receipt,
             zero_trust_preflight_receipt=zero_trust_receipt,
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -282,9 +353,42 @@ def run_project_dag_contract(
             if isinstance(evidence_validation_receipt, dict)
             else None
         ),
+        "zero_trust_preflight_receipt": (
+            zero_trust_receipt.get("receipt_path")
+            if isinstance(zero_trust_receipt, dict)
+            else None
+        ),
+        "memory_intent_gate_receipt": (
+            memory_intent_receipt.get("receipt_path")
+            if isinstance(memory_intent_receipt, dict)
+            else None
+        ),
+        "evidence_case_gate_receipt": (
+            evidence_case_receipt.get("receipt_path")
+            if isinstance(evidence_case_receipt, dict)
+            else None
+        ),
         "artifacts": [
             str(start_path),
             str(loop_receipt_path),
+            *(
+                [str(zero_trust_receipt["receipt_path"])]
+                if isinstance(zero_trust_receipt, dict)
+                and isinstance(zero_trust_receipt.get("receipt_path"), str)
+                else []
+            ),
+            *(
+                [str(memory_intent_receipt["receipt_path"])]
+                if isinstance(memory_intent_receipt, dict)
+                and isinstance(memory_intent_receipt.get("receipt_path"), str)
+                else []
+            ),
+            *(
+                [str(evidence_case_receipt["receipt_path"])]
+                if isinstance(evidence_case_receipt, dict)
+                and isinstance(evidence_case_receipt.get("receipt_path"), str)
+                else []
+            ),
             *(
                 [str(evidence_validation_receipt["receipt_path"])]
                 if isinstance(evidence_validation_receipt, dict)
@@ -843,6 +947,14 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if data_boundary is not None and not isinstance(data_boundary, (str, dict)):
         errors.append("data_boundary must be a string path or object when provided")
         data_boundary = None
+    memory_intent = payload.get("memory_intent")
+    if memory_intent is not None and not isinstance(memory_intent, (str, dict)):
+        errors.append("memory_intent must be a string path or object when provided")
+        memory_intent = None
+    evidence_case = payload.get("evidence_case")
+    if evidence_case is not None and not isinstance(evidence_case, (str, dict)):
+        errors.append("evidence_case must be a string path or object when provided")
+        evidence_case = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -874,6 +986,8 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         command_policy=command_policy,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        memory_intent=memory_intent,
+        evidence_case=evidence_case,
     )
 
 
@@ -1047,6 +1161,79 @@ def _zero_trust_preflight(
     return alerts, receipt
 
 
+def _memory_evidence_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None, dict[str, Any] | None]:
+    if (
+        contract.policy_profile is None
+        and contract.memory_intent is None
+        and contract.evidence_case is None
+    ):
+        return [], None, None
+    policy_profile, _, policy_alerts = _resolve_policy_object(
+        contract.policy_profile,
+        contract_path=contract_path,
+        field_name="policy_profile",
+    )
+    data_boundary, _, boundary_alerts = _resolve_policy_object(
+        contract.data_boundary,
+        contract_path=contract_path,
+        field_name="data_boundary",
+    )
+    memory_intent, memory_intent_path, intent_load_alerts = load_memory_gate_object(
+        contract.memory_intent,
+        contract_path=contract_path,
+        field_name="memory_intent",
+    )
+    evidence_case, evidence_case_path, evidence_load_alerts = load_memory_gate_object(
+        contract.evidence_case,
+        contract_path=contract_path,
+        field_name="evidence_case",
+    )
+    intent_receipt, evidence_receipt = evaluate_memory_evidence_gate(
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+        memory_intent=memory_intent,
+        evidence_case=evidence_case,
+        memory_intent_path=memory_intent_path,
+        evidence_case_path=evidence_case_path,
+    )
+    intent_receipt, evidence_receipt = write_memory_evidence_gate_receipts(
+        receipt_dir=receipt_dir,
+        intent_receipt=intent_receipt,
+        evidence_receipt=evidence_receipt,
+    )
+    alerts = [
+        *policy_alerts,
+        *boundary_alerts,
+        *intent_load_alerts,
+        *evidence_load_alerts,
+        *intent_receipt["alerts"],
+        *evidence_receipt["alerts"],
+    ]
+    if alerts:
+        intent_receipt["ok"] = False
+        intent_receipt["status"] = "BLOCKED"
+        intent_receipt["alerts"] = [
+            *policy_alerts,
+            *boundary_alerts,
+            *intent_load_alerts,
+            *intent_receipt["alerts"],
+        ]
+        intent_receipt["alert_codes"] = [alert["code"] for alert in intent_receipt["alerts"]]
+        evidence_receipt["ok"] = False
+        evidence_receipt["status"] = "BLOCKED"
+        evidence_receipt["allowed_to_dispatch"] = False
+        evidence_receipt["alerts"] = [*evidence_load_alerts, *evidence_receipt["alerts"]]
+        evidence_receipt["alert_codes"] = [alert["code"] for alert in evidence_receipt["alerts"]]
+        _write_json(Path(str(intent_receipt["receipt_path"])), intent_receipt)
+        _write_json(Path(str(evidence_receipt["receipt_path"])), evidence_receipt)
+    return alerts, intent_receipt, evidence_receipt
+
+
 def _resolve_policy_object(
     value: str | dict[str, Any] | None,
     *,
@@ -1089,6 +1276,8 @@ def _pre_dispatch_blocked_receipt(
     alerts: list[dict[str, Any]],
     evidence_validation_receipt: dict[str, Any] | None,
     zero_trust_preflight_receipt: dict[str, Any] | None = None,
+    memory_intent_gate_receipt: dict[str, Any] | None = None,
+    evidence_case_gate_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
     if isinstance(zero_trust_preflight_receipt, dict) and isinstance(
@@ -1101,6 +1290,16 @@ def _pre_dispatch_blocked_receipt(
         str,
     ):
         artifacts.append(str(evidence_validation_receipt["receipt_path"]))
+    if isinstance(memory_intent_gate_receipt, dict) and isinstance(
+        memory_intent_gate_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(memory_intent_gate_receipt["receipt_path"]))
+    if isinstance(evidence_case_gate_receipt, dict) and isinstance(
+        evidence_case_gate_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(evidence_case_gate_receipt["receipt_path"]))
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": False,
@@ -1134,6 +1333,16 @@ def _pre_dispatch_blocked_receipt(
         "zero_trust_preflight_receipt": (
             zero_trust_preflight_receipt.get("receipt_path")
             if isinstance(zero_trust_preflight_receipt, dict)
+            else None
+        ),
+        "memory_intent_gate_receipt": (
+            memory_intent_gate_receipt.get("receipt_path")
+            if isinstance(memory_intent_gate_receipt, dict)
+            else None
+        ),
+        "evidence_case_gate_receipt": (
+            evidence_case_gate_receipt.get("receipt_path")
+            if isinstance(evidence_case_gate_receipt, dict)
             else None
         ),
         "artifacts": artifacts,
@@ -2069,6 +2278,32 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "repair_then_retry_or_reroute",
             "next_agent": "goal-guardian",
             "reason": "Repair zero-trust policy/data-boundary gates before DAG dispatch.",
+        }
+    if normalized in {
+        "missing_memory_intent",
+        "invalid_memory_intent_schema",
+        "memory_first_not_true",
+        "intent_not_planner_only",
+        "intent_confidence_missing",
+        "intent_confidence_too_low",
+        "intent_clarify_required",
+        "intent_deflected",
+        "intent_contains_inline_evidence",
+        "missing_evidence_case",
+        "invalid_evidence_case_schema",
+        "evidence_case_hash_missing",
+        "evidence_case_boundary_mismatch",
+        "evidence_case_policy_mismatch",
+        "invalid_memory_intent",
+        "invalid_evidence_case",
+    }:
+        return {
+            "type": "repair_memory_evidence_gate",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Repair Graph Memory intent and create-evidence-case artifacts before "
+                "zero-trust DAG dispatch."
+            ),
         }
     if normalized in {
         "non_local_ready_queue_node_not_allowed",
