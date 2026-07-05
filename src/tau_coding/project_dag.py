@@ -27,6 +27,66 @@ except ImportError:  # pragma: no cover - exercised only in stripped runtime env
 DAG_CONTRACT_SCHEMA = "tau.dag_contract.v1"
 DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
 DAG_ERROR_SCHEMA = "tau.dag_error.v1"
+FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
+
+FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
+    "branch_goal_hash_divergence": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.branch_goal_hash_divergence",
+    },
+    "branch_target_divergence": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.branch_target_divergence",
+    },
+    "cleanup_apply_without_absence_proof": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.provider_cleanup.absence_proof",
+    },
+    "goal_hash_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.handoff.active_goal_hash",
+    },
+    "invalid_provider_receipt": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.provider_receipt.schema_and_binding",
+    },
+    "malformed_handoff": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.handoff.schema",
+    },
+    "max_attempts_exceeded": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.node_attempts",
+    },
+    "missing_required_evidence": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.required_evidence",
+    },
+    "missing_required_join": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.required_join",
+    },
+    "missing_work_order_sha256": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.provider_work_order.sha256",
+    },
+    "target_changed": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.handoff.github_target",
+    },
+    "unexpected_edge": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.observed_edges",
+    },
+    "unexpected_node": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.observed_nodes",
+    },
+    "unresolved_block_alert": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.monitor_alerts.unresolved_block",
+    },
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +98,7 @@ class ProjectDagNode:
     command_spec: str | None
     required_evidence: tuple[str, ...]
     reviewer: dict[str, Any] | None
+    context: dict[str, Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +119,7 @@ class ProjectDagContract:
     nodes: dict[str, ProjectDagNode]
     edges: tuple[ProjectDagEdge, ...]
     limits: dict[str, Any]
+    context: dict[str, Any]
     required_evidence: tuple[str, ...]
     fail_closed_on: tuple[str, ...]
 
@@ -599,6 +661,7 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     entry_node = _required_string(payload, "entry_node", errors)
     terminal_nodes = _string_list(payload.get("terminal_nodes"), "terminal_nodes", errors)
     limits = _required_mapping(payload, "limits", errors)
+    context = _optional_context_mapping(payload.get("context"), "context", errors)
     if _int_value(limits.get("max_total_attempts"), "limits.max_total_attempts", errors) < 1:
         errors.append("limits.max_total_attempts must be at least 1")
     required_evidence = _string_list(
@@ -607,6 +670,7 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         errors,
     )
     fail_closed_on = _string_list(payload.get("fail_closed_on"), "fail_closed_on", errors)
+    _validate_fail_closed_on_registry(fail_closed_on, errors)
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -637,9 +701,36 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         nodes=nodes,
         edges=tuple(edges),
         limits=limits,
+        context=context,
         required_evidence=tuple(required_evidence),
         fail_closed_on=tuple(fail_closed_on),
     )
+
+
+def fail_closed_registry_payload() -> dict[str, Any]:
+    """Return the executable fail-closed invariant registry for DAG authors."""
+
+    return {
+        "schema": FAIL_CLOSED_REGISTRY_SCHEMA,
+        "status": "ACTIVE",
+        "invariants": {
+            code: {
+                "severity": meta["severity"],
+                "implemented_by": meta["implemented_by"],
+            }
+            for code, meta in sorted(FAIL_CLOSED_REGISTRY.items())
+        },
+    }
+
+
+def _validate_fail_closed_on_registry(values: list[str], errors: list[str]) -> None:
+    unknown = sorted({value for value in values if value not in FAIL_CLOSED_REGISTRY})
+    if unknown:
+        known = ", ".join(sorted(FAIL_CLOSED_REGISTRY))
+        errors.append(
+            "fail_closed_on contains unknown invariant code(s): "
+            f"{', '.join(unknown)}. Known codes: {known}"
+        )
 
 
 def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
@@ -667,6 +758,11 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
         if reviewer is not None and not isinstance(reviewer, dict):
             errors.append(f"nodes[{index}].reviewer must be an object")
             reviewer = None
+        context = _optional_context_mapping(
+            item.get("context"),
+            f"nodes[{index}].context",
+            errors,
+        )
         if node_id in nodes:
             errors.append(f"duplicate node id: {node_id}")
             continue
@@ -678,6 +774,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             command_spec=str(command_spec) if isinstance(command_spec, str) else None,
             required_evidence=tuple(required_evidence),
             reviewer=reviewer,
+            context=context,
         )
     return nodes
 
@@ -746,6 +843,12 @@ def _compile_command_specs(
 
 def _start_handoff(contract: ProjectDagContract, *, contract_path: Path) -> dict[str, Any]:
     entry = contract.nodes[contract.entry_node]
+    context = _handoff_context(
+        summary=f"Dispatch DAG contract {contract.dag_id}.",
+        artifacts=[str(contract_path)],
+        contract_context=contract.context,
+        node_context=entry.context,
+    )
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -754,10 +857,7 @@ def _start_handoff(contract: ProjectDagContract, *, contract_path: Path) -> dict
         },
         "goal": contract.goal,
         "previous_subagent": "human",
-        "context": {
-            "summary": f"Dispatch DAG contract {contract.dag_id}.",
-            "artifacts": [str(contract_path)],
-        },
+        "context": context,
         "result": {
             "status": "DAG_DISPATCH_REQUESTED",
             "summary": f"Tau is dispatching entry node {contract.entry_node}.",
@@ -1106,6 +1206,12 @@ def _node_start_handoff(
         context = response.get("context")
         if isinstance(context, dict):
             artifacts.extend(str(item) for item in context.get("artifacts", []) if isinstance(item, str))
+    context = _handoff_context(
+        summary=f"Dispatch ready DAG node {node.node_id}.",
+        artifacts=artifacts,
+        contract_context=contract.context,
+        node_context=node.context,
+    )
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -1114,10 +1220,7 @@ def _node_start_handoff(
         },
         "goal": contract.goal,
         "previous_subagent": "human",
-        "context": {
-            "summary": f"Dispatch ready DAG node {node.node_id}.",
-            "artifacts": artifacts,
-        },
+        "context": context,
         "result": {
             "status": "DAG_NODE_READY",
             "summary": f"Dependencies are satisfied for DAG node {node.node_id}.",
@@ -1604,6 +1707,43 @@ def _required_mapping(value: dict[str, Any], key: str, errors: list[str]) -> dic
         errors.append(f"{key} must be an object")
         return {}
     return item
+
+
+def _optional_context_mapping(value: object, label: str, errors: list[str]) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        errors.append(f"{label} must be an object")
+        return {}
+    try:
+        return json.loads(json.dumps(value))
+    except (TypeError, ValueError) as exc:
+        errors.append(f"{label} must be JSON-serializable: {exc}")
+        return {}
+
+
+def _handoff_context(
+    *,
+    summary: str,
+    artifacts: list[str],
+    contract_context: dict[str, Any],
+    node_context: dict[str, Any],
+) -> dict[str, Any]:
+    context: dict[str, Any] = {}
+    merged_artifacts = list(artifacts)
+    for source in (contract_context, node_context):
+        for key, value in source.items():
+            if key == "summary":
+                context["dag_context_summary"] = value
+                continue
+            if key == "artifacts":
+                if isinstance(value, list):
+                    merged_artifacts.extend(str(item) for item in value if isinstance(item, str))
+                continue
+            context[key] = value
+    context["summary"] = summary
+    context["artifacts"] = merged_artifacts
+    return context
 
 
 def _required_string(

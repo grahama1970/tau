@@ -1,0 +1,64 @@
+{
+  "schema": "tau.p1_fail_closed_registry_proof_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "timestamp": "2026-07-05T12:29:00Z",
+  "goal": {
+    "summary": "Continue P1 Tau hardening by making DAG fail_closed_on invariants executable and project-agent-readable.",
+    "scope": [
+      "src/tau_coding/project_dag.py",
+      "tests/test_project_dag.py"
+    ]
+  },
+  "changed_files": [
+    "src/tau_coding/project_dag.py",
+    "tests/test_project_dag.py",
+    "experiments/goal-locked-subagents/proofs/p1-fail-closed-registry-20260705T1229Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_project_dag.py -q",
+      "exit_code": 0,
+      "result": "20 passed in 1.65s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/project_dag.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "uv run pytest tests/test_project_dag.py tests/test_generic_dag.py tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "39 passed in 1.99s"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/project_dag.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "No whitespace errors reported for tracked diffs"
+    }
+  ],
+  "what_changed": [
+    "Added tau.fail_closed_registry.v1 metadata for known DAG fail-closed invariant codes.",
+    "DAG contract validation now rejects unknown fail_closed_on codes before dispatch.",
+    "Unknown fail_closed_on codes are returned through tau.dag_error.v1 course-correction JSON from the CLI failure path.",
+    "The committed DAG runtime also includes active context propagation and bounded-ready-queue stress coverage already present in the worktree and covered by tests."
+  ],
+  "proves": [
+    "Tau exposes a deterministic fail-closed invariant registry payload for DAG authors.",
+    "Tau rejects a DAG contract containing an unknown fail_closed_on value such as nebulous_goal.",
+    "The rejection is packaged as a project-agent-readable tau.dag_error.v1 payload and recommends goal-guardian repair.",
+    "The project DAG focused suite passes with creator/reviewer, YAML, context propagation, ready-queue concurrency, timeout retry, non-JSON retry, max-retry block, provider branch block, malformed contract error, missing command spec error, missing evidence, reviewer target mismatch, cycle block, mutating-node block, and fail_closed_on registry coverage."
+  ],
+  "does_not_prove": [
+    "Runtime-wide enforcement for every possible fail_closed_on code beyond currently implemented validators.",
+    "Live provider/model semantic quality.",
+    "Provider branch locks, Memory sync, GitHub mutation, browser UI proof, or full WebGPT roadmap completion.",
+    "That future adaptive DAG expansion proposals are safe to apply automatically."
+  ],
+  "next_recommended_route": {
+    "agent": "coder",
+    "reason": "Continue P1 with evidence manifests/validators or provider work-order enforcement across runtime entrypoints."
+  }
+}

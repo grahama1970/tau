@@ -5,7 +5,13 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
-from tau_coding.project_dag import DAG_ERROR_SCHEMA, DAG_RECEIPT_SCHEMA, run_project_dag_contract
+from tau_coding.project_dag import (
+    DAG_ERROR_SCHEMA,
+    DAG_RECEIPT_SCHEMA,
+    FAIL_CLOSED_REGISTRY_SCHEMA,
+    fail_closed_registry_payload,
+    run_project_dag_contract,
+)
 
 
 def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
@@ -143,6 +149,61 @@ def test_cli_dag_run_dispatches_yaml_project_dag_contract(tmp_path: Path) -> Non
     assert payload["selected_agents"] == ["coder", "reviewer"]
 
 
+def test_project_dag_propagates_safe_context_to_command_stdin(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["context"] = {
+        "persona_dream_panel": {
+            "panel_id": "panel_contract",
+            "run_root": "/tmp/persona-dream-active-run",
+            "image_path": "/tmp/persona-dream-active-run/artifacts/panel.png",
+        },
+        "artifacts": ["/tmp/contract-artifact.json"],
+    }
+    payload["nodes"][0]["context"] = {
+        "persona_dream_panel": {
+            "panel_id": "panel_node",
+            "run_root": "/tmp/persona-dream-node-run",
+            "image_path": "/tmp/persona-dream-node-run/artifacts/panel.png",
+            "panel_prompt": "Use active Embry/Kai storyboard context.",
+        }
+    }
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_stdin_capture_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "reviewer", _creator_evidence()),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    request = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-001"
+            / "request.json"
+        ).read_text(encoding="utf-8")
+    )
+    context = request["context"]
+    assert receipt["ok"] is True
+    assert context["persona_dream_panel"] == {
+        "panel_id": "panel_node",
+        "run_root": "/tmp/persona-dream-node-run",
+        "image_path": "/tmp/persona-dream-node-run/artifacts/panel.png",
+        "panel_prompt": "Use active Embry/Kai storyboard context.",
+    }
+    assert context["artifacts"] == [str(contract_path.resolve()), "/tmp/contract-artifact.json"]
+    assert context["summary"] == "Dispatch DAG contract creator-reviewer-test."
+
+
 def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     tmp_path: Path,
 ) -> None:
@@ -183,6 +244,58 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
         event["event"] == "virtual_node_completed" and event["node_id"] == "start"
         for event in receipt["scheduler_events"]
     )
+
+
+def test_project_dag_ready_queue_propagates_node_context_to_command_stdin(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["context"] = {
+                "persona_dream_panel": {
+                    "panel_id": "panel_ready_queue",
+                    "run_root": "/tmp/persona-dream-ready-queue-run",
+                    "image_path": "/tmp/persona-dream-ready-queue-run/artifacts/panel.png",
+                }
+            }
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_stdin_capture_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "human", _creator_evidence()),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    request = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "ready-queue"
+            / "coder"
+            / "attempt-001"
+            / "request.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert receipt["ok"] is True
+    assert request["context"]["persona_dream_panel"] == {
+        "panel_id": "panel_ready_queue",
+        "run_root": "/tmp/persona-dream-ready-queue-run",
+        "image_path": "/tmp/persona-dream-ready-queue-run/artifacts/panel.png",
+    }
 
 
 def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
@@ -390,6 +503,54 @@ def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_pat
         "Tau packaged the contract failure as a project-agent course-correction payload.",
         "No DAG route, goal, target, command, or handoff was executed.",
     ]
+
+
+def test_fail_closed_registry_payload_names_executable_invariants() -> None:
+    payload = fail_closed_registry_payload()
+
+    assert payload["schema"] == FAIL_CLOSED_REGISTRY_SCHEMA
+    assert payload["status"] == "ACTIVE"
+    assert payload["invariants"]["goal_hash_mismatch"] == {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.handoff.active_goal_hash",
+    }
+    assert payload["invariants"]["unexpected_edge"] == {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.observed_edges",
+    }
+    assert payload["invariants"]["missing_work_order_sha256"] == {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.provider_work_order.sha256",
+    }
+
+
+def test_cli_dag_run_unknown_fail_closed_code_returns_course_correction_json(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["fail_closed_on"].append("nebulous_goal")
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "unknown-fail-closed-run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+        ],
+    )
+    error_payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert error_payload["schema"] == DAG_ERROR_SCHEMA
+    assert error_payload["failure_code"] == "dag_contract_invalid"
+    assert "fail_closed_on contains unknown invariant code(s): nebulous_goal" in error_payload["message"]
+    assert "goal_hash_mismatch" in error_payload["message"]
+    assert error_payload["recommended_action"]["next_agent"] == "goal-guardian"
 
 
 def test_cli_dag_run_missing_command_spec_returns_course_correction_json(tmp_path: Path) -> None:
@@ -729,6 +890,42 @@ def _write_response_spec(
     if sleep_seconds:
         code += f"import time; time.sleep({sleep_seconds!r}); "
     code += f"print({json.dumps(json.dumps(response))})"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    code,
+                ],
+                "timeout_s": timeout_s,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_stdin_capture_response_spec(
+    tmp_path: Path,
+    agent: str,
+    response: dict[str, object],
+    *,
+    timeout_s: float = 5,
+) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    code = f"""
+import json
+import os
+import sys
+from pathlib import Path
+
+payload = json.loads(sys.stdin.readline())
+artifact_dir = Path(os.environ["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"])
+artifact_dir.mkdir(parents=True, exist_ok=True)
+(artifact_dir / "request.json").write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+print({json.dumps(json.dumps(response))})
+"""
     spec_path.write_text(
         json.dumps(
             {
