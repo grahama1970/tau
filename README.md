@@ -51,6 +51,11 @@ Once a run has receipts, `uv run tau compliance-package <run-dir> --out
 [Compliance Evidence Package](docs/compliance-package.md). The package is an
 audit aid, not compliance certification.
 
+For a single-file static inspection view, `uv run tau report <run-dir> --out
+report.html` renders goal, policy, data boundary, memory/evidence gates, DAG
+steps, receipts, decisions, and non-claims from existing artifacts. See
+[Static Run Report](docs/run-report.md).
+
 To create a local zero-trust starter file set:
 
 ```bash

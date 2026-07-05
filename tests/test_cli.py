@@ -239,6 +239,63 @@ def test_cli_compliance_package_writes_review_bundle(tmp_path: Path) -> None:
     assert (out_dir / "non-claims.md").exists()
 
 
+def test_cli_report_writes_static_html_report(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    report_path = tmp_path / "report.html"
+    run_dir.mkdir()
+    contract_path = tmp_path / "dag-contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_contract.v1",
+                "dag_id": "cli-report-test",
+                "goal": {
+                    "goal_id": "cli-report-test",
+                    "goal_hash": "sha256:cli-report-test",
+                },
+                "entry_node": "coder",
+                "terminal_nodes": ["human"],
+                "policy_profile": {
+                    "schema": "tau.policy_profile.v1",
+                    "profile_id": "itar-zero-trust-local-only",
+                    "default_decision": "deny",
+                },
+                "data_boundary": {
+                    "schema": "tau.data_boundary.v1",
+                    "classification": "public",
+                    "export_controlled": False,
+                    "itar": False,
+                    "technical_data": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "dag-receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "verdict": "PASS",
+                "contract_path": str(contract_path),
+                "alerts": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(app, ["report", str(run_dir), "--out", str(report_path)])
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.run_report_receipt.v1"
+    assert payload["ok"] is True
+    assert report_path.exists()
+    assert Path(str(payload["receipt_path"])).exists()
+    assert "Tau Run Report" in report_path.read_text(encoding="utf-8")
+
+
 def test_cli_zero_trust_doctor_reports_policy_and_boundary_status(tmp_path: Path) -> None:
     receipt_path = tmp_path / "zero-trust-preflight.json"
     result = CliRunner().invoke(

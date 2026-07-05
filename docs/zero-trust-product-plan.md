@@ -365,6 +365,12 @@ run.sh
 
 ### B4. Static Run Report
 
+Status: implemented as `tau report <run-dir> --out report.html`. The report
+renders existing run-status and DAG artifacts into static HTML with sections
+for goal, policy, data boundary, memory intent, evidence case, DAG steps,
+receipts, decisions, and non-claims. It does not serve live status or prove UI
+correctness beyond deterministic file generation.
+
 Build:
 
 ```text
