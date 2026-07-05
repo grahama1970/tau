@@ -156,7 +156,7 @@ def run_generic_dag(
         active_node_id=None,
     )
     provider_live = any(result.get("provider_live") is True for result in node_results)
-    live = True if provider_live else False
+    live = bool(provider_live)
     receipt = {
         "schema": GENERIC_DAG_RUN_RECEIPT_SCHEMA,
         "ok": final_status == "PASS",
@@ -256,6 +256,13 @@ def inspect_generic_dag_run(run_dir: Path) -> dict[str, Any]:
                 "provider_live": node.get("provider_live"),
                 "provider_status": node.get("provider_status"),
                 "provider_verdict": node.get("provider_verdict"),
+                "goal_hash": node.get("goal_hash"),
+                "attempt": node.get("attempt"),
+                "workspace_id": node.get("workspace_id"),
+                "pane_id": node.get("pane_id"),
+                "terminal_id": node.get("terminal_id"),
+                "visible_log_path": node.get("visible_log_path"),
+                "visible_log_sha256": node.get("visible_log_sha256"),
                 "started_at": node.get("started_at"),
                 "finished_at": node.get("finished_at"),
                 "duration_seconds": node.get("duration_seconds"),
@@ -516,6 +523,13 @@ def _node_record(
         "provider_live": receipt.get("provider_live"),
         "provider_status": receipt.get("provider_status"),
         "provider_verdict": receipt.get("provider_verdict"),
+        "goal_hash": receipt.get("goal_hash"),
+        "attempt": receipt.get("attempt"),
+        "workspace_id": receipt.get("workspace_id"),
+        "pane_id": receipt.get("pane_id"),
+        "terminal_id": receipt.get("terminal_id"),
+        "visible_log_path": receipt.get("visible_log_path"),
+        "visible_log_sha256": receipt.get("visible_log_sha256"),
         "attempt_count": attempt_count,
         "started_at": started_at,
         "finished_at": finished_at,
@@ -666,11 +680,51 @@ def _validate_node_receipt(receipt: dict[str, Any], node: DagNode) -> list[str]:
     expected_work_order_hash = _work_order_sha256(node)
     if node.work_order_path is not None and expected_work_order_hash is None:
         errors.append(f"work_order_path not found or unreadable: {node.work_order_path}")
-    if expected_work_order_hash is not None and receipt.get("work_order_sha256") != expected_work_order_hash:
+    if (
+        expected_work_order_hash is not None
+        and receipt.get("work_order_sha256") != expected_work_order_hash
+    ):
         errors.append(
             "work_order_sha256 must match current work_order_path "
             f"{node.work_order_path}"
         )
+    errors.extend(_validate_provider_live_receipt(receipt))
+    return errors
+
+
+def _validate_provider_live_receipt(receipt: dict[str, Any]) -> list[str]:
+    if receipt.get("provider_live") is not True:
+        return []
+
+    errors: list[str] = []
+    if receipt.get("live") is not True:
+        errors.append("live must be true when provider_live is true")
+    for key in ("goal_hash", "workspace_id", "pane_id", "terminal_id"):
+        if not isinstance(receipt.get(key), str) or not str(receipt.get(key)).strip():
+            errors.append(f"{key} must be a non-empty string when provider_live is true")
+
+    attempt = receipt.get("attempt")
+    if not isinstance(attempt, int) or attempt < 1:
+        errors.append("attempt must be a positive integer when provider_live is true")
+
+    visible_log_path = receipt.get("visible_log_path")
+    visible_log_sha256 = receipt.get("visible_log_sha256")
+    if not isinstance(visible_log_path, str) or not visible_log_path.strip():
+        errors.append("visible_log_path must be a non-empty string when provider_live is true")
+    if not isinstance(visible_log_sha256, str) or not visible_log_sha256.strip():
+        errors.append("visible_log_sha256 must be a non-empty string when provider_live is true")
+    if isinstance(visible_log_path, str) and visible_log_path.strip():
+        resolved_visible_log = Path(visible_log_path).expanduser()
+        if not resolved_visible_log.exists():
+            errors.append(f"visible_log_path does not exist: {visible_log_path}")
+        elif isinstance(visible_log_sha256, str) and visible_log_sha256.strip():
+            actual_sha256 = hashlib.sha256(resolved_visible_log.read_bytes()).hexdigest()
+            if visible_log_sha256 != actual_sha256:
+                errors.append("visible_log_sha256 must match visible_log_path contents")
+
+    provider_binding = receipt.get("provider_binding")
+    if isinstance(provider_binding, dict) and provider_binding.get("status") != "PASS":
+        errors.append("provider_binding.status must be PASS when provider_live is true")
     return errors
 
 
@@ -714,7 +768,11 @@ def _proof_scope(*, provider_live: bool) -> dict[str, list[str]]:
 
 
 def _spec_path_from_run_metadata(run_dir: Path) -> tuple[Path, Path]:
-    for path in (run_dir / "current-state.json", run_dir / "checkpoint.json", run_dir / "run-receipt.json"):
+    for path in (
+        run_dir / "current-state.json",
+        run_dir / "checkpoint.json",
+        run_dir / "run-receipt.json",
+    ):
         payload = _optional_json_object(path)
         spec_path = payload.get("spec_path")
         if isinstance(spec_path, str) and spec_path:

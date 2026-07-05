@@ -1,0 +1,44 @@
+{
+  "schema": "tau.p1_provider_receipt_binding_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": false,
+  "provider_live": false,
+  "timestamp": "2026-07-05T13:16:05Z",
+  "objective": "Harden generic DAG validation so provider-live node receipts require Herdr/session and visible-log binding evidence.",
+  "changed_files": [
+    "src/tau_coding/generic_dag.py",
+    "tests/test_generic_dag.py"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_generic_dag.py tests/test_generic_provider_adapter.py tests/test_run_status.py -q",
+      "exit_code": 0,
+      "summary": "35 passed in 0.98s"
+    },
+    {
+      "command": "uv run ruff check src/tau_coding/generic_dag.py tests/test_generic_dag.py",
+      "exit_code": 0,
+      "summary": "All checks passed!"
+    },
+    {
+      "command": "uv run python -m compileall -q src/tau_coding/generic_dag.py src/tau_coding/generic_provider_adapter.py src/tau_coding/run_status.py",
+      "exit_code": 0,
+      "summary": "Compiled without output."
+    }
+  ],
+  "proves": [
+    "Generic DAG provider-live node receipts without goal, attempt, workspace, pane, terminal, and visible-log fields are rejected as INVALID_RECEIPT.",
+    "Generic DAG provider-live node receipts with an existing visible log and matching visible_log_sha256 are accepted and propagated into run/inspect summaries.",
+    "The existing generic provider adapter receipt tests remain compatible with the stronger generic DAG receipt gate."
+  ],
+  "does_not_prove": [
+    "New live provider execution.",
+    "Provider/model semantic quality.",
+    "Herdr workspace cleanup.",
+    "GitHub mutation.",
+    "Browser/CDP UI proof.",
+    "Full WebGPT roadmap completion."
+  ],
+  "errors": []
+}

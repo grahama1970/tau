@@ -372,6 +372,9 @@ def test_generic_dag_inspect_reports_resume_aggregates(tmp_path: Path) -> None:
 
 def test_generic_dag_propagates_provider_live_node_evidence(tmp_path: Path) -> None:
     receipt_path = tmp_path / "receipts" / "provider.json"
+    visible_log = tmp_path / "logs" / "provider.visible.txt"
+    visible_log.parent.mkdir(parents=True, exist_ok=True)
+    visible_log.write_text("provider output is visible\n", encoding="utf-8")
     payload = {
         "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
         "node_id": "provider",
@@ -382,6 +385,13 @@ def test_generic_dag_propagates_provider_live_node_evidence(tmp_path: Path) -> N
         "provider_live": True,
         "provider_status": "PASS",
         "provider_verdict": "PASS",
+        "goal_hash": "sha256:goal",
+        "attempt": 1,
+        "workspace_id": "w1",
+        "pane_id": "w1:p3",
+        "terminal_id": "term-provider",
+        "visible_log_path": str(visible_log),
+        "visible_log_sha256": _sha256(visible_log),
         "artifacts": [{"kind": "run_dir", "path": "/tmp/provider-run"}],
         "commands_run": ["tau generic-provider-dag-node"],
         "handoff_summary": "provider adapter passed",
@@ -409,6 +419,12 @@ def test_generic_dag_propagates_provider_live_node_evidence(tmp_path: Path) -> N
     assert receipt["provider_live"] is True
     assert receipt["nodes"][0]["provider_live"] is True
     assert receipt["nodes"][0]["provider_status"] == "PASS"
+    assert receipt["nodes"][0]["goal_hash"] == "sha256:goal"
+    assert receipt["nodes"][0]["workspace_id"] == "w1"
+    assert receipt["nodes"][0]["pane_id"] == "w1:p3"
+    assert receipt["nodes"][0]["terminal_id"] == "term-provider"
+    assert receipt["nodes"][0]["visible_log_path"] == str(visible_log)
+    assert receipt["nodes"][0]["visible_log_sha256"] == _sha256(visible_log)
     assert receipt["nodes"][0]["artifacts"] == [{"kind": "run_dir", "path": "/tmp/provider-run"}]
     assert (
         "Tau can carry live provider-backed node evidence through the generic DAG receipt"
@@ -418,8 +434,68 @@ def test_generic_dag_propagates_provider_live_node_evidence(tmp_path: Path) -> N
     assert summary["nodes"][0]["provider_live"] is True
     assert summary["nodes"][0]["provider_status"] == "PASS"
     assert summary["nodes"][0]["provider_verdict"] == "PASS"
+    assert summary["nodes"][0]["goal_hash"] == "sha256:goal"
+    assert summary["nodes"][0]["attempt"] == 1
+    assert summary["nodes"][0]["workspace_id"] == "w1"
+    assert summary["nodes"][0]["pane_id"] == "w1:p3"
+    assert summary["nodes"][0]["terminal_id"] == "term-provider"
+    assert summary["nodes"][0]["visible_log_path"] == str(visible_log)
+    assert summary["nodes"][0]["visible_log_sha256"] == _sha256(visible_log)
     assert summary["nodes"][0]["artifact_count"] == 1
     assert summary["nodes"][0]["artifacts"] == {"run_dir": "/tmp/provider-run"}
+
+
+def test_generic_dag_rejects_provider_live_receipt_without_binding(
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "receipts" / "provider.json"
+    payload = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": "provider",
+        "status": "PASS",
+        "verdict": "PASS",
+        "mocked": False,
+        "live": True,
+        "provider_live": True,
+        "provider_status": "PASS",
+        "provider_verdict": "PASS",
+        "artifacts": [],
+        "commands_run": ["tau generic-provider-dag-node"],
+        "handoff_summary": "unbound provider adapter claim",
+        "errors": [],
+        "policy_exceptions": [],
+    }
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "provider",
+                command=[
+                    sys.executable,
+                    "-c",
+                    _write_literal_json_code(receipt_path, payload),
+                ],
+            ),
+            _node(tmp_path, "downstream", depends_on=["provider"]),
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INVALID_RECEIPT"
+    assert receipt["completed_node_count"] == 0
+    assert [node["node_id"] for node in receipt["nodes"]] == ["provider"]
+    errors = receipt["nodes"][0]["errors"]
+    assert "goal_hash must be a non-empty string when provider_live is true" in errors
+    assert "attempt must be a positive integer when provider_live is true" in errors
+    assert "workspace_id must be a non-empty string when provider_live is true" in errors
+    assert "pane_id must be a non-empty string when provider_live is true" in errors
+    assert "terminal_id must be a non-empty string when provider_live is true" in errors
+    assert "visible_log_path must be a non-empty string when provider_live is true" in errors
+    assert "visible_log_sha256 must be a non-empty string when provider_live is true" in errors
 
 
 def _write_spec(tmp_path: Path, nodes: list[dict[str, object]]) -> Path:
