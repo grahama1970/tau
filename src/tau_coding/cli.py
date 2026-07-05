@@ -1258,6 +1258,7 @@ def main(
                 payload = run_herdr_gc(**options)
             else:
                 options.pop("apply", None)
+                options.pop("approval_receipt_path", None)
                 payload = run_herdr_cleanup(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -2730,13 +2731,15 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             "[--workspace-lease <lease.json>] [--herdr-bin herdr] "
             "[--include-current-workspace]\n"
             "       tau herdr-cleanup gc --run-dir <receipt-dir> "
-            "[--apply] [--herdr-bin herdr] [--include-current-workspace]"
+            "[--apply --approval-receipt <receipt.json>] [--herdr-bin herdr] "
+            "[--include-current-workspace]"
         )
     mode = args[0]
     run_dir: Path | None = None
     herdr_bin = "herdr"
     include_current_workspace = False
     workspace_lease_path: Path | None = None
+    approval_receipt_path: Path | None = None
     apply_gc = False
     index = 1
     while index < len(args):
@@ -2762,6 +2765,13 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             workspace_lease_path = Path(args[index])
         elif arg.startswith("--workspace-lease="):
             workspace_lease_path = Path(arg.partition("=")[2])
+        elif arg == "--approval-receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--approval-receipt requires a value")
+            approval_receipt_path = Path(args[index])
+        elif arg.startswith("--approval-receipt="):
+            approval_receipt_path = Path(arg.partition("=")[2])
         elif arg == "--include-current-workspace":
             include_current_workspace = True
         elif arg == "--apply" and mode == "gc":
@@ -2778,6 +2788,7 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
         "herdr_bin": herdr_bin,
         "include_current_workspace": include_current_workspace,
         "workspace_lease_path": workspace_lease_path,
+        "approval_receipt_path": approval_receipt_path,
         "gc": mode == "gc",
     }
 

@@ -240,6 +240,7 @@ def build_checks(
     approval = create_approval_gate_fixtures(run_dir)
     cleanup = create_cleanup_status_fixture(run_dir)
     cleanup_session = create_cleanup_session_fixture(run_dir)
+    cleanup_gc = create_cleanup_gc_fixture(run_dir)
     orchestration_evidence = create_orchestration_evidence_status_fixture(run_dir)
     provider_lifecycle = create_provider_lifecycle_status_fixture(run_dir)
     provider_readiness_status = create_provider_readiness_status_fixture(run_dir)
@@ -632,6 +633,27 @@ def build_checks(
                 str(cleanup_session["workspace_lease"]),
                 "--herdr-bin",
                 str(cleanup_session["blocked_herdr"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+        ),
+        Check(
+            check_id="medium.herdr_gc_apply_requires_approval",
+            level="medium",
+            purpose=(
+                "Tau blocks broad Herdr GC apply when no approval receipt authorizes "
+                "label-based workspace cleanup."
+            ),
+            command=[
+                *uv_tau,
+                "herdr-cleanup",
+                "gc",
+                "--run-dir",
+                str(cleanup_gc["run_dir"]),
+                "--apply",
+                "--herdr-bin",
+                str(cleanup_gc["herdr_bin"]),
             ],
             timeout_seconds=60,
             expected_exit_codes=(1,),
@@ -2633,6 +2655,56 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
         "run_dir": fixture_dir,
         "workspace_lease": workspace_lease,
         "blocked_herdr": fixture_dir / "should-not-run-herdr",
+    }
+
+
+def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-herdr-gc-approval"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    workspaces_path = write_json(
+        fixture_dir / "workspaces.json",
+        {
+            "result": {
+                "workspaces": [
+                    {
+                        "workspace_id": "w-rw-sanity-gc-stale",
+                        "label": "rw-sanity-provider-readiness-gc",
+                        "agent_status": "done",
+                        "focused": False,
+                        "pane_count": 2,
+                        "tab_count": 1,
+                    }
+                ]
+            }
+        },
+    )
+    calls_path = fixture_dir / "herdr-calls.jsonl"
+    herdr_bin = fixture_dir / "fake-herdr"
+    herdr_bin.write_text(
+        "#!/usr/bin/env bash\n"
+        f"HERDR_GC_CALLS={str(calls_path)!r}\n"
+        f"HERDR_GC_WORKSPACES={str(workspaces_path)!r}\n"
+        "printf '{\"argv\":[' >> \"$HERDR_GC_CALLS\"\n"
+        "first=1\n"
+        "for arg in \"$@\"; do\n"
+        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$HERDR_GC_CALLS\"; fi\n"
+        "  first=0\n"
+        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$HERDR_GC_CALLS\"\n"
+        "done\n"
+        "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
+        "if [ \"$1 $2\" = \"workspace list\" ]; then\n"
+        "  cat \"$HERDR_GC_WORKSPACES\"\n"
+        "  exit 0\n"
+        "fi\n"
+        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
+        encoding="utf-8",
+    )
+    herdr_bin.chmod(0o755)
+    return {
+        "run_dir": fixture_dir,
+        "herdr_bin": herdr_bin,
+        "workspaces": workspaces_path,
+        "calls": calls_path,
     }
 
 

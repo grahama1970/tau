@@ -13,6 +13,8 @@ from typing import Any
 HERDR_CLEANUP_RECEIPT_SCHEMA = "tau.herdr_cleanup_receipt.v1"
 HERDR_GC_RECEIPT_SCHEMA = "tau.herdr_gc_receipt.v1"
 HERDR_WORKSPACE_LEASE_SCHEMA = "tau.herdr_workspace_lease.v1"
+APPROVAL_GATE_RECEIPT_SCHEMA = "tau.approval_gate_receipt.v1"
+HERDR_GC_APPROVAL_ACTION = "herdr_gc_apply"
 DEFAULT_GC_LABEL_PREFIXES = (
     "rw-sanity-generic-provider-",
     "rw-sanity-provider-",
@@ -148,11 +150,17 @@ def run_herdr_gc(
     herdr_bin: str = "herdr",
     include_current_workspace: bool = False,
     label_prefixes: tuple[str, ...] = DEFAULT_GC_LABEL_PREFIXES,
+    approval_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     """Garbage-collect stale Tau-owned Herdr workspaces by label prefix."""
 
     resolved_run_dir = run_dir.expanduser().resolve()
     resolved_run_dir.mkdir(parents=True, exist_ok=True)
+    resolved_approval_path = (
+        approval_receipt_path.expanduser().resolve()
+        if approval_receipt_path is not None
+        else None
+    )
     current_workspace = os.environ.get("HERDR_WORKSPACE_ID") or ""
     list_result = subprocess.run(
         [herdr_bin, "workspace", "list"],
@@ -194,8 +202,12 @@ def run_herdr_gc(
                 }
             )
 
+    approval_alerts = _approval_receipt_alerts(
+        approval_receipt_path=resolved_approval_path,
+        apply=apply,
+    )
     applied_actions: list[dict[str, Any]] = []
-    if apply:
+    if apply and not approval_alerts:
         for candidate in candidates:
             workspace_id = str(candidate["workspace_id"])
             close_result = subprocess.run(
@@ -227,7 +239,7 @@ def run_herdr_gc(
                     "post_verified_absent": post_verified_absent,
                 }
             )
-    ok = all(_applied_action_ok(action) for action in applied_actions)
+    ok = not approval_alerts and all(_applied_action_ok(action) for action in applied_actions)
     receipt = {
         "schema": HERDR_GC_RECEIPT_SCHEMA,
         "ok": ok,
@@ -237,6 +249,13 @@ def run_herdr_gc(
         "mode": "apply" if apply else "dry-run",
         "run_dir": str(resolved_run_dir),
         "herdr_bin": herdr_bin,
+        "approval_receipt": str(resolved_approval_path) if resolved_approval_path else None,
+        "approval_receipt_sha256": (
+            f"sha256:{_file_sha256(resolved_approval_path)}"
+            if resolved_approval_path and resolved_approval_path.is_file()
+            else None
+        ),
+        "approval_required": apply,
         "label_prefixes": list(label_prefixes),
         "current_workspace": current_workspace or None,
         "include_current_workspace": include_current_workspace,
@@ -249,6 +268,7 @@ def run_herdr_gc(
         ),
         "candidates": candidates,
         "skipped": skipped,
+        "alerts": approval_alerts,
         "applied_actions": applied_actions,
         "command_results": command_results,
         "proof_scope": {
@@ -256,6 +276,7 @@ def run_herdr_gc(
                 "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
                 "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
                 "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+                "Tau Herdr GC apply requires an explicit approval receipt before mutation.",
                 "Apply mode verifies closed workspaces are no longer addressable through Herdr.",
             ],
             "does_not_prove": [
@@ -531,6 +552,68 @@ def _session_cleanup_alerts(
             },
         )
     ]
+
+
+def _approval_receipt_alerts(
+    *,
+    approval_receipt_path: Path | None,
+    apply: bool,
+) -> list[dict[str, Any]]:
+    if not apply:
+        return []
+    if approval_receipt_path is None:
+        return [
+            _alert(
+                "BLOCK",
+                "missing_approval_receipt",
+                "Herdr GC apply requires an approval-gate receipt.",
+                {"required_action": HERDR_GC_APPROVAL_ACTION},
+            )
+        ]
+    try:
+        approval = _read_json_object(approval_receipt_path, label="approval receipt")
+    except RuntimeError as exc:
+        return [
+            _alert(
+                "BLOCK",
+                "approval_receipt_unreadable",
+                "Herdr GC approval receipt could not be read.",
+                {"approval_receipt": str(approval_receipt_path), "error": str(exc)},
+            )
+        ]
+    alerts: list[dict[str, Any]] = []
+    if approval.get("schema") != APPROVAL_GATE_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_approval_receipt_schema",
+                "Herdr GC approval receipt schema is not supported.",
+                {"schema": approval.get("schema")},
+            )
+        )
+    if approval.get("ok") is not True or approval.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_receipt_not_pass",
+                "Herdr GC approval receipt must be PASS.",
+                {"ok": approval.get("ok"), "status": approval.get("status")},
+            )
+        )
+    requested_action = approval.get("requested_action")
+    if requested_action != HERDR_GC_APPROVAL_ACTION:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_action_mismatch",
+                "Herdr GC approval receipt requested_action does not authorize GC apply.",
+                {
+                    "expected": HERDR_GC_APPROVAL_ACTION,
+                    "observed": requested_action,
+                },
+            )
+        )
+    return alerts
 
 
 def _lease_workspace_ids(lease: dict[str, Any]) -> list[str]:

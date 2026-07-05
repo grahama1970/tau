@@ -398,17 +398,23 @@ def test_herdr_gc_apply_closes_and_verifies_absence(
     monkeypatch,
 ) -> None:
     fake_herdr = _write_fake_gc_herdr(tmp_path)
+    approval_path = _write_gc_approval_receipt(tmp_path)
     monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
 
     receipt = run_herdr_gc(
         run_dir=tmp_path / "gc",
         apply=True,
         herdr_bin=str(fake_herdr),
+        approval_receipt_path=approval_path,
     )
 
     assert receipt["ok"] is True
     assert receipt["live"] is True
     assert receipt["mode"] == "apply"
+    assert receipt["approval_receipt"] == str(approval_path.resolve())
+    assert receipt["approval_receipt_sha256"] == (
+        f"sha256:{hashlib.sha256(approval_path.read_bytes()).hexdigest()}"
+    )
     assert receipt["candidate_count"] == 2
     assert receipt["applied_action_count"] == 2
     assert receipt["post_verified_absent_count"] == 2
@@ -430,6 +436,75 @@ def test_herdr_gc_apply_closes_and_verifies_absence(
         {"argv": ["workspace", "close", "w-generic"]},
         {"argv": ["workspace", "get", "w-generic"]},
     ]
+
+
+def test_herdr_gc_apply_blocks_without_approval_receipt(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+
+    receipt = run_herdr_gc(
+        run_dir=tmp_path / "gc",
+        apply=True,
+        herdr_bin=str(fake_herdr),
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["approval_required"] is True
+    assert receipt["alerts"][0]["code"] == "missing_approval_receipt"
+    assert receipt["applied_actions"] == []
+    calls = [
+        json.loads(line)
+        for line in (tmp_path / "gc-calls.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert calls == [{"argv": ["workspace", "list"]}]
+
+
+def test_herdr_gc_apply_blocks_wrong_approval_action(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+    approval_path = _write_gc_approval_receipt(tmp_path, requested_action="memory_upsert")
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+
+    receipt = run_herdr_gc(
+        run_dir=tmp_path / "gc",
+        apply=True,
+        herdr_bin=str(fake_herdr),
+        approval_receipt_path=approval_path,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["approval_receipt"] == str(approval_path.resolve())
+    assert receipt["alerts"][0]["code"] == "approval_action_mismatch"
+    assert receipt["applied_actions"] == []
+
+
+def test_cli_herdr_gc_apply_without_approval_exits_nonzero(tmp_path: Path) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "herdr-cleanup",
+            "gc",
+            "--run-dir",
+            str(tmp_path / "gc"),
+            "--apply",
+            "--herdr-bin",
+            str(fake_herdr),
+        ],
+    )
+
+    assert result.exit_code == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "BLOCKED"
+    assert payload["alerts"][0]["code"] == "missing_approval_receipt"
 
 
 def _write_fake_gc_herdr(tmp_path: Path) -> Path:
@@ -516,6 +591,29 @@ def _write_fake_gc_herdr(tmp_path: Path) -> Path:
     os.environ["HERDR_GC_CALLS"] = str(calls_path)
     os.environ["HERDR_GC_WORKSPACES"] = str(workspaces_path)
     return fake_herdr
+
+
+def _write_gc_approval_receipt(
+    tmp_path: Path,
+    *,
+    requested_action: str = "herdr_gc_apply",
+) -> Path:
+    path = tmp_path / f"approval-{requested_action}.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "requested_action": requested_action,
+                "approval_packet": str(tmp_path / "approval-packet.json"),
+                "approval_packet_sha256": "sha256:test-approval",
+                "errors": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
 
 
 def _write_workspace_lease(
