@@ -775,9 +775,41 @@ def _provider_dag_attempt_summary(attempt: dict[str, Any]) -> dict[str, Any]:
         "attempt": attempt.get("attempt"),
         "coder_status": attempt.get("coder_status"),
         "coder_verdict": attempt.get("coder_verdict"),
+        "coder_receipt": _provider_node_receipt_summary(attempt.get("coder_receipt_path")),
         "reviewer_status": attempt.get("reviewer_status"),
         "reviewer_verdict": attempt.get("reviewer_verdict"),
+        "reviewer_receipt": _provider_node_receipt_summary(
+            attempt.get("reviewer_receipt_path")
+        ),
         "errors": attempt.get("errors"),
+    }
+
+
+def _provider_node_receipt_summary(path_value: Any) -> dict[str, Any] | None:
+    if not isinstance(path_value, str) or not path_value:
+        return None
+    path = Path(path_value)
+    payload = _read_optional_json(path)
+    if payload.get("schema") != "tau.provider_dag_node_receipt.v1":
+        return None
+    return {
+        "path": str(path),
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "verdict": payload.get("verdict"),
+        "dag_id": payload.get("dag_id"),
+        "goal_hash": payload.get("goal_hash"),
+        "node_id": payload.get("node_id"),
+        "provider_id": payload.get("provider_id"),
+        "attempt": payload.get("attempt"),
+        "workspace_id": payload.get("workspace_id"),
+        "pane_id": payload.get("pane_id"),
+        "terminal_id": payload.get("terminal_id"),
+        "work_order_path": payload.get("work_order_path"),
+        "work_order_sha256": payload.get("work_order_sha256"),
+        "visible_log_path": payload.get("visible_log_path"),
+        "visible_log_sha256": payload.get("visible_log_sha256"),
+        "error_count": _count(payload.get("errors")),
     }
 
 

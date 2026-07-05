@@ -169,6 +169,52 @@ def test_run_status_summarizes_blocked_generic_dag_work_order_node(
 def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
     events = tmp_path / "events.jsonl"
     events.write_text('{"kind":"coder_dispatch"}\n', encoding="utf-8")
+    receipts = tmp_path / "receipts"
+    receipts.mkdir()
+    coder_receipt = receipts / "attempt-01-coder.json"
+    reviewer_receipt = receipts / "attempt-01-reviewer.json"
+    _write_json(
+        coder_receipt,
+        {
+            "schema": "tau.provider_dag_node_receipt.v1",
+            "status": "PASS",
+            "verdict": "PASS",
+            "dag_id": "provider-run",
+            "goal_hash": "sha256:goal",
+            "node_id": "coder",
+            "provider_id": "codex",
+            "attempt": 1,
+            "workspace_id": "w1",
+            "pane_id": "w1:p1",
+            "terminal_id": "term-codex",
+            "work_order_path": str(tmp_path / "work-orders" / "attempt-01-coder.json"),
+            "work_order_sha256": "sha256:coder-work-order",
+            "visible_log_path": str(tmp_path / "logs" / "codex.visible.txt"),
+            "visible_log_sha256": "sha256:codex-visible-log",
+            "errors": [],
+        },
+    )
+    _write_json(
+        reviewer_receipt,
+        {
+            "schema": "tau.provider_dag_node_receipt.v1",
+            "status": "PASS",
+            "verdict": "PASS",
+            "dag_id": "provider-run",
+            "goal_hash": "sha256:goal",
+            "node_id": "reviewer",
+            "provider_id": "opencode",
+            "attempt": 1,
+            "workspace_id": "w1",
+            "pane_id": "w1:p2",
+            "terminal_id": "term-opencode",
+            "work_order_path": str(tmp_path / "work-orders" / "attempt-01-reviewer.json"),
+            "work_order_sha256": "sha256:reviewer-work-order",
+            "visible_log_path": str(tmp_path / "logs" / "opencode.visible.txt"),
+            "visible_log_sha256": "sha256:opencode-visible-log",
+            "errors": [],
+        },
+    )
     _write_json(
         tmp_path / "runtime-manifest.json",
         {
@@ -233,8 +279,10 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
                     "attempt": 1,
                     "coder_status": "PASS",
                     "coder_verdict": "PASS",
+                    "coder_receipt_path": str(coder_receipt),
                     "reviewer_status": "PASS",
                     "reviewer_verdict": "PASS",
+                    "reviewer_receipt_path": str(reviewer_receipt),
                     "errors": [],
                 }
             ],
@@ -279,6 +327,17 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
     assert status["provider_dag"]["herdr_cleanup"]["applied_action_count"] == 1
     assert status["provider_dag"]["herdr_cleanup"]["post_verified_absent_count"] == 1
     assert status["provider_dag"]["orchestration_evidence"]["feature_counts"]["agent_lineage"] == 4
+    attempt = status["provider_dag"]["attempts"][0]
+    assert attempt["coder_receipt"]["visible_log_path"] == str(
+        tmp_path / "logs" / "codex.visible.txt"
+    )
+    assert attempt["coder_receipt"]["visible_log_sha256"] == "sha256:codex-visible-log"
+    assert attempt["coder_receipt"]["work_order_sha256"] == "sha256:coder-work-order"
+    assert attempt["reviewer_receipt"]["visible_log_path"] == str(
+        tmp_path / "logs" / "opencode.visible.txt"
+    )
+    assert attempt["reviewer_receipt"]["visible_log_sha256"] == "sha256:opencode-visible-log"
+    assert attempt["reviewer_receipt"]["work_order_sha256"] == "sha256:reviewer-work-order"
 
 
 def test_run_status_summarizes_provider_dag_planner_receipt(tmp_path: Path) -> None:
