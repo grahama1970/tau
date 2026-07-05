@@ -1077,6 +1077,7 @@ def main(
             options = _parse_herdr_cleanup_cli_args(positional_args[1:])
             if options.pop("gc"):
                 options.pop("mode", None)
+                options.pop("workspace_lease_path", None)
                 payload = run_herdr_gc(**options)
             else:
                 options.pop("apply", None)
@@ -2488,7 +2489,8 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
     if not args or args[0] not in {"audit", "dry-run", "apply", "gc"}:
         raise RuntimeError(
             "Usage: tau herdr-cleanup audit|dry-run|apply --run-dir <run-dir> "
-            "[--herdr-bin herdr] [--include-current-workspace]\n"
+            "[--workspace-lease <lease.json>] [--herdr-bin herdr] "
+            "[--include-current-workspace]\n"
             "       tau herdr-cleanup gc --run-dir <receipt-dir> "
             "[--apply] [--herdr-bin herdr] [--include-current-workspace]"
         )
@@ -2496,6 +2498,7 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
     run_dir: Path | None = None
     herdr_bin = "herdr"
     include_current_workspace = False
+    workspace_lease_path: Path | None = None
     apply_gc = False
     index = 1
     while index < len(args):
@@ -2514,6 +2517,13 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             herdr_bin = args[index]
         elif arg.startswith("--herdr-bin="):
             herdr_bin = arg.partition("=")[2]
+        elif arg == "--workspace-lease":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--workspace-lease requires a value")
+            workspace_lease_path = Path(args[index])
+        elif arg.startswith("--workspace-lease="):
+            workspace_lease_path = Path(arg.partition("=")[2])
         elif arg == "--include-current-workspace":
             include_current_workspace = True
         elif arg == "--apply" and mode == "gc":
@@ -2529,6 +2539,7 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
         "apply": apply_gc,
         "herdr_bin": herdr_bin,
         "include_current_workspace": include_current_workspace,
+        "workspace_lease_path": workspace_lease_path,
         "gc": mode == "gc",
     }
 

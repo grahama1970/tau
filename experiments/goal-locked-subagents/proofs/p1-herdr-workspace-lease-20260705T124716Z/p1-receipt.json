@@ -1,0 +1,56 @@
+{
+  "schema": "tau.p1_herdr_workspace_lease_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "slice": "P1 Herdr workspace lease cleanup gate",
+  "changed_files": [
+    "src/tau_coding/cli.py",
+    "src/tau_coding/herdr_cleanup.py",
+    "src/tau_coding/provider_dag_poc.py",
+    "tests/test_herdr_cleanup.py",
+    "tests/test_provider_pane_poc.py"
+  ],
+  "artifacts": [
+    "experiments/goal-locked-subagents/proofs/p1-herdr-workspace-lease-20260705T124716Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_herdr_cleanup.py -q",
+      "exit_code": 0,
+      "result": "12 passed in 1.06s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/herdr_cleanup.py src/tau_coding/provider_dag_poc.py src/tau_coding/cli.py tests/test_herdr_cleanup.py tests/test_provider_pane_poc.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "uv run pytest tests/test_herdr_cleanup.py tests/test_provider_pane_poc.py tests/test_run_status.py -q",
+      "exit_code": 0,
+      "result": "43 passed in 1.56s"
+    },
+    {
+      "command": "uv run pytest tests/test_herdr_cleanup.py tests/test_provider_pane_poc.py tests/test_run_status.py tests/test_real_world_sanity_runner.py tests/test_generic_provider_adapter.py tests/test_provider_lifecycle.py -q",
+      "exit_code": 0,
+      "result": "63 passed in 1.24s"
+    }
+  ],
+  "proves": [
+    "tau.herdr_cleanup_receipt.v1 apply mode blocks before Herdr close commands when a workspace lease is missing.",
+    "tau.herdr_workspace_lease.v1 metadata is checked for schema, owner, run_id binding, cleanup_policy, covered workspace ids, and expiry.",
+    "Cleanup apply does not invoke Herdr close/get when the lease is missing, expired, unreadable, or does not cover all workspace candidates.",
+    "Provider DAG cleanup writes a run-owned herdr-workspace-lease.json and passes it into Herdr cleanup.",
+    "The tau herdr-cleanup CLI accepts --workspace-lease and returns a project-agent-readable BLOCKED receipt when apply lacks a lease."
+  ],
+  "does_not_prove": [
+    "Live Herdr API cleanup in this slice.",
+    "Provider/model semantic quality.",
+    "Global cleanup of arbitrary non-Tau Herdr resources.",
+    "Deletion of Git worktrees or local proof artifacts.",
+    "That a workspace lease came from an external human approval system."
+  ],
+  "errors": [],
+  "next_recommended_route": "Continue P1 with approval-packet hash validation or evidence-validator expansion for provider session/readiness receipts."
+}

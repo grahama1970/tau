@@ -3,6 +3,9 @@ import json
 import os
 from pathlib import Path
 
+from typer.testing import CliRunner
+
+from tau_coding.cli import app
 from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
 
 
@@ -77,6 +80,7 @@ def test_herdr_cleanup_apply_uses_herdr_workspace_close(
 ) -> None:
     run_dir = tmp_path / "run"
     _write_manifest(run_dir)
+    lease_path = _write_workspace_lease(run_dir)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     calls_path = tmp_path / "calls.jsonl"
@@ -101,10 +105,17 @@ def test_herdr_cleanup_apply_uses_herdr_workspace_close(
     fake_herdr.chmod(0o755)
     monkeypatch.setenv("HERDR_CALLS", str(calls_path))
 
-    receipt = run_herdr_cleanup(run_dir=run_dir, mode="apply", herdr_bin=str(fake_herdr))
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin=str(fake_herdr),
+        workspace_lease_path=lease_path,
+    )
 
     assert receipt["ok"] is True
     assert receipt["live"] is True
+    assert receipt["workspace_lease"] == str(lease_path.resolve())
+    assert receipt["workspace_lease_sha256"] == hashlib.sha256(lease_path.read_bytes()).hexdigest()
     assert receipt["applied_actions"] == [
         {
             "action": "workspace_close",
@@ -129,12 +140,53 @@ def test_herdr_cleanup_apply_uses_herdr_workspace_close(
     assert receipt["command_results"][1]["argv"] == [str(fake_herdr), "workspace", "get", "w-run"]
 
 
+def test_herdr_cleanup_apply_blocks_without_workspace_lease(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin="/tmp/should-not-run-herdr",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["alerts"][0]["code"] == "missing_workspace_lease"
+    assert receipt["applied_actions"] == []
+    assert receipt["command_results"] == []
+
+
+def test_cli_herdr_cleanup_apply_blocks_without_workspace_lease(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "herdr-cleanup",
+            "apply",
+            "--run-dir",
+            str(run_dir),
+            "--herdr-bin",
+            "/tmp/should-not-run-herdr",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["ok"] is False
+    assert payload["alerts"][0]["code"] == "missing_workspace_lease"
+    assert payload["command_results"] == []
+
+
 def test_herdr_cleanup_apply_blocks_when_workspace_still_exists(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     run_dir = tmp_path / "run"
     _write_manifest(run_dir)
+    lease_path = _write_workspace_lease(run_dir)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     calls_path = tmp_path / "calls.jsonl"
@@ -159,7 +211,12 @@ def test_herdr_cleanup_apply_blocks_when_workspace_still_exists(
     fake_herdr.chmod(0o755)
     monkeypatch.setenv("HERDR_CALLS", str(calls_path))
 
-    receipt = run_herdr_cleanup(run_dir=run_dir, mode="apply", herdr_bin=str(fake_herdr))
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin=str(fake_herdr),
+        workspace_lease_path=lease_path,
+    )
 
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
@@ -172,6 +229,42 @@ def test_herdr_cleanup_apply_blocks_when_workspace_still_exists(
         {"argv": ["workspace", "close", "w-run"]},
         {"argv": ["workspace", "get", "w-run"]},
     ]
+
+
+def test_herdr_cleanup_blocks_mismatched_workspace_lease(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+    lease_path = _write_workspace_lease(run_dir, workspace_ids=["w-other"])
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin="/tmp/should-not-run-herdr",
+        workspace_lease_path=lease_path,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["alerts"][0]["code"] == "workspace_lease_missing_workspace"
+    assert receipt["applied_actions"] == []
+    assert receipt["command_results"] == []
+
+
+def test_herdr_cleanup_blocks_expired_workspace_lease(tmp_path: Path) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+    lease_path = _write_workspace_lease(run_dir, expires_at="2000-01-01T00:00:00Z")
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin="/tmp/should-not-run-herdr",
+        workspace_lease_path=lease_path,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["alerts"][0]["code"] == "workspace_lease_expired"
+    assert receipt["applied_actions"] == []
+    assert receipt["command_results"] == []
 
 
 def test_herdr_cleanup_can_include_current_workspace(
@@ -392,3 +485,29 @@ def _write_fake_gc_herdr(tmp_path: Path) -> Path:
     os.environ["HERDR_GC_CALLS"] = str(calls_path)
     os.environ["HERDR_GC_WORKSPACES"] = str(workspaces_path)
     return fake_herdr
+
+
+def _write_workspace_lease(
+    run_dir: Path,
+    *,
+    workspace_ids: list[str] | None = None,
+    expires_at: str = "2099-01-01T00:00:00Z",
+    cleanup_policy: str = "apply",
+) -> Path:
+    lease_path = run_dir / "herdr-workspace-lease.json"
+    lease_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.herdr_workspace_lease.v1",
+                "run_id": None,
+                "dag_id": "test-dag",
+                "owner": "tau-orchestrator",
+                "created_at": "2026-07-05T00:00:00Z",
+                "expires_at": expires_at,
+                "cleanup_policy": cleanup_policy,
+                "workspace_ids": workspace_ids or ["w-run"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return lease_path

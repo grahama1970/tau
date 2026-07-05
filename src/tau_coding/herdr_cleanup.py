@@ -12,6 +12,7 @@ from typing import Any
 
 HERDR_CLEANUP_RECEIPT_SCHEMA = "tau.herdr_cleanup_receipt.v1"
 HERDR_GC_RECEIPT_SCHEMA = "tau.herdr_gc_receipt.v1"
+HERDR_WORKSPACE_LEASE_SCHEMA = "tau.herdr_workspace_lease.v1"
 DEFAULT_GC_LABEL_PREFIXES = (
     "rw-sanity-generic-provider-",
     "rw-sanity-provider-",
@@ -28,6 +29,7 @@ def run_herdr_cleanup(
     mode: str = "audit",
     herdr_bin: str = "herdr",
     include_current_workspace: bool = False,
+    workspace_lease_path: Path | None = None,
 ) -> dict[str, Any]:
     """Audit, dry-run, or apply cleanup for Herdr resources recorded by one Tau run."""
 
@@ -42,9 +44,23 @@ def run_herdr_cleanup(
         current_workspace=current_workspace,
         include_current_workspace=include_current_workspace,
     )
+    lease_payload: dict[str, Any] | None = None
+    lease_alerts = _workspace_lease_alerts(
+        workspace_lease_path=workspace_lease_path,
+        manifest=manifest,
+        candidates=candidates,
+        mode=mode,
+    )
+    resolved_lease_path = (
+        workspace_lease_path.expanduser().resolve()
+        if workspace_lease_path is not None
+        else None
+    )
+    if resolved_lease_path is not None and resolved_lease_path.is_file():
+        lease_payload = _read_json_object(resolved_lease_path, label="workspace lease")
     command_results: list[dict[str, Any]] = []
     applied_actions: list[dict[str, Any]] = []
-    if mode == "apply":
+    if mode == "apply" and not lease_alerts:
         for candidate in candidates:
             if candidate["action"] != "workspace_close":
                 continue
@@ -76,7 +92,7 @@ def run_herdr_cleanup(
                     "post_verified_absent": post_verified_absent,
                 }
             )
-    ok = all(_applied_action_ok(action) for action in applied_actions)
+    ok = not lease_alerts and all(_applied_action_ok(action) for action in applied_actions)
     receipt = {
         "schema": HERDR_CLEANUP_RECEIPT_SCHEMA,
         "ok": ok,
@@ -93,6 +109,13 @@ def run_herdr_cleanup(
         "include_current_workspace": include_current_workspace,
         "candidate_count": len(candidates),
         "candidates": candidates,
+        "workspace_lease": str(resolved_lease_path) if resolved_lease_path else None,
+        "workspace_lease_sha256": (
+            _file_sha256(resolved_lease_path) if resolved_lease_path else None
+        ),
+        "workspace_lease_payload": lease_payload,
+        "lease_required": mode == "apply",
+        "alerts": lease_alerts,
         "applied_actions": applied_actions,
         "command_results": command_results,
         "proof_scope": {
@@ -100,6 +123,7 @@ def run_herdr_cleanup(
                 "Tau can identify Herdr workspace/session resources recorded by one run",
                 "Tau cleanup defaults to audit/dry-run before mutation",
                 "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+                "Tau apply cleanup requires a Herdr workspace lease before mutation",
                 "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
             ],
             "does_not_prove": [
@@ -359,6 +383,156 @@ def _candidate_actions(
     return candidates
 
 
+def _workspace_lease_alerts(
+    *,
+    workspace_lease_path: Path | None,
+    manifest: dict[str, Any],
+    candidates: list[dict[str, Any]],
+    mode: str,
+) -> list[dict[str, Any]]:
+    workspace_candidates = [
+        str(candidate.get("workspace_id") or "")
+        for candidate in candidates
+        if candidate.get("action") == "workspace_close"
+    ]
+    workspace_candidates = [item for item in workspace_candidates if item]
+    if not workspace_candidates:
+        return []
+    if workspace_lease_path is None:
+        if mode == "apply":
+            return [
+                _alert(
+                    "BLOCK",
+                    "missing_workspace_lease",
+                    "Apply cleanup requires a Herdr workspace lease.",
+                    {"workspace_ids": workspace_candidates},
+                )
+            ]
+        return []
+    resolved_path = workspace_lease_path.expanduser().resolve()
+    try:
+        lease = _read_json_object(resolved_path, label="workspace lease")
+    except RuntimeError as exc:
+        return [
+            _alert(
+                "BLOCK",
+                "workspace_lease_unreadable",
+                "Herdr workspace lease could not be read.",
+                {"workspace_lease": str(resolved_path), "error": str(exc)},
+            )
+        ]
+    alerts: list[dict[str, Any]] = []
+    if lease.get("schema") != HERDR_WORKSPACE_LEASE_SCHEMA:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_workspace_lease_schema",
+                "Herdr workspace lease schema is not supported.",
+                {"schema": lease.get("schema")},
+            )
+        )
+    if not lease.get("owner"):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_workspace_lease_owner",
+                "Herdr workspace lease must include an owner.",
+                {"workspace_lease": str(resolved_path)},
+            )
+        )
+    expected_run_id = manifest.get("run_id")
+    if expected_run_id and lease.get("run_id") != expected_run_id:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "workspace_lease_run_id_mismatch",
+                "Herdr workspace lease run_id does not match the runtime manifest.",
+                {"expected": expected_run_id, "observed": lease.get("run_id")},
+            )
+        )
+    cleanup_policy = lease.get("cleanup_policy")
+    if cleanup_policy not in {"audit", "dry-run", "apply"}:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_workspace_lease_cleanup_policy",
+                "Herdr workspace lease cleanup_policy is not supported.",
+                {"cleanup_policy": cleanup_policy},
+            )
+        )
+    elif mode == "apply" and cleanup_policy != "apply":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "workspace_lease_policy_not_apply",
+                "Herdr workspace lease does not authorize apply cleanup.",
+                {"cleanup_policy": cleanup_policy},
+            )
+        )
+    lease_workspaces = _lease_workspace_ids(lease)
+    missing = sorted(set(workspace_candidates) - set(lease_workspaces))
+    if missing:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "workspace_lease_missing_workspace",
+                "Herdr workspace lease does not cover every cleanup candidate.",
+                {"missing_workspace_ids": missing, "lease_workspace_ids": lease_workspaces},
+            )
+        )
+    expires_at = lease.get("expires_at")
+    parsed_expiry = _parse_timestamp(expires_at)
+    if parsed_expiry is None:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "invalid_workspace_lease_expiry",
+                "Herdr workspace lease expires_at must be an ISO-8601 timestamp.",
+                {"expires_at": expires_at},
+            )
+        )
+    elif parsed_expiry <= datetime.now(UTC):
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "workspace_lease_expired",
+                "Herdr workspace lease has expired.",
+                {"expires_at": expires_at},
+            )
+        )
+    return alerts
+
+
+def _lease_workspace_ids(lease: dict[str, Any]) -> list[str]:
+    workspace_ids: list[str] = []
+    _append_unique(workspace_ids, str(lease.get("workspace_id") or ""))
+    value = lease.get("workspace_ids")
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                _append_unique(workspace_ids, item)
+    workspaces = lease.get("workspaces")
+    if isinstance(workspaces, list):
+        for item in workspaces:
+            if isinstance(item, str):
+                _append_unique(workspace_ids, item)
+            elif isinstance(item, dict):
+                _append_unique(workspace_ids, str(item.get("workspace_id") or ""))
+    return workspace_ids
+
+
+def _parse_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
 def _append_unique(items: list[str], value: str) -> None:
     if value and value not in items:
         items.append(value)
@@ -410,6 +584,10 @@ def _json_error_code(result: subprocess.CompletedProcess[str]) -> str | None:
         if isinstance(error, dict) and isinstance(error.get("code"), str):
             return error["code"]
     return None
+
+
+def _alert(severity: str, code: str, message: str, evidence: dict[str, Any]) -> dict[str, Any]:
+    return {"severity": severity, "code": code, "message": message, "evidence": evidence}
 
 
 def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
