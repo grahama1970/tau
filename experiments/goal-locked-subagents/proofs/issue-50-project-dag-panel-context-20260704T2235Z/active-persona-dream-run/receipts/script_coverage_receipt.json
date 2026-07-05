@@ -1,0 +1,8 @@
+{
+  "blockers": [
+    "Tau proof does not include full persona-dream script coverage."
+  ],
+  "panel_id": "panel_issue_50",
+  "schema": "persona_dream.script_coverage_receipt.v1",
+  "status": "FAIL"
+}

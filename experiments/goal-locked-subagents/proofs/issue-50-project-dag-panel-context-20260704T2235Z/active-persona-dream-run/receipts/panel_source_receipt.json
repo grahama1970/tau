@@ -1,0 +1,26 @@
+{
+  "blockers": [
+    "repair_gate_status_not_final_reviewed:BLOCKED_PENDING_INDEPENDENT_VERIFICATION",
+    "script_coverage_status_not_pass:FAIL",
+    "post_generation_script_coverage_status_not_pass:FAIL",
+    "visual_review_status_not_pass:FAIL",
+    "no_overlay_status_not_pass:FAIL",
+    "provider_media_status_not_pass:FAIL",
+    "visual_style_not_photoreal:UNKNOWN",
+    "provider_eligibility_not_true"
+  ],
+  "final_panel_eligible": false,
+  "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/artifacts/active_panel_001.png",
+  "nano_banana_fallback_used": false,
+  "panel_id": "panel_issue_50",
+  "photoreal_status": "UNKNOWN",
+  "producer": {
+    "kind": "subagent",
+    "name": "persona-dream-panel-repair-gate",
+    "receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/panel_repair_gate_receipt.json"
+  },
+  "run_id": "active-persona-dream-run",
+  "schema": "persona_dream.panel_source_receipt.v1",
+  "sha256": "sha256:5620cf0425cc13d2e5de8cd05b09484ae1c5af280d1cb4d306f9741d48f52c24",
+  "status": "BLOCKED"
+}

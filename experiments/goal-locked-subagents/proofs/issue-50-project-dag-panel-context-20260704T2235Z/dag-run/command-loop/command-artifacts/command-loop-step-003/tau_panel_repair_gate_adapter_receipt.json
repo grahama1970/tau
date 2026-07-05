@@ -1,0 +1,42 @@
+{
+  "claims": {
+    "does_not_prove": [
+      "no full panel repair loop ran",
+      "no provider-ready packet is claimed",
+      "no Kling or paid provider call occurred"
+    ],
+    "proves": [
+      "repair-gate command consumed the reviewer route",
+      "repair-gate command wrote a terminal receipt from creator/reviewer evidence"
+    ]
+  },
+  "created_at": "2026-07-04T22:33:40Z",
+  "dry_run_one_scene_kling_request": null,
+  "kling_api_call_performed": false,
+  "live_call_performed": false,
+  "paid_call_performed": false,
+  "panel_id": "panel_issue_50",
+  "persona_dream_panel_repair_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/dag-run/command-loop/command-artifacts/command-loop-step-003/panel_repair_gate_receipt.json",
+  "persona_dream_panel_source_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/panel_source_receipt.json",
+  "provider_eligibility": false,
+  "provider_packet_status": "BLOCKED_PROVIDER_GATE",
+  "public_upload_performed": false,
+  "remaining_blockers": [
+    "live WebGPT/VLM visual PASS receipt is missing",
+    "real panel-creator generation receipt is missing",
+    "loop final receipt for a panel repair attempt is missing",
+    "script coverage receipt is missing or failed",
+    "post-generation script coverage receipt is missing or failed"
+  ],
+  "role": "persona-dream-panel-repair-gate",
+  "run_root_panel_repair_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/panel_repair_gate_receipt.json",
+  "schema": "tau.persona_dream.panel_repair_gate_adapter_receipt.v1",
+  "source_artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/phase-07-panel-context.dag.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/dag-run/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/artifacts/active_panel_001.png",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/dag-run/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/visual_review_receipt.json"
+  ],
+  "status": "BLOCKED_PENDING_INDEPENDENT_VERIFICATION"
+}

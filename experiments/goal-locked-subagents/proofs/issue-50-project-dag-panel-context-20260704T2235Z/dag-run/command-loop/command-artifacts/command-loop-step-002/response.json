@@ -1,0 +1,51 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/phase-07-panel-context.dag.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/dag-run/command-loop/command-artifacts/command-loop-step-001/panel_creator_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/artifacts/active_panel_001.png",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/dag-run/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/visual_review_receipt.json"
+    ],
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/artifacts/active_panel_001.png",
+      "panel_id": "panel_issue_50",
+      "panel_prompt": "Issue 50 active Embry/Kai storyboard panel context, not DEFAULT_FIXTURE_ROOT.",
+      "post_generation_script_coverage": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/post_generation_script_coverage_receipt.json",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run",
+      "source_script_coverage": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/script_coverage_receipt.json",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/visual_review_receipt.json",
+      "write_receipts_to_panel_run_root": "true"
+    },
+    "summary": "Panel Reviewer consumed the creator artifact and review source."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#50"
+  },
+  "goal": {
+    "goal_hash": "sha256:issue-50-panel-context-smoke",
+    "goal_id": "tau-issue-50",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "persona-dream-panel-repair-gate",
+    "reason": "Repair gate must consolidate creator/reviewer evidence and fail closed."
+  },
+  "previous_subagent": "panel-reviewer",
+  "rationale": "The repair gate owns terminal panel eligibility and must consume this reviewer evidence before any provider readiness claim.",
+  "required_evidence": [
+    "Repair gate writes panel_repair_gate_receipt.json with provider_eligibility=false unless every subgate passes."
+  ],
+  "result": {
+    "evidence": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/dag-run/command-loop/command-artifacts/command-loop-step-002/panel_reviewer_receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/visual_review_receipt.json"
+    ],
+    "status": "INSUFFICIENT_EVIDENCE",
+    "summary": "Panel Reviewer wrote a read-only receipt and failed closed because the available visual review source is not a live PASS verdict."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Repair gate emits a terminal Tau handoff with receipt paths."
+}

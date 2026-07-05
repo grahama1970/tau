@@ -1,0 +1,96 @@
+{
+  "context": {
+    "persona_dream_panel": {
+      "image_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/artifacts/active_panel_001.png",
+      "panel_id": "panel_issue_50",
+      "panel_prompt": "Issue 50 active Embry/Kai storyboard panel context, not DEFAULT_FIXTURE_ROOT.",
+      "post_generation_script_coverage": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/post_generation_script_coverage_receipt.json",
+      "run_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run",
+      "source_script_coverage": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/script_coverage_receipt.json",
+      "visual_review_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-50-project-dag-panel-context-20260704T2235Z/active-persona-dream-run/receipts/visual_review_receipt.json",
+      "write_receipts_to_panel_run_root": "true"
+    }
+  },
+  "dag_id": "issue-50-phase-07-panel-context-smoke",
+  "edges": [
+    {
+      "from": "panel-creator",
+      "to": "panel-reviewer"
+    },
+    {
+      "from": "panel-reviewer",
+      "to": "persona-dream-panel-repair-gate"
+    },
+    {
+      "from": "persona-dream-panel-repair-gate",
+      "to": "human"
+    }
+  ],
+  "entry_node": "panel-creator",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:issue-50-panel-context-smoke",
+    "goal_id": "tau-issue-50",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 900,
+    "max_total_attempts": 4,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "panel-creator",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs/panel-creator/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "panel-creator",
+      "max_attempts": 1,
+      "required_evidence": [
+        "panel_creator_receipt.json"
+      ]
+    },
+    {
+      "agent": "panel-reviewer",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs/panel-reviewer/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "panel-reviewer",
+      "max_attempts": 1,
+      "required_evidence": [
+        "panel_reviewer_receipt.json"
+      ]
+    },
+    {
+      "agent": "persona-dream-panel-repair-gate",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/agent-command-specs/persona-dream-panel-repair-gate/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "persona-dream-panel-repair-gate",
+      "max_attempts": 1,
+      "required_evidence": [
+        "panel_repair_gate_receipt.json",
+        "panel_source_receipt.json"
+      ]
+    }
+  ],
+  "required_evidence": [
+    "panel_creator_receipt.json",
+    "panel_reviewer_receipt.json",
+    "panel_repair_gate_receipt.json",
+    "panel_source_receipt.json"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#50"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}
