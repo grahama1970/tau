@@ -656,6 +656,8 @@ def _provider_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
     attempt_records = attempts if isinstance(attempts, list) else []
     provider_sessions = payload.get("provider_sessions")
     visible_subagents = payload.get("visible_subagents")
+    alerts = payload.get("alerts")
+    alert_records = alerts if isinstance(alerts, list) else []
     return {
         "schema": payload.get("schema"),
         "status": payload.get("status"),
@@ -669,6 +671,17 @@ def _provider_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "max_attempts": payload.get("max_attempts"),
         "provider_session_count": _count(provider_sessions),
         "visible_subagent_count": _count(visible_subagents),
+        "alert_count": len(alert_records),
+        "blocking_alert_count": sum(
+            1
+            for alert in alert_records
+            if isinstance(alert, dict) and alert.get("severity") == "BLOCK"
+        ),
+        "alerts": [
+            _provider_dag_alert_summary(alert)
+            for alert in alert_records
+            if isinstance(alert, dict)
+        ],
         "visible_subagents": _role_summary_map(visible_subagents),
         "provider_sessions": _role_summary_map(provider_sessions),
         "attempts": [
@@ -835,6 +848,18 @@ def _provider_dag_attempt_summary(attempt: dict[str, Any]) -> dict[str, Any]:
             attempt.get("reviewer_receipt_path")
         ),
         "errors": attempt.get("errors"),
+    }
+
+
+def _provider_dag_alert_summary(alert: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "severity": alert.get("severity"),
+        "code": alert.get("code"),
+        "node_id": alert.get("node_id"),
+        "attempt": alert.get("attempt"),
+        "message": alert.get("message"),
+        "error_count": _count(alert.get("errors")),
+        "recommended_action": alert.get("recommended_action"),
     }
 
 

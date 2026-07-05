@@ -236,6 +236,22 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
             "scratch_worktree": str(tmp_path / "scratch-worktree"),
             "attempt_count": 1,
             "max_attempts": 2,
+            "alerts": [
+                {
+                    "schema": "tau.provider_dag_alert.v1",
+                    "severity": "BLOCK",
+                    "code": "coder_receipt_timeout",
+                    "node_id": "coder",
+                    "attempt": 1,
+                    "message": "Provider DAG coder node did not produce a bound receipt before timeout.",
+                    "errors": ["node_receipt_timeout: coder receipt did not appear before timeout"],
+                    "recommended_action": {
+                        "type": "reroute",
+                        "next_agent": "goal-guardian",
+                        "reason": "Provider DAG coder node did not produce a bound receipt before timeout.",
+                    },
+                }
+            ],
             "provider_sessions": {
                 "codex": {
                     "role": "coder",
@@ -320,6 +336,23 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
     assert status["provider_dag"]["attempt_count"] == 1
     assert status["provider_dag"]["provider_session_count"] == 2
     assert status["provider_dag"]["visible_subagent_count"] == 2
+    assert status["provider_dag"]["alert_count"] == 1
+    assert status["provider_dag"]["blocking_alert_count"] == 1
+    assert status["provider_dag"]["alerts"] == [
+        {
+            "severity": "BLOCK",
+            "code": "coder_receipt_timeout",
+            "node_id": "coder",
+            "attempt": 1,
+            "message": "Provider DAG coder node did not produce a bound receipt before timeout.",
+            "error_count": 1,
+            "recommended_action": {
+                "type": "reroute",
+                "next_agent": "goal-guardian",
+                "reason": "Provider DAG coder node did not produce a bound receipt before timeout.",
+            },
+        }
+    ]
     assert status["provider_dag"]["provider_sessions"]["codex"]["pane_id"] == "w1:p1"
     assert status["provider_dag"]["visible_subagents"]["planner"]["visible"] is True
     assert status["provider_dag"]["herdr_cleanup"]["mode"] == "dry-run"

@@ -8,6 +8,7 @@ from tau_coding.provider_dag_poc import (
     _reviewer_work_order,
     _run_provider_dag_cleanup,
     _validate_node_receipt,
+    _wait_for_node_receipt,
     inspect_provider_dag_run,
     plan_provider_dag_poc,
     run_provider_dag_orchestrator,
@@ -883,6 +884,42 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
     assert "pane_id must be w1:p5" in stale_errors
     assert f"visible_log_path must be {visible_log}" in stale_errors
     assert "visible_log_sha256 must match visible_log_path contents" in stale_errors
+
+
+def test_provider_node_receipt_timeout_reports_delivery_diagnostics(tmp_path: Path) -> None:
+    visible_log = tmp_path / "codex.visible.txt"
+    visible_log.write_text("OpenAI Codex\n› Find and fix a bug in @filename\n", encoding="utf-8")
+    work_order_path = tmp_path / "work-orders" / "attempt-01-coder.json"
+    work_order_path.parent.mkdir()
+    work_order_path.write_text('{"schema":"tau.provider_dag_work_order.v1"}\n', encoding="utf-8")
+    missing_receipt = tmp_path / "receipts" / "attempt-01-coder.json"
+
+    receipt, errors = _wait_for_node_receipt(
+        missing_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256="sha256:work-order",
+        expected_herdr={
+            "workspace_id": "w1",
+            "pane_id": "w1:p5",
+            "terminal_id": "term-codex",
+            "visible_log_path": str(visible_log),
+        },
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+        timeout_seconds=0.01,
+    )
+
+    assert receipt == {}
+    assert any(error.startswith("node_receipt_timeout: coder") for error in errors)
+    assert f"node_receipt_missing: {missing_receipt}" in errors
+    assert f"visible_log_path: {visible_log}" in errors
+    assert any(
+        error.startswith("work_order_delivery_not_observed: visible log does not contain")
+        for error in errors
+    )
 
 
 def test_plan_provider_dag_poc_records_forced_reviewer_revise_attempts(tmp_path: Path) -> None:

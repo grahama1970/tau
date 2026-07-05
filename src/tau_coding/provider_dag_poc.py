@@ -386,7 +386,11 @@ def run_provider_dag_orchestrator(
                     errors=coder_errors,
                 )
             )
-            final_verdict = "CODER_RECEIPT_INVALID"
+            final_verdict = _receipt_failure_verdict(
+                role="CODER",
+                receipt=coder_receipt,
+                errors=coder_errors,
+            )
             break
         reached.add("coder_receipt_validated")
         _append_event(
@@ -471,7 +475,11 @@ def run_provider_dag_orchestrator(
                     errors=reviewer_errors,
                 )
             )
-            final_verdict = "REVIEWER_RECEIPT_INVALID"
+            final_verdict = _receipt_failure_verdict(
+                role="REVIEWER",
+                receipt=reviewer_receipt,
+                errors=reviewer_errors,
+            )
             break
         reached.add("reviewer_receipt_validated")
         _append_event(
@@ -556,6 +564,11 @@ def run_provider_dag_orchestrator(
         "attempt_count": len(attempts),
         "max_attempts": max_attempts,
         "attempts": attempts,
+        "alerts": _provider_dag_alerts(
+            status=final_status,
+            verdict=final_verdict,
+            attempts=attempts,
+        ),
         "command_results": command_results,
         "proof_scope": {
             "proves": _provider_dag_proof_claims(reached),
@@ -1200,7 +1213,66 @@ def _wait_for_node_receipt(
         except RuntimeError as exc:
             return {}, [str(exc)]
         return receipt, last_errors
-    return {}, last_errors
+    return {}, _missing_receipt_errors(
+        receipt_path=path,
+        expected_node_id=expected_node_id,
+        expected_provider_id=expected_provider_id,
+        expected_attempt=expected_attempt,
+        work_order_path=work_order_path,
+        work_order_sha256=work_order_sha256,
+        expected_herdr=expected_herdr,
+    )
+
+
+def _receipt_failure_verdict(
+    *,
+    role: str,
+    receipt: dict[str, Any],
+    errors: list[str],
+) -> str:
+    if not receipt and any(error.startswith("node_receipt_timeout") for error in errors):
+        return f"{role}_RECEIPT_TIMEOUT"
+    return f"{role}_RECEIPT_INVALID"
+
+
+def _missing_receipt_errors(
+    *,
+    receipt_path: Path,
+    expected_node_id: str,
+    expected_provider_id: str,
+    expected_attempt: int,
+    work_order_path: Path,
+    work_order_sha256: str,
+    expected_herdr: dict[str, Any],
+) -> list[str]:
+    errors = [
+        f"node_receipt_timeout: {expected_node_id} receipt did not appear before timeout",
+        f"node_receipt_missing: {receipt_path}",
+        f"provider_id: {expected_provider_id}",
+        f"attempt: {expected_attempt}",
+        f"work_order_path: {work_order_path}",
+        f"work_order_sha256: {work_order_sha256}",
+    ]
+    visible_log_path = str(expected_herdr.get("visible_log_path") or "")
+    if not visible_log_path:
+        errors.append("visible_log_missing: expected visible_log_path was not recorded")
+        return errors
+    visible_path = Path(visible_log_path)
+    errors.append(f"visible_log_path: {visible_log_path}")
+    visible_log_sha256 = _file_sha256(visible_path)
+    if visible_log_sha256:
+        errors.append(f"visible_log_sha256: {visible_log_sha256}")
+    try:
+        visible_text = visible_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        errors.append(f"visible_log_unreadable: {exc}")
+        return errors
+    if str(work_order_path) not in visible_text and work_order_sha256 not in visible_text:
+        errors.append(
+            "work_order_delivery_not_observed: visible log does not contain the "
+            "dispatched work_order_path or work_order_sha256"
+        )
+    return errors
 
 
 def _validate_node_receipt(
@@ -1359,6 +1431,50 @@ def _attempt_record(
         "reviewer_verdict": reviewer_receipt.get("verdict"),
         "errors": errors,
     }
+
+
+def _provider_dag_alerts(
+    *,
+    status: str,
+    verdict: str,
+    attempts: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if status == "PASS":
+        return []
+    last_attempt = attempts[-1] if attempts else {}
+    errors = last_attempt.get("errors") if isinstance(last_attempt.get("errors"), list) else []
+    node_id = "reviewer" if verdict.startswith("REVIEWER_") else "coder"
+    code = verdict.lower() if verdict else "provider_dag_blocked"
+    message = _provider_dag_alert_message(verdict=verdict, node_id=node_id)
+    return [
+        {
+            "schema": "tau.provider_dag_alert.v1",
+            "severity": "BLOCK",
+            "code": code,
+            "node_id": node_id,
+            "attempt": last_attempt.get("attempt"),
+            "message": message,
+            "errors": errors,
+            "recommended_action": {
+                "type": "reroute",
+                "next_agent": "goal-guardian",
+                "reason": message,
+            },
+        }
+    ]
+
+
+def _provider_dag_alert_message(*, verdict: str, node_id: str) -> str:
+    if verdict.endswith("_RECEIPT_TIMEOUT"):
+        return (
+            f"Provider DAG {node_id} node did not produce a bound receipt before timeout; "
+            "inspect visible log and work-order delivery before retrying."
+        )
+    if verdict.endswith("_SEND_FAILED"):
+        return f"Provider DAG {node_id} prompt dispatch failed before receipt wait."
+    if verdict.endswith("_RECEIPT_INVALID"):
+        return f"Provider DAG {node_id} receipt was missing required binding fields or hashes."
+    return f"Provider DAG blocked with verdict {verdict}."
 
 
 def _provider_map(readiness_receipt: dict[str, Any]) -> dict[str, dict[str, Any]]:
