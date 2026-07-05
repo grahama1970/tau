@@ -271,6 +271,15 @@ tau.sandbox_run_receipt.v1
 
 The category proof is not a happy-path demo. It is malicious-agent containment.
 
+Status: first deterministic suite implemented as
+`scripts/run-zero-trust-redteam.py`. It writes
+`tau.zero_trust_redteam_receipt.v1` and currently checks nine malicious paths
+against real Tau gates: missing memory intent, inline fake evidence, CLARIFY
+dispatch, evidence-case boundary mismatch, external provider request, external
+research request, public repo mutation request, tampered signed receipt, and
+missing sandbox backend. This is adversarial gate coverage, not proof of ITAR
+compliance, runtime sandbox enforcement, or exhaustive malicious-agent coverage.
+
 Build:
 
 ```text

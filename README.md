@@ -75,6 +75,12 @@ namespace before executing the command. See [Sandbox Run](docs/sandbox-run.md).
 If the host cannot establish the boundary, Tau writes a blocked receipt and
 does not execute the payload.
 
+For adversarial containment checks, `uv run python
+scripts/run-zero-trust-redteam.py --out-dir <dir>` runs deterministic malicious
+paths against Tau's current gates and writes
+`tau.zero_trust_redteam_receipt.v1`. See
+[Zero-Trust Red-Team Suite](docs/zero-trust-redteam.md).
+
 To create a local zero-trust starter file set:
 
 ```bash
