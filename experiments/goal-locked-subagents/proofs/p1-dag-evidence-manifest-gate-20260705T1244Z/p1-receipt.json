@@ -1,0 +1,64 @@
+{
+  "schema": "tau.p1_dag_evidence_manifest_gate_proof_receipt.v1",
+  "status": "PASS",
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "timestamp": "2026-07-05T12:44:00Z",
+  "goal": {
+    "summary": "Continue P1 Tau hardening by wiring typed evidence manifests into project DAG pre-dispatch gates.",
+    "scope": [
+      "src/tau_coding/project_dag.py",
+      "tests/test_project_dag.py"
+    ]
+  },
+  "changed_files": [
+    "src/tau_coding/project_dag.py",
+    "tests/test_project_dag.py",
+    "experiments/goal-locked-subagents/proofs/p1-dag-evidence-manifest-gate-20260705T1244Z/p1-receipt.json"
+  ],
+  "commands_run": [
+    {
+      "command": "uv run pytest tests/test_project_dag.py -q",
+      "exit_code": 0,
+      "result": "23 passed in 1.45s"
+    },
+    {
+      "command": "uv run ruff check --select F,I src/tau_coding/project_dag.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "uv run pytest tests/test_project_dag.py tests/test_evidence_manifest.py tests/test_generic_dag.py tests/test_generic_provider_adapter.py -q",
+      "exit_code": 0,
+      "result": "46 passed in 2.00s"
+    },
+    {
+      "command": "git diff --check -- src/tau_coding/project_dag.py tests/test_project_dag.py",
+      "exit_code": 0,
+      "result": "No whitespace errors reported for tracked diffs"
+    }
+  ],
+  "what_changed": [
+    "Added optional evidence_manifest path support to tau.dag_contract.v1 parsing.",
+    "When evidence_manifest is present, Tau validates it before dispatch with tau.evidence_validation_receipt.v1.",
+    "Tau blocks before dispatch if the manifest is invalid or does not cover every DAG-level required_evidence kind.",
+    "Blocked manifest gates are packaged as tau.dag_error.v1 course-correction payloads and execute no node commands."
+  ],
+  "proves": [
+    "A valid evidence_manifest covering creator_artifact and reviewer_verdict allows the local creator/reviewer DAG to dispatch.",
+    "A manifest missing a DAG-level required_evidence kind blocks before dispatch with evidence_manifest_missing_required_evidence.",
+    "A manifest with a sha256 mismatch blocks before dispatch with evidence_manifest_invalid.",
+    "The focused project DAG, evidence manifest, generic DAG, and generic provider adapter tests pass together."
+  ],
+  "does_not_prove": [
+    "Provider/model semantic quality.",
+    "Live Herdr pane or provider execution.",
+    "GitHub mutation, Memory sync, browser UI proof, or full WebGPT roadmap completion.",
+    "That every existing DAG contract in the repository declares an evidence_manifest."
+  ],
+  "next_recommended_route": {
+    "agent": "coder",
+    "reason": "Continue P1 with command-spec trust policy or Herdr workspace lease/state-machine hardening."
+  }
+}

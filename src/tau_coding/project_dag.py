@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
     load_agent_dispatch_command_spec,
@@ -122,6 +123,7 @@ class ProjectDagContract:
     context: dict[str, Any]
     required_evidence: tuple[str, ...]
     fail_closed_on: tuple[str, ...]
+    evidence_manifest: str | None
 
 
 def run_project_dag_contract(
@@ -146,6 +148,23 @@ def run_project_dag_contract(
 
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    evidence_manifest_alerts, evidence_validation_receipt = _evidence_manifest_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+        receipt_dir=resolved_receipt_dir,
+    )
+    if evidence_manifest_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(evidence_manifest_alerts[0]["code"]).upper(),
+            alerts=evidence_manifest_alerts,
+            evidence_validation_receipt=evidence_validation_receipt,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     if scheduler == "bounded-ready-queue":
         return _run_bounded_ready_queue_project_dag(
             contract=contract,
@@ -215,9 +234,20 @@ def run_project_dag_contract(
         "node_attempts": _node_attempts(contract, loop_payload),
         "reviewer_verdicts": _reviewer_verdicts(contract, loop_payload),
         "alerts": alerts,
+        "evidence_validation_receipt": (
+            evidence_validation_receipt.get("receipt_path")
+            if isinstance(evidence_validation_receipt, dict)
+            else None
+        ),
         "artifacts": [
             str(start_path),
             str(loop_receipt_path),
+            *(
+                [str(evidence_validation_receipt["receipt_path"])]
+                if isinstance(evidence_validation_receipt, dict)
+                and isinstance(evidence_validation_receipt.get("receipt_path"), str)
+                else []
+            ),
             *[
                 str(path)
                 for path in sorted((resolved_receipt_dir / "compiled-command-specs").rglob("*"))
@@ -671,6 +701,10 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     )
     fail_closed_on = _string_list(payload.get("fail_closed_on"), "fail_closed_on", errors)
     _validate_fail_closed_on_registry(fail_closed_on, errors)
+    evidence_manifest = payload.get("evidence_manifest")
+    if evidence_manifest is not None and not isinstance(evidence_manifest, str):
+        errors.append("evidence_manifest must be a string path when provided")
+        evidence_manifest = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -704,6 +738,7 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         context=context,
         required_evidence=tuple(required_evidence),
         fail_closed_on=tuple(fail_closed_on),
+        evidence_manifest=evidence_manifest,
     )
 
 
@@ -731,6 +766,159 @@ def _validate_fail_closed_on_registry(values: list[str], errors: list[str]) -> N
             "fail_closed_on contains unknown invariant code(s): "
             f"{', '.join(unknown)}. Known codes: {known}"
         )
+
+
+def _evidence_manifest_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    if contract.evidence_manifest is None:
+        return [], None
+    manifest_path = Path(contract.evidence_manifest)
+    if not manifest_path.is_absolute():
+        manifest_path = contract_path.parent / manifest_path
+    try:
+        receipt = write_evidence_validation_receipt(
+            manifest_path=manifest_path,
+            receipt_path=receipt_dir / "evidence-validation-receipt.json",
+        )
+    except RuntimeError as exc:
+        return [
+            _alert(
+                "BLOCK",
+                "evidence_manifest_invalid",
+                "DAG evidence_manifest could not be validated.",
+                {
+                    "evidence_manifest": str(manifest_path.expanduser().resolve()),
+                    "error": str(exc),
+                },
+            )
+        ], None
+
+    alerts: list[dict[str, Any]] = []
+    if receipt.get("ok") is not True:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "evidence_manifest_invalid",
+                "DAG evidence_manifest did not pass typed evidence validation.",
+                {
+                    "evidence_manifest": str(manifest_path.expanduser().resolve()),
+                    "evidence_validation_receipt": receipt.get("receipt_path"),
+                    "errors": receipt.get("errors", []),
+                },
+            )
+        )
+    covered_kinds = {
+        item.get("kind")
+        for item in receipt.get("checked_items", [])
+        if isinstance(item, dict) and item.get("valid") is True and isinstance(item.get("kind"), str)
+    }
+    missing = [item for item in contract.required_evidence if item not in covered_kinds]
+    if missing:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "evidence_manifest_missing_required_evidence",
+                "DAG evidence_manifest does not cover all DAG-level required_evidence kinds.",
+                {
+                    "evidence_manifest": str(manifest_path.expanduser().resolve()),
+                    "evidence_validation_receipt": receipt.get("receipt_path"),
+                    "missing": missing,
+                    "covered_kinds": sorted(covered_kinds),
+                },
+            )
+        )
+    return alerts, receipt
+
+
+def _pre_dispatch_blocked_receipt(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+    scheduler: str,
+    verdict: str,
+    alerts: list[dict[str, Any]],
+    evidence_validation_receipt: dict[str, Any] | None,
+) -> dict[str, Any]:
+    artifacts = [str(contract_path)]
+    if isinstance(evidence_validation_receipt, dict) and isinstance(
+        evidence_validation_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(evidence_validation_receipt["receipt_path"]))
+    receipt = {
+        "schema": DAG_RECEIPT_SCHEMA,
+        "ok": False,
+        "status": "BLOCKED",
+        "verdict": verdict,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "scheduler": scheduler,
+        "execution": "project_agent_dag_pre_dispatch_validation",
+        "dag_id": contract.dag_id,
+        "contract_path": str(contract_path),
+        "contract_sha256": f"sha256:{_sha256(contract_path)}",
+        "run_dir": str(receipt_dir),
+        "active_goal_hash": contract.goal["goal_hash"],
+        "target": contract.target,
+        "entry_node": contract.entry_node,
+        "terminal_nodes": list(contract.terminal_nodes),
+        "node_count": len(contract.nodes),
+        "edge_count": len(contract.edges),
+        "selected_agents": [],
+        "observed_edges": [],
+        "node_attempts": {},
+        "reviewer_verdicts": [],
+        "alerts": alerts,
+        "evidence_validation_receipt": (
+            evidence_validation_receipt.get("receipt_path")
+            if isinstance(evidence_validation_receipt, dict)
+            else None
+        ),
+        "artifacts": artifacts,
+        "proof_scope": {
+            "mocked": False,
+            "live": True,
+            "proves": [
+                "DAG contract parsed and validated.",
+                "Tau inspected typed evidence manifest gates before dispatch.",
+                "No node command, provider, GitHub, Memory, or browser action was executed.",
+            ],
+            "does_not_prove": [
+                "The repaired DAG contract will pass.",
+                "Provider/model semantic quality.",
+                "Runtime route mutation or GitHub side effects.",
+            ],
+        },
+        "errors": [
+            str(error)
+            for alert in alerts
+            for error in (
+                alert.get("evidence", {}).get("errors", [])
+                if isinstance(alert.get("evidence"), dict)
+                else []
+            )
+        ],
+        "timestamp": _utc_stamp(),
+    }
+    dag_error = _dag_error(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        scheduler=scheduler,
+        status="BLOCKED",
+        verdict=verdict,
+        alerts=alerts,
+        errors=receipt["errors"],
+        node_attempts={},
+    )
+    if dag_error is not None:
+        receipt["dag_error"] = dag_error
+    return receipt
 
 
 def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:

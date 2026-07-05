@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -576,6 +577,84 @@ def test_cli_dag_run_missing_command_spec_returns_course_correction_json(tmp_pat
     assert payload["evidence"]["alert_codes"] == ["dag_contract_invalid"]
 
 
+def test_project_dag_evidence_manifest_allows_dispatch_when_required_kinds_exist(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    manifest = _write_evidence_manifest(tmp_path, ["creator_artifact", "reviewer_verdict"])
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["evidence_manifest"] = str(manifest)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["selected_agents"] == ["coder", "reviewer"]
+    assert receipt["evidence_validation_receipt"] == str(
+        tmp_path / "run" / "evidence-validation-receipt.json"
+    )
+    assert Path(str(receipt["evidence_validation_receipt"])).exists()
+
+
+def test_project_dag_evidence_manifest_blocks_missing_required_kind(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    manifest = _write_evidence_manifest(tmp_path, ["creator_artifact"])
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["evidence_manifest"] = str(manifest)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "EVIDENCE_MANIFEST_MISSING_REQUIRED_EVIDENCE"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "evidence_manifest_missing_required_evidence"
+    assert receipt["alerts"][0]["evidence"]["missing"] == ["reviewer_verdict"]
+    assert receipt["dag_error"]["failure_code"] == "evidence_manifest_missing_required_evidence"
+    assert Path(str(receipt["evidence_validation_receipt"])).exists()
+
+
+def test_project_dag_evidence_manifest_blocks_invalid_manifest_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    manifest = _write_evidence_manifest(
+        tmp_path,
+        ["creator_artifact", "reviewer_verdict"],
+        bad_sha_for="reviewer_verdict",
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["evidence_manifest"] = str(manifest)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "EVIDENCE_MANIFEST_INVALID"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "evidence_manifest_invalid"
+    assert "items[1].sha256 mismatch" in receipt["alerts"][0]["evidence"]["errors"][0]
+    assert receipt["dag_error"]["failure_code"] == "evidence_manifest_invalid"
+
+
 def test_project_dag_blocks_missing_required_evidence_with_reviewer_action(
     tmp_path: Path,
 ) -> None:
@@ -874,6 +953,58 @@ def _write_parallel_contract(tmp_path: Path) -> Path:
     path = tmp_path / "parallel-dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
     return path
+
+
+def _write_evidence_manifest(
+    tmp_path: Path,
+    kinds: list[str],
+    *,
+    bad_sha_for: str | None = None,
+) -> Path:
+    evidence_dir = tmp_path / "evidence"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    items: list[dict[str, object]] = []
+    for kind in kinds:
+        evidence_path = evidence_dir / f"{kind}.json"
+        schema = f"tau.{kind}.v1"
+        evidence_path.write_text(
+            json.dumps(
+                {
+                    "schema": schema,
+                    "kind": kind,
+                    "goal_hash": "sha256:active-goal",
+                    "status": "PASS",
+                }
+            ),
+            encoding="utf-8",
+        )
+        digest = f"sha256:{hashlib.sha256(evidence_path.read_bytes()).hexdigest()}"
+        if kind == bad_sha_for:
+            digest = "sha256:" + ("0" * 64)
+        items.append(
+            {
+                "kind": kind,
+                "path": str(evidence_path),
+                "sha256": digest,
+                "schema": schema,
+                "validator": f"tau evidence-validate {kind}",
+                "valid": True,
+            }
+        )
+    manifest_path = tmp_path / "evidence-manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.evidence_manifest.v1",
+                "run_id": "run-001",
+                "dag_id": "creator-reviewer-test",
+                "goal_hash": "sha256:active-goal",
+                "items": items,
+            }
+        ),
+        encoding="utf-8",
+    )
+    return manifest_path
 
 
 def _write_response_spec(
