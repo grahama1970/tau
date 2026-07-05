@@ -237,6 +237,7 @@ def build_checks(
         spec_flag=None,
     )
     dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
+    dag_branch_locks = create_dag_branch_locks_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
     github_apply_policy = create_github_apply_policy_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
@@ -1286,6 +1287,50 @@ def build_checks(
             output_receipt=dag_expansion_tamper["apply_receipt"],
         ),
         Check(
+            check_id="advanced.dag_branch_locks_validate_pass",
+            level="advanced",
+            purpose=(
+                "Tau validates provider and mutating DAG branch locks with approval "
+                "packet hash binding before side-effecting branches are schedulable."
+            ),
+            command=[
+                *uv_tau,
+                "dag-branch-locks-validate",
+                "--dag-contract",
+                str(dag_branch_locks["contract"]),
+                "--locks",
+                str(dag_branch_locks["valid_locks"]),
+                "--receipt",
+                str(dag_branch_locks["valid_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            output_receipt=dag_branch_locks["valid_receipt"],
+        ),
+        Check(
+            check_id="advanced.dag_branch_locks_missing_workspace_lease_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks provider branch scheduling when branch locks omit the "
+                "required Herdr workspace lease reference."
+            ),
+            command=[
+                *uv_tau,
+                "dag-branch-locks-validate",
+                "--dag-contract",
+                str(dag_branch_locks["contract"]),
+                "--locks",
+                str(dag_branch_locks["missing_workspace_lease_locks"]),
+                "--receipt",
+                str(dag_branch_locks["missing_workspace_lease_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_WORKSPACE_LEASE",
+            output_receipt=dag_branch_locks["missing_workspace_lease_receipt"],
+        ),
+        Check(
             check_id="advanced.dag_route_memory_apply_requires_approval",
             level="advanced",
             purpose=(
@@ -2141,6 +2186,145 @@ def create_dag_expansion_fixture(run_dir: Path) -> dict[str, Path]:
         "apply_receipt": fixture_dir / "apply-receipt.json",
         "preview": fixture_dir / "expanded-dag.preview.json",
         "out": fixture_dir / "expanded-dag.json",
+    }
+
+
+def create_dag_branch_locks_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "dag-branch-locks"
+    goal_hash = "sha256:rw-sanity-dag-branch-locks"
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "rw-sanity-dag-branch-locks",
+        "goal": {
+            "goal_id": "rw-sanity-dag-branch-locks",
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-dag-branch-locks",
+        },
+        "entry_node": "provider-node",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "provider-node",
+                "agent": "provider-agent",
+                "executor": "provider",
+                "max_attempts": 1,
+                "required_evidence": ["provider_receipt"],
+                "provider": {"adapter": "generic-provider-dag-node"},
+            },
+            {
+                "id": "mutating-node",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": ["mutation_receipt"],
+                "mutates": True,
+            },
+            {
+                "id": "human",
+                "agent": "human",
+                "executor": "human",
+            },
+        ],
+        "edges": [
+            {"from": "provider-node", "to": "mutating-node"},
+            {"from": "mutating-node", "to": "human"},
+        ],
+        "required_evidence": ["provider_receipt", "mutation_receipt"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+        ],
+    }
+    contract_path = write_json(fixture_dir / "dag-contract.json", contract)
+    provider_approval = write_json(
+        fixture_dir / "provider-approval.json",
+        {
+            "schema": "tau.human_approval_packet.v1",
+            "approved": True,
+            "actor": {"id": "human:graham", "auth_method": "manual"},
+            "action": "provider_branch_scheduling",
+            "target": {"id": "rw-sanity-dag-branch-locks"},
+            "reason": "Approve provider branch lock fixture.",
+            "evidence": ["dag-contract.json"],
+            "nonce": "rw-sanity-provider-branch-lock",
+            "signature": "manual-rw-sanity-signature",
+        },
+    )
+    mutating_approval = write_json(
+        fixture_dir / "mutating-approval.json",
+        {
+            "schema": "tau.human_approval_packet.v1",
+            "approved": True,
+            "actor": {"id": "human:graham", "auth_method": "manual"},
+            "action": "working_tree_mutation",
+            "target": {"id": "rw-sanity-dag-branch-locks"},
+            "reason": "Approve mutating branch lock fixture.",
+            "evidence": ["dag-contract.json"],
+            "nonce": "rw-sanity-mutating-branch-lock",
+            "signature": "manual-rw-sanity-signature",
+        },
+    )
+    locks = {
+        "schema": "tau.dag_branch_locks.v1",
+        "dag_id": contract["dag_id"],
+        "goal_hash": goal_hash,
+        "approval_packets": [
+            str(provider_approval.name),
+            str(mutating_approval.name),
+        ],
+        "locks": [
+            {
+                "node_id": "provider-node",
+                "branch_type": "provider",
+                "lock_id": "rw-sanity-lock-provider",
+                "owner": "goal-guardian",
+                "actor_identity": "human:graham",
+                "approval_packet_sha256": f"sha256:{sha256_file(provider_approval)}",
+                "allowed_paths": [
+                    "experiments/goal-locked-subagents/proofs/provider/**"
+                ],
+                "side_effect_class": "provider",
+                "workspace_lease": "rw-sanity-workspace-lease",
+                "expires_at": "2099-01-01T00:00:00Z",
+                "rollback_policy": "required",
+            },
+            {
+                "node_id": "mutating-node",
+                "branch_type": "mutating",
+                "lock_id": "rw-sanity-lock-mutating",
+                "owner": "goal-guardian",
+                "actor_identity": "human:graham",
+                "approval_packet_sha256": f"sha256:{sha256_file(mutating_approval)}",
+                "allowed_paths": ["src/tau_coding/example.py"],
+                "side_effect_class": "filesystem",
+                "expires_at": "2099-01-01T00:00:00Z",
+                "rollback_policy": "required",
+            },
+        ],
+    }
+    missing_workspace_lease = json.loads(json.dumps(locks))
+    missing_workspace_lease["locks"][0].pop("workspace_lease")
+    return {
+        "contract": contract_path,
+        "valid_locks": write_json(fixture_dir / "branch-locks.valid.json", locks),
+        "missing_workspace_lease_locks": write_json(
+            fixture_dir / "branch-locks.missing-workspace-lease.json",
+            missing_workspace_lease,
+        ),
+        "valid_receipt": fixture_dir / "branch-lock-validation.valid.receipt.json",
+        "missing_workspace_lease_receipt": fixture_dir
+        / "branch-lock-validation.missing-workspace-lease.receipt.json",
     }
 
 
@@ -4342,6 +4526,8 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "feature_counts",
         "item_count",
         "manifest_sha256",
+        "required_lock_count",
+        "provided_lock_count",
         "provider_session_state_count",
         "scheduler",
         "max_concurrency",

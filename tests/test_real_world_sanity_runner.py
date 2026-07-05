@@ -249,6 +249,45 @@ def test_summarize_receipt_includes_github_transport_fields() -> None:
     }
 
 
+def test_summarize_receipt_includes_branch_lock_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.dag_branch_lock_validation_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "verdict": "MISSING_WORKSPACE_LEASE",
+            "required_lock_count": 2,
+            "provided_lock_count": 2,
+            "alerts": [
+                {
+                    "severity": "BLOCK",
+                    "code": "missing_workspace_lease",
+                    "message": "Provider branch locks require a Herdr workspace lease reference.",
+                }
+            ],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.dag_branch_lock_validation_receipt.v1",
+        "ok": False,
+        "status": "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "verdict": "MISSING_WORKSPACE_LEASE",
+        "required_lock_count": 2,
+        "provided_lock_count": 2,
+        "alert_count": 1,
+        "alert_codes": ["missing_workspace_lease"],
+    }
+
+
 def test_summarize_receipt_includes_route_memory_sync_fields() -> None:
     module = _load_runner_module()
 
