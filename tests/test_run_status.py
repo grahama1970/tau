@@ -1348,6 +1348,54 @@ def test_run_status_summarizes_github_handoff_transport_receipt(tmp_path: Path) 
     }
 
 
+def test_run_status_summarizes_research_source_receipt(tmp_path: Path) -> None:
+    source_packet = tmp_path / "research-source-packet.json"
+    _write_json(
+        tmp_path / "research-source-receipt.json",
+        {
+            "schema": "tau.research_source_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "source_packet": str(source_packet),
+            "source_packet_sha256": "sha256:packet",
+            "source_type": "paper",
+            "method": "arxiv",
+            "classification": "design_input",
+            "source_count": 2,
+            "arxiv_source_count": 2,
+            "review_required": True,
+            "errors": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["detected_type"] == "research_source"
+    assert status["missing_required_artifacts"] == []
+    assert status["research_source"] == {
+        "schema": "tau.research_source_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "source_packet": str(source_packet),
+        "source_packet_sha256": "sha256:packet",
+        "source_type": "paper",
+        "method": "arxiv",
+        "classification": "design_input",
+        "source_count": 2,
+        "arxiv_source_count": 2,
+        "review_required": True,
+        "errors": [],
+    }
+
+
 def test_run_status_summarizes_project_dag_evidence_validation_failure(
     tmp_path: Path,
 ) -> None:
