@@ -1,0 +1,389 @@
+{
+  "errors": [
+    "review_comments is empty"
+  ],
+  "execution": "read_only_projection_from_tau_provider_dag_run",
+  "feature_counts": {
+    "agent_lineage": 4,
+    "agent_messages": 2,
+    "doctor": 1,
+    "execution_timeline": 5,
+    "provider_capabilities": 2,
+    "review_comments": 0,
+    "worktree_session_bindings": 4
+  },
+  "features": {
+    "agent_lineage": [
+      {
+        "agent_id": "planner",
+        "node_id": "planner",
+        "pane_id": "w68:p7",
+        "parent_agent_id": null,
+        "process_alive": null,
+        "provider_id": "tau",
+        "role": "planner",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e5037d7e016f0",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68"
+      },
+      {
+        "agent_id": "orchestrator",
+        "node_id": "orchestrator",
+        "pane_id": "w68:p8",
+        "parent_agent_id": "planner",
+        "process_alive": null,
+        "provider_id": "tau",
+        "role": "orchestrator",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e5038251896f1",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68"
+      },
+      {
+        "agent_id": "coder",
+        "node_id": "coder",
+        "pane_id": "w68:p9",
+        "parent_agent_id": "orchestrator",
+        "process_alive": null,
+        "provider_id": "tau-deterministic-visible",
+        "role": "coder",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e50387f2516f2",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68"
+      },
+      {
+        "agent_id": "reviewer",
+        "node_id": "reviewer",
+        "pane_id": "w68:pA",
+        "parent_agent_id": "orchestrator",
+        "process_alive": null,
+        "provider_id": "opencode",
+        "role": "reviewer",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.agent_lineage.v1",
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e5038d9c9c6f3",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68"
+      }
+    ],
+    "agent_messages": [
+      {
+        "body": "coder_dispatch: execute work order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-coder.json",
+        "created_at": "2026-07-05T22:52:35Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0003",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/receipts/attempt-01-coder.json",
+        "receiver_agent_id": "coder",
+        "response_id": "response-0003",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "orchestrator",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-coder.json"
+      },
+      {
+        "body": "reviewer_dispatch: execute work order /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-reviewer.json",
+        "created_at": "2026-07-05T22:52:35Z",
+        "delivery_surface": "tau_receipt_side_channel",
+        "expects_reply": true,
+        "message_id": "msg-0005",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/receipts/attempt-01-reviewer.json",
+        "receiver_agent_id": "reviewer",
+        "response_id": "response-0005",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.agent_message.v1",
+        "sender_agent_id": "orchestrator",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-reviewer.json"
+      }
+    ],
+    "doctor": {
+      "checks": [
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+          "name": "run_dir_exists",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/run-receipt.json",
+          "name": "run_receipt_schema",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/runtime-manifest.json",
+          "name": "runtime_manifest_schema",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/dag-spec.json",
+          "name": "dag_spec_schema",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/events.jsonl",
+          "name": "events_jsonl_exists",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/scratch-worktree",
+          "name": "scratch_worktree_exists",
+          "ok": true
+        },
+        {
+          "evidence": "provider_sessions",
+          "name": "provider_sessions_present",
+          "ok": true
+        },
+        {
+          "evidence": "visible_subagents",
+          "name": "visible_subagents_present",
+          "ok": true
+        },
+        {
+          "evidence": "receipts",
+          "name": "node_receipts_present",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T225220Z-rw-sanity-provider-dag-invalid-model-readiness/readiness/codex.readiness.json",
+          "name": "codex_ready",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T225220Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt",
+          "name": "codex_visible_log_exists",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T225220Z-rw-sanity-provider-dag-invalid-model-readiness/readiness/opencode.readiness.json",
+          "name": "opencode_ready",
+          "ok": true
+        },
+        {
+          "evidence": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260705T225220Z-rw-sanity-provider-dag-invalid-model-readiness/logs/opencode.visible.txt",
+          "name": "opencode_visible_log_exists",
+          "ok": true
+        }
+      ],
+      "live": true,
+      "mocked": false,
+      "schema": "tau.doctor_status_receipt.v1",
+      "status": "PASS"
+    },
+    "execution_timeline": [
+      {
+        "actor": "planner",
+        "attempt": null,
+        "kind": "dag_spec_created",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": null,
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.execution_event.v1",
+        "seq": 1,
+        "timestamp": "2026-07-05T22:52:20Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "orchestrator",
+        "attempt": null,
+        "kind": "orchestrator_started",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": null,
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.execution_event.v1",
+        "seq": 2,
+        "timestamp": "2026-07-05T22:52:20Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "coder",
+        "attempt": 1,
+        "kind": "coder_dispatch",
+        "pane_id": "w68:p5",
+        "provider_id": "codex",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/receipts/attempt-01-coder.json",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.execution_event.v1",
+        "seq": 3,
+        "timestamp": "2026-07-05T22:52:35Z",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-coder.json"
+      },
+      {
+        "actor": "coder",
+        "attempt": 1,
+        "kind": "coder_receipt_validated",
+        "pane_id": null,
+        "provider_id": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/receipts/attempt-01-coder.json",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.execution_event.v1",
+        "seq": 4,
+        "timestamp": "2026-07-05T22:52:35Z",
+        "work_order_path": null
+      },
+      {
+        "actor": "reviewer",
+        "attempt": 1,
+        "kind": "reviewer_dispatch",
+        "pane_id": "w68:p6",
+        "provider_id": "opencode",
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/receipts/attempt-01-reviewer.json",
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.execution_event.v1",
+        "seq": 5,
+        "timestamp": "2026-07-05T22:52:35Z",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-reviewer.json"
+      }
+    ],
+    "provider_capabilities": [
+      {
+        "a2a_supported": false,
+        "executable_found": true,
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "models": [],
+        "provider_id": "codex",
+        "readiness_state": "ready",
+        "ready": true,
+        "roles_supported": [
+          "coder"
+        ],
+        "schema": "tau.provider_capability.v1",
+        "stop_supported": true,
+        "structured_readiness_supported": true,
+        "surface": "herdr_pane",
+        "transcript_supported": true,
+        "workspace_binding_supported": true
+      },
+      {
+        "a2a_supported": false,
+        "executable_found": true,
+        "foreground_command": "opencode",
+        "models": [],
+        "provider_id": "opencode",
+        "readiness_state": "ready",
+        "ready": true,
+        "roles_supported": [
+          "reviewer"
+        ],
+        "schema": "tau.provider_capability.v1",
+        "stop_supported": true,
+        "structured_readiness_supported": true,
+        "surface": "herdr_pane",
+        "transcript_supported": true,
+        "workspace_binding_supported": true
+      }
+    ],
+    "review_comments": [],
+    "worktree_session_bindings": [
+      {
+        "agent_id": "coder",
+        "node_id": "coder",
+        "pane_id": "w68:p9",
+        "process_alive": null,
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e50387f2516f2",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/scratch-worktree"
+      },
+      {
+        "agent_id": "orchestrator",
+        "node_id": "orchestrator",
+        "pane_id": "w68:p8",
+        "process_alive": null,
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e5038251896f1",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/scratch-worktree"
+      },
+      {
+        "agent_id": "planner",
+        "node_id": "planner",
+        "pane_id": "w68:p7",
+        "process_alive": null,
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e5037d7e016f0",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/scratch-worktree"
+      },
+      {
+        "agent_id": "reviewer",
+        "node_id": "reviewer",
+        "pane_id": "w68:pA",
+        "process_alive": null,
+        "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+        "schema": "tau.worktree_session_binding.v1",
+        "session_bound": true,
+        "tab_id": "w68:t1",
+        "terminal_id": "term_655e5038d9c9c6f3",
+        "visible": true,
+        "visible_log_path": null,
+        "workspace_id": "w68",
+        "worktree_exists": true,
+        "worktree_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/scratch-worktree"
+      }
+    ]
+  },
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "new live provider execution by this command",
+      "cloud collaboration",
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "agent-to-agent transport delivery outside the Tau receipt channel"
+    ],
+    "proves": [
+      "Tau can project agent lineage from a real provider-DAG run receipt",
+      "Tau can project a normalized execution timeline from provider-DAG events",
+      "Tau can derive provider capability records from structured readiness/session data",
+      "Tau can bind visible subagents to Herdr sessions and scratch worktree evidence",
+      "Tau can convert reviewer node receipts into typed review-comment records",
+      "Tau can represent DAG dispatches as typed agent-message side-channel records",
+      "Tau can emit a doctor/status receipt over real run artifacts"
+    ]
+  },
+  "provider_live": true,
+  "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+  "schema": "tau.orchestration_evidence_receipt.v1",
+  "source_dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/dag-spec.json",
+  "source_run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+  "source_run_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/run-receipt.json",
+  "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/runtime-manifest.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:53:22Z"
+}

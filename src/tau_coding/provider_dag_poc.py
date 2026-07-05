@@ -687,6 +687,7 @@ def _run_provider_dag_cleanup(
         "ok": receipt.get("ok"),
         "mocked": receipt.get("mocked"),
         "live": receipt.get("live"),
+        "herdr_surface": receipt.get("herdr_surface"),
         "candidate_count": receipt.get("candidate_count"),
         "resource_count": receipt.get("resource_count"),
         "workspace_lease": receipt.get("workspace_lease"),

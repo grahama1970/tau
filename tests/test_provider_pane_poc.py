@@ -882,6 +882,7 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
 
     stale_receipt = dict(receipt)
     stale_receipt["work_order_sha256"] = "stale"
+    stale_receipt["workspace_id"] = "wrong-workspace"
     stale_receipt["pane_id"] = "wrong-pane"
     stale_receipt["visible_log_path"] = "wrong-log"
     stale_receipt["visible_log_sha256"] = "stale-log-sha"
@@ -898,6 +899,7 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
     )
 
     assert "work_order_sha256 must match the dispatched work order" in stale_errors
+    assert "workspace_id must be w1" in stale_errors
     assert "pane_id must be w1:p5" in stale_errors
     assert f"visible_log_path must be {visible_log}" in stale_errors
     assert "visible_log_sha256 must match visible_log_path contents" in stale_errors
@@ -1388,7 +1390,8 @@ def test_provider_dag_cleanup_apply_summarizes_verified_absence(
     cleanup = _run_provider_dag_cleanup(run_dir=tmp_path, mode="apply", herdr_bin=str(fake_herdr))
 
     assert cleanup["status"] == "PASS"
-    assert cleanup["live"] is True
+    assert cleanup["live"] is False
+    assert cleanup["herdr_surface"] == "fixture"
     assert cleanup["applied_action_count"] == 1
     assert cleanup["post_verified_absent_count"] == 1
     receipt = json.loads((tmp_path / "herdr-cleanup-receipt.json").read_text(encoding="utf-8"))

@@ -1057,6 +1057,7 @@ def _herdr_gc_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "mode": payload.get("mode"),
         "run_dir": payload.get("run_dir"),
         "herdr_bin": payload.get("herdr_bin"),
+        "herdr_surface": payload.get("herdr_surface"),
         "approval_required": payload.get("approval_required"),
         "approval_receipt": payload.get("approval_receipt"),
         "approval_receipt_sha256": payload.get("approval_receipt_sha256"),
