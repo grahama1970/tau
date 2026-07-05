@@ -1,4 +1,4 @@
-# T’au - Goal-Locked Agent Harness
+# T’au - Memory-First Zero-Trust Agent Harness
 
 <p align="center">
   <img
@@ -8,34 +8,131 @@
   />
 </p>
 
-> Turn agent work into receipt-backed, goal-locked loops.
+> Agents hallucinate. Tau contains them.
 
-T’au is an experimental harness for long-running agent work. It is small enough
-to understand, opinionated enough to keep a human in the loop, and structured
-enough that every meaningful transition leaves a trace.
+T’au is an experimental, memory-first, zero-trust containment harness for
+untrusted agent work. It treats every agent output as a claim, not a fact.
+Before high-stakes work can continue, Tau expects explicit policy, data-boundary
+checks, DAG contracts, receipts, evidence artifacts, validators, and human-gated
+side effects.
 
 The idea is simple:
 
 ```text
-agents may work and recommend the next step
-T’au validates the receipt and routes the next step
-only the human may change the immutable goal
+agents may propose
+T’au decides what counts
+humans own goals and high-risk approvals
 ```
 
 T’au does not hide orchestration inside model reasoning. Every handoff produces
-a local receipt, a schema-valid JSON block, or a GitHub-shaped projection that
-another agent or human can inspect, replay, or reject.
+a local receipt, a schema-valid JSON block, a Herdr-visible work surface, or a
+GitHub-shaped projection that another agent or human can inspect, replay, or
+reject.
 
-## Zero-Trust Direction
+## Why Tau exists
 
-T’au is moving toward a memory-first zero-trust agent containment harness:
-agents produce claims, and Tau decides what counts. The first zero-trust slice
-is policy/data-boundary preflight, documented in
+Raw agent DAGs and swarms are not trustworthy. More agents can mean more
+hallucination, false consensus, responsibility diffusion, and side-effect risk.
+
+Tau does not make agents trustworthy. It makes agent work bounded,
+inspectable, rejectable, and policy-gated.
+
+A Tau DAG is not proof. It is a containment map.
+
+A reviewer agent is not a trust anchor. It is another untrusted claim source.
+
+A swarm consensus is not evidence. Evidence must be captured, hashed,
+validated, and reviewed.
+
+## What makes Tau different
+
+| Capability | Tau stance |
+| --- | --- |
+| Memory | Memory is not context stuffing. Memory intent is a dispatch and routing input. |
+| Evidence | Evidence is separate from model prose. Typed manifests, receipts, and artifacts are validated independently. |
+| Agent DAGs | DAGs are containment maps, not proof. |
+| Subagents | Subagent communication is untrusted until receipt-backed and validated. |
+| Herdr | Provider/subagent work can be monitored through visible panes, lifecycle records, and cleanup receipts. |
+| Policy | Policy profiles and data boundaries are checked before zero-trust DAG dispatch. |
+| Side effects | GitHub, Memory, Herdr, provider, and filesystem effects require explicit gates. |
+| Claims | Every proof artifact should state what it proves and what it does not prove. |
+
+## Current zero-trust stack
+
+Tau's zero-trust stack is built around one rule:
+
+```text
+No policy compatibility, no data boundary, no receipt, no evidence, no approval - no action.
+```
+
+Implemented local gates and receipt surfaces in this checkout include:
+
+- `tau.policy_profile.v1`
+- `tau.data_boundary.v1`
+- `tau.zero_trust_preflight_receipt.v1`
+- `tau.evidence_manifest.v1`
+- `tau.command_spec_policy.v1`
+- `tau.github_apply_policy.v1`
+- `tau.github_apply_policy_receipt.v1`
+- `tau.herdr_workspace_lease.v1`
+- Herdr cleanup and GC receipts
+- provider readiness, lifecycle, work-order, and node receipts
+- DAG signal and route-memory candidate receipts
+- adaptive DAG expansion validation, policy, and apply receipts
+- browser/CDP proof receipts
+- `tau.dag_error.v1` course-correction payloads
+
+These are containment and review mechanisms. They do not prove ITAR
+compliance, legal sufficiency, model safety, future route correctness, or that
+an agent DAG is trustworthy.
+
+The policy/data-boundary gate is documented in
 [Zero-Trust Policy/Data-Boundary Preflight](docs/zero-trust-policy.md).
 
-That preflight is a gate, not compliance certification. It blocks missing or
-incompatible classification metadata before DAG dispatch. It does not prove ITAR
-compliance, sandbox isolation, signed provenance, or legal sufficiency.
+## Herdr-visible subagent monitoring
+
+Tau does not treat provider agents as invisible API calls only. In
+provider-live lanes, Tau can allocate visible Herdr workspaces and panes,
+record provider readiness, capture pane/process lifecycle evidence, dispatch
+work orders, validate node receipts, and clean up run-owned workspaces through
+lease/approval gates.
+
+Visible panes are evidence, not truth. Tau still treats pane output as an
+untrusted signal until a receipt validates the expected goal, node, attempt,
+work-order hash, and evidence artifacts.
+
+## Status snapshot
+
+| Area | Status | Boundary |
+| --- | --- | --- |
+| Policy/data-boundary preflight | Implemented | Gate only; not compliance certification. |
+| Typed evidence manifest | Implemented | Validates artifact metadata; does not prove semantic truth. |
+| Command-spec trust policy | Implemented | Local command policy gate; not a sandbox. |
+| Herdr-visible provider lanes | Implemented in proof lanes | Visible pane state is evidence, not truth. |
+| Herdr cleanup/GC | Implemented with leases/approval gates | Does not prove arbitrary non-Tau cleanup. |
+| GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
+| Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
+| Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
+| Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
+| Memory/evidence-case gate | Partial | Memory-first routes exist; a dedicated `tau.memory_intent_gate_receipt.v1` surface is not present in this checkout. |
+| `tau run` convenience command | Planned gap | Use `tau dag-run` until implemented. |
+| Copyable examples | Planned gap | No `examples/` directory is present in this checkout. |
+
+## Positioning
+
+Tau is not trying to be a better general-purpose agent framework. General agent
+frameworks focus on making agents easier to build, compose, deploy, and scale.
+Tau focuses on making untrusted agent work admissible or rejectable before it
+counts.
+
+Tau's differentiated stance is:
+
+- memory intent before dispatch where Memory is available;
+- evidence artifacts separate from model prose;
+- Herdr-visible subagent monitoring for provider lanes;
+- policy and data-boundary gates before zero-trust DAG dispatch;
+- receipts and validators instead of agent consensus;
+- explicit non-claims for every proof rung.
 
 ## Research Influence: Adaptive DAGs
 
@@ -229,41 +326,49 @@ T’au is still experimental. Treat dry-run GitHub transport, local command-loop
 receipts, and UX Lab chat evidence as proof of specific rungs, not proof of a
 finished global Sparta Chat or production orchestration system.
 
-## Quickstart
+## Quickstart: zero-trust local run
 
-Install and run the original T’au CLI:
+Install the project environment:
 
 ```bash
 cd /home/graham/workspace/experiments/tau
 uv sync
 uv run tau --help
-uv run tau --print "Summarize this repository in three bullets."
 ```
 
-Run the focused test suite:
+Inspect the starter policy and data-boundary fixtures:
 
 ```bash
-uv run pytest tests/test_subagent_receipt.py tests/test_generated_ticket.py tests/test_human_goal_change.py -q
-uv run pytest tests/test_handoff_dispatch.py tests/test_github_handoff.py -q
+python -m json.tool experiments/goal-locked-subagents/fixtures/zero-trust-policy.json
+python -m json.tool experiments/goal-locked-subagents/fixtures/itar-data-boundary.json
 ```
 
-Run a local command-loop harness receipt:
+Run the zero-trust preflight doctor:
 
 ```bash
-uv run tau human-goal-change-bridge \
-  experiments/goal-locked-subagents/fixtures/valid-human-goal-change.json \
-  --active-goal-hash 'sha256:active-goal' \
-  --trusted-human \
-  --handoff-out /tmp/tau-start-handoff.json \
-  --receipt /tmp/tau-bridge-receipt.json
-
-uv run tau handoff-command-loop \
-  --start /tmp/tau-start-handoff.json \
-  --receipt-dir /tmp/tau-command-loop \
-  --max-steps 1 \
-  --agents-root experiments/goal-locked-subagents/agent-command-specs \
-  --command-spec-root experiments/goal-locked-subagents/agent-command-specs
+uv run tau zero-trust-doctor \
+  --policy-profile experiments/goal-locked-subagents/fixtures/zero-trust-policy.json \
+  --data-boundary experiments/goal-locked-subagents/fixtures/itar-data-boundary.json
 ```
+
+Run a bounded DAG through the current product command:
+
+```bash
+uv run tau dag-run <dag-spec.json>
+uv run tau run-status <run-dir>
+```
+
+The shorter product command `uv run tau run <dag-spec.json>` is a planned gap;
+use `dag-run` until it exists.
+
+For a quick non-mutating regression surface, run:
+
+```bash
+scripts/run-real-world-sanity.py --levels simple --receipt-timeout-seconds 120
+```
+
+The generic coding-agent runtime still exists, but Tau's primary product
+surface is zero-trust containment, not autonomous chat.
 
 Render dry-run GitHub transport from a command-loop receipt:
 
