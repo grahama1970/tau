@@ -169,6 +169,7 @@ from tau_coding.run_status import build_run_status
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.self_fix_ticket_repair import run_ticket_repair
+from tau_coding.server import serve_tau_api
 from tau_coding.session import (
     CodingSession,
     CodingSessionConfig,
@@ -1372,6 +1373,42 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is not True:
             raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "serve":
+        try:
+            options = _parse_serve_cli_args(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(
+            json.dumps(
+                {
+                    "schema": "tau.serve_start_receipt.v1",
+                    "ok": True,
+                    "status": "PASS",
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": False,
+                    "host": options["host"],
+                    "port": options["port"],
+                    "proof_scope": {
+                        "proves": ["Tau started a local self-hosted API process."],
+                        "does_not_prove": [
+                            "Production deployment readiness.",
+                            "Provider/model semantic quality.",
+                            "Sandbox enforcement.",
+                        ],
+                    },
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        serve_tau_api(
+            host=str(options["host"]),
+            port=int(options["port"]),
+            doctor_handler=lambda: doctor_command(repo_root=Path(__file__).resolve().parents[2]),
+        )
         raise typer.Exit()
 
     if prompt_option is None and command == "dag-fail-closed-registry":
@@ -3079,6 +3116,38 @@ def _parse_report_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if options["out"] is None:
         raise RuntimeError("Usage: tau report <run-dir> --out <report.html> [--force]")
+    return options
+
+
+def _parse_serve_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "host": "127.0.0.1",
+        "port": 8768,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--host":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--host requires a value")
+            options["host"] = args[index]
+        elif arg.startswith("--host="):
+            options["host"] = arg.partition("=")[2]
+        elif arg == "--port":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--port requires a value")
+            options["port"] = int(args[index])
+        elif arg.startswith("--port="):
+            options["port"] = int(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown serve option: {arg}")
+        index += 1
+    if not isinstance(options["host"], str) or not options["host"]:
+        raise RuntimeError("--host must be non-empty")
+    if int(options["port"]) < 1 or int(options["port"]) > 65535:
+        raise RuntimeError("--port must be between 1 and 65535")
     return options
 
 

@@ -56,6 +56,10 @@ report.html` renders goal, policy, data boundary, memory/evidence gates, DAG
 steps, receipts, decisions, and non-claims from existing artifacts. See
 [Static Run Report](docs/run-report.md).
 
+For local tool integration, `uv run tau serve --host 127.0.0.1 --port 8768`
+starts a minimal self-hosted API over existing doctor, preflight, run-status,
+DAG-run, receipt-listing, and package commands. See [Local API](docs/local-api.md).
+
 To create a local zero-trust starter file set:
 
 ```bash
