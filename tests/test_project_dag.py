@@ -1035,6 +1035,36 @@ def test_project_dag_command_policy_blocks_denied_command_before_dispatch(
     }
 
 
+def test_project_dag_command_policy_blocks_implicit_cwd_when_roots_are_restricted(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    policy_path = _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["command_policy"] = str(policy_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "reviewer", _creator_evidence()),
+        include_cwd=False,
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "COMMAND_POLICY_REJECTED"
+    assert "cwd must be explicit when command policy allowed_cwd_roots is set" in "\n".join(
+        receipt["errors"]
+    )
+
+
 def test_project_dag_ready_queue_command_policy_blocks_denied_command(
     tmp_path: Path,
 ) -> None:
@@ -1576,6 +1606,7 @@ def _write_response_spec(
     *,
     sleep_seconds: float = 0.0,
     timeout_s: float = 5,
+    include_cwd: bool = True,
 ) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1583,17 +1614,18 @@ def _write_response_spec(
     if sleep_seconds:
         code += f"import time; time.sleep({sleep_seconds!r}); "
     code += f"print({json.dumps(json.dumps(response))})"
+    payload: dict[str, object] = {
+        "command": [
+            sys.executable,
+            "-c",
+            code,
+        ],
+        "timeout_s": timeout_s,
+    }
+    if include_cwd:
+        payload["cwd"] = str(tmp_path)
     spec_path.write_text(
-        json.dumps(
-            {
-                "command": [
-                    sys.executable,
-                    "-c",
-                    code,
-                ],
-                "timeout_s": timeout_s,
-            }
-        ),
+        json.dumps(payload),
         encoding="utf-8",
     )
 

@@ -2042,6 +2042,16 @@ def create_project_dag_command_policy_fixture(
         },
     )
     coder_spec_path = Path(contract["nodes"][0]["command_spec"])
+    for node in contract.get("nodes", []):
+        if not isinstance(node, dict):
+            continue
+        spec_path_text = node.get("command_spec")
+        if not isinstance(spec_path_text, str):
+            continue
+        spec_path = Path(spec_path_text)
+        spec = read_json(spec_path)
+        spec["cwd"] = str(fixture_dir)
+        write_json(spec_path, spec)
     if spec_flag is not None:
         coder_spec = read_json(coder_spec_path)
         coder_spec[spec_flag] = True

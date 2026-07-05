@@ -818,6 +818,10 @@ def validate_command_dispatch_spec_policy(
             raise ValueError(f"{label} command is denied by command policy: {denied}")
     cwd = spec.get("cwd")
     allowed_cwd_roots = _string_list(policy.get("allowed_cwd_roots"))
+    if allowed_cwd_roots and cwd is None:
+        raise ValueError(
+            f"{label} cwd must be explicit when command policy allowed_cwd_roots is set"
+        )
     if cwd is not None and allowed_cwd_roots:
         resolved_cwd = _resolve_policy_path(Path(cwd), policy_dir)
         allowed = [_resolve_policy_path(Path(root), policy_dir) for root in allowed_cwd_roots]
