@@ -29,7 +29,20 @@ cat > "${WORK_ORDER}" <<JSON
   "receipt_path": "${RECEIPT}",
   "high_stakes": true,
   "zero_trust": true,
-  "execution_substrate": "docker-sandbox"
+  "execution_substrate": "docker-sandbox",
+  "policy_profile": {
+    "schema": "tau.policy_profile.v1",
+    "profile_id": "omp-worker-example-zero-trust",
+    "default_decision": "deny"
+  },
+  "data_boundary": {
+    "schema": "tau.data_boundary.v1",
+    "classification": "public",
+    "export_controlled": false,
+    "external_provider_allowed": false,
+    "external_research_allowed": false,
+    "public_repo_allowed": false
+  }
 }
 JSON
 

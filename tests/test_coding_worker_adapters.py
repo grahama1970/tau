@@ -114,6 +114,44 @@ def test_high_stakes_worker_requires_substrate(tmp_path: Path) -> None:
     assert "substrate_required" in payload["alert_codes"]
 
 
+def test_zero_trust_worker_blocks_missing_policy(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        policy_profile=None,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+
+
+def test_zero_trust_worker_blocks_missing_data_boundary(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        data_boundary=None,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_data_boundary" in payload["alert_codes"]
+
+
 def test_scillm_worker_records_model_provider_route(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -182,6 +220,8 @@ def _write_work_order(
     schema: str,
     high_stakes: bool = False,
     execution_substrate: str | None = "docker-sandbox",
+    policy_profile: dict | None = {"profile_id": "test-zero-trust"},
+    data_boundary: dict | None = {"classification": "public"},
     model_provider_route: dict | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
@@ -205,6 +245,10 @@ def _write_work_order(
     }
     if execution_substrate is not None:
         payload["execution_substrate"] = execution_substrate
+    if policy_profile is not None:
+        payload["policy_profile"] = policy_profile
+    if data_boundary is not None:
+        payload["data_boundary"] = data_boundary
     path = tmp_path / "work-order.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

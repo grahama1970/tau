@@ -94,6 +94,14 @@ def _write_worker_receipt(
     high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
     if high_stakes and substrate not in ALLOWED_SUBSTRATES:
         alerts.append(_alert("substrate_required", "high-stakes worker requires Herdr or sandbox"))
+    if high_stakes and not work_order.get("policy_profile"):
+        alerts.append(
+            _alert("missing_policy_profile", "zero-trust coding worker requires policy_profile")
+        )
+    if high_stakes and not work_order.get("data_boundary"):
+        alerts.append(
+            _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
+        )
 
     repo = _repo_root(work_order)
     allowed_paths = _string_list(work_order.get("allowed_paths"))
@@ -176,6 +184,8 @@ def _write_worker_receipt(
         "goal_hash": goal_hash,
         "execution_substrate": substrate,
         "high_stakes": high_stakes,
+        "policy_profile": work_order.get("policy_profile"),
+        "data_boundary": work_order.get("data_boundary"),
         "model_provider_route": _model_provider_route(work_order, result),
         "changed_files": changed_files,
         "required_artifacts": required_artifacts,

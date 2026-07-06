@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:08 EDT by agent
+**Last updated:** 2026-07-06 18:14 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding worker policy/data-boundary enforcement rung:
+  `src/tau_coding/coding_worker_adapters.py` now blocks high-stakes or
+  zero-trust OMP/SciLLM worker results when the work order omits
+  `policy_profile` or `data_boundary`, in addition to the existing substrate,
+  goal-hash, changed-path, artifact, test-log, GitHub mutation, and research
+  receipt gates. The worker receipts preserve the observed `policy_profile` and
+  `data_boundary` metadata. `examples/omp-worker/run.sh` now includes public
+  zero-trust example metadata so the copyable fixture still passes through the
+  stricter gate. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `11 passed in 0.41s`;
+  `bash -n examples/omp-worker/run.sh` -> pass;
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-policy-boundary-proof`
+  exited 0 and wrote
+  `/tmp/tau-omp-worker-policy-boundary-proof/demo-receipt.json`. This proves
+  deterministic local policy/data-boundary presence gating for external coding
+  worker validation; it does not prove full policy semantic compatibility,
+  Tau-launched workers, live OMP/SciLLM coding work, runtime sandbox isolation,
+  provider/model quality, or legal compliance.
 
 - 2026-07-06 OMP worker example rung:
   `examples/omp-worker/` adds a copyable Tau validation example for bounded

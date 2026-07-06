@@ -247,7 +247,8 @@ goal-hash drift, disallowed file changes, missing required artifacts, PASS test
 claims without durable logs, public GitHub mutation without policy receipts, and
 external research without research-query/source receipts. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution
-or a sandbox.
+or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
+before Tau accepts the worker result.
 
 CLI:
 
