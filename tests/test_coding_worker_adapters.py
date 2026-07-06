@@ -5,9 +5,11 @@ from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.coding_worker_adapters import (
+    OMP_WORKER_LAUNCH_RECEIPT_SCHEMA,
     OMP_WORKER_RECEIPT_SCHEMA,
     SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
     SCILLM_WORKER_RECEIPT_SCHEMA,
+    write_omp_worker_launch_receipt,
     write_omp_worker_receipt,
     write_scillm_worker_launch_receipt,
     write_scillm_worker_receipt,
@@ -229,6 +231,74 @@ def test_scillm_worker_nonclaims_model_truth(tmp_path: Path) -> None:
 
     assert "Provider/model semantic quality." in payload["proof_scope"]["does_not_prove"]
     assert "The worker is trustworthy." in payload["proof_scope"]["does_not_prove"]
+
+
+def test_omp_worker_launch_builds_dry_run_rpc_request(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+    )
+
+    assert payload["schema"] == OMP_WORKER_LAUNCH_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    assert payload["dry_run"] is True
+    assert payload["live"] is False
+    assert payload["command"] == ["omp", "--mode", "rpc", "--no-session"]
+    assert payload["stdin_jsonl"][0]["type"] == "prompt"
+    assert payload["stdin_jsonl"][0]["metadata"]["goal_hash"] == "sha256:goal"
+
+
+def test_omp_worker_launch_blocks_wrong_surface(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_swarm"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_omp_surface" in payload["alert_codes"]
+
+
+def test_cli_omp_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+    out = tmp_path / "omp-launch-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "omp-worker-launch",
+            "--work-order",
+            str(work_order),
+            "--out",
+            str(out),
+            "--caller-skill",
+            "tau-test",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["schema"] == OMP_WORKER_LAUNCH_RECEIPT_SCHEMA
+    assert payload["caller_skill"] == "tau-test"
 
 
 def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) -> None:

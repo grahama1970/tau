@@ -261,6 +261,8 @@ result artifacts.
 Current validation adapters:
 
 - `tau.executor.omp.v1` work orders validated into `tau.omp_worker_receipt.v1`
+- `tau.executor.omp.v1` work orders converted into dry-run
+  `tau.omp_worker_launch_receipt.v1` launch requests for OMP RPC
 - `tau.executor.scillm_worker.v1` work orders validated into
   `tau.scillm_worker_receipt.v1`
 - `tau.executor.scillm_worker.v1` work orders converted into dry-run
@@ -285,6 +287,10 @@ uv run tau omp-worker-validate \
   --result omp-result.json \
   --out omp-worker-receipt.json
 
+uv run tau omp-worker-launch \
+  --work-order omp-work-order.json \
+  --out omp-worker-launch-receipt.json
+
 uv run tau scillm-worker-validate \
   --work-order scillm-work-order.json \
   --result scillm-result.json \
@@ -294,6 +300,13 @@ uv run tau scillm-worker-launch \
   --work-order scillm-work-order.json \
   --out scillm-worker-launch-receipt.json
 ```
+
+For OMP coding delegates, Tau uses the documented process-isolated RPC surface:
+`omp --mode rpc --no-session` with NDJSON prompt frames. `omp-worker-launch` is
+currently a dry-run launcher receipt: it builds the command and stdin JSONL
+frame, records the caller skill, and blocks incompatible OMP route metadata
+before any external process launch. It does not prove Tau launched OMP, OMP
+accepted or ran the request, the worker ran, or code changed.
 
 For SciLLM coding delegates, Tau should use the OpenCode serve surface
 (`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
@@ -313,10 +326,19 @@ examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
 ```
 
 `examples/omp-worker` validates a bounded OMP-shaped worker result. By default
-it uses a fixture result and marks the demo `mocked:true`, `live:false`. Set
+it uses a fixture result and marks the demo `mocked:true`, `live:false`; it
+also writes a dry-run `omp-worker-launch-receipt.json` showing the exact OMP
+RPC command and prompt frame Tau would send. Set
 `OMP_WORKER_RESULT=/path/to/tau.omp_worker_result.v1.json` to validate an
-external worker artifact. The example does not prove Tau launched OMP until a
-separate launcher receipt exists.
+external worker artifact. The launch receipt can also be generated directly:
+
+```bash
+uv run tau omp-worker-launch \
+  --work-order omp-work-order.json \
+  --out omp-worker-launch-receipt.json
+```
+
+Neither validation nor dry-run launch proves live OMP execution.
 
 `examples/scillm-worker` validates a bounded SciLLM/OpenCode-serve-shaped
 worker result. By default it uses a fixture result and marks the demo
@@ -346,6 +368,7 @@ Tau does not claim:
 - LSP or tests prove full safety
 - worker adapters make OMP or SciLLM trusted
 - worker validation proves Tau launched the worker
+- OMP dry-run launch receipts prove live RPC execution
 - SciLLM dry-run launch receipts prove live OpenCode execution
 - GitHub read receipts authorize mutation
 - policy/data-boundary gates are legal compliance

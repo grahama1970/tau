@@ -40,6 +40,7 @@ from tau_coding.browser_cdp_proof import (
 )
 from tau_coding.code_patch import apply_code_patch_receipt
 from tau_coding.coding_worker_adapters import (
+    write_omp_worker_launch_receipt,
     write_omp_worker_receipt,
     write_scillm_worker_launch_receipt,
     write_scillm_worker_receipt,
@@ -1784,6 +1785,20 @@ def main(
                 work_order_path=Path(str(options["work_order"])),
                 result_path=Path(str(options["result"])),
                 output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "omp-worker-launch":
+        try:
+            options = _parse_omp_worker_launch_cli_args(positional_args[1:])
+            payload = write_omp_worker_launch_receipt(
+                work_order_path=Path(str(options["work_order"])),
+                output_path=Path(str(options["out"])),
+                caller_skill=str(options["caller_skill"]),
+                apply=bool(options["apply"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4635,6 +4650,39 @@ def _parse_worker_validate_cli_args(args: list[str], *, command: str) -> dict[st
         raise RuntimeError(
             f"Usage: tau {command} --work-order <json> --result <json> --out <receipt>"
         )
+    return options
+
+
+def _parse_omp_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "work_order": None,
+        "out": None,
+        "caller_skill": "tau",
+        "apply": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--work-order", "--out", "--caller-skill"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--work-order="):
+            options["work_order"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--caller-skill="):
+            options["caller_skill"] = arg.partition("=")[2]
+        elif arg == "--apply":
+            options["apply"] = True
+        else:
+            raise RuntimeError(f"unknown omp-worker-launch option: {arg}")
+        index += 1
+    if not _optional_str(options.get("work_order")):
+        raise RuntimeError("Usage: tau omp-worker-launch --work-order <json> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau omp-worker-launch --work-order <json> --out <receipt>")
     return options
 
 

@@ -12,6 +12,8 @@ from typing import Any
 OMP_WORK_ORDER_SCHEMA = "tau.executor.omp.v1"
 OMP_WORKER_RESULT_SCHEMA = "tau.omp_worker_result.v1"
 OMP_WORKER_RECEIPT_SCHEMA = "tau.omp_worker_receipt.v1"
+OMP_WORKER_LAUNCH_RECEIPT_SCHEMA = "tau.omp_worker_launch_receipt.v1"
+OMP_RPC_COMMAND = ["omp", "--mode", "rpc", "--no-session"]
 SCILLM_WORK_ORDER_SCHEMA = "tau.executor.scillm_worker.v1"
 SCILLM_WORKER_RESULT_SCHEMA = "tau.scillm_worker_result.v1"
 SCILLM_WORKER_RECEIPT_SCHEMA = "tau.scillm_worker_receipt.v1"
@@ -61,6 +63,75 @@ def write_scillm_worker_receipt(
         receipt_schema=SCILLM_WORKER_RECEIPT_SCHEMA,
         worker_kind="scillm",
     )
+
+
+def write_omp_worker_launch_receipt(
+    *,
+    work_order_path: Path,
+    output_path: Path,
+    caller_skill: str = "tau",
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Write a dry-run OMP RPC launch request receipt."""
+
+    resolved_work_order = work_order_path.expanduser().resolve()
+    alerts: list[dict[str, Any]] = []
+    work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    if work_order.get("schema") != OMP_WORK_ORDER_SCHEMA:
+        alerts.append(
+            _alert("invalid_work_order_schema", f"schema must be {OMP_WORK_ORDER_SCHEMA}")
+        )
+    _append_work_order_gate_alerts(work_order, alerts)
+    route = _model_provider_route(work_order, {})
+    route_surface = route.get("surface")
+    if route_surface is not None and route_surface != "omp_rpc":
+        alerts.append(_alert("invalid_omp_surface", "OMP worker launch must use omp_rpc"))
+    if apply:
+        alerts.append(_alert("apply_not_implemented", "live OMP worker launch is not implemented"))
+
+    request_payload = _omp_rpc_request_payload(work_order)
+    ok = not alerts
+    payload = {
+        "schema": OMP_WORKER_LAUNCH_RECEIPT_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "dry_run": True,
+        "apply_requested": apply,
+        "worker_kind": "omp",
+        "work_order_path": str(resolved_work_order),
+        "work_order_schema": work_order.get("schema"),
+        "dag_id": work_order.get("dag_id"),
+        "node_id": work_order.get("node_id"),
+        "agent": work_order.get("agent"),
+        "attempt": work_order.get("attempt"),
+        "goal_hash": work_order.get("goal_hash"),
+        "command": OMP_RPC_COMMAND,
+        "stdin_jsonl": [request_payload],
+        "caller_skill": caller_skill,
+        "model_provider_route": route,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau built a bounded OMP RPC launch request from a work order.",
+                "Tau checked work-order gates before any external OMP process launch.",
+            ],
+            "does_not_prove": [
+                "Tau launched OMP.",
+                "OMP accepted or ran the request.",
+                "The worker is trustworthy.",
+                "The code is semantically correct.",
+                "Provider/model semantic quality.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    payload["receipt_path"] = str(output_path.expanduser().resolve())
+    _write_json(output_path, payload)
+    return payload
 
 
 def write_scillm_worker_launch_receipt(
@@ -395,6 +466,42 @@ def _scillm_opencode_request_payload(
             "receipt_path": work_order.get("receipt_path"),
         },
     }
+
+
+def _omp_rpc_request_payload(work_order: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "id": f"tau-{_string(work_order.get('dag_id'))}-{_string(work_order.get('node_id'))}",
+        "type": "prompt",
+        "message": _omp_worker_prompt(work_order),
+        "metadata": {
+            "schema": OMP_WORK_ORDER_SCHEMA,
+            "dag_id": work_order.get("dag_id"),
+            "node_id": work_order.get("node_id"),
+            "attempt": work_order.get("attempt"),
+            "goal_hash": work_order.get("goal_hash"),
+            "result_path": work_order.get("result_path"),
+            "receipt_path": work_order.get("receipt_path"),
+        },
+    }
+
+
+def _omp_worker_prompt(work_order: Mapping[str, Any]) -> str:
+    allowed_paths = ", ".join(_string_list(work_order.get("allowed_paths"))) or "(none)"
+    forbidden_paths = ", ".join(_string_list(work_order.get("forbidden_paths"))) or "(none)"
+    required_artifacts = ", ".join(_string_list(work_order.get("required_artifacts"))) or "(none)"
+    return "\n".join(
+        [
+            "You are an untrusted oh-my-pi coding worker running under Tau.",
+            f"Task: {_string(work_order.get('task')) or ''}",
+            f"Goal hash: {_string(work_order.get('goal_hash')) or ''}",
+            f"Allowed paths: {allowed_paths}",
+            f"Forbidden paths: {forbidden_paths}",
+            f"Required artifacts: {required_artifacts}",
+            "Return a tau.omp_worker_result.v1 JSON artifact at the requested result_path.",
+            "Do not claim tests passed without durable logs.",
+            "Do not mutate paths outside the allowlist.",
+        ]
+    )
 
 
 def _scillm_worker_prompt(work_order: Mapping[str, Any]) -> str:

@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:27 EDT by agent
+**Last updated:** 2026-07-06 18:33 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 OMP worker dry-run launch receipt rung:
+  `src/tau_coding/coding_worker_adapters.py` now writes
+  `tau.omp_worker_launch_receipt.v1` from a `tau.executor.omp.v1` work order.
+  The new `uv run tau omp-worker-launch --work-order <work-order.json> --out
+  <receipt.json>` command builds a dry-run OMP RPC launch request using the
+  local `oh-my-pi` documented process-isolated surface:
+  `omp --mode rpc --no-session` with an NDJSON `prompt` frame. It records the
+  exact command, stdin JSONL, caller skill, goal hash, result path, and receipt
+  path, rejects incompatible route metadata, and exits before any external OMP
+  process launch. `examples/omp-worker/run.sh` now emits
+  `omp-worker-launch-receipt.json` before validating the worker result. Proof:
+  `bash -n examples/omp-worker/run.sh` -> pass;
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-launch-example-proof-final`
+  exited 0 and wrote
+  `/tmp/tau-omp-worker-launch-example-proof-final/omp-worker-launch-receipt.json`
+  plus `/tmp/tau-omp-worker-launch-example-proof-final/demo-receipt.json`;
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `20 passed in 0.41s`. This
+  proves deterministic local OMP RPC request construction, route fail-closed
+  checks, and example wiring; it does not prove Tau launched OMP, OMP accepted
+  or ran the request, live coding work occurred, semantic code correctness,
+  provider/model quality, or legal compliance.
 
 - 2026-07-06 SciLLM worker dry-run launch receipt rung:
   `src/tau_coding/coding_worker_adapters.py` now writes
