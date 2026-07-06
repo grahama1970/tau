@@ -1,0 +1,80 @@
+{
+  "actions": [
+    "comment",
+    "label"
+  ],
+  "approval_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002452Z-tau-github-apply-policy-approval-target-20260706/github-apply-policy-approval-mismatch/approval-gate-receipt.json",
+  "approval_receipt_sha256": "15dcfdba2bf5a6d8926086cf16658d2a8b9f2fca285977e9f6116b4f5b915853",
+  "checks": [
+    {
+      "code": "repo_allowlist",
+      "ok": true,
+      "repo": "grahama1970/tau"
+    },
+    {
+      "code": "action_denylist",
+      "denied_hits": [],
+      "ok": true
+    },
+    {
+      "allowed_misses": [],
+      "code": "action_allowlist",
+      "ok": true
+    },
+    {
+      "code": "preflight_required",
+      "ok": true,
+      "required": true
+    },
+    {
+      "code": "redaction_receipt",
+      "ok": true
+    },
+    {
+      "code": "approval_receipt",
+      "expected_target_id": "grahama1970/tau:issue#47",
+      "ok": false,
+      "target_id": "grahama1970/tau:issue#999"
+    }
+  ],
+  "errors": [
+    "approval receipt target_id must match GitHub projection target grahama1970/tau:issue#47",
+    "approval receipt is not a passing github_apply approval receipt"
+  ],
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "policy": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002452Z-tau-github-apply-policy-approval-target-20260706/github-apply-policy-approval-mismatch/github-apply-policy.json",
+  "policy_sha256": "28cbd949df01780f0dd82ce5b5106686a32a04e678b31ec1acd51f6d52e186ff",
+  "preflight_ready": true,
+  "projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002452Z-tau-github-apply-policy-approval-target-20260706/github-apply-policy-approval-mismatch/projection.json",
+  "projection_sha256": "d0e0830893f134b3ceaa717b7f840edecc66ced3558675b256a177e187a51fad",
+  "proof_scope": {
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "GitHub auth actually succeeds.",
+      "Semantic safety of the projected public comment.",
+      "Human acceptance of the projection content."
+    ],
+    "proves": [
+      "A GitHub projection and apply policy were inspected deterministically.",
+      "Repo/action allowlists and denial checks were evaluated before apply.",
+      "Required approval, redaction, and preflight gates fail closed when missing."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002452Z-tau-github-apply-policy-approval-target-20260706/github-apply-policy-approval-mismatch/github-apply-policy-receipt.json",
+  "redaction_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002452Z-tau-github-apply-policy-approval-target-20260706/github-apply-policy-approval-mismatch/github-redaction-receipt.json",
+  "redaction_receipt_sha256": "675c89be922ce170098fbf0422d8dd7d17a2dd44699b0d4944af8ab6d4a75841",
+  "requirements": {
+    "approval_packet": true,
+    "preflight": true,
+    "redaction": true
+  },
+  "schema": "tau.github_apply_policy_receipt.v1",
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}

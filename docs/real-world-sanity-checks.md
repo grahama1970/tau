@@ -118,6 +118,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.github_apply_policy_missing_gates_fail_closed`: Tau blocks a GitHub apply projection when policy-required approval, preflight, and redaction gates are missing.
 - `advanced.github_apply_policy_all_gates_pass`: Tau allows a GitHub apply projection to pass local policy only when approval, preflight, and redaction evidence are all supplied; this is still non-mutating and does not post to GitHub.
 - `advanced.github_apply_policy_redaction_hash_fail_closed`: Tau blocks a GitHub apply projection when the redacted projection artifact no longer matches the redaction receipt hash.
+- `advanced.github_apply_policy_approval_target_fail_closed`: Tau blocks a GitHub apply projection when the approval receipt target does not match the projection repo and issue target.
 - `advanced.provider_readiness`: Herdr allocates visible Codex and OpenCode provider panes, writes structured `tau.provider_session_state.v1` lifecycle records, and records post-check cleanup when provider cleanup is enabled.
 - `advanced.provider_dag_one_pass`: live visible Codex coder and OpenCode reviewer complete a one-pass scratch DAG.
 - `advanced.generic_provider_dag_adapter`: generic DAG executes a provider-backed adapter node and carries `provider_live` evidence in the generic run receipt.

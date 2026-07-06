@@ -824,6 +824,9 @@ def test_cli_github_apply_policy_check_writes_policy_receipt(tmp_path: Path) -> 
                 "status": "PASS",
                 "approved": True,
                 "requested_action": "github_apply",
+                "packet_summary": {
+                    "target_id": "grahama1970/tau:issue#47",
+                },
                 "errors": [],
             }
         ),

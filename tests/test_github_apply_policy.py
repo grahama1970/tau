@@ -99,6 +99,29 @@ def test_github_apply_policy_blocks_redacted_projection_hash_mismatch(
     )
 
 
+def test_github_apply_policy_blocks_approval_target_mismatch(tmp_path: Path) -> None:
+    paths = _write_policy_fixture(tmp_path)
+    approval = json.loads(paths["approval"].read_text(encoding="utf-8"))
+    approval["packet_summary"]["target_id"] = "grahama1970/tau:issue#999"
+    paths["approval"].write_text(json.dumps(approval), encoding="utf-8")
+
+    receipt = write_github_apply_policy_receipt(
+        projection_path=paths["projection"],
+        policy_path=paths["policy"],
+        receipt_path=paths["receipt"],
+        approval_receipt_path=paths["approval"],
+        redaction_receipt_path=paths["redaction"],
+        preflight_ready=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert (
+        "approval receipt target_id must match GitHub projection target "
+        "grahama1970/tau:issue#47"
+    ) in receipt["errors"]
+
+
 def _write_policy_fixture(tmp_path: Path) -> dict[str, Path]:
     projection_path = tmp_path / "projection.json"
     redacted_projection_path = tmp_path / "projection.redacted.json"
@@ -137,6 +160,9 @@ def _write_policy_fixture(tmp_path: Path) -> dict[str, Path]:
         "status": "PASS",
         "approved": True,
         "requested_action": "github_apply",
+        "packet_summary": {
+            "target_id": "grahama1970/tau:issue#47",
+        },
         "errors": [],
     }
     projection_path.write_text(json.dumps(projection), encoding="utf-8")
