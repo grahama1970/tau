@@ -265,12 +265,13 @@ scripts/run-coding-capability-sanity.py \
 
 The receipt covers hash-bound patch receipts, course correction, structured
 review findings, LSP receipts, commit planning, debugger evidence, GitHub reads,
-worker validation, dry-run worker launch receipts, and orchestration reliability.
-It records `mocked:"mixed"` and `live:"mixed"` because the worker examples use
-fixture worker results while the coding reliability example exercises local
-receipt-producing commands. It does not prove live OMP/SciLLM execution,
-provider/model quality, semantic code correctness, GitHub mutation, human
-acceptance, or legal compliance.
+worker validation, dry-run worker launch receipts, bounded apply-launch
+mechanics, and orchestration reliability. It records `mocked:"mixed"` and
+`live:"mixed"` because the worker examples use fixture worker results and
+deterministic local apply fixtures while the coding reliability example
+exercises local receipt-producing commands. It does not prove live OMP/SciLLM
+semantic worker execution, provider/model quality, semantic code correctness,
+GitHub mutation, human acceptance, or legal compliance.
 
 ## Intended Worker Adapters
 
@@ -281,13 +282,13 @@ result artifacts.
 Current validation adapters:
 
 - `tau.executor.omp.v1` work orders validated into `tau.omp_worker_receipt.v1`
-- `tau.executor.omp.v1` work orders converted into dry-run
+- `tau.executor.omp.v1` work orders converted into dry-run or bounded apply
   `tau.omp_worker_launch_receipt.v1` launch requests for OMP RPC
 - `tau.executor.scillm_worker.v1` work orders validated into
   `tau.scillm_worker_receipt.v1`
-- `tau.executor.scillm_worker.v1` work orders converted into dry-run
-  `tau.scillm_worker_launch_receipt.v1` launch requests for SciLLM OpenCode
-  serve
+- `tau.executor.scillm_worker.v1` work orders converted into dry-run or
+  bounded apply `tau.scillm_worker_launch_receipt.v1` launch requests for
+  SciLLM OpenCode serve
 
 These adapters reject missing results, invalid schemas, prose-only results,
 goal-hash drift, disallowed file changes, missing required artifacts, PASS test
@@ -428,8 +429,8 @@ Tau does not claim:
 - LSP or tests prove full safety
 - worker adapters make OMP or SciLLM trusted
 - worker validation proves Tau launched the worker
-- OMP dry-run launch receipts prove live RPC execution
-- SciLLM dry-run launch receipts prove live OpenCode execution
+- OMP dry-run or fixture apply launch receipts prove real OMP execution
+- SciLLM dry-run or fixture apply launch receipts prove live OpenCode execution
 - GitHub read receipts authorize mutation
 - policy/data-boundary gates are legal compliance
 
