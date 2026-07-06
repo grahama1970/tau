@@ -1519,6 +1519,30 @@ def build_checks(
             output_receipt=route_memory_apply["sync_receipt"],
         ),
         Check(
+            check_id="advanced.dag_route_memory_apply_approval_target_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau projects route-memory candidates locally, then blocks Memory "
+                "sync apply when the memory_upsert approval targets a different DAG."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                route_memory_apply_wrong_approval_target_command(
+                    uv_tau=uv_tau,
+                    signal=route_memory_apply["signal"],
+                    candidate_receipt=route_memory_apply["approval_mismatch_candidate_receipt"],
+                    sync_receipt=route_memory_apply["approval_mismatch_sync_receipt"],
+                    approval_receipt=route_memory_apply["approval_mismatch_receipt"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="APPROVAL_TARGET_MISMATCH",
+            output_receipt=route_memory_apply["approval_mismatch_sync_receipt"],
+        ),
+        Check(
             check_id="advanced.dag_route_memory_dry_run_projects_documents",
             level="advanced",
             purpose=(
@@ -2780,6 +2804,22 @@ def create_route_memory_fixture(run_dir: Path) -> dict[str, Path]:
         "signal": write_json(fixture_dir / "dag-signal-receipt.json", signal),
         "candidate_receipt": fixture_dir / "candidate-receipt.json",
         "sync_receipt": fixture_dir / "sync-receipt.json",
+        "approval_mismatch_candidate_receipt": fixture_dir
+        / "approval-mismatch-candidate-receipt.json",
+        "approval_mismatch_sync_receipt": fixture_dir / "approval-mismatch-sync-receipt.json",
+        "approval_mismatch_receipt": write_json(
+            fixture_dir / "approval-mismatch-receipt.json",
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "approved": True,
+                "requested_action": "memory_upsert",
+                "packet_summary": {
+                    "target_id": "route-memory:other-dag:tau_route_memory",
+                },
+            },
+        ),
         "dry_run_candidate_receipt": fixture_dir / "dry-run-candidate-receipt.json",
         "dry_run_sync_receipt": fixture_dir / "dry-run-sync-receipt.json",
     }
@@ -2879,6 +2919,60 @@ completed = run([
     "--receipt",
     str(sync_receipt),
     "--apply",
+], 1)
+raise SystemExit(completed.returncode)
+"""
+
+
+def route_memory_apply_wrong_approval_target_command(
+    *,
+    uv_tau: list[str],
+    signal: Path,
+    candidate_receipt: Path,
+    sync_receipt: Path,
+    approval_receipt: Path,
+) -> str:
+    return f"""
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+signal = Path({str(signal)!r})
+candidate_receipt = Path({str(candidate_receipt)!r})
+sync_receipt = Path({str(sync_receipt)!r})
+approval_receipt = Path({str(approval_receipt)!r})
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-route-memory-candidates",
+    "--signal-receipt",
+    str(signal),
+    "--receipt",
+    str(candidate_receipt),
+], 0)
+completed = run([
+    *uv_tau,
+    "dag-route-memory-sync",
+    "--candidate-receipt",
+    str(candidate_receipt),
+    "--receipt",
+    str(sync_receipt),
+    "--apply",
+    "--approval-receipt",
+    str(approval_receipt),
 ], 1)
 raise SystemExit(completed.returncode)
 """

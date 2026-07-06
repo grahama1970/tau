@@ -323,6 +323,8 @@ def _sync_gate_alerts(
             _approval_alerts(
                 approval_receipt=approval_receipt,
                 approval_receipt_path=approval_receipt_path,
+                candidate_receipt=candidate_receipt,
+                collection=collection,
             )
         )
     return alerts
@@ -332,6 +334,8 @@ def _approval_alerts(
     *,
     approval_receipt: dict[str, Any] | None,
     approval_receipt_path: Path | None,
+    candidate_receipt: dict[str, Any],
+    collection: str,
 ) -> list[dict[str, Any]]:
     if approval_receipt_path is None:
         return [
@@ -383,7 +387,26 @@ def _approval_alerts(
                 {"requested_action": approval_receipt.get("requested_action")},
             )
         )
+    packet_summary = approval_receipt.get("packet_summary")
+    target_id = packet_summary.get("target_id") if isinstance(packet_summary, dict) else None
+    expected_target_id = _approval_target_id(candidate_receipt, collection=collection)
+    if target_id != expected_target_id:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_target_mismatch",
+                "Route-memory apply approval must target this DAG and Memory collection.",
+                {
+                    "target_id": target_id,
+                    "expected_target_id": expected_target_id,
+                },
+            )
+        )
     return alerts
+
+
+def _approval_target_id(candidate_receipt: dict[str, Any], *, collection: str) -> str:
+    return f"route-memory:{candidate_receipt.get('dag_id')}:{collection}"
 
 
 def _memory_documents(candidate_receipt: dict[str, Any], *, collection: str) -> list[dict[str, Any]]:

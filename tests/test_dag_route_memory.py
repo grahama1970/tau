@@ -218,6 +218,27 @@ def test_route_memory_sync_apply_blocks_wrong_approval_action(tmp_path: Path) ->
     assert any(alert["code"] == "approval_action_mismatch" for alert in receipt["alerts"])
 
 
+def test_route_memory_sync_apply_blocks_wrong_approval_target(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    approval_path = _write_approval_receipt(
+        tmp_path,
+        requested_action="memory_upsert",
+        target_id="route-memory:other-dag:tau_route_memory",
+    )
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+        approval_receipt_path=approval_path,
+        apply=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert any(alert["code"] == "approval_target_mismatch" for alert in receipt["alerts"])
+
+
 def test_cli_route_memory_sync_writes_dry_run_receipt(tmp_path: Path) -> None:
     candidate_path = _write_candidate_receipt(tmp_path)
     receipt_path = tmp_path / "sync.json"
@@ -282,7 +303,12 @@ def _write_candidate_receipt(tmp_path: Path) -> Path:
     return candidate_path
 
 
-def _write_approval_receipt(tmp_path: Path, *, requested_action: str) -> Path:
+def _write_approval_receipt(
+    tmp_path: Path,
+    *,
+    requested_action: str,
+    target_id: str = "route-memory:route-memory-test:tau_route_memory",
+) -> Path:
     path = tmp_path / "approval-receipt.json"
     path.write_text(
         json.dumps(
@@ -292,6 +318,9 @@ def _write_approval_receipt(tmp_path: Path, *, requested_action: str) -> Path:
                 "status": "PASS",
                 "approved": True,
                 "requested_action": requested_action,
+                "packet_summary": {
+                    "target_id": target_id,
+                },
             }
         ),
         encoding="utf-8",
