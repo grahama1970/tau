@@ -1,0 +1,21 @@
+28Z-rw-sanity-provider-dag-repair\nrun_dir: /home/graham/wo
+rkspace/experiments/tau/experiments/goal-locked-subagents/p
+roofs/real-world-sanity/20260706T000138Z-tau-advanced-resea
+rch-source-regression-20260706/advanced-provider-runs/repai
+r-loop/20260706T001028Z-rw-sanity-provider-dag-repair\ndag_
+spec: /home/graham/workspace/experiments/tau/experiments/go
+al-locked-subagents/proofs/real-world-sanity/20260706T00013
+8Z-tau-advanced-research-source-regression-20260706/advance
+d-provider-runs/repair-loop/20260706T001028Z-rw-sanity-prov
+ider-dag-repair/dag-spec.json\nplanner_receipt: /home/graha
+m/workspace/experiments/tau/experiments/goal-locked-subagen
+ts/proofs/real-world-sanity/20260706T000138Z-tau-advanced-r
+esearch-source-regression-20260706/advanced-provider-runs/r
+epair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/p
+lanner-receipt.json\nfinal_receipt: /home/graham/workspace/
+experiments/tau/experiments/goal-locked-subagents/proofs/re
+al-world-sanity/20260706T000138Z-tau-advanced-research-sour
+ce-regression-20260706/advanced-provider-runs/repair-loop/2
+0260706T001028Z-rw-sanity-provider-dag-repair/run-receipt.j
+son\ncanonical truth: Tau JSON receipts; this pane is human
+-visible telemetry.\n

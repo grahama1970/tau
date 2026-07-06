@@ -1,0 +1,48 @@
+{
+  "attempt": 2,
+  "dag_id": "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc",
+    "goal_id": "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w6Y:p5",
+    "terminal_id": "term_655e621819a197b7",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+    "workspace_id": "w6Y"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "REVISE: target_file content is too minimal \u2014 it only states completion without demonstrating substantive output. The coder should write actual implementation content to message.txt rather than a status note. The visible log is empty (sha256 of empty file); the coder provider must ensure stdout/stderr is captured to the visible_log_path. The commands_run field is vague ('python deterministic visible coder') \u2014 next attempt should list the explicit deterministic command(s) executed.",
+  "run_id": "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "9b3ef0d7d88398d0ce2f3f3375740dc6ce768af25b2dec50c7b6afc15410b378"
+}

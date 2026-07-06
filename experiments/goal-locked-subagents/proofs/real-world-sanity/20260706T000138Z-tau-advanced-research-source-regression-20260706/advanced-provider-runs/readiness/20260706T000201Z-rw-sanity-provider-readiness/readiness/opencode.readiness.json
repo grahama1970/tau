@@ -1,0 +1,116 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "provider_initializing_visible": false,
+    "readiness_actions": [],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "foreground_argv": [],
+    "foreground_command": "",
+    "foreground_cwd": null,
+    "foreground_pid": null,
+    "pane_agent_status": null,
+    "pane_cwd": null,
+    "pane_label": null,
+    "process_alive": false,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/readiness/20260706T000201Z-rw-sanity-provider-readiness/readiness/opencode.readiness.json",
+    "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/readiness/20260706T000201Z-rw-sanity-provider-readiness/readiness/opencode.session-state.json",
+    "readiness_probe_attempt_count": 6,
+    "readiness_probe_samples": [
+      {
+        "attempt": 1,
+        "command_matches": false,
+        "foreground_command": "",
+        "pane_get_returncode": 1,
+        "process_alive": false,
+        "process_info_returncode": 1,
+        "ready": false,
+        "state": "unknown"
+      },
+      {
+        "attempt": 2,
+        "command_matches": false,
+        "foreground_command": "",
+        "pane_get_returncode": 1,
+        "process_alive": false,
+        "process_info_returncode": 1,
+        "ready": false,
+        "state": "unknown"
+      },
+      {
+        "attempt": 3,
+        "command_matches": false,
+        "foreground_command": "",
+        "pane_get_returncode": 1,
+        "process_alive": false,
+        "process_info_returncode": 1,
+        "ready": false,
+        "state": "unknown"
+      },
+      {
+        "attempt": 4,
+        "command_matches": false,
+        "foreground_command": "",
+        "pane_get_returncode": 1,
+        "process_alive": false,
+        "process_info_returncode": 1,
+        "ready": false,
+        "state": "unknown"
+      },
+      {
+        "attempt": 5,
+        "command_matches": false,
+        "foreground_command": "",
+        "pane_get_returncode": 1,
+        "process_alive": false,
+        "process_info_returncode": 1,
+        "ready": false,
+        "state": "unknown"
+      },
+      {
+        "attempt": 6,
+        "command_matches": false,
+        "foreground_command": "",
+        "pane_get_returncode": 1,
+        "process_alive": false,
+        "process_info_returncode": 1,
+        "ready": false,
+        "state": "unknown"
+      }
+    ],
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/readiness/20260706T000201Z-rw-sanity-provider-readiness/logs/opencode.visible.txt"
+  },
+  "observed_at": "2026-07-06T00:02:51Z",
+  "pane_id": "w6R:p6",
+  "provider_id": "opencode",
+  "provider_session_state": {
+    "auth_status": "unknown",
+    "foreground_command": "",
+    "interstitial_kind": null,
+    "interstitial_present": false,
+    "observed_at": "2026-07-06T00:02:51Z",
+    "pane_id": "w6R:p6",
+    "process_alive": false,
+    "provider_api_available": false,
+    "provider_event_log_path": null,
+    "provider_id": "opencode",
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/readiness/20260706T000201Z-rw-sanity-provider-readiness/readiness/opencode.readiness.json",
+    "ready": false,
+    "schema": "tau.provider_session_state.v1",
+    "source": "herdr_process_info",
+    "state": "crashed",
+    "terminal_id": "term_655e5fbf616e0785",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/readiness/20260706T000201Z-rw-sanity-provider-readiness/logs/opencode.visible.txt",
+    "workspace_id": "w6R"
+  },
+  "ready": false,
+  "run_id": "20260706T000201Z-rw-sanity-provider-readiness",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "unknown",
+  "terminal_id": "term_655e5fbf616e0785",
+  "workspace_id": "w6R"
+}

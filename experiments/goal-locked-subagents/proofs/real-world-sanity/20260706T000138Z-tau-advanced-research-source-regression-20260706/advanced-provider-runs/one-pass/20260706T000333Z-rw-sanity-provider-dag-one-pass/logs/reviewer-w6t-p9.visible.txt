@@ -1,0 +1,20 @@
+one-pass/2026
+0706T000333Z-
+rw-sanity-pro
+vider-dag-one
+-pass/receipt
+s/attempt-01-
+reviewer.json
+Wrote file su
+ccessfully.
+
+Both conditio
+ns are met: `
+message.txt`
+has no TODO l
+ine, and the
+coder receipt
+ is schema-va
+lid. Writing
+the PASS rece
+ipt.

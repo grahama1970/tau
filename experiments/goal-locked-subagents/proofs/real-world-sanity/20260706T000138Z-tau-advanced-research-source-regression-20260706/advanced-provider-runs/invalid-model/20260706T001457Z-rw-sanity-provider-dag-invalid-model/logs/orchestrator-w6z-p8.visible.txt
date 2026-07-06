@@ -1,0 +1,21 @@
+ed-subagents/proofs/real-wor
+ld-sanity/20260706T000138Z-t
+au-advanced-research-source-
+regression-20260706/advanced
+-provider-runs/invalid-model
+/20260706T001457Z-rw-sanity-
+provider-dag-invalid-model/p
+lanner-receipt.json\nfinal_r
+eceipt: /home/graham/workspa
+ce/experiments/tau/experimen
+ts/goal-locked-subagents/pro
+ofs/real-world-sanity/202607
+06T000138Z-tau-advanced-rese
+arch-source-regression-20260
+706/advanced-provider-runs/i
+nvalid-model/20260706T001457
+Z-rw-sanity-provider-dag-inv
+alid-model/run-receipt.json\
+ncanonical truth: Tau JSON r
+eceipts; this pane is human-
+visible telemetry.\n

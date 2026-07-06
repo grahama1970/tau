@@ -1,0 +1,62 @@
+{
+  "checked_items": [
+    {
+      "actual_sha256": "sha256:c0e05eeea79f39cb9ec794dc4ca2a5e4312712da4eb269fa949bc54c9df4429b",
+      "errors": [],
+      "index": 0,
+      "kind": "creator_artifact",
+      "observed_goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+      "observed_kind": "creator_artifact",
+      "observed_schema": "tau.creator_artifact.v1",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/evidence-manifest-goal-drift-project-dag/preflight-evidence/creator-artifact.json",
+      "schema": "tau.creator_artifact.v1",
+      "sha256": "sha256:c0e05eeea79f39cb9ec794dc4ca2a5e4312712da4eb269fa949bc54c9df4429b",
+      "valid": true,
+      "validator": "tau evidence-validate creator-artifact"
+    },
+    {
+      "actual_sha256": "sha256:0b72d79ad4321e42d79643dc2fd0389f6c6a6c1ef7a20e66a7f22083940b3be9",
+      "errors": [
+        "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+      ],
+      "index": 1,
+      "kind": "reviewer_verdict",
+      "observed_goal_hash": "sha256:stale-rw-sanity-reviewer-goal",
+      "observed_kind": "reviewer_verdict",
+      "observed_schema": "tau.reviewer_verdict.v1",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/evidence-manifest-goal-drift-project-dag/preflight-evidence/reviewer-verdict.json",
+      "schema": "tau.reviewer_verdict.v1",
+      "sha256": "sha256:0b72d79ad4321e42d79643dc2fd0389f6c6a6c1ef7a20e66a7f22083940b3be9",
+      "valid": false,
+      "validator": "tau evidence-validate reviewer-verdict"
+    }
+  ],
+  "dag_id": "rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "errors": [
+    "items[1].goal_hash mismatch: expected sha256:rw-sanity-project-dag-evidence-manifest-goal-drift, observed sha256:stale-rw-sanity-reviewer-goal"
+  ],
+  "goal_hash": "sha256:rw-sanity-project-dag-evidence-manifest-goal-drift",
+  "item_count": 2,
+  "live": true,
+  "manifest_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/evidence-manifest-goal-drift-project-dag/evidence-manifest.json",
+  "manifest_sha256": "sha256:a2edb5450d3dfb536d05bcb004004c4d2569f3826c6599e5bd5b24b3c9c927e5",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Semantic correctness of the artifact contents beyond declared schema/hash checks.",
+      "Provider/model quality.",
+      "GitHub, Memory, or browser/UI side effects."
+    ],
+    "proves": [
+      "Tau inspected a typed evidence manifest.",
+      "Every listed evidence item was checked for path existence and sha256 match.",
+      "JSON evidence items with declared schemas were checked against their root schema field and goal hash."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/evidence-manifest-goal-drift-project-dag/run/evidence-validation-receipt.json",
+  "schema": "tau.evidence_validation_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-06T00:01:47Z"
+}

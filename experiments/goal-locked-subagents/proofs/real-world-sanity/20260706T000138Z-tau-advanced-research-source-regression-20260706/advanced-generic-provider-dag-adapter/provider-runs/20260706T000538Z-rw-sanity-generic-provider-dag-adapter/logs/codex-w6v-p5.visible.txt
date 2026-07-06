@@ -1,0 +1,22 @@
+        rch-source-regression-20260706/advanced-generic-pro
+        vider-dag-adapter/provider-runs/20260706T000538Z-rw
+        -sanity-generic-provider-dag-adapter/scratch-worktr
+        ee/message.txt",
+    30 +    "sha256sum /home/graham/workspace/experiments/t
+        au/experiments/goal-locked-subagents/proofs/real-wo
+        rld-sanity/20260706T000138Z-tau-advanced-research-s
+        ource-regression-20260706/advanced-generic-provider
+        -dag-adapter/provider-runs/20260706T000538Z-rw-sani
+        ty-generic-provider-dag-adapter/provider-readiness/
+        20260706T000538Z-rw-sanity-generic-provider-dag-ada
+        pter-readiness/logs/codex.visible.txt"
+    31    ],
+
+───────────────────────────────────────────────────────────
+
+• Working (1m 56s • esc to interrupt)
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

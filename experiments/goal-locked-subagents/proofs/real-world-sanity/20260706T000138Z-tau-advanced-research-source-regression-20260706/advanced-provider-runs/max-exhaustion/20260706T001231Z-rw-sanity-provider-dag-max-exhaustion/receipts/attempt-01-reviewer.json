@@ -1,0 +1,30 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w6Y",
+  "pane_id": "w6Y:p6",
+  "terminal_id": "term_655e6218871cf7b8",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "56f9da120ff2c55b1f291605356ef9ce612c10a57db07a350d07c09ff5306db6",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read target_file (message.txt)",
+    "read coder_receipt (attempt-01-coder.json)",
+    "sha256sum on visible_log_path"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file content is too minimal — it only states completion without demonstrating substantive output. The coder should write actual implementation content to message.txt rather than a status note. The visible log is empty (sha256 of empty file); the coder provider must ensure stdout/stderr is captured to the visible_log_path. The commands_run field is vague ('python deterministic visible coder') — next attempt should list the explicit deterministic command(s) executed.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,35 @@
+{
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/events.jsonl",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "proof_controls": {
+    "allow_final_forced_revise": false,
+    "coder_mode": "codex",
+    "force_reviewer_revise_attempts": [],
+    "reviewer_model": null
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider readiness",
+      "Provider execution",
+      "Node receipt validation",
+      "GitHub ticket closure",
+      "remote Tailscale monitoring"
+    ],
+    "proves": [
+      "Tau planner can emit a tau.dag_run_spec.v1 scratch coder/reviewer DAG",
+      "Planner output names DAG nodes, dependencies, policies, and artifact paths"
+    ]
+  },
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass",
+  "run_id": "20260706T000333Z-rw-sanity-provider-dag-one-pass",
+  "schema": "tau.dag_planner_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/scratch-worktree",
+  "status": "PASS",
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+  "timestamp": "2026-07-06T00:03:33Z"
+}

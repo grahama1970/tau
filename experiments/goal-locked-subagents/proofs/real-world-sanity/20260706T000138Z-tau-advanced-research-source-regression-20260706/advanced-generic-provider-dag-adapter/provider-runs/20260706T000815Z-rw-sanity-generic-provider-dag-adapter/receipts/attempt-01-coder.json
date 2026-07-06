@@ -1,0 +1,38 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T000815Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:24b6a682d8c235268f3a858715c11a685862a79946e8dacccca4180357eeb3a3",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w6W",
+  "pane_id": "w6W:p5",
+  "terminal_id": "term_655e612393ea27a2",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T000815Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "02db943326aea2f1844b4e221964ead41e0734fb4a0183cc73aebc3e3e0f1ec0",
+  "work_order_sha256": "d4797d514a4ef5a4b2cc316ae5b053ac7ddf013de0487ad6c0a2fd40453ce280",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "pwd",
+    "nl -ba message.txt",
+    "git status --short",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T000815Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "nl -ba message.txt",
+    "python -m json.tool /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json >/dev/null",
+    "jq -r '.work_order_sha256, .status, .verdict, (.changed_files | length), (.errors | length), (.policy_exceptions | length)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T000815Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "nl -ba /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T000815Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in message.txt with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,339 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-concurrent-brave-required",
+  "alerts": [
+    {
+      "code": "brave_search_required_after_two_attempts",
+      "evidence": {
+        "agent": "coder",
+        "attempts": 2,
+        "course_correction_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json",
+        "max_attempts": 3,
+        "node_id": "coder",
+        "stop_reason": "invalid_command_json"
+      },
+      "message": "Node reached two failed attempts and must use $brave-search before retry.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/compiled-command-specs/research/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-agent-registry/coder/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-agent-registry/research/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-agent-registry/reviewer/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-agent-registry/start/AGENTS.md",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/ready-queue/coder/attempt-001/dispatch-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/ready-queue/coder/attempt-002/dispatch-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/ready-queue/research/attempt-001/source-summary.json"
+  ],
+  "command_spec_root": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/compiled-command-specs",
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:31d15f32956266c2e322d4d77639fdd90577a8ed129067732e2a85a8290e9ad9",
+  "course_correction_artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json"
+  ],
+  "dag_error": {
+    "active_goal_hash": "sha256:rw-sanity-project-dag-concurrent-brave-required",
+    "attempts": 2,
+    "dag_id": "rw-sanity-project-dag-concurrent-brave-required",
+    "evidence": {
+      "alert_codes": [
+        "brave_search_required_after_two_attempts"
+      ],
+      "alert_count": 1,
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "primary_alert": {
+        "code": "brave_search_required_after_two_attempts",
+        "evidence": {
+          "agent": "coder",
+          "attempts": 2,
+          "course_correction_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json",
+          "max_attempts": 3,
+          "node_id": "coder",
+          "stop_reason": "invalid_command_json"
+        },
+        "message": "Node reached two failed attempts and must use $brave-search before retry.",
+        "severity": "BLOCK"
+      }
+    },
+    "failed_agent": "coder",
+    "failed_node": "coder",
+    "failure_code": "brave_search_required_after_two_attempts",
+    "max_attempts": 3,
+    "message": "Node reached two failed attempts and must use $brave-search before retry.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "goal-guardian",
+      "reason": "Require $brave-search research before another attempt.",
+      "type": "run_brave_search_then_retry"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run",
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-brave-required"
+    },
+    "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+  },
+  "dag_id": "rw-sanity-project-dag-concurrent-brave-required",
+  "dispatches": [
+    {
+      "artifacts": [],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "-c",
+            "print('not json')"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:8eafa96519de0555de1db40551e6de466d231ff64cfb5dd7289f89b96a9e8ef4",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "not json\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "live": false,
+      "mocked": true,
+      "ok": false,
+      "receipt_dir": null,
+      "response_projection": null,
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "coder",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-brave-required\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-brave-required\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-brave-required\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-brave-required.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:31d15f32956266c2e322d4d77639fdd90577a8ed129067732e2a85a8290e9ad9\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:coder",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "coder",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-brave-required"
+        }
+      },
+      "status": "BLOCKED",
+      "stop_reason": "invalid_command_json"
+    },
+    {
+      "artifacts": [],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "-c",
+            "print('not json')"
+          ],
+          "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+          "command_spec_sha256": "sha256:8eafa96519de0555de1db40551e6de466d231ff64cfb5dd7289f89b96a9e8ef4",
+          "exit_code": 0,
+          "stderr": "",
+          "stdout": "not json\n",
+          "timed_out": false,
+          "timeout_s": 20.0
+        }
+      ],
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "live": false,
+      "mocked": true,
+      "ok": false,
+      "receipt_dir": null,
+      "response_projection": null,
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "coder",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-brave-required\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-brave-required\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-brave-required\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-brave-required.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:31d15f32956266c2e322d4d77639fdd90577a8ed129067732e2a85a8290e9ad9\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:coder",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "coder",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-brave-required"
+        }
+      },
+      "status": "BLOCKED",
+      "stop_reason": "invalid_command_json"
+    }
+  ],
+  "edge_count": 5,
+  "entry_node": "start",
+  "errors": [
+    "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "execution": "project_agent_dag_bounded_ready_queue",
+  "execution_seconds": 0.447266,
+  "live": true,
+  "max_concurrency": 2,
+  "max_observed_concurrency": 1,
+  "max_steps": 4,
+  "mocked": false,
+  "node_artifacts": {
+    "coder": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/ready-queue/coder/attempt-001/dispatch-receipt.json",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/ready-queue/coder/attempt-002/dispatch-receipt.json"
+    ]
+  },
+  "node_attempts": {
+    "coder": 2,
+    "research": 1
+  },
+  "node_count": 4,
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "GitHub mutation or ticket closure.",
+      "Mutating branch safety.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Bounded ready-queue scheduler preflight checked acyclicity, local-only execution, provider branches, and mutating branches.",
+      "Ready nodes were dispatched by the bounded ready-queue scheduler.",
+      "Independent ready nodes can run concurrently when dependencies are satisfied.",
+      "Each dispatched node used the real local command subprocess runner.",
+      "Node evidence and reviewer verdicts were checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run",
+  "scheduler": "bounded-ready-queue",
+  "scheduler_events": [
+    {
+      "agent": "goal-guardian",
+      "event": "virtual_node_completed",
+      "node_id": "start",
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "coder",
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "research-auditor",
+      "attempt": 1,
+      "event": "node_started",
+      "node_id": "research",
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 1,
+      "event": "node_completed",
+      "node_id": "coder",
+      "ok": false,
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 1,
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "event": "node_attempt_failed",
+      "node_id": "coder",
+      "retrying": true,
+      "stop_reason": "invalid_command_json",
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 2,
+      "event": "node_started",
+      "node_id": "coder",
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 2,
+      "event": "node_completed",
+      "node_id": "coder",
+      "ok": false,
+      "ts": "2026-07-06T00:01:43Z"
+    },
+    {
+      "agent": "coder",
+      "attempt": 2,
+      "errors": [
+        "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+      ],
+      "event": "node_attempt_failed",
+      "node_id": "coder",
+      "retrying": true,
+      "stop_reason": "invalid_command_json",
+      "ts": "2026-07-06T00:01:43Z"
+    }
+  ],
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [
+    "coder",
+    "coder"
+  ],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-concurrent-brave-required"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-06T00:01:43Z",
+  "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+}
