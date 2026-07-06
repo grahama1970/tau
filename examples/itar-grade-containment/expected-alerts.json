@@ -1,0 +1,11 @@
+{
+  "research_query_gate": ["controlled_artifact_snippet_in_query"],
+  "itar_access_preflight": [
+    "actor_not_verified",
+    "us_person_not_verified",
+    "export_training_not_current",
+    "actor_boundary_not_approved"
+  ],
+  "docker_sandbox_check": ["docker_socket_mount_requested"],
+  "package_validation": []
+}

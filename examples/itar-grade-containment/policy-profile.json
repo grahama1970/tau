@@ -1,0 +1,29 @@
+{
+  "schema": "tau.policy_profile.v1",
+  "profile_id": "itar-grade-containment-demo",
+  "default_decision": "deny",
+  "requires_data_boundary": true,
+  "network": {
+    "default": "deny"
+  },
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow"
+  },
+  "research": {
+    "external_search": "allow_with_approval",
+    "manual_sanitized_receipt": "allow"
+  },
+  "memory": {
+    "read": "allow",
+    "write": "approval_required"
+  },
+  "github": {
+    "public_mutation": "deny",
+    "dry_run_projection": "allow"
+  },
+  "filesystem": {
+    "write_allowlist": ["./out"],
+    "read_denylist": []
+  }
+}
