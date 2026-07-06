@@ -714,6 +714,13 @@ def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     )
 
     by_id = {item.check_id: item for item in checks}
+    provider_metadata = by_id["advanced.project_dag_provider_metadata_propagates"]
+    assert provider_metadata.expected_status == "PASS"
+    assert provider_metadata.expected_verdict == "PASS"
+    assert provider_metadata.output_receipt == (
+        tmp_path / "provider-metadata-project-dag" / "run" / "dag-receipt.json"
+    )
+
     missing_gate = by_id["advanced.project_dag_itar_access_gate_missing_fail_closed"]
     assert missing_gate.expected_status == "BLOCKED"
     assert missing_gate.expected_verdict == "MISSING_ITAR_ACCESS_PREFLIGHT"

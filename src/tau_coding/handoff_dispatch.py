@@ -272,7 +272,11 @@ def dispatch_agent_handoff_command_once(
             errors=("command must not be empty",),
         )
 
-    stdin = json.dumps(start_payload, sort_keys=True) + "\n"
+    command_start_payload = _payload_with_command_spec_dispatch_metadata(
+        start_payload,
+        command_spec_metadata=command_spec_metadata,
+    )
+    stdin = json.dumps(command_start_payload, sort_keys=True) + "\n"
     env = os.environ.copy()
     env["TAU_HANDOFF_SELECTED_AGENT"] = str(selected_agent)
     if active_goal_hash:
@@ -377,7 +381,7 @@ def dispatch_agent_handoff_command_once(
         )
 
     dispatch = dispatch_agent_handoff_once(
-        start_payload,
+        command_start_payload,
         {str(selected_agent): response_payload},
         active_goal_hash=active_goal_hash,
         agent_registry_root=agent_registry_root,
@@ -397,6 +401,44 @@ def dispatch_agent_handoff_command_once(
         artifacts=tuple(artifacts),
         errors=dispatch.errors,
     )
+
+
+def _payload_with_command_spec_dispatch_metadata(
+    start_payload: Mapping[str, Any],
+    *,
+    command_spec_metadata: Mapping[str, Any] | None,
+) -> Mapping[str, Any]:
+    if command_spec_metadata is None:
+        return start_payload
+    tau_dag_node = command_spec_metadata.get("tau_dag_node")
+    if not isinstance(tau_dag_node, Mapping):
+        return start_payload
+
+    payload = json.loads(json.dumps(start_payload))
+    context = payload.get("context")
+    if not isinstance(context, dict):
+        context = {}
+        payload["context"] = context
+
+    context["tau_dag_node"] = tau_dag_node
+    node_id = tau_dag_node.get("node_id")
+    if isinstance(node_id, str):
+        context["dag_node_id"] = node_id
+    agent = tau_dag_node.get("agent")
+    if isinstance(agent, str):
+        context["dag_agent_role"] = agent
+
+    for key in (
+        "provider",
+        "model_policy",
+        "prompt_contract",
+        "provider_route",
+        "requires_provider_route",
+    ):
+        if key in tau_dag_node:
+            context[key] = tau_dag_node[key]
+
+    return payload
 
 
 def write_agent_handoff_command_dispatch_receipt(
@@ -761,7 +803,7 @@ def validate_command_dispatch_spec(
         raise ValueError(f"{label} timeout_s must be a positive number")
     cwd_value = payload.get("cwd")
     cwd = Path(cwd_value) if isinstance(cwd_value, str) and cwd_value else None
-    return {
+    spec: dict[str, object] = {
         "command": command,
         "timeout_s": timeout_s,
         "cwd": cwd,
@@ -769,6 +811,10 @@ def validate_command_dispatch_spec(
         "mutates": _bool(payload.get("mutates")),
         "requires_clean_worktree": _bool(payload.get("requires_clean_worktree")),
     }
+    tau_dag_node = payload.get("tau_dag_node")
+    if isinstance(tau_dag_node, dict):
+        spec["tau_dag_node"] = tau_dag_node
+    return spec
 
 
 def load_command_spec_policy(path: Path) -> dict[str, object]:

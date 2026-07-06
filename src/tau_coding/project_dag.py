@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
@@ -1496,6 +1495,49 @@ def _has_provider_route_evidence(required_evidence: tuple[str, ...]) -> bool:
     return any(any(marker in item for marker in markers) for item in required_evidence)
 
 
+def _node_dispatch_metadata(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    *,
+    include_context: bool,
+) -> dict[str, Any]:
+    node_payload = _node_payload(contract, node.node_id)
+    metadata: dict[str, Any] = {
+        "dag_id": contract.dag_id,
+        "node_id": node.node_id,
+        "agent": node.agent,
+        "executor": node.executor,
+        "goal": contract.goal,
+        "target": contract.target,
+        "required_evidence": list(node.required_evidence),
+    }
+    for key in ("provider", "model_policy", "prompt_contract", "provider_route"):
+        value = node_payload.get(key)
+        if value is not None:
+            metadata[key] = value
+    if node_payload.get("requires_provider_route") is True:
+        metadata["requires_provider_route"] = True
+    if include_context:
+        metadata["context"] = node.context
+    return metadata
+
+
+def _attach_node_dispatch_context(
+    context: dict[str, Any],
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+) -> None:
+    metadata = _node_dispatch_metadata(contract, node, include_context=True)
+    context["dag_node_id"] = node.node_id
+    context["dag_agent_role"] = node.agent
+    context["tau_dag_node"] = metadata
+    for key in ("provider", "model_policy", "prompt_contract", "provider_route"):
+        if key in metadata:
+            context[key] = metadata[key]
+    if metadata.get("requires_provider_route") is True:
+        context["requires_provider_route"] = True
+
+
 def _memory_evidence_preflight(
     *,
     contract: ProjectDagContract,
@@ -1838,7 +1880,12 @@ def _compile_command_specs(
             raise RuntimeError(f"command_spec for node {node.node_id} does not exist: {source}")
         target = compiled_root / node.node_id / "tau-dispatch-command.json"
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
+        _write_compiled_command_spec(
+            source=source,
+            target=target,
+            contract=contract,
+            node=node,
+        )
     if fallback_root is not None:
         for node in contract.nodes.values():
             if node.command_spec:
@@ -1850,8 +1897,29 @@ def _compile_command_specs(
             if source.is_file():
                 target = compiled_root / node.node_id / "tau-dispatch-command.json"
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(source, target)
+                _write_compiled_command_spec(
+                    source=source,
+                    target=target,
+                    contract=contract,
+                    node=node,
+                )
     return compiled_root
+
+
+def _write_compiled_command_spec(
+    *,
+    source: Path,
+    target: Path,
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+) -> None:
+    payload = _read_json_object(source, label=f"command_spec:{node.node_id}")
+    payload["tau_dag_node"] = _node_dispatch_metadata(
+        contract,
+        node,
+        include_context=False,
+    )
+    target.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _write_dag_agent_registry(*, contract: ProjectDagContract, receipt_dir: Path) -> Path:
@@ -1889,6 +1957,7 @@ def _start_handoff(contract: ProjectDagContract, *, contract_path: Path) -> dict
         contract_context=contract.context,
         node_context=entry.context,
     )
+    _attach_node_dispatch_context(context, contract, entry)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -2262,8 +2331,7 @@ def _node_start_handoff(
         contract_context=contract.context,
         node_context=node.context,
     )
-    context["dag_node_id"] = node.node_id
-    context["dag_agent_role"] = node.agent
+    _attach_node_dispatch_context(context, contract, node)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {

@@ -761,7 +761,7 @@ def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_e
     tmp_path: Path,
 ) -> None:
     contract_path = _write_provider_sensitive_contract(tmp_path, complete=True)
-    _write_response_spec(
+    _write_stdin_capture_response_spec(
         tmp_path,
         "panel-creator",
         _persona_dream_provider_handoff(
@@ -795,6 +795,45 @@ def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_e
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["selected_agents"] == ["panel-creator", "panel-reviewer"]
+    compiled_creator_spec = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "compiled-command-specs"
+            / "panel-creator"
+            / "tau-dispatch-command.json"
+        ).read_text(encoding="utf-8")
+    )
+    request = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-001"
+            / "request.json"
+        ).read_text(encoding="utf-8")
+    )
+    model_policy = {
+        "provider": "scillm",
+        "auth": "codex-oauth",
+        "model": "gpt-image-2",
+    }
+    prompt_contract = {
+        "schema": "tau.prompt_contract.v1",
+        "system_prompt": "Stay inside the immutable storyboard goal.",
+        "user_template": "Use the provider route evidence before claiming PASS.",
+    }
+    assert compiled_creator_spec["tau_dag_node"]["model_policy"] == model_policy
+    assert compiled_creator_spec["tau_dag_node"]["prompt_contract"] == prompt_contract
+    assert compiled_creator_spec["tau_dag_node"]["required_evidence"] == [
+        "storyboard_creator_receipt.json",
+        "provider_route_receipt",
+    ]
+    assert request["context"]["model_policy"] == model_policy
+    assert request["context"]["prompt_contract"] == prompt_contract
+    assert request["context"]["tau_dag_node"]["model_policy"] == model_policy
+    assert request["context"]["tau_dag_node"]["prompt_contract"] == prompt_contract
 
 
 def test_project_dag_memory_evidence_gate_allows_valid_artifacts(tmp_path: Path) -> None:

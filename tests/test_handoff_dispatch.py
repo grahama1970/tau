@@ -156,6 +156,61 @@ def test_command_handoff_dispatch_consumes_stdout_response(tmp_path: Path) -> No
     assert result.response_projection["next_agent"] == "human"
 
 
+def test_command_handoff_dispatch_injects_command_spec_dag_metadata(tmp_path: Path) -> None:
+    response = _valid_handoff()
+    response["previous_subagent"] = "reviewer"
+    response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+    response_path = tmp_path / "response.json"
+    response_path.write_text(json.dumps(response), encoding="utf-8")
+    request_path = tmp_path / "request.json"
+
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [
+            sys.executable,
+            "-c",
+            (
+                "import sys; "
+                f"open({str(request_path)!r}, 'w', encoding='utf-8').write(sys.stdin.read()); "
+                f"print(open({str(response_path)!r}, encoding='utf-8').read())"
+            ),
+        ],
+        active_goal_hash="sha256:active-goal",
+        command_spec_metadata={
+            "tau_dag_node": {
+                "dag_id": "provider-sensitive-dag",
+                "node_id": "reviewer",
+                "agent": "reviewer",
+                "model_policy": {
+                    "model": "codex-oauth/gpt-image-2",
+                    "provider": "scillm",
+                },
+                "prompt_contract": {
+                    "name": "phase07_storyboard_panel",
+                    "version": 1,
+                },
+                "requires_provider_route": True,
+                "required_evidence": ["provider_route_receipt"],
+            }
+        },
+    )
+
+    assert result.ok is True
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    context = request["context"]
+    assert context["dag_node_id"] == "reviewer"
+    assert context["dag_agent_role"] == "reviewer"
+    assert context["requires_provider_route"] is True
+    assert context["model_policy"]["model"] == "codex-oauth/gpt-image-2"
+    assert context["prompt_contract"]["name"] == "phase07_storyboard_panel"
+    assert context["tau_dag_node"]["model_policy"]["provider"] == "scillm"
+    assert context["tau_dag_node"]["prompt_contract"]["version"] == 1
+
+
 def test_command_handoff_dispatch_blocks_nonzero_exit() -> None:
     result = dispatch_agent_handoff_command_once(
         _valid_handoff(),
@@ -255,6 +310,41 @@ def test_load_agent_dispatch_command_spec_from_registry(tmp_path: Path) -> None:
     assert spec["command"] == [sys.executable, "-c", "print('{}')"]
     assert spec["timeout_s"] == 3.0
     assert spec["cwd"] is None
+
+
+def test_load_agent_dispatch_command_spec_preserves_dag_node_metadata(
+    tmp_path: Path,
+) -> None:
+    registry_dir = tmp_path / "registry" / "reviewer"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "AGENTS.md").write_text("---\nid: reviewer\n---\n", encoding="utf-8")
+    spec_dir = tmp_path / "compiled" / "reviewer"
+    spec_dir.mkdir(parents=True)
+    (spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", "print('{}')"],
+                "timeout_s": 3,
+                "tau_dag_node": {
+                    "node_id": "reviewer",
+                    "agent": "reviewer",
+                    "model_policy": {"provider": "scillm"},
+                    "prompt_contract": {"schema": "tau.prompt_contract.v1"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    spec = load_agent_dispatch_command_spec(
+        tmp_path / "registry",
+        "reviewer",
+        command_spec_root=tmp_path / "compiled",
+    )
+
+    assert spec["tau_dag_node"]["node_id"] == "reviewer"
+    assert spec["tau_dag_node"]["model_policy"]["provider"] == "scillm"
+    assert spec["tau_dag_node"]["prompt_contract"]["schema"] == "tau.prompt_contract.v1"
 
 
 def test_load_agent_dispatch_command_spec_records_policy_hashes(tmp_path: Path) -> None:

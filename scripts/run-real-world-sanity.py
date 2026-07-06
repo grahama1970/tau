@@ -277,6 +277,7 @@ def build_checks(
         scenario="command-policy-allowed",
         spec_flag=None,
     )
+    project_dag_provider_metadata = create_project_dag_provider_metadata_fixture(run_dir)
     project_dag_containment_missing_itar = create_project_dag_containment_gate_fixture(
         run_dir,
         scenario="containment-missing-itar",
@@ -1428,6 +1429,27 @@ def build_checks(
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
             expected_verdict="COMMAND_POLICY_REJECTED",
+        ),
+        Check(
+            check_id="advanced.project_dag_provider_metadata_propagates",
+            level="advanced",
+            purpose=(
+                "Tau propagates provider-sensitive node model_policy and prompt_contract "
+                "into the dispatched node handoff so the node can emit provider_route_receipt."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_provider_metadata["contract"]),
+                "--receipt-dir",
+                str(project_dag_provider_metadata["run_dir"]),
+                "--agents-root",
+                str(project_dag_provider_metadata["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+            output_receipt=project_dag_provider_metadata["run_dir"] / "dag-receipt.json",
         ),
         Check(
             check_id="advanced.project_dag_itar_access_gate_missing_fail_closed",
@@ -2664,6 +2686,37 @@ def create_project_dag_command_policy_fixture(
     return fixture
 
 
+def create_project_dag_provider_metadata_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario="provider-metadata",
+        goal_hash="sha256:rw-sanity-project-dag-provider-metadata",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    contract["provider_sensitive"] = True
+    for node in contract["nodes"]:
+        if not isinstance(node, dict) or node.get("executor") == "human":
+            continue
+        node["model_policy"] = {
+            "provider": "scillm",
+            "auth": "codex-oauth",
+            "model": "gpt-image-2",
+        }
+        node["prompt_contract"] = {
+            "schema": "tau.prompt_contract.v1",
+            "system_prompt": "Stay inside the immutable provider metadata sanity goal.",
+            "user_template": "Use provider route metadata before claiming PASS.",
+        }
+        evidence = node.get("required_evidence")
+        if isinstance(evidence, list) and "provider_route_receipt" not in evidence:
+            evidence.append("provider_route_receipt")
+    if "provider_route_receipt" not in contract["required_evidence"]:
+        contract["required_evidence"].append("provider_route_receipt")
+    write_json(contract_path, contract)
+    return fixture
+
+
 def create_project_dag_containment_gate_fixture(
     run_dir: Path,
     *,
@@ -3846,18 +3899,28 @@ def coder_response(payload, artifact_dir, scenario):
         "summary": "Creator artifact for real-world project DAG sanity.",
     }
     artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    evidence = [
+        {
+            "kind": "creator_artifact",
+            "path": str(artifact),
+            "attempt": attempt,
+            "goal_hash": payload["goal"]["goal_hash"],
+        }
+    ]
+    if scenario == "provider-metadata" and provider_metadata_present(payload):
+        provider_artifact = write_provider_route_artifact(payload, artifact_dir, "coder")
+        evidence.append(
+            {
+                "kind": "provider_route_receipt",
+                "path": str(provider_artifact),
+                "goal_hash": payload["goal"]["goal_hash"],
+            }
+        )
     return handoff(
         payload,
         previous_subagent="coder",
         result_status="PASS",
-        evidence=[
-            {
-                "kind": "creator_artifact",
-                "path": str(artifact),
-                "attempt": attempt,
-                "goal_hash": payload["goal"]["goal_hash"],
-            }
-        ],
+        evidence=evidence,
         next_agent="reviewer",
         next_executor="local",
         summary=f"Creator produced attempt {attempt} artifact for reviewer.",
@@ -3922,24 +3985,63 @@ def reviewer_response(payload, artifact_dir, scenario):
         "verdict": verdict,
     }
     artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    evidence = [
+        {
+            "kind": "reviewer_verdict",
+            "path": str(artifact),
+            "reviewed_node_id": "coder",
+            "creator_attempt": attempt,
+            "goal_hash": verdict_goal_hash,
+            "verdict": verdict,
+        }
+    ]
+    if scenario == "provider-metadata" and provider_metadata_present(payload):
+        provider_artifact = write_provider_route_artifact(payload, artifact_dir, "reviewer")
+        evidence.append(
+            {
+                "kind": "provider_route_receipt",
+                "path": str(provider_artifact),
+                "goal_hash": payload["goal"]["goal_hash"],
+            }
+        )
     return handoff(
         payload,
         previous_subagent="reviewer",
         result_status=verdict,
-        evidence=[
-            {
-                "kind": "reviewer_verdict",
-                "path": str(artifact),
-                "reviewed_node_id": "coder",
-                "creator_attempt": attempt,
-                "goal_hash": verdict_goal_hash,
-                "verdict": verdict,
-            }
-        ],
+        evidence=evidence,
         next_agent=next_agent,
         next_executor=next_executor,
         summary=f"Reviewer returned {verdict} for creator attempt {attempt}.",
     )
+
+
+def provider_metadata_present(payload):
+    context = payload.get("context") if isinstance(payload, dict) else {}
+    if not isinstance(context, dict):
+        return False
+    node = context.get("tau_dag_node")
+    return (
+        isinstance(context.get("model_policy"), dict)
+        and isinstance(context.get("prompt_contract"), dict)
+        and isinstance(node, dict)
+        and isinstance(node.get("model_policy"), dict)
+        and isinstance(node.get("prompt_contract"), dict)
+    )
+
+
+def write_provider_route_artifact(payload, artifact_dir, role):
+    artifact = artifact_dir / f"{role}-provider-route-receipt.json"
+    context = payload["context"]
+    artifact_payload = {
+        "schema": "tau.provider_route_receipt.v1",
+        "kind": "provider_route_receipt",
+        "role": role,
+        "goal_hash": payload["goal"]["goal_hash"],
+        "model_policy": context["model_policy"],
+        "prompt_contract": context["prompt_contract"],
+    }
+    artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return artifact
 
 
 def handoff(payload, *, previous_subagent, result_status, evidence, next_agent, next_executor, summary):
