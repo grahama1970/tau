@@ -1,0 +1,80 @@
+{
+  "active_goal_hash": "sha256:issue-63-provider-sensitive",
+  "alerts": [],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run/start-handoff.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run/command-loop/command-loop-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run/compiled-command-specs/panel-creator/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run/compiled-command-specs/panel-reviewer/tau-dispatch-command.json"
+  ],
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run/command-loop/command-loop-receipt.json",
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/dag-contract.json",
+  "contract_sha256": "sha256:7f381e43bb29d77ab8cacaf0d7aec95416636aa8744f0d70cc2dcbf655e552c7",
+  "dag_id": "issue-63-provider-sensitive-dag",
+  "edge_count": 2,
+  "entry_node": "panel-creator",
+  "errors": [],
+  "evidence_case_gate_receipt": null,
+  "evidence_validation_receipt": null,
+  "execution": "project_agent_dag_via_handoff_command_loop",
+  "live": true,
+  "max_steps": 2,
+  "memory_intent_gate_receipt": null,
+  "mocked": false,
+  "node_attempts": {
+    "panel-creator": 1,
+    "panel-reviewer": 1
+  },
+  "node_count": 3,
+  "observed_edges": [
+    {
+      "from_agent": "panel-creator",
+      "from_node": "panel-creator",
+      "to_agent": "panel-reviewer",
+      "to_node": "panel-reviewer"
+    },
+    {
+      "from_agent": "panel-reviewer",
+      "from_node": "panel-reviewer",
+      "to_agent": "human",
+      "to_node": "human"
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Parallel DAG scheduling.",
+      "GitHub mutation or ticket closure.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Entry node was compiled into a tau.agent_handoff.v1 start handoff.",
+      "Node routing was executed by the real local command-loop subprocess runner.",
+      "Observed edges and retry counts were checked against the DAG contract.",
+      "Reviewer verdict evidence was checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [
+    "panel-creator",
+    "panel-reviewer"
+  ],
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue:63"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-06T12:17:01Z",
+  "verdict": "PASS"
+}

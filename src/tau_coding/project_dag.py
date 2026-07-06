@@ -171,6 +171,22 @@ def run_project_dag_contract(
 
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    provider_policy_alerts = _provider_policy_preflight(contract)
+    if provider_policy_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(provider_policy_alerts[0]["code"]).upper(),
+            alerts=provider_policy_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     zero_trust_alerts, zero_trust_receipt = _zero_trust_preflight(
         contract=contract,
         contract_path=resolved_contract_path,
@@ -1061,6 +1077,143 @@ def _evidence_manifest_preflight(
             )
         )
     return alerts, receipt
+
+
+def _provider_policy_preflight(contract: ProjectDagContract) -> list[dict[str, Any]]:
+    if not _provider_sensitive_contract(contract):
+        return []
+    alerts: list[dict[str, Any]] = []
+    for node in contract.nodes.values():
+        if node.executor == "human":
+            continue
+        node_payload = _node_payload(contract, node.node_id)
+        model_policy = node_payload.get("model_policy")
+        if not isinstance(model_policy, dict):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "provider_policy_missing",
+                    "Provider-sensitive DAG node is missing model_policy.",
+                    {"node_id": node.node_id, "agent": node.agent},
+                )
+            )
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "model_unspecified",
+                    "Provider-sensitive DAG node does not specify an explicit model.",
+                    {"node_id": node.node_id, "agent": node.agent},
+                )
+            )
+        else:
+            missing_policy_fields = [
+                field
+                for field in ("provider", "auth")
+                if not isinstance(model_policy.get(field), str) or not model_policy.get(field)
+            ]
+            if missing_policy_fields:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "provider_policy_missing",
+                        "Provider-sensitive DAG node model_policy is missing provider/auth fields.",
+                        {
+                            "node_id": node.node_id,
+                            "agent": node.agent,
+                            "missing": missing_policy_fields,
+                        },
+                    )
+                )
+            if not isinstance(model_policy.get("model"), str) or not model_policy.get("model"):
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "model_unspecified",
+                        "Provider-sensitive DAG node does not specify an explicit model.",
+                        {"node_id": node.node_id, "agent": node.agent},
+                    )
+                )
+        prompt_contract = node_payload.get("prompt_contract")
+        if not _valid_prompt_contract(prompt_contract):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_prompt_contract",
+                    "Provider-sensitive DAG node is missing an explicit prompt contract.",
+                    {"node_id": node.node_id, "agent": node.agent},
+                )
+            )
+        if not _has_provider_route_evidence(node.required_evidence):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_required_evidence",
+                    "Provider-sensitive DAG node is missing required provider-route evidence.",
+                    {
+                        "node_id": node.node_id,
+                        "agent": node.agent,
+                        "missing": ["provider_route_receipt"],
+                        "required_evidence": list(node.required_evidence),
+                    },
+                )
+            )
+    return alerts
+
+
+def _provider_sensitive_contract(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("provider_sensitive") is True:
+        return True
+    if contract.payload.get("requires_provider_route") is True:
+        return True
+    context_text = json.dumps(contract.context, sort_keys=True)
+    provider_markers = (
+        "scillm_image_model",
+        "scillm_image_auth",
+        "provider_route",
+        "provider_model",
+        "oauth",
+    )
+    if any(marker in context_text for marker in provider_markers):
+        return True
+    for node_id in contract.nodes:
+        node_payload = _node_payload(contract, node_id)
+        if any(
+            key in node_payload
+            for key in (
+                "model_policy",
+                "prompt_contract",
+                "provider_route",
+                "requires_provider_route",
+            )
+        ):
+            return True
+    return False
+
+
+def _valid_prompt_contract(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    path = value.get("path")
+    if isinstance(path, str) and path:
+        return True
+    schema = value.get("schema")
+    if isinstance(schema, str) and schema:
+        return True
+    system = value.get("system_prompt") or value.get("system")
+    user = value.get("user_template") or value.get("user_prompt") or value.get("user")
+    return isinstance(system, str) and bool(system) and isinstance(user, str) and bool(user)
+
+
+def _has_provider_route_evidence(required_evidence: tuple[str, ...]) -> bool:
+    markers = (
+        "provider_route",
+        "model_route",
+        "model_policy",
+        "oauth",
+        "auth_route",
+        "provider_receipt",
+    )
+    return any(any(marker in item for marker in markers) for item in required_evidence)
 
 
 def _memory_evidence_preflight(
@@ -2176,6 +2329,19 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "repair_evidence_case",
             "next_agent": "reviewer",
             "reason": "Repair or regenerate the evidence case before DAG dispatch.",
+        }
+    if normalized in {
+        "provider_policy_missing",
+        "model_unspecified",
+        "missing_prompt_contract",
+    }:
+        return {
+            "type": "repair_provider_policy",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Add explicit model_policy, prompt_contract, provider/auth/model route, "
+                "and provider-route evidence before dispatch."
+            ),
         }
     if normalized in {
         "missing_required_evidence",

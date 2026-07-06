@@ -1,0 +1,74 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "/usr/bin/python3",
+        "-c",
+        "import json; print(json.dumps({'schema': 'tau.agent_handoff.v1', 'github': {'repo': 'grahama1970/tau', 'target': 'issue:63'}, 'goal': {'goal_id': 'issue-63', 'goal_version': 1, 'goal_hash': 'sha256:issue-63-provider-sensitive'}, 'previous_subagent': 'panel-reviewer', 'context': {'summary': 'panel-reviewer response.', 'artifacts': []}, 'result': {'status': 'PASS', 'summary': 'panel-reviewer passed.', 'evidence': [{'kind': 'storyboard_review_verdict.json'}, {'kind': 'provider_route_receipt'}]}, 'rationale': 'Issue #63 positive provider-sensitive DAG fixture.', 'next_agent': {'name': 'human', 'executor': 'human', 'reason': 'Continue along DAG route.'}, 'required_evidence': ['provider_route_receipt'], 'stop_condition': 'Stop at human.'}))"
+      ],
+      "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/run/compiled-command-specs/panel-reviewer/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:1aba753eee55197df5d6c5b9b9402f6ec86b209b685d00271a428a9f278e4df4",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"issue:63\"}, \"goal\": {\"goal_id\": \"issue-63\", \"goal_version\": 1, \"goal_hash\": \"sha256:issue-63-provider-sensitive\"}, \"previous_subagent\": \"panel-reviewer\", \"context\": {\"summary\": \"panel-reviewer response.\", \"artifacts\": []}, \"result\": {\"status\": \"PASS\", \"summary\": \"panel-reviewer passed.\", \"evidence\": [{\"kind\": \"storyboard_review_verdict.json\"}, {\"kind\": \"provider_route_receipt\"}]}, \"rationale\": \"Issue #63 positive provider-sensitive DAG fixture.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Continue along DAG route.\"}, \"required_evidence\": [\"provider_route_receipt\"], \"stop_condition\": \"Stop at human.\"}\n",
+      "timed_out": false,
+      "timeout_s": 5.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 2,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: panel-reviewer passed.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"panel-reviewer response.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue:63\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-63-provider-sensitive\",\n    \"goal_id\": \"issue-63\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Continue along DAG route.\"\n  },\n  \"previous_subagent\": \"panel-reviewer\",\n  \"rationale\": \"Issue #63 positive provider-sensitive DAG fixture.\",\n  \"required_evidence\": [\n    \"provider_route_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"storyboard_review_verdict.json\"\n      },\n      {\n        \"kind\": \"provider_route_receipt\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"panel-reviewer passed.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue:63"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "panel-reviewer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: panel-creator passed.\n- Next agent: `panel-reviewer`\n- Executor: `local`\n- Stop condition: Stop at human.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"panel-creator response.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"issue:63\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:issue-63-provider-sensitive\",\n    \"goal_id\": \"issue-63\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"panel-reviewer\",\n    \"reason\": \"Continue along DAG route.\"\n  },\n  \"previous_subagent\": \"panel-creator\",\n  \"rationale\": \"Issue #63 positive provider-sensitive DAG fixture.\",\n  \"required_evidence\": [\n    \"provider_route_receipt\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"storyboard_creator_receipt.json\"\n      },\n      {\n        \"kind\": \"provider_route_receipt\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"panel-creator passed.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:panel-reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "panel-reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue:63"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

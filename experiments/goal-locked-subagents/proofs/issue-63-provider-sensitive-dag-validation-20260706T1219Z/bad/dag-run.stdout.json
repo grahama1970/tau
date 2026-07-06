@@ -1,0 +1,200 @@
+{
+  "active_goal_hash": "sha256:issue-63-provider-sensitive",
+  "alerts": [
+    {
+      "code": "provider_policy_missing",
+      "evidence": {
+        "agent": "panel-creator",
+        "node_id": "panel-creator"
+      },
+      "message": "Provider-sensitive DAG node is missing model_policy.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "model_unspecified",
+      "evidence": {
+        "agent": "panel-creator",
+        "node_id": "panel-creator"
+      },
+      "message": "Provider-sensitive DAG node does not specify an explicit model.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "missing_prompt_contract",
+      "evidence": {
+        "agent": "panel-creator",
+        "node_id": "panel-creator"
+      },
+      "message": "Provider-sensitive DAG node is missing an explicit prompt contract.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "missing_required_evidence",
+      "evidence": {
+        "agent": "panel-creator",
+        "missing": [
+          "provider_route_receipt"
+        ],
+        "node_id": "panel-creator",
+        "required_evidence": [
+          "storyboard_creator_receipt.json"
+        ]
+      },
+      "message": "Provider-sensitive DAG node is missing required provider-route evidence.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "provider_policy_missing",
+      "evidence": {
+        "agent": "panel-reviewer",
+        "node_id": "panel-reviewer"
+      },
+      "message": "Provider-sensitive DAG node is missing model_policy.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "model_unspecified",
+      "evidence": {
+        "agent": "panel-reviewer",
+        "node_id": "panel-reviewer"
+      },
+      "message": "Provider-sensitive DAG node does not specify an explicit model.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "missing_prompt_contract",
+      "evidence": {
+        "agent": "panel-reviewer",
+        "node_id": "panel-reviewer"
+      },
+      "message": "Provider-sensitive DAG node is missing an explicit prompt contract.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "missing_required_evidence",
+      "evidence": {
+        "agent": "panel-reviewer",
+        "missing": [
+          "provider_route_receipt"
+        ],
+        "node_id": "panel-reviewer",
+        "required_evidence": [
+          "storyboard_review_verdict.json"
+        ]
+      },
+      "message": "Provider-sensitive DAG node is missing required provider-route evidence.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/bad/dag-contract.json"
+  ],
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/bad/dag-contract.json",
+  "contract_sha256": "sha256:fe14718f17c602760771a9f86799e49c575bdc499bb2d2714791037d5e68502c",
+  "dag_error": {
+    "active_goal_hash": "sha256:issue-63-provider-sensitive",
+    "attempts": 0,
+    "dag_id": "issue-63-provider-sensitive-dag",
+    "evidence": {
+      "alert_codes": [
+        "provider_policy_missing",
+        "model_unspecified",
+        "missing_prompt_contract",
+        "missing_required_evidence",
+        "provider_policy_missing",
+        "model_unspecified",
+        "missing_prompt_contract",
+        "missing_required_evidence"
+      ],
+      "alert_count": 8,
+      "errors": [],
+      "primary_alert": {
+        "code": "provider_policy_missing",
+        "evidence": {
+          "agent": "panel-creator",
+          "node_id": "panel-creator"
+        },
+        "message": "Provider-sensitive DAG node is missing model_policy.",
+        "severity": "BLOCK"
+      }
+    },
+    "failed_agent": "panel-creator",
+    "failed_node": "panel-creator",
+    "failure_code": "provider_policy_missing",
+    "max_attempts": 1,
+    "message": "Provider-sensitive DAG node is missing model_policy.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/bad/run/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "goal-guardian",
+      "reason": "Add explicit model_policy, prompt_contract, provider/auth/model route, and provider-route evidence before dispatch.",
+      "type": "repair_provider_policy"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/bad/run",
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "issue:63"
+    },
+    "verdict": "PROVIDER_POLICY_MISSING"
+  },
+  "dag_id": "issue-63-provider-sensitive-dag",
+  "edge_count": 2,
+  "entry_node": "panel-creator",
+  "errors": [],
+  "evidence_case_gate_receipt": null,
+  "evidence_validation_receipt": null,
+  "execution": "project_agent_dag_pre_dispatch_validation",
+  "live": true,
+  "memory_intent_gate_receipt": null,
+  "mocked": false,
+  "node_attempts": {},
+  "node_count": 3,
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The repaired DAG contract will pass.",
+      "Provider/model semantic quality.",
+      "Runtime route mutation or GitHub side effects."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Tau inspected pre-dispatch gates before dispatch.",
+      "No node command, provider, GitHub, Memory, or browser action was executed."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/bad/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue:63"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-06T12:17:01Z",
+  "verdict": "PROVIDER_POLICY_MISSING",
+  "zero_trust_preflight_receipt": null
+}

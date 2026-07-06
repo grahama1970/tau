@@ -721,6 +721,82 @@ def test_project_dag_zero_trust_blocks_external_provider_when_policy_denies(
     assert receipt["alerts"][0]["code"] == "external_provider_denied"
 
 
+def test_project_dag_blocks_underspecified_provider_sensitive_contract_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_provider_sensitive_contract(tmp_path, complete=False)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    alert_codes = {alert["code"] for alert in receipt["alerts"]}
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "PROVIDER_POLICY_MISSING"
+    assert receipt["selected_agents"] == []
+    assert not (tmp_path / "run" / "command-loop").exists()
+    assert receipt["dag_error"]["schema"] == DAG_ERROR_SCHEMA
+    assert receipt["dag_error"]["failure_code"] == "provider_policy_missing"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_provider_policy",
+        "next_agent": "goal-guardian",
+        "reason": (
+            "Add explicit model_policy, prompt_contract, provider/auth/model route, "
+            "and provider-route evidence before dispatch."
+        ),
+    }
+    assert {
+        "provider_policy_missing",
+        "model_unspecified",
+        "missing_prompt_contract",
+        "missing_required_evidence",
+    }.issubset(alert_codes)
+    assert all(alert["evidence"]["node_id"] in {"panel-creator", "panel-reviewer"} for alert in receipt["alerts"])
+
+
+def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_evidence(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_provider_sensitive_contract(tmp_path, complete=True)
+    _write_response_spec(
+        tmp_path,
+        "panel-creator",
+        _persona_dream_provider_handoff(
+            "panel-creator",
+            "panel-reviewer",
+            [
+                {"kind": "storyboard_creator_receipt.json"},
+                {"kind": "provider_route_receipt"},
+            ],
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "panel-reviewer",
+        _persona_dream_provider_handoff(
+            "panel-reviewer",
+            "human",
+            [
+                {"kind": "storyboard_review_verdict.json"},
+                {"kind": "provider_route_receipt"},
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["selected_agents"] == ["panel-creator", "panel-reviewer"]
+
+
 def test_project_dag_memory_evidence_gate_allows_valid_artifacts(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     memory_path = _write_memory_intent(tmp_path)
@@ -1441,6 +1517,114 @@ def _write_repeated_reviewer_contract(tmp_path: Path) -> Path:
     path = tmp_path / "repeated-reviewer-dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
     return path
+
+
+def _write_provider_sensitive_contract(tmp_path: Path, *, complete: bool) -> Path:
+    (tmp_path / "agents").mkdir(exist_ok=True)
+    spec_root = tmp_path / "specs"
+    creator_evidence = ["storyboard_creator_receipt.json"]
+    reviewer_evidence = ["storyboard_review_verdict.json"]
+    if complete:
+        creator_evidence.append("provider_route_receipt")
+        reviewer_evidence.append("provider_route_receipt")
+    nodes: list[dict[str, object]] = [
+        {
+            "id": "panel-creator",
+            "agent": "panel-creator",
+            "executor": "local",
+            "max_attempts": 2,
+            "command_spec": str(spec_root / "panel-creator" / "tau-dispatch-command.json"),
+            "required_evidence": creator_evidence,
+        },
+        {
+            "id": "panel-reviewer",
+            "agent": "panel-reviewer",
+            "executor": "local",
+            "max_attempts": 2,
+            "command_spec": str(spec_root / "panel-reviewer" / "tau-dispatch-command.json"),
+            "required_evidence": reviewer_evidence,
+        },
+        {
+            "id": "human",
+            "agent": "human",
+            "executor": "human",
+        },
+    ]
+    if complete:
+        for node in nodes:
+            if node["id"] == "human":
+                continue
+            node["model_policy"] = {
+                "provider": "scillm",
+                "auth": "codex-oauth",
+                "model": "gpt-image-2",
+            }
+            node["prompt_contract"] = {
+                "schema": "tau.prompt_contract.v1",
+                "system_prompt": "Stay inside the immutable storyboard goal.",
+                "user_template": "Use the provider route evidence before claiming PASS.",
+            }
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "persona-dream-phase-07-storyboard-packet-panel-review",
+        "provider_sensitive": True,
+        "goal": {
+            "goal_id": "persona-dream-phase-07-storyboard-panels-accepted",
+            "goal_version": 1,
+            "goal_hash": "sha256:phase07-storyboard-panels-accepted-20260705",
+        },
+        "target": {
+            "repo": "grahama1970/agent-skills",
+            "target": "skills/persona-dream/reports/pipeline-complete/phase_07_storyboard_live_tau",
+        },
+        "entry_node": "panel-creator",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 120,
+            "max_total_attempts": 4,
+        },
+        "nodes": nodes,
+        "edges": [
+            {"from": "panel-creator", "to": "panel-reviewer"},
+            {"from": "panel-reviewer", "to": "human"},
+        ],
+        "required_evidence": [
+            "dag-receipt.json",
+            *creator_evidence,
+            *reviewer_evidence,
+        ],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = tmp_path / "provider-sensitive-dag-contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _persona_dream_provider_handoff(
+    previous: str,
+    next_agent: str,
+    evidence: list[dict],
+) -> dict:
+    payload = _handoff(previous, next_agent, evidence)
+    payload["github"] = {
+        "repo": "grahama1970/agent-skills",
+        "target": "skills/persona-dream/reports/pipeline-complete/phase_07_storyboard_live_tau",
+    }
+    payload["goal"] = {
+        "goal_id": "persona-dream-phase-07-storyboard-panels-accepted",
+        "goal_version": 1,
+        "goal_hash": "sha256:phase07-storyboard-panels-accepted-20260705",
+    }
+    return payload
 
 
 def _write_yaml_contract(tmp_path: Path) -> Path:
