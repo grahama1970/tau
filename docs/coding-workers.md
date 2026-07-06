@@ -299,6 +299,7 @@ Copyable examples:
 ```bash
 examples/coding-reliability-basic/run.sh /tmp/tau-coding-reliability-basic
 examples/omp-worker/run.sh /tmp/tau-omp-worker-example
+examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
 ```
 
 `examples/omp-worker` validates a bounded OMP-shaped worker result. By default
@@ -306,6 +307,15 @@ it uses a fixture result and marks the demo `mocked:true`, `live:false`. Set
 `OMP_WORKER_RESULT=/path/to/tau.omp_worker_result.v1.json` to validate an
 external worker artifact. The example does not prove Tau launched OMP until a
 separate launcher receipt exists.
+
+`examples/scillm-worker` validates a bounded SciLLM/OpenCode-serve-shaped
+worker result. By default it uses a fixture result and marks the demo
+`mocked:true`, `live:false`. Set
+`SCILLM_WORKER_RESULT=/path/to/tau.scillm_worker_result.v1.json` to validate an
+external worker artifact. The work order records the correct coding-delegate
+surface, `/v1/scillm/opencode/runs`, with an OpenCode agent profile such as
+`build`; it does not prove Tau called SciLLM until a separate launcher receipt
+exists.
 
 ## Non-Claims
 

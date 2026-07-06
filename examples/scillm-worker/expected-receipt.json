@@ -1,0 +1,17 @@
+{
+  "schema": "tau.scillm_worker_example_receipt.v1",
+  "status": "PASS",
+  "expected_inner_receipt_schema": "tau.scillm_worker_receipt.v1",
+  "expected_inner_status": "PASS",
+  "expected_model_provider_route": {
+    "surface": "opencode_serve",
+    "endpoint": "/v1/scillm/opencode/runs",
+    "agent": "build"
+  },
+  "does_not_prove": [
+    "Tau called SciLLM.",
+    "OpenCode serve performed live coding work.",
+    "The code is semantically correct.",
+    "Provider/model semantic quality."
+  ]
+}

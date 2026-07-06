@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:19 EDT by agent
+**Last updated:** 2026-07-06 18:21 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 SciLLM worker example rung:
+  `examples/scillm-worker/` adds a copyable Tau validation example for bounded
+  SciLLM/OpenCode-serve worker results. The example writes a
+  `tau.executor.scillm_worker.v1` work order that records the correct coding
+  delegate surface `/v1/scillm/opencode/runs`, OpenCode agent profile `build`,
+  skill allowlist metadata, zero-trust policy/data-boundary metadata, and a
+  sandbox receipt binding, then validates a `tau.scillm_worker_result.v1`
+  artifact through `uv run tau scillm-worker-validate`. By default the worker
+  result is a fixture and the demo marks `mocked:true`, `live:false`; setting
+  `SCILLM_WORKER_RESULT=/path/to/result.json` validates an external worker
+  artifact instead. Proof: `bash -n examples/scillm-worker/run.sh` -> pass;
+  `examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example-proof` exited 0
+  and wrote `/tmp/tau-scillm-worker-example-proof/demo-receipt.json`;
+  `uv run ruff check --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  src/tau_coding/cli.py tests/test_coding_worker_adapters.py` -> pass;
+  `uv run pytest tests/test_coding_worker_adapters.py -q` -> `13 passed in
+  0.41s`. This proves the copyable SciLLM-shaped worker validation path and
+  route metadata; it does not prove Tau called SciLLM, OpenCode serve performed
+  live coding work, semantic code correctness, provider/model quality, or legal
+  compliance.
 
 - 2026-07-06 review-findings zero-trust enforcement rung:
   `src/tau_coding/review_findings.py` now supports zero-trust metadata on
