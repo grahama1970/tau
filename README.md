@@ -53,6 +53,7 @@ validated, and reviewed.
 | Agent DAGs | DAGs are containment maps, not proof. |
 | Subagents | Subagent communication is untrusted until receipt-backed and validated. |
 | Herdr | Provider/subagent work can be monitored through visible panes, lifecycle records, and cleanup receipts. |
+| DAG visualization | Browser graph views render DAG contracts and receipts for inspection; the artifacts remain authoritative. |
 | Policy | Policy profiles and data boundaries are checked before zero-trust DAG dispatch. |
 | Side effects | GitHub, Memory, Herdr, provider, and filesystem effects require explicit gates. |
 | Claims | Every proof artifact should state what it proves and what it does not prove. |
@@ -119,6 +120,7 @@ work-order hash, and evidence artifacts.
 | Herdr cleanup/GC | Implemented with leases/approval gates | Does not prove arbitrary non-Tau cleanup. |
 | GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
+| Tau DAG React Flow viewer | Implemented as UX Lab integration surface | Static fixtures prove renderability only; not live DAG execution. |
 | Proof index | Implemented | Indexes receipt metadata and hashes; does not prove receipt semantic truth. |
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
@@ -214,6 +216,7 @@ T’au has four related surfaces. They should not be collapsed into one vague
 | **Harness** | Yes | Validates receipts, goal hashes, handoff JSON, command specs, GitHub projections, and subagent routing before the loop can advance. |
 | **TUI** | Yes | Terminal frontend for the coding-agent runtime. It is one renderer of the agent loop, not the whole harness. |
 | **Chat** | Contract owned here; browser viewer in UX Lab | Memory-first shared chat surface that renders stages, receipts, handoffs, and proof boundaries for human inspection. |
+| **DAG viewer** | Contract/artifacts owned here; browser viewer in UX Lab | Read-only React Flow inspection of `tau.dag_contract.v1`, DAG receipts, node evidence, alerts, and non-claims. |
 
 The loop is intentionally bounded. A subagent does one step, emits a
 schema-valid handoff, names the next agent, and exits. The harness decides
@@ -284,6 +287,26 @@ products, evidence blocks, and embedded artifact affordances. T’au owns the
 contract and receipts; UX Lab proves that the contract can be rendered in a
 browser.
 
+### React Flow DAG inspection viewer
+
+UX Lab also hosts a read-only Tau DAG inspection route:
+
+```text
+http://localhost:3002/#tau/dag
+```
+
+This route renders `tau.dag_contract.v1` and `tau.dag_receipt.v1` artifacts
+through the existing React Flow transport DAG workspace. It is useful for
+showing node order, allowed edges, receipt-backed node statuses, alerts,
+mocked/live/provider-live boundaries, artifact paths, and `proof_scope`
+non-claims.
+
+The DAG viewer is an inspection surface, not a dispatcher. A static fixture can
+prove that a Tau DAG contract and receipt can be rendered in the browser; it
+does not prove live Tau DAG execution from the browser, Herdr provider
+execution, GitHub mutation, provider/model semantic quality, or human
+acceptance.
+
 ## What changed from upstream Tau
 
 This fork keeps the original Python teaching architecture, but adds a goal-locked
@@ -315,6 +338,8 @@ Added or materially changed areas include:
   execution or mutation.
 - **T’au-owned UX contract** at `ui/tau-chat-contract.json`, with UX Lab acting
   as an integration viewer rather than the source of truth.
+- **T’au DAG React Flow inspection** through UX Lab `#tau/dag`, where the DAG
+  contract and receipt remain the authoritative artifacts.
 
 ## When to reach for it
 
