@@ -266,7 +266,14 @@ def build_checks(
         scenario="command-policy-allowed",
         spec_flag=None,
     )
-    dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
+    dag_expansion_tamper = create_dag_expansion_fixture(
+        run_dir,
+        scenario="dag-expansion-tampered-preview",
+    )
+    dag_expansion_source_tamper = create_dag_expansion_fixture(
+        run_dir,
+        scenario="dag-expansion-tampered-source",
+    )
     dag_branch_locks = create_dag_branch_locks_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
     research_source = create_research_source_fixture(run_dir)
@@ -1452,6 +1459,32 @@ def build_checks(
             output_receipt=dag_expansion_tamper["apply_receipt"],
         ),
         Check(
+            check_id="advanced.dag_expansion_apply_tampered_source_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau validates an adaptive DAG expansion, records policy, then refuses "
+                "to apply when the source DAG contract no longer matches validation."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                dag_expansion_source_tamper_apply_command(
+                    uv_tau=uv_tau,
+                    contract=dag_expansion_source_tamper["contract"],
+                    proposal=dag_expansion_source_tamper["proposal"],
+                    validation_receipt=dag_expansion_source_tamper["validation_receipt"],
+                    policy_receipt=dag_expansion_source_tamper["policy_receipt"],
+                    apply_receipt=dag_expansion_source_tamper["apply_receipt"],
+                    out=dag_expansion_source_tamper["out"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="SOURCE_DAG_CONTRACT_HASH_MISMATCH",
+            output_receipt=dag_expansion_source_tamper["apply_receipt"],
+        ),
+        Check(
             check_id="advanced.dag_branch_locks_validate_pass",
             level="advanced",
             purpose=(
@@ -2461,8 +2494,12 @@ def create_project_dag_command_policy_fixture(
     return fixture
 
 
-def create_dag_expansion_fixture(run_dir: Path) -> dict[str, Path]:
-    fixture_dir = run_dir / "dag-expansion-tampered-preview"
+def create_dag_expansion_fixture(
+    run_dir: Path,
+    *,
+    scenario: str = "dag-expansion-tampered-preview",
+) -> dict[str, Path]:
+    fixture_dir = run_dir / scenario
     fixture_dir.mkdir(parents=True, exist_ok=True)
     contract = {
         "schema": "tau.dag_contract.v1",
@@ -2751,6 +2788,88 @@ payload["nodes"].append({{
 }})
 payload["edges"].append({{"from": "validator", "to": "tampered"}})
 preview.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+completed = run([
+    *uv_tau,
+    "dag-expansion-apply",
+    "--validation-receipt",
+    str(validation_receipt),
+    "--policy-receipt",
+    str(policy_receipt),
+    "--out",
+    str(out),
+    "--receipt",
+    str(apply_receipt),
+], 1)
+raise SystemExit(completed.returncode)
+"""
+
+
+def dag_expansion_source_tamper_apply_command(
+    *,
+    uv_tau: list[str],
+    contract: Path,
+    proposal: Path,
+    validation_receipt: Path,
+    policy_receipt: Path,
+    apply_receipt: Path,
+    out: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+contract = Path({str(contract)!r})
+proposal = Path({str(proposal)!r})
+validation_receipt = Path({str(validation_receipt)!r})
+policy_receipt = Path({str(policy_receipt)!r})
+apply_receipt = Path({str(apply_receipt)!r})
+out = Path({str(out)!r})
+preview = contract.parent / "expanded-dag.preview.json"
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-expansion-validate",
+    "--dag-contract",
+    str(contract),
+    "--proposal",
+    str(proposal),
+    "--receipt",
+    str(validation_receipt),
+    "--preview",
+    str(preview),
+], 0)
+run([
+    *uv_tau,
+    "dag-expansion-policy",
+    "--validation-receipt",
+    str(validation_receipt),
+    "--receipt",
+    str(policy_receipt),
+], 0)
+payload = json.loads(contract.read_text(encoding="utf-8"))
+payload["nodes"].append({{
+    "id": "source-tamper",
+    "agent": "validator",
+    "executor": "local",
+    "max_attempts": 1,
+    "required_evidence": ["tampered_source"],
+}})
+contract.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
 completed = run([
     *uv_tau,
     "dag-expansion-apply",

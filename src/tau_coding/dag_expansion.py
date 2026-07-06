@@ -537,6 +537,52 @@ def _apply_alerts(
                 {"applied": validation.get("applied")},
             )
         )
+    source_dag_contract = validation.get("dag_contract")
+    expected_source_sha = validation.get("dag_contract_sha256")
+    if not isinstance(source_dag_contract, str) or not source_dag_contract:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_source_dag_contract",
+                "Expansion apply requires validation receipt dag_contract.",
+                {},
+            )
+        )
+    else:
+        resolved_source_path = Path(source_dag_contract).expanduser().resolve()
+        if not resolved_source_path.is_file():
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "source_dag_contract_missing",
+                    "Source DAG contract from validation receipt no longer exists.",
+                    {"dag_contract": source_dag_contract},
+                )
+            )
+        else:
+            observed_source_sha = f"sha256:{_sha256(resolved_source_path)}"
+            if not isinstance(expected_source_sha, str) or not expected_source_sha:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "missing_source_dag_contract_hash",
+                        "Expansion apply requires validation receipt dag_contract_sha256.",
+                        {"dag_contract": source_dag_contract},
+                    )
+                )
+            elif observed_source_sha != expected_source_sha:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "source_dag_contract_hash_mismatch",
+                        "Source DAG contract hash does not match the validation receipt.",
+                        {
+                            "dag_contract": source_dag_contract,
+                            "expected": expected_source_sha,
+                            "observed": observed_source_sha,
+                        },
+                    )
+                )
     if policy_receipt_path is not None:
         policy = _load_object(policy_receipt_path, label="DAG expansion policy receipt")
         if policy.get("schema") != DAG_EXPANSION_POLICY_RECEIPT_SCHEMA:

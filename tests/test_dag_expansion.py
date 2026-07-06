@@ -379,6 +379,43 @@ def test_dag_expansion_apply_blocks_tampered_preview(tmp_path: Path) -> None:
     assert any(alert["code"] == "preview_hash_mismatch" for alert in receipt["alerts"])
 
 
+def test_dag_expansion_apply_blocks_tampered_source_dag(tmp_path: Path) -> None:
+    validation_path = _write_valid_validation_receipt(tmp_path)
+    policy_path = tmp_path / "policy.json"
+    write_dag_expansion_policy_receipt(
+        validation_receipt_path=validation_path,
+        receipt_path=policy_path,
+    )
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    contract_path = Path(validation["dag_contract"])
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"].append(
+        {
+            "id": "source-tamper",
+            "agent": "validator",
+            "executor": "local",
+            "max_attempts": 1,
+            "required_evidence": ["tampered"],
+        }
+    )
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = write_dag_expansion_apply_receipt(
+        validation_receipt_path=validation_path,
+        policy_receipt_path=policy_path,
+        out_path=tmp_path / "expanded-dag.json",
+        receipt_path=tmp_path / "apply.json",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["expanded_dag"] is None
+    assert any(
+        alert["code"] == "source_dag_contract_hash_mismatch"
+        for alert in receipt["alerts"]
+    )
+
+
 def test_dag_expansion_apply_blocks_stale_policy_binding(tmp_path: Path) -> None:
     validation_path = _write_valid_validation_receipt(tmp_path)
     policy_path = tmp_path / "policy.json"

@@ -1,0 +1,12 @@
+{
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/github-apply-policy-all-gates/projection.json",
+  "redacted_projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/github-apply-policy-all-gates/projection.redacted.json",
+  "redacted_projection_sha256": "d0e0830893f134b3ceaa717b7f840edecc66ced3558675b256a177e187a51fad",
+  "redaction_count": 1,
+  "schema": "tau.github_projection_redaction_receipt.v1",
+  "status": "PASS"
+}

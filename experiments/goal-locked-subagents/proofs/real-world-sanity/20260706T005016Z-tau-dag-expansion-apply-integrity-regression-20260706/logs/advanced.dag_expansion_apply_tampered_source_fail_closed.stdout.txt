@@ -1,0 +1,150 @@
+{
+  "alerts": [],
+  "applied": false,
+  "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/dag-contract.json",
+  "dag_contract_sha256": "sha256:bc3dbb74e1c4251e5b1a4010ee2bed0f8185cd9ee0572ea9f021d8573bb27c1d",
+  "dag_id": "rw-sanity-dag-expansion",
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "limits": {
+    "allow_command_spec_change": false,
+    "allow_goal_change": false,
+    "allow_new_executors": false,
+    "allow_target_change": false,
+    "allow_terminal_node_change": false,
+    "max_depth_delta": 1,
+    "max_new_edges": 4,
+    "max_new_nodes": 2
+  },
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": true,
+  "preview_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/expanded-dag.preview.json",
+  "preview_sha256": "sha256:33fd8f15035b6916f95df6ef227d225c5de5a241832d46226a776ddae9542858",
+  "proof_scope": {
+    "does_not_prove": [
+      "Adaptive DAG expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "DAG expansion proposal was inspected deterministically.",
+      "Immutable goal, target, terminal node, executor, command-spec, depth, node, and edge limits were checked.",
+      "No expansion was applied to a running DAG.",
+      "No source DAG contract mutation, route mutation, Memory write, GitHub mutation, provider call, or command dispatch occurred."
+    ]
+  },
+  "proposal": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/proposal.json",
+  "proposal_sha256": "sha256:d35aca4a778b4555870a3e1de2b10742746bd0c02b49e5e3f7db0dde47dadbc5",
+  "proposal_summary": {
+    "new_edge_count": 2,
+    "new_node_count": 1,
+    "phase": null,
+    "proposal_id": "rw-sanity-expansion-proposal",
+    "proposed_by": "reviewer"
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/validation-receipt.json",
+  "schema": "tau.dag_expansion_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:50:18Z",
+  "verdict": "PASS"
+}
+{
+  "alerts": [],
+  "applied": false,
+  "apply_allowed": true,
+  "dag_id": "rw-sanity-dag-expansion",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning."
+    ],
+    "proves": [
+      "Expansion validation receipt was checked for policy eligibility.",
+      "Policy decision was emitted as a receipt.",
+      "No DAG artifact was written by policy validation."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/policy-receipt.json",
+  "recommended_next_command": "tau dag-expansion-apply --validation-receipt <receipt> --policy-receipt <policy-receipt.json> --out <expanded-dag.json> --receipt <apply-receipt.json>",
+  "require_clean_signal": false,
+  "route_mutation": false,
+  "schema": "tau.dag_expansion_policy_receipt.v1",
+  "signal_receipt": null,
+  "signal_receipt_sha256": null,
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:50:18Z",
+  "validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/validation-receipt.json",
+  "validation_receipt_sha256": "sha256:dc5aa6760e792683e1d21f96a5cc634da68966200698993ab70bfba7dd729ef5",
+  "verdict": "PASS"
+}
+{
+  "alerts": [
+    {
+      "code": "source_dag_contract_hash_mismatch",
+      "evidence": {
+        "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/dag-contract.json",
+        "expected": "sha256:bc3dbb74e1c4251e5b1a4010ee2bed0f8185cd9ee0572ea9f021d8573bb27c1d",
+        "observed": "sha256:7b22adf64f03d37cae8e8e691fbefe22633e7f469da2ed403a7b06f0af2e9eb6"
+      },
+      "message": "Source DAG contract hash does not match the validation receipt.",
+      "severity": "BLOCK"
+    }
+  ],
+  "applied": false,
+  "dag_id": "rw-sanity-dag-expansion",
+  "errors": [],
+  "expanded_dag": null,
+  "expanded_dag_sha256": null,
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": false,
+  "policy_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/policy-receipt.json",
+  "policy_receipt_sha256": "sha256:59a49b6ad97cde4b85cc3e79820e90a8cb75182aa8a6bcebb24021cedaa201a1",
+  "proof_scope": {
+    "does_not_prove": [
+      "Expanded DAG execution.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "Validated expansion preview was materialized as a new DAG contract artifact.",
+      "Source DAG contract was not mutated.",
+      "No running DAG route was mutated."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/apply-receipt.json",
+  "rerun_command": null,
+  "resume_supported": null,
+  "runtime_route_mutation": false,
+  "schema": "tau.dag_expansion_apply_receipt.v1",
+  "source_dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/dag-contract.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-06T00:50:19Z",
+  "validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-source/validation-receipt.json",
+  "validation_receipt_sha256": "sha256:dc5aa6760e792683e1d21f96a5cc634da68966200698993ab70bfba7dd729ef5",
+  "verdict": "SOURCE_DAG_CONTRACT_HASH_MISMATCH"
+}

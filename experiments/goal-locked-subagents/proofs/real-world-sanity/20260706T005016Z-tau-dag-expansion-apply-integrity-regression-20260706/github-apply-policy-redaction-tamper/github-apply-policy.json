@@ -1,0 +1,18 @@
+{
+  "allowed_actions": [
+    "comment",
+    "label"
+  ],
+  "allowed_repos": [
+    "grahama1970/tau"
+  ],
+  "denied_actions": [
+    "close",
+    "merge",
+    "release"
+  ],
+  "requires_approval_packet": true,
+  "requires_preflight": true,
+  "requires_redaction": true,
+  "schema": "tau.github_apply_policy.v1"
+}
