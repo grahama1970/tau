@@ -178,6 +178,27 @@ def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
     assert "herdr_binding_required" in payload["alert_codes"]
 
 
+def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        herdr_binding=None,
+        herdr_receipt_path="missing-herdr-receipt.json",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_receipt_missing" in payload["alert_codes"]
+
+
 def test_zero_trust_worker_blocks_missing_policy(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -468,6 +489,54 @@ def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) ->
     assert payload["request_payload"]["scillm_metadata"]["goal_hash"] == "sha256:goal"
 
 
+def test_omp_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["execution_substrate"] == "herdr-visible"
+    assert payload["herdr_binding"] == {"pane_id": "w1:p1", "workspace_id": "w1"}
+    assert payload["high_stakes"] is True
+    assert payload["policy_profile"] == {"profile_id": "test-zero-trust"}
+    assert payload["data_boundary"] == {"classification": "public"}
+
+
+def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["execution_substrate"] == "herdr-visible"
+    assert payload["herdr_binding"] == {"pane_id": "w1:p1", "workspace_id": "w1"}
+    assert payload["high_stakes"] is True
+    assert payload["policy_profile"] == {"profile_id": "test-zero-trust"}
+    assert payload["data_boundary"] == {"classification": "public"}
+
+
 def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path: Path) -> None:
     server, base_url, requests = _start_fake_scillm_server()
     work_order = _write_work_order(
@@ -739,6 +808,7 @@ def _write_work_order(
     data_boundary: dict | None = {"classification": "public"},
     sandbox_receipt_path: str | None = "sandbox-receipt.json",
     herdr_binding: dict | None = {"workspace_id": "w1", "pane_id": "w1:p1"},
+    herdr_receipt_path: str | None = None,
     model_provider_route: dict | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
@@ -791,6 +861,8 @@ def _write_work_order(
         payload["sandbox_receipt_path"] = sandbox_receipt_path
     if herdr_binding is not None:
         payload["herdr_binding"] = herdr_binding
+    if herdr_receipt_path is not None:
+        payload["herdr_receipt_path"] = herdr_receipt_path
     path = tmp_path / "work-order.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

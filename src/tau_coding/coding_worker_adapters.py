@@ -128,6 +128,7 @@ def write_omp_worker_launch_receipt(
         "agent": work_order.get("agent"),
         "attempt": work_order.get("attempt"),
         "goal_hash": work_order.get("goal_hash"),
+        **_substrate_metadata(work_order),
         "command": command,
         "stdin_jsonl": [request_payload],
         "stdout_path": launch_result["stdout_path"],
@@ -245,6 +246,7 @@ def write_scillm_worker_launch_receipt(
         "agent": work_order.get("agent"),
         "attempt": work_order.get("attempt"),
         "goal_hash": work_order.get("goal_hash"),
+        **_substrate_metadata(work_order),
         "scillm_base_url": scillm_base_url.rstrip("/"),
         "endpoint": SCILLM_OPENCODE_SERVE_ENDPOINT,
         "url": url,
@@ -702,14 +704,20 @@ def _append_work_order_gate_alerts(
                 )
             )
     if high_stakes and substrate in {"herdr", "herdr-visible"}:
-        if not (
-            isinstance(work_order.get("herdr_binding"), Mapping)
-            or _string(work_order.get("herdr_receipt_path"))
-        ):
+        herdr_binding = isinstance(work_order.get("herdr_binding"), Mapping)
+        herdr_receipt_path = _string(work_order.get("herdr_receipt_path"))
+        if not (herdr_binding or herdr_receipt_path):
             alerts.append(
                 _alert(
                     "herdr_binding_required",
                     "high-stakes Herdr worker requires herdr_binding or herdr_receipt_path",
+                )
+            )
+        elif herdr_receipt_path and not _path_exists(herdr_receipt_path, repo):
+            alerts.append(
+                _alert(
+                    "herdr_receipt_missing",
+                    "high-stakes Herdr worker herdr_receipt_path does not exist",
                 )
             )
     if high_stakes and not work_order.get("policy_profile"):
@@ -720,6 +728,20 @@ def _append_work_order_gate_alerts(
         alerts.append(
             _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
         )
+
+
+def _substrate_metadata(work_order: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "execution_substrate": _string(
+            work_order.get("execution_substrate") or work_order.get("substrate")
+        ),
+        "sandbox_receipt_path": work_order.get("sandbox_receipt_path"),
+        "herdr_binding": work_order.get("herdr_binding"),
+        "herdr_receipt_path": work_order.get("herdr_receipt_path"),
+        "high_stakes": bool(work_order.get("high_stakes") or work_order.get("zero_trust")),
+        "policy_profile": work_order.get("policy_profile"),
+        "data_boundary": work_order.get("data_boundary"),
+    }
 
 
 def _scillm_opencode_request_payload(

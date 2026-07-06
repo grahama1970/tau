@@ -348,6 +348,28 @@
   Tau-launched workers, live OMP/SciLLM coding work, provider/model quality, or
   legal compliance.
 
+- 2026-07-06 worker substrate metadata hardening rung:
+  `src/tau_coding/coding_worker_adapters.py` now blocks high-stakes Herdr
+  worker work orders that name `herdr_receipt_path` without an existing
+  receipt file, instead of accepting the path string as evidence. OMP and
+  SciLLM worker launch receipts now also carry `execution_substrate`,
+  `sandbox_receipt_path`, `herdr_binding`, `herdr_receipt_path`, `high_stakes`,
+  `policy_profile`, and `data_boundary`, so dry-run/apply launch requests
+  preserve the same containment metadata as worker validation receipts.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `30
+  passed in 2.10s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-substrate-metadata` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-substrate-metadata/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded coding receipt tests
+  `108 passed in 2.59s`. This deterministic local gate does not prove live
+  OMP/SciLLM semantic worker execution, provider/model quality, code
+  correctness, GitHub mutation, legal compliance, or runtime sandbox isolation.
+
 - 2026-07-06 commit-plan changed-file hash-binding rung:
   `src/tau_coding/commit_plan.py` now records changed-file content artifacts on
   `tau.commit_plan_receipt.v1`: existing changed files carry `exists:true`,
