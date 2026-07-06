@@ -274,6 +274,8 @@ def _semantic_alerts(
         return _actor_manifest_alerts(payload, artifact=artifact)
     if key == "signed_receipt_verification":
         return _signed_receipt_verification_alerts(payload, artifact=artifact)
+    if key == "sandbox_run":
+        return _sandbox_run_alerts(payload, artifact=artifact)
     return []
 
 
@@ -422,6 +424,57 @@ def _actor_manifest_alerts(payload: Mapping[str, Any], *, artifact: str) -> list
                 "ITAR local-only review package requires actor approval for ITAR boundary.",
                 artifact=artifact,
                 approved_for_boundary=approved,
+            )
+        )
+    return alerts
+
+
+def _sandbox_run_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    policy = payload.get("policy")
+    policy_map = policy if isinstance(policy, Mapping) else {}
+    backend = payload.get("backend")
+    backend_map = backend if isinstance(backend, Mapping) else {}
+
+    if payload.get("command_executed") is True:
+        alerts.append(
+            _alert(
+                "sandbox_execution_not_review_ready",
+                "Review packages cannot claim sandbox command execution without a runtime execution receipt accepted by Tau.",
+                artifact=artifact,
+            )
+        )
+
+    if policy_map.get("network") not in {None, "none"}:
+        alerts.append(
+            _alert(
+                "sandbox_policy_not_review_ready",
+                "Review package sandbox receipt must not allow network access.",
+                artifact=artifact,
+                field="policy.network",
+                actual=policy_map.get("network"),
+            )
+        )
+    for field in ("privileged", "docker_socket_mounted", "host_network"):
+        if policy_map.get(field) is True:
+            alerts.append(
+                _alert(
+                    "sandbox_policy_not_review_ready",
+                    f"Review package sandbox receipt must not enable {field}.",
+                    artifact=artifact,
+                    field=f"policy.{field}",
+                    actual=policy_map.get(field),
+                )
+            )
+    image = backend_map.get("image")
+    if isinstance(image, str) and "@sha256:" not in image:
+        alerts.append(
+            _alert(
+                "sandbox_policy_not_review_ready",
+                "Review package sandbox image must be pinned by digest when present.",
+                artifact=artifact,
+                field="backend.image",
+                actual=image,
             )
         )
     return alerts

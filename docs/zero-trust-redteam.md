@@ -20,14 +20,20 @@ with schema `tau.zero_trust_redteam_receipt.v1`.
 
 ## Current Attempts
 
-The first suite passes only when Tau blocks each malicious fixture:
+The current suite passes only when Tau blocks each malicious fixture:
 
 - controlled snippet in an external research query;
 - foreign-person actor on an ITAR boundary;
 - unverified human approval actor;
 - cloud provider branch under a provider-deny policy;
+- provider metadata hidden in DAG node `model_policy` / `prompt_contract`
+  fields under a provider-deny policy;
 - public mutation under a GitHub public-mutation deny policy;
-- blocked signed-receipt verification in a review package.
+- public GitHub projection metadata under a public-mutation deny policy;
+- blocked signed-receipt verification in a review package;
+- approved/sanitized research lane swapped back to a controlled-data query;
+- unverified actor provenance inside a review package;
+- sandbox receipt that claims command execution with unsafe Docker policy.
 
 Each attempt records the expected alert code and the observed alert codes.
 

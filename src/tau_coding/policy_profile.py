@@ -286,6 +286,13 @@ def _dag_requests_external_provider(dag_contract: Mapping[str, Any] | None) -> b
             continue
         if isinstance(node.get("provider"), Mapping):
             return True
+        model_policy = node.get("model_policy")
+        if isinstance(model_policy, Mapping) and isinstance(model_policy.get("provider"), str):
+            return True
+        if isinstance(node.get("prompt_contract"), Mapping) and node.get("requires_provider_route"):
+            return True
+        if isinstance(node.get("provider_route_receipt"), str):
+            return True
         executor = node.get("executor")
         if executor in {"codex", "opencode", "scillm", "provider"}:
             return True

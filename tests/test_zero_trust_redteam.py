@@ -15,8 +15,8 @@ def test_zero_trust_redteam_requires_expected_fail_closed_alerts(tmp_path: Path)
     assert receipt["schema"] == ZERO_TRUST_REDTEAM_RECEIPT_SCHEMA
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
-    assert receipt["attempt_count"] == 6
-    assert receipt["passed_attempt_count"] == 6
+    assert receipt["attempt_count"] == 11
+    assert receipt["passed_attempt_count"] == 11
     attempts = {attempt["attempt_id"]: attempt for attempt in receipt["attempts"]}
     assert attempts["controlled_snippet_in_research_query"]["expected_alert_code"] == (
         "controlled_artifact_snippet_in_query"
@@ -28,11 +28,26 @@ def test_zero_trust_redteam_requires_expected_fail_closed_alerts(tmp_path: Path)
     assert attempts["cloud_provider_requested_for_itar"]["expected_alert_code"] == (
         "external_provider_denied"
     )
+    assert attempts["provider_metadata_hidden_in_dag"]["expected_alert_code"] == (
+        "external_provider_denied"
+    )
     assert attempts["public_mutation_for_itar_boundary"]["expected_alert_code"] == (
+        "public_repo_denied"
+    )
+    assert attempts["github_projection_public_mutation"]["expected_alert_code"] == (
         "public_repo_denied"
     )
     assert attempts["unsigned_critical_receipt"]["expected_alert_code"] == (
         "critical_receipt_not_pass"
+    )
+    assert attempts["sanitized_query_swapped_after_approval"]["expected_alert_code"] == (
+        "controlled_artifact_snippet_in_query"
+    )
+    assert attempts["unverified_actor_package_provenance"]["expected_alert_code"] == (
+        "actor_manifest_not_verified"
+    )
+    assert attempts["sandbox_execution_claim_mismatch"]["expected_alert_code"] == (
+        "sandbox_execution_not_review_ready"
     )
     assert all(attempt["status"] == "PASS" for attempt in receipt["attempts"])
     assert "ITAR compliance." in receipt["proof_scope"]["does_not_prove"]
