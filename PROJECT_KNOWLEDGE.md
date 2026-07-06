@@ -1,9 +1,27 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:33 EDT by agent
+**Last updated:** 2026-07-06 18:39 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding capability aggregate sanity receipt rung:
+  `scripts/run-coding-capability-sanity.py` now runs the coding reliability
+  example, OMP worker example, SciLLM worker example, focused ruff checks, and
+  focused coding receipt tests before writing one
+  `tau.coding_capability_sanity_receipt.v1`. Proof:
+  `python3 -m py_compile scripts/run-coding-capability-sanity.py` -> pass;
+  `uv run ruff check --select I,F,E501
+  scripts/run-coding-capability-sanity.py` -> pass;
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-proof-final` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-proof-final/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, and `failed_check_count:0`.
+  The embedded focused pytest command reports `87 passed in 0.77s`. This
+  proves the current local coding receipt tests and copyable examples compose
+  into one deterministic audit artifact; it does not prove live OMP/SciLLM
+  worker execution, provider/model semantic quality, semantic code correctness,
+  GitHub mutation, human acceptance, or legal compliance.
 
 - 2026-07-06 OMP worker dry-run launch receipt rung:
   `src/tau_coding/coding_worker_adapters.py` now writes

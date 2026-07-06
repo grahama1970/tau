@@ -252,6 +252,26 @@ uv run tau orchestration-reliability --run-dir run --out orchestration-reliabili
 This receipt does not prove code correctness, agent truthfulness, provider/model
 quality, GitHub mutation, or human acceptance.
 
+### Aggregate Coding Sanity
+
+`scripts/run-coding-capability-sanity.py` runs the current copyable coding
+examples plus the focused coding receipt test set, then writes one
+`tau.coding_capability_sanity_receipt.v1`:
+
+```bash
+scripts/run-coding-capability-sanity.py \
+  --run-dir /tmp/tau-coding-capability-sanity
+```
+
+The receipt covers hash-bound patch receipts, course correction, structured
+review findings, LSP receipts, commit planning, debugger evidence, GitHub reads,
+worker validation, dry-run worker launch receipts, and orchestration reliability.
+It records `mocked:"mixed"` and `live:"mixed"` because the worker examples use
+fixture worker results while the coding reliability example exercises local
+receipt-producing commands. It does not prove live OMP/SciLLM execution,
+provider/model quality, semantic code correctness, GitHub mutation, human
+acceptance, or legal compliance.
+
 ## Intended Worker Adapters
 
 External coding workers remain untrusted. Tau should wrap them with work orders,
