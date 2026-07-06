@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-06 Phase 07 image model policy enforcement slice: the persona-dream
+  panel creator now resolves live image generation from the Tau handoff's
+  `context.image_model_policy`, `context.model_policy`, or
+  `context.tau_dag_node.model_policy` before falling back to panel-local
+  `scillm_image_model` / `scillm_image_auth` defaults. DAG policy can select
+  Codex OAuth image generation such as `provider:"codex"`,
+  `auth:"codex-oauth"`, `model:"gpt-2"`; stale panel-local backend settings are
+  recorded as ignored overrides. Unsupported DAG image providers block before
+  Scillm auth lookup or subprocess execution and write
+  `tau.persona_dream.scillm_image_generation_call.v1` with `live:false`,
+  `live_call_performed:false`, `fallback_allowed:false`, and
+  `fallback_performed:false` unless the DAG policy explicitly records fallback
+  allowance. Focused proof: `uv run ruff check --select I,F
+  src/tau_coding/persona_dream_panel_agent.py
+  tests/test_persona_dream_panel_agent.py` passed; `uv run pytest
+  tests/test_persona_dream_panel_agent.py tests/test_project_dag.py -q`
+  reported `51 passed`; deterministic local no-fallback proof wrote
+  `/tmp/tau-image-policy-no-fallback-proof/artifacts/scillm_image_generation_receipt.json`
+  with `ok:false`, `error:"unsupported_image_model_provider"`, `live:false`,
+  `live_call_performed:false`, and `fallback_performed:false`. This proves
+  policy resolution and fail-closed no-fallback behavior for the tested local
+  path; it does not prove a live GPT image provider call, provider/model
+  semantic quality, Google/Flux/Fal behavior, or storyboard acceptance.
+
 - 2026-07-06 DAG viewer link real-world sanity regression: `scripts/run-real-world-sanity.py`
   now registers `advanced.project_dag_viewer_link_exports`, which runs the real
   local provider-metadata project DAG fixture, calls `uv run tau run-status` on
