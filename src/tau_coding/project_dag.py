@@ -34,6 +34,7 @@ except ImportError:  # pragma: no cover - exercised only in stripped runtime env
 DAG_CONTRACT_SCHEMA = "tau.dag_contract.v1"
 DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
 DAG_ERROR_SCHEMA = "tau.dag_error.v1"
+DAG_PROGRESS_SCHEMA = "tau.dag_progress.v1"
 FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
@@ -338,6 +339,19 @@ def run_project_dag_contract(
 
     max_steps = _max_steps(contract)
     loop_dir = resolved_receipt_dir / "command-loop"
+    progress_events: list[dict[str, Any]] = []
+
+    def record_progress(event: dict[str, Any]) -> None:
+        progress_events.append(event)
+        _write_project_dag_progress(
+            contract=contract,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            events=progress_events,
+            node_attempts=_command_loop_progress_attempts(progress_events),
+            status="RUNNING",
+        )
+
     loop = write_agent_handoff_command_loop_receipt(
         start_handoff,
         loop_dir,
@@ -349,6 +363,7 @@ def run_project_dag_contract(
             contract.command_policy,
             resolved_contract_path,
         ),
+        progress_callback=record_progress,
     )
     loop_payload = loop.as_dict()
     loop_receipt_path = loop_dir / "command-loop-receipt.json"
@@ -483,6 +498,16 @@ def run_project_dag_contract(
     )
     if dag_error is not None:
         receipt["dag_error"] = dag_error
+    _write_project_dag_progress(
+        contract=contract,
+        receipt_dir=resolved_receipt_dir,
+        scheduler=scheduler,
+        events=progress_events,
+        node_attempts=receipt["node_attempts"],
+        status=status,
+        verdict=verdict,
+    )
+    receipt["progress_path"] = str(resolved_receipt_dir / "dag-progress.json")
     _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
     return receipt
 
@@ -635,6 +660,14 @@ def _run_bounded_ready_queue_project_dag(
                         "ts": _utc_stamp(),
                     }
                 )
+                _write_project_dag_progress(
+                    contract=contract,
+                    receipt_dir=receipt_dir,
+                    scheduler="bounded-ready-queue",
+                    events=events,
+                    node_attempts=node_attempts,
+                    status="RUNNING",
+                )
                 changed = True
 
     def ready_nodes(running: set[str]) -> list[str]:
@@ -707,6 +740,14 @@ def _run_bounded_ready_queue_project_dag(
                         "ts": _utc_stamp(),
                     }
                 )
+                _write_project_dag_progress(
+                    contract=contract,
+                    receipt_dir=receipt_dir,
+                    scheduler="bounded-ready-queue",
+                    events=events,
+                    node_attempts=node_attempts,
+                    status="RUNNING",
+                )
             if failed:
                 break
             if not futures:
@@ -766,6 +807,14 @@ def _run_bounded_ready_queue_project_dag(
                         "ts": _utc_stamp(),
                     }
                 )
+                _write_project_dag_progress(
+                    contract=contract,
+                    receipt_dir=receipt_dir,
+                    scheduler="bounded-ready-queue",
+                    events=events,
+                    node_attempts=node_attempts,
+                    status="RUNNING",
+                )
                 if result.get("ok") is not True:
                     stop_reason = "node_dispatch_failed"
                     if isinstance(dispatch, dict):
@@ -786,6 +835,14 @@ def _run_bounded_ready_queue_project_dag(
                             "errors": result.get("errors", []),
                             "ts": _utc_stamp(),
                         }
+                    )
+                    _write_project_dag_progress(
+                        contract=contract,
+                        receipt_dir=receipt_dir,
+                        scheduler="bounded-ready-queue",
+                        events=events,
+                        node_attempts=node_attempts,
+                        status="RUNNING",
                     )
                     drift_alert = _pointless_unit_test_drift_alert(
                         node_id=node_id,
@@ -928,6 +985,16 @@ def _run_bounded_ready_queue_project_dag(
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
     )
+    _write_project_dag_progress(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        scheduler="bounded-ready-queue",
+        events=events,
+        node_attempts=node_attempts,
+        status=status,
+        verdict=verdict,
+    )
+    receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
     _write_json(receipt_dir / "dag-receipt.json", receipt)
     return receipt
 
@@ -2587,6 +2654,125 @@ def _ready_queue_receipt(
     if dag_error is not None:
         receipt["dag_error"] = dag_error
     return receipt
+
+
+def _command_loop_progress_attempts(events: list[dict[str, Any]]) -> dict[str, int]:
+    attempts: dict[str, int] = {}
+    for event in events:
+        if event.get("event") != "step_started":
+            continue
+        selected_agent = event.get("selected_agent")
+        if isinstance(selected_agent, str) and selected_agent:
+            attempts[selected_agent] = attempts.get(selected_agent, 0) + 1
+    return attempts
+
+
+def _write_project_dag_progress(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    scheduler: str,
+    events: list[dict[str, Any]],
+    node_attempts: dict[str, int],
+    status: str,
+    verdict: str | None = None,
+) -> None:
+    node_progress = _project_dag_node_progress(contract, events, node_attempts)
+    active_subagents = [
+        {
+            "node_id": item["node_id"],
+            "agent": item["agent"],
+            "attempt": item["attempt"],
+        }
+        for item in node_progress
+        if item["status"] == "RUNNING"
+    ]
+    completed_subagents = [
+        {"node_id": item["node_id"], "agent": item["agent"]}
+        for item in node_progress
+        if item["status"] == "COMPLETED"
+    ]
+    payload = {
+        "schema": DAG_PROGRESS_SCHEMA,
+        "ok": status not in {"BLOCKED", "FAIL", "FAILED"},
+        "status": status,
+        "verdict": verdict,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "scheduler": scheduler,
+        "dag_id": contract.dag_id,
+        "run_dir": str(receipt_dir),
+        "active_goal_hash": contract.goal["goal_hash"],
+        "entry_node": contract.entry_node,
+        "terminal_nodes": list(contract.terminal_nodes),
+        "node_count": len(contract.nodes),
+        "node_progress": node_progress,
+        "active_subagents": active_subagents,
+        "completed_subagents": completed_subagents,
+        "event_count": len(events),
+        "last_event": events[-1] if events else None,
+        "events": events,
+        "proof_scope": {
+            "proves": [
+                "Tau has written a durable local progress artifact for this DAG run.",
+                (
+                    "Operators can inspect active and completed subagents before the final "
+                    "DAG receipt exists."
+                ),
+            ],
+            "does_not_prove": [
+                "The active subprocess will finish successfully.",
+                "Provider/model semantic quality.",
+                "Final DAG acceptance before dag-receipt.json is written.",
+            ],
+        },
+        "updated_at": _utc_stamp(),
+    }
+    _write_json(receipt_dir / "dag-progress.json", payload)
+
+
+def _project_dag_node_progress(
+    contract: ProjectDagContract,
+    events: list[dict[str, Any]],
+    node_attempts: dict[str, int],
+) -> list[dict[str, Any]]:
+    statuses: dict[str, str] = {
+        node_id: "PENDING"
+        for node_id, node in contract.nodes.items()
+        if node.executor != "human" and node_id not in contract.terminal_nodes
+    }
+    last_seen: dict[str, str] = {}
+    for event in events:
+        name = str(event.get("event") or "")
+        node_id = event.get("node_id")
+        if not isinstance(node_id, str) or not node_id:
+            selected_agent = event.get("selected_agent")
+            node_id = selected_agent if isinstance(selected_agent, str) else None
+        if not node_id or node_id == "human":
+            continue
+        last_seen[node_id] = str(event.get("ts") or "")
+        if name in {"node_started", "step_started"}:
+            statuses[node_id] = "RUNNING"
+        elif name in {"virtual_node_completed", "node_completed"}:
+            statuses[node_id] = "COMPLETED" if event.get("ok", True) is True else "BLOCKED"
+        elif name == "step_completed":
+            statuses[node_id] = "COMPLETED" if event.get("ok") is True else "BLOCKED"
+        elif name in {"node_attempt_failed", "step_blocked", "loop_blocked"}:
+            statuses[node_id] = "BLOCKED"
+    progress: list[dict[str, Any]] = []
+    for node_id in sorted(statuses):
+        node = contract.nodes.get(node_id)
+        progress.append(
+            {
+                "node_id": node_id,
+                "agent": node.agent if node else node_id,
+                "status": statuses[node_id],
+                "attempt": node_attempts.get(node_id, 0),
+                "last_event_at": last_seen.get(node_id),
+            }
+        )
+    return progress
 
 
 def _dag_error(

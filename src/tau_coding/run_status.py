@@ -24,6 +24,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     if not run_receipt:
         run_receipt = _read_optional_json(artifacts["real_world_sanity_receipt"])
     project_dag_receipt = _read_optional_json(artifacts["project_dag_receipt"])
+    project_dag_progress = _read_optional_json(artifacts["project_dag_progress"])
     evidence_validation = _read_optional_json(artifacts["evidence_validation"])
     runtime_manifest = _read_optional_json(artifacts["runtime_manifest"])
     checkpoint = _read_optional_json(artifacts["checkpoint"])
@@ -64,6 +65,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     detected_type = _detected_type(
         run_receipt,
         project_dag_receipt,
+        project_dag_progress,
         evidence_validation,
         runtime_manifest,
         approval_gate=approval_gate,
@@ -87,6 +89,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     status = _overall_status(
         run_receipt,
         project_dag_receipt,
+        project_dag_progress,
         evidence_validation,
         checkpoint,
         approval_gate,
@@ -125,6 +128,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "live": _live_value(
             run_receipt,
             project_dag_receipt,
+            project_dag_progress,
             evidence_validation,
             cleanup,
             herdr_gc,
@@ -151,6 +155,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "dag_viewer": dag_viewer,
         "run_receipt": _receipt_summary(run_receipt),
         "project_dag": _project_dag_summary(project_dag_receipt),
+        "project_dag_progress": _project_dag_progress_summary(project_dag_progress),
         "evidence_validation": _evidence_validation_summary(evidence_validation),
         "runtime_manifest": _manifest_summary(runtime_manifest),
         "checkpoint": _checkpoint_summary(checkpoint or current_state),
@@ -193,8 +198,14 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "proof_scope": {
             "proves": [
                 "Tau can summarize known run artifacts from one run directory",
-                "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
-                "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests",
+                (
+                    "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, "
+                    "and evidence status without mutation"
+                ),
+                (
+                    "Tau can expose project DAG dag-receipt.json failures without requiring "
+                    "provider runtime manifests"
+                ),
             ],
             "does_not_prove": [
                 "new provider execution",
@@ -234,7 +245,10 @@ def build_dag_viewer_link(run_dir: Path) -> dict[str, Any]:
         "proof_scope": {
             "proves": [
                 "Tau can derive a DAG viewer URL from local DAG contract and receipt artifacts",
-                "Tau does not mutate the DAG, route, provider state, Herdr state, or GitHub state to create the viewer link",
+                (
+                    "Tau does not mutate the DAG, route, provider state, Herdr state, or "
+                    "GitHub state to create the viewer link"
+                ),
             ],
             "does_not_prove": [
                 "browser rendering",
@@ -266,6 +280,13 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
                 run_dir / "run" / "dag-receipt.json",
             ],
             fallback=run_dir / "dag-receipt.json",
+        ),
+        "project_dag_progress": _first_existing_path(
+            [
+                run_dir / "dag-progress.json",
+                run_dir / "run" / "dag-progress.json",
+            ],
+            fallback=run_dir / "dag-progress.json",
         ),
         "evidence_validation": run_dir / "evidence-validation-receipt.json",
         "runtime_manifest": run_dir / "runtime-manifest.json",
@@ -358,6 +379,7 @@ def _missing_required_artifact(
 def _detected_type(
     run_receipt: dict[str, Any],
     project_dag_receipt: dict[str, Any],
+    project_dag_progress: dict[str, Any],
     evidence_validation: dict[str, Any],
     runtime_manifest: dict[str, Any],
     *,
@@ -382,6 +404,7 @@ def _detected_type(
     schema = str(
         run_receipt.get("schema")
         or project_dag_receipt.get("schema")
+        or project_dag_progress.get("schema")
         or evidence_validation.get("schema")
         or herdr_gc.get("schema")
         or cleanup.get("schema")
@@ -405,7 +428,11 @@ def _detected_type(
     )
     if schema == "tau.generic_dag_run_receipt.v1":
         return "generic_dag"
-    if schema in {"tau.dag_receipt.v1", "tau.evidence_validation_receipt.v1"}:
+    if schema in {
+        "tau.dag_receipt.v1",
+        "tau.dag_progress.v1",
+        "tau.evidence_validation_receipt.v1",
+    }:
         return "project_dag"
     if schema == "tau.provider_pane_run_receipt.v1":
         return "provider_pane"
@@ -457,6 +484,7 @@ def _detected_type(
 def _overall_status(
     run_receipt: dict[str, Any],
     project_dag_receipt: dict[str, Any],
+    project_dag_progress: dict[str, Any],
     evidence_validation: dict[str, Any],
     checkpoint: dict[str, Any],
     approval_gate: dict[str, Any],
@@ -480,6 +508,7 @@ def _overall_status(
     for payload in (
         run_receipt,
         project_dag_receipt,
+        project_dag_progress,
         evidence_validation,
         checkpoint,
         herdr_gc,
@@ -649,6 +678,39 @@ def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         else [],
         "error_count": _count(payload.get("errors")),
         "errors": payload.get("errors") if isinstance(payload.get("errors"), list) else [],
+    }
+
+
+def _project_dag_progress_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.dag_progress.v1":
+        return None
+    active_subagents = payload.get("active_subagents")
+    completed_subagents = payload.get("completed_subagents")
+    node_progress = payload.get("node_progress")
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "verdict": payload.get("verdict"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "scheduler": payload.get("scheduler"),
+        "dag_id": payload.get("dag_id"),
+        "goal_hash": _project_dag_goal_hash(payload),
+        "entry_node": payload.get("entry_node"),
+        "terminal_nodes": payload.get("terminal_nodes"),
+        "node_count": payload.get("node_count"),
+        "event_count": payload.get("event_count"),
+        "last_event": payload.get("last_event"),
+        "active_subagent_count": _count(active_subagents),
+        "active_subagents": active_subagents if isinstance(active_subagents, list) else [],
+        "completed_subagent_count": _count(completed_subagents),
+        "completed_subagents": completed_subagents
+        if isinstance(completed_subagents, list)
+        else [],
+        "node_progress": node_progress if isinstance(node_progress, list) else [],
+        "updated_at": payload.get("updated_at"),
     }
 
 
@@ -1162,7 +1224,11 @@ def _herdr_gc_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
 def _post_verified_absent_count(value: Any) -> int:
     if not isinstance(value, list):
         return 0
-    return sum(1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True)
+    return sum(
+        1
+        for item in value
+        if isinstance(item, dict) and item.get("post_verified_absent") is True
+    )
 
 
 def _real_world_sanity_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
@@ -1380,7 +1446,9 @@ def _dag_viewer_summary(
         "source": "dag-contract.json + dag-receipt.json" if available else "missing_dag_artifacts",
         "mocked": bool(project_dag_receipt.get("mocked", False)) if available else False,
         "live": project_dag_receipt.get("live") if available else False,
-        "provider_live": bool(project_dag_receipt.get("provider_live", False)) if available else False,
+        "provider_live": bool(project_dag_receipt.get("provider_live", False))
+        if available
+        else False,
         "contract_path": str(contract_path) if contract_exists else None,
         "contract_sha256": _file_sha256(contract_path) if contract_exists else None,
         "receipt_path": str(receipt_path) if receipt_exists else None,

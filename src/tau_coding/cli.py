@@ -91,6 +91,7 @@ from tau_coding.github_handoff import (
     transport_goal_guardian_reconciliation_to_github,
     transport_handoff_projection_to_github,
 )
+from tau_coding.github_read_schemes import write_github_read_receipt
 from tau_coding.handoff_dispatch import (
     TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
     load_agent_dispatch_command_spec,
@@ -1782,6 +1783,18 @@ def main(
                 session_path=Path(str(options["session"])),
                 output_path=Path(str(options["out"])),
                 required=bool(options["required"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "github-read":
+        try:
+            options = _parse_github_read_cli_args(positional_args[1:])
+            payload = write_github_read_receipt(
+                uri=str(options["uri"]),
+                output_path=Path(str(options["out"])),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4544,6 +4557,30 @@ def _parse_debug_session_receipt_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError("Usage: tau debug-session-receipt --session <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau debug-session-receipt --session <json> --out <receipt>")
+    return options
+
+
+def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"uri": None, "out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--uri", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--uri="):
+            options["uri"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown github-read option: {arg}")
+        index += 1
+    if not _optional_str(options.get("uri")):
+        raise RuntimeError("Usage: tau github-read --uri <github-uri> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau github-read --uri <github-uri> --out <receipt>")
     return options
 
 

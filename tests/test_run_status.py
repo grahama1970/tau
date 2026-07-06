@@ -243,12 +243,17 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
                     "code": "coder_receipt_timeout",
                     "node_id": "coder",
                     "attempt": 1,
-                    "message": "Provider DAG coder node did not produce a bound receipt before timeout.",
+                    "message": (
+                        "Provider DAG coder node did not produce a bound receipt before timeout."
+                    ),
                     "errors": ["node_receipt_timeout: coder receipt did not appear before timeout"],
                     "recommended_action": {
                         "type": "reroute",
                         "next_agent": "goal-guardian",
-                        "reason": "Provider DAG coder node did not produce a bound receipt before timeout.",
+                        "reason": (
+                            "Provider DAG coder node did not produce a bound receipt before "
+                            "timeout."
+                        ),
                     },
                 }
             ],
@@ -504,18 +509,20 @@ def test_run_status_summarizes_provider_lifecycle_states(tmp_path: Path) -> None
     assert status["provider_session_states"][0]["provider_session_state_sha256"] == hashlib.sha256(
         state_path.read_bytes()
     ).hexdigest()
-    assert status["provider_session_states"][0]["provider_event_log_path"] == "/tmp/codex.events.jsonl"
+    assert status["provider_session_states"][0]["provider_event_log_path"] == (
+        "/tmp/codex.events.jsonl"
+    )
     assert status["provider_readiness"]["readiness_record_count"] == 1
     assert status["provider_readiness"]["provider_session_state_count"] == 1
     assert status["provider_readiness"]["ready_count"] == 1
     assert status["provider_readiness"]["state_counts"] == {"ready": 1}
     assert status["provider_readiness"]["readiness"][0]["visible_prompt_is_gate"] is False
-    assert status["provider_readiness"]["readiness"][0]["provider_readiness_sha256"] == hashlib.sha256(
-        readiness_path.read_bytes()
-    ).hexdigest()
-    assert status["provider_readiness"]["readiness"][0]["provider_session_state_sha256"] == hashlib.sha256(
-        state_path.read_bytes()
-    ).hexdigest()
+    assert status["provider_readiness"]["readiness"][0]["provider_readiness_sha256"] == (
+        hashlib.sha256(readiness_path.read_bytes()).hexdigest()
+    )
+    assert status["provider_readiness"]["readiness"][0]["provider_session_state_sha256"] == (
+        hashlib.sha256(state_path.read_bytes()).hexdigest()
+    )
 
 
 def test_run_status_summarizes_provider_pane_allocation(tmp_path: Path) -> None:
@@ -1465,6 +1472,72 @@ def test_run_status_summarizes_project_dag_evidence_validation_failure(
             "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
         ],
     }
+
+
+def test_run_status_summarizes_project_dag_progress_before_final_receipt(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path / "dag-progress.json",
+        {
+            "schema": "tau.dag_progress.v1",
+            "ok": True,
+            "status": "RUNNING",
+            "verdict": None,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "scheduler": "handoff-loop",
+            "dag_id": "project-dag-running",
+            "active_goal_hash": "sha256:goal",
+            "entry_node": "coder",
+            "terminal_nodes": ["human"],
+            "node_count": 2,
+            "active_subagents": [{"node_id": "coder", "agent": "coder", "attempt": 1}],
+            "completed_subagents": [],
+            "node_progress": [
+                {
+                    "node_id": "coder",
+                    "agent": "coder",
+                    "status": "RUNNING",
+                    "attempt": 1,
+                    "last_event_at": "2026-07-06T18:00:00Z",
+                },
+                {
+                    "node_id": "reviewer",
+                    "agent": "reviewer",
+                    "status": "PENDING",
+                    "attempt": 0,
+                    "last_event_at": None,
+                },
+            ],
+            "event_count": 1,
+            "last_event": {
+                "event": "step_started",
+                "loop_step": 1,
+                "selected_agent": "coder",
+                "status": "RUNNING",
+                "ts": "2026-07-06T18:00:00Z",
+            },
+            "events": [],
+            "updated_at": "2026-07-06T18:00:00Z",
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "RUNNING"
+    assert status["live"] is True
+    assert status["detected_type"] == "project_dag"
+    assert status["missing_required_artifacts"] == []
+    assert status["project_dag"] is None
+    assert status["artifacts"]["project_dag_progress"] == str(tmp_path / "dag-progress.json")
+    assert status["project_dag_progress"]["active_subagents"] == [
+        {"node_id": "coder", "agent": "coder", "attempt": 1}
+    ]
+    assert status["project_dag_progress"]["completed_subagent_count"] == 0
+    assert status["project_dag_progress"]["node_progress"][1]["status"] == "PENDING"
 
 
 def test_run_status_exports_dag_viewer_link_for_project_dag_run_root(

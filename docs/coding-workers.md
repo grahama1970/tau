@@ -171,6 +171,34 @@ Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code
 is correct.
 
+### GitHub Read Schemes
+
+`tau.github_read_receipt.v1` turns URI-style GitHub references into read-only
+inspection receipts:
+
+```text
+issue://owner/repo/123
+pr://owner/repo/456
+diff://owner/repo/pull/456
+commit://owner/repo/<sha>
+```
+
+CLI:
+
+```bash
+uv run tau github-read \
+  --uri issue://grahama1970/tau/67 \
+  --out github-read-receipt.json
+```
+
+The receipt records the parsed target, a suggested `gh` read command, blocked
+mutation verbs, and `mutation_allowed:false`. It does not call GitHub, prove
+live auth, prove the target object exists, or prove content freshness.
+
+GitHub mutation remains separate. Commenting, labeling, closing, merging,
+pushing, and releasing must go through `tau.github_apply_policy_receipt.v1`
+with the existing repo allowlist, preflight, redaction, and approval gates.
+
 ### Orchestration Reliability
 
 `tau.orchestration_reliability_receipt.v1` summarizes whether a DAG run obeyed
@@ -251,6 +279,7 @@ Tau does not claim:
 - LSP or tests prove full safety
 - worker adapters make OMP or SciLLM trusted
 - worker validation proves Tau launched the worker
+- GitHub read receipts authorize mutation
 - policy/data-boundary gates are legal compliance
 
 The design goal is narrower: make coding-agent output bounded, inspectable,

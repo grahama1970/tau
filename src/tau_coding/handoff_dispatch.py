@@ -6,8 +6,9 @@ import hashlib
 import json
 import os
 import subprocess
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -505,8 +506,13 @@ def run_agent_handoff_command_loop(
     max_steps: int = 5,
     artifact_root: Path | None = None,
     command_policy_path: Path | None = None,
+    progress_callback: Callable[[dict[str, Any]], None] | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Run selected agent commands until the route reaches human or fails closed."""
+
+    def emit_progress(event: dict[str, Any]) -> None:
+        if progress_callback is not None:
+            progress_callback({"ts": _utc_stamp(), **event})
 
     if max_steps < 1:
         return AgentHandoffCommandLoopResult(
@@ -536,6 +542,15 @@ def run_agent_handoff_command_loop(
             )
         selected_agent = current_projection.next_agent
         if selected_agent == "human":
+            emit_progress(
+                {
+                    "event": "loop_waiting",
+                    "loop_step": step - 1,
+                    "selected_agent": selected_agent,
+                    "status": "WAITING",
+                    "stop_reason": "next_agent_is_human",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=True,
                 status="WAITING",
@@ -545,6 +560,15 @@ def run_agent_handoff_command_loop(
                 dispatches=tuple(dispatches),
             )
         if selected_agent is None:
+            emit_progress(
+                {
+                    "event": "loop_blocked",
+                    "loop_step": step,
+                    "selected_agent": None,
+                    "status": "BLOCKED",
+                    "stop_reason": "missing_next_agent",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=False,
                 status="BLOCKED",
@@ -562,6 +586,15 @@ def run_agent_handoff_command_loop(
                 command_policy_path=command_policy_path,
             )
         except ValueError as exc:
+            emit_progress(
+                {
+                    "event": "step_blocked",
+                    "loop_step": step,
+                    "selected_agent": selected_agent,
+                    "status": "BLOCKED",
+                    "stop_reason": _command_spec_load_stop_reason(str(exc)),
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=False,
                 status="BLOCKED",
@@ -572,6 +605,15 @@ def run_agent_handoff_command_loop(
                 errors=(str(exc),),
             )
 
+        emit_progress(
+            {
+                "event": "step_started",
+                "loop_step": step,
+                "selected_agent": selected_agent,
+                "status": "RUNNING",
+                "command_spec_path": spec.get("command_spec_path"),
+            }
+        )
         dispatch = dispatch_agent_handoff_command_once(
             current_payload,
             _command_with_goal_guardian_ticket_source(
@@ -593,6 +635,16 @@ def run_agent_handoff_command_loop(
         dispatch_payload = dispatch.as_dict()
         dispatch_payload["loop_step"] = step
         dispatches.append(dispatch_payload)
+        emit_progress(
+            {
+                "event": "step_completed",
+                "loop_step": step,
+                "selected_agent": dispatch.selected_agent,
+                "status": dispatch.status,
+                "ok": dispatch.ok,
+                "stop_reason": dispatch.stop_reason,
+            }
+        )
         if not dispatch.ok:
             return AgentHandoffCommandLoopResult(
                 ok=False,
@@ -615,6 +667,15 @@ def run_agent_handoff_command_loop(
         command_results = dispatch.command_results
         stdout = command_results[0].get("stdout") if command_results else None
         if not isinstance(stdout, str):
+            emit_progress(
+                {
+                    "event": "loop_blocked",
+                    "loop_step": step,
+                    "selected_agent": dispatch.selected_agent,
+                    "status": "BLOCKED",
+                    "stop_reason": "missing_command_stdout",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=False,
                 status="BLOCKED",
@@ -627,6 +688,15 @@ def run_agent_handoff_command_loop(
         try:
             next_payload = json.loads(stdout)
         except json.JSONDecodeError as exc:
+            emit_progress(
+                {
+                    "event": "loop_blocked",
+                    "loop_step": step,
+                    "selected_agent": dispatch.selected_agent,
+                    "status": "BLOCKED",
+                    "stop_reason": "invalid_command_json",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=False,
                 status="BLOCKED",
@@ -637,6 +707,15 @@ def run_agent_handoff_command_loop(
                 errors=(f"step[{step}]: command stdout was not JSON: {exc}",),
             )
         if not isinstance(next_payload, dict):
+            emit_progress(
+                {
+                    "event": "loop_blocked",
+                    "loop_step": step,
+                    "selected_agent": dispatch.selected_agent,
+                    "status": "BLOCKED",
+                    "stop_reason": "invalid_command_json",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=False,
                 status="BLOCKED",
@@ -653,6 +732,15 @@ def run_agent_handoff_command_loop(
             agent_registry_root=agent_registry_root,
         )
         if not next_projection.ok:
+            emit_progress(
+                {
+                    "event": "loop_blocked",
+                    "loop_step": step,
+                    "selected_agent": next_projection.next_agent,
+                    "status": "BLOCKED",
+                    "stop_reason": "invalid_handoff",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=False,
                 status="BLOCKED",
@@ -663,6 +751,15 @@ def run_agent_handoff_command_loop(
                 errors=tuple(f"step[{step}]: {error}" for error in next_projection.errors),
             )
         if next_projection.next_agent == "human":
+            emit_progress(
+                {
+                    "event": "loop_waiting",
+                    "loop_step": step,
+                    "selected_agent": "human",
+                    "status": "WAITING",
+                    "stop_reason": "next_agent_is_human",
+                }
+            )
             return AgentHandoffCommandLoopResult(
                 ok=True,
                 status="WAITING",
@@ -672,6 +769,15 @@ def run_agent_handoff_command_loop(
                 dispatches=tuple(dispatches),
             )
 
+    emit_progress(
+        {
+            "event": "loop_blocked",
+            "loop_step": max_steps,
+            "selected_agent": dispatches[-1].get("selected_agent") if dispatches else None,
+            "status": "BLOCKED",
+            "stop_reason": "max_steps_exhausted",
+        }
+    )
     return AgentHandoffCommandLoopResult(
         ok=False,
         status="BLOCKED",
@@ -693,6 +799,7 @@ def write_agent_handoff_command_loop_receipt(
     goal_guardian_ticket_source: Path | None = None,
     max_steps: int = 5,
     command_policy_path: Path | None = None,
+    progress_callback: Callable[[dict[str, Any]], None] | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Write one command-backed loop receipt plus per-step dispatch artifacts."""
 
@@ -706,6 +813,7 @@ def write_agent_handoff_command_loop_receipt(
         max_steps=max_steps,
         artifact_root=receipt_dir / "command-artifacts",
         command_policy_path=command_policy_path,
+        progress_callback=progress_callback,
     )
     artifacts: list[str] = []
     for dispatch in loop.dispatches:
@@ -731,6 +839,10 @@ def write_agent_handoff_command_loop_receipt(
         artifacts=tuple(artifacts),
         errors=loop.errors,
     )
+
+
+def _utc_stamp() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def load_agent_dispatch_command_spec(

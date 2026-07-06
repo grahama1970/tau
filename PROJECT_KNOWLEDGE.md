@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:53 EDT by agent
+**Last updated:** 2026-07-06 17:58 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GitHub read-scheme coding receipt rung:
+  `src/tau_coding/github_read_schemes.py` adds
+  `tau.github_read_receipt.v1` for read-only GitHub URI projections covering
+  `issue://owner/repo/123`, `pr://owner/repo/456`,
+  `diff://owner/repo/pull/456`, and `commit://owner/repo/<sha>`.
+  `src/tau_coding/cli.py` exposes `uv run tau github-read --uri <uri> --out
+  <receipt>`. Receipts record the parsed target, suggested `gh` read command,
+  blocked mutation verbs, `mutation_allowed:false`, and proof-scope non-claims.
+  The existing `tau.github_apply_policy_receipt.v1` remains the mutation gate
+  for comments, labels, closes, merges, pushes, and releases. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py src/tau_coding/cli.py
+  tests/test_github_read_schemes.py tests/test_github_apply_policy.py` ->
+  pass; `uv run pytest tests/test_github_read_schemes.py
+  tests/test_github_apply_policy.py -q` -> `12 passed in 0.44s`. This proves
+  deterministic local read-only URI parsing, CLI receipt writing, unsupported
+  URI blocking, and apply-policy mutation-gate regressions for the tested
+  cases; it does not prove live GitHub auth, GitHub object existence, content
+  freshness, live mutation safety, provider/model quality, or legal compliance.
 
 - 2026-07-06 debugger/DAP coding evidence rung:
   `src/tau_coding/debug_session_receipt.py` adds

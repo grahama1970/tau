@@ -9,6 +9,7 @@ from tau_coding.cli import app
 from tau_coding.handoff_dispatch import TAU_COMMAND_SPEC_POLICY_SCHEMA
 from tau_coding.project_dag import (
     DAG_ERROR_SCHEMA,
+    DAG_PROGRESS_SCHEMA,
     DAG_RECEIPT_SCHEMA,
     FAIL_CLOSED_REGISTRY_SCHEMA,
     fail_closed_registry_payload,
@@ -57,6 +58,38 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
         }
     ]
     assert Path(str(receipt["command_loop_receipt"])).exists()
+
+
+def test_project_dag_writes_live_subagent_progress_for_handoff_loop(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    progress_path = tmp_path / "run" / "dag-progress.json"
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    assert receipt["progress_path"] == str(progress_path)
+    assert progress["schema"] == DAG_PROGRESS_SCHEMA
+    assert progress["status"] == "PASS"
+    assert progress["mocked"] is False
+    assert progress["live"] is True
+    assert progress["active_subagents"] == []
+    assert progress["completed_subagents"] == [
+        {"agent": "coder", "node_id": "coder"},
+        {"agent": "reviewer", "node_id": "reviewer"},
+    ]
+    assert [
+        (event["event"], event["selected_agent"])
+        for event in progress["events"]
+        if event["event"] == "step_started"
+    ] == [("step_started", "coder"), ("step_started", "reviewer")]
 
 
 def test_project_dag_allows_repeated_agent_roles_with_node_addressing(
