@@ -1,9 +1,24 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:20 EDT by agent
+**Last updated:** 2026-07-06 18:25 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan zero-trust enforcement rung:
+  `src/tau_coding/commit_plan.py` now supports zero-trust metadata on
+  `tau.commit_plan_receipt.v1`; `src/tau_coding/cli.py` exposes it through
+  `uv run tau commit-plan --zero-trust --policy-profile <policy.json>
+  --data-boundary <boundary.json>`. In zero-trust mode, Tau blocks dry-run
+  commit plans that omit `policy_profile` or `data_boundary`, while preserving
+  the existing apply-approval and high-risk-path gates. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  src/tau_coding/cli.py tests/test_commit_plan.py` -> pass; `uv run pytest
+  tests/test_commit_plan.py -q` -> `9 passed in 0.51s`. This proves
+  deterministic local policy/data-boundary presence gating for commit planning
+  in zero-trust mode; it does not prove semantic grouping quality, commit
+  creation, test success, legal compliance, provider/model quality, or runtime
+  sandbox isolation.
 
 - 2026-07-06 LSP diagnostics zero-trust enforcement rung:
   `src/tau_coding/lsp_receipts.py` now supports a `zero_trust` diagnostics

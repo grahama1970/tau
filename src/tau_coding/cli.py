@@ -1719,6 +1719,9 @@ def main(
                 repo=Path(str(options["repo"])),
                 output_path=Path(str(options["out"])),
                 apply=bool(options["apply"]),
+                zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4433,21 +4436,34 @@ def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"repo": ".", "out": None, "apply": False}
+    options: dict[str, object] = {
+        "repo": ".",
+        "out": None,
+        "apply": False,
+        "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
+    }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--repo", "--out"}:
+        if arg in {"--repo", "--out", "--policy-profile", "--data-boundary"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--")] = args[index]
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
         elif arg.startswith("--repo="):
             options["repo"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
         elif arg == "--apply":
             options["apply"] = True
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
         else:
             raise RuntimeError(f"unknown commit-plan option: {arg}")
         index += 1

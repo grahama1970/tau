@@ -150,6 +150,10 @@ CLI:
 uv run tau commit-plan --repo . --out commit-plan-receipt.json
 ```
 
+Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
+when planning commits for a high-stakes coding route. In zero-trust mode, Tau
+blocks commit plans that omit policy or boundary metadata.
+
 The command is dry-run by default. `--apply` is intentionally blocked unless a
 future approval lane authorizes commit application. High-risk paths such as
 `.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and

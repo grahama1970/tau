@@ -9,6 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+
 COMMIT_PLAN_SCHEMA = "tau.commit_plan.v1"
 COMMIT_PLAN_RECEIPT_SCHEMA = "tau.commit_plan_receipt.v1"
 
@@ -27,9 +29,16 @@ def write_commit_plan_receipt(
     repo: Path,
     output_path: Path,
     apply: bool = False,
+    zero_trust: bool = False,
+    policy_profile: dict[str, Any] | None = None,
+    data_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     resolved_repo = repo.expanduser().resolve()
-    alerts: list[dict[str, Any]] = []
+    alerts = _coding_policy_alerts(
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+    )
     changed = _git_changed_files(resolved_repo)
     groups = _commit_groups(changed)
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
@@ -53,6 +62,9 @@ def write_commit_plan_receipt(
         "live": True,
         "provider_live": False,
         "repo": str(resolved_repo),
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "dry_run": not apply,
         "apply_requested": apply,
         "changed_file_count": len(changed),
@@ -169,6 +181,28 @@ def _required_evidence(group_id: str) -> list[str]:
 
 def _is_high_risk(path: str) -> bool:
     return any(path == pattern or path.startswith(pattern) for pattern in HIGH_RISK_PATTERNS)
+
+
+def _coding_policy_alerts(
+    *,
+    zero_trust: bool,
+    policy_profile: dict[str, Any] | None,
+    data_boundary: dict[str, Any] | None,
+) -> list[dict[str, str]]:
+    alerts: list[dict[str, str]] = []
+    if zero_trust and policy_profile is None:
+        alerts.append(
+            _alert("missing_policy_profile", "zero-trust commit plan requires policy_profile")
+        )
+    if zero_trust and data_boundary is None:
+        alerts.append(
+            _alert("missing_data_boundary", "zero-trust commit plan requires data_boundary")
+        )
+    if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
+        alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
+    if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
+        alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    return alerts
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

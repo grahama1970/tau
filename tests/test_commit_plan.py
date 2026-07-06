@@ -68,6 +68,39 @@ def test_commit_plan_requires_approval_to_apply(tmp_path: Path) -> None:
     assert "approval_required_to_apply" in payload["alert_codes"]
 
 
+def test_commit_plan_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        zero_trust=True,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["zero_trust"] is True
+    assert payload["policy_profile"]["profile_id"] == "test"
+    assert payload["data_boundary"]["classification"] == "public"
+
+
 def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
@@ -79,6 +112,26 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == COMMIT_PLAN_RECEIPT_SCHEMA
+
+
+def test_cli_commit_plan_zero_trust_missing_boundary_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    out = repo / "commit-plan.json"
+
+    result = CliRunner().invoke(
+        app,
+        ["commit-plan", "--repo", str(repo), "--out", str(out), "--zero-trust"],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
 
 
 def _git_repo(tmp_path: Path) -> Path:
