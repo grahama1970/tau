@@ -10,6 +10,7 @@ from tau_coding.lsp_receipts import (
     LSP_SYMBOL_RECEIPT_SCHEMA,
     write_lsp_diagnostics_receipt,
     write_lsp_rename_plan_receipt,
+    write_lsp_symbol_receipt,
 )
 
 
@@ -87,6 +88,37 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
 
 
+def test_lsp_symbols_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_symbol_receipt(
+        workspace=tmp_path,
+        query="target",
+        output_path=tmp_path / "symbols.json",
+        zero_trust=True,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_lsp_rename_plan_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="target",
+        new_name="renamed",
+        output_path=tmp_path / "rename.json",
+        zero_trust=True,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
+
+
 def test_lsp_receipt_does_not_claim_semantic_correctness(tmp_path: Path) -> None:
     (tmp_path / "example.py").write_text("value = 1\n", encoding="utf-8")
     payload = write_lsp_diagnostics_receipt(
@@ -121,6 +153,66 @@ def test_cli_lsp_symbols_writes_receipt(tmp_path: Path) -> None:
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == LSP_SYMBOL_RECEIPT_SCHEMA
     assert payload["reference_count"] == 2
+
+
+def test_cli_lsp_symbols_zero_trust_missing_boundary_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def lookup_symbol():\n    return lookup_symbol()\n", encoding="utf-8")
+    out = tmp_path / "symbols.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "lsp-symbols",
+            "--workspace",
+            str(tmp_path),
+            "--query",
+            "lookup_symbol",
+            "--out",
+            str(out),
+            "--zero-trust",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_cli_lsp_rename_plan_zero_trust_missing_boundary_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def lookup_symbol():\n    return lookup_symbol()\n", encoding="utf-8")
+    out = tmp_path / "rename.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "lsp-rename-plan",
+            "--workspace",
+            str(tmp_path),
+            "--symbol",
+            "lookup_symbol",
+            "--new-name",
+            "renamed_symbol",
+            "--out",
+            str(out),
+            "--zero-trust",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
 
 
 def test_cli_lsp_diagnostics_zero_trust_missing_boundary_exits_blocked(

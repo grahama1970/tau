@@ -1,9 +1,26 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:37 EDT by agent
+**Last updated:** 2026-07-06 18:16 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 LSP symbol/rename zero-trust enforcement rung:
+  `src/tau_coding/lsp_receipts.py` now applies the same zero-trust
+  policy/data-boundary presence gate to `tau.lsp_symbol_receipt.v1` and
+  `tau.lsp_rename_receipt.v1` that diagnostics already use. `src/tau_coding/cli.py`
+  exposes the gate through `uv run tau lsp-symbols --zero-trust ...` and
+  `uv run tau lsp-rename-plan --zero-trust ...`. In zero-trust mode, Tau blocks
+  symbol and rename-plan receipts that omit `policy_profile` or
+  `data_boundary`, while preserving the read-only/no-apply behavior for rename
+  planning. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/lsp_receipts.py src/tau_coding/cli.py tests/test_lsp_receipts.py`
+  -> pass; `uv run pytest tests/test_lsp_receipts.py -q` -> `12 passed in
+  0.56s`. This proves deterministic local policy/data-boundary presence gating
+  across LSP diagnostics, symbols, and rename planning; it does not prove
+  semantic code correctness, full language-server parity, safe rename
+  application, legal compliance, provider/model quality, or runtime sandbox
+  isolation.
 
 - 2026-07-06 worker substrate evidence enforcement rung:
   `src/tau_coding/coding_worker_adapters.py` now requires high-stakes

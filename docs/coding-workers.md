@@ -116,8 +116,9 @@ uv run tau lsp-diagnostics --workspace . --out lsp-diagnostics-receipt.json
 ```
 
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
-when diagnostics are part of a high-stakes coding route. In zero-trust mode,
-Tau blocks diagnostics receipts that omit the policy profile or data boundary.
+when LSP evidence is part of a high-stakes coding route. In zero-trust mode,
+Tau blocks diagnostics, symbol, and rename-plan receipts that omit the policy
+profile or data boundary.
 
 `tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
 symbol lookup and rename planning. Rename planning does not apply edits by

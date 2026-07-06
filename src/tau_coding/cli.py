@@ -1692,6 +1692,9 @@ def main(
                 workspace=Path(str(options["workspace"])),
                 query=str(options["query"]),
                 output_path=Path(str(options["out"])),
+                zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -1706,6 +1709,9 @@ def main(
                 symbol=str(options["symbol"]),
                 new_name=str(options["new_name"]),
                 output_path=Path(str(options["out"])),
+                zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4377,21 +4383,34 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_lsp_symbols_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"workspace": ".", "query": None, "out": None}
+    options: dict[str, object] = {
+        "workspace": ".",
+        "query": None,
+        "out": None,
+        "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
+    }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--workspace", "--query", "--out"}:
+        if arg in {"--workspace", "--query", "--out", "--policy-profile", "--data-boundary"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--")] = args[index]
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
         elif arg.startswith("--workspace="):
             options["workspace"] = arg.partition("=")[2]
         elif arg.startswith("--query="):
             options["query"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
         else:
             raise RuntimeError(f"unknown lsp-symbols option: {arg}")
         index += 1
@@ -4407,11 +4426,26 @@ def _parse_lsp_symbols_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"workspace": ".", "symbol": None, "new_name": None, "out": None}
+    options: dict[str, object] = {
+        "workspace": ".",
+        "symbol": None,
+        "new_name": None,
+        "out": None,
+        "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
+    }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--workspace", "--symbol", "--new-name", "--out"}:
+        if arg in {
+            "--workspace",
+            "--symbol",
+            "--new-name",
+            "--out",
+            "--policy-profile",
+            "--data-boundary",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -4424,6 +4458,12 @@ def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
             options["new_name"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
         else:
             raise RuntimeError(f"unknown lsp-rename-plan option: {arg}")
         index += 1

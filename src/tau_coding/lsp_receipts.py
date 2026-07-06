@@ -93,23 +93,37 @@ def write_lsp_symbol_receipt(
     workspace: Path,
     query: str,
     output_path: Path,
+    zero_trust: bool = False,
+    policy_profile: Mapping[str, Any] | None = None,
+    data_boundary: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     resolved_workspace = workspace.expanduser().resolve()
+    alerts = _coding_policy_alerts(
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+    )
     files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
     references = _symbol_references(files, query)
+    ok = not alerts
     payload = {
         "schema": LSP_SYMBOL_RECEIPT_SCHEMA,
-        "ok": True,
-        "status": "PASS",
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "workspace": str(resolved_workspace),
         "language_server_used": "python_ast_symbol_adapter",
         "query": query,
         "files_inspected": [str(path) for path in files],
         "reference_count": len(references),
         "references": references,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": _lsp_proof_scope("symbols"),
         "timestamp": _utc_stamp(),
     }
@@ -124,20 +138,31 @@ def write_lsp_rename_plan_receipt(
     symbol: str,
     new_name: str,
     output_path: Path,
+    zero_trust: bool = False,
+    policy_profile: Mapping[str, Any] | None = None,
+    data_boundary: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     symbol_receipt = write_lsp_symbol_receipt(
         workspace=workspace,
         query=symbol,
         output_path=output_path.with_name(output_path.stem + ".symbols.tmp.json"),
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
     )
     references = symbol_receipt["references"]
+    alerts = list(symbol_receipt.get("alerts", []))
+    ok = not alerts
     payload = {
         "schema": LSP_RENAME_RECEIPT_SCHEMA,
-        "ok": True,
-        "status": "PASS",
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "workspace": str(workspace.expanduser().resolve()),
         "language_server_used": "python_ast_symbol_adapter",
         "symbol": symbol,
@@ -149,6 +174,8 @@ def write_lsp_rename_plan_receipt(
             {"file": item["file"], "line": item["line"], "old": symbol, "new": new_name}
             for item in references
         ],
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": _lsp_proof_scope("rename plan"),
         "timestamp": _utc_stamp(),
     }
