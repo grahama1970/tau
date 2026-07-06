@@ -113,6 +113,7 @@ from tau_coding.media_explainer_orchestration import (
     run_media_explainer_smoke,
 )
 from tau_coding.orchestration_evidence import build_orchestration_evidence
+from tau_coding.package_validate import write_compliance_package_validation_receipt
 from tau_coding.persona_dream_panel_proof import (
     DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
 )
@@ -1472,6 +1473,17 @@ def main(
         try:
             options = _parse_itar_access_preflight_args(positional_args[1:])
             payload = write_itar_access_preflight_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "compliance-package-validate":
+        try:
+            options = _parse_compliance_package_validate_args(positional_args[1:])
+            payload = write_compliance_package_validation_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3638,6 +3650,42 @@ def _parse_itar_access_preflight_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"{flag} requires a value")
     if not isinstance(options["required_boundary"], str) or not options["required_boundary"].strip():
         raise RuntimeError("--required-boundary requires a non-empty value")
+    return options
+
+
+def _parse_compliance_package_validate_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau compliance-package-validate <package-dir> "
+            "--receipt <receipt.json> [--policy itar-local-only]"
+        )
+    options: dict[str, object] = {
+        "package_dir": Path(args[0]),
+        "receipt_path": None,
+        "policy": "itar-local-only",
+    }
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--receipt", "--policy"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--receipt":
+                options["receipt_path"] = Path(args[index])
+            else:
+                options["policy"] = args[index]
+        elif arg.startswith("--receipt="):
+            options["receipt_path"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--policy="):
+            options["policy"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown compliance-package-validate option: {arg}")
+        index += 1
+    if not isinstance(options["receipt_path"], Path):
+        raise RuntimeError("--receipt requires a value")
+    if not isinstance(options["policy"], str) or not options["policy"].strip():
+        raise RuntimeError("--policy requires a non-empty value")
     return options
 
 
