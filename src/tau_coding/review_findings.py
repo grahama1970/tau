@@ -1,0 +1,245 @@
+"""Structured review findings receipts for Tau coding workflows."""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Mapping
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+REVIEW_FINDINGS_SCHEMA = "tau.review_findings.v1"
+
+SEVERITIES = {"P0", "P1", "P2", "P3"}
+VERDICTS = {"PASS", "REVISE", "BLOCKED"}
+REQUIRED_ACTIONS = {"block", "revise", "note"}
+
+
+def validate_review_findings(
+    payload: Mapping[str, Any],
+    *,
+    expected_goal_hash: str | None = None,
+) -> dict[str, Any]:
+    """Validate structured reviewer findings and derive Tau routing state."""
+
+    alerts: list[dict[str, Any]] = []
+    if payload.get("schema") != REVIEW_FINDINGS_SCHEMA:
+        alerts.append(_alert("invalid_schema", f"schema must be {REVIEW_FINDINGS_SCHEMA}"))
+    goal_hash = payload.get("goal_hash")
+    if not isinstance(goal_hash, str) or not goal_hash:
+        alerts.append(_alert("missing_goal_hash", "review findings goal_hash is required"))
+    elif expected_goal_hash is not None and goal_hash != expected_goal_hash:
+        alerts.append(
+            _alert(
+                "goal_hash_mismatch",
+                "review findings goal_hash did not match expected goal",
+            )
+        )
+    if not isinstance(payload.get("reviewer"), str) or not payload.get("reviewer"):
+        alerts.append(_alert("missing_reviewer", "reviewer is required"))
+    declared_verdict = payload.get("verdict")
+    if declared_verdict not in VERDICTS:
+        alerts.append(_alert("invalid_verdict", "verdict must be PASS, REVISE, or BLOCKED"))
+
+    findings_raw = payload.get("findings")
+    if not isinstance(findings_raw, list):
+        alerts.append(_alert("invalid_findings", "findings must be a list"))
+        findings_raw = []
+
+    normalized_findings: list[dict[str, Any]] = []
+    for index, item in enumerate(findings_raw):
+        normalized, item_alerts = _validate_finding(index, item)
+        normalized_findings.append(normalized)
+        alerts.extend(item_alerts)
+
+    route = _route_for_findings(normalized_findings)
+    if declared_verdict == "PASS" and route != "PASS":
+        alerts.append(
+            _alert(
+                "verdict_understates_findings",
+                "PASS verdict conflicts with blocking findings",
+            )
+        )
+    if declared_verdict == "REVISE" and route == "BLOCKED":
+        alerts.append(
+            _alert(
+                "verdict_understates_findings",
+                "REVISE verdict conflicts with P0 findings",
+            )
+        )
+
+    ok = not alerts
+    return {
+        "schema": REVIEW_FINDINGS_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "reviewer": payload.get("reviewer"),
+        "declared_verdict": declared_verdict,
+        "derived_verdict": route if ok else "BLOCKED",
+        "finding_count": len(normalized_findings),
+        "blocking_finding_count": sum(
+            1 for finding in normalized_findings if finding.get("required_action") == "block"
+        ),
+        "revision_finding_count": sum(
+            1 for finding in normalized_findings if finding.get("required_action") == "revise"
+        ),
+        "findings": normalized_findings,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau parsed reviewer output as structured findings.",
+                "Tau derived PASS, REVISE, or BLOCKED routing from severity and required_action.",
+                "Tau blocked high-severity findings without evidence.",
+            ],
+            "does_not_prove": [
+                "The reviewer is correct.",
+                "The code is semantically correct.",
+                "All possible issues were found.",
+                "The underlying agent is trustworthy.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+
+
+def write_review_findings_receipt(
+    *,
+    findings_path: Path,
+    receipt_path: Path | None = None,
+    expected_goal_hash: str | None = None,
+) -> dict[str, Any]:
+    payload = _read_json_object(findings_path.expanduser().resolve())
+    receipt = validate_review_findings(payload, expected_goal_hash=expected_goal_hash)
+    resolved_receipt = (
+        receipt_path.expanduser().resolve()
+        if receipt_path is not None
+        else findings_path.expanduser().resolve().with_name("review-findings-receipt.json")
+    )
+    resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
+    receipt["findings_path"] = str(findings_path.expanduser().resolve())
+    receipt["receipt_path"] = str(resolved_receipt)
+    resolved_receipt.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return receipt
+
+
+def _validate_finding(index: int, item: object) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    alerts: list[dict[str, Any]] = []
+    normalized: dict[str, Any] = {
+        "index": index,
+        "id": None,
+        "severity": None,
+        "confidence": None,
+        "file": None,
+        "line": None,
+        "claim": None,
+        "evidence": [],
+        "required_action": None,
+    }
+    if not isinstance(item, Mapping):
+        return normalized, [_alert("invalid_finding", f"findings[{index}] must be an object")]
+    for key in ("id", "file", "claim"):
+        value = item.get(key)
+        if isinstance(value, str) and value:
+            normalized[key] = value
+        else:
+            alerts.append(_alert("invalid_finding", f"findings[{index}].{key} is required"))
+    severity = item.get("severity")
+    if severity in SEVERITIES:
+        normalized["severity"] = severity
+    else:
+        alerts.append(_alert("invalid_finding_severity", f"findings[{index}].severity is invalid"))
+    action = item.get("required_action")
+    if action in REQUIRED_ACTIONS:
+        normalized["required_action"] = action
+    else:
+        alerts.append(
+            _alert("invalid_required_action", f"findings[{index}].required_action is invalid")
+        )
+    confidence = item.get("confidence")
+    if isinstance(confidence, int | float) and 0 <= confidence <= 1:
+        normalized["confidence"] = float(confidence)
+    else:
+        alerts.append(_alert("invalid_confidence", f"findings[{index}].confidence must be 0..1"))
+    line = item.get("line")
+    if isinstance(line, int) and line >= 1:
+        normalized["line"] = line
+    elif line is not None:
+        alerts.append(_alert("invalid_line", f"findings[{index}].line must be a positive integer"))
+    evidence = item.get("evidence")
+    if isinstance(evidence, list) and all(isinstance(entry, str) and entry for entry in evidence):
+        normalized["evidence"] = evidence
+    else:
+        alerts.append(
+            _alert(
+                "missing_finding_evidence",
+                f"findings[{index}].evidence must be a list of strings",
+            )
+        )
+    if severity in {"P0", "P1"} and not normalized["evidence"]:
+        alerts.append(
+            _alert("missing_finding_evidence", f"findings[{index}] P0/P1 requires evidence")
+        )
+    expected_action = _expected_action(severity)
+    if expected_action == "block" and action != "block":
+        alerts.append(
+            _alert(
+                "finding_action_understates_severity",
+                f"findings[{index}] P0 must block",
+            )
+        )
+    if expected_action == "revise" and action not in {"revise", "block"}:
+        alerts.append(
+            _alert(
+                "finding_action_understates_severity",
+                f"findings[{index}] P1/P2 must revise or block",
+            )
+        )
+    return normalized, alerts
+
+
+def _expected_action(severity: object) -> str:
+    if severity == "P0":
+        return "block"
+    if severity in {"P1", "P2"}:
+        return "revise"
+    return "note"
+
+
+def _route_for_findings(findings: list[dict[str, Any]]) -> str:
+    if any(
+        finding.get("severity") == "P0" or finding.get("required_action") == "block"
+        for finding in findings
+    ):
+        return "BLOCKED"
+    if any(
+        finding.get("severity") in {"P1", "P2"} or finding.get("required_action") == "revise"
+        for finding in findings
+    ):
+        return "REVISE"
+    return "PASS"
+
+
+def _read_json_object(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"review findings are not readable JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("review findings root must be an object")
+    return payload
+
+
+def _alert(code: str, message: str) -> dict[str, str]:
+    return {"severity": "BLOCK", "code": code, "message": message}
+
+
+def _utc_stamp() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")

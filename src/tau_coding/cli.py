@@ -38,6 +38,7 @@ from tau_coding.browser_cdp_proof import (
     DEFAULT_SURF_WRAPPER,
     write_browser_cdp_proof,
 )
+from tau_coding.code_patch import apply_code_patch_receipt
 from tau_coding.compliance_package import build_compliance_evidence_package
 from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.credentials import FileCredentialStore
@@ -184,6 +185,7 @@ from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
+from tau_coding.review_findings import write_review_findings_receipt
 from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
 from tau_coding.sandbox_run import run_sandboxed_command
@@ -1623,6 +1625,37 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("next_allowed") is False else 0)
+
+    if prompt_option is None and command == "code-patch":
+        try:
+            options = _parse_code_patch_cli_args(positional_args[1:])
+            payload = apply_code_patch_receipt(
+                patch_path=Path(str(options["patch"])),
+                repo_root=Path(str(options["repo"])),
+                receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
+                zero_trust=bool(options["zero_trust"]),
+                apply=not bool(options["dry_run"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "review-findings":
+        try:
+            options = _parse_review_findings_cli_args(positional_args[1:])
+            payload = write_review_findings_receipt(
+                findings_path=Path(str(options["findings"])),
+                receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
 
     if prompt_option is None and command == "herdr-observation-gate":
         try:
@@ -4091,6 +4124,82 @@ def _parse_course_correction_cli_args(args: list[str]) -> dict[str, object]:
     return options
 
 
+def _parse_code_patch_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "patch": None,
+        "repo": ".",
+        "out": None,
+        "goal_hash": None,
+        "policy_profile": None,
+        "data_boundary": None,
+        "zero_trust": False,
+        "dry_run": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--patch",
+            "--repo",
+            "--out",
+            "--goal-hash",
+            "--policy-profile",
+            "--data-boundary",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = args[index]
+        elif arg.startswith("--patch="):
+            options["patch"] = arg.partition("=")[2]
+        elif arg.startswith("--repo="):
+            options["repo"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
+        elif arg == "--dry-run":
+            options["dry_run"] = True
+        else:
+            raise RuntimeError(f"unknown code-patch option: {arg}")
+        index += 1
+    if not _optional_str(options.get("patch")):
+        raise RuntimeError("Usage: tau code-patch --patch <patch.json> [--repo <repo>]")
+    return options
+
+
+def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"findings": None, "out": None, "goal_hash": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--findings", "--out", "--goal-hash"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = args[index]
+        elif arg.startswith("--findings="):
+            options["findings"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown review-findings option: {arg}")
+        index += 1
+    if not _optional_str(options.get("findings")):
+        raise RuntimeError("Usage: tau review-findings --findings <findings.json>")
+    return options
+
+
 def _parse_herdr_observation_gate_cli_args(args: list[str]) -> dict[str, object]:
     options: dict[str, object] = {
         "snapshot": None,
@@ -4289,6 +4398,20 @@ def _json_object_option(value: object, *, label: str) -> dict[str, Any] | None:
         raise RuntimeError(f"{label} must be a JSON object: {exc}") from exc
     if not isinstance(parsed, dict):
         raise RuntimeError(f"{label} must be a JSON object")
+    return parsed
+
+
+def _read_optional_json_object(value: object) -> dict[str, Any] | None:
+    path_text = _optional_str(value)
+    if path_text is None:
+        return None
+    path = Path(path_text).expanduser().resolve()
+    try:
+        parsed = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{path} is not readable JSON: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise RuntimeError(f"{path} root must be a JSON object")
     return parsed
 
 

@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 13:47 EDT by agent
+**Last updated:** 2026-07-06 17:28 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding reliability Round 1 slice:
+  `src/tau_coding/code_patch.py` adds `tau.code_patch.v1` and
+  `tau.code_patch_receipt.v1` for deterministic hash-bound exact replacement
+  patches. It blocks stale base hashes, missing anchors, disallowed or generated
+  paths, goal-hash mismatches, malformed patch operations, missing zero-trust
+  policy/data-boundary inputs, and post-hash mismatches.
+  `src/tau_coding/review_findings.py` adds `tau.review_findings.v1` validation
+  with P0/P1/P2/P3 routing to PASS/REVISE/BLOCKED and required evidence for
+  P0/P1. `src/tau_coding/cli.py` exposes `uv run tau code-patch ...` and
+  `uv run tau review-findings ...`. `src/tau_coding/course_correction.py` now
+  maps coding triggers including `patch_stale`, `patch_failed`, `reviewer_p0`,
+  `reviewer_p1`, `test_failed_twice`, `worker_result_missing`, and
+  `worker_changed_forbidden_path` to bounded next actions. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/code_patch.py
+  src/tau_coding/review_findings.py src/tau_coding/course_correction.py
+  src/tau_coding/cli.py tests/test_code_patch.py tests/test_review_findings.py
+  tests/test_course_correction.py` -> pass; `uv run pytest
+  tests/test_code_patch.py tests/test_review_findings.py
+  tests/test_course_correction.py -q` -> `20 passed in 0.48s`. This proves
+  deterministic local coding receipt validation and routing for the tested
+  cases; it does not prove semantic code correctness, full suite health, live
+  provider execution, OMP/SciLLM worker integration, LSP/DAP integration,
+  GitHub mutation, or legal compliance.
 
 - 2026-07-06 UX Lab live Tau DAG viewer loading: `pi-mono` commit
   `0cac7d6c7` adds read-only loading for

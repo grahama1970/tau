@@ -141,13 +141,63 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["retry_same_context", "route_implementation_agent"],
             ["goal_guardian_reconciliation_receipt"],
         )
-    if trigger in {"reviewer_revise", "missing_evidence"}:
+    if trigger in {"reviewer_revise", "reviewer_p1", "missing_evidence"}:
         return _policy(
             "route_reviewer",
             "Reviewer or evidence gate found unresolved required evidence.",
             ["reviewer", "goal-guardian", "human"],
             ["claim_pass_without_evidence"],
             ["reviewer_verdict", "required_evidence_receipt"],
+        )
+    if trigger == "reviewer_p0":
+        return _policy(
+            "route_goal_guardian",
+            "Reviewer reported a P0 finding; normal implementation retry may bypass "
+            "a blocking defect.",
+            ["goal-guardian", "human"],
+            ["retry_same_context", "claim_pass_without_resolving_p0"],
+            ["structured_review_findings", "blocking_finding_resolution_plan"],
+        )
+    if trigger in {"patch_stale", "patch_failed"}:
+        return _policy(
+            "retry_node",
+            "The proposed code patch was stale or failed deterministic patch validation.",
+            ["retry_node", "reviewer", "goal-guardian"],
+            ["apply_unvalidated_patch", "claim_progress_from_failed_patch"],
+            ["fresh_code_patch_receipt", "current_file_sha256"],
+        )
+    if trigger in {"lsp_diagnostics_regressed", "debugger_evidence_required"}:
+        return _policy(
+            "debug_or_route_reviewer",
+            "Coding evidence regressed or debugger evidence is required before another "
+            "implementation attempt.",
+            ["debug", "reviewer", "goal-guardian", "human"],
+            ["retry_without_diagnostics", "claim_pass_with_regressed_diagnostics"],
+            ["diagnostics_receipt", "debug_session_receipt"],
+        )
+    if trigger == "worker_changed_forbidden_path":
+        return _policy(
+            "route_goal_guardian",
+            "The coding worker touched a forbidden path, so the result must be quarantined.",
+            ["goal-guardian", "human"],
+            ["accept_worker_result", "route_reviewer_as_if_valid"],
+            ["worker_receipt", "forbidden_path_diff", "quarantine_receipt"],
+        )
+    if trigger == "worker_result_missing":
+        return _policy(
+            "retry_node_or_route_goal_guardian",
+            "The coding worker did not return a structured result artifact.",
+            ["retry_node", "goal-guardian", "human"],
+            ["parse_worker_prose", "continue_without_worker_receipt"],
+            ["worker_stdout_stderr", "fresh_worker_work_order"],
+        )
+    if trigger == "test_failed_twice":
+        return _policy(
+            "route_reviewer",
+            "The same test failure survived two attempts; normal retry risks churn.",
+            ["reviewer", "debug", "goal-guardian", "human"],
+            ["retry_same_context", "run_more_unrelated_tests"],
+            ["test_failure_receipt", "debug_or_review_plan"],
         )
     if trigger in {"receipt_timeout", "invalid_receipt", "provider_crashed"}:
         return _policy(

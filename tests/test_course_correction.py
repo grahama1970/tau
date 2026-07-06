@@ -75,6 +75,69 @@ def test_course_correction_receipt_preserves_legacy_required_action_fields(
     assert "retry_without_research_receipt" in on_disk["forbidden_next_routes"]
 
 
+def test_course_correction_created_for_stale_patch() -> None:
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+    )
+
+    assert payload["schema"] == COURSE_CORRECTION_SCHEMA
+    assert payload["trigger"] == "patch_stale"
+    assert payload["required_next_action"] == "retry_node"
+    assert "fresh_code_patch_receipt" in payload["required_evidence_before_retry"]
+    assert "apply_unvalidated_patch" in payload["forbidden_next_routes"]
+
+
+def test_course_correction_created_for_reviewer_p0() -> None:
+    payload = build_course_correction_receipt(
+        trigger="reviewer_p0",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="reviewer",
+        agent="reviewer",
+        attempt=1,
+    )
+
+    assert payload["trigger"] == "reviewer_p0"
+    assert payload["required_next_action"] == "route_goal_guardian"
+    assert "structured_review_findings" in payload["required_evidence_before_retry"]
+    assert "claim_pass_without_resolving_p0" in payload["forbidden_next_routes"]
+
+
+def test_course_correction_created_for_worker_forbidden_path() -> None:
+    payload = build_course_correction_receipt(
+        trigger="worker_changed_forbidden_path",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="omp-worker",
+        agent="omp",
+        attempt=1,
+    )
+
+    assert payload["required_next_action"] == "route_goal_guardian"
+    assert "forbidden_path_diff" in payload["required_evidence_before_retry"]
+    assert "accept_worker_result" in payload["forbidden_next_routes"]
+
+
+def test_course_correction_forbids_same_context_after_two_failures() -> None:
+    payload = build_course_correction_receipt(
+        trigger="test_failed_twice",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=2,
+    )
+
+    assert payload["required_next_action"] == "route_reviewer"
+    assert "retry_same_context" in payload["forbidden_next_routes"]
+    assert "test_failure_receipt" in payload["required_evidence_before_retry"]
+
+
 def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> None:
     receipt_path = tmp_path / "course-correction.json"
 
