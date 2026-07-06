@@ -84,6 +84,46 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.retry_policy.brave_search_course_correction",
     },
+    "evidence_case_boundary_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_boundary",
+    },
+    "evidence_case_hash_missing": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_hash",
+    },
+    "evidence_case_policy_mismatch": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_policy",
+    },
+    "intent_clarify_required": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.intent_route",
+    },
+    "intent_contains_inline_evidence": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.no_inline_evidence",
+    },
+    "intent_deflected": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.intent_route",
+    },
+    "intent_not_planner_only": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.planner_only",
+    },
+    "memory_first_not_true": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.memory_first",
+    },
+    "missing_evidence_case": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.evidence_case_required",
+    },
+    "missing_memory_intent": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.memory_evidence_gate.intent_required",
+    },
     "reviewer_goal_hash_mismatch": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.reviewer_goal_hash",
@@ -210,27 +250,7 @@ def run_project_dag_contract(
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
-    containment_alerts, containment_receipts = _containment_gate_preflight(
-        contract=contract,
-        contract_path=resolved_contract_path,
-    )
-    if containment_alerts:
-        receipt = _pre_dispatch_blocked_receipt(
-            contract=contract,
-            contract_path=resolved_contract_path,
-            receipt_dir=resolved_receipt_dir,
-            scheduler=scheduler,
-            verdict=str(containment_alerts[0]["code"]).upper(),
-            alerts=containment_alerts,
-            memory_intent_gate_receipt=None,
-            evidence_case_gate_receipt=None,
-            evidence_validation_receipt=None,
-            zero_trust_preflight_receipt=zero_trust_receipt,
-            containment_gate_receipts=containment_receipts,
-        )
-        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
-        return receipt
-    memory_alerts, memory_receipt, evidence_case_receipt = _memory_evidence_preflight(
+    memory_alerts, memory_intent_receipt, evidence_case_receipt = _memory_evidence_preflight(
         contract=contract,
         contract_path=resolved_contract_path,
         receipt_dir=resolved_receipt_dir,
@@ -243,7 +263,26 @@ def run_project_dag_contract(
             scheduler=scheduler,
             verdict=str(memory_alerts[0]["code"]).upper(),
             alerts=memory_alerts,
-            memory_intent_gate_receipt=memory_receipt,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+    containment_alerts, containment_receipts = _containment_gate_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+    )
+    if containment_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(containment_alerts[0]["code"]).upper(),
+            alerts=containment_alerts,
+            memory_intent_gate_receipt=memory_intent_receipt,
             evidence_case_gate_receipt=evidence_case_receipt,
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=zero_trust_receipt,
@@ -264,10 +303,10 @@ def run_project_dag_contract(
             scheduler=scheduler,
             verdict=str(evidence_manifest_alerts[0]["code"]).upper(),
             alerts=evidence_manifest_alerts,
-            memory_intent_gate_receipt=memory_receipt,
-            evidence_case_gate_receipt=evidence_case_receipt,
             evidence_validation_receipt=evidence_validation_receipt,
             zero_trust_preflight_receipt=zero_trust_receipt,
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
             containment_gate_receipts=containment_receipts,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
@@ -354,8 +393,15 @@ def run_project_dag_contract(
             if isinstance(evidence_validation_receipt, dict)
             else None
         ),
+        "zero_trust_preflight_receipt": (
+            zero_trust_receipt.get("receipt_path")
+            if isinstance(zero_trust_receipt, dict)
+            else None
+        ),
         "memory_intent_gate_receipt": (
-            memory_receipt.get("receipt_path") if isinstance(memory_receipt, dict) else None
+            memory_intent_receipt.get("receipt_path")
+            if isinstance(memory_intent_receipt, dict)
+            else None
         ),
         "evidence_case_gate_receipt": (
             evidence_case_receipt.get("receipt_path")
@@ -371,9 +417,15 @@ def run_project_dag_contract(
             str(start_path),
             str(loop_receipt_path),
             *(
-                [str(memory_receipt["receipt_path"])]
-                if isinstance(memory_receipt, dict)
-                and isinstance(memory_receipt.get("receipt_path"), str)
+                [str(zero_trust_receipt["receipt_path"])]
+                if isinstance(zero_trust_receipt, dict)
+                and isinstance(zero_trust_receipt.get("receipt_path"), str)
+                else []
+            ),
+            *(
+                [str(memory_intent_receipt["receipt_path"])]
+                if isinstance(memory_intent_receipt, dict)
+                and isinstance(memory_intent_receipt.get("receipt_path"), str)
                 else []
             ),
             *(
@@ -1545,7 +1597,20 @@ def _memory_evidence_preflight(
     receipt_dir: Path,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None, dict[str, Any] | None]:
     if contract.memory_intent is None and contract.evidence_case is None:
-        return [], None, None
+        if contract.policy_profile is None:
+            return [], None, None
+        policy_profile, _, policy_alerts = _resolve_policy_object(
+            contract.policy_profile,
+            contract_path=contract_path,
+            field_name="policy_profile",
+        )
+        if policy_alerts:
+            return policy_alerts, None, None
+        memory_policy = (
+            policy_profile.get("memory") if isinstance(policy_profile, dict) else None
+        )
+        if not isinstance(memory_policy, dict) or memory_policy.get("intent_required") is not True:
+            return [], None, None
     memory_intent, memory_path, memory_read_alerts = read_gate_payload(
         contract.memory_intent,
         contract_path=contract_path,
@@ -1557,6 +1622,12 @@ def _memory_evidence_preflight(
         dag_contract=contract.payload,
         receipt_path=receipt_dir / "memory-intent-gate-receipt.json",
     )
+    if contract.policy_profile is not None:
+        _rewrite_alert_code(
+            memory_receipt,
+            old="inline_memory_evidence_rejected",
+            new="intent_contains_inline_evidence",
+        )
     evidence_case, evidence_case_path, evidence_read_alerts = read_gate_payload(
         contract.evidence_case,
         contract_path=contract_path,
@@ -2655,7 +2726,6 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             ),
         }
     if normalized in {
-        "missing_memory_intent",
         "invalid_memory_intent_schema",
         "memory_first_required",
         "missing_memory_route",
@@ -2759,6 +2829,32 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "repair_then_retry_or_reroute",
             "next_agent": "goal-guardian",
             "reason": "Repair zero-trust policy/data-boundary gates before DAG dispatch.",
+        }
+    if normalized in {
+        "missing_memory_intent",
+        "invalid_memory_intent_schema",
+        "memory_first_not_true",
+        "intent_not_planner_only",
+        "intent_confidence_missing",
+        "intent_confidence_too_low",
+        "intent_clarify_required",
+        "intent_deflected",
+        "intent_contains_inline_evidence",
+        "missing_evidence_case",
+        "invalid_evidence_case_schema",
+        "evidence_case_hash_missing",
+        "evidence_case_boundary_mismatch",
+        "evidence_case_policy_mismatch",
+        "invalid_memory_intent",
+        "invalid_evidence_case",
+    }:
+        return {
+            "type": "repair_memory_evidence_gate",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Repair Graph Memory intent and create-evidence-case artifacts before "
+                "zero-trust DAG dispatch."
+            ),
         }
     if normalized in {
         "missing_itar_access_preflight",
@@ -3168,6 +3264,15 @@ def _alert(
         "message": message,
         "evidence": evidence,
     }
+
+
+def _rewrite_alert_code(receipt: dict[str, Any], *, old: str, new: str) -> None:
+    for alert in receipt.get("alerts", []):
+        if isinstance(alert, dict) and alert.get("code") == old:
+            alert["code"] = new
+    receipt["alert_codes"] = [
+        new if code == old else code for code in receipt.get("alert_codes", [])
+    ]
 
 
 def _required_mapping(value: dict[str, Any], key: str, errors: list[str]) -> dict[str, Any]:

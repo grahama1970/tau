@@ -118,8 +118,17 @@ uv run tau research-query-gate \
 For controlled work, the gate blocks when the data boundary disallows external
 research, policy denies external search, the query includes controlled-data
 markers, the query copies text from a declared controlled artifact, or the
-authorization packet is missing, expired, or mismatched.
+authorization packet is missing, expired, method/boundary-mismatched, or not
+bound to the exact sanitized query hash through `sanitized_query_sha256` or
+`query_sha256`.
 
 The gate is deliberately pre-query only. It writes
 `tau.research_query_safety_receipt.v1` and does not call external research
 services, write Memory, mutate GitHub, or prove legal/export compliance.
+
+For DAG visualization, Tau should reuse the source-backed React Flow pattern
+already proven in Scillm's Transport room (`#scillm/dag-harness`) rather than
+inventing a detached dashboard. Any Tau DAG viewer must show DAG contracts,
+receipts, gates, fanout/join edges, and blocked course-correction payloads from
+real artifacts; visible statuses must be receipt-backed or explicitly marked
+`missing`/`intended`, and UI acceptance requires a fresh browser screenshot.

@@ -2,6 +2,7 @@
   "schema": "tau.research_query_authorization.v1",
   "approved": true,
   "allowed_methods": ["brave-search"],
+  "sanitized_query_sha256": "sha256:82302377ce881d9ee820edae95674aa9e5feb385c266fd8371fa6297b7850674",
   "data_boundary_classification": "ITAR",
   "approver": {
     "id": "human:demo"

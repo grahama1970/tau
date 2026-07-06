@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 12:18 EDT by agent
+**Last updated:** 2026-07-06 16:58 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -54,6 +54,7 @@
   rendering for this command, provider/model semantic quality, future route
   correctness, live GitHub mutation, or Herdr/provider execution.
 
+- 2026-07-06 research query authorization-binding hardening: `src/tau_coding/research_query_gate.py` now requires external research authorization packets to bind to the exact sanitized query through `sanitized_query_sha256` or `query_sha256`, records `external_tool_called:false`, and marks the local pre-query receipt `live:true` because the gate executed against real local policy/boundary/auth/artifact inputs without calling external services. `src/tau_coding/zero_trust_redteam.py` now expects the sanitized-query-swap malicious fixture to fail on `research_authorization_invalid`, not only on controlled-snippet detection. `docs/zero-trust-policy.md` documents the query-hash binding and records the DAG visualization direction: Tau should reuse the source-backed React Flow pattern from Scillm's Transport room (`#scillm/dag-harness`) and must not show unbacked PASS/running/completed statuses. Focused proof: `uv run ruff check --select I,F src/tau_coding/research_query_gate.py src/tau_coding/zero_trust_redteam.py tests/test_research_query_gate.py tests/test_zero_trust_redteam.py` -> pass; `uv run pytest tests/test_research_query_gate.py tests/test_zero_trust_redteam.py -q` -> `9 passed in 0.46s`; `uv run pytest tests/test_research_query_gate.py tests/test_zero_trust_redteam.py tests/test_project_dag.py -q` -> `56 passed in 1.97s`; `examples/itar-grade-containment/run.sh /tmp/tau-itar-research-query-auth-binding-demo-final` exited 0 and wrote `/tmp/tau-itar-research-query-auth-binding-demo-final/demo-receipt.json` with `schema:"tau.itar_grade_containment_demo_receipt.v1"`, `status:"PASS"`, `mocked:false`, `live:false`, and `provider_live:false`. Inner receipt `/tmp/tau-itar-research-query-auth-binding-demo-final/redteam/research-swapped-query-receipt.json` is `BLOCKED` with `alert_codes:["controlled_artifact_snippet_in_query","research_authorization_invalid"]` and `external_tool_called:false`. This proves deterministic local pre-query authorization binding and fail-closed swapped-query detection; it does not prove ITAR compliance, export-control legal sufficiency, external research truth, production Memory persistence, live GitHub mutation, provider/model semantic quality, or a Tau DAG React Flow UI.
 - 2026-07-06 Tau DAG React Flow UI inspection slice: UX Lab commit
   `711b9c051` added `http://localhost:3002/#tau/dag` as a read-only Tau DAG
   evidence view. The implementation lives in `pi-mono` and reuses the existing

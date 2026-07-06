@@ -41,7 +41,7 @@ def test_zero_trust_redteam_requires_expected_fail_closed_alerts(tmp_path: Path)
         "critical_receipt_not_pass"
     )
     assert attempts["sanitized_query_swapped_after_approval"]["expected_alert_code"] == (
-        "controlled_artifact_snippet_in_query"
+        "research_authorization_invalid"
     )
     assert attempts["unverified_actor_package_provenance"]["expected_alert_code"] == (
         "actor_manifest_not_verified"

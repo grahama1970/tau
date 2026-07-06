@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -307,7 +308,7 @@ def _attempt_sanitized_query_swapped_after_approval(
     return _attempt_summary(
         "sanitized_query_swapped_after_approval",
         receipt,
-        expected_code="controlled_artifact_snippet_in_query",
+        expected_code="research_authorization_invalid",
         receipt_path=receipt_path,
     )
 
@@ -432,6 +433,10 @@ def _write_research_auth(root: Path) -> Path:
             "schema": "tau.research_query_authorization.v1",
             "approved": True,
             "allowed_methods": ["brave-search"],
+            "sanitized_query_sha256": (
+                "sha256:"
+                f"{_text_sha256('Find public NIST publications on secure research workflow review')}"
+            ),
             "data_boundary_classification": "ITAR",
             "approver": {"id": "human:graham"},
             "expires_at": (datetime.now(UTC) + timedelta(days=1)).strftime(
@@ -440,6 +445,10 @@ def _write_research_auth(root: Path) -> Path:
         },
     )
     return path
+
+
+def _text_sha256(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _write_actor(path: Path, *, foreign_person: bool = False, verified: bool = True) -> Path:

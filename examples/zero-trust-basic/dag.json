@@ -1,0 +1,48 @@
+{
+  "command_policy": "command-policy.json",
+  "dag_id": "zero-trust-basic-example",
+  "data_boundary": "data-boundary.json",
+  "edges": [],
+  "entry_node": "human",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "goal_id": "zero-trust-basic-example",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 120,
+    "max_total_attempts": 1,
+    "resume": false
+  },
+  "nodes": [
+    {
+      "agent": "human",
+      "executor": "human",
+      "id": "human"
+    }
+  ],
+  "policy_profile": "policy-profile.json",
+  "required_evidence": [
+    "zero-trust-preflight-receipt.json"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "allowed_paths": [
+      "./out/**",
+      "./scratch/**"
+    ],
+    "repo": "local",
+    "target": "zero-trust-basic"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

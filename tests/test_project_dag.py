@@ -701,6 +701,98 @@ def test_project_dag_zero_trust_allows_valid_public_boundary(tmp_path: Path) -> 
     assert receipt["status"] == "PASS"
 
 
+def test_project_dag_memory_gate_blocks_missing_intent(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    policy = _zero_trust_policy()
+    policy["memory"].update(
+        {
+            "intent_required": True,
+            "evidence_case_required_for": ["COMPLIANCE"],
+            "min_intent_confidence": 0.75,
+        }
+    )
+    payload["policy_profile"] = policy
+    payload["data_boundary"] = _public_data_boundary()
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_MEMORY_INTENT"
+    assert receipt["alerts"][0]["code"] == "missing_memory_intent"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_memory_evidence_gate",
+        "next_agent": "goal-guardian",
+        "reason": (
+            "Repair Graph Memory intent and create-evidence-case artifacts before "
+            "zero-trust DAG dispatch."
+        ),
+    }
+    assert Path(str(receipt["memory_intent_gate_receipt"])).exists()
+    assert Path(str(receipt["evidence_case_gate_receipt"])).exists()
+
+
+def test_project_dag_memory_gate_blocks_inline_intent_evidence(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    policy = _zero_trust_policy()
+    policy["memory"].update({"intent_required": True, "min_intent_confidence": 0.75})
+    intent = _memory_intent()
+    intent["evidence"] = [{"claim": "inline evidence should be rejected"}]
+    payload["policy_profile"] = policy
+    payload["data_boundary"] = _public_data_boundary()
+    payload["memory_intent"] = intent
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["alerts"][0]["code"] == "intent_contains_inline_evidence"
+
+
+def test_project_dag_memory_gate_allows_valid_intent_and_evidence_case(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    policy = _zero_trust_policy()
+    policy["memory"].update(
+        {
+            "intent_required": True,
+            "evidence_case_required_for": ["COMPLIANCE"],
+            "min_intent_confidence": 0.75,
+        }
+    )
+    payload["policy_profile"] = policy
+    payload["data_boundary"] = _public_data_boundary()
+    payload["memory_intent"] = _memory_intent()
+    payload["evidence_case"] = _memory_evidence_case()
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert Path(str(receipt["memory_intent_gate_receipt"])).exists()
+    assert Path(str(receipt["evidence_case_gate_receipt"])).exists()
+
+
 def test_project_dag_zero_trust_blocks_external_provider_when_policy_denies(
     tmp_path: Path,
 ) -> None:
@@ -1924,6 +2016,35 @@ def _public_data_boundary() -> dict:
         "external_research_allowed": False,
         "public_repo_allowed": False,
         "notes": [],
+    }
+
+
+def _memory_intent() -> dict:
+    return {
+        "schema": "memory.intent.v1",
+        "memory_first": True,
+        "planner_only": True,
+        "route": "COMPLIANCE",
+        "confidence": 0.91,
+        "recall_profile": "proof_retrieval",
+        "required_artifacts": [],
+        "tool_calls": [{"name": "create_evidence_case"}],
+        "evidence_case_required": True,
+    }
+
+
+def _memory_evidence_case() -> dict:
+    return {
+        "schema": "memory.evidence_case.v1",
+        "source": "graph-memory-operator:/create-evidence-case",
+        "sha256": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "question": "Can Tau dispatch this zero-trust DAG?",
+        "data_boundary": _public_data_boundary(),
+        "policy_profile": {
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "itar-zero-trust-local-only",
+            "default_decision": "deny",
+        },
     }
 
 

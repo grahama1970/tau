@@ -1,0 +1,8 @@
+{
+  "alert_codes": [],
+  "mocked": false,
+  "ok": true,
+  "provider_live": false,
+  "schema": "tau.zero_trust_preflight_receipt.v1",
+  "status": "PASS"
+}
