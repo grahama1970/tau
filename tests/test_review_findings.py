@@ -110,6 +110,31 @@ def test_review_findings_requires_evidence_for_p0_p1() -> None:
     assert "missing_finding_evidence" in receipt["alert_codes"]
 
 
+def test_review_findings_zero_trust_blocks_missing_policy_boundary() -> None:
+    receipt = validate_review_findings(
+        _payload(verdict="PASS", findings=[]),
+        zero_trust=True,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_policy_profile" in receipt["alert_codes"]
+    assert "missing_data_boundary" in receipt["alert_codes"]
+
+
+def test_review_findings_zero_trust_accepts_policy_boundary() -> None:
+    receipt = validate_review_findings(
+        _payload(verdict="PASS", findings=[]),
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["zero_trust"] is True
+    assert receipt["policy_profile"]["profile_id"] == "test"
+    assert receipt["data_boundary"]["classification"] == "public"
+
+
 def test_cli_review_findings_writes_receipt(tmp_path: Path) -> None:
     findings_path = tmp_path / "findings.json"
     receipt_path = tmp_path / "receipt.json"
@@ -133,6 +158,35 @@ def test_cli_review_findings_writes_receipt(tmp_path: Path) -> None:
     assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
     assert payload["schema"] == REVIEW_FINDINGS_SCHEMA
     assert payload["derived_verdict"] == "PASS"
+
+
+def test_cli_review_findings_zero_trust_missing_boundary_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    findings_path = tmp_path / "findings.json"
+    receipt_path = tmp_path / "receipt.json"
+    findings_path.write_text(json.dumps(_payload(verdict="PASS", findings=[])), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "review-findings",
+            "--findings",
+            str(findings_path),
+            "--out",
+            str(receipt_path),
+            "--goal-hash",
+            "sha256:goal",
+            "--zero-trust",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
 
 
 def _payload(*, verdict: str, findings: list[dict]) -> dict:

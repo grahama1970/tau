@@ -1663,6 +1663,9 @@ def main(
                 findings_path=Path(str(options["findings"])),
                 receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
                 expected_goal_hash=_optional_str(options.get("goal_hash")),
+                zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4324,11 +4327,24 @@ def _parse_code_patch_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"findings": None, "out": None, "goal_hash": None}
+    options: dict[str, object] = {
+        "findings": None,
+        "out": None,
+        "goal_hash": None,
+        "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
+    }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--findings", "--out", "--goal-hash"}:
+        if arg in {
+            "--findings",
+            "--out",
+            "--goal-hash",
+            "--policy-profile",
+            "--data-boundary",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -4340,6 +4356,12 @@ def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
             options["out"] = arg.partition("=")[2]
         elif arg.startswith("--goal-hash="):
             options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
         else:
             raise RuntimeError(f"unknown review-findings option: {arg}")
         index += 1

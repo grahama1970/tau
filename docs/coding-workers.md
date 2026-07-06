@@ -84,6 +84,10 @@ uv run tau review-findings \
   --goal-hash sha256:...
 ```
 
+Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
+when reviewer findings are part of a high-stakes coding route. In zero-trust
+mode, Tau blocks review finding receipts that omit policy or boundary metadata.
+
 ### Coding Course Correction
 
 `tau.course_correction.v1` now includes coding failure triggers:

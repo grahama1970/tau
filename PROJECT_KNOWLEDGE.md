@@ -1,9 +1,25 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:18 EDT by agent
+**Last updated:** 2026-07-06 18:19 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 review-findings zero-trust enforcement rung:
+  `src/tau_coding/review_findings.py` now supports zero-trust metadata on
+  `tau.review_findings.v1` receipts, and `src/tau_coding/cli.py` exposes it
+  through `uv run tau review-findings --zero-trust --policy-profile
+  <policy.json> --data-boundary <boundary.json>`. In zero-trust mode, Tau
+  blocks structured review finding receipts that omit `policy_profile` or
+  `data_boundary`, while preserving P0/P1 evidence requirements and derived
+  PASS/REVISE/BLOCKED routing. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/review_findings.py src/tau_coding/cli.py
+  tests/test_review_findings.py` -> pass; `uv run pytest
+  tests/test_review_findings.py -q` -> `9 passed in 0.48s`. This proves
+  deterministic local policy/data-boundary presence gating for structured
+  review finding receipts; it does not prove reviewer correctness, issue
+  exhaustiveness, semantic code correctness, legal compliance, or provider/model
+  quality.
 
 - 2026-07-06 GitHub read zero-trust enforcement rung:
   `src/tau_coding/github_read_schemes.py` now supports zero-trust metadata on

@@ -8,6 +8,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+
 REVIEW_FINDINGS_SCHEMA = "tau.review_findings.v1"
 
 SEVERITIES = {"P0", "P1", "P2", "P3"}
@@ -19,10 +21,17 @@ def validate_review_findings(
     payload: Mapping[str, Any],
     *,
     expected_goal_hash: str | None = None,
+    zero_trust: bool = False,
+    policy_profile: dict[str, Any] | None = None,
+    data_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Validate structured reviewer findings and derive Tau routing state."""
 
-    alerts: list[dict[str, Any]] = []
+    alerts: list[dict[str, Any]] = _coding_policy_alerts(
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+    )
     if payload.get("schema") != REVIEW_FINDINGS_SCHEMA:
         alerts.append(_alert("invalid_schema", f"schema must be {REVIEW_FINDINGS_SCHEMA}"))
     goal_hash = payload.get("goal_hash")
@@ -76,6 +85,9 @@ def validate_review_findings(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "goal_hash": goal_hash,
         "reviewer": payload.get("reviewer"),
         "declared_verdict": declared_verdict,
@@ -112,9 +124,18 @@ def write_review_findings_receipt(
     findings_path: Path,
     receipt_path: Path | None = None,
     expected_goal_hash: str | None = None,
+    zero_trust: bool = False,
+    policy_profile: dict[str, Any] | None = None,
+    data_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     payload = _read_json_object(findings_path.expanduser().resolve())
-    receipt = validate_review_findings(payload, expected_goal_hash=expected_goal_hash)
+    receipt = validate_review_findings(
+        payload,
+        expected_goal_hash=expected_goal_hash,
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+    )
     resolved_receipt = (
         receipt_path.expanduser().resolve()
         if receipt_path is not None
@@ -239,6 +260,28 @@ def _read_json_object(path: Path) -> dict[str, Any]:
 
 def _alert(code: str, message: str) -> dict[str, str]:
     return {"severity": "BLOCK", "code": code, "message": message}
+
+
+def _coding_policy_alerts(
+    *,
+    zero_trust: bool,
+    policy_profile: dict[str, Any] | None,
+    data_boundary: dict[str, Any] | None,
+) -> list[dict[str, str]]:
+    alerts: list[dict[str, str]] = []
+    if zero_trust and policy_profile is None:
+        alerts.append(
+            _alert("missing_policy_profile", "zero-trust review findings require policy_profile")
+        )
+    if zero_trust and data_boundary is None:
+        alerts.append(
+            _alert("missing_data_boundary", "zero-trust review findings require data_boundary")
+        )
+    if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
+        alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
+    if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
+        alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    return alerts
 
 
 def _utc_stamp() -> str:
