@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -25,6 +27,9 @@ def write_github_read_receipt(
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
+    execute: bool = False,
+    gh_bin: str = "gh",
+    timeout_s: int = 30,
 ) -> dict[str, Any]:
     alerts = _coding_policy_alerts(
         zero_trust=zero_trust,
@@ -36,12 +41,21 @@ def write_github_read_receipt(
         alerts.append(_alert("unsupported_github_read_uri", "unsupported GitHub read URI"))
         parsed = {}
     ok = not alerts
+    suggested_command = _suggested_gh_command(parsed)
+    execution = _execute_read_command(
+        output_path=output_path,
+        command=suggested_command,
+        gh_bin=gh_bin,
+        timeout_s=timeout_s,
+    ) if execute and ok else _empty_execution(execute_requested=execute)
+    alerts.extend(execution.pop("alerts"))
+    ok = not alerts
     payload = {
         "schema": GITHUB_READ_RECEIPT_SCHEMA,
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": False,
+        "live": bool(execution["command_executed"]),
         "provider_live": False,
         "zero_trust": zero_trust,
         "policy_profile": policy_profile,
@@ -52,7 +66,8 @@ def write_github_read_receipt(
         "dry_run_projection": True,
         "mutation_allowed": False,
         "blocked_mutations": ["comment", "label", "close", "merge", "push", "release"],
-        "suggested_gh_command": _suggested_gh_command(parsed),
+        "suggested_gh_command": suggested_command,
+        "execution": execution,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -63,7 +78,10 @@ def write_github_read_receipt(
             "does_not_prove": [
                 "Live GitHub auth succeeds.",
                 "The GitHub object exists.",
-                "The read projection content is current.",
+                (
+                    "The read projection content is current unless execute mode "
+                    "captured fresh gh output."
+                ),
                 "Any GitHub mutation is allowed.",
             ],
         },
@@ -72,6 +90,110 @@ def write_github_read_receipt(
     payload["receipt_path"] = str(output_path.expanduser().resolve())
     _write_json(output_path, payload)
     return payload
+
+
+def _execute_read_command(
+    *,
+    output_path: Path,
+    command: list[str],
+    gh_bin: str,
+    timeout_s: int,
+) -> dict[str, Any]:
+    if not command:
+        return _empty_execution(
+            execute_requested=True,
+            alerts=[
+                _alert(
+                    "github_read_command_missing",
+                    "GitHub read execution requires a supported read command",
+                )
+            ],
+        )
+    resolved_gh = shutil.which(gh_bin) if "/" not in gh_bin else gh_bin
+    if not resolved_gh:
+        return _empty_execution(
+            execute_requested=True,
+            alerts=[_alert("github_read_gh_missing", "gh executable was not found")],
+        )
+    executed = [resolved_gh, *command[1:]]
+    stdout_path = _sidecar_path(output_path, "stdout.txt")
+    stderr_path = _sidecar_path(output_path, "stderr.txt")
+    stdout_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        proc = subprocess.run(
+            executed,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=max(1, timeout_s),
+        )
+        stdout_path.write_text(proc.stdout, encoding="utf-8")
+        stderr_path.write_text(proc.stderr, encoding="utf-8")
+        alerts = []
+        if proc.returncode != 0:
+            alerts.append(
+                _alert(
+                    "github_read_nonzero_exit",
+                    f"GitHub read command exited {proc.returncode}",
+                )
+            )
+        return {
+            "execute_requested": True,
+            "command_executed": True,
+            "command": executed,
+            "exit_code": proc.returncode,
+            "timed_out": False,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+            "stdout_bytes": len(proc.stdout.encode("utf-8")),
+            "stderr_bytes": len(proc.stderr.encode("utf-8")),
+            "alerts": alerts,
+        }
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode("utf-8", errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
+        stdout_path.write_text(stdout, encoding="utf-8")
+        stderr_path.write_text(stderr, encoding="utf-8")
+        return {
+            "execute_requested": True,
+            "command_executed": True,
+            "command": executed,
+            "exit_code": None,
+            "timed_out": True,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+            "stdout_bytes": len(stdout.encode("utf-8")),
+            "stderr_bytes": len(stderr.encode("utf-8")),
+            "alerts": [_alert("github_read_timeout", "GitHub read command timed out")],
+        }
+
+
+def _empty_execution(
+    *,
+    execute_requested: bool,
+    alerts: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "execute_requested": execute_requested,
+        "command_executed": False,
+        "command": [],
+        "exit_code": None,
+        "timed_out": False,
+        "stdout_path": None,
+        "stderr_path": None,
+        "stdout_bytes": 0,
+        "stderr_bytes": 0,
+        "alerts": alerts or [],
+    }
+
+
+def _sidecar_path(output_path: Path, suffix: str) -> Path:
+    resolved = output_path.expanduser().resolve()
+    return resolved.with_name(f"{resolved.name}.{suffix}")
 
 
 def _parse_github_uri(uri: str) -> dict[str, Any] | None:

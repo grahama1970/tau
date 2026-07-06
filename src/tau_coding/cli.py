@@ -1849,6 +1849,9 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
+                execute=bool(options["execute"]),
+                gh_bin=str(options["gh_bin"]),
+                timeout_s=int(options["timeout_s"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4793,11 +4796,21 @@ def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "execute": False,
+        "gh_bin": "gh",
+        "timeout_s": 30,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--uri", "--out", "--policy-profile", "--data-boundary"}:
+        if arg in {
+            "--uri",
+            "--out",
+            "--policy-profile",
+            "--data-boundary",
+            "--gh-bin",
+            "--timeout-s",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -4810,8 +4823,14 @@ def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--gh-bin="):
+            options["gh_bin"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = arg.partition("=")[2]
         elif arg == "--zero-trust":
             options["zero_trust"] = True
+        elif arg == "--execute":
+            options["execute"] = True
         else:
             raise RuntimeError(f"unknown github-read option: {arg}")
         index += 1

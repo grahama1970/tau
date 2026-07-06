@@ -328,18 +328,26 @@
   `issue://owner/repo/123`, `pr://owner/repo/456`,
   `diff://owner/repo/pull/456`, and `commit://owner/repo/<sha>`.
   `src/tau_coding/cli.py` exposes `uv run tau github-read --uri <uri> --out
-  <receipt>`. Receipts record the parsed target, suggested `gh` read command,
-  blocked mutation verbs, `mutation_allowed:false`, and proof-scope non-claims.
-  The existing `tau.github_apply_policy_receipt.v1` remains the mutation gate
-  for comments, labels, closes, merges, pushes, and releases. Focused proof:
-  `uv run ruff check --select I,F,E501
+  <receipt>` and optional `--execute --gh-bin <path> --timeout-s <seconds>`.
+  Receipts record the parsed target, suggested `gh` read command, blocked
+  mutation verbs, `mutation_allowed:false`, and proof-scope non-claims. Execute
+  mode only runs the projected read-only `gh` command, captures stdout/stderr
+  sidecars, records exit code and timeout state, and still authorizes no
+  mutation. The existing `tau.github_apply_policy_receipt.v1` remains the
+  mutation gate for comments, labels, closes, merges, pushes, and releases.
+  Focused proof: `uv run ruff check --select I,F,E501
   src/tau_coding/github_read_schemes.py src/tau_coding/cli.py
-  tests/test_github_read_schemes.py tests/test_github_apply_policy.py` ->
-  pass; `uv run pytest tests/test_github_read_schemes.py
-  tests/test_github_apply_policy.py -q` -> `12 passed in 0.44s`. This proves
-  deterministic local read-only URI parsing, CLI receipt writing, unsupported
-  URI blocking, and apply-policy mutation-gate regressions for the tested
-  cases; it does not prove live GitHub auth, GitHub object existence, content
+  tests/test_github_read_schemes.py` -> pass; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `13 passed in 0.53s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-execute-final` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-github-read-execute-final/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded focused tests `97
+  passed in 2.42s`. This proves deterministic local read-only URI parsing, CLI
+  receipt writing, unsupported URI blocking, fake-`gh` execute-mode artifact
+  capture, and apply-policy mutation-gate regressions for the tested cases; it
+  does not prove live GitHub auth, GitHub object existence, real content
   freshness, live mutation safety, provider/model quality, or legal compliance.
 
 - 2026-07-06 debugger/DAP coding evidence rung:

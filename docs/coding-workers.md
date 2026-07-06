@@ -208,14 +208,27 @@ uv run tau github-read \
   --out github-read-receipt.json
 ```
 
+Projection is the default. Use `--execute` only when the run should perform the
+bounded read-only `gh` command and persist stdout/stderr sidecars:
+
+```bash
+uv run tau github-read \
+  --uri issue://grahama1970/tau/67 \
+  --out github-read-receipt.json \
+  --execute
+```
+
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when GitHub read projections are part of a high-stakes coding route. In
 zero-trust mode, Tau blocks read receipts that omit policy or boundary
 metadata.
 
 The receipt records the parsed target, a suggested `gh` read command, blocked
-mutation verbs, and `mutation_allowed:false`. It does not call GitHub, prove
-live auth, prove the target object exists, or prove content freshness.
+mutation verbs, and `mutation_allowed:false`. In execute mode it records the
+exact command, exit code, timeout state, and stdout/stderr artifact paths. It
+does not authorize mutation, prove semantic correctness of GitHub content, or
+prove content freshness unless a real `gh` command completed for that target at
+that time.
 
 GitHub mutation remains separate. Commenting, labeling, closing, merging,
 pushing, and releasing must go through `tau.github_apply_policy_receipt.v1`
