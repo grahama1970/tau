@@ -6,6 +6,7 @@ REPO_DIR="${OUT_DIR}/repo"
 WORK_ORDER="${OUT_DIR}/work-order.json"
 RESULT="${OUT_DIR}/scillm-result.json"
 RECEIPT="${OUT_DIR}/scillm-worker-receipt.json"
+LAUNCH_RECEIPT="${OUT_DIR}/scillm-worker-launch-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
 SANDBOX_RECEIPT="${OUT_DIR}/sandbox-run-receipt.json"
 
@@ -97,25 +98,33 @@ else
 JSON
 fi
 
+uv run tau scillm-worker-launch \
+  --work-order "${WORK_ORDER}" \
+  --out "${LAUNCH_RECEIPT}" >/tmp/tau-scillm-worker-launch.stdout.json
+
 uv run tau scillm-worker-validate \
   --work-order "${WORK_ORDER}" \
   --result "${RESULT}" \
   --out "${RECEIPT}" >/tmp/tau-scillm-worker-validate.stdout.json
 
-python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
+python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 demo_path = Path(sys.argv[1])
 receipt_path = Path(sys.argv[2])
-worker_result_source = sys.argv[3]
+launch_receipt_path = Path(sys.argv[3])
+worker_result_source = sys.argv[4]
 receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+launch_receipt = json.loads(launch_receipt_path.read_text(encoding="utf-8"))
 route = receipt.get("model_provider_route", {})
 payload = {
     "schema": "tau.scillm_worker_example_receipt.v1",
-    "ok": receipt.get("ok") is True,
-    "status": "PASS" if receipt.get("ok") is True else "BLOCKED",
+    "ok": receipt.get("ok") is True and launch_receipt.get("ok") is True,
+    "status": (
+        "PASS" if receipt.get("ok") is True and launch_receipt.get("ok") is True else "BLOCKED"
+    ),
     "mocked": worker_result_source == "fixture",
     "live": worker_result_source != "fixture",
     "provider_live": False,
@@ -124,14 +133,21 @@ payload = {
     "worker_receipt_schema": receipt.get("schema"),
     "worker_receipt_status": receipt.get("status"),
     "worker_receipt_alert_codes": receipt.get("alert_codes", []),
+    "launch_receipt_path": str(launch_receipt_path),
+    "launch_receipt_schema": launch_receipt.get("schema"),
+    "launch_receipt_status": launch_receipt.get("status"),
+    "launch_receipt_alert_codes": launch_receipt.get("alert_codes", []),
+    "launch_url": launch_receipt.get("url"),
     "model_provider_route": route,
     "proof_scope": {
         "proves": [
+            "Tau built a dry-run SciLLM OpenCode-serve launch request from a bounded work order.",
             "Tau validated a SciLLM-shaped worker result against a bounded work order.",
             "Tau checked goal hash, changed paths, required artifacts, test logs, substrate evidence, and route metadata."
         ],
         "does_not_prove": [
             "Tau called SciLLM.",
+            "OpenCode serve accepted or ran the request.",
             "OpenCode serve performed live coding work.",
             "The code is semantically correct.",
             "Provider/model semantic quality."

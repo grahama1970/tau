@@ -23,6 +23,27 @@
   accepted or ran the request, live coding work occurred, semantic code
   correctness, provider/model quality, or legal compliance.
 
+- 2026-07-06 SciLLM worker example launch receipt rung:
+  `examples/scillm-worker/run.sh` now emits
+  `scillm-worker-launch-receipt.json` through `uv run tau
+  scillm-worker-launch` before validating the worker result. The demo receipt
+  records the launch receipt schema/status/path and the dry-run OpenCode-serve
+  URL. This makes the copyable SciLLM example exercise both launch-request
+  construction and result validation without calling SciLLM. Proof:
+  `bash -n examples/scillm-worker/run.sh` -> pass;
+  `examples/scillm-worker/run.sh /tmp/tau-scillm-worker-launch-example-proof-v2`
+  exited 0 and wrote
+  `/tmp/tau-scillm-worker-launch-example-proof-v2/scillm-worker-launch-receipt.json`
+  plus `/tmp/tau-scillm-worker-launch-example-proof-v2/demo-receipt.json`;
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `17 passed in 0.40s`. This
+  proves deterministic local example wiring for dry-run launch-request
+  construction and result validation; it does not prove Tau called SciLLM,
+  OpenCode serve accepted or ran the request, live coding work occurred,
+  semantic code correctness, provider/model quality, or legal compliance.
+
 - 2026-07-06 SciLLM worker example rung:
   `examples/scillm-worker/` adds a copyable Tau validation example for bounded
   SciLLM/OpenCode-serve worker results. The example writes a

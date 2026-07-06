@@ -13,6 +13,10 @@ The default path writes a fixture `tau.executor.scillm_worker.v1` work order and
 a fixture `tau.scillm_worker_result.v1`, then validates them with:
 
 ```bash
+uv run tau scillm-worker-launch \
+  --work-order work-order.json \
+  --out scillm-worker-launch-receipt.json
+
 uv run tau scillm-worker-validate \
   --work-order work-order.json \
   --result scillm-result.json \
@@ -38,5 +42,6 @@ SCILLM_WORKER_RESULT=/path/to/scillm-result.json examples/scillm-worker/run.sh /
 
 This example proves only the Tau-side receipt validation path. Unless
 `SCILLM_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
-called SciLLM, that OpenCode serve performed coding work, semantic code
-correctness, or provider/model quality.
+called SciLLM. The dry-run launch receipt proves only request construction and
+route gating; it does not prove OpenCode serve accepted or ran the request,
+semantic code correctness, or provider/model quality.

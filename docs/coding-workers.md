@@ -320,11 +320,13 @@ separate launcher receipt exists.
 
 `examples/scillm-worker` validates a bounded SciLLM/OpenCode-serve-shaped
 worker result. By default it uses a fixture result and marks the demo
-`mocked:true`, `live:false`. Set
+`mocked:true`, `live:false`; it also writes a dry-run
+`scillm-worker-launch-receipt.json` showing the exact OpenCode-serve request
+Tau would send. Set
 `SCILLM_WORKER_RESULT=/path/to/tau.scillm_worker_result.v1.json` to validate an
 external worker artifact. The work order records the correct coding-delegate
 surface, `/v1/scillm/opencode/runs`, with an OpenCode agent profile such as
-`build`; use `scillm-worker-launch` to generate the dry-run launch request:
+`build`; the launch receipt can also be generated directly:
 
 ```bash
 uv run tau scillm-worker-launch \
