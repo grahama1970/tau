@@ -120,6 +120,22 @@ def test_github_read_execute_runs_read_only_command_and_records_logs(tmp_path: P
     stderr_path = Path(receipt["execution"]["stderr_path"])
     assert json.loads(stdout_path.read_text(encoding="utf-8"))["fake_gh"] is True
     assert stderr_path.read_text(encoding="utf-8") == ""
+    assert receipt["execution"]["stdout_sha256"] == f"sha256:{_sha256(stdout_path)}"
+    assert receipt["execution"]["stderr_sha256"] == f"sha256:{_sha256(stderr_path)}"
+    assert receipt["execution"]["artifacts"] == [
+        {
+            "label": "stdout",
+            "path": str(stdout_path),
+            "sha256": f"sha256:{_sha256(stdout_path)}",
+            "bytes": stdout_path.stat().st_size,
+        },
+        {
+            "label": "stderr",
+            "path": str(stderr_path),
+            "sha256": f"sha256:{_sha256(stderr_path)}",
+            "bytes": stderr_path.stat().st_size,
+        },
+    ]
 
 
 def test_github_read_execute_skips_invalid_uri(tmp_path: Path) -> None:

@@ -257,10 +257,10 @@ metadata.
 
 The receipt records the parsed target, a suggested `gh` read command, blocked
 mutation verbs, and `mutation_allowed:false`. In execute mode it records the
-exact command, exit code, timeout state, and stdout/stderr artifact paths. It
-does not authorize mutation, prove semantic correctness of GitHub content, or
-prove content freshness unless a real `gh` command completed for that target at
-that time.
+exact command, exit code, timeout state, stdout/stderr artifact paths, SHA-256
+hashes, byte counts, and artifact descriptors. It does not authorize mutation,
+prove semantic correctness of GitHub content, or prove content freshness unless
+a real `gh` command completed for that target at that time.
 
 GitHub mutation remains separate. Commenting, labeling, closing, merging,
 pushing, and releasing must go through `tau.github_apply_policy_receipt.v1`

@@ -5,6 +5,26 @@
 
 ## Current Understanding
 
+- 2026-07-06 GitHub read execution artifact hash binding rung:
+  `src/tau_coding/github_read_schemes.py` now hash-binds execute-mode
+  `tau.github_read_receipt.v1` stdout/stderr sidecars. The receipt execution
+  object records `stdout_sha256`, `stderr_sha256`, byte counts, and
+  `artifacts` descriptors while preserving `mutation_allowed:false`. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py` ->
+  pass; `uv run pytest tests/test_github_read_schemes.py -q` -> `13 passed in
+  0.46s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-artifact-hashes` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-github-read-artifact-hashes/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, and embedded
+  focused tests `104 passed in 2.57s`. This proves deterministic local
+  fake-`gh` execution artifact hash/size binding for GitHub read receipts; it
+  does not prove live GitHub auth, GitHub object freshness beyond a real
+  executed command, GitHub mutation, semantic content correctness,
+  provider/model quality, or legal compliance.
+
 - 2026-07-06 worker validation artifact hash binding rung:
   `src/tau_coding/coding_worker_adapters.py` now hash-binds the exact work
   order and worker-result JSON artifacts inspected by

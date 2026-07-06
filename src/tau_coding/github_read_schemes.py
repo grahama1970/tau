@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -145,8 +146,14 @@ def _execute_read_command(
             "timed_out": False,
             "stdout_path": str(stdout_path),
             "stderr_path": str(stderr_path),
+            "stdout_sha256": _sha256_uri(stdout_path),
             "stdout_bytes": len(proc.stdout.encode("utf-8")),
+            "stderr_sha256": _sha256_uri(stderr_path),
             "stderr_bytes": len(proc.stderr.encode("utf-8")),
+            "artifacts": _artifact_descriptors(
+                ("stdout", stdout_path),
+                ("stderr", stderr_path),
+            ),
             "alerts": alerts,
         }
     except subprocess.TimeoutExpired as exc:
@@ -166,8 +173,14 @@ def _execute_read_command(
             "timed_out": True,
             "stdout_path": str(stdout_path),
             "stderr_path": str(stderr_path),
+            "stdout_sha256": _sha256_uri(stdout_path),
             "stdout_bytes": len(stdout.encode("utf-8")),
+            "stderr_sha256": _sha256_uri(stderr_path),
             "stderr_bytes": len(stderr.encode("utf-8")),
+            "artifacts": _artifact_descriptors(
+                ("stdout", stdout_path),
+                ("stderr", stderr_path),
+            ),
             "alerts": [_alert("github_read_timeout", "GitHub read command timed out")],
         }
 
@@ -185,8 +198,11 @@ def _empty_execution(
         "timed_out": False,
         "stdout_path": None,
         "stderr_path": None,
+        "stdout_sha256": None,
         "stdout_bytes": 0,
+        "stderr_sha256": None,
         "stderr_bytes": 0,
+        "artifacts": [],
         "alerts": alerts or [],
     }
 
@@ -194,6 +210,27 @@ def _empty_execution(
 def _sidecar_path(output_path: Path, suffix: str) -> Path:
     resolved = output_path.expanduser().resolve()
     return resolved.with_name(f"{resolved.name}.{suffix}")
+
+
+def _artifact_descriptors(*items: tuple[str, Path]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for label, path in items:
+        resolved = path.expanduser().resolve()
+        if not resolved.exists():
+            continue
+        artifacts.append(
+            {
+                "label": label,
+                "path": str(resolved),
+                "sha256": _sha256_uri(resolved),
+                "bytes": resolved.stat().st_size,
+            }
+        )
+    return artifacts
+
+
+def _sha256_uri(path: Path) -> str:
+    return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
 
 
 def _parse_github_uri(uri: str) -> dict[str, Any] | None:
