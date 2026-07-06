@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -47,6 +48,36 @@ def test_debug_receipt_records_variables_and_frames(tmp_path: Path) -> None:
 
     assert receipt["stopped_frame"]["function"] == "answer"
     assert receipt["variables"] == [{"name": "value", "value": "41"}]
+
+
+def test_debug_receipt_records_log_artifact_hashes(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    stdout = tmp_path / "debug-stdout.txt"
+    stderr = tmp_path / "debug-stderr.txt"
+    assert receipt["stdout_sha256"] == f"sha256:{_sha256(stdout)}"
+    assert receipt["stdout_bytes"] == len("stopped at breakpoint\n".encode("utf-8"))
+    assert receipt["stderr_sha256"] == f"sha256:{_sha256(stderr)}"
+    assert receipt["stderr_bytes"] == 0
+    assert receipt["log_artifacts"] == [
+        {
+            "label": "stdout",
+            "path": str(stdout.resolve()),
+            "sha256": f"sha256:{_sha256(stdout)}",
+            "bytes": stdout.stat().st_size,
+        },
+        {
+            "label": "stderr",
+            "path": str(stderr.resolve()),
+            "sha256": f"sha256:{_sha256(stderr)}",
+            "bytes": stderr.stat().st_size,
+        },
+    ]
 
 
 def test_debug_receipt_never_claims_fix_correctness(tmp_path: Path) -> None:
@@ -164,3 +195,7 @@ def _write_debug_session(
     path = tmp_path / "debug-session.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

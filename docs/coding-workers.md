@@ -201,8 +201,8 @@ future approval lane authorizes commit application. High-risk paths such as
 `tau.debug_session_receipt.v1` records debugger/DAP evidence from a structured
 local session packet. Supported adapter labels are `debugpy`, `lldb-dap`, `dlv`,
 and `node`. The receipt records the target, adapter availability, breakpoints,
-stopped frame, variables, commands, stdout/stderr artifacts, conclusion, and
-non-claims.
+stopped frame, variables, commands, stdout/stderr artifacts, SHA-256 hashes,
+byte counts, conclusion, and non-claims.
 
 CLI:
 

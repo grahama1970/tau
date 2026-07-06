@@ -253,15 +253,23 @@
   `uv run tau debug-session-receipt --zero-trust --policy-profile <policy.json>
   --data-boundary <boundary.json>`. In zero-trust mode, Tau blocks structured
   debugger evidence receipts that omit `policy_profile` or `data_boundary`,
-  while preserving the existing adapter, log-path, and non-claim checks.
+  while preserving the existing adapter, log-path, and non-claim checks. The
+  receipt now binds stdout/stderr debugger artifacts with SHA-256 hashes, byte
+  counts, and a `log_artifacts` list for review-package use.
   Focused proof: `uv run ruff check --select I,F,E501
-  src/tau_coding/debug_session_receipt.py src/tau_coding/cli.py
-  tests/test_debug_session_receipt.py` -> pass; `uv run pytest
-  tests/test_debug_session_receipt.py -q` -> `8 passed in 0.48s`. This proves
-  deterministic local policy/data-boundary presence gating for structured
-  debugger evidence in zero-trust mode; it does not prove live DAP adapter
-  launch, bug repair, semantic debug completeness, legal compliance,
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py
+  docs/coding-workers.md` -> pass; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `9 passed in 0.41s`. This proves
+  deterministic local policy/data-boundary presence gating and log-artifact
+  hash binding for structured debugger evidence; it does not prove live DAP
+  adapter launch, bug repair, semantic debug completeness, legal compliance,
   provider/model quality, or runtime sandbox isolation.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-log-hashes` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-debug-log-hashes/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded coding receipt tests
+  `104 passed in 2.53s`.
 
 - 2026-07-06 commit-plan zero-trust enforcement rung:
   `src/tau_coding/commit_plan.py` now supports zero-trust metadata on

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
@@ -69,7 +70,12 @@ def write_debug_session_receipt(
         "variables": _list(packet.get("variables")),
         "commands": _list(packet.get("commands")),
         "stdout_path": str(stdout_path) if stdout_path is not None else None,
+        "stdout_sha256": _sha256_uri(stdout_path),
+        "stdout_bytes": stdout_path.stat().st_size if stdout_path is not None else None,
         "stderr_path": str(stderr_path) if stderr_path is not None else None,
+        "stderr_sha256": _sha256_uri(stderr_path),
+        "stderr_bytes": stderr_path.stat().st_size if stderr_path is not None else None,
+        "log_artifacts": _log_artifacts(stdout_path=stdout_path, stderr_path=stderr_path),
         "conclusion": packet.get("conclusion"),
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
@@ -115,6 +121,28 @@ def _optional_existing_path(value: object, base_dir: Path) -> Path | None:
         candidate = base_dir / candidate
     resolved = candidate.resolve()
     return resolved if resolved.exists() else None
+
+
+def _log_artifacts(*, stdout_path: Path | None, stderr_path: Path | None) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for label, path in (("stdout", stdout_path), ("stderr", stderr_path)):
+        if path is None:
+            continue
+        artifacts.append(
+            {
+                "label": label,
+                "path": str(path),
+                "sha256": _sha256_uri(path),
+                "bytes": path.stat().st_size,
+            }
+        )
+    return artifacts
+
+
+def _sha256_uri(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
 
 
 def _string(value: object) -> str | None:
