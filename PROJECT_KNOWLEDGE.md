@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:43 EDT by agent
+**Last updated:** 2026-07-06 17:45 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding reliability basic example:
+  `examples/coding-reliability-basic/run.sh` creates a temporary Git repo,
+  generates stale and valid `tau.code_patch.v1` artifacts, expects the stale
+  patch to fail closed, applies the valid patch, collects
+  `tau.lsp_diagnostics_receipt.v1`, validates `tau.review_findings.v1`, writes
+  `tau.commit_plan_receipt.v1`, synthesizes a small `tau.dag_receipt.v1`, and
+  runs `uv run tau orchestration-reliability` over that DAG receipt. Live-local
+  example proof: `examples/coding-reliability-basic/run.sh
+  /tmp/tau-coding-reliability-basic-proof` exited 0 and wrote
+  `/tmp/tau-coding-reliability-basic-proof/demo-receipt.json` with
+  `schema:"tau.coding_reliability_basic_demo_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `mocked:false`, `live:true`, and `provider_live:false`. Inner
+  receipt statuses: stale code patch `BLOCKED` with `stale_base_hash`; valid
+  code patch `PASS`; LSP diagnostics `PASS`; review findings `PASS`; commit
+  plan `PASS`; orchestration reliability `PASS`. This proves the copyable local
+  coding-reliability example exercises the receipt chain and negative stale
+  patch control; it does not prove semantic code correctness, agent
+  truthfulness, provider/model quality, full DAG execution, GitHub mutation, or
+  legal compliance.
 
 - 2026-07-06 coding reliability Round 2 slice:
   `src/tau_coding/lsp_receipts.py` adds `tau.lsp_diagnostics_receipt.v1`,
