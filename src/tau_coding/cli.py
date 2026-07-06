@@ -192,6 +192,7 @@ from tau_coding.tui.proof import (
     render_textual_tui_memory_stage_proof,
 )
 from tau_coding.visible_dag_poc import inspect_visible_dag_run, run_visible_dag_poc
+from tau_coding.zero_trust_redteam import run_zero_trust_redteam
 
 app = typer.Typer(
     name="tau",
@@ -1484,6 +1485,17 @@ def main(
         try:
             options = _parse_compliance_package_validate_args(positional_args[1:])
             payload = write_compliance_package_validation_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "zero-trust-redteam":
+        try:
+            run_dir = _parse_zero_trust_redteam_args(positional_args[1:])
+            payload = run_zero_trust_redteam(run_dir=run_dir)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3687,6 +3699,26 @@ def _parse_compliance_package_validate_args(args: list[str]) -> dict[str, object
     if not isinstance(options["policy"], str) or not options["policy"].strip():
         raise RuntimeError("--policy requires a non-empty value")
     return options
+
+
+def _parse_zero_trust_redteam_args(args: list[str]) -> Path:
+    run_dir: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown zero-trust-redteam option: {arg}")
+        index += 1
+    if run_dir is None:
+        raise RuntimeError("Usage: tau zero-trust-redteam --run-dir <dir>")
+    return run_dir
 
 
 def _parse_generated_ticket_github_create_cli_args(
