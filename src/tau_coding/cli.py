@@ -117,6 +117,10 @@ from tau_coding.media_explainer_orchestration import (
     inspect_media_explainer_run,
     run_media_explainer_smoke,
 )
+from tau_coding.memory_acquisition import (
+    write_evidence_case_acquisition_receipt,
+    write_memory_intent_acquisition_receipt,
+)
 from tau_coding.orchestration_evidence import build_orchestration_evidence
 from tau_coding.orchestration_redteam import run_orchestration_redteam
 from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
@@ -1191,6 +1195,48 @@ def main(
                     if options["approval_receipt"] is not None
                     else None
                 ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "memory-intent":
+        try:
+            options = _parse_memory_intent_cli_args(positional_args[1:])
+            payload = write_memory_intent_acquisition_receipt(
+                query=str(options["query"]),
+                receipt_path=Path(str(options["out"])),
+                memory_url=_optional_str(options.get("memory_url")),
+                scope=str(options["scope"]),
+                app=str(options["app"]),
+                fast=bool(options["fast"]),
+                goal_hash=_optional_str(options.get("goal_hash")),
+                target=_json_object_option(options.get("target"), label="--target-json"),
+                timeout_seconds=float(options["timeout_seconds"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "evidence-case-create":
+        try:
+            options = _parse_evidence_case_create_cli_args(positional_args[1:])
+            payload = write_evidence_case_acquisition_receipt(
+                intent_path=Path(str(options["intent"])),
+                receipt_path=Path(str(options["out"])),
+                memory_url=_optional_str(options.get("memory_url")),
+                question=_optional_str(options.get("question")),
+                scope=str(options["scope"]),
+                app=str(options["app"]),
+                goal_hash=_optional_str(options.get("goal_hash")),
+                target=_json_object_option(options.get("target"), label="--target-json"),
+                timeout_seconds=float(options["timeout_seconds"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3052,6 +3098,131 @@ def _parse_dag_route_memory_sync_cli_args(args: list[str]) -> dict[str, object]:
             "[--apply --approval-receipt <approval-gate-receipt.json>]"
         )
     return options
+
+
+def _parse_memory_intent_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "query": None,
+        "out": None,
+        "memory_url": None,
+        "scope": "tau",
+        "app": "tau",
+        "fast": True,
+        "goal_hash": None,
+        "target": None,
+        "timeout_seconds": 15.0,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--query",
+            "--out",
+            "--memory-url",
+            "--scope",
+            "--app",
+            "--goal-hash",
+            "--target-json",
+            "--timeout-seconds",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            _set_memory_acquisition_option(options, arg, args[index])
+        elif arg.startswith("--query="):
+            options["query"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--memory-url="):
+            options["memory_url"] = arg.partition("=")[2]
+        elif arg.startswith("--scope="):
+            options["scope"] = arg.partition("=")[2]
+        elif arg.startswith("--app="):
+            options["app"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--target-json="):
+            options["target"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-seconds="):
+            options["timeout_seconds"] = float(arg.partition("=")[2])
+        elif arg == "--no-fast":
+            options["fast"] = False
+        else:
+            raise RuntimeError(f"unknown memory-intent option: {arg}")
+        index += 1
+    if not _optional_str(options.get("query")):
+        raise RuntimeError("Usage: tau memory-intent --query <text> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau memory-intent --query <text> --out <receipt>")
+    return options
+
+
+def _parse_evidence_case_create_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "intent": None,
+        "out": None,
+        "memory_url": None,
+        "question": None,
+        "scope": "tau",
+        "app": "tau",
+        "goal_hash": None,
+        "target": None,
+        "timeout_seconds": 15.0,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--intent",
+            "--out",
+            "--memory-url",
+            "--question",
+            "--scope",
+            "--app",
+            "--goal-hash",
+            "--target-json",
+            "--timeout-seconds",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            _set_memory_acquisition_option(options, arg, args[index])
+        elif arg.startswith("--intent="):
+            options["intent"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--memory-url="):
+            options["memory_url"] = arg.partition("=")[2]
+        elif arg.startswith("--question="):
+            options["question"] = arg.partition("=")[2]
+        elif arg.startswith("--scope="):
+            options["scope"] = arg.partition("=")[2]
+        elif arg.startswith("--app="):
+            options["app"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--target-json="):
+            options["target"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-seconds="):
+            options["timeout_seconds"] = float(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown evidence-case-create option: {arg}")
+        index += 1
+    if not _optional_str(options.get("intent")):
+        raise RuntimeError("Usage: tau evidence-case-create --intent <json> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau evidence-case-create --intent <json> --out <receipt>")
+    return options
+
+
+def _set_memory_acquisition_option(options: dict[str, object], arg: str, value: str) -> None:
+    key = arg.removeprefix("--").replace("-", "_")
+    if arg == "--target-json":
+        key = "target"
+    if arg == "--timeout-seconds":
+        options[key] = float(value)
+    else:
+        options[key] = value
 
 
 def _parse_generic_dag_inspect_cli_args(args: list[str]) -> Path:
