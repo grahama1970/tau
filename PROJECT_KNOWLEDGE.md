@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 12:05 EDT by agent
+**Last updated:** 2026-07-06 12:18 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 DAG viewer link real-world sanity regression: `scripts/run-real-world-sanity.py`
+  now registers `advanced.project_dag_viewer_link_exports`, which runs the real
+  local provider-metadata project DAG fixture, calls `uv run tau run-status` on
+  the resulting run directory, calls `uv run tau dag-viewer-link` on the same
+  run directory, and fails if the two viewer contracts disagree on URL,
+  contract hash, receipt hash, DAG id, goal hash, or receipt status. Focused
+  proof: `uv run ruff check --select I,F scripts/run-real-world-sanity.py
+  tests/test_real_world_sanity_runner.py` passed; `uv run pytest
+  tests/test_real_world_sanity_runner.py::test_build_checks_registers_itar_containment_dag_and_demo_checks
+  -q` reported `1 passed`. Non-mocked local sanity proof: `uv run python
+  scripts/run-real-world-sanity.py --repo . --levels advanced --checks
+  advanced.project_dag_viewer_link_exports --label
+  tau-dag-viewer-link-export-20260706 --receipt-timeout-seconds 120` exited 0
+  and wrote
+  `experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/real-world-sanity-receipt.json`
+  with `schema:"tau.real_world_sanity_suite_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `mocked:false`, `provider_live:false`, `check_count:1`, and
+  `failed_check_count:0`. The captured stdout at
+  `experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/logs/advanced.project_dag_viewer_link_exports.stdout.txt`
+  contains `dag_viewer.available:true`, `detected_type:"project_dag"`, an
+  encoded `http://localhost:3002/#tau/dag?run=...` URL, and SHA-256 hashes for
+  both the DAG contract and DAG receipt. This proves the DAG viewer link/export
+  contract is now guarded by the non-mocked real-world sanity suite; it does not
+  prove browser rendering, provider/model semantic quality, future route
+  correctness, live GitHub mutation, or new provider execution.
 
 - 2026-07-06 Tau-side DAG viewer link/export contract: `src/tau_coding/run_status.py`
   now discovers project-DAG artifact roots where `dag-contract.json` lives at

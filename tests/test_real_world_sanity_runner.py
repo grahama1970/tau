@@ -720,6 +720,15 @@ def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     assert provider_metadata.output_receipt == (
         tmp_path / "provider-metadata-project-dag" / "run" / "dag-receipt.json"
     )
+    viewer_link = by_id["advanced.project_dag_viewer_link_exports"]
+    assert viewer_link.expected_status == "PASS"
+    assert viewer_link.expected_verdict is None
+    assert viewer_link.output_receipt is None
+    viewer_script = " ".join(viewer_link.command)
+    assert "dag-viewer-link" in viewer_script
+    assert str(tmp_path / "provider-metadata-project-dag" / "dag-contract.json") in (
+        viewer_script
+    )
 
     missing_gate = by_id["advanced.project_dag_itar_access_gate_missing_fail_closed"]
     assert missing_gate.expected_status == "BLOCKED"

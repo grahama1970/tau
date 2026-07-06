@@ -1452,6 +1452,33 @@ def build_checks(
             output_receipt=project_dag_provider_metadata["run_dir"] / "dag-receipt.json",
         ),
         Check(
+            check_id="advanced.project_dag_viewer_link_exports",
+            level="advanced",
+            purpose=(
+                "Tau exports a read-only DAG viewer link from a real local project-DAG "
+                "contract and receipt, with artifact hashes and non-claims."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                dag_viewer_link_after_project_dag_command(
+                    producer_command=[
+                        *uv_tau,
+                        "dag-run",
+                        str(project_dag_provider_metadata["contract"]),
+                        "--receipt-dir",
+                        str(project_dag_provider_metadata["run_dir"]),
+                        "--agents-root",
+                        str(project_dag_provider_metadata["agents_root"]),
+                    ],
+                    status_command_prefix=[*uv_tau, "run-status"],
+                    viewer_link_command_prefix=[*uv_tau, "dag-viewer-link"],
+                ),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+        ),
+        Check(
             check_id="advanced.project_dag_itar_access_gate_missing_fail_closed",
             level="advanced",
             purpose=(
@@ -5208,6 +5235,67 @@ def run_status_after_json_command(
             "sys.stderr.write(second.stderr)",
             "sys.stdout.write(second.stdout)",
             "raise SystemExit(second.returncode)",
+        ]
+    )
+
+
+def dag_viewer_link_after_project_dag_command(
+    *,
+    producer_command: list[str],
+    status_command_prefix: list[str],
+    viewer_link_command_prefix: list[str],
+) -> str:
+    return "\n".join(
+        [
+            "import json, subprocess, sys",
+            f"producer = {producer_command!r}",
+            f"status_prefix = {status_command_prefix!r}",
+            f"viewer_prefix = {viewer_link_command_prefix!r}",
+            "first = subprocess.run(producer, text=True, capture_output=True)",
+            "sys.stderr.write(first.stderr)",
+            "if first.returncode != 0:",
+            "    sys.stdout.write(first.stdout)",
+            "    raise SystemExit(first.returncode)",
+            "dag_payload = json.loads(first.stdout)",
+            "run_dir = dag_payload.get('run_dir')",
+            "if not isinstance(run_dir, str) or not run_dir:",
+            "    print(json.dumps({'schema': 'tau.real_world_sanity_dag_viewer_check.v1', 'status': 'BLOCKED', 'mocked': False, 'live': True, 'provider_live': False, 'errors': ['dag-run output did not include run_dir']}))",
+            "    raise SystemExit(1)",
+            "status_result = subprocess.run([*status_prefix, run_dir], text=True, capture_output=True)",
+            "sys.stderr.write(status_result.stderr)",
+            "if status_result.returncode != 0:",
+            "    sys.stdout.write(status_result.stdout)",
+            "    raise SystemExit(status_result.returncode)",
+            "status_payload = json.loads(status_result.stdout)",
+            "link_result = subprocess.run([*viewer_prefix, run_dir], text=True, capture_output=True)",
+            "sys.stderr.write(link_result.stderr)",
+            "if link_result.returncode != 0:",
+            "    sys.stdout.write(link_result.stdout)",
+            "    raise SystemExit(link_result.returncode)",
+            "link_payload = json.loads(link_result.stdout)",
+            "errors = []",
+            "status_viewer = status_payload.get('dag_viewer') if isinstance(status_payload, dict) else None",
+            "link_viewer = link_payload.get('dag_viewer') if isinstance(link_payload, dict) else None",
+            "if not isinstance(status_viewer, dict) or status_viewer.get('available') is not True:",
+            "    errors.append('run-status dag_viewer.available was not true')",
+            "if not isinstance(link_viewer, dict) or link_viewer.get('available') is not True:",
+            "    errors.append('dag-viewer-link dag_viewer.available was not true')",
+            "if isinstance(status_viewer, dict) and isinstance(link_viewer, dict):",
+            "    for key in ('url', 'contract_sha256', 'receipt_sha256', 'dag_id', 'goal_hash', 'receipt_status'):",
+            "        if status_viewer.get(key) != link_viewer.get(key):",
+            "            errors.append(f'dag viewer {key} mismatch: {status_viewer.get(key)!r} != {link_viewer.get(key)!r}')",
+            "    if not str(status_viewer.get('url') or '').startswith('http://localhost:3002/#tau/dag?run='):",
+            "        errors.append('viewer URL did not use the Tau DAG route')",
+            "    if not status_viewer.get('contract_sha256'):",
+            "        errors.append('contract_sha256 missing')",
+            "    if not status_viewer.get('receipt_sha256'):",
+            "        errors.append('receipt_sha256 missing')",
+            "if status_payload.get('detected_type') != 'project_dag':",
+            "    errors.append(f\"run-status detected_type {status_payload.get('detected_type')!r}, expected 'project_dag'\")",
+            "if errors:",
+            "    print(json.dumps({'schema': 'tau.real_world_sanity_dag_viewer_check.v1', 'status': 'BLOCKED', 'mocked': False, 'live': True, 'provider_live': False, 'errors': errors, 'run_status': status_payload, 'dag_viewer_link': link_payload}, sort_keys=True))",
+            "    raise SystemExit(1)",
+            "sys.stdout.write(json.dumps(status_payload, indent=2, sort_keys=True))",
         ]
     )
 
