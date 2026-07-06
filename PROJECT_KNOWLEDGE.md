@@ -1,9 +1,28 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:58 EDT by agent
+**Last updated:** 2026-07-06 18:08 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 OMP worker example rung:
+  `examples/omp-worker/` adds a copyable Tau validation example for bounded
+  `oh-my-pi` worker results. The example writes a `tau.executor.omp.v1` work
+  order with zero-trust/high-stakes substrate metadata, validates a
+  `tau.omp_worker_result.v1` artifact through `uv run tau omp-worker-validate`,
+  and writes `tau.omp_worker_example_receipt.v1`. By default the worker result
+  is a fixture and the demo marks `mocked:true`, `live:false`; setting
+  `OMP_WORKER_RESULT=/path/to/result.json` validates an external worker
+  artifact instead. Proof: `bash -n examples/omp-worker/run.sh` -> pass;
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-example-proof` exited 0 and
+  wrote `/tmp/tau-omp-worker-example-proof/demo-receipt.json` with
+  `schema:"tau.omp_worker_example_receipt.v1"`, `status:"PASS"`, `ok:true`,
+  `mocked:true`, `live:false`, `provider_live:false`,
+  `worker_receipt_schema:"tau.omp_worker_receipt.v1"`, and
+  `worker_result_source:"fixture"`. This proves the copyable OMP-shaped worker
+  validation path; it does not prove Tau launched OMP, OMP performed live
+  coding work, semantic code correctness, provider/model quality, or legal
+  compliance.
 
 - 2026-07-06 GitHub read-scheme coding receipt rung:
   `src/tau_coding/github_read_schemes.py` adds

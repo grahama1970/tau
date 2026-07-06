@@ -1,0 +1,12 @@
+{
+  "schema": "tau.omp_worker_example_receipt.v1",
+  "status": "PASS",
+  "expected_inner_receipt_schema": "tau.omp_worker_receipt.v1",
+  "expected_inner_status": "PASS",
+  "does_not_prove": [
+    "Tau launched OMP.",
+    "OMP performed live coding work.",
+    "The code is semantically correct.",
+    "Provider/model semantic quality."
+  ]
+}
