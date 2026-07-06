@@ -389,7 +389,14 @@ Run a bounded DAG through the product command:
 ```bash
 uv run tau run <dag-spec.json>
 uv run tau run-status <run-dir>
+uv run tau dag-viewer-link <run-dir>
 ```
+
+For project DAG runs, `run-status` includes a read-only `dag_viewer` contract
+when it can find both the DAG contract and `tau.dag_receipt.v1`. The viewer URL
+uses the local UX route `http://localhost:3002/#tau/dag?run=<encoded-run-dir>`
+and is an artifact pointer only: it does not prove browser rendering, provider
+semantic quality, GitHub mutation, or future route correctness.
 
 Build a local proof index when you need a machine-readable ledger over receipt
 artifacts:

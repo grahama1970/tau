@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 RUN_STATUS_SCHEMA = "tau.run_status.v1"
+DAG_VIEWER_LINK_SCHEMA = "tau.dag_viewer_link.v1"
+DEFAULT_TAU_DAG_VIEWER_BASE_URL = "http://localhost:3002/#tau/dag"
 
 
 def build_run_status(run_dir: Path) -> dict[str, Any]:
@@ -51,6 +55,12 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     readiness_records = _load_readiness_records(resolved, runtime_manifest, run_receipt)
     events_path = _event_path(resolved, run_receipt, runtime_manifest)
     events_count = _events_count(events_path)
+    dag_viewer = _dag_viewer_summary(
+        resolved,
+        project_dag_receipt,
+        contract_path=artifacts["project_dag_contract"],
+        receipt_path=artifacts["project_dag_receipt"],
+    )
     detected_type = _detected_type(
         run_receipt,
         project_dag_receipt,
@@ -138,6 +148,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "detected_type": detected_type,
         "artifacts": {name: str(path) for name, path in artifacts.items() if path.exists()},
         "missing_required_artifacts": missing,
+        "dag_viewer": dag_viewer,
         "run_receipt": _receipt_summary(run_receipt),
         "project_dag": _project_dag_summary(project_dag_receipt),
         "evidence_validation": _evidence_validation_summary(evidence_validation),
@@ -198,10 +209,64 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     return receipt
 
 
+def build_dag_viewer_link(run_dir: Path) -> dict[str, Any]:
+    """Return the Tau DAG viewer URL contract for a run directory."""
+
+    resolved = run_dir.expanduser().resolve()
+    artifacts = _artifact_paths(resolved)
+    receipt = _read_optional_json(artifacts["project_dag_receipt"])
+    summary = _dag_viewer_summary(
+        resolved,
+        receipt,
+        contract_path=artifacts["project_dag_contract"],
+        receipt_path=artifacts["project_dag_receipt"],
+    )
+    available = bool(summary and summary.get("available") is True)
+    return {
+        "schema": DAG_VIEWER_LINK_SCHEMA,
+        "ok": available,
+        "status": "PASS" if available else "MISSING",
+        "mocked": False,
+        "live": available,
+        "provider_live": bool(summary.get("provider_live")) if summary else False,
+        "run_dir": str(resolved),
+        "dag_viewer": summary,
+        "proof_scope": {
+            "proves": [
+                "Tau can derive a DAG viewer URL from local DAG contract and receipt artifacts",
+                "Tau does not mutate the DAG, route, provider state, Herdr state, or GitHub state to create the viewer link",
+            ],
+            "does_not_prove": [
+                "browser rendering",
+                "provider/model semantic quality",
+                "future route correctness",
+                "live GitHub mutation",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+
+
 def _artifact_paths(run_dir: Path) -> dict[str, Path]:
     return {
         "run_receipt": run_dir / "run-receipt.json",
-        "project_dag_receipt": run_dir / "dag-receipt.json",
+        "project_dag_contract": _first_existing_path(
+            [
+                run_dir / "dag-contract.json",
+                run_dir / "project-dag-contract.json",
+                run_dir / "contract" / "dag-contract.json",
+                run_dir.parent / "dag-contract.json" if run_dir.name == "run" else None,
+                run_dir.parent / "project-dag-contract.json" if run_dir.name == "run" else None,
+            ],
+            fallback=run_dir / "dag-contract.json",
+        ),
+        "project_dag_receipt": _first_existing_path(
+            [
+                run_dir / "dag-receipt.json",
+                run_dir / "run" / "dag-receipt.json",
+            ],
+            fallback=run_dir / "dag-receipt.json",
+        ),
         "evidence_validation": run_dir / "evidence-validation-receipt.json",
         "runtime_manifest": run_dir / "runtime-manifest.json",
         "checkpoint": run_dir / "checkpoint.json",
@@ -228,6 +293,13 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "github_handoff_transport": run_dir / "github-transport-missing-policy-receipt.json",
         "research_source": run_dir / "research-source-receipt.json",
     }
+
+
+def _first_existing_path(candidates: list[Path | None], *, fallback: Path) -> Path:
+    for candidate in candidates:
+        if candidate is not None and candidate.exists():
+            return candidate
+    return fallback
 
 
 def _missing_required_artifact(
@@ -583,6 +655,8 @@ def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
 def _project_dag_goal_hash(payload: dict[str, Any]) -> Any:
     if payload.get("goal_hash"):
         return payload.get("goal_hash")
+    if payload.get("active_goal_hash"):
+        return payload.get("active_goal_hash")
     goal = payload.get("goal")
     if isinstance(goal, dict):
         return goal.get("goal_hash")
@@ -1277,6 +1351,50 @@ def _browser_cdp_proof_summary(payload: dict[str, Any]) -> dict[str, Any] | None
         "receipt_artifact": artifacts.get("receipt"),
         "screenshot_artifact": artifacts.get("screenshot_png"),
         "errors": payload.get("errors"),
+    }
+
+
+def _dag_viewer_summary(
+    run_dir: Path,
+    project_dag_receipt: dict[str, Any],
+    *,
+    contract_path: Path,
+    receipt_path: Path,
+) -> dict[str, Any]:
+    contract_exists = contract_path.exists()
+    receipt_exists = receipt_path.exists()
+    available = (
+        contract_exists
+        and receipt_exists
+        and project_dag_receipt.get("schema") == "tau.dag_receipt.v1"
+    )
+    base_url = os.environ.get("TAU_DAG_VIEWER_BASE_URL", DEFAULT_TAU_DAG_VIEWER_BASE_URL)
+    run_arg = quote(str(run_dir), safe="")
+    viewer_url = f"{base_url}?run={run_arg}"
+    return {
+        "schema": DAG_VIEWER_LINK_SCHEMA,
+        "available": available,
+        "url": viewer_url if available else None,
+        "viewer_route": base_url,
+        "run_query": str(run_dir),
+        "source": "dag-contract.json + dag-receipt.json" if available else "missing_dag_artifacts",
+        "mocked": bool(project_dag_receipt.get("mocked", False)) if available else False,
+        "live": project_dag_receipt.get("live") if available else False,
+        "provider_live": bool(project_dag_receipt.get("provider_live", False)) if available else False,
+        "contract_path": str(contract_path) if contract_exists else None,
+        "contract_sha256": _file_sha256(contract_path) if contract_exists else None,
+        "receipt_path": str(receipt_path) if receipt_exists else None,
+        "receipt_sha256": _file_sha256(receipt_path) if receipt_exists else None,
+        "dag_id": project_dag_receipt.get("dag_id") if available else None,
+        "goal_hash": _project_dag_goal_hash(project_dag_receipt) if available else None,
+        "receipt_status": project_dag_receipt.get("status") if available else None,
+        "receipt_verdict": project_dag_receipt.get("verdict") if available else None,
+        "does_not_prove": [
+            "browser rendering",
+            "provider/model semantic quality",
+            "future route correctness",
+            "GitHub mutation",
+        ],
     }
 
 

@@ -1467,6 +1467,69 @@ def test_run_status_summarizes_project_dag_evidence_validation_failure(
     }
 
 
+def test_run_status_exports_dag_viewer_link_for_project_dag_run_root(
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "dag-contract.json"
+    receipt_path = tmp_path / "run" / "dag-receipt.json"
+    _write_json(
+        contract_path,
+        {
+            "schema": "tau.dag_contract.v1",
+            "dag_id": "project-dag-viewer",
+            "goal": {"goal_hash": "sha256:goal"},
+            "target": {"repo": "grahama1970/tau", "target": "scratch"},
+            "entry_node": "coder",
+            "terminal_nodes": ["human"],
+            "nodes": [],
+            "edges": [],
+        },
+    )
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.dag_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "verdict": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "dag_id": "project-dag-viewer",
+            "active_goal_hash": "sha256:goal",
+            "target": {"repo": "grahama1970/tau", "target": "scratch"},
+            "observed_edges": [{"from": "coder", "to": "human"}],
+            "node_attempts": {"coder": 1},
+            "errors": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["detected_type"] == "project_dag"
+    assert status["missing_required_artifacts"] == []
+    assert status["artifacts"]["project_dag_contract"] == str(contract_path)
+    assert status["artifacts"]["project_dag_receipt"] == str(receipt_path)
+    assert status["project_dag"]["dag_id"] == "project-dag-viewer"
+    assert status["dag_viewer"]["schema"] == "tau.dag_viewer_link.v1"
+    assert status["dag_viewer"]["available"] is True
+    assert status["dag_viewer"]["source"] == "dag-contract.json + dag-receipt.json"
+    assert status["dag_viewer"]["url"].startswith("http://localhost:3002/#tau/dag?run=")
+    assert "%2F" in status["dag_viewer"]["url"]
+    assert status["dag_viewer"]["contract_path"] == str(contract_path)
+    assert status["dag_viewer"]["receipt_path"] == str(receipt_path)
+    assert status["dag_viewer"]["contract_sha256"] == _sha256(contract_path)
+    assert status["dag_viewer"]["receipt_sha256"] == _sha256(receipt_path)
+    assert status["dag_viewer"]["dag_id"] == "project-dag-viewer"
+    assert status["dag_viewer"]["goal_hash"] == "sha256:goal"
+    assert status["dag_viewer"]["receipt_status"] == "PASS"
+    assert status["dag_viewer"]["mocked"] is False
+    assert status["dag_viewer"]["live"] is True
+    assert status["dag_viewer"]["provider_live"] is False
+
+
 def test_run_status_summarizes_project_dag_command_policy_rejection(
     tmp_path: Path,
 ) -> None:
@@ -1578,3 +1641,7 @@ def test_run_status_summarizes_project_dag_blocking_alerts(
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

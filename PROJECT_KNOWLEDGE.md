@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 11:12 EDT by agent
+**Last updated:** 2026-07-06 12:05 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 Tau-side DAG viewer link/export contract: `src/tau_coding/run_status.py`
+  now discovers project-DAG artifact roots where `dag-contract.json` lives at
+  the root and `run/dag-receipt.json` holds the `tau.dag_receipt.v1`, then
+  exposes a `dag_viewer` object in `uv run tau run-status <run-dir>`.
+  `uv run tau dag-viewer-link <run-dir>` exports the same
+  `tau.dag_viewer_link.v1` contract directly with encoded
+  `http://localhost:3002/#tau/dag?run=<run-dir>` URL, contract/receipt paths,
+  SHA-256 hashes, DAG id, goal hash, receipt status, and explicit non-claims.
+  Focused proof: `uv run ruff check --select I,F src/tau_coding/run_status.py
+  src/tau_coding/cli.py tests/test_run_status.py tests/test_cli.py` passed;
+  `uv run pytest
+  tests/test_run_status.py::test_run_status_exports_dag_viewer_link_for_project_dag_run_root
+  tests/test_cli.py::test_cli_dag_viewer_link_exports_project_dag_viewer_contract
+  -q` reported `2 passed`. Non-mocked local operator proof:
+  `uv run tau run-status
+  experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T131543Z-tau-provider-metadata-propagation-final-20260706/provider-metadata-project-dag`
+  now exits 0 with `detected_type:"project_dag"`, `status:"PASS"`,
+  `dag_viewer.available:true`, real contract/receipt artifact paths, and URL
+  for the local Tau DAG React Flow viewer. This proves Tau can export a
+  deterministic viewer link from local DAG artifacts; it does not prove browser
+  rendering for this command, provider/model semantic quality, future route
+  correctness, live GitHub mutation, or Herdr/provider execution.
 
 - 2026-07-06 Tau DAG React Flow UI inspection slice: UX Lab commit
   `711b9c051` added `http://localhost:3002/#tau/dag` as a read-only Tau DAG

@@ -273,6 +273,59 @@ def test_cli_run_alias_uses_dag_run_zero_trust_gate(tmp_path: Path) -> None:
     assert payload["dag_error"]["recommended_action"]["next_agent"] == "goal-guardian"
 
 
+def test_cli_dag_viewer_link_exports_project_dag_viewer_contract(tmp_path: Path) -> None:
+    contract_path = tmp_path / "dag-contract.json"
+    receipt_path = tmp_path / "run" / "dag-receipt.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_contract.v1",
+                "dag_id": "cli-project-dag-viewer",
+                "goal": {"goal_hash": "sha256:goal"},
+                "target": {"repo": "grahama1970/tau", "target": "scratch"},
+                "entry_node": "coder",
+                "terminal_nodes": ["human"],
+                "nodes": [],
+                "edges": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.dag_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "verdict": "PASS",
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "dag_id": "cli-project-dag-viewer",
+                "goal_hash": "sha256:goal",
+                "observed_edges": [],
+                "node_attempts": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(app, ["dag-viewer-link", str(tmp_path)])
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.dag_viewer_link.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["dag_viewer"]["available"] is True
+    assert payload["dag_viewer"]["url"].startswith("http://localhost:3002/#tau/dag?run=")
+    assert payload["dag_viewer"]["dag_id"] == "cli-project-dag-viewer"
+    assert payload["dag_viewer"]["goal_hash"] == "sha256:goal"
+    assert payload["dag_viewer"]["contract_path"] == str(contract_path.resolve())
+    assert payload["dag_viewer"]["receipt_path"] == str(receipt_path.resolve())
+
+
 def test_cli_handoff_project_writes_dry_run_receipt(tmp_path: Path) -> None:
     handoff_path = tmp_path / "handoff.json"
     receipt_path = tmp_path / "projection" / "receipt.json"

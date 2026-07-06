@@ -167,7 +167,7 @@ from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
-from tau_coding.run_status import build_run_status
+from tau_coding.run_status import build_dag_viewer_link, build_run_status
 from tau_coding.scillm_subagent_gate import validate_scillm_subagent_loop_summary
 from tau_coding.self_fix_repair_loop import write_coder_reviewer_repair_loop
 from tau_coding.self_fix_ticket_repair import run_ticket_repair
@@ -1303,6 +1303,17 @@ def main(
         try:
             run_dir = _parse_run_status_cli_args(positional_args[1:])
             payload = build_run_status(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-viewer-link":
+        try:
+            run_dir = _parse_dag_viewer_link_cli_args(positional_args[1:])
+            payload = build_dag_viewer_link(run_dir)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3074,6 +3085,12 @@ def _parse_approval_gate_check_cli_args(args: list[str]) -> dict[str, object]:
 def _parse_run_status_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau run-status <run-dir>")
+    return Path(args[0])
+
+
+def _parse_dag_viewer_link_cli_args(args: list[str]) -> Path:
+    if len(args) != 1:
+        raise RuntimeError("Usage: tau dag-viewer-link <run-dir>")
     return Path(args[0])
 
 
