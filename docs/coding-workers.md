@@ -151,6 +151,26 @@ future approval lane authorizes commit application. High-risk paths such as
 `.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and
 `package-lock.json` are flagged for approval.
 
+### Debugger Evidence
+
+`tau.debug_session_receipt.v1` records debugger/DAP evidence from a structured
+local session packet. Supported adapter labels are `debugpy`, `lldb-dap`, `dlv`,
+and `node`. The receipt records the target, adapter availability, breakpoints,
+stopped frame, variables, commands, stdout/stderr artifacts, conclusion, and
+non-claims.
+
+CLI:
+
+```bash
+uv run tau debug-session-receipt \
+  --session debug-session.json \
+  --out debug-session-receipt.json
+```
+
+Use `--required` when a missing adapter must block the coding route. The receipt
+does not prove the bug is fixed, the debug conclusion is complete, or the code
+is correct.
+
 ### Orchestration Reliability
 
 `tau.orchestration_reliability_receipt.v1` summarizes whether a DAG run obeyed

@@ -65,6 +65,7 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_campaign,
     run_dag_stress_poc,
 )
+from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
@@ -1768,6 +1769,19 @@ def main(
                 work_order_path=Path(str(options["work_order"])),
                 result_path=Path(str(options["result"])),
                 output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "debug-session-receipt":
+        try:
+            options = _parse_debug_session_receipt_cli_args(positional_args[1:])
+            payload = write_debug_session_receipt(
+                session_path=Path(str(options["session"])),
+                output_path=Path(str(options["out"])),
+                required=bool(options["required"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4504,6 +4518,32 @@ def _parse_worker_validate_cli_args(args: list[str], *, command: str) -> dict[st
         raise RuntimeError(
             f"Usage: tau {command} --work-order <json> --result <json> --out <receipt>"
         )
+    return options
+
+
+def _parse_debug_session_receipt_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"session": None, "out": None, "required": False}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--session", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--session="):
+            options["session"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg == "--required":
+            options["required"] = True
+        else:
+            raise RuntimeError(f"unknown debug-session-receipt option: {arg}")
+        index += 1
+    if not _optional_str(options.get("session")):
+        raise RuntimeError("Usage: tau debug-session-receipt --session <json> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau debug-session-receipt --session <json> --out <receipt>")
     return options
 
 

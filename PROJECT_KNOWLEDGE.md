@@ -1,9 +1,27 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:50 EDT by agent
+**Last updated:** 2026-07-06 17:53 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debugger/DAP coding evidence rung:
+  `src/tau_coding/debug_session_receipt.py` adds
+  `tau.debug_session_packet.v1` input packets and
+  `tau.debug_session_receipt.v1` receipts for structured local debugger
+  evidence. The receipt records target, adapter, adapter availability,
+  breakpoints, stopped frame, variables, commands, stdout/stderr paths,
+  conclusion, and explicit non-claims. `src/tau_coding/cli.py` exposes
+  `uv run tau debug-session-receipt --session <json> --out <receipt>` with
+  `--required` to block when the adapter is unavailable. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py src/tau_coding/cli.py
+  tests/test_debug_session_receipt.py` -> pass; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `5 passed in 0.48s`. This proves
+  deterministic local debugger receipt generation and CLI wiring for structured
+  session packets; it does not prove a live DAP adapter was launched, the bug is
+  fixed, the debug conclusion is semantically complete, code correctness,
+  provider/model quality, or legal compliance.
 
 - 2026-07-06 OMP/SciLLM coding worker validation rung:
   `src/tau_coding/coding_worker_adapters.py` adds `tau.executor.omp.v1`,
