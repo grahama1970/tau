@@ -216,17 +216,17 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "debug-session receipts",
             "GitHub read receipts",
             "OMP/SciLLM worker validation receipts",
-            "OMP/SciLLM dry-run launch receipts",
+            "OMP/SciLLM dry-run and bounded apply launch receipts",
             "orchestration reliability receipts",
         ],
         "proof_scope": {
             "proves": [
                 "Tau's focused coding receipt tests pass in this checkout.",
                 "Tau's copyable coding and worker examples produce parseable receipts.",
-                "Tau records dry-run worker launch requests without trusting worker execution.",
+                "Tau records worker launch requests without trusting worker execution.",
             ],
             "does_not_prove": [
-                "Live OMP or SciLLM worker execution.",
+                "Live OMP or SciLLM semantic worker execution.",
                 "Provider/model semantic quality.",
                 "Semantic code correctness.",
                 "GitHub mutation.",

@@ -326,6 +326,14 @@ uv run tau scillm-worker-validate \
 uv run tau scillm-worker-launch \
   --work-order scillm-work-order.json \
   --out scillm-worker-launch-receipt.json
+
+uv run tau scillm-worker-launch \
+  --work-order scillm-work-order.json \
+  --out scillm-worker-launch-receipt.json \
+  --scillm-base-url http://localhost:4001 \
+  --apply \
+  --auth-token "$SCILLM_MASTER_KEY" \
+  --request-timeout-s 650
 ```
 
 For OMP coding delegates, Tau uses the documented process-isolated RPC surface:
@@ -346,11 +354,20 @@ changed, or code is correct. A worker result must still pass
 For SciLLM coding delegates, Tau should use the OpenCode serve surface
 (`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
 `scillm-debugger`, not chat completions, raw OpenCode ports, or `opencode-go/*`
-model strings as the `agent`. `scillm-worker-launch` is currently a dry-run
+model strings as the `agent`. By default, `scillm-worker-launch` is a dry-run
 launcher receipt: it builds the exact `POST /v1/scillm/opencode/runs` payload,
 redacts the required auth header, records `x_caller_skill`, and blocks wrong
-surfaces/endpoints before any external call. It does not prove Tau called
-SciLLM, OpenCode serve accepted the request, the worker ran, or code changed.
+surfaces/endpoints before any external call.
+
+With `--apply`, `scillm-worker-launch` posts the bounded request to the
+configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the
+receipt, and records `http_executed`, `http_status`, `response_path`,
+`run_id`, `session_id`, `scillm_run_status`, and response artifacts. Apply mode
+requires `--auth-token`; the token is never written to the receipt. This proves
+only that Tau sent the bounded request to the configured SciLLM endpoint and
+captured its response. It does not prove OpenCode served the request
+correctly, a worker result artifact is valid, code changed, or code is correct.
+A worker result must still pass `scillm-worker-validate`.
 
 Copyable examples:
 
@@ -393,7 +410,9 @@ uv run tau scillm-worker-launch \
   --out scillm-worker-launch-receipt.json
 ```
 
-Neither validation nor dry-run launch proves live SciLLM/OpenCode execution.
+Dry-run launch does not prove live SciLLM execution. Apply launch proves only
+that Tau posted to the configured SciLLM endpoint and captured the response; it
+does not replace result validation.
 
 ## Non-Claims
 

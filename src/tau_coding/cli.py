@@ -1816,6 +1816,8 @@ def main(
                 scillm_base_url=str(options["scillm_base_url"]),
                 caller_skill=str(options["caller_skill"]),
                 apply=bool(options["apply"]),
+                auth_token=_optional_str(options.get("auth_token")),
+                request_timeout_s=int(options["request_timeout_s"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4702,15 +4704,25 @@ def _parse_scillm_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
         "scillm_base_url": "http://localhost:4001",
         "caller_skill": "tau",
         "apply": False,
+        "auth_token": None,
+        "request_timeout_s": 650,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--work-order", "--out", "--scillm-base-url", "--caller-skill"}:
+        if arg in {
+            "--work-order",
+            "--out",
+            "--scillm-base-url",
+            "--caller-skill",
+            "--auth-token",
+            "--request-timeout-s",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = int(args[index]) if key == "request_timeout_s" else args[index]
         elif arg.startswith("--work-order="):
             options["work_order"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
@@ -4719,6 +4731,10 @@ def _parse_scillm_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
             options["scillm_base_url"] = arg.partition("=")[2]
         elif arg.startswith("--caller-skill="):
             options["caller_skill"] = arg.partition("=")[2]
+        elif arg.startswith("--auth-token="):
+            options["auth_token"] = arg.partition("=")[2]
+        elif arg.startswith("--request-timeout-s="):
+            options["request_timeout_s"] = int(arg.partition("=")[2])
         elif arg == "--apply":
             options["apply"] = True
         else:

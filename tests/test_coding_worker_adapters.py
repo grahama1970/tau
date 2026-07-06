@@ -1,5 +1,7 @@
 import json
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 
 from typer.testing import CliRunner
 
@@ -421,6 +423,154 @@ def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) ->
     assert payload["request_payload"]["scillm_metadata"]["goal_hash"] == "sha256:goal"
 
 
+def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path: Path) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+            "skills": ["memory", "debugger", "scillm"],
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            caller_skill="tau-test",
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "PASS"
+    assert payload["dry_run"] is False
+    assert payload["live"] is True
+    assert payload["provider_live"] is False
+    assert payload["http_executed"] is True
+    assert payload["http_status"] == 200
+    assert payload["response_schema"] == "scillm.opencode_serve.run.v1"
+    assert payload["run_id"] == "run-123"
+    assert payload["session_id"] == "sess-123"
+    assert payload["scillm_run_status"] == "completed"
+    assert payload["response_artifacts"] == ["events.jsonl"]
+    assert payload["response_path"]
+    response_payload = json.loads(Path(payload["response_path"]).read_text(encoding="utf-8"))
+    assert response_payload["run_id"] == "run-123"
+    assert requests[0]["path"] == "/v1/scillm/opencode/runs"
+    assert requests[0]["authorization"] == "Bearer test-token"
+    assert requests[0]["caller_skill"] == "tau-test"
+    assert requests[0]["payload"]["agent"] == "build"
+    assert requests[0]["payload"]["skills"] == ["memory", "debugger", "scillm"]
+    assert "test-token" not in json.dumps(payload)
+
+
+def test_scillm_worker_launch_apply_requires_auth_token(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+        apply=True,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "missing_scillm_auth_token" in payload["alert_codes"]
+
+
+def test_scillm_worker_launch_apply_skips_http_when_route_blocks(tmp_path: Path) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "chat",
+            "endpoint": "/v1/chat/completions",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "invalid_scillm_surface" in payload["alert_codes"]
+    assert requests == []
+
+
+def test_cli_scillm_worker_launch_apply_records_http_receipt(tmp_path: Path) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    out = tmp_path / "launch-receipt.json"
+    try:
+        result = CliRunner().invoke(
+            app,
+            [
+                "scillm-worker-launch",
+                "--work-order",
+                str(work_order),
+                "--out",
+                str(out),
+                "--scillm-base-url",
+                base_url,
+                "--caller-skill",
+                "tau-test",
+                "--apply",
+                "--auth-token",
+                "test-token",
+                "--request-timeout-s",
+                "5",
+            ],
+        )
+    finally:
+        server.shutdown()
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["dry_run"] is False
+    assert payload["http_executed"] is True
+    assert payload["http_status"] == 200
+    assert requests[0]["authorization"] == "Bearer test-token"
+
+
 def test_scillm_worker_launch_blocks_chat_model_as_agent(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -616,6 +766,46 @@ def _write_fake_omp(tmp_path: Path, *, marker: Path | None = None) -> Path:
     )
     script.chmod(0o755)
     return script
+
+
+def _start_fake_scillm_server() -> tuple[ThreadingHTTPServer, str, list[dict]]:
+    requests: list[dict] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            length = int(self.headers.get("Content-Length", "0"))
+            body = self.rfile.read(length).decode("utf-8")
+            requests.append(
+                {
+                    "path": self.path,
+                    "authorization": self.headers.get("Authorization"),
+                    "caller_skill": self.headers.get("X-Caller-Skill"),
+                    "payload": json.loads(body),
+                }
+            )
+            response = {
+                "schema": "scillm.opencode_serve.run.v1",
+                "run_id": "run-123",
+                "session_id": "sess-123",
+                "status": "completed",
+                "assistant_text": "fixture response",
+                "artifacts": ["events.jsonl"],
+            }
+            encoded = json.dumps(response, sort_keys=True).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+    return server, f"http://{host}:{port}", requests
 
 
 def _write_result(

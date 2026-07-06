@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:12 EDT by agent
+**Last updated:** 2026-07-06 23:25 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -14,12 +14,13 @@
   `uv run ruff check --select I,F,E501
   scripts/run-coding-capability-sanity.py` -> pass;
   `scripts/run-coding-capability-sanity.py --run-dir
-  /tmp/tau-coding-capability-sanity-proof-final` exited 0 and wrote
-  `/tmp/tau-coding-capability-sanity-proof-final/coding-capability-sanity-receipt.json`
+  /tmp/tau-coding-capability-sanity-scillm-apply-final` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-scillm-apply-final/coding-capability-sanity-receipt.json`
   with `status:"PASS"`, `check_count:8`, and `failed_check_count:0`.
-  The embedded focused pytest command reports `87 passed in 0.77s`. This
+  The embedded focused pytest command reports `94 passed in 2.38s`. This
   proves the current local coding receipt tests and copyable examples compose
-  into one deterministic audit artifact; it does not prove live OMP/SciLLM
+  into one deterministic audit artifact, including dry-run and bounded apply
+  worker-launch receipt tests; it does not prove live OMP/SciLLM semantic
   worker execution, provider/model semantic quality, semantic code correctness,
   GitHub mutation, human acceptance, or legal compliance.
 
@@ -40,6 +41,27 @@
   the request semantically, a worker result artifact is valid, live coding work
   occurred, semantic code correctness, provider/model quality, or legal
   compliance. `omp-worker-validate` remains the required result gate.
+
+- 2026-07-06 SciLLM worker apply launch receipt rung:
+  `uv run tau scillm-worker-launch --work-order <work-order.json> --out
+  <receipt.json> --scillm-base-url <url> --apply --auth-token <token>
+  --request-timeout-s <seconds>` now posts the bounded work-order request to
+  the configured SciLLM OpenCode-serve endpoint after work-order and route
+  gates pass, writes the response JSON artifact next to the receipt, redacts
+  bearer auth, and records `http_executed`, `http_status`, `response_path`,
+  `run_id`, `session_id`, `scillm_run_status`, and response artifacts.
+  Missing auth and route/preflight alerts block the HTTP call. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `27 passed in 2.12s`.
+  The tests use a deterministic local fake HTTP server, so this proves Tau's
+  apply-mode HTTP request construction, auth redaction, skip-on-block behavior,
+  and response capture; it does not prove a live SciLLM service was used,
+  OpenCode served the request semantically, a worker result artifact is valid,
+  live coding work occurred, semantic code correctness, provider/model quality,
+  or legal compliance. `scillm-worker-validate` remains the required result
+  gate.
 
 - 2026-07-06 OMP worker dry-run launch receipt rung:
   `src/tau_coding/coding_worker_adapters.py` now writes

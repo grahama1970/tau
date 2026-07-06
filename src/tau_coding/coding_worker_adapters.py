@@ -5,6 +5,8 @@ from __future__ import annotations
 import fnmatch
 import json
 import subprocess
+import urllib.error
+import urllib.request
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
@@ -163,10 +165,13 @@ def write_scillm_worker_launch_receipt(
     scillm_base_url: str = "http://localhost:4001",
     caller_skill: str = "tau",
     apply: bool = False,
+    auth_token: str | None = None,
+    request_timeout_s: int = 650,
 ) -> dict[str, Any]:
-    """Write a dry-run SciLLM OpenCode-serve launch request receipt."""
+    """Write a SciLLM OpenCode-serve launch request receipt."""
 
     resolved_work_order = work_order_path.expanduser().resolve()
+    resolved_output = output_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
     if work_order.get("schema") != SCILLM_WORK_ORDER_SCHEMA:
@@ -191,22 +196,38 @@ def write_scillm_worker_launch_receipt(
         alerts.append(
             _alert("chat_model_used_as_agent", "OpenCode serve agent must be an agent profile")
         )
-    if apply:
+    if apply and not auth_token:
         alerts.append(
-            _alert("apply_not_implemented", "live SciLLM worker launch is not implemented")
+            _alert("missing_scillm_auth_token", "apply requires a SciLLM bearer auth token")
         )
 
     request_payload = _scillm_opencode_request_payload(work_order, route)
+    url = f"{scillm_base_url.rstrip('/')}{SCILLM_OPENCODE_SERVE_ENDPOINT}"
+    launch_result = _maybe_post_scillm_opencode_run(
+        apply=apply,
+        url=url,
+        request_payload=request_payload,
+        output_path=resolved_output,
+        caller_skill=caller_skill,
+        auth_token=auth_token,
+        alerts=alerts,
+        request_timeout_s=request_timeout_s,
+    )
     ok = not alerts
     payload = {
         "schema": SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": False,
+        "live": launch_result["http_executed"],
         "provider_live": False,
-        "dry_run": True,
+        "dry_run": not apply,
         "apply_requested": apply,
+        "http_executed": launch_result["http_executed"],
+        "launch_skipped": launch_result["launch_skipped"],
+        "http_status": launch_result["http_status"],
+        "timed_out": launch_result["timed_out"],
+        "request_timeout_s": request_timeout_s,
         "worker_kind": "scillm",
         "work_order_path": str(resolved_work_order),
         "work_order_schema": work_order.get("schema"),
@@ -217,7 +238,7 @@ def write_scillm_worker_launch_receipt(
         "goal_hash": work_order.get("goal_hash"),
         "scillm_base_url": scillm_base_url.rstrip("/"),
         "endpoint": SCILLM_OPENCODE_SERVE_ENDPOINT,
-        "url": f"{scillm_base_url.rstrip('/')}{SCILLM_OPENCODE_SERVE_ENDPOINT}",
+        "url": url,
         "headers": {
             "authorization": "REDACTED_REQUIRED",
             "x_caller_skill": caller_skill,
@@ -225,16 +246,25 @@ def write_scillm_worker_launch_receipt(
         },
         "model_provider_route": route,
         "request_payload": request_payload,
+        "response_path": launch_result["response_path"],
+        "error_path": launch_result["error_path"],
+        "response_schema": launch_result["response_schema"],
+        "run_id": launch_result["run_id"],
+        "session_id": launch_result["session_id"],
+        "scillm_run_status": launch_result["scillm_run_status"],
+        "response_artifacts": launch_result["response_artifacts"],
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
             "proves": [
                 "Tau built a bounded SciLLM OpenCode-serve launch request from a work order.",
                 "Tau checked route metadata before any external SciLLM call.",
+                "When apply=true and gates pass, Tau posted the request to the configured "
+                "SciLLM OpenCode-serve endpoint and captured the response artifact.",
             ],
             "does_not_prove": [
-                "Tau called SciLLM.",
                 "OpenCode serve accepted or ran the request.",
+                "The worker result artifact is valid without scillm-worker-validate.",
                 "The worker is trustworthy.",
                 "The code is semantically correct.",
                 "Provider/model semantic quality.",
@@ -242,7 +272,7 @@ def write_scillm_worker_launch_receipt(
         },
         "timestamp": _utc_stamp(),
     }
-    payload["receipt_path"] = str(output_path.expanduser().resolve())
+    payload["receipt_path"] = str(resolved_output)
     _write_json(output_path, payload)
     return payload
 
@@ -487,6 +517,125 @@ def _maybe_run_omp_rpc_launch(
             "timed_out": False,
             "stdout_path": str(stdout_path),
             "stderr_path": str(stderr_path),
+        }
+    )
+    return result
+
+
+def _maybe_post_scillm_opencode_run(
+    *,
+    apply: bool,
+    url: str,
+    request_payload: Mapping[str, Any],
+    output_path: Path,
+    caller_skill: str,
+    auth_token: str | None,
+    alerts: list[dict[str, Any]],
+    request_timeout_s: int,
+) -> dict[str, Any]:
+    response_path = output_path.with_suffix(output_path.suffix + ".response.json")
+    error_path = output_path.with_suffix(output_path.suffix + ".error.txt")
+    result: dict[str, Any] = {
+        "http_executed": False,
+        "launch_skipped": not apply,
+        "http_status": None,
+        "timed_out": False,
+        "response_path": None,
+        "error_path": None,
+        "response_schema": None,
+        "run_id": None,
+        "session_id": None,
+        "scillm_run_status": None,
+        "response_artifacts": [],
+    }
+    if not apply:
+        return result
+    if alerts:
+        result["launch_skipped"] = True
+        return result
+    if request_timeout_s <= 0:
+        alerts.append(_alert("invalid_timeout", "request_timeout_s must be positive"))
+        result["launch_skipped"] = True
+        return result
+
+    body = json.dumps(request_payload, sort_keys=True).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "Authorization": f"Bearer {auth_token}",
+            "X-Caller-Skill": caller_skill,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=request_timeout_s) as response:
+            response_body = response.read().decode("utf-8", errors="replace")
+            http_status = response.status
+    except TimeoutError:
+        alerts.append(
+            _alert(
+                "scillm_launch_timeout",
+                f"SciLLM OpenCode serve request timed out after {request_timeout_s}s",
+            )
+        )
+        result.update({"http_executed": True, "launch_skipped": False, "timed_out": True})
+        return result
+    except urllib.error.HTTPError as exc:
+        response_body = exc.read().decode("utf-8", errors="replace")
+        error_path.parent.mkdir(parents=True, exist_ok=True)
+        error_path.write_text(response_body, encoding="utf-8")
+        alerts.append(_alert("scillm_http_error", f"SciLLM returned HTTP {exc.code}"))
+        result.update(
+            {
+                "http_executed": True,
+                "launch_skipped": False,
+                "http_status": exc.code,
+                "error_path": str(error_path),
+            }
+        )
+        return result
+    except urllib.error.URLError as exc:
+        error_path.parent.mkdir(parents=True, exist_ok=True)
+        error_path.write_text(str(exc), encoding="utf-8")
+        alerts.append(_alert("scillm_connection_error", f"SciLLM request failed: {exc}"))
+        result.update(
+            {
+                "http_executed": True,
+                "launch_skipped": False,
+                "error_path": str(error_path),
+            }
+        )
+        return result
+
+    response_path.parent.mkdir(parents=True, exist_ok=True)
+    response_path.write_text(response_body, encoding="utf-8")
+    try:
+        response_payload = json.loads(response_body)
+    except json.JSONDecodeError as exc:
+        alerts.append(_alert("scillm_response_not_json", f"SciLLM response is not JSON: {exc}"))
+        response_payload = {}
+    if not isinstance(response_payload, Mapping):
+        alerts.append(_alert("scillm_response_not_object", "SciLLM response root must be object"))
+        response_payload = {}
+
+    run_status = _string(response_payload.get("status"))
+    if run_status and run_status != "completed":
+        alerts.append(_alert("scillm_run_not_completed", f"SciLLM run status is {run_status}"))
+    artifacts = response_payload.get("artifacts")
+    result.update(
+        {
+            "http_executed": True,
+            "launch_skipped": False,
+            "http_status": http_status,
+            "timed_out": False,
+            "response_path": str(response_path),
+            "response_schema": response_payload.get("schema"),
+            "run_id": response_payload.get("run_id"),
+            "session_id": response_payload.get("session_id"),
+            "scillm_run_status": run_status or None,
+            "response_artifacts": artifacts if isinstance(artifacts, list) else [],
         }
     )
     return result
