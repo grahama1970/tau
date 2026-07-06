@@ -7,10 +7,24 @@ WORK_ORDER="${OUT_DIR}/work-order.json"
 RESULT="${OUT_DIR}/omp-result.json"
 RECEIPT="${OUT_DIR}/omp-worker-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
+SANDBOX_RECEIPT="${OUT_DIR}/sandbox-run-receipt.json"
 
 mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${OUT_DIR}/logs"
 printf 'def answer():\n    return 42\n' > "${REPO_DIR}/src/example.py"
 printf 'fixture pytest log\n' > "${OUT_DIR}/logs/pytest.log"
+
+cat > "${SANDBOX_RECEIPT}" <<JSON
+{
+  "schema": "tau.sandbox_run_receipt.v1",
+  "ok": true,
+  "status": "PASS",
+  "mocked": true,
+  "live": false,
+  "provider_live": false,
+  "command_executed": false,
+  "network_egress": "denied"
+}
+JSON
 
 cat > "${WORK_ORDER}" <<JSON
 {
@@ -30,6 +44,7 @@ cat > "${WORK_ORDER}" <<JSON
   "high_stakes": true,
   "zero_trust": true,
   "execution_substrate": "docker-sandbox",
+  "sandbox_receipt_path": "${SANDBOX_RECEIPT}",
   "policy_profile": {
     "schema": "tau.policy_profile.v1",
     "profile_id": "omp-worker-example-zero-trust",

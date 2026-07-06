@@ -1,9 +1,28 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:30 EDT by agent
+**Last updated:** 2026-07-06 18:37 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 worker substrate evidence enforcement rung:
+  `src/tau_coding/coding_worker_adapters.py` now requires high-stakes
+  sandbox-backed worker orders to include an existing `sandbox_receipt_path`,
+  and high-stakes Herdr-backed worker orders to include `herdr_binding` or
+  `herdr_receipt_path`. `local-low-risk` is rejected as a high-stakes worker
+  substrate. `examples/omp-worker/run.sh` now writes a local
+  `tau.sandbox_run_receipt.v1` fixture and binds the worker work order to that
+  path before validation. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `13 passed in 0.42s`;
+  `bash -n examples/omp-worker/run.sh` -> pass;
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-substrate-proof` exited 0
+  and wrote `/tmp/tau-omp-worker-substrate-proof/demo-receipt.json`. This proves
+  deterministic local substrate-evidence gating for external worker validation;
+  it does not prove live Docker/Herdr execution, runtime isolation strength,
+  Tau-launched workers, live OMP/SciLLM coding work, provider/model quality, or
+  legal compliance.
 
 - 2026-07-06 debug-session zero-trust enforcement rung:
   `src/tau_coding/debug_session_receipt.py` now supports zero-trust metadata on

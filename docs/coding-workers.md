@@ -260,7 +260,9 @@ claims without durable logs, public GitHub mutation without policy receipts, and
 external research without research-query/source receipts. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution
 or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
-before Tau accepts the worker result.
+before Tau accepts the worker result. Sandbox substrates must include an
+existing `sandbox_receipt_path`; Herdr substrates must include `herdr_binding`
+or `herdr_receipt_path`.
 
 CLI:
 

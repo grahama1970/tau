@@ -114,6 +114,45 @@ def test_high_stakes_worker_requires_substrate(tmp_path: Path) -> None:
     assert "substrate_required" in payload["alert_codes"]
 
 
+def test_high_stakes_sandbox_worker_requires_sandbox_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        sandbox_receipt_path=None,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "sandbox_receipt_required" in payload["alert_codes"]
+
+
+def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        herdr_binding=None,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_binding_required" in payload["alert_codes"]
+
+
 def test_zero_trust_worker_blocks_missing_policy(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -222,10 +261,33 @@ def _write_work_order(
     execution_substrate: str | None = "docker-sandbox",
     policy_profile: dict | None = {"profile_id": "test-zero-trust"},
     data_boundary: dict | None = {"classification": "public"},
+    sandbox_receipt_path: str | None = "sandbox-receipt.json",
+    herdr_binding: dict | None = {"workspace_id": "w1", "pane_id": "w1:p1"},
     model_provider_route: dict | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir(exist_ok=True)
+    if sandbox_receipt_path is not None:
+        sandbox_receipt = Path(sandbox_receipt_path)
+        if not sandbox_receipt.is_absolute():
+            sandbox_receipt = repo / sandbox_receipt
+        sandbox_receipt.parent.mkdir(parents=True, exist_ok=True)
+        sandbox_receipt.write_text(
+            json.dumps(
+                {
+                    "schema": "tau.sandbox_run_receipt.v1",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": True,
+                    "live": False,
+                    "provider_live": False,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
     payload = {
         "schema": schema,
         "dag_id": "coding-dag",
@@ -249,6 +311,10 @@ def _write_work_order(
         payload["policy_profile"] = policy_profile
     if data_boundary is not None:
         payload["data_boundary"] = data_boundary
+    if sandbox_receipt_path is not None:
+        payload["sandbox_receipt_path"] = sandbox_receipt_path
+    if herdr_binding is not None:
+        payload["herdr_binding"] = herdr_binding
     path = tmp_path / "work-order.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

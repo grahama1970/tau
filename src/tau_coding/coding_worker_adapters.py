@@ -90,10 +90,42 @@ def _write_worker_receipt(
     elif result_goal_hash != goal_hash:
         alerts.append(_alert("goal_hash_mismatch", "worker result goal_hash mismatches work order"))
 
+    repo = _repo_root(work_order)
     substrate = _string(work_order.get("execution_substrate") or work_order.get("substrate"))
     high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
     if high_stakes and substrate not in ALLOWED_SUBSTRATES:
         alerts.append(_alert("substrate_required", "high-stakes worker requires Herdr or sandbox"))
+    if high_stakes and substrate == "local-low-risk":
+        alerts.append(
+            _alert("invalid_high_stakes_substrate", "high-stakes worker cannot use local-low-risk")
+        )
+    if high_stakes and substrate in {"docker", "docker-sandbox", "bubblewrap"}:
+        sandbox_receipt_path = _string(work_order.get("sandbox_receipt_path"))
+        if not sandbox_receipt_path:
+            alerts.append(
+                _alert(
+                    "sandbox_receipt_required",
+                    "high-stakes sandbox worker requires sandbox_receipt_path",
+                )
+            )
+        elif not _path_exists(sandbox_receipt_path, repo):
+            alerts.append(
+                _alert(
+                    "sandbox_receipt_missing",
+                    "high-stakes sandbox worker sandbox_receipt_path does not exist",
+                )
+            )
+    if high_stakes and substrate in {"herdr", "herdr-visible"}:
+        if not (
+            isinstance(work_order.get("herdr_binding"), Mapping)
+            or _string(work_order.get("herdr_receipt_path"))
+        ):
+            alerts.append(
+                _alert(
+                    "herdr_binding_required",
+                    "high-stakes Herdr worker requires herdr_binding or herdr_receipt_path",
+                )
+            )
     if high_stakes and not work_order.get("policy_profile"):
         alerts.append(
             _alert("missing_policy_profile", "zero-trust coding worker requires policy_profile")
@@ -103,7 +135,6 @@ def _write_worker_receipt(
             _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
         )
 
-    repo = _repo_root(work_order)
     allowed_paths = _string_list(work_order.get("allowed_paths"))
     forbidden_paths = _string_list(work_order.get("forbidden_paths"))
     changed_files = _string_list(result.get("changed_files"))
@@ -183,6 +214,9 @@ def _write_worker_receipt(
         "attempt": work_order.get("attempt"),
         "goal_hash": goal_hash,
         "execution_substrate": substrate,
+        "sandbox_receipt_path": work_order.get("sandbox_receipt_path"),
+        "herdr_binding": work_order.get("herdr_binding"),
+        "herdr_receipt_path": work_order.get("herdr_receipt_path"),
         "high_stakes": high_stakes,
         "policy_profile": work_order.get("policy_profile"),
         "data_boundary": work_order.get("data_boundary"),
@@ -274,6 +308,13 @@ def _tests_claim_pass_without_logs(result: Mapping[str, Any], repo: Path | None)
         if not candidate.exists():
             return True
     return False
+
+
+def _path_exists(path: str, repo: Path | None) -> bool:
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute() and repo is not None:
+        candidate = repo / candidate
+    return candidate.exists()
 
 
 def _requested_public_github_mutation(result: Mapping[str, Any]) -> bool:
