@@ -144,3 +144,54 @@ def test_scillm_image_generation_blocks_unsupported_policy_before_subprocess(
     assert receipt["fallback_allowed"] is False
     assert receipt["fallback_performed"] is False
     assert not Path(panel["image_path"]).exists()
+
+
+def test_scillm_image_generation_passes_panel_timeout_to_wrapper(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    captured: dict[str, list[str]] = {}
+
+    class FakeProc:
+        stdout = None
+        stderr = None
+        returncode = 0
+
+        def __init__(self, cmd: list[str], **kwargs) -> None:  # noqa: ANN003
+            captured["cmd"] = cmd
+
+        def poll(self) -> int:
+            return 0
+
+        def communicate(self) -> tuple[str, str]:
+            return "", ""
+
+        def kill(self) -> None:
+            pass
+
+    monkeypatch.setenv("MASTER_KEY", "test-key")
+    monkeypatch.setattr("tau_coding.persona_dream_panel_agent.subprocess.Popen", FakeProc)
+    payload = {
+        "context": {
+            "model_policy": {
+                "provider": "codex",
+                "auth": "codex-oauth",
+                "model": "gpt-2",
+            },
+            "persona_dream_panel": {
+                "panel_id": "panel_active",
+                "run_root": str(tmp_path),
+                "image_path": str(tmp_path / "panel.png"),
+                "visual_review_receipt": str(tmp_path / "visual_review_receipt.json"),
+                "panel_prompt": "Generate a bounded panel.",
+                "scillm_image_timeout_s": "1234",
+            },
+        }
+    }
+    panel = _panel_context(payload)
+
+    _generate_panel_image_with_scillm(panel, tmp_path / "artifacts", payload)
+
+    cmd = captured["cmd"]
+    timeout_index = cmd.index("--timeout-s")
+    assert cmd[timeout_index + 1] == "1234.0"

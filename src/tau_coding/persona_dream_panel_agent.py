@@ -309,6 +309,7 @@ def _generate_panel_image_with_scillm(
     auth = _resolve_scillm_api_key()
     image_auth = image_policy["auth"]
     image_model = image_policy["model"]
+    timeout_s = float(panel.get("scillm_image_timeout_s") or 900)
     cmd = [
         "bash",
         str(SCILLM_SKILL_RUN),
@@ -329,6 +330,8 @@ def _generate_panel_image_with_scillm(
         str(panel.get("scillm_image_quality") or "high"),
         "--caller-skill",
         "tau-persona-dream-panel-creator",
+        "--timeout-s",
+        str(timeout_s),
         "--json",
     ]
     if image_auth == "openai-api-key":
@@ -355,7 +358,6 @@ def _generate_panel_image_with_scillm(
         stderr=subprocess.PIPE,
         text=True,
     )
-    timeout_s = float(panel.get("scillm_image_timeout_s") or 900)
     heartbeat_s = float(panel.get("scillm_stream_heartbeat_s") or 15)
     stdout_tail: list[str] = []
     stderr_tail: list[str] = []
