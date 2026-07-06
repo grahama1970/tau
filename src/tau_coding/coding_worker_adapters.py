@@ -15,6 +15,8 @@ OMP_WORKER_RECEIPT_SCHEMA = "tau.omp_worker_receipt.v1"
 SCILLM_WORK_ORDER_SCHEMA = "tau.executor.scillm_worker.v1"
 SCILLM_WORKER_RESULT_SCHEMA = "tau.scillm_worker_result.v1"
 SCILLM_WORKER_RECEIPT_SCHEMA = "tau.scillm_worker_receipt.v1"
+SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA = "tau.scillm_worker_launch_receipt.v1"
+SCILLM_OPENCODE_SERVE_ENDPOINT = "/v1/scillm/opencode/runs"
 
 ALLOWED_STATUSES = {"PASS", "BLOCKED", "NEEDS_REVIEW"}
 ALLOWED_SUBSTRATES = {
@@ -61,6 +63,97 @@ def write_scillm_worker_receipt(
     )
 
 
+def write_scillm_worker_launch_receipt(
+    *,
+    work_order_path: Path,
+    output_path: Path,
+    scillm_base_url: str = "http://localhost:4001",
+    caller_skill: str = "tau",
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Write a dry-run SciLLM OpenCode-serve launch request receipt."""
+
+    resolved_work_order = work_order_path.expanduser().resolve()
+    alerts: list[dict[str, Any]] = []
+    work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    if work_order.get("schema") != SCILLM_WORK_ORDER_SCHEMA:
+        alerts.append(
+            _alert("invalid_work_order_schema", f"schema must be {SCILLM_WORK_ORDER_SCHEMA}")
+        )
+    _append_work_order_gate_alerts(work_order, alerts)
+    route = _model_provider_route(work_order, {})
+    if route.get("surface") != "opencode_serve":
+        alerts.append(_alert("invalid_scillm_surface", "SciLLM worker must use opencode_serve"))
+    if route.get("endpoint") != SCILLM_OPENCODE_SERVE_ENDPOINT:
+        alerts.append(
+            _alert(
+                "invalid_scillm_endpoint",
+                f"SciLLM worker endpoint must be {SCILLM_OPENCODE_SERVE_ENDPOINT}",
+            )
+        )
+    agent = route.get("agent")
+    if not isinstance(agent, str) or not agent:
+        alerts.append(_alert("missing_scillm_agent_profile", "OpenCode serve agent is required"))
+    elif agent.startswith("opencode-go/"):
+        alerts.append(
+            _alert("chat_model_used_as_agent", "OpenCode serve agent must be an agent profile")
+        )
+    if apply:
+        alerts.append(
+            _alert("apply_not_implemented", "live SciLLM worker launch is not implemented")
+        )
+
+    request_payload = _scillm_opencode_request_payload(work_order, route)
+    ok = not alerts
+    payload = {
+        "schema": SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "dry_run": True,
+        "apply_requested": apply,
+        "worker_kind": "scillm",
+        "work_order_path": str(resolved_work_order),
+        "work_order_schema": work_order.get("schema"),
+        "dag_id": work_order.get("dag_id"),
+        "node_id": work_order.get("node_id"),
+        "agent": work_order.get("agent"),
+        "attempt": work_order.get("attempt"),
+        "goal_hash": work_order.get("goal_hash"),
+        "scillm_base_url": scillm_base_url.rstrip("/"),
+        "endpoint": SCILLM_OPENCODE_SERVE_ENDPOINT,
+        "url": f"{scillm_base_url.rstrip('/')}{SCILLM_OPENCODE_SERVE_ENDPOINT}",
+        "headers": {
+            "authorization": "REDACTED_REQUIRED",
+            "x_caller_skill": caller_skill,
+            "content_type": "application/json",
+        },
+        "model_provider_route": route,
+        "request_payload": request_payload,
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau built a bounded SciLLM OpenCode-serve launch request from a work order.",
+                "Tau checked route metadata before any external SciLLM call.",
+            ],
+            "does_not_prove": [
+                "Tau called SciLLM.",
+                "OpenCode serve accepted or ran the request.",
+                "The worker is trustworthy.",
+                "The code is semantically correct.",
+                "Provider/model semantic quality.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    payload["receipt_path"] = str(output_path.expanduser().resolve())
+    _write_json(output_path, payload)
+    return payload
+
+
 def _write_worker_receipt(
     *,
     work_order_path: Path,
@@ -91,49 +184,9 @@ def _write_worker_receipt(
         alerts.append(_alert("goal_hash_mismatch", "worker result goal_hash mismatches work order"))
 
     repo = _repo_root(work_order)
+    _append_work_order_gate_alerts(work_order, alerts)
     substrate = _string(work_order.get("execution_substrate") or work_order.get("substrate"))
     high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
-    if high_stakes and substrate not in ALLOWED_SUBSTRATES:
-        alerts.append(_alert("substrate_required", "high-stakes worker requires Herdr or sandbox"))
-    if high_stakes and substrate == "local-low-risk":
-        alerts.append(
-            _alert("invalid_high_stakes_substrate", "high-stakes worker cannot use local-low-risk")
-        )
-    if high_stakes and substrate in {"docker", "docker-sandbox", "bubblewrap"}:
-        sandbox_receipt_path = _string(work_order.get("sandbox_receipt_path"))
-        if not sandbox_receipt_path:
-            alerts.append(
-                _alert(
-                    "sandbox_receipt_required",
-                    "high-stakes sandbox worker requires sandbox_receipt_path",
-                )
-            )
-        elif not _path_exists(sandbox_receipt_path, repo):
-            alerts.append(
-                _alert(
-                    "sandbox_receipt_missing",
-                    "high-stakes sandbox worker sandbox_receipt_path does not exist",
-                )
-            )
-    if high_stakes and substrate in {"herdr", "herdr-visible"}:
-        if not (
-            isinstance(work_order.get("herdr_binding"), Mapping)
-            or _string(work_order.get("herdr_receipt_path"))
-        ):
-            alerts.append(
-                _alert(
-                    "herdr_binding_required",
-                    "high-stakes Herdr worker requires herdr_binding or herdr_receipt_path",
-                )
-            )
-    if high_stakes and not work_order.get("policy_profile"):
-        alerts.append(
-            _alert("missing_policy_profile", "zero-trust coding worker requires policy_profile")
-        )
-    if high_stakes and not work_order.get("data_boundary"):
-        alerts.append(
-            _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
-        )
 
     allowed_paths = _string_list(work_order.get("allowed_paths"))
     forbidden_paths = _string_list(work_order.get("forbidden_paths"))
@@ -266,6 +319,99 @@ def _read_json_object(path: Path, alerts: list[dict[str, Any]], label: str) -> d
 def _repo_root(work_order: Mapping[str, Any]) -> Path | None:
     repo = _string(work_order.get("repo"))
     return Path(repo).expanduser().resolve() if repo else None
+
+
+def _append_work_order_gate_alerts(
+    work_order: Mapping[str, Any],
+    alerts: list[dict[str, Any]],
+) -> None:
+    repo = _repo_root(work_order)
+    substrate = _string(work_order.get("execution_substrate") or work_order.get("substrate"))
+    high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
+    if high_stakes and substrate not in ALLOWED_SUBSTRATES:
+        alerts.append(_alert("substrate_required", "high-stakes worker requires Herdr or sandbox"))
+    if high_stakes and substrate == "local-low-risk":
+        alerts.append(
+            _alert("invalid_high_stakes_substrate", "high-stakes worker cannot use local-low-risk")
+        )
+    if high_stakes and substrate in {"docker", "docker-sandbox", "bubblewrap"}:
+        sandbox_receipt_path = _string(work_order.get("sandbox_receipt_path"))
+        if not sandbox_receipt_path:
+            alerts.append(
+                _alert(
+                    "sandbox_receipt_required",
+                    "high-stakes sandbox worker requires sandbox_receipt_path",
+                )
+            )
+        elif not _path_exists(sandbox_receipt_path, repo):
+            alerts.append(
+                _alert(
+                    "sandbox_receipt_missing",
+                    "high-stakes sandbox worker sandbox_receipt_path does not exist",
+                )
+            )
+    if high_stakes and substrate in {"herdr", "herdr-visible"}:
+        if not (
+            isinstance(work_order.get("herdr_binding"), Mapping)
+            or _string(work_order.get("herdr_receipt_path"))
+        ):
+            alerts.append(
+                _alert(
+                    "herdr_binding_required",
+                    "high-stakes Herdr worker requires herdr_binding or herdr_receipt_path",
+                )
+            )
+    if high_stakes and not work_order.get("policy_profile"):
+        alerts.append(
+            _alert("missing_policy_profile", "zero-trust coding worker requires policy_profile")
+        )
+    if high_stakes and not work_order.get("data_boundary"):
+        alerts.append(
+            _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
+        )
+
+
+def _scillm_opencode_request_payload(
+    work_order: Mapping[str, Any],
+    route: Mapping[str, Any],
+) -> dict[str, Any]:
+    skills = route.get("skills")
+    if not isinstance(skills, list) or not all(isinstance(item, str) for item in skills):
+        skills = []
+    return {
+        "prompt": _scillm_worker_prompt(work_order),
+        "agent": route.get("agent"),
+        "skills": skills,
+        "timeout_s": work_order.get("timeout_s", 600),
+        "cleanup_session": True,
+        "cwd": work_order.get("repo"),
+        "scillm_metadata": {
+            "schema": SCILLM_WORK_ORDER_SCHEMA,
+            "dag_id": work_order.get("dag_id"),
+            "node_id": work_order.get("node_id"),
+            "attempt": work_order.get("attempt"),
+            "goal_hash": work_order.get("goal_hash"),
+            "result_path": work_order.get("result_path"),
+            "receipt_path": work_order.get("receipt_path"),
+        },
+    }
+
+
+def _scillm_worker_prompt(work_order: Mapping[str, Any]) -> str:
+    allowed_paths = ", ".join(_string_list(work_order.get("allowed_paths"))) or "(none)"
+    forbidden_paths = ", ".join(_string_list(work_order.get("forbidden_paths"))) or "(none)"
+    required_artifacts = ", ".join(_string_list(work_order.get("required_artifacts"))) or "(none)"
+    return "\n".join(
+        [
+            "You are an untrusted coding worker running under Tau.",
+            f"Task: {_string(work_order.get('task')) or ''}",
+            f"Goal hash: {_string(work_order.get('goal_hash')) or ''}",
+            f"Allowed paths: {allowed_paths}",
+            f"Forbidden paths: {forbidden_paths}",
+            f"Required artifacts: {required_artifacts}",
+            "Return structured evidence for Tau validation; do not claim closure from prose.",
+        ]
+    )
 
 
 def _missing_required_artifacts(

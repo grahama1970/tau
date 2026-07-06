@@ -1,9 +1,27 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:21 EDT by agent
+**Last updated:** 2026-07-06 18:27 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 SciLLM worker dry-run launch receipt rung:
+  `src/tau_coding/coding_worker_adapters.py` now writes
+  `tau.scillm_worker_launch_receipt.v1` from a
+  `tau.executor.scillm_worker.v1` work order. The new
+  `uv run tau scillm-worker-launch --work-order <work-order.json> --out
+  <receipt.json>` command builds the exact dry-run
+  `POST /v1/scillm/opencode/runs` payload, records redacted auth and
+  `x_caller_skill`, rejects chat surfaces, wrong endpoints, missing OpenCode
+  agent profiles, and `opencode-go/*` model strings used as the `agent`, then
+  exits before any external SciLLM call. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  src/tau_coding/cli.py tests/test_coding_worker_adapters.py` -> pass;
+  `uv run pytest tests/test_coding_worker_adapters.py -q` -> `17 passed in
+  0.39s`. This proves deterministic local launch-request construction and
+  route fail-closed checks; it does not prove Tau called SciLLM, OpenCode serve
+  accepted or ran the request, live coding work occurred, semantic code
+  correctness, provider/model quality, or legal compliance.
 
 - 2026-07-06 SciLLM worker example rung:
   `examples/scillm-worker/` adds a copyable Tau validation example for bounded

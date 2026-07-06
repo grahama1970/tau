@@ -263,6 +263,9 @@ Current validation adapters:
 - `tau.executor.omp.v1` work orders validated into `tau.omp_worker_receipt.v1`
 - `tau.executor.scillm_worker.v1` work orders validated into
   `tau.scillm_worker_receipt.v1`
+- `tau.executor.scillm_worker.v1` work orders converted into dry-run
+  `tau.scillm_worker_launch_receipt.v1` launch requests for SciLLM OpenCode
+  serve
 
 These adapters reject missing results, invalid schemas, prose-only results,
 goal-hash drift, disallowed file changes, missing required artifacts, PASS test
@@ -286,13 +289,20 @@ uv run tau scillm-worker-validate \
   --work-order scillm-work-order.json \
   --result scillm-result.json \
   --out scillm-worker-receipt.json
+
+uv run tau scillm-worker-launch \
+  --work-order scillm-work-order.json \
+  --out scillm-worker-launch-receipt.json
 ```
 
 For SciLLM coding delegates, Tau should use the OpenCode serve surface
 (`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
-`scillm-debugger`, not chat completions or raw OpenCode ports. The current Tau
-receipt validates the declared model/provider route; it does not prove Tau
-launched the worker.
+`scillm-debugger`, not chat completions, raw OpenCode ports, or `opencode-go/*`
+model strings as the `agent`. `scillm-worker-launch` is currently a dry-run
+launcher receipt: it builds the exact `POST /v1/scillm/opencode/runs` payload,
+redacts the required auth header, records `x_caller_skill`, and blocks wrong
+surfaces/endpoints before any external call. It does not prove Tau called
+SciLLM, OpenCode serve accepted the request, the worker ran, or code changed.
 
 Copyable examples:
 
@@ -314,8 +324,15 @@ worker result. By default it uses a fixture result and marks the demo
 `SCILLM_WORKER_RESULT=/path/to/tau.scillm_worker_result.v1.json` to validate an
 external worker artifact. The work order records the correct coding-delegate
 surface, `/v1/scillm/opencode/runs`, with an OpenCode agent profile such as
-`build`; it does not prove Tau called SciLLM until a separate launcher receipt
-exists.
+`build`; use `scillm-worker-launch` to generate the dry-run launch request:
+
+```bash
+uv run tau scillm-worker-launch \
+  --work-order scillm-work-order.json \
+  --out scillm-worker-launch-receipt.json
+```
+
+Neither validation nor dry-run launch proves live SciLLM/OpenCode execution.
 
 ## Non-Claims
 
@@ -327,6 +344,7 @@ Tau does not claim:
 - LSP or tests prove full safety
 - worker adapters make OMP or SciLLM trusted
 - worker validation proves Tau launched the worker
+- SciLLM dry-run launch receipts prove live OpenCode execution
 - GitHub read receipts authorize mutation
 - policy/data-boundary gates are legal compliance
 
