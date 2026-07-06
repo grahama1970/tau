@@ -720,6 +720,19 @@ def test_build_checks_registers_itar_containment_dag_and_demo_checks(
     assert provider_metadata.output_receipt == (
         tmp_path / "provider-metadata-project-dag" / "run" / "dag-receipt.json"
     )
+    gpt2_image = by_id["advanced.project_dag_gpt2_oauth_image_generates"]
+    assert gpt2_image.expected_status == "PASS"
+    assert gpt2_image.expected_provider_live is True
+    assert gpt2_image.timeout_seconds >= 240
+    assert gpt2_image.output_receipt == (
+        tmp_path
+        / "gpt2-oauth-image-project-dag"
+        / "gpt2-oauth-image-sanity-receipt.json"
+    )
+    gpt2_script = " ".join(gpt2_image.command)
+    assert "gpt-2" in gpt2_script
+    assert "codex-oauth" in gpt2_script
+    assert "fallback_performed" in gpt2_script
     viewer_link = by_id["advanced.project_dag_viewer_link_exports"]
     assert viewer_link.expected_status == "PASS"
     assert viewer_link.expected_verdict is None
