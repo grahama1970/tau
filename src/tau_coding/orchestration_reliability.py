@@ -3,58 +3,129 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 ORCHESTRATION_RELIABILITY_SCHEMA = "tau.orchestration_reliability_receipt.v1"
+ORCHESTRATION_RELIABILITY_RECEIPT_SCHEMA = ORCHESTRATION_RELIABILITY_SCHEMA
+DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
+
+GOAL_DRIFT_CODES = {
+    "branch_goal_hash_divergence",
+    "goal_hash_mismatch",
+    "reviewer_goal_hash_mismatch",
+}
+ROUTE_DRIFT_CODES = {
+    "missing_required_join",
+    "missing_terminal_route",
+    "unexpected_edge",
+    "unexpected_node",
+}
+RETRY_BUDGET_CODES = {
+    "brave_search_required_after_two_attempts",
+    "max_attempts_exceeded",
+}
 
 
 def write_orchestration_reliability_receipt(
     *,
-    run_dir: Path,
     output_path: Path,
+    run_dir: Path | None = None,
+    dag_receipt_path: Path | None = None,
+    required_receipts: Iterable[Path] = (),
 ) -> dict[str, Any]:
-    resolved_run_dir = run_dir.expanduser().resolve()
-    dag_receipt = _read_first_json(
-        [
-            resolved_run_dir / "dag-receipt.json",
-            resolved_run_dir / "run" / "dag-receipt.json",
-            resolved_run_dir / "run-receipt.json",
-        ]
+    resolved_run_dir = run_dir.expanduser().resolve() if run_dir is not None else None
+    resolved_dag_receipt_path = (
+        dag_receipt_path.expanduser().resolve() if dag_receipt_path is not None else None
     )
-    herdr_gates = _read_schema_glob(
-        resolved_run_dir,
-        "tau.herdr_observation_gate_receipt.v1",
+    dag_receipt = (
+        _read_json_with_path(resolved_dag_receipt_path)
+        if resolved_dag_receipt_path is not None
+        else _read_first_json(
+            [
+                resolved_run_dir / "dag-receipt.json",
+                resolved_run_dir / "run" / "dag-receipt.json",
+                resolved_run_dir / "run-receipt.json",
+            ]
+            if resolved_run_dir is not None
+            else []
+        )
     )
-    course_corrections = _read_schema_glob(resolved_run_dir, "tau.course_correction.v1")
+    search_root = resolved_run_dir or (
+        resolved_dag_receipt_path.parent if resolved_dag_receipt_path is not None else None
+    )
+    herdr_gates = (
+        _read_schema_glob(search_root, "tau.herdr_observation_gate_receipt.v1")
+        if search_root is not None
+        else []
+    )
+    course_corrections = (
+        _read_schema_glob(search_root, "tau.course_correction.v1")
+        if search_root is not None
+        else []
+    )
     embedded_course_corrections = [
         gate.get("course_correction")
         for gate in herdr_gates
         if isinstance(gate.get("course_correction"), dict)
     ]
     all_corrections = [*course_corrections, *embedded_course_corrections]
-    dag_error = dag_receipt.get("dag_error") if isinstance(dag_receipt.get("dag_error"), dict) else {}
+    dag_error = (
+        dag_receipt.get("dag_error") if isinstance(dag_receipt.get("dag_error"), dict) else {}
+    )
     failure_code = str(dag_error.get("failure_code") or "")
-    goal_hash_preserved = failure_code not in {"goal_hash_mismatch", "goal_changed"}
-    dag_routes_respected = failure_code not in {"unexpected_edge", "unexpected_node"}
+    dag_alert_codes = _dag_alert_codes(dag_receipt)
+    goal_hash_preserved = _goal_hash_preserved(dag_receipt, failure_code, dag_alert_codes)
+    dag_routes_respected = _dag_routes_respected(failure_code, dag_alert_codes)
     unhandled_herdr_blocks = [
         gate
         for gate in herdr_gates
         if gate.get("status") == "BLOCKED" and not isinstance(gate.get("course_correction"), dict)
     ]
     missing_receipt_count = _missing_receipt_count(dag_receipt, herdr_gates, all_corrections)
-    retry_budget_respected = failure_code not in {"max_attempts_exceeded"}
+    retry_budget_respected = failure_code not in RETRY_BUDGET_CODES and not (
+        dag_alert_codes & RETRY_BUDGET_CODES
+    )
     blocked_without_correction = bool(dag_receipt.get("status") == "BLOCKED") and not (
         dag_error or all_corrections
     )
+    missing_artifacts = _missing_artifacts(dag_receipt)
+    required_evidence_present = (
+        not missing_artifacts and "missing_required_evidence" not in dag_alert_codes
+    )
+    terminal_condition_valid = _terminal_condition_valid(dag_receipt)
+    course_correction_paths = _course_correction_paths(dag_receipt)
+    course_corrections_followed = _course_corrections_followed(
+        dag_receipt,
+        course_correction_paths,
+    )
+    required_receipt_report = _required_receipt_report(required_receipts)
     reliable = (
         bool(dag_receipt)
         and goal_hash_preserved
         and dag_routes_respected
         and retry_budget_respected
+        and required_evidence_present
+        and terminal_condition_valid
+        and course_corrections_followed
+        and not required_receipt_report["missing"]
         and not unhandled_herdr_blocks
         and not blocked_without_correction
+    )
+    alerts = _alerts(
+        dag_receipt=dag_receipt,
+        dag_error=dag_error,
+        unhandled_herdr_blocks=unhandled_herdr_blocks,
+        blocked_without_correction=blocked_without_correction,
+        goal_hash_preserved=goal_hash_preserved,
+        dag_routes_respected=dag_routes_respected,
+        retry_budget_respected=retry_budget_respected,
+        required_evidence_present=required_evidence_present,
+        terminal_condition_valid=terminal_condition_valid,
+        course_corrections_followed=course_corrections_followed,
+        required_receipt_report=required_receipt_report,
     )
     payload = {
         "schema": ORCHESTRATION_RELIABILITY_SCHEMA,
@@ -63,27 +134,32 @@ def write_orchestration_reliability_receipt(
         "mocked": False,
         "live": bool(dag_receipt or herdr_gates or course_corrections),
         "provider_live": _provider_live(dag_receipt, herdr_gates),
-        "run_dir": str(resolved_run_dir),
+        "run_dir": str(resolved_run_dir) if resolved_run_dir is not None else None,
         "dag_receipt_path": _path_for_payload(dag_receipt),
         "dag_status": dag_receipt.get("status"),
         "dag_verdict": dag_receipt.get("verdict"),
         "dag_id": dag_receipt.get("dag_id"),
+        "active_goal_hash": dag_receipt.get("active_goal_hash") or dag_receipt.get("goal_hash"),
         "goal_hash_preserved": goal_hash_preserved,
         "dag_routes_respected": dag_routes_respected,
+        "unexpected_nodes": _alerts_by_code(dag_receipt, "unexpected_node"),
+        "unexpected_edges": _alerts_by_code(dag_receipt, "unexpected_edge"),
         "missing_receipt_count": missing_receipt_count,
+        "required_receipts_present": not required_receipt_report["missing"],
+        "required_receipts": required_receipt_report,
+        "required_evidence_present": required_evidence_present,
+        "missing_artifacts": missing_artifacts,
         "unhandled_herdr_block_count": len(unhandled_herdr_blocks),
         "course_correction_count": len(all_corrections),
-        "course_corrections_followed": "NOT_EVALUATED",
+        "course_corrections_emitted": bool(course_correction_paths or all_corrections),
+        "course_correction_artifacts": course_correction_paths,
+        "course_corrections_followed": course_corrections_followed,
         "retry_budget_respected": retry_budget_respected,
-        "terminal_condition_valid": reliable,
+        "terminal_condition_valid": terminal_condition_valid,
         "reliable_orchestration": reliable,
         "agent_truthfulness": "NOT_CLAIMED",
-        "alerts": _alerts(
-            dag_receipt=dag_receipt,
-            dag_error=dag_error,
-            unhandled_herdr_blocks=unhandled_herdr_blocks,
-            blocked_without_correction=blocked_without_correction,
-        ),
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
         "artifact_counts": {
             "herdr_observation_gate": len(herdr_gates),
             "course_correction": len(course_corrections),
@@ -91,14 +167,17 @@ def write_orchestration_reliability_receipt(
         },
         "proof_scope": {
             "proves": [
-                "Tau inspected local orchestration receipts from one run directory.",
-                "Tau distinguished controlled blocked states from unhandled blocked states.",
+                "Tau inspected local orchestration receipts from one DAG run.",
+                "Tau reported goal continuity, route discipline, artifacts, course corrections, "
+                "retry budget, and terminal condition separately from code correctness.",
                 "Tau did not claim agent truthfulness or task correctness.",
             ],
             "does_not_prove": [
-                "The agent answer is semantically correct.",
-                "A course-correction action was executed.",
+                "Code correctness.",
+                "Agent truthfulness.",
                 "Provider/model semantic quality.",
+                "Human acceptance.",
+                "GitHub mutation or ticket closure.",
                 "Future route correctness.",
             ],
         },
@@ -106,7 +185,10 @@ def write_orchestration_reliability_receipt(
     }
     resolved_output = output_path.expanduser().resolve()
     resolved_output.parent.mkdir(parents=True, exist_ok=True)
-    resolved_output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    resolved_output.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return payload
 
 
@@ -116,6 +198,13 @@ def _alerts(
     dag_error: dict[str, Any],
     unhandled_herdr_blocks: list[dict[str, Any]],
     blocked_without_correction: bool,
+    goal_hash_preserved: bool,
+    dag_routes_respected: bool,
+    retry_budget_respected: bool,
+    required_evidence_present: bool,
+    terminal_condition_valid: bool,
+    course_corrections_followed: bool,
+    required_receipt_report: dict[str, list[str]],
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     if not dag_receipt:
@@ -125,6 +214,20 @@ def _alerts(
         alerts.append({"severity": "BLOCK", "code": failure_code})
     if blocked_without_correction:
         alerts.append({"severity": "BLOCK", "code": "blocked_without_course_correction"})
+    if not goal_hash_preserved:
+        alerts.append({"severity": "BLOCK", "code": "goal_hash_not_preserved"})
+    if not dag_routes_respected:
+        alerts.append({"severity": "BLOCK", "code": "dag_routes_not_respected"})
+    if not retry_budget_respected:
+        alerts.append({"severity": "BLOCK", "code": "retry_budget_not_respected"})
+    if not required_evidence_present:
+        alerts.append({"severity": "BLOCK", "code": "required_evidence_missing"})
+    if not terminal_condition_valid:
+        alerts.append({"severity": "BLOCK", "code": "terminal_condition_invalid"})
+    if not course_corrections_followed:
+        alerts.append({"severity": "BLOCK", "code": "course_correction_ignored"})
+    if required_receipt_report["missing"]:
+        alerts.append({"severity": "BLOCK", "code": "required_receipt_missing"})
     for gate in unhandled_herdr_blocks:
         alerts.append(
             {
@@ -134,6 +237,24 @@ def _alerts(
             }
         )
     return alerts
+
+
+def _goal_hash_preserved(
+    dag_receipt: Mapping[str, Any],
+    failure_code: str,
+    dag_alert_codes: set[str],
+) -> bool:
+    active_goal_hash = dag_receipt.get("active_goal_hash") or dag_receipt.get("goal_hash")
+    return bool(active_goal_hash) and failure_code not in {
+        "goal_changed",
+        "goal_hash_mismatch",
+    } and not (dag_alert_codes & GOAL_DRIFT_CODES)
+
+
+def _dag_routes_respected(failure_code: str, dag_alert_codes: set[str]) -> bool:
+    return failure_code not in {"unexpected_edge", "unexpected_node"} and not (
+        dag_alert_codes & ROUTE_DRIFT_CODES
+    )
 
 
 def _missing_receipt_count(
@@ -149,6 +270,80 @@ def _missing_receipt_count(
     return count
 
 
+def _dag_alert_codes(dag_receipt: Mapping[str, Any]) -> set[str]:
+    return {
+        str(alert.get("code"))
+        for alert in dag_receipt.get("alerts", [])
+        if isinstance(alert, Mapping) and alert.get("code")
+    }
+
+
+def _alerts_by_code(dag_receipt: Mapping[str, Any], code: str) -> list[dict[str, Any]]:
+    return [
+        dict(alert)
+        for alert in dag_receipt.get("alerts", [])
+        if isinstance(alert, Mapping) and alert.get("code") == code
+    ]
+
+
+def _missing_artifacts(dag_receipt: Mapping[str, Any]) -> list[str]:
+    missing: list[str] = []
+    for value in dag_receipt.get("artifacts", []):
+        if isinstance(value, str) and value and not Path(value).expanduser().exists():
+            missing.append(value)
+    return missing
+
+
+def _course_correction_paths(dag_receipt: Mapping[str, Any]) -> list[str]:
+    return [
+        value
+        for value in dag_receipt.get("course_correction_artifacts", [])
+        if isinstance(value, str) and value
+    ]
+
+
+def _course_corrections_followed(
+    dag_receipt: Mapping[str, Any],
+    course_correction_paths: list[str],
+) -> bool:
+    if not course_correction_paths:
+        return True
+    if dag_receipt.get("status") == "PASS":
+        return False
+    return all(Path(path).expanduser().exists() for path in course_correction_paths)
+
+
+def _terminal_condition_valid(dag_receipt: Mapping[str, Any]) -> bool:
+    if dag_receipt.get("status") != "PASS":
+        return False
+    terminal_nodes = {
+        str(value)
+        for value in dag_receipt.get("terminal_nodes", [])
+        if isinstance(value, str) and value
+    }
+    if not terminal_nodes:
+        return True
+    observed_edges = dag_receipt.get("observed_edges", [])
+    if not isinstance(observed_edges, list):
+        return False
+    return any(
+        isinstance(edge, Mapping) and str(edge.get("to_node")) in terminal_nodes
+        for edge in observed_edges
+    )
+
+
+def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, list[str]]:
+    present: list[str] = []
+    missing: list[str] = []
+    for receipt in required_receipts:
+        resolved = receipt.expanduser().resolve()
+        if resolved.exists():
+            present.append(str(resolved))
+        else:
+            missing.append(str(resolved))
+    return {"present": present, "missing": missing}
+
+
 def _read_first_json(paths: list[Path]) -> dict[str, Any]:
     for path in paths:
         payload = _read_json(path)
@@ -156,6 +351,13 @@ def _read_first_json(paths: list[Path]) -> dict[str, Any]:
             payload["_path"] = str(path)
             return payload
     return {}
+
+
+def _read_json_with_path(path: Path) -> dict[str, Any]:
+    payload = _read_json(path)
+    if payload:
+        payload["_path"] = str(path)
+    return payload
 
 
 def _read_schema_glob(run_dir: Path, schema: str) -> list[dict[str, Any]]:

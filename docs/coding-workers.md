@@ -151,6 +151,37 @@ future approval lane authorizes commit application. High-risk paths such as
 `.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and
 `package-lock.json` are flagged for approval.
 
+### Orchestration Reliability
+
+`tau.orchestration_reliability_receipt.v1` summarizes whether a DAG run obeyed
+the harness rules separately from whether the code is correct. It reports:
+
+- goal-hash continuity
+- DAG route discipline
+- unexpected nodes and edges
+- required receipt and evidence presence
+- course-correction emission and handling
+- retry budget discipline
+- terminal condition validity
+- `agent_truthfulness: NOT_CLAIMED`
+
+CLI:
+
+```bash
+uv run tau orchestration-reliability \
+  --dag-receipt run/dag-receipt.json \
+  --out orchestration-reliability.json
+```
+
+Existing run-directory usage remains supported:
+
+```bash
+uv run tau orchestration-reliability --run-dir run --out orchestration-reliability.json
+```
+
+This receipt does not prove code correctness, agent truthfulness, provider/model
+quality, GitHub mutation, or human acceptance.
+
 ## Intended Worker Adapters
 
 External coding workers remain untrusted. Tau should wrap them with work orders,

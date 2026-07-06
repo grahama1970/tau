@@ -1718,6 +1718,26 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(0 if payload.get("ok") is True else 1)
 
+    if prompt_option is None and command == "orchestration-reliability":
+        try:
+            options = _parse_orchestration_reliability_cli_args(positional_args[1:])
+            payload = write_orchestration_reliability_receipt(
+                output_path=Path(str(options["out"])),
+                run_dir=(
+                    Path(str(options["run_dir"])) if options.get("run_dir") is not None else None
+                ),
+                dag_receipt_path=(
+                    Path(str(options["dag_receipt"]))
+                    if options.get("dag_receipt") is not None
+                    else None
+                ),
+                required_receipts=[Path(str(path)) for path in options["required_receipts"]],
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
     if prompt_option is None and command == "herdr-observation-gate":
         try:
             options = _parse_herdr_observation_gate_cli_args(positional_args[1:])
@@ -1758,18 +1778,6 @@ def main(
             options = _parse_project_profile_validate_cli_args(positional_args[1:])
             payload = write_project_profile_validation_receipt(
                 profile_path=Path(str(options["profile"])),
-                output_path=Path(str(options["out"])),
-            )
-        except RuntimeError as exc:
-            raise typer.BadParameter(str(exc)) from exc
-        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
-        raise typer.Exit(1 if payload.get("ok") is not True else 0)
-
-    if prompt_option is None and command == "orchestration-reliability":
-        try:
-            options = _parse_orchestration_reliability_cli_args(positional_args[1:])
-            payload = write_orchestration_reliability_receipt(
-                run_dir=Path(str(options["run_dir"])),
                 output_path=Path(str(options["out"])),
             )
         except RuntimeError as exc:
@@ -4381,6 +4389,54 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
     return options
 
 
+def _parse_orchestration_reliability_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_dir": None,
+        "dag_receipt": None,
+        "out": None,
+        "required_receipts": [],
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--run-dir", "--dag-receipt", "--out", "--required-receipt"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--required-receipt":
+                required = options["required_receipts"]
+                if isinstance(required, list):
+                    required.append(args[index])
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--run-dir="):
+            options["run_dir"] = arg.partition("=")[2]
+        elif arg.startswith("--dag-receipt="):
+            options["dag_receipt"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--required-receipt="):
+            required = options["required_receipts"]
+            if isinstance(required, list):
+                required.append(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown orchestration-reliability option: {arg}")
+        index += 1
+    if not _optional_str(options.get("run_dir")) and not _optional_str(
+        options.get("dag_receipt")
+    ):
+        raise RuntimeError(
+            "Usage: tau orchestration-reliability "
+            "(--run-dir <dir> | --dag-receipt <receipt>) --out <receipt>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau orchestration-reliability "
+            "(--run-dir <dir> | --dag-receipt <receipt>) --out <receipt>"
+        )
+    return options
+
+
 def _parse_herdr_observation_gate_cli_args(args: list[str]) -> dict[str, object]:
     options: dict[str, object] = {
         "snapshot": None,
@@ -4489,31 +4545,6 @@ def _parse_project_profile_validate_cli_args(args: list[str]) -> dict[str, objec
         raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
-    return options
-
-
-def _parse_orchestration_reliability_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"run_dir": None, "out": None}
-    index = 0
-    while index < len(args):
-        arg = args[index]
-        if arg in {"--run-dir", "--out"}:
-            index += 1
-            if index >= len(args):
-                raise RuntimeError(f"{arg} requires a value")
-            key = "run_dir" if arg == "--run-dir" else "out"
-            options[key] = args[index]
-        elif arg.startswith("--run-dir="):
-            options["run_dir"] = arg.partition("=")[2]
-        elif arg.startswith("--out="):
-            options["out"] = arg.partition("=")[2]
-        else:
-            raise RuntimeError(f"unknown orchestration-reliability option: {arg}")
-        index += 1
-    if not _optional_str(options.get("run_dir")):
-        raise RuntimeError("Usage: tau orchestration-reliability --run-dir <dir> --out <receipt>")
-    if not _optional_str(options.get("out")):
-        raise RuntimeError("Usage: tau orchestration-reliability --run-dir <dir> --out <receipt>")
     return options
 
 

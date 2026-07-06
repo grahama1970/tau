@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:35 EDT by agent
+**Last updated:** 2026-07-06 17:43 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -25,6 +25,25 @@
   complete language-server parity, safe rename application, commits were
   created, full-suite health, live providers, OMP/SciLLM workers, debugger/DAP
   integration, GitHub mutation, or legal compliance.
+
+- 2026-07-06 orchestration reliability coding slice:
+  `src/tau_coding/orchestration_reliability.py` now preserves the existing
+  run-directory red-team behavior while also accepting a direct
+  `dag_receipt_path`. The `tau.orchestration_reliability_receipt.v1` reports
+  goal-hash continuity, DAG route discipline, unexpected nodes/edges, required
+  receipts, evidence artifacts, course corrections, retry budget, terminal
+  condition validity, and `agent_truthfulness:"NOT_CLAIMED"` separately from
+  code correctness. `uv run tau orchestration-reliability` accepts both
+  `--run-dir <dir>` and `--dag-receipt <receipt>`. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/orchestration_reliability.py src/tau_coding/cli.py
+  tests/test_orchestration_reliability.py src/tau_coding/orchestration_redteam.py
+  tests/test_orchestration_redteam.py` -> pass; `uv run pytest
+  tests/test_orchestration_reliability.py tests/test_orchestration_redteam.py
+  -q` -> `7 passed in 0.41s`. This proves deterministic local reliability
+  receipt behavior for the tested DAG receipt and red-team cases; it does not
+  prove code correctness, agent truthfulness, provider/model semantic quality,
+  GitHub mutation, human acceptance, or future route correctness.
 
 - 2026-07-06 coding reliability Round 1 slice:
   `src/tau_coding/code_patch.py` adds `tau.code_patch.v1` and
