@@ -1,0 +1,18 @@
+{
+  "action": "herdr_gc_apply",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "experiments/goal-locked-subagents/proofs/herdr-gc-current-audit-20260706T0122Z/herdr-gc-receipt.json"
+  ],
+  "nonce": "tau-current-herdr-gc-20260706T0123Z",
+  "reason": "User requested cleanup of stale Tau/real-world-sanity Herdr workspaces; approval is restricted to Tau GC label prefixes and excludes current/focused/non-idle workspaces.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-user-request-in-conversation",
+  "target": {
+    "id": "herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-"
+  }
+}

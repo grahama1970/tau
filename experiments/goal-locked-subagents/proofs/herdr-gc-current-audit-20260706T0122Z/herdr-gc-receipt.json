@@ -1,0 +1,72 @@
+{
+  "alerts": [],
+  "applied_action_count": 0,
+  "applied_actions": [],
+  "approval_receipt": null,
+  "approval_receipt_sha256": null,
+  "approval_required": false,
+  "approval_target_id_expected": "herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-",
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-provider-readiness",
+      "pane_count": 5,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w6R"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "list"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:list\",\"result\":{\"type\":\"workspace_list\",\"workspaces\":[{\"active_tab_id\":\"w11:t7\",\"agent_status\":\"working\",\"focused\":true,\"label\":\"chatterbox\",\"number\":1,\"pane_count\":6,\"tab_count\":6,\"workspace_id\":\"w11\"},{\"active_tab_id\":\"w6R:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-provider-readiness\",\"number\":2,\"pane_count\":5,\"tab_count\":4,\"workspace_id\":\"w6R\"}]}}\n"
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "herdr_surface": "real",
+  "include_current_workspace": false,
+  "label_prefixes": [
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-"
+  ],
+  "live": true,
+  "mocked": false,
+  "mode": "dry-run",
+  "ok": true,
+  "post_verified_absent_count": 0,
+  "proof_scope": {
+    "does_not_prove": [
+      "Cleanup of arbitrary non-Tau Herdr workspaces.",
+      "Deletion of Git worktrees or local proof artifacts.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
+      "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
+      "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+      "Tau Herdr GC apply requires an explicit approval receipt before mutation.",
+      "Apply mode verifies closed workspaces are no longer addressable through Herdr."
+    ]
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-current-audit-20260706T0122Z",
+  "schema": "tau.herdr_gc_receipt.v1",
+  "skipped": [],
+  "skipped_count": 0,
+  "status": "PASS",
+  "timestamp": "2026-07-06T01:22:04Z",
+  "workspace_count": 2
+}
