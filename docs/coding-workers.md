@@ -165,8 +165,11 @@ parity, or that a rename is safe to apply.
 
 `tau.commit_plan_receipt.v1` inspects a Git working tree and proposes dry-run
 commit groups for source, tests, docs, and lockfiles. It records changed files,
-dependency order, risk level, required evidence per group, lockfile handling,
-and approval requirements.
+their SHA-256 hashes and byte counts when the file still exists, dependency
+order, risk level, required evidence per group, lockfile handling, and approval
+requirements. Deleted files are recorded with `exists:false`, `bytes:null`, and
+`sha256:null` so reviewers can distinguish absent content from missing
+evidence.
 
 CLI:
 

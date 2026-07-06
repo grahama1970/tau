@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -21,6 +22,39 @@ def test_commit_plan_groups_related_changes(tmp_path: Path) -> None:
     assert payload["dry_run"] is True
     assert payload["changed_file_count"] == 2
     assert payload["dependency_order"] == ["source", "tests"]
+    source_file = next(
+        item for item in payload["changed_files"] if item["path"] == "src/example.py"
+    )
+    assert source_file["exists"] is True
+    assert source_file["bytes"] == len("value = 1\n")
+    assert source_file["sha256"] == f"sha256:{_sha256(repo / 'src' / 'example.py')}"
+    assert source_file in payload["proposed_commit_groups"][0]["files"]
+    assert {
+        "path": "src/example.py",
+        "status": "??",
+        "original_path": "",
+        "exists": True,
+        "bytes": len("value = 1\n"),
+        "sha256": f"sha256:{_sha256(repo / 'src' / 'example.py')}",
+    } in payload["changed_file_artifacts"]
+
+
+def test_commit_plan_records_deleted_file_artifact(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    source = repo / "src.py"
+    source.write_text("value = 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "src.py"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, capture_output=True)
+    source.unlink()
+
+    payload = write_commit_plan_receipt(repo=repo, output_path=repo / "commit-plan.json")
+
+    deleted = payload["changed_files"][0]
+    assert deleted["path"] == "src.py"
+    assert deleted["status"] == "D"
+    assert deleted["exists"] is False
+    assert deleted["bytes"] is None
+    assert deleted["sha256"] is None
 
 
 def test_commit_plan_allows_empty_clean_tree(tmp_path: Path) -> None:
@@ -200,3 +234,7 @@ def _git_repo(tmp_path: Path) -> Path:
     )
     subprocess.run(["git", "config", "user.name", "Tau Test"], cwd=repo, check=True)
     return repo
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

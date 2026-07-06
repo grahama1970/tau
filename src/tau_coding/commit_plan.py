@@ -41,7 +41,7 @@ def write_commit_plan_receipt(
         policy_profile=policy_profile,
         data_boundary=data_boundary,
     )
-    changed = _git_changed_files(resolved_repo)
+    changed = _changed_file_artifacts(resolved_repo, _git_changed_files(resolved_repo))
     groups = _commit_groups(changed)
     evidence_receipts = _evidence_receipts(evidence_receipt_paths or [], alerts)
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
@@ -79,6 +79,7 @@ def write_commit_plan_receipt(
         "apply_requested": apply,
         "changed_file_count": len(changed),
         "changed_files": changed,
+        "changed_file_artifacts": _reviewable_file_artifacts(changed),
         "evidence_receipts": evidence_receipts,
         "evidence_receipt_count": len(evidence_receipts),
         "proposed_commit_groups": groups,
@@ -139,8 +140,30 @@ def _git_changed_files(repo: Path) -> list[dict[str, str]]:
     return changed
 
 
-def _commit_groups(changed: list[dict[str, str]]) -> list[dict[str, Any]]:
-    buckets: dict[str, list[dict[str, str]]] = defaultdict(list)
+def _changed_file_artifacts(repo: Path, changed: list[dict[str, str]]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for item in changed:
+        artifact: dict[str, Any] = dict(item)
+        path = repo / item["path"]
+        if path.exists() and path.is_file():
+            artifact["exists"] = True
+            artifact["bytes"] = path.stat().st_size
+            artifact["sha256"] = f"sha256:{_sha256(path)}"
+        else:
+            artifact["exists"] = False
+            artifact["bytes"] = None
+            artifact["sha256"] = None
+        artifacts.append(artifact)
+    return artifacts
+
+
+def _reviewable_file_artifacts(changed: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    fields = ("path", "status", "original_path", "exists", "bytes", "sha256")
+    return [{field: item.get(field) for field in fields} for item in changed]
+
+
+def _commit_groups(changed: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    buckets: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for item in changed:
         path = item["path"]
         if path.startswith("tests/"):

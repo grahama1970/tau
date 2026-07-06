@@ -348,6 +348,28 @@
   Tau-launched workers, live OMP/SciLLM coding work, provider/model quality, or
   legal compliance.
 
+- 2026-07-06 commit-plan changed-file hash-binding rung:
+  `src/tau_coding/commit_plan.py` now records changed-file content artifacts on
+  `tau.commit_plan_receipt.v1`: existing changed files carry `exists:true`,
+  byte count, and `sha256:<digest>` in both `changed_files` and
+  `changed_file_artifacts`, while deleted files carry `exists:false`,
+  `bytes:null`, and `sha256:null`. Proposed commit groups reuse the same
+  enriched file records, so dry-run grouping is tied to the inspected working
+  tree bytes instead of path/status claims alone. Focused proof: `uv run ruff
+  check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py docs/coding-workers.md` -> pass; `uv run pytest
+  tests/test_commit_plan.py -q` -> `11 passed in 0.55s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-file-hashes` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-file-hashes/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded coding receipt tests
+  `105 passed in 2.56s`. This deterministic local receipt binding does not
+  prove semantic grouping quality, commit correctness, legal compliance,
+  provider/model quality, live OMP/SciLLM semantic worker execution, GitHub
+  mutation, or runtime sandbox isolation.
+
 - 2026-07-06 debug-session zero-trust enforcement rung:
   `src/tau_coding/debug_session_receipt.py` now supports zero-trust metadata on
   `tau.debug_session_receipt.v1`; `src/tau_coding/cli.py` exposes it through
