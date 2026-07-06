@@ -57,6 +57,7 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_campaign,
     run_dag_stress_poc,
 )
+from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
     load_generated_ticket,
@@ -1496,6 +1497,17 @@ def main(
         try:
             run_dir = _parse_zero_trust_redteam_args(positional_args[1:])
             payload = run_zero_trust_redteam(run_dir=run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "docker-sandbox-check":
+        try:
+            options = _parse_docker_sandbox_check_args(positional_args[1:])
+            payload = write_docker_sandbox_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3719,6 +3731,71 @@ def _parse_zero_trust_redteam_args(args: list[str]) -> Path:
     if run_dir is None:
         raise RuntimeError("Usage: tau zero-trust-redteam --run-dir <dir>")
     return run_dir
+
+
+def _parse_docker_sandbox_check_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "image": None,
+        "command": [],
+        "receipt_path": None,
+        "backend": "docker",
+        "network": "none",
+        "user": "65532:65532",
+        "read_only_rootfs": True,
+        "cap_drop": ["ALL"],
+        "no_new_privileges": True,
+        "privileged": False,
+        "host_network": False,
+        "docker_socket_mounted": False,
+        "mounts": [],
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--image", "--receipt", "--backend", "--network", "--user", "--mount"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--receipt":
+                options["receipt_path"] = Path(value)
+            elif arg == "--mount":
+                mounts = options["mounts"]
+                if not isinstance(mounts, list):
+                    raise RuntimeError("internal mount parser error")
+                mounts.append(value)
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = value
+        elif arg == "--command":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command requires at least one value")
+            options["command"] = args[index:]
+            break
+        elif arg == "--privileged":
+            options["privileged"] = True
+        elif arg == "--host-network":
+            options["host_network"] = True
+            options["network"] = "host"
+        elif arg == "--docker-socket-mounted":
+            options["docker_socket_mounted"] = True
+        elif arg == "--no-read-only-rootfs":
+            options["read_only_rootfs"] = False
+        elif arg == "--allow-new-privileges":
+            options["no_new_privileges"] = False
+        elif arg == "--no-cap-drop-all":
+            options["cap_drop"] = []
+        else:
+            raise RuntimeError(f"Unknown docker-sandbox-check option: {arg}")
+        index += 1
+    if not isinstance(options["image"], str) or not options["image"].strip():
+        raise RuntimeError("--image requires a non-empty value")
+    if not isinstance(options["receipt_path"], Path):
+        raise RuntimeError("--receipt requires a value")
+    command = options["command"]
+    if not isinstance(command, list) or not command:
+        raise RuntimeError("--command requires at least one value")
+    return options
 
 
 def _parse_generated_ticket_github_create_cli_args(
