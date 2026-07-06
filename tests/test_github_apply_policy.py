@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -72,6 +73,32 @@ def test_github_apply_policy_blocks_denied_actions(tmp_path: Path) -> None:
     assert "projection contains actions not allowed by policy: ['label']" in receipt["errors"]
 
 
+def test_github_apply_policy_blocks_redacted_projection_hash_mismatch(
+    tmp_path: Path,
+) -> None:
+    paths = _write_policy_fixture(tmp_path)
+    paths["redacted_projection"].write_text(
+        json.dumps({"tampered": True}),
+        encoding="utf-8",
+    )
+
+    receipt = write_github_apply_policy_receipt(
+        projection_path=paths["projection"],
+        policy_path=paths["policy"],
+        receipt_path=paths["receipt"],
+        approval_receipt_path=paths["approval"],
+        redaction_receipt_path=paths["redaction"],
+        preflight_ready=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert (
+        "redaction receipt redacted_projection_sha256 does not match artifact"
+        in receipt["errors"]
+    )
+
+
 def _write_policy_fixture(tmp_path: Path) -> dict[str, Path]:
     projection_path = tmp_path / "projection.json"
     redacted_projection_path = tmp_path / "projection.redacted.json"
@@ -115,6 +142,7 @@ def _write_policy_fixture(tmp_path: Path) -> dict[str, Path]:
     projection_path.write_text(json.dumps(projection), encoding="utf-8")
     redacted_projection_path.write_text(json.dumps(projection), encoding="utf-8")
     policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    redaction_receipt["redacted_projection_sha256"] = _sha256_file(redacted_projection_path)
     redaction_path.write_text(json.dumps(redaction_receipt), encoding="utf-8")
     approval_path.write_text(json.dumps(approval_receipt), encoding="utf-8")
     return {
@@ -125,3 +153,7 @@ def _write_policy_fixture(tmp_path: Path) -> dict[str, Path]:
         "approval": approval_path,
         "receipt": receipt_path,
     }
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

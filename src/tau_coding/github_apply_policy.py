@@ -260,9 +260,18 @@ def _check_redaction_receipt(
         and receipt.get("status") == "PASS"
     )
     redacted_projection = receipt.get("redacted_projection")
+    expected_redacted_sha = receipt.get("redacted_projection_sha256")
     if not isinstance(redacted_projection, str) or not Path(redacted_projection).exists():
         ok = False
         errors.append("redaction receipt redacted_projection must exist")
+    elif not isinstance(expected_redacted_sha, str) or not expected_redacted_sha.strip():
+        ok = False
+        errors.append("redaction receipt redacted_projection_sha256 is required")
+    else:
+        actual_redacted_sha = _safe_file_sha256(Path(redacted_projection).expanduser().resolve())
+        if actual_redacted_sha != expected_redacted_sha:
+            ok = False
+            errors.append("redaction receipt redacted_projection_sha256 does not match artifact")
     if receipt.get("projection") != str(projection_path):
         ok = False
         errors.append("redaction receipt projection does not match checked projection")

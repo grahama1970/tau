@@ -1,0 +1,359 @@
+{
+  "check_count": 3,
+  "checks": [
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "actions": [
+              "comment",
+              "label"
+            ],
+            "errors": [
+              "preflight is required by policy but --preflight-ready was not supplied",
+              "redaction receipt is required by policy",
+              "approval receipt is required by policy"
+            ],
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "preflight_ready": false,
+            "provider_live": false,
+            "requirements": {
+              "approval_packet": true,
+              "preflight": true,
+              "redaction": true
+            },
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "BLOCKED",
+            "target": {
+              "repo": "grahama1970/tau",
+              "target": "issue#47"
+            }
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_missing_gates_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_missing_gates_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.github_apply_policy_missing_gates_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "github-apply-policy-check",
+        "--projection",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-missing-gates/projection.json",
+        "--policy",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-missing-gates/github-apply-policy.json",
+        "--receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-missing-gates/github-apply-policy-receipt.json"
+      ],
+      "completed_at": "2026-07-06T00:21:55Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-missing-gates/github-apply-policy-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a GitHub apply projection when policy-required approval, preflight, and redaction gates are missing.",
+      "receipt_summary": {
+        "actions": [
+          "comment",
+          "label"
+        ],
+        "errors": [
+          "preflight is required by policy but --preflight-ready was not supplied",
+          "redaction receipt is required by policy",
+          "approval receipt is required by policy"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "preflight_ready": false,
+        "provider_live": false,
+        "requirements": {
+          "approval_packet": true,
+          "preflight": true,
+          "redaction": true
+        },
+        "schema": "tau.github_apply_policy_receipt.v1",
+        "status": "BLOCKED",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue#47"
+        }
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-06T00:21:54Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_missing_gates_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_missing_gates_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 0,
+          "receipt_summary": {
+            "actions": [
+              "comment",
+              "label"
+            ],
+            "errors": [],
+            "live": false,
+            "mocked": false,
+            "ok": true,
+            "preflight_ready": true,
+            "provider_live": false,
+            "requirements": {
+              "approval_packet": true,
+              "preflight": true,
+              "redaction": true
+            },
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "PASS",
+            "target": {
+              "repo": "grahama1970/tau",
+              "target": "issue#47"
+            }
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_all_gates_pass.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_all_gates_pass.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.github_apply_policy_all_gates_pass",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "github-apply-policy-check",
+        "--projection",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-all-gates/projection.json",
+        "--policy",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-all-gates/github-apply-policy.json",
+        "--receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-all-gates/github-apply-policy-receipt.json",
+        "--approval-receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-all-gates/approval-gate-receipt.json",
+        "--redaction-receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-all-gates/github-redaction-receipt.json",
+        "--preflight-ready"
+      ],
+      "completed_at": "2026-07-06T00:21:55Z",
+      "errors": [],
+      "exit_code": 0,
+      "expected_exit_codes": [
+        0
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "PASS",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-all-gates/github-apply-policy-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau allows a GitHub apply projection to pass local policy only when approval, preflight, and redaction evidence are all supplied.",
+      "receipt_summary": {
+        "actions": [
+          "comment",
+          "label"
+        ],
+        "errors": [],
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "preflight_ready": true,
+        "provider_live": false,
+        "requirements": {
+          "approval_packet": true,
+          "preflight": true,
+          "redaction": true
+        },
+        "schema": "tau.github_apply_policy_receipt.v1",
+        "status": "PASS",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue#47"
+        }
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-06T00:21:55Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_all_gates_pass.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_all_gates_pass.stdout.txt",
+      "timeout_seconds": 90
+    },
+    {
+      "attempt_count": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "errors": [],
+          "exit_code": 1,
+          "receipt_summary": {
+            "actions": [
+              "comment",
+              "label"
+            ],
+            "errors": [
+              "redaction receipt redacted_projection_sha256 does not match artifact",
+              "redaction receipt is not a passing Tau redaction receipt"
+            ],
+            "live": false,
+            "mocked": false,
+            "ok": false,
+            "preflight_ready": true,
+            "provider_live": false,
+            "requirements": {
+              "approval_packet": true,
+              "preflight": true,
+              "redaction": true
+            },
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "BLOCKED",
+            "target": {
+              "repo": "grahama1970/tau",
+              "target": "issue#47"
+            }
+          },
+          "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_redaction_hash_fail_closed.stderr.txt",
+          "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_redaction_hash_fail_closed.stdout.txt",
+          "timed_out": false
+        }
+      ],
+      "check_id": "advanced.github_apply_policy_redaction_hash_fail_closed",
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "tau",
+        "github-apply-policy-check",
+        "--projection",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-redaction-tamper/projection.json",
+        "--policy",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-redaction-tamper/github-apply-policy.json",
+        "--receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-redaction-tamper/github-apply-policy-receipt.json",
+        "--approval-receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-redaction-tamper/approval-gate-receipt.json",
+        "--redaction-receipt",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-redaction-tamper/github-redaction-receipt.json",
+        "--preflight-ready"
+      ],
+      "completed_at": "2026-07-06T00:21:56Z",
+      "errors": [],
+      "exit_code": 1,
+      "expected_exit_codes": [
+        1
+      ],
+      "expected_min_provider_session_states": 0,
+      "expected_status": "BLOCKED",
+      "expected_verdict": null,
+      "level": "advanced",
+      "live": false,
+      "max_attempts": 1,
+      "mocked": false,
+      "ok": true,
+      "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/github-apply-policy-redaction-tamper/github-apply-policy-receipt.json",
+      "post_cleanup": null,
+      "provider_live": false,
+      "purpose": "Tau blocks a GitHub apply projection when the redacted projection artifact no longer matches the passing redaction receipt hash.",
+      "receipt_summary": {
+        "actions": [
+          "comment",
+          "label"
+        ],
+        "errors": [
+          "redaction receipt redacted_projection_sha256 does not match artifact",
+          "redaction receipt is not a passing Tau redaction receipt"
+        ],
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "preflight_ready": true,
+        "provider_live": false,
+        "requirements": {
+          "approval_packet": true,
+          "preflight": true,
+          "redaction": true
+        },
+        "schema": "tau.github_apply_policy_receipt.v1",
+        "status": "BLOCKED",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "issue#47"
+        }
+      },
+      "schema": "tau.real_world_sanity_check_receipt.v1",
+      "started_at": "2026-07-06T00:21:55Z",
+      "status": "PASS",
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_redaction_hash_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706/logs/advanced.github_apply_policy_redaction_hash_fail_closed.stdout.txt",
+      "timeout_seconds": 90
+    }
+  ],
+  "completed_at": "2026-07-06T00:21:56Z",
+  "failed_check_count": 0,
+  "level_counts": {
+    "advanced": {
+      "PASS": 3
+    }
+  },
+  "live": "mixed",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "production browser/chat UI rendering",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau CLI and command-spec surfaces execute from the local checkout",
+      "Tau can run a real local handoff command loop",
+      "Tau planner, generic DAG runner, and deterministic scheduler stress surfaces emit non-mocked receipts",
+      "Tau can allocate visible provider panes and run live provider DAG checks when advanced checks pass",
+      "Tau can run Surf-backed browser proof checks when advanced browser checks pass",
+      "Tau fail-closed negative controls preserve typed BLOCKED receipts"
+    ]
+  },
+  "provider_live": false,
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002154Z-tau-github-apply-policy-hash-regression-20260706",
+  "run_id": "20260706T002154Z-tau-github-apply-policy-hash-regression-20260706",
+  "schema": "tau.real_world_sanity_suite_receipt.v1",
+  "selected_levels": [
+    "advanced"
+  ],
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:21:56Z"
+}

@@ -1627,6 +1627,33 @@ def build_checks(
             output_receipt=github_apply_policy["positive_receipt"],
         ),
         Check(
+            check_id="advanced.github_apply_policy_redaction_hash_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a GitHub apply projection when the redacted projection "
+                "artifact no longer matches the passing redaction receipt hash."
+            ),
+            command=[
+                *uv_tau,
+                "github-apply-policy-check",
+                "--projection",
+                str(github_apply_policy["tamper_projection"]),
+                "--policy",
+                str(github_apply_policy["tamper_policy"]),
+                "--receipt",
+                str(github_apply_policy["tamper_receipt"]),
+                "--approval-receipt",
+                str(github_apply_policy["tamper_approval"]),
+                "--redaction-receipt",
+                str(github_apply_policy["tamper_redaction"]),
+                "--preflight-ready",
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=github_apply_policy["tamper_receipt"],
+        ),
+        Check(
             check_id="advanced.github_handoff_transport_apply_requires_policy_receipt",
             level="advanced",
             purpose=(
@@ -2889,9 +2916,11 @@ def create_research_source_fixture(run_dir: Path) -> dict[str, Path]:
 def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "github-apply-policy-missing-gates"
     positive_dir = run_dir / "github-apply-policy-all-gates"
+    tamper_dir = run_dir / "github-apply-policy-redaction-tamper"
     transport_dir = run_dir / "github-handoff-transport-apply-missing-policy"
     fixture_dir.mkdir(parents=True, exist_ok=True)
     positive_dir.mkdir(parents=True, exist_ok=True)
+    tamper_dir.mkdir(parents=True, exist_ok=True)
     transport_dir.mkdir(parents=True, exist_ok=True)
     goal_hash = "sha256:rw-sanity-github-apply-policy"
     projection = {
@@ -2921,6 +2950,12 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     }
     positive_projection_path = positive_dir / "projection.json"
     positive_redacted_projection_path = positive_dir / "projection.redacted.json"
+    tamper_projection_path = tamper_dir / "projection.json"
+    tamper_redacted_projection_path = tamper_dir / "projection.redacted.json"
+    write_json(positive_projection_path, projection)
+    write_json(positive_redacted_projection_path, projection)
+    write_json(tamper_projection_path, projection)
+    write_json(tamper_redacted_projection_path, projection)
     approval_receipt = {
         "schema": "tau.approval_gate_receipt.v1",
         "ok": True,
@@ -2939,9 +2974,19 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "live": True,
         "projection": str(positive_projection_path.resolve()),
         "redacted_projection": str(positive_redacted_projection_path.resolve()),
+        "redacted_projection_sha256": sha256_file(positive_redacted_projection_path),
         "redaction_count": 1,
         "errors": [],
     }
+    tamper_redaction_receipt = dict(redaction_receipt)
+    tamper_redaction_receipt["projection"] = str(tamper_projection_path.resolve())
+    tamper_redaction_receipt["redacted_projection"] = str(
+        tamper_redacted_projection_path.resolve()
+    )
+    tamper_redaction_receipt["redacted_projection_sha256"] = sha256_file(
+        tamper_redacted_projection_path
+    )
+    write_json(tamper_redacted_projection_path, {"tampered": True})
     handoff = {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -2976,8 +3021,8 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "projection": write_json(fixture_dir / "projection.json", projection),
         "policy": write_json(fixture_dir / "github-apply-policy.json", policy),
         "receipt": fixture_dir / "github-apply-policy-receipt.json",
-        "positive_projection": write_json(positive_projection_path, projection),
-        "positive_redacted_projection": write_json(positive_redacted_projection_path, projection),
+        "positive_projection": positive_projection_path,
+        "positive_redacted_projection": positive_redacted_projection_path,
         "positive_policy": write_json(positive_dir / "github-apply-policy.json", policy),
         "positive_approval": write_json(
             positive_dir / "approval-gate-receipt.json",
@@ -2988,6 +3033,18 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
             redaction_receipt,
         ),
         "positive_receipt": positive_dir / "github-apply-policy-receipt.json",
+        "tamper_projection": tamper_projection_path,
+        "tamper_redacted_projection": tamper_redacted_projection_path,
+        "tamper_policy": write_json(tamper_dir / "github-apply-policy.json", policy),
+        "tamper_approval": write_json(
+            tamper_dir / "approval-gate-receipt.json",
+            approval_receipt,
+        ),
+        "tamper_redaction": write_json(
+            tamper_dir / "github-redaction-receipt.json",
+            tamper_redaction_receipt,
+        ),
+        "tamper_receipt": tamper_dir / "github-apply-policy-receipt.json",
         "handoff": write_json(transport_dir / "handoff.json", handoff),
         "handoff_goal_hash": goal_hash,
         "transport_missing_policy_receipt": transport_dir

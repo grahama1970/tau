@@ -808,6 +808,9 @@ def test_cli_github_apply_policy_check_writes_policy_receipt(tmp_path: Path) -> 
                 "status": "PASS",
                 "projection": str(projection_path.resolve()),
                 "redacted_projection": str(redacted_path.resolve()),
+                "redacted_projection_sha256": hashlib.sha256(
+                    redacted_path.read_bytes()
+                ).hexdigest(),
                 "errors": [],
             }
         ),
