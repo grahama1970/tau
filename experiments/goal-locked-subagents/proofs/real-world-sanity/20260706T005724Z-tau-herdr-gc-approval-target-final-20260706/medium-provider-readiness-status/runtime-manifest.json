@@ -1,0 +1,15 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/events.jsonl",
+  "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/inspect.json",
+  "provider_session_states": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/readiness/codex.session-state.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/readiness/opencode.session-state.json"
+  ],
+  "readiness_records": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/readiness/codex.readiness.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/readiness/opencode.readiness.json"
+  ],
+  "run_id": "rw-sanity-provider-readiness-status",
+  "schema": "tau.provider_readiness_runtime_manifest.v1",
+  "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005724Z-tau-herdr-gc-approval-target-final-20260706/medium-provider-readiness-status/workstation.json"
+}

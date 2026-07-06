@@ -1,0 +1,18 @@
+{
+  "action": "provider_branch_scheduling",
+  "actor": {
+    "auth_method": "manual",
+    "id": "human:graham"
+  },
+  "approved": true,
+  "evidence": [
+    "dag-contract.json"
+  ],
+  "nonce": "rw-sanity-provider-branch-lock",
+  "reason": "Approve provider branch lock fixture.",
+  "schema": "tau.human_approval_packet.v1",
+  "signature": "manual-rw-sanity-signature",
+  "target": {
+    "id": "rw-sanity-dag-branch-locks"
+  }
+}

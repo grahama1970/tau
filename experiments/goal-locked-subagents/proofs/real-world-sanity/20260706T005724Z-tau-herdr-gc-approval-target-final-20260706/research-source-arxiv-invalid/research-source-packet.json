@@ -1,0 +1,23 @@
+{
+  "classification": "design_input",
+  "limitations": [
+    "Research is design input only.",
+    "Local Tau receipts and validators remain required before closure."
+  ],
+  "method": "arxiv",
+  "query": "adaptive DAG multi-agent routing references for Tau",
+  "retrieved_at": "2026-07-05T13:40:00Z",
+  "schema": "tau.research_source_packet.v1",
+  "source_type": "paper",
+  "sources": [
+    {
+      "claims_supported": [
+        "generic distributed-agent claim"
+      ],
+      "relevance": "HIGH",
+      "title": "Generic web article mislabeled as ArXiv",
+      "url": "https://example.com/not-arxiv"
+    }
+  ],
+  "summary": "Source-bearing ArXiv packet for Tau adaptive DAG design review."
+}

@@ -21,6 +21,15 @@ from typing import Any
 
 RECEIPT_SCHEMA = "tau.real_world_sanity_suite_receipt.v1"
 CHECK_SCHEMA = "tau.real_world_sanity_check_receipt.v1"
+HERDR_GC_DEFAULT_LABEL_PREFIXES = (
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-",
+)
+HERDR_GC_DEFAULT_TARGET_ID = f"herdr-gc:{','.join(HERDR_GC_DEFAULT_LABEL_PREFIXES)}"
 
 
 @dataclass(frozen=True)
@@ -100,9 +109,13 @@ def main() -> int:
         provider_cleanup_mode=args.provider_cleanup_mode,
     )
     selected_checks = [check for check in checks if check.level in selected_levels]
-    selected_check_ids = {check_id.strip() for check_id in args.checks.split(",") if check_id.strip()}
+    selected_check_ids = {
+        check_id.strip() for check_id in args.checks.split(",") if check_id.strip()
+    }
     if selected_check_ids:
-        selected_checks = [check for check in selected_checks if check.check_id in selected_check_ids]
+        selected_checks = [
+            check for check in selected_checks if check.check_id in selected_check_ids
+        ]
         missing = sorted(selected_check_ids - {check.check_id for check in selected_checks})
         if missing:
             raise SystemExit(f"unknown or unselected check ids: {', '.join(missing)}")
@@ -227,9 +240,7 @@ def build_checks(
         scenario="ready-queue-provider-policy",
         mutation="provider",
     )
-    project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(
-        run_dir
-    )
+    project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(run_dir)
     project_dag_memory_evidence_valid = create_project_dag_memory_evidence_fixture(
         run_dir,
         scenario="memory-evidence-valid",
@@ -749,6 +760,30 @@ def build_checks(
             timeout_seconds=60,
             expected_status="PASS",
             output_receipt=cleanup_gc["run_dir"] / "herdr-gc-receipt.json",
+        ),
+        Check(
+            check_id="medium.herdr_gc_apply_wrong_approval_target",
+            level="medium",
+            purpose=(
+                "Tau blocks broad Herdr GC apply when the approval receipt target "
+                "does not match the configured GC label-prefix scope."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                herdr_gc_apply_wrong_target_command(
+                    uv_tau=uv_tau,
+                    fixture_dir=cleanup_gc["wrong_target_run_dir"],
+                    herdr_bin=cleanup_gc["wrong_target_herdr_bin"],
+                    approval_packet_path=cleanup_gc["wrong_target_approval_packet"],
+                    approval_run_dir=cleanup_gc["wrong_target_approval_run_dir"],
+                    receipt_path=cleanup_gc["wrong_target_run_dir"] / "herdr-gc-receipt.json",
+                ),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=cleanup_gc["wrong_target_run_dir"] / "herdr-gc-receipt.json",
         ),
         Check(
             check_id="medium.orchestration_evidence_status",
@@ -2683,9 +2718,7 @@ def create_dag_branch_locks_fixture(run_dir: Path) -> dict[str, Path]:
                 "owner": "goal-guardian",
                 "actor_identity": "human:graham",
                 "approval_packet_sha256": f"sha256:{sha256_file(provider_approval)}",
-                "allowed_paths": [
-                    "experiments/goal-locked-subagents/proofs/provider/**"
-                ],
+                "allowed_paths": ["experiments/goal-locked-subagents/proofs/provider/**"],
                 "side_effect_class": "provider",
                 "workspace_lease": "rw-sanity-workspace-lease",
                 "expires_at": "2099-01-01T00:00:00Z",
@@ -3229,9 +3262,7 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     }
     tamper_redaction_receipt = dict(redaction_receipt)
     tamper_redaction_receipt["projection"] = str(tamper_projection_path.resolve())
-    tamper_redaction_receipt["redacted_projection"] = str(
-        tamper_redacted_projection_path.resolve()
-    )
+    tamper_redaction_receipt["redacted_projection"] = str(tamper_redacted_projection_path.resolve())
     tamper_redaction_receipt["redacted_projection_sha256"] = sha256_file(
         tamper_redacted_projection_path
     )
@@ -3406,7 +3437,7 @@ else:
 
 
 def project_dag_worker_script() -> str:
-    return r'''#!/usr/bin/env python3
+    return r"""#!/usr/bin/env python3
 import argparse
 import json
 import os
@@ -3586,7 +3617,7 @@ def evidence_items(payload, kind):
 
 if __name__ == "__main__":
     raise SystemExit(main())
-'''
+"""
 
 
 def create_generic_dag_resume_fixture(run_dir: Path) -> Path:
@@ -3810,16 +3841,16 @@ def create_cleanup_status_fixture(run_dir: Path) -> dict[str, Path]:
 def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "medium-herdr-cleanup-session"
     manifest_payload = {
-            "schema": "tau.provider_dag_runtime_manifest.v1",
-            "run_id": "rw-sanity-herdr-cleanup-session",
-            "provider_sessions": {
-                "codex": {
-                    "workspace_id": "w-rw-sanity-session-cleanup",
-                    "pane_id": "w-rw-sanity-session-cleanup:p5",
-                    "terminal_id": "term-codex",
-                    "session": "session-rw-sanity-codex",
-                }
-            },
+        "schema": "tau.provider_dag_runtime_manifest.v1",
+        "run_id": "rw-sanity-herdr-cleanup-session",
+        "provider_sessions": {
+            "codex": {
+                "workspace_id": "w-rw-sanity-session-cleanup",
+                "pane_id": "w-rw-sanity-session-cleanup:p5",
+                "terminal_id": "term-codex",
+                "session": "session-rw-sanity-codex",
+            }
+        },
     }
     blocked_dir = fixture_dir / "blocked"
     owned_dir = fixture_dir / "owned"
@@ -3869,23 +3900,23 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
     owned_herdr.write_text(
         "#!/usr/bin/env bash\n"
         f"CALLS={json.dumps(str(owned_herdr_calls))}\n"
-        "printf '{\"argv\":[' >> \"$CALLS\"\n"
+        'printf \'{"argv":[\' >> "$CALLS"\n'
         "first=1\n"
-        "for arg in \"$@\"; do\n"
-        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$CALLS\"; fi\n"
+        'for arg in "$@"; do\n'
+        '  if [ "$first" = 0 ]; then printf \',\' >> "$CALLS"; fi\n'
         "  first=0\n"
-        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$CALLS\"\n"
+        '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$CALLS"\n'
         "done\n"
         "printf ']}\\n' >> \"$CALLS\"\n"
-        "if [ \"$1 $2 $3\" = \"session get session-rw-sanity-codex\" ]; then\n"
-        "  printf '{\"error\":{\"code\":\"session_not_found\",\"message\":\"session not found\"}}\\n'\n"
+        'if [ "$1 $2 $3" = "session get session-rw-sanity-codex" ]; then\n'
+        '  printf \'{"error":{"code":"session_not_found","message":"session not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
-        "if [ \"$1 $2 $3\" = \"workspace get w-rw-sanity-session-cleanup\" ]; then\n"
-        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\\n'\n"
+        'if [ "$1 $2 $3" = "workspace get w-rw-sanity-session-cleanup" ]; then\n'
+        '  printf \'{"error":{"code":"workspace_not_found","message":"workspace not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
-        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
+        'printf \'{"result":{"type":"ok"}}\\n\'\n',
         encoding="utf-8",
     )
     owned_herdr.chmod(0o755)
@@ -3902,7 +3933,9 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
 
 def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "medium-herdr-gc-approval"
+    wrong_target_dir = run_dir / "medium-herdr-gc-wrong-target"
     fixture_dir.mkdir(parents=True, exist_ok=True)
+    wrong_target_dir.mkdir(parents=True, exist_ok=True)
     workspaces_path = write_json(
         fixture_dir / "workspaces.json",
         {
@@ -3920,40 +3953,76 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
             }
         },
     )
+    wrong_target_workspaces_path = write_json(
+        wrong_target_dir / "workspaces.json",
+        {
+            "result": {
+                "workspaces": [
+                    {
+                        "workspace_id": "w-rw-sanity-gc-wrong-target",
+                        "label": "rw-sanity-provider-readiness-gc",
+                        "agent_status": "done",
+                        "focused": False,
+                        "pane_count": 2,
+                        "tab_count": 1,
+                    }
+                ]
+            }
+        },
+    )
     calls_path = fixture_dir / "herdr-calls.jsonl"
+    wrong_target_calls_path = wrong_target_dir / "herdr-calls.jsonl"
     herdr_bin = fixture_dir / "fake-herdr"
+    wrong_target_herdr_bin = wrong_target_dir / "fake-herdr"
     approval_packet_path = write_json(
         fixture_dir / "herdr-gc-approval.json",
         approval_packet(
             action="herdr_gc_apply",
-            target_id="rw-sanity-provider-readiness-gc",
+            target_id=HERDR_GC_DEFAULT_TARGET_ID,
             reason="Authorize fake-Herdr GC apply for real-world sanity proof.",
         ),
     )
-    herdr_bin.write_text(
-        "#!/usr/bin/env bash\n"
-        f"HERDR_GC_CALLS={str(calls_path)!r}\n"
-        f"HERDR_GC_WORKSPACES={str(workspaces_path)!r}\n"
-        "printf '{\"argv\":[' >> \"$HERDR_GC_CALLS\"\n"
-        "first=1\n"
-        "for arg in \"$@\"; do\n"
-        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$HERDR_GC_CALLS\"; fi\n"
-        "  first=0\n"
-        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$HERDR_GC_CALLS\"\n"
-        "done\n"
-        "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
-        "if [ \"$1 $2\" = \"workspace list\" ]; then\n"
-        "  cat \"$HERDR_GC_WORKSPACES\"\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1 $2\" = \"workspace get\" ]; then\n"
-        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\\n'\n"
-        "  exit 1\n"
-        "fi\n"
-        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
-        encoding="utf-8",
+    wrong_target_approval_packet_path = write_json(
+        wrong_target_dir / "herdr-gc-wrong-target-approval.json",
+        approval_packet(
+            action="herdr_gc_apply",
+            target_id="herdr-gc:other-prefix",
+            reason="Intentionally wrong Herdr GC target for fail-closed sanity proof.",
+        ),
     )
-    herdr_bin.chmod(0o755)
+
+    def write_fake_herdr(path: Path, *, calls: Path, workspaces: Path) -> None:
+        path.write_text(
+            "#!/usr/bin/env bash\n"
+            f"HERDR_GC_CALLS={str(calls)!r}\n"
+            f"HERDR_GC_WORKSPACES={str(workspaces)!r}\n"
+            'printf \'{"argv":[\' >> "$HERDR_GC_CALLS"\n'
+            "first=1\n"
+            'for arg in "$@"; do\n'
+            '  if [ "$first" = 0 ]; then printf \',\' >> "$HERDR_GC_CALLS"; fi\n'
+            "  first=0\n"
+            '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_GC_CALLS"\n'
+            "done\n"
+            "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
+            'if [ "$1 $2" = "workspace list" ]; then\n'
+            '  cat "$HERDR_GC_WORKSPACES"\n'
+            "  exit 0\n"
+            "fi\n"
+            'if [ "$1 $2" = "workspace get" ]; then\n'
+            '  printf \'{"error":{"code":"workspace_not_found","message":"workspace not found"}}\\n\'\n'
+            "  exit 1\n"
+            "fi\n"
+            'printf \'{"result":{"type":"ok"}}\\n\'\n',
+            encoding="utf-8",
+        )
+        path.chmod(0o755)
+
+    write_fake_herdr(herdr_bin, calls=calls_path, workspaces=workspaces_path)
+    write_fake_herdr(
+        wrong_target_herdr_bin,
+        calls=wrong_target_calls_path,
+        workspaces=wrong_target_workspaces_path,
+    )
     return {
         "run_dir": fixture_dir,
         "herdr_bin": herdr_bin,
@@ -3961,6 +4030,12 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
         "calls": calls_path,
         "approval_packet": approval_packet_path,
         "approval_run_dir": fixture_dir / "approval",
+        "wrong_target_run_dir": wrong_target_dir,
+        "wrong_target_herdr_bin": wrong_target_herdr_bin,
+        "wrong_target_workspaces": wrong_target_workspaces_path,
+        "wrong_target_calls": wrong_target_calls_path,
+        "wrong_target_approval_packet": wrong_target_approval_packet_path,
+        "wrong_target_approval_run_dir": wrong_target_dir / "approval",
     }
 
 
@@ -4026,6 +4101,73 @@ if payload.get("applied_action_count") != 1:
     raise SystemExit("expected exactly one applied action")
 if payload.get("post_verified_absent_count") != 1:
     raise SystemExit("expected exactly one post-verified absent workspace")
+raise SystemExit(completed.returncode)
+"""
+
+
+def herdr_gc_apply_wrong_target_command(
+    *,
+    uv_tau: list[str],
+    fixture_dir: Path,
+    herdr_bin: Path,
+    approval_packet_path: Path,
+    approval_run_dir: Path,
+    receipt_path: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+fixture_dir = Path({str(fixture_dir)!r})
+herdr_bin = Path({str(herdr_bin)!r})
+approval_packet_path = Path({str(approval_packet_path)!r})
+approval_run_dir = Path({str(approval_run_dir)!r})
+receipt_path = Path({str(receipt_path)!r})
+approval_receipt = approval_run_dir / "approval-gate-receipt.json"
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "approval-gate-check",
+    "--approval-packet",
+    str(approval_packet_path),
+    "--requested-action",
+    "herdr_gc_apply",
+    "--run-dir",
+    str(approval_run_dir),
+], 0)
+completed = run([
+    *uv_tau,
+    "herdr-cleanup",
+    "gc",
+    "--run-dir",
+    str(fixture_dir),
+    "--apply",
+    "--approval-receipt",
+    str(approval_receipt),
+    "--herdr-bin",
+    str(herdr_bin),
+], 1)
+payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+codes = [alert.get("code") for alert in payload.get("alerts", [])]
+if "approval_target_mismatch" not in codes:
+    raise SystemExit(f"expected approval_target_mismatch, got {{codes}}")
+if payload.get("applied_actions"):
+    raise SystemExit("expected no applied actions for wrong approval target")
 raise SystemExit(completed.returncode)
 """
 
@@ -4226,7 +4368,9 @@ def create_provider_readiness_status_fixture(run_dir: Path) -> dict[str, Path]:
                 "ready": True,
                 "source": "real_world_sanity_static_provider_readiness_fixture",
                 "process": {"alive": True, "command": command},
-                "evidence": {"visible_log_path": str(fixture_dir / f"logs/{provider_id}.visible.txt")},
+                "evidence": {
+                    "visible_log_path": str(fixture_dir / f"logs/{provider_id}.visible.txt")
+                },
             },
         )
     write_text(
@@ -5347,7 +5491,9 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 def _post_verified_absent_count(value: list[Any]) -> int:
-    return sum(1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True)
+    return sum(
+        1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True
+    )
 
 
 def receipt_live_value(payload: dict[str, Any] | None) -> Any:
