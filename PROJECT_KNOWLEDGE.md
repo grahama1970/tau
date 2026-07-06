@@ -1,9 +1,24 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:14 EDT by agent
+**Last updated:** 2026-07-06 18:20 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 LSP diagnostics zero-trust enforcement rung:
+  `src/tau_coding/lsp_receipts.py` now supports a `zero_trust` diagnostics
+  mode that blocks `tau.lsp_diagnostics_receipt.v1` when policy/data-boundary
+  metadata is missing, and records the supplied `policy_profile` plus
+  `data_boundary` in the receipt. `src/tau_coding/cli.py` exposes this through
+  `uv run tau lsp-diagnostics --zero-trust --policy-profile <policy.json>
+  --data-boundary <boundary.json>`. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/lsp_receipts.py src/tau_coding/cli.py
+  tests/test_lsp_receipts.py` -> pass; `uv run pytest tests/test_lsp_receipts.py
+  -q` -> `8 passed in 0.59s`. This proves deterministic local
+  policy/data-boundary presence gating for LSP-style diagnostics in zero-trust
+  mode; it does not prove semantic code correctness, full language-server
+  parity, legal compliance, provider/model quality, or runtime sandbox
+  isolation.
 
 - 2026-07-06 coding worker policy/data-boundary enforcement rung:
   `src/tau_coding/coding_worker_adapters.py` now blocks high-stakes or

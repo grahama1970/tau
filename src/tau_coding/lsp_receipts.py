@@ -30,11 +30,16 @@ def write_lsp_diagnostics_receipt(
     workspace: Path,
     output_path: Path,
     required: bool = False,
+    zero_trust: bool = False,
     policy_profile: Mapping[str, Any] | None = None,
     data_boundary: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     resolved_workspace = workspace.expanduser().resolve()
-    alerts = _coding_policy_alerts(policy_profile=policy_profile, data_boundary=data_boundary)
+    alerts = _coding_policy_alerts(
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+    )
     files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
     diagnostics: list[dict[str, Any]] = []
     server_used = "python_ast_parse_adapter"
@@ -60,6 +65,9 @@ def write_lsp_diagnostics_receipt(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "workspace": str(resolved_workspace),
         "language_server_used": server_used,
         "server_available": server_available,
@@ -239,10 +247,19 @@ def _severity_counts(diagnostics: list[dict[str, Any]]) -> dict[str, int]:
 
 def _coding_policy_alerts(
     *,
+    zero_trust: bool,
     policy_profile: Mapping[str, Any] | None,
     data_boundary: Mapping[str, Any] | None,
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
+    if zero_trust and policy_profile is None:
+        alerts.append(
+            _alert("missing_policy_profile", "zero-trust diagnostics require policy_profile")
+        )
+    if zero_trust and data_boundary is None:
+        alerts.append(
+            _alert("missing_data_boundary", "zero-trust diagnostics require data_boundary")
+        )
     if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
         alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:

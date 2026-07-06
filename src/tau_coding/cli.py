@@ -1676,6 +1676,7 @@ def main(
                 workspace=Path(str(options["workspace"])),
                 output_path=Path(str(options["out"])),
                 required=bool(options["required"]),
+                zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
@@ -4337,6 +4338,7 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
         "workspace": ".",
         "out": None,
         "required": False,
+        "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
     }
@@ -4358,6 +4360,8 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
             options["data_boundary"] = arg.partition("=")[2]
         elif arg == "--required":
             options["required"] = True
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
         else:
             raise RuntimeError(f"unknown lsp-diagnostics option: {arg}")
         index += 1

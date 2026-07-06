@@ -39,6 +39,37 @@ def test_lsp_diagnostics_blocks_when_server_unavailable_if_required(tmp_path: Pa
     assert "lsp_server_unavailable" in payload["alert_codes"]
 
 
+def test_lsp_diagnostics_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("value = 1\n", encoding="utf-8")
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "diagnostics.json",
+        zero_trust=True,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_lsp_diagnostics_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("value = 1\n", encoding="utf-8")
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "diagnostics.json",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["zero_trust"] is True
+    assert payload["policy_profile"]["profile_id"] == "test"
+    assert payload["data_boundary"]["classification"] == "public"
+
+
 def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path: Path) -> None:
     source = tmp_path / "example.py"
     source.write_text("def target():\n    return target()\n", encoding="utf-8")
@@ -90,3 +121,29 @@ def test_cli_lsp_symbols_writes_receipt(tmp_path: Path) -> None:
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == LSP_SYMBOL_RECEIPT_SCHEMA
     assert payload["reference_count"] == 2
+
+
+def test_cli_lsp_diagnostics_zero_trust_missing_boundary_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "example.py").write_text("value = 1\n", encoding="utf-8")
+    out = tmp_path / "diagnostics.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "lsp-diagnostics",
+            "--workspace",
+            str(tmp_path),
+            "--out",
+            str(out),
+            "--zero-trust",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
