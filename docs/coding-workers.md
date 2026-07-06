@@ -171,6 +171,22 @@ CLI:
 uv run tau commit-plan --repo . --out commit-plan-receipt.json
 ```
 
+For source-only changes, attach the receipts that justify the commit group:
+
+```bash
+uv run tau commit-plan \
+  --repo . \
+  --out commit-plan-receipt.json \
+  --evidence-receipt code-patch-receipt.json \
+  --evidence-receipt lsp-diagnostics-receipt.json \
+  --evidence-receipt review-findings-receipt.json
+```
+
+Tau blocks source changes that have neither changed tests nor explicit evidence
+receipts. The receipt records each evidence artifact path, schema, status, and
+SHA-256 so a later reviewer can inspect what supported the proposed atomic
+commit.
+
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when planning commits for a high-stakes coding route. In zero-trust mode, Tau
 blocks commit plans that omit policy or boundary metadata.

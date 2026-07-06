@@ -267,16 +267,34 @@
   `src/tau_coding/commit_plan.py` now supports zero-trust metadata on
   `tau.commit_plan_receipt.v1`; `src/tau_coding/cli.py` exposes it through
   `uv run tau commit-plan --zero-trust --policy-profile <policy.json>
-  --data-boundary <boundary.json>`. In zero-trust mode, Tau blocks dry-run
-  commit plans that omit `policy_profile` or `data_boundary`, while preserving
-  the existing apply-approval and high-risk-path gates. Focused proof: `uv run
-  ruff check --select I,F,E501 src/tau_coding/commit_plan.py
-  src/tau_coding/cli.py tests/test_commit_plan.py` -> pass; `uv run pytest
-  tests/test_commit_plan.py -q` -> `9 passed in 0.51s`. This proves
-  deterministic local policy/data-boundary presence gating for commit planning
-  in zero-trust mode; it does not prove semantic grouping quality, commit
+  --data-boundary <boundary.json>` and repeatable `--evidence-receipt
+  <receipt.json>`. In zero-trust mode, Tau blocks dry-run commit plans that
+  omit `policy_profile` or `data_boundary`, and source-only changes now block
+  with `source_changes_lack_tests_or_evidence` unless tests changed or explicit
+  evidence receipts are attached. Commit-plan receipts record evidence receipt
+  path, schema, status, `ok`, and SHA-256 while preserving the existing
+  apply-approval and high-risk-path gates. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/commit_plan.py src/tau_coding/cli.py
+  tests/test_commit_plan.py docs/coding-workers.md` -> pass; `uv run pytest
+  tests/test_commit_plan.py -q` -> `10 passed in 0.59s`. CLI no-evidence
+  smoke intentionally exited non-zero and produced
+  `source_changes_lack_tests_or_evidence`. Example proof:
+  `examples/coding-reliability-basic/run.sh
+  /tmp/tau-coding-reliability-commit-plan-evidence` exited 0; nested
+  `/tmp/tau-coding-reliability-commit-plan-evidence/receipts/commit-plan-receipt.json`
+  reports `status:"PASS"`, `evidence_receipt_count:3`, and evidence schemas
+  `tau.code_patch_receipt.v1`, `tau.lsp_diagnostics_receipt.v1`, and
+  `tau.review_findings.v1`. This proves deterministic local
+  policy/data-boundary presence gating and source-change evidence attachment
+  for commit planning; it does not prove semantic grouping quality, commit
   creation, test success, legal compliance, provider/model quality, or runtime
   sandbox isolation.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-evidence` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-evidence/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded coding receipt tests
+  `103 passed in 2.58s`.
 
 - 2026-07-06 LSP diagnostics zero-trust enforcement rung:
   `src/tau_coding/lsp_receipts.py` now supports a `zero_trust` diagnostics

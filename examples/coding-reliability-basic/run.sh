@@ -111,6 +111,9 @@ uv run tau review-findings \
 uv run tau commit-plan \
   --repo "${WORK_REPO}" \
   --out "${OUT}/receipts/commit-plan-receipt.json" \
+  --evidence-receipt "${OUT}/receipts/valid-code-patch-receipt.json" \
+  --evidence-receipt "${OUT}/receipts/lsp-diagnostics-receipt.json" \
+  --evidence-receipt "${OUT}/receipts/review-findings-receipt.json" \
   > "${OUT}/receipts/commit-plan.stdout.json"
 
 python3 - "${OUT}" "${GOAL_HASH}" <<'PY'

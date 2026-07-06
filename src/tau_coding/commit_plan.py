@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from collections import defaultdict
@@ -32,6 +33,7 @@ def write_commit_plan_receipt(
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
+    evidence_receipt_paths: list[Path] | None = None,
 ) -> dict[str, Any]:
     resolved_repo = repo.expanduser().resolve()
     alerts = _coding_policy_alerts(
@@ -41,6 +43,7 @@ def write_commit_plan_receipt(
     )
     changed = _git_changed_files(resolved_repo)
     groups = _commit_groups(changed)
+    evidence_receipts = _evidence_receipts(evidence_receipt_paths or [], alerts)
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
     if changed and not groups:
         alerts.append(_alert("empty_plan_with_dirty_tree", "dirty tree produced no commit groups"))
@@ -49,6 +52,13 @@ def write_commit_plan_receipt(
             alerts.append(_alert("commit_group_missing_rationale", "commit group has no rationale"))
     if high_risk:
         alerts.append(_alert("high_risk_paths_touched", "high-risk paths require approval"))
+    if _has_group(groups, "source") and not _has_group(groups, "tests") and not evidence_receipts:
+        alerts.append(
+            _alert(
+                "source_changes_lack_tests_or_evidence",
+                "source changes require changed tests or explicit evidence receipts",
+            )
+        )
     if apply:
         alerts.append(
             _alert("approval_required_to_apply", "commit-plan apply requires approval receipt")
@@ -69,6 +79,8 @@ def write_commit_plan_receipt(
         "apply_requested": apply,
         "changed_file_count": len(changed),
         "changed_files": changed,
+        "evidence_receipts": evidence_receipts,
+        "evidence_receipt_count": len(evidence_receipts),
         "proposed_commit_groups": groups,
         "group_count": len(groups),
         "dependency_order": [group["group_id"] for group in groups],
@@ -160,6 +172,43 @@ def _commit_groups(changed: list[dict[str, str]]) -> list[dict[str, Any]]:
     return groups
 
 
+def _evidence_receipts(
+    paths: list[Path],
+    alerts: list[dict[str, str]],
+) -> list[dict[str, Any]]:
+    receipts: list[dict[str, Any]] = []
+    for path in paths:
+        resolved = path.expanduser().resolve()
+        try:
+            payload = json.loads(resolved.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            alerts.append(
+                _alert("evidence_receipt_unreadable", f"evidence receipt unreadable: {exc}")
+            )
+            continue
+        if not isinstance(payload, dict):
+            alerts.append(
+                _alert("evidence_receipt_not_object", "evidence receipt must be JSON object")
+            )
+            continue
+        schema = payload.get("schema")
+        status = payload.get("status")
+        receipts.append(
+            {
+                "path": str(resolved),
+                "sha256": f"sha256:{_sha256(resolved)}",
+                "schema": schema,
+                "status": status,
+                "ok": payload.get("ok"),
+            }
+        )
+    return receipts
+
+
+def _has_group(groups: list[dict[str, Any]], group_id: str) -> bool:
+    return any(group.get("group_id") == group_id for group in groups)
+
+
 def _rationale(group_id: str) -> str:
     return {
         "source": "Source and runtime behavior changes should be reviewed together.",
@@ -181,6 +230,10 @@ def _required_evidence(group_id: str) -> list[str]:
 
 def _is_high_risk(path: str) -> bool:
     return any(path == pattern or path.startswith(pattern) for pattern in HIGH_RISK_PATTERNS)
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _coding_policy_alerts(

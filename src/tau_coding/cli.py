@@ -1738,6 +1738,9 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
+                evidence_receipt_paths=[
+                    Path(str(path)) for path in options["evidence_receipts"]
+                ],
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4563,15 +4566,25 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "evidence_receipts": [],
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--repo", "--out", "--policy-profile", "--data-boundary"}:
+        if arg in {
+            "--repo",
+            "--out",
+            "--policy-profile",
+            "--data-boundary",
+            "--evidence-receipt",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+            if arg == "--evidence-receipt":
+                options["evidence_receipts"].append(args[index])
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = args[index]
         elif arg.startswith("--repo="):
             options["repo"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
@@ -4580,6 +4593,8 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--evidence-receipt="):
+            options["evidence_receipts"].append(arg.partition("=")[2])
         elif arg == "--apply":
             options["apply"] = True
         elif arg == "--zero-trust":

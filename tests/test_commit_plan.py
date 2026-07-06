@@ -49,9 +49,39 @@ def test_commit_plan_is_dry_run_by_default(tmp_path: Path) -> None:
 
     payload = write_commit_plan_receipt(repo=repo, output_path=repo / "commit-plan.json")
 
+    assert payload["status"] == "BLOCKED"
     assert payload["dry_run"] is True
     assert payload["apply_requested"] is False
+    assert "source_changes_lack_tests_or_evidence" in payload["alert_codes"]
     assert "Commits were created." in payload["proof_scope"]["does_not_prove"]
+
+
+def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "lsp-diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["evidence_receipt_count"] == 1
+    assert payload["evidence_receipts"][0]["schema"] == "tau.lsp_diagnostics_receipt.v1"
+    assert payload["evidence_receipts"][0]["sha256"].startswith("sha256:")
 
 
 def test_commit_plan_requires_approval_to_apply(tmp_path: Path) -> None:
@@ -86,6 +116,12 @@ def test_commit_plan_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -
 def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "diagnostics.json"
+    evidence.write_text(
+        json.dumps({"schema": "tau.lsp_diagnostics_receipt.v1", "ok": True, "status": "PASS"})
+        + "\n",
+        encoding="utf-8",
+    )
 
     payload = write_commit_plan_receipt(
         repo=repo,
@@ -93,6 +129,7 @@ def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
         zero_trust=True,
         policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
         data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        evidence_receipt_paths=[evidence],
     )
 
     assert payload["status"] == "PASS"
@@ -104,14 +141,32 @@ def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
 def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "evidence.json"
+    evidence.write_text(
+        json.dumps({"schema": "tau.review_findings_receipt.v1", "ok": True, "status": "PASS"})
+        + "\n",
+        encoding="utf-8",
+    )
     out = repo / "commit-plan.json"
 
-    result = CliRunner().invoke(app, ["commit-plan", "--repo", str(repo), "--out", str(out)])
+    result = CliRunner().invoke(
+        app,
+        [
+            "commit-plan",
+            "--repo",
+            str(repo),
+            "--out",
+            str(out),
+            "--evidence-receipt",
+            str(evidence),
+        ],
+    )
 
     payload = json.loads(result.output)
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == COMMIT_PLAN_RECEIPT_SCHEMA
+    assert payload["evidence_receipt_count"] == 1
 
 
 def test_cli_commit_plan_zero_trust_missing_boundary_exits_blocked(
