@@ -1,0 +1,2 @@
+pane_read_failed returncode=1
+{"code":"pane_not_found","message":"pane w7D:pA not found"}

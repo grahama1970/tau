@@ -1,0 +1,17 @@
+{
+  "confidence": 0.91,
+  "evidence": [
+    {
+      "statement": "Inline evidence must be rejected; use a separate evidence case."
+    }
+  ],
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-inline",
+  "memory_first": true,
+  "route": "ANSWER",
+  "schema": "memory.intent.v1",
+  "summary": "Memory intent routes the DAG to deterministic local execution.",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-inline"
+  }
+}

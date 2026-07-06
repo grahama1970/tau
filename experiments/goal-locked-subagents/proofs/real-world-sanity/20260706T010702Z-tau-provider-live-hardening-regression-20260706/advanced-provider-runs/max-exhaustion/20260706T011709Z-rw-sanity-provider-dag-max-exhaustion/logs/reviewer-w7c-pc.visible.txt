@@ -1,0 +1,20 @@
+
+Now I have al
+l the informa
+tion. The scr
+atch worktree
+ exists with
+only `message
+.txt`, the ta
+rget file has
+ the TODO lin
+e removed, an
+d the coder r
+eceipt is sch
+ema-valid. Si
+nce `force_re
+vise` is true
+, verdict mus
+t be REVISE w
+ith concrete
+feedback.

@@ -1,0 +1,20 @@
+/provider-run
+s/20260706T01
+1244Z-rw-sani
+ty-generic-pr
+ovider-dag-ad
+apter/receipt
+s/attempt-01-
+reviewer.json
+Wrote file su
+ccessfully.
+
+Good — visibl
+e log is empt
+y (no output
+from this ses
+sion yet), wh
+ich is expect
+ed. Now writi
+ng the receip
+t.

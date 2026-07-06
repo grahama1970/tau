@@ -1,0 +1,22 @@
+  condition. Include exact paths, command names, or
+  artifact names when work has touched files or tools. Do
+  not answer with only conclusions such as done, fixed,
+  checking, working, or making progress.
+
+• Stop hook (stopped)
+  warning: Violation blocked: do not end with a 'does not
+  prove' / 'still not proven here' / 'not yet proven' /
+  'specifically unproven' / 'pending, not closed' caveat
+  when actionable work remains. A caveat is not a stopping
+  condition. Continue into the next concrete implementation
+  or verification step, or state a real blocker with
+  Status/Phase, Now, Evidence, mocked/live, and Next/stop
+  condition.
+  stop: Premature unproven-work stop.
+
+─ Worked for 1m 51s ───────────────────────────────────────
+
+
+› Write tests for @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

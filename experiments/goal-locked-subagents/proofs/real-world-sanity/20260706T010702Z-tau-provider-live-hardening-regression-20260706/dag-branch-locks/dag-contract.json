@@ -1,0 +1,71 @@
+{
+  "dag_id": "rw-sanity-dag-branch-locks",
+  "edges": [
+    {
+      "from": "provider-node",
+      "to": "mutating-node"
+    },
+    {
+      "from": "mutating-node",
+      "to": "human"
+    }
+  ],
+  "entry_node": "provider-node",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "missing_required_evidence",
+    "max_attempts_exceeded"
+  ],
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-dag-branch-locks",
+    "goal_id": "rw-sanity-dag-branch-locks",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 30,
+    "max_total_attempts": 3,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "provider-agent",
+      "executor": "provider",
+      "id": "provider-node",
+      "max_attempts": 1,
+      "provider": {
+        "adapter": "generic-provider-dag-node"
+      },
+      "required_evidence": [
+        "provider_receipt"
+      ]
+    },
+    {
+      "agent": "coder",
+      "executor": "local",
+      "id": "mutating-node",
+      "max_attempts": 1,
+      "mutates": true,
+      "required_evidence": [
+        "mutation_receipt"
+      ]
+    },
+    {
+      "agent": "human",
+      "executor": "human",
+      "id": "human"
+    }
+  ],
+  "required_evidence": [
+    "provider_receipt",
+    "mutation_receipt"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-dag-branch-locks"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

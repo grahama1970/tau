@@ -1,0 +1,21 @@
+nts/tau/experiments/goal-loc
+ked-subagents/proofs/real-wo
+rld-sanity/20260706T010702Z-
+tau-provider-live-hardening-
+regression-20260706/advanced
+-provider-runs/one-pass/2026
+0706T010744Z-rw-sanity-provi
+der-dag-one-pass/planner-rec
+eipt.json\nfinal_receipt: /h
+ome/graham/workspace/experim
+ents/tau/experiments/goal-lo
+cked-subagents/proofs/real-w
+orld-sanity/20260706T010702Z
+-tau-provider-live-hardening
+-regression-20260706/advance
+d-provider-runs/one-pass/202
+60706T010744Z-rw-sanity-prov
+ider-dag-one-pass/run-receip
+t.json\ncanonical truth: Tau
+ JSON receipts; this pane is
+ human-visible telemetry.\n

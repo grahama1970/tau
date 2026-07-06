@@ -1,0 +1,82 @@
+{
+  "artifacts": [
+    {
+      "kind": "run_dir",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter"
+    },
+    {
+      "kind": "runtime_manifest",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/runtime-manifest.json"
+    },
+    {
+      "kind": "events_jsonl",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/events.jsonl"
+    },
+    {
+      "kind": "dag_spec",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/dag-spec.json"
+    },
+    {
+      "kind": "provider_readiness_receipt",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/provider-readiness-receipt.json"
+    },
+    {
+      "kind": "herdr_cleanup_receipt",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/herdr-cleanup-receipt.json"
+    },
+    {
+      "kind": "orchestration_evidence_receipt",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/orchestration-evidence-receipt.json"
+    }
+  ],
+  "attempt": 1,
+  "commands_run": [
+    "tau provider-dag-poc via tau generic-provider-dag-node"
+  ],
+  "dag_id": "20260706T011244Z-rw-sanity-generic-provider-dag-adapter",
+  "errors": [],
+  "goal_hash": "sha256:5d5ad1809b37fdf80e2263083a204ceed87cf44fe503cde5e046e98ce5dc2170",
+  "handoff_summary": "Provider DAG subrun passed and was translated into a generic DAG node receipt.",
+  "live": true,
+  "mocked": false,
+  "node_id": "provider_task",
+  "pane_id": "w7A:p5",
+  "policy_exceptions": [],
+  "provider_binding": {
+    "agent": "provider-dag-adapter",
+    "attempt": 1,
+    "binding_source": "provider_subrun",
+    "dag_id": "20260706T011244Z-rw-sanity-generic-provider-dag-adapter",
+    "errors": [],
+    "goal_hash": "sha256:5d5ad1809b37fdf80e2263083a204ceed87cf44fe503cde5e046e98ce5dc2170",
+    "max_attempts": 1,
+    "node_id": "provider_task",
+    "pane_id": "w7A:p5",
+    "provider_run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter",
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/runtime-manifest.json",
+    "schema": "tau.provider_dag_node_binding.v1",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree",
+    "status": "PASS",
+    "target_repo": null,
+    "terminal_id": "term_655e6f8de72a3828",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T011244Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "visible_log_sha256": "37e64dc397eaf72d7ae668e62d0048dd3dcef34e5a817816b8ccbc924effd965",
+    "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/work-orders/provider-task.json",
+    "work_order_schema": "tau.generic_provider_adapter_work_order.v1",
+    "work_order_sha256": "f1beb1b8f99ed2ff3c6e04a6b0bf41cb9f738e6c6932d63537e916b317b18812",
+    "workspace_id": "w7A"
+  },
+  "provider_live": true,
+  "provider_status": "PASS",
+  "provider_verdict": "PASS",
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e6f8de72a3828",
+  "timestamp": "2026-07-06T01:15:00Z",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T011244Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "37e64dc397eaf72d7ae668e62d0048dd3dcef34e5a817816b8ccbc924effd965",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/work-orders/provider-task.json",
+  "work_order_sha256": "f1beb1b8f99ed2ff3c6e04a6b0bf41cb9f738e6c6932d63537e916b317b18812",
+  "workspace_id": "w7A"
+}

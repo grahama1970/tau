@@ -1,0 +1,10 @@
+{
+  "case_id": "memory-evidence-missing-hash-case",
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-missing-hash",
+  "schema": "tau.evidence_case.v1",
+  "support_artifacts": [],
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-missing-hash"
+  }
+}

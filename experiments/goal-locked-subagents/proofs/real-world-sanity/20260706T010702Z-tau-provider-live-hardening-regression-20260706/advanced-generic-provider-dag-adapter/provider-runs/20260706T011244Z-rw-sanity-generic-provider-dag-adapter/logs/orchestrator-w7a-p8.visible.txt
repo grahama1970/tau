@@ -1,0 +1,21 @@
+702Z-tau-provider-live-harde
+ning-regression-20260706/adv
+anced-generic-provider-dag-a
+dapter/provider-runs/2026070
+6T011244Z-rw-sanity-generic-
+provider-dag-adapter/planner
+-receipt.json\nfinal_receipt
+: /home/graham/workspace/exp
+eriments/tau/experiments/goa
+l-locked-subagents/proofs/re
+al-world-sanity/20260706T010
+702Z-tau-provider-live-harde
+ning-regression-20260706/adv
+anced-generic-provider-dag-a
+dapter/provider-runs/2026070
+6T011244Z-rw-sanity-generic-
+provider-dag-adapter/run-rec
+eipt.json\ncanonical truth:
+Tau JSON receipts; this pane
+ is human-visible telemetry.
+\n

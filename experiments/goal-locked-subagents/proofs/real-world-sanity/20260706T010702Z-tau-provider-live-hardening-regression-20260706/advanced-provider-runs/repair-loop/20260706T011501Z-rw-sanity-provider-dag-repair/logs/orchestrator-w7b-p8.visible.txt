@@ -1,0 +1,21 @@
+ked-subagents/proofs/real-wo
+rld-sanity/20260706T010702Z-
+tau-provider-live-hardening-
+regression-20260706/advanced
+-provider-runs/repair-loop/2
+0260706T011501Z-rw-sanity-pr
+ovider-dag-repair/planner-re
+ceipt.json\nfinal_receipt: /
+home/graham/workspace/experi
+ments/tau/experiments/goal-l
+ocked-subagents/proofs/real-
+world-sanity/20260706T010702
+Z-tau-provider-live-hardenin
+g-regression-20260706/advanc
+ed-provider-runs/repair-loop
+/20260706T011501Z-rw-sanity-
+provider-dag-repair/run-rece
+ipt.json\ncanonical truth: T
+au JSON receipts; this pane
+is human-visible telemetry.\
+n

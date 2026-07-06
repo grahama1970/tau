@@ -1,0 +1,21 @@
+-subagents/proofs/real-world
+-sanity/20260706T010702Z-tau
+-provider-live-hardening-reg
+ression-20260706/advanced-pr
+ovider-runs/invalid-model/20
+260706T011915Z-rw-sanity-pro
+vider-dag-invalid-model/plan
+ner-receipt.json\nfinal_rece
+ipt: /home/graham/workspace/
+experiments/tau/experiments/
+goal-locked-subagents/proofs
+/real-world-sanity/20260706T
+010702Z-tau-provider-live-ha
+rdening-regression-20260706/
+advanced-provider-runs/inval
+id-model/20260706T011915Z-rw
+-sanity-provider-dag-invalid
+-model/run-receipt.json\ncan
+onical truth: Tau JSON recei
+pts; this pane is human-visi
+ble telemetry.\n

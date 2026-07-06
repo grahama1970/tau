@@ -1,0 +1,30 @@
+{
+  "agent_name": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+  "command": [
+    "opencode",
+    "/home/graham/workspace/experiments/tau"
+  ],
+  "dag": {
+    "agent": "reviewer",
+    "dag_id": "20260706T011709Z-rw-sanity-provider-dag-max-exhaustion",
+    "node_id": "reviewer"
+  },
+  "does_not_own": [
+    "semantic task execution",
+    "GitHub ticket closure",
+    "remote Tailscale monitoring proof"
+  ],
+  "owns": [
+    "launch an interactive provider session in a visible Herdr pane"
+  ],
+  "provider_id": "opencode",
+  "role": "opencode",
+  "run_id": "20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema": "tau.provider_pane_work_order.v1",
+  "status_reporting": {
+    "reason": "This POC proves provider session launch, not provider task execution.",
+    "required": false
+  },
+  "summary": "Provider pane launch smoke only. Do not modify files or claim task completion from this work order.",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json"
+}

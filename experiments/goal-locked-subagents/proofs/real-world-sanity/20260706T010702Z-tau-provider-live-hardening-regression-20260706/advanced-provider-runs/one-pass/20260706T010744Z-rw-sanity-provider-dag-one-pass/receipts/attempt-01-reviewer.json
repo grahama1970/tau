@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T010744Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:edbe71b4a17884e3cd48f440efe3dde34f2947cb41999b9192ce79d7df335026",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w78",
+  "pane_id": "w78:p6",
+  "terminal_id": "term_655e6e70045b1817",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T010744Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "2989f3143278072dcf2e6952aefef141eb58733351d857ecdf031f444447ddb8",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T010744Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (reads 'Completed implementation for the Tau provider DAG coder POC.'), coder receipt is schema-valid with tau.provider_dag_node_receipt.v1, force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}
