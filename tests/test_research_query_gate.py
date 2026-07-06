@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -45,10 +46,11 @@ def test_research_query_gate_blocks_controlled_marker_under_itar_boundary(
 ) -> None:
     policy_path = _write_policy(tmp_path, external_search="allow_with_approval")
     boundary_path = _write_boundary(tmp_path, external_research_allowed=True)
-    auth_path = _write_authorization(tmp_path)
+    query = "Search for ITAR controlled technical data handling examples"
+    auth_path = _write_authorization(tmp_path, query=query)
 
     receipt = write_research_query_safety_receipt(
-        query="Search for ITAR controlled technical data handling examples",
+        query=query,
         method="brave-search",
         policy_profile_path=policy_path,
         data_boundary_path=boundary_path,
@@ -67,7 +69,11 @@ def test_research_query_gate_blocks_controlled_marker_under_itar_boundary(
 def test_research_query_gate_blocks_controlled_artifact_snippet(tmp_path: Path) -> None:
     policy_path = _write_policy(tmp_path, external_search="allow_with_approval")
     boundary_path = _write_boundary(tmp_path, external_research_allowed=True)
-    auth_path = _write_authorization(tmp_path)
+    query = (
+        "Please search this exact phrase: rotor actuator calibration detail "
+        "alpha bravo charlie delta echo foxtrot"
+    )
+    auth_path = _write_authorization(tmp_path, query=query)
     controlled = tmp_path / "controlled.txt"
     controlled.write_text(
         "Rotor actuator calibration detail alpha bravo charlie delta echo foxtrot.",
@@ -75,10 +81,7 @@ def test_research_query_gate_blocks_controlled_artifact_snippet(tmp_path: Path) 
     )
 
     receipt = write_research_query_safety_receipt(
-        query=(
-            "Please search this exact phrase: rotor actuator calibration detail "
-            "alpha bravo charlie delta echo foxtrot"
-        ),
+        query=query,
         method="brave-search",
         policy_profile_path=policy_path,
         data_boundary_path=boundary_path,
@@ -94,10 +97,11 @@ def test_research_query_gate_blocks_controlled_artifact_snippet(tmp_path: Path) 
 def test_research_query_gate_passes_sanitized_authorized_query(tmp_path: Path) -> None:
     policy_path = _write_policy(tmp_path, external_search="allow_with_approval")
     boundary_path = _write_boundary(tmp_path, external_research_allowed=True)
-    auth_path = _write_authorization(tmp_path)
+    query = "Find public NIST publications on secure research workflow review"
+    auth_path = _write_authorization(tmp_path, query=query)
 
     receipt = write_research_query_safety_receipt(
-        query="Find public NIST publications on secure research workflow review",
+        query=query,
         method="brave-search",
         policy_profile_path=policy_path,
         data_boundary_path=boundary_path,
@@ -107,9 +111,61 @@ def test_research_query_gate_passes_sanitized_authorized_query(tmp_path: Path) -
 
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
+    assert receipt["live"] is True
+    assert receipt["external_tool_called"] is False
     assert receipt["alert_codes"] == []
     assert receipt["recommended_action"]["next_agent"] == "research-auditor"
     assert "ITAR compliance." in receipt["proof_scope"]["does_not_prove"]
+
+
+def test_research_query_gate_blocks_query_swapped_after_authorization(
+    tmp_path: Path,
+) -> None:
+    policy_path = _write_policy(tmp_path, external_search="allow_with_approval")
+    boundary_path = _write_boundary(tmp_path, external_research_allowed=True)
+    auth_path = _write_authorization(
+        tmp_path,
+        query="Find public NIST publications on secure research workflow review",
+    )
+
+    receipt = write_research_query_safety_receipt(
+        query="Find public NIST publications on secure workflow review plus actuator tuning",
+        method="brave-search",
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        authorization_path=auth_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "research_authorization_invalid" in receipt["alert_codes"]
+    auth_alert = next(
+        alert for alert in receipt["alerts"] if alert["code"] == "research_authorization_invalid"
+    )
+    assert "authorized query hash does not match requested query" in auth_alert["evidence"]["errors"]
+
+
+def test_research_query_gate_blocks_expired_authorization(tmp_path: Path) -> None:
+    policy_path = _write_policy(tmp_path, external_search="allow_with_approval")
+    boundary_path = _write_boundary(tmp_path, external_research_allowed=True)
+    query = "Find public NIST publications on secure research workflow review"
+    auth_path = _write_authorization(tmp_path, query=query, expired=True)
+
+    receipt = write_research_query_safety_receipt(
+        query=query,
+        method="brave-search",
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        authorization_path=auth_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "research_authorization_invalid" in receipt["alert_codes"]
+    auth_alert = next(
+        alert for alert in receipt["alerts"] if alert["code"] == "research_authorization_invalid"
+    )
+    assert "authorization is expired" in auth_alert["evidence"]["errors"]
 
 
 def test_cli_research_query_gate_writes_fail_closed_receipt(tmp_path: Path) -> None:
@@ -195,21 +251,27 @@ def _write_boundary(tmp_path: Path, *, external_research_allowed: bool) -> Path:
     return path
 
 
-def _write_authorization(tmp_path: Path) -> Path:
+def _write_authorization(tmp_path: Path, *, query: str, expired: bool = False) -> Path:
     path = tmp_path / "research-query-authorization.json"
+    expires_at = datetime.now(UTC) + timedelta(days=1)
+    if expired:
+        expires_at = datetime.now(UTC) - timedelta(minutes=1)
     path.write_text(
         json.dumps(
             {
                 "schema": "tau.research_query_authorization.v1",
                 "approved": True,
                 "allowed_methods": ["brave-search"],
+                "sanitized_query_sha256": f"sha256:{_sha256_text(query)}",
                 "data_boundary_classification": "ITAR",
                 "approver": {"id": "human:graham"},
-                "expires_at": (datetime.now(UTC) + timedelta(days=1)).strftime(
-                    "%Y-%m-%dT%H:%M:%SZ"
-                ),
+                "expires_at": expires_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
             }
         ),
         encoding="utf-8",
     )
     return path
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()

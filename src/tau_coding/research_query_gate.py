@@ -73,9 +73,10 @@ def write_research_query_safety_receipt(
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": False,
+        "live": True,
         "provider_live": False,
         "method": method,
+        "external_tool_called": False,
         "query_sha256": f"sha256:{_text_sha256(query)}",
         "query_length": len(query),
         "policy_profile": _source_payload(resolved_policy, policy),
@@ -183,12 +184,18 @@ def _evaluate_query(
             )
         )
 
-    if external_method and _authorization_errors(authorization, method=method, boundary=boundary):
+    auth_errors = _authorization_errors(
+        authorization,
+        method=method,
+        boundary=boundary,
+        query=query,
+    )
+    if external_method and auth_errors:
         alerts.append(
             _alert(
                 "research_authorization_invalid",
                 "External research requires a matching, unexpired research authorization.",
-                errors=_authorization_errors(authorization, method=method, boundary=boundary),
+                errors=auth_errors,
             )
         )
     return alerts
@@ -199,6 +206,7 @@ def _authorization_errors(
     *,
     method: str,
     boundary: Mapping[str, Any],
+    query: str,
 ) -> list[str]:
     if authorization is None:
         return ["authorization packet missing"]
@@ -210,6 +218,11 @@ def _authorization_errors(
     allowed_methods = authorization.get("allowed_methods")
     if not isinstance(allowed_methods, list) or method not in allowed_methods:
         errors.append("allowed_methods must include requested method")
+    query_hash = _authorized_query_hash(authorization)
+    if query_hash is None:
+        errors.append("sanitized_query_sha256 or query_sha256 is required")
+    elif query_hash != f"sha256:{_text_sha256(query)}":
+        errors.append("authorized query hash does not match requested query")
     boundary_classification = authorization.get("data_boundary_classification")
     if boundary_classification != boundary.get("classification"):
         errors.append("data_boundary_classification must match data_boundary.classification")
@@ -224,6 +237,15 @@ def _authorization_errors(
         if parsed is not None and parsed <= datetime.now(UTC):
             errors.append("authorization is expired")
     return errors
+
+
+def _authorized_query_hash(authorization: Mapping[str, Any]) -> str | None:
+    for key in ("sanitized_query_sha256", "query_sha256"):
+        value = authorization.get(key)
+        if isinstance(value, str) and value.strip():
+            normalized = value.strip()
+            return normalized if normalized.startswith("sha256:") else f"sha256:{normalized}"
+    return None
 
 
 def _read_json_object(path: Path, *, errors: list[str], label: str) -> dict[str, Any]:
