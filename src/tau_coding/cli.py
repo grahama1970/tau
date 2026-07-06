@@ -139,6 +139,7 @@ from tau_coding.project_dag import (
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
+from tau_coding.project_profile import write_project_profile_validation_receipt
 from tau_coding.proof_index import build_proof_index
 from tau_coding.provenance import (
     build_actor_manifest,
@@ -1603,6 +1604,18 @@ def main(
                 mocked=bool(options["mocked"]),
                 live=bool(options["live"]),
                 provider_live=bool(options["provider_live"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "project-profile-validate":
+        try:
+            options = _parse_project_profile_validate_cli_args(positional_args[1:])
+            payload = write_project_profile_validation_receipt(
+                profile_path=Path(str(options["profile"])),
+                output_path=Path(str(options["out"])),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3957,6 +3970,30 @@ def _parse_herdr_observation_gate_cli_args(args: list[str]) -> dict[str, object]
         raise RuntimeError("Usage: tau herdr-observation-gate --snapshot <json> --out <json>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau herdr-observation-gate --snapshot <json> --out <json>")
+    return options
+
+
+def _parse_project_profile_validate_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"profile": None, "out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--profile", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--profile="):
+            options["profile"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown project-profile-validate option: {arg}")
+        index += 1
+    if not _optional_str(options.get("profile")):
+        raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
     return options
 
 
