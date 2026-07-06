@@ -1611,6 +1611,29 @@ def build_checks(
             output_receipt=route_memory_apply["approval_mismatch_sync_receipt"],
         ),
         Check(
+            check_id="advanced.dag_route_memory_apply_with_approval_syncs",
+            level="advanced",
+            purpose=(
+                "Tau projects route-memory candidates locally, then performs an "
+                "approved Memory /upsert against a local HTTP endpoint."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                route_memory_apply_with_approval_command(
+                    uv_tau=uv_tau,
+                    signal=route_memory_apply["signal"],
+                    candidate_receipt=route_memory_apply["approved_candidate_receipt"],
+                    sync_receipt=route_memory_apply["approved_sync_receipt"],
+                    approval_receipt=route_memory_apply["approved_receipt"],
+                    memory_requests=route_memory_apply["approved_memory_requests"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            output_receipt=route_memory_apply["approved_sync_receipt"],
+        ),
+        Check(
             check_id="advanced.dag_route_memory_dry_run_projects_documents",
             level="advanced",
             purpose=(
@@ -2972,6 +2995,22 @@ def create_route_memory_fixture(run_dir: Path) -> dict[str, Path]:
                 },
             },
         ),
+        "approved_candidate_receipt": fixture_dir / "approved-candidate-receipt.json",
+        "approved_sync_receipt": fixture_dir / "approved-sync-receipt.json",
+        "approved_memory_requests": fixture_dir / "approved-memory-requests.json",
+        "approved_receipt": write_json(
+            fixture_dir / "approved-memory-upsert-receipt.json",
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "approved": True,
+                "requested_action": "memory_upsert",
+                "packet_summary": {
+                    "target_id": "route-memory:rw-sanity-route-memory:tau_route_memory",
+                },
+            },
+        ),
         "dry_run_candidate_receipt": fixture_dir / "dry-run-candidate-receipt.json",
         "dry_run_sync_receipt": fixture_dir / "dry-run-sync-receipt.json",
     }
@@ -3126,6 +3165,110 @@ completed = run([
     "--approval-receipt",
     str(approval_receipt),
 ], 1)
+raise SystemExit(completed.returncode)
+"""
+
+
+def route_memory_apply_with_approval_command(
+    *,
+    uv_tau: list[str],
+    signal: Path,
+    candidate_receipt: Path,
+    sync_receipt: Path,
+    approval_receipt: Path,
+    memory_requests: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+signal = Path({str(signal)!r})
+candidate_receipt = Path({str(candidate_receipt)!r})
+sync_receipt = Path({str(sync_receipt)!r})
+approval_receipt = Path({str(approval_receipt)!r})
+memory_requests = Path({str(memory_requests)!r})
+requests = []
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        length = int(self.headers.get("content-length", "0") or "0")
+        body = self.rfile.read(length)
+        payload = json.loads(body.decode("utf-8")) if body else {{}}
+        requests.append({{"path": self.path, "payload": payload}})
+        documents = payload.get("documents") if isinstance(payload, dict) else []
+        response = {{
+            "ok": True,
+            "received": len(documents) if isinstance(documents, list) else 0,
+        }}
+        response_bytes = json.dumps(response).encode("utf-8")
+        self.send_response(200)
+        self.send_header("content-type", "application/json")
+        self.send_header("content-length", str(len(response_bytes)))
+        self.end_headers()
+        self.wfile.write(response_bytes)
+
+    def log_message(self, format, *args):
+        return
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+thread = threading.Thread(target=server.serve_forever, daemon=True)
+thread.start()
+try:
+    run([
+        *uv_tau,
+        "dag-route-memory-candidates",
+        "--signal-receipt",
+        str(signal),
+        "--receipt",
+        str(candidate_receipt),
+    ], 0)
+    completed = run([
+        *uv_tau,
+        "dag-route-memory-sync",
+        "--candidate-receipt",
+        str(candidate_receipt),
+        "--receipt",
+        str(sync_receipt),
+        "--apply",
+        "--approval-receipt",
+        str(approval_receipt),
+        "--memory-url",
+        f"http://127.0.0.1:{{server.server_port}}",
+    ], 0)
+finally:
+    server.shutdown()
+    server.server_close()
+    thread.join(timeout=2)
+
+memory_requests.write_text(json.dumps(requests, indent=2, sort_keys=True), encoding="utf-8")
+payload = json.loads(sync_receipt.read_text(encoding="utf-8"))
+if payload.get("memory_sync") is not True:
+    raise SystemExit("expected memory_sync true")
+if payload.get("sync_status") != "SYNCED":
+    raise SystemExit(f"expected SYNCED, got {{payload.get('sync_status')}}")
+if len(requests) != 1 or requests[0].get("path") != "/upsert":
+    raise SystemExit(f"expected one /upsert request, got {{requests}}")
+documents = requests[0]["payload"].get("documents")
+if not isinstance(documents, list) or len(documents) != payload.get("projected_document_count"):
+    raise SystemExit("Memory /upsert document count did not match receipt")
 raise SystemExit(completed.returncode)
 """
 
@@ -5123,7 +5266,9 @@ def _cleanup_workspace_ids(manifest: dict[str, Any]) -> set[str]:
             continue
         try:
             record = read_json(Path(path_text))
-        except (OSError, json.JSONDecodeError):
+        except OSError:
+            continue
+        except json.JSONDecodeError:
             continue
         if record.get("workspace_id"):
             workspace_ids.add(str(record["workspace_id"]))

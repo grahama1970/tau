@@ -1,0 +1,31 @@
+[
+  {
+    "path": "/upsert",
+    "payload": {
+      "collection": "tau_route_memory",
+      "documents": [
+        {
+          "_key": "tau-route-67f7ae2025d4bfaf98281a887618c906",
+          "confidence": 1.0,
+          "dag_id": "rw-sanity-route-memory",
+          "from_agent": "coder",
+          "from_node": "coder",
+          "goal_hash": "sha256:rw-sanity-route-memory",
+          "kind": "tau_route_memory_signal",
+          "memory_sync_candidate": true,
+          "observed_at": "2026-07-06T01:02:06Z",
+          "retrieval_text": "Tau DAG route memory signal coder:coder->reviewer:reviewer for rw-sanity-route-memory goal sha256:rw-sanity-route-memory",
+          "route_key": "coder:coder->reviewer:reviewer",
+          "schema": "tau.route_memory_signal.v1",
+          "source": "deterministic_dag_receipt_pass",
+          "source_candidate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010203Z-tau-route-memory-approved-sync-20260706/dag-route-memory-approval/approved-candidate-receipt.json",
+          "source_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010203Z-tau-route-memory-approved-sync-20260706/dag-route-memory-approval/dag-receipt.json",
+          "source_signal_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010203Z-tau-route-memory-approved-sync-20260706/dag-route-memory-approval/dag-signal-receipt.json",
+          "sync_source": "tau.dag_route_memory_sync_receipt.v1",
+          "to_agent": "reviewer",
+          "to_node": "reviewer"
+        }
+      ]
+    }
+  }
+]

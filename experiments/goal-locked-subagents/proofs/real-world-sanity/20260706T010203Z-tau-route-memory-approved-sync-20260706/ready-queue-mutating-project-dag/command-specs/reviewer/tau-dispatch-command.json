@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010203Z-tau-route-memory-approved-sync-20260706/ready-queue-mutating-project-dag/project_dag_worker.py",
+    "--role",
+    "reviewer",
+    "--scenario",
+    "ready-queue-mutating"
+  ],
+  "timeout_s": 20
+}

@@ -1,0 +1,16 @@
+{
+  "dag_id": "rw-sanity-evidence-manifest-valid",
+  "goal_hash": "sha256:rw-sanity-evidence-manifest-valid",
+  "items": [
+    {
+      "kind": "reviewer_verdict",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010203Z-tau-route-memory-approved-sync-20260706/evidence-manifest-valid/evidence/reviewer-verdict.json",
+      "schema": "tau.reviewer_verdict.v1",
+      "sha256": "sha256:a5c8b4ff69e8cad1d8182c959dff6a283fdf084cae4adb27c2d81c42e1346cea",
+      "valid": true,
+      "validator": "tau evidence-validate reviewer-verdict"
+    }
+  ],
+  "run_id": "rw-sanity-evidence-manifest-valid",
+  "schema": "tau.evidence_manifest.v1"
+}

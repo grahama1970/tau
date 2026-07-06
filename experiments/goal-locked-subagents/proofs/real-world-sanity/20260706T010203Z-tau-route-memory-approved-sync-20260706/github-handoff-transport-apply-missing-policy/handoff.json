@@ -1,0 +1,34 @@
+{
+  "context": {
+    "artifacts": [],
+    "summary": "Real-world sanity GitHub transport apply policy fixture."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  },
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-github-apply-policy",
+    "goal_id": "rw-sanity-github-apply-policy",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "reviewer",
+    "reason": "Reviewer route is valid for the handoff projection."
+  },
+  "previous_subagent": "coder",
+  "rationale": "GitHub mutation must remain policy-gated.",
+  "required_evidence": [
+    "github apply policy receipt before live apply"
+  ],
+  "result": {
+    "evidence": [
+      "github transport missing policy negative control"
+    ],
+    "status": "COMPLETED",
+    "summary": "Projection is intentionally used to prove apply fails closed without policy receipt."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop before live apply without policy receipt."
+}

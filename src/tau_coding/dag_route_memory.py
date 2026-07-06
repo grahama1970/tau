@@ -107,8 +107,12 @@ def write_dag_route_memory_sync_receipt(
 
     resolved_candidate_path = candidate_receipt_path.expanduser().resolve()
     resolved_receipt_path = receipt_path.expanduser().resolve()
-    resolved_approval_path = approval_receipt_path.expanduser().resolve() if approval_receipt_path else None
-    candidate_receipt = _read_json_object(resolved_candidate_path, label="DAG route-memory candidate receipt")
+    resolved_approval_path = (
+        approval_receipt_path.expanduser().resolve() if approval_receipt_path else None
+    )
+    candidate_receipt = _read_json_object(
+        resolved_candidate_path, label="DAG route-memory candidate receipt"
+    )
     approval_receipt = (
         _read_json_object(resolved_approval_path, label="approval gate receipt")
         if resolved_approval_path
@@ -125,10 +129,16 @@ def write_dag_route_memory_sync_receipt(
     sync_response: dict[str, Any] | None = None
     if apply and not alerts:
         try:
-            with httpx.Client(base_url=memory_url.rstrip("/"), timeout=httpx.Timeout(10.0, connect=2.0)) as client:
-                response = client.post("/upsert", json={"collection": collection, "documents": documents})
+            with httpx.Client(
+                base_url=memory_url.rstrip("/"), timeout=httpx.Timeout(10.0, connect=2.0)
+            ) as client:
+                response = client.post(
+                    "/upsert", json={"collection": collection, "documents": documents}
+                )
                 response.raise_for_status()
-                sync_response = response.json() if response.content else {"status_code": response.status_code}
+                sync_response = (
+                    response.json() if response.content else {"status_code": response.status_code}
+                )
         except (httpx.HTTPError, json.JSONDecodeError) as exc:
             alerts.append(
                 _alert(
@@ -160,7 +170,9 @@ def write_dag_route_memory_sync_receipt(
         "memory_url": memory_url,
         "apply": apply,
         "memory_sync": bool(apply and status == "PASS"),
-        "sync_status": "SYNCED" if apply and status == "PASS" else ("BLOCKED" if alerts else "DRY_RUN"),
+        "sync_status": "SYNCED"
+        if apply and status == "PASS"
+        else ("BLOCKED" if alerts else "DRY_RUN"),
         "projected_document_count": len(documents),
         "documents": documents,
         "memory_response": sync_response,
@@ -308,7 +320,9 @@ def _sync_gate_alerts(
             )
         )
     if not collection:
-        alerts.append(_alert("BLOCK", "missing_collection", "Memory sync collection is required.", {}))
+        alerts.append(
+            _alert("BLOCK", "missing_collection", "Memory sync collection is required.", {})
+        )
     if int(candidate_receipt.get("accepted_candidate_count") or 0) <= 0:
         alerts.append(
             _alert(
@@ -409,7 +423,9 @@ def _approval_target_id(candidate_receipt: dict[str, Any], *, collection: str) -
     return f"route-memory:{candidate_receipt.get('dag_id')}:{collection}"
 
 
-def _memory_documents(candidate_receipt: dict[str, Any], *, collection: str) -> list[dict[str, Any]]:
+def _memory_documents(
+    candidate_receipt: dict[str, Any], *, collection: str
+) -> list[dict[str, Any]]:
     documents: list[dict[str, Any]] = []
     for candidate in _dict_list(candidate_receipt.get("accepted_candidates")):
         route_key = str(candidate.get("route_key") or "")
