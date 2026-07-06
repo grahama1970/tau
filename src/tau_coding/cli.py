@@ -1808,6 +1808,9 @@ def main(
             payload = write_github_read_receipt(
                 uri=str(options["uri"]),
                 output_path=Path(str(options["out"])),
+                zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4637,19 +4640,31 @@ def _parse_debug_session_receipt_cli_args(args: list[str]) -> dict[str, object]:
 
 
 def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"uri": None, "out": None}
+    options: dict[str, object] = {
+        "uri": None,
+        "out": None,
+        "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
+    }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--uri", "--out"}:
+        if arg in {"--uri", "--out", "--policy-profile", "--data-boundary"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--")] = args[index]
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
         elif arg.startswith("--uri="):
             options["uri"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
         else:
             raise RuntimeError(f"unknown github-read option: {arg}")
         index += 1

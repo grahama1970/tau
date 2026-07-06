@@ -204,6 +204,11 @@ uv run tau github-read \
   --out github-read-receipt.json
 ```
 
+Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
+when GitHub read projections are part of a high-stakes coding route. In
+zero-trust mode, Tau blocks read receipts that omit policy or boundary
+metadata.
+
 The receipt records the parsed target, a suggested `gh` read command, blocked
 mutation verbs, and `mutation_allowed:false`. It does not call GitHub, prove
 live auth, prove the target object exists, or prove content freshness.

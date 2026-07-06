@@ -1,9 +1,26 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:16 EDT by agent
+**Last updated:** 2026-07-06 18:18 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GitHub read zero-trust enforcement rung:
+  `src/tau_coding/github_read_schemes.py` now supports zero-trust metadata on
+  `tau.github_read_receipt.v1`; `src/tau_coding/cli.py` exposes it through
+  `uv run tau github-read --zero-trust --policy-profile <policy.json>
+  --data-boundary <boundary.json>`. In zero-trust mode, Tau blocks read-only
+  GitHub URI projections that omit `policy_profile` or `data_boundary`, while
+  preserving `mutation_allowed:false` and the existing apply-policy mutation
+  gates. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py src/tau_coding/cli.py
+  tests/test_github_read_schemes.py tests/test_github_apply_policy.py` ->
+  pass; `uv run pytest tests/test_github_read_schemes.py
+  tests/test_github_apply_policy.py -q` -> `15 passed in 0.51s`. This proves
+  deterministic local policy/data-boundary presence gating for GitHub read
+  projections and preserves mutation-gate regressions; it does not prove live
+  GitHub auth, GitHub object existence, content freshness, live mutation safety,
+  legal compliance, or provider/model quality.
 
 - 2026-07-06 LSP symbol/rename zero-trust enforcement rung:
   `src/tau_coding/lsp_receipts.py` now applies the same zero-trust
