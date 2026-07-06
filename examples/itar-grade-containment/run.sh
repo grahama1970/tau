@@ -77,6 +77,8 @@ for name, schema in {
     "environment-manifest.json": "tau.environment_manifest.v1",
 }.items():
     payload = {"schema": schema, "status": "PASS", "goal_hash": "sha256:demo"}
+    if name == "signed-receipt-verification.json":
+        payload["verified_count"] = 1
     (pkg / name).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 (pkg / "non-claims.md").write_text(
     "This package does not prove ITAR compliance or legal sufficiency.\n",

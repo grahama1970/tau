@@ -29,8 +29,25 @@ The first policy is `itar-local-only`. It requires:
 - `non-claims.md`
 
 Critical receipts must be `PASS` or `VALID`. JSON artifacts must have the
-expected schema. Goal hashes and data-boundary hashes are checked for
-cross-package consistency when present.
+expected schema. Goal hashes are checked for cross-package consistency.
+
+For `itar-local-only`, the validator also checks the package contents, not only
+file names:
+
+- `data-boundary.json` must declare `classification:"ITAR"`,
+  `itar:true`, `technical_data:true`, `export_controlled:true`,
+  `external_provider_allowed:false`, `public_repo_allowed:false`, and
+  `foreign_person_access:"prohibited"`.
+- `policy-profile.json` must default to deny, require a data boundary, and
+  deny or explicitly gate cloud provider use and public GitHub mutation.
+- `actor-access-manifest.json` must describe a trusted, verified human actor
+  with `eligibility.us_person:"verified"`, `foreign_person:false`, current
+  export-control training metadata, and ITAR boundary approval.
+- `signed-receipt-verification.json` must include at least one verified signed
+  receipt, using one of `verified_count`, `verified_receipt_count`,
+  `valid_signature_count`, or `signature_count`.
+- Any receipt that cites `data_boundary_sha256` must cite the actual hash of
+  the packaged `data-boundary.json`.
 
 The validation receipt uses:
 

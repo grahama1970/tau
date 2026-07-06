@@ -87,6 +87,111 @@ def test_compliance_package_validate_blocks_goal_hash_mismatch(tmp_path: Path) -
     assert "goal_hash_mismatch" in receipt["alert_codes"]
 
 
+def test_compliance_package_validate_blocks_weak_itar_boundary_policy_and_actor(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    _write_json(
+        package_dir / "data-boundary.json",
+        {
+            "schema": "tau.data_boundary.v1",
+            "classification": "PUBLIC",
+            "export_controlled": False,
+            "itar": False,
+            "technical_data": False,
+            "external_provider_allowed": True,
+            "public_repo_allowed": True,
+            "foreign_person_access": "allowed",
+        },
+    )
+    _write_json(
+        package_dir / "policy-profile.json",
+        {
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "weak",
+            "default_decision": "allow",
+            "requires_data_boundary": False,
+            "providers": {"cloud_llm": "allow"},
+            "github": {"public_mutation": "allow"},
+        },
+    )
+    _write_json(
+        package_dir / "actor-access-manifest.json",
+        {
+            "schema": "tau.actor_access_manifest.v1",
+            "actor_id": "agent:worker",
+            "actor_type": "agent",
+            "roles": ["approver"],
+            "trusted": True,
+            "verified": False,
+            "eligibility": {
+                "us_person": "unknown",
+                "foreign_person": True,
+                "export_control_training_current": False,
+                "approved_for_boundary": [],
+            },
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "data_boundary_not_itar" in receipt["alert_codes"]
+    assert "policy_default_not_deny" in receipt["alert_codes"]
+    assert "policy_cloud_provider_not_denied" in receipt["alert_codes"]
+    assert "actor_manifest_actor_not_human" in receipt["alert_codes"]
+    assert "actor_us_person_not_verified" in receipt["alert_codes"]
+
+
+def test_compliance_package_validate_blocks_empty_signed_verification(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    _write_json(
+        package_dir / "signed-receipt-verification.json",
+        {
+            "schema": "tau.signed_receipt_verification.v1",
+            "status": "PASS",
+            "verified_count": 0,
+            "goal_hash": "sha256:g",
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "signed_receipt_verification_empty" in receipt["alert_codes"]
+
+
+def test_compliance_package_validate_blocks_data_boundary_hash_mismatch(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    _write_json(
+        package_dir / "zero-trust-preflight-receipt.json",
+        {
+            "schema": "tau.zero_trust_preflight_receipt.v1",
+            "status": "PASS",
+            "goal_hash": "sha256:g",
+            "data_boundary_sha256": "sha256:not-the-package-boundary",
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "data_boundary_hash_does_not_match_artifact" in receipt["alert_codes"]
+
+
 def test_cli_compliance_package_validate_writes_blocked_receipt(tmp_path: Path) -> None:
     package_dir = _write_package(tmp_path)
     (package_dir / "non-claims.md").write_text("This package is compliant.\n", encoding="utf-8")
@@ -137,6 +242,8 @@ def _write_package(tmp_path: Path) -> Path:
             "profile_id": "itar-local-only",
             "default_decision": "deny",
             "requires_data_boundary": True,
+            "providers": {"cloud_llm": "deny"},
+            "github": {"public_mutation": "deny"},
         },
     )
     _write_json(
@@ -144,6 +251,16 @@ def _write_package(tmp_path: Path) -> Path:
         {
             "schema": "tau.actor_access_manifest.v1",
             "actor_id": "human:graham",
+            "actor_type": "human",
+            "roles": ["approver"],
+            "trusted": True,
+            "verified": True,
+            "eligibility": {
+                "us_person": "verified",
+                "foreign_person": False,
+                "export_control_training_current": True,
+                "approved_for_boundary": ["ITAR"],
+            },
             "goal_hash": "sha256:g",
         },
     )
@@ -160,7 +277,13 @@ def _write_package(tmp_path: Path) -> Path:
         "signed-receipt-verification.json": "tau.signed_receipt_verification.v1",
         "itar-access-preflight-receipt.json": "tau.itar_access_preflight_receipt.v1",
     }.items():
-        _write_json(package_dir / filename, {"schema": schema, "status": "PASS", "goal_hash": "sha256:g"})
+        extra: dict[str, object] = {}
+        if filename == "signed-receipt-verification.json":
+            extra["verified_count"] = 1
+        _write_json(
+            package_dir / filename,
+            {"schema": schema, "status": "PASS", "goal_hash": "sha256:g", **extra},
+        )
     (package_dir / "non-claims.md").write_text(
         "This package does not prove ITAR compliance or legal sufficiency.\n",
         encoding="utf-8",

@@ -77,10 +77,13 @@ def write_compliance_package_validation_receipt(
 
     goal_hashes: set[str] = set()
     data_boundary_hashes: set[str] = set()
+    package_data_boundary_sha256: str | None = None
     for key, (relative_path, expected_schema, require_pass) in requirements.items():
         artifact_path = resolved_package / relative_path
         summary = _artifact_summary(artifact_path)
         artifacts[key] = summary
+        if key == "data_boundary" and isinstance(summary.get("sha256"), str):
+            package_data_boundary_sha256 = str(summary["sha256"])
         if not artifact_path.exists():
             alerts.append(
                 _alert(
@@ -113,6 +116,7 @@ def write_compliance_package_validation_receipt(
                         status=payload.get("status"),
                     )
                 )
+            alerts.extend(_semantic_alerts(key, payload, artifact=relative_path))
             _collect_hash(payload, "goal_hash", goal_hashes)
             _collect_hash(payload, "active_goal_hash", goal_hashes)
             _collect_hash(payload, "data_boundary_sha256", data_boundary_hashes)
@@ -152,6 +156,19 @@ def write_compliance_package_validation_receipt(
                 "data_boundary_hash_mismatch",
                 "Package artifacts cite inconsistent data boundary hashes.",
                 data_boundary_hashes=sorted(data_boundary_hashes),
+            )
+        )
+    if (
+        package_data_boundary_sha256 is not None
+        and data_boundary_hashes
+        and package_data_boundary_sha256 not in data_boundary_hashes
+    ):
+        alerts.append(
+            _alert(
+                "data_boundary_hash_does_not_match_artifact",
+                "Receipt data_boundary_sha256 does not match packaged data-boundary.json.",
+                expected=package_data_boundary_sha256,
+                cited=sorted(data_boundary_hashes),
             )
         )
 
@@ -241,6 +258,209 @@ def _collect_hash(payload: Mapping[str, Any], key: str, target: set[str]) -> Non
     value = payload.get(key)
     if isinstance(value, str) and value.strip():
         target.add(value)
+
+
+def _semantic_alerts(
+    key: str,
+    payload: Mapping[str, Any],
+    *,
+    artifact: str,
+) -> list[dict[str, Any]]:
+    if key == "data_boundary":
+        return _data_boundary_alerts(payload, artifact=artifact)
+    if key == "policy_profile":
+        return _policy_profile_alerts(payload, artifact=artifact)
+    if key == "actor_manifest":
+        return _actor_manifest_alerts(payload, artifact=artifact)
+    if key == "signed_receipt_verification":
+        return _signed_receipt_verification_alerts(payload, artifact=artifact)
+    return []
+
+
+def _data_boundary_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[dict[str, Any]]:
+    checks = {
+        "itar": True,
+        "technical_data": True,
+        "export_controlled": True,
+        "external_provider_allowed": False,
+        "public_repo_allowed": False,
+    }
+    alerts: list[dict[str, Any]] = []
+    if payload.get("classification") != "ITAR":
+        alerts.append(
+            _alert(
+                "data_boundary_not_itar",
+                "ITAR local-only package requires data_boundary.classification to be ITAR.",
+                artifact=artifact,
+                actual=payload.get("classification"),
+            )
+        )
+    if payload.get("foreign_person_access") != "prohibited":
+        alerts.append(
+            _alert(
+                "foreign_person_access_not_prohibited",
+                "ITAR local-only package requires foreign_person_access:'prohibited'.",
+                artifact=artifact,
+                actual=payload.get("foreign_person_access"),
+            )
+        )
+    for field, expected in checks.items():
+        if payload.get(field) is not expected:
+            alerts.append(
+                _alert(
+                    "data_boundary_policy_mismatch",
+                    f"ITAR local-only package requires data_boundary.{field}={expected!r}.",
+                    artifact=artifact,
+                    field=field,
+                    expected=expected,
+                    actual=payload.get(field),
+                )
+            )
+    return alerts
+
+
+def _policy_profile_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if payload.get("default_decision") != "deny":
+        alerts.append(
+            _alert(
+                "policy_default_not_deny",
+                "ITAR local-only package requires policy_profile.default_decision:'deny'.",
+                artifact=artifact,
+                actual=payload.get("default_decision"),
+            )
+        )
+    if payload.get("requires_data_boundary") is not True:
+        alerts.append(
+            _alert(
+                "policy_does_not_require_data_boundary",
+                "ITAR local-only package requires policy_profile.requires_data_boundary:true.",
+                artifact=artifact,
+                actual=payload.get("requires_data_boundary"),
+            )
+        )
+    providers = payload.get("providers")
+    provider_map = providers if isinstance(providers, Mapping) else {}
+    if provider_map.get("cloud_llm") not in {"deny", "block", "approval_required"}:
+        alerts.append(
+            _alert(
+                "policy_cloud_provider_not_denied",
+                "ITAR local-only package must deny or gate cloud provider use.",
+                artifact=artifact,
+                actual=provider_map.get("cloud_llm"),
+            )
+        )
+    github = payload.get("github")
+    github_map = github if isinstance(github, Mapping) else {}
+    if github_map.get("public_mutation") not in {"deny", "block", "approval_required"}:
+        alerts.append(
+            _alert(
+                "policy_public_mutation_not_denied",
+                "ITAR local-only package must deny or gate public GitHub mutation.",
+                artifact=artifact,
+                actual=github_map.get("public_mutation"),
+            )
+        )
+    return alerts
+
+
+def _actor_manifest_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    eligibility = payload.get("eligibility")
+    eligibility_map = eligibility if isinstance(eligibility, Mapping) else {}
+    if payload.get("actor_type") != "human":
+        alerts.append(
+            _alert(
+                "actor_manifest_actor_not_human",
+                "ITAR local-only review package requires a verified human actor manifest.",
+                artifact=artifact,
+                actual=payload.get("actor_type"),
+            )
+        )
+    if payload.get("trusted") is not True or payload.get("verified") is not True:
+        alerts.append(
+            _alert(
+                "actor_manifest_not_verified",
+                "ITAR local-only review package requires trusted:true and verified:true.",
+                artifact=artifact,
+                trusted=payload.get("trusted"),
+                verified=payload.get("verified"),
+            )
+        )
+    if eligibility_map.get("us_person") != "verified":
+        alerts.append(
+            _alert(
+                "actor_us_person_not_verified",
+                "ITAR local-only review package requires eligibility.us_person:'verified'.",
+                artifact=artifact,
+                actual=eligibility_map.get("us_person"),
+            )
+        )
+    if eligibility_map.get("foreign_person") is not False:
+        alerts.append(
+            _alert(
+                "actor_foreign_person_not_false",
+                "ITAR local-only review package requires eligibility.foreign_person:false.",
+                artifact=artifact,
+                actual=eligibility_map.get("foreign_person"),
+            )
+        )
+    if eligibility_map.get("export_control_training_current") is not True:
+        alerts.append(
+            _alert(
+                "actor_export_training_not_current",
+                "ITAR local-only review package requires current export-control training metadata.",
+                artifact=artifact,
+                actual=eligibility_map.get("export_control_training_current"),
+            )
+        )
+    approved = eligibility_map.get("approved_for_boundary")
+    if not isinstance(approved, list) or "ITAR" not in approved:
+        alerts.append(
+            _alert(
+                "actor_boundary_not_approved",
+                "ITAR local-only review package requires actor approval for ITAR boundary.",
+                artifact=artifact,
+                approved_for_boundary=approved,
+            )
+        )
+    return alerts
+
+
+def _signed_receipt_verification_alerts(
+    payload: Mapping[str, Any],
+    *,
+    artifact: str,
+) -> list[dict[str, Any]]:
+    verified_count = _first_int(
+        payload,
+        (
+            "verified_count",
+            "verified_receipt_count",
+            "valid_signature_count",
+            "signature_count",
+        ),
+    )
+    if verified_count is None or verified_count < 1:
+        return [
+            _alert(
+                "signed_receipt_verification_empty",
+                "ITAR local-only review package requires at least one verified signed receipt.",
+                artifact=artifact,
+                verified_count=verified_count,
+            )
+        ]
+    return []
+
+
+def _first_int(payload: Mapping[str, Any], keys: tuple[str, ...]) -> int | None:
+    for key in keys:
+        value = payload.get(key)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, int):
+            return value
+    return None
 
 
 def _recommended_action(alerts: list[dict[str, Any]]) -> dict[str, str]:

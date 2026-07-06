@@ -304,11 +304,33 @@ def _write_package(root: Path, *, signed_receipt_status: str) -> None:
     _write_json(root / "data-boundary.json", _boundary_payload(external_research_allowed=False))
     _write_json(
         root / "policy-profile.json",
-        {"schema": "tau.policy_profile.v1", "profile_id": "redteam", "goal_hash": "sha256:g"},
+        {
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "redteam",
+            "default_decision": "deny",
+            "requires_data_boundary": True,
+            "providers": {"cloud_llm": "deny"},
+            "github": {"public_mutation": "deny"},
+            "goal_hash": "sha256:g",
+        },
     )
     _write_json(
         root / "actor-access-manifest.json",
-        {"schema": "tau.actor_access_manifest.v1", "goal_hash": "sha256:g"},
+        {
+            "schema": "tau.actor_access_manifest.v1",
+            "actor_id": "human:redteam",
+            "actor_type": "human",
+            "roles": ["approver"],
+            "trusted": True,
+            "verified": True,
+            "eligibility": {
+                "us_person": "verified",
+                "foreign_person": False,
+                "export_control_training_current": True,
+                "approved_for_boundary": ["ITAR"],
+            },
+            "goal_hash": "sha256:g",
+        },
     )
     _write_json(
         root / "environment-manifest.json",
@@ -328,6 +350,7 @@ def _write_package(root: Path, *, signed_receipt_status: str) -> None:
         {
             "schema": "tau.signed_receipt_verification.v1",
             "status": signed_receipt_status,
+            "verified_count": 0 if signed_receipt_status != "PASS" else 1,
             "goal_hash": "sha256:g",
         },
     )
