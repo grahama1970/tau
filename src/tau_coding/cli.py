@@ -1799,6 +1799,8 @@ def main(
                 output_path=Path(str(options["out"])),
                 caller_skill=str(options["caller_skill"]),
                 apply=bool(options["apply"]),
+                omp_bin=str(options["omp_bin"]),
+                timeout_s=int(options["timeout_s"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4659,21 +4661,28 @@ def _parse_omp_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
         "out": None,
         "caller_skill": "tau",
         "apply": False,
+        "omp_bin": "omp",
+        "timeout_s": 600,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--work-order", "--out", "--caller-skill"}:
+        if arg in {"--work-order", "--out", "--caller-skill", "--omp-bin", "--timeout-s"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = int(args[index]) if key == "timeout_s" else args[index]
         elif arg.startswith("--work-order="):
             options["work_order"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
         elif arg.startswith("--caller-skill="):
             options["caller_skill"] = arg.partition("=")[2]
+        elif arg.startswith("--omp-bin="):
+            options["omp_bin"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = int(arg.partition("=")[2])
         elif arg == "--apply":
             options["apply"] = True
         else:

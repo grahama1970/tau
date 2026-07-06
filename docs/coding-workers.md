@@ -311,6 +311,13 @@ uv run tau omp-worker-launch \
   --work-order omp-work-order.json \
   --out omp-worker-launch-receipt.json
 
+uv run tau omp-worker-launch \
+  --work-order omp-work-order.json \
+  --out omp-worker-launch-receipt.json \
+  --apply \
+  --omp-bin omp \
+  --timeout-s 600
+
 uv run tau scillm-worker-validate \
   --work-order scillm-work-order.json \
   --result scillm-result.json \
@@ -322,11 +329,19 @@ uv run tau scillm-worker-launch \
 ```
 
 For OMP coding delegates, Tau uses the documented process-isolated RPC surface:
-`omp --mode rpc --no-session` with NDJSON prompt frames. `omp-worker-launch` is
-currently a dry-run launcher receipt: it builds the command and stdin JSONL
-frame, records the caller skill, and blocks incompatible OMP route metadata
-before any external process launch. It does not prove Tau launched OMP, OMP
-accepted or ran the request, the worker ran, or code changed.
+`omp --mode rpc --no-session` with NDJSON prompt frames. By default,
+`omp-worker-launch` is a dry-run launcher receipt: it builds the command and
+stdin JSONL frame, records the caller skill, and blocks incompatible OMP route
+metadata before any external process launch.
+
+With `--apply`, `omp-worker-launch` invokes the configured command, writes
+captured stdout and stderr artifacts next to the receipt, and records
+`process_executed`, `exit_code`, `timed_out`, `stdout_path`, and `stderr_path`.
+This proves only that Tau sent a bounded request to a local process and captured
+the process result. It does not prove OMP accepted the request semantically, a
+real `oh-my-pi` binary was used, the worker result artifact is valid, code
+changed, or code is correct. A worker result must still pass
+`omp-worker-validate`.
 
 For SciLLM coding delegates, Tau should use the OpenCode serve surface
 (`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
@@ -358,7 +373,9 @@ uv run tau omp-worker-launch \
   --out omp-worker-launch-receipt.json
 ```
 
-Neither validation nor dry-run launch proves live OMP execution.
+Dry-run launch does not prove live OMP execution. Apply launch proves only that
+Tau invoked the configured local process and captured stdout/stderr; it does not
+replace result validation.
 
 `examples/scillm-worker` validates a bounded SciLLM/OpenCode-serve-shaped
 worker result. By default it uses a fixture result and marks the demo

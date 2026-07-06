@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import subprocess
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
@@ -71,10 +72,13 @@ def write_omp_worker_launch_receipt(
     output_path: Path,
     caller_skill: str = "tau",
     apply: bool = False,
+    omp_bin: str = "omp",
+    timeout_s: int = 600,
 ) -> dict[str, Any]:
-    """Write a dry-run OMP RPC launch request receipt."""
+    """Write an OMP RPC launch request receipt."""
 
     resolved_work_order = work_order_path.expanduser().resolve()
+    resolved_output = output_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
     if work_order.get("schema") != OMP_WORK_ORDER_SCHEMA:
@@ -86,20 +90,33 @@ def write_omp_worker_launch_receipt(
     route_surface = route.get("surface")
     if route_surface is not None and route_surface != "omp_rpc":
         alerts.append(_alert("invalid_omp_surface", "OMP worker launch must use omp_rpc"))
-    if apply:
-        alerts.append(_alert("apply_not_implemented", "live OMP worker launch is not implemented"))
 
     request_payload = _omp_rpc_request_payload(work_order)
+    command = [omp_bin, *OMP_RPC_COMMAND[1:]]
+    launch_result = _maybe_run_omp_rpc_launch(
+        apply=apply,
+        command=command,
+        stdin_payload=request_payload,
+        output_path=resolved_output,
+        work_order=work_order,
+        alerts=alerts,
+        timeout_s=timeout_s,
+    )
     ok = not alerts
     payload = {
         "schema": OMP_WORKER_LAUNCH_RECEIPT_SCHEMA,
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": False,
+        "live": launch_result["process_executed"],
         "provider_live": False,
-        "dry_run": True,
+        "dry_run": not apply,
         "apply_requested": apply,
+        "process_executed": launch_result["process_executed"],
+        "launch_skipped": launch_result["launch_skipped"],
+        "exit_code": launch_result["exit_code"],
+        "timed_out": launch_result["timed_out"],
+        "timeout_s": timeout_s,
         "worker_kind": "omp",
         "work_order_path": str(resolved_work_order),
         "work_order_schema": work_order.get("schema"),
@@ -108,8 +125,10 @@ def write_omp_worker_launch_receipt(
         "agent": work_order.get("agent"),
         "attempt": work_order.get("attempt"),
         "goal_hash": work_order.get("goal_hash"),
-        "command": OMP_RPC_COMMAND,
+        "command": command,
         "stdin_jsonl": [request_payload],
+        "stdout_path": launch_result["stdout_path"],
+        "stderr_path": launch_result["stderr_path"],
         "caller_skill": caller_skill,
         "model_provider_route": route,
         "alerts": alerts,
@@ -118,10 +137,13 @@ def write_omp_worker_launch_receipt(
             "proves": [
                 "Tau built a bounded OMP RPC launch request from a work order.",
                 "Tau checked work-order gates before any external OMP process launch.",
+                "When apply=true and gates pass, Tau invoked the configured OMP command "
+                "and captured stdout/stderr artifacts.",
             ],
             "does_not_prove": [
-                "Tau launched OMP.",
                 "OMP accepted or ran the request.",
+                "A real oh-my-pi binary was used unless independently identified.",
+                "A worker result artifact is valid without omp-worker-validate.",
                 "The worker is trustworthy.",
                 "The code is semantically correct.",
                 "Provider/model semantic quality.",
@@ -129,7 +151,7 @@ def write_omp_worker_launch_receipt(
         },
         "timestamp": _utc_stamp(),
     }
-    payload["receipt_path"] = str(output_path.expanduser().resolve())
+    payload["receipt_path"] = str(resolved_output)
     _write_json(output_path, payload)
     return payload
 
@@ -385,6 +407,89 @@ def _read_json_object(path: Path, alerts: list[dict[str, Any]], label: str) -> d
         alerts.append(_alert(f"{label}_not_object", f"{label} root must be a JSON object"))
         return {}
     return payload
+
+
+def _maybe_run_omp_rpc_launch(
+    *,
+    apply: bool,
+    command: list[str],
+    stdin_payload: Mapping[str, Any],
+    output_path: Path,
+    work_order: Mapping[str, Any],
+    alerts: list[dict[str, Any]],
+    timeout_s: int,
+) -> dict[str, Any]:
+    stdout_path = output_path.with_suffix(output_path.suffix + ".stdout.jsonl")
+    stderr_path = output_path.with_suffix(output_path.suffix + ".stderr.txt")
+    result: dict[str, Any] = {
+        "process_executed": False,
+        "launch_skipped": not apply,
+        "exit_code": None,
+        "timed_out": False,
+        "stdout_path": None,
+        "stderr_path": None,
+    }
+    if not apply:
+        return result
+    if alerts:
+        result["launch_skipped"] = True
+        return result
+    if timeout_s <= 0:
+        alerts.append(_alert("invalid_timeout", "timeout_s must be positive"))
+        result["launch_skipped"] = True
+        return result
+
+    stdin_jsonl = json.dumps(stdin_payload, sort_keys=True) + "\n"
+    cwd = _repo_root(work_order)
+    try:
+        completed = subprocess.run(
+            command,
+            input=stdin_jsonl,
+            text=True,
+            capture_output=True,
+            timeout=timeout_s,
+            cwd=str(cwd) if cwd is not None else None,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        alerts.append(_alert("omp_command_missing", f"OMP command is missing: {exc}"))
+        result["launch_skipped"] = True
+        return result
+    except subprocess.TimeoutExpired as exc:
+        stdout_path.parent.mkdir(parents=True, exist_ok=True)
+        stdout_path.write_text(exc.stdout or "", encoding="utf-8")
+        stderr_path.write_text(exc.stderr or "", encoding="utf-8")
+        alerts.append(_alert("omp_launch_timeout", f"OMP launch timed out after {timeout_s}s"))
+        result.update(
+            {
+                "process_executed": True,
+                "launch_skipped": False,
+                "exit_code": None,
+                "timed_out": True,
+                "stdout_path": str(stdout_path),
+                "stderr_path": str(stderr_path),
+            }
+        )
+        return result
+
+    stdout_path.parent.mkdir(parents=True, exist_ok=True)
+    stdout_path.write_text(completed.stdout, encoding="utf-8")
+    stderr_path.write_text(completed.stderr, encoding="utf-8")
+    if completed.returncode != 0:
+        alerts.append(
+            _alert("omp_launch_nonzero_exit", f"OMP launch exited {completed.returncode}")
+        )
+    result.update(
+        {
+            "process_executed": True,
+            "launch_skipped": False,
+            "exit_code": completed.returncode,
+            "timed_out": False,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+        }
+    )
+    return result
 
 
 def _repo_root(work_order: Mapping[str, Any]) -> Path | None:

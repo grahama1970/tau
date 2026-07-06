@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:39 EDT by agent
+**Last updated:** 2026-07-06 23:12 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -22,6 +22,24 @@
   into one deterministic audit artifact; it does not prove live OMP/SciLLM
   worker execution, provider/model semantic quality, semantic code correctness,
   GitHub mutation, human acceptance, or legal compliance.
+
+- 2026-07-06 OMP worker apply launch receipt rung:
+  `uv run tau omp-worker-launch --work-order <work-order.json> --out
+  <receipt.json> --apply --omp-bin <path> --timeout-s <seconds>` now invokes
+  the configured OMP-compatible local process after work-order gates pass,
+  writes stdout/stderr artifacts next to the receipt, and records
+  `process_executed`, `exit_code`, `timed_out`, `stdout_path`, and
+  `stderr_path`. Preflight alerts still block launch before process execution.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `23 passed in 0.61s`.
+  The tests use a deterministic local fake OMP-compatible executable, so this
+  proves Tau's apply-mode process invocation, skip-on-block behavior, and log
+  capture; it does not prove a real `oh-my-pi` binary was used, OMP accepted
+  the request semantically, a worker result artifact is valid, live coding work
+  occurred, semantic code correctness, provider/model quality, or legal
+  compliance. `omp-worker-validate` remains the required result gate.
 
 - 2026-07-06 OMP worker dry-run launch receipt rung:
   `src/tau_coding/coding_worker_adapters.py` now writes

@@ -301,6 +301,98 @@ def test_cli_omp_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None:
     assert payload["caller_skill"] == "tau-test"
 
 
+def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -> None:
+    fake_omp = _write_fake_omp(tmp_path)
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+    out = tmp_path / "omp-launch-receipt.json"
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=out,
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["dry_run"] is False
+    assert payload["live"] is True
+    assert payload["process_executed"] is True
+    assert payload["launch_skipped"] is False
+    assert payload["exit_code"] == 0
+    assert payload["command"][0] == str(fake_omp)
+    assert payload["stdout_path"]
+    assert payload["stderr_path"]
+    stdout_payload = json.loads(Path(payload["stdout_path"]).read_text(encoding="utf-8"))
+    assert stdout_payload["schema"] == "fake.omp.rpc.response"
+    assert stdout_payload["received_type"] == "prompt"
+    assert Path(payload["stderr_path"]).read_text(encoding="utf-8") == ""
+
+
+def test_omp_worker_launch_apply_skips_process_when_preflight_blocks(tmp_path: Path) -> None:
+    marker = tmp_path / "fake-omp-ran"
+    fake_omp = _write_fake_omp(tmp_path, marker=marker)
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_swarm"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "invalid_omp_surface" in payload["alert_codes"]
+    assert not marker.exists()
+
+
+def test_cli_omp_worker_launch_apply_records_process_receipt(tmp_path: Path) -> None:
+    fake_omp = _write_fake_omp(tmp_path)
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+    out = tmp_path / "omp-launch-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "omp-worker-launch",
+            "--work-order",
+            str(work_order),
+            "--out",
+            str(out),
+            "--apply",
+            "--omp-bin",
+            str(fake_omp),
+            "--timeout-s",
+            "5",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["dry_run"] is False
+    assert payload["process_executed"] is True
+    assert payload["exit_code"] == 0
+
+
 def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -494,6 +586,36 @@ def _write_work_order(
     path = tmp_path / "work-order.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _write_fake_omp(tmp_path: Path, *, marker: Path | None = None) -> Path:
+    script = tmp_path / "fake-omp"
+    marker_line = (
+        f"Path({str(marker)!r}).write_text('ran\\n', encoding='utf-8')"
+        if marker is not None
+        else "None"
+    )
+    script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json",
+                "import sys",
+                "from pathlib import Path",
+                marker_line,
+                "payload = json.loads(sys.stdin.readline())",
+                "print(json.dumps({",
+                "    'schema': 'fake.omp.rpc.response',",
+                "    'received_type': payload.get('type'),",
+                "    'metadata': payload.get('metadata'),",
+                "}, sort_keys=True))",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    return script
 
 
 def _write_result(
