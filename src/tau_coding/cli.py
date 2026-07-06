@@ -118,6 +118,7 @@ from tau_coding.media_explainer_orchestration import (
     run_media_explainer_smoke,
 )
 from tau_coding.orchestration_evidence import build_orchestration_evidence
+from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
 from tau_coding.package_validate import write_compliance_package_validation_receipt
 from tau_coding.persona_dream_panel_proof import (
     DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
@@ -1615,6 +1616,18 @@ def main(
             options = _parse_project_profile_validate_cli_args(positional_args[1:])
             payload = write_project_profile_validation_receipt(
                 profile_path=Path(str(options["profile"])),
+                output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "orchestration-reliability":
+        try:
+            options = _parse_orchestration_reliability_cli_args(positional_args[1:])
+            payload = write_orchestration_reliability_receipt(
+                run_dir=Path(str(options["run_dir"])),
                 output_path=Path(str(options["out"])),
             )
         except RuntimeError as exc:
@@ -3994,6 +4007,31 @@ def _parse_project_profile_validate_cli_args(args: list[str]) -> dict[str, objec
         raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
+    return options
+
+
+def _parse_orchestration_reliability_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"run_dir": None, "out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--run-dir", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = "run_dir" if arg == "--run-dir" else "out"
+            options[key] = args[index]
+        elif arg.startswith("--run-dir="):
+            options["run_dir"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown orchestration-reliability option: {arg}")
+        index += 1
+    if not _optional_str(options.get("run_dir")):
+        raise RuntimeError("Usage: tau orchestration-reliability --run-dir <dir> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau orchestration-reliability --run-dir <dir> --out <receipt>")
     return options
 
 
