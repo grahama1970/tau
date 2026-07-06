@@ -49,7 +49,7 @@ def _run_panel_creator(
     artifact_dir: Path,
 ) -> dict[str, Any]:
     if _truthy(panel.get("scillm_live_panel")):
-        generation = _generate_panel_image_with_scillm(panel, artifact_dir)
+        generation = _generate_panel_image_with_scillm(panel, artifact_dir, start_payload)
         if generation.get("ok") is not True:
             receipt_path = artifact_dir / "panel_creator_receipt.json"
             receipt = {
@@ -250,7 +250,9 @@ def _run_panel_reviewer(
 def _generate_panel_image_with_scillm(
     panel: Mapping[str, Any],
     artifact_dir: Path,
+    start_payload: Mapping[str, Any],
 ) -> dict[str, Any]:
+    artifact_dir.mkdir(parents=True, exist_ok=True)
     prompt_file = artifact_dir / "panel_image.prompt.md"
     image_path = Path(str(panel["image_path"])).expanduser()
     if not image_path.is_absolute():
@@ -261,8 +263,52 @@ def _generate_panel_image_with_scillm(
     wrapper_events_path = artifact_dir / "scillm_image_generation_wrapper_events.jsonl"
     prompt = str(panel.get("panel_prompt") or _default_panel_prompt(panel)).strip()
     prompt_file.write_text(prompt + "\n", encoding="utf-8")
+    image_policy = _resolve_scillm_image_policy(panel, start_payload)
+    if image_policy["supported"] is not True:
+        wrapper = {
+            "schema": "tau.persona_dream.scillm_image_generation_call.v1",
+            "created_at": _now_iso(),
+            "role": "panel-creator",
+            "mocked": False,
+            "live": False,
+            "surface": "scillm.generate-image-wrapper",
+            "status": "BLOCKED",
+            "ok": False,
+            "error": image_policy["error"],
+            "image_policy": image_policy,
+            "live_call_performed": False,
+            "fallback_allowed": image_policy["fallback_allowed"],
+            "fallback_backends": image_policy["fallback_backends"],
+            "fallback_performed": False,
+            "prompt_file": str(prompt_file),
+            "path": str(image_path),
+            "receipt_path": str(receipt_path),
+            "claims": {
+                "proves": [
+                    "Tau inspected the DAG image model policy before image generation.",
+                    "Tau blocked image generation instead of falling back to another backend.",
+                ],
+                "does_not_prove": [
+                    "Image generation success.",
+                    "Provider/model semantic quality.",
+                    "That another backend would be acceptable for this DAG.",
+                ],
+            },
+        }
+        _write_json(receipt_path, wrapper)
+        _append_event(
+            events_path,
+            {
+                "type": "image_policy_blocked",
+                "created_at": _now_iso(),
+                "error": image_policy["error"],
+                "image_policy": image_policy,
+            },
+        )
+        return wrapper
     auth = _resolve_scillm_api_key()
-    image_auth = str(panel.get("scillm_image_auth") or "codex-oauth")
+    image_auth = image_policy["auth"]
+    image_model = image_policy["model"]
     cmd = [
         "bash",
         str(SCILLM_SKILL_RUN),
@@ -278,7 +324,7 @@ def _generate_panel_image_with_scillm(
         "--events-out",
         str(wrapper_events_path),
         "--model",
-        str(panel.get("scillm_image_model") or "gpt-image-2"),
+        image_model,
         "--quality",
         str(panel.get("scillm_image_quality") or "high"),
         "--caller-skill",
@@ -296,8 +342,9 @@ def _generate_panel_image_with_scillm(
             "created_at": _now_iso(),
             "role": "panel-creator",
             "surface": "scillm.generate-image-wrapper",
-            "model": str(panel.get("scillm_image_model") or "gpt-image-2"),
+            "model": image_model,
             "auth": image_auth,
+            "image_policy": image_policy,
             "wrapper_events_path": str(wrapper_events_path),
         },
     )
@@ -420,6 +467,11 @@ def _generate_panel_image_with_scillm(
         "live": True,
         "surface": "scillm.generate-image-wrapper",
         "api_key_source": auth["source"],
+        "image_policy": image_policy,
+        "model_policy_enforced": image_policy["source"] != "panel_context",
+        "fallback_allowed": image_policy["fallback_allowed"],
+        "fallback_backends": image_policy["fallback_backends"],
+        "fallback_performed": False,
         "command": _redact_command(cmd),
         "exit_code": returncode,
         "duration_seconds": round(time.monotonic() - started, 6),
@@ -468,6 +520,90 @@ def _generate_panel_image_with_scillm(
     )
     _write_json(receipt_path, wrapper)
     return wrapper
+
+
+def _resolve_scillm_image_policy(
+    panel: Mapping[str, Any],
+    start_payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Resolve the image generation policy without silently changing backend."""
+
+    policy = _extract_image_model_policy(start_payload)
+    source = "dag_model_policy" if policy else "panel_context"
+    fallback_backends: list[str] = []
+    fallback_allowed = False
+    if policy:
+        raw_fallback = policy.get("fallback_backends")
+        if isinstance(raw_fallback, list):
+            fallback_backends = [str(item) for item in raw_fallback if str(item).strip()]
+        fallback_allowed = bool(policy.get("allow_fallback")) or bool(fallback_backends)
+        provider = str(policy.get("provider") or "").strip()
+        auth = str(policy.get("auth") or "").strip()
+        model = str(policy.get("model") or "").strip()
+    else:
+        provider = "scillm"
+        auth = str(panel.get("scillm_image_auth") or "codex-oauth").strip()
+        model = str(panel.get("scillm_image_model") or "gpt-image-2").strip()
+
+    auth, model = _normalize_image_auth_and_model(auth, model)
+    provider = provider or "scillm"
+    supported_provider = provider in {"scillm", "codex", "openai", "openai-codex"}
+    supported = bool(auth and model and supported_provider)
+    error = None
+    if not supported_provider:
+        error = "unsupported_image_model_provider"
+    elif not auth:
+        error = "missing_image_model_auth"
+    elif not model:
+        error = "missing_image_model"
+
+    panel_model = str(panel.get("scillm_image_model") or "").strip()
+    panel_auth = str(panel.get("scillm_image_auth") or "").strip()
+    ignored_panel_overrides: dict[str, str] = {}
+    if policy and panel_model and panel_model != model:
+        ignored_panel_overrides["scillm_image_model"] = panel_model
+    if policy and panel_auth and panel_auth != auth:
+        ignored_panel_overrides["scillm_image_auth"] = panel_auth
+
+    return {
+        "schema": "tau.persona_dream.image_model_policy.v1",
+        "source": source,
+        "provider": provider,
+        "auth": auth,
+        "model": model,
+        "supported": supported,
+        "error": error,
+        "fallback_allowed": fallback_allowed,
+        "fallback_backends": fallback_backends,
+        "fallback_performed": False,
+        "ignored_panel_overrides": ignored_panel_overrides,
+    }
+
+
+def _extract_image_model_policy(start_payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    context = start_payload.get("context")
+    if not isinstance(context, Mapping):
+        return None
+    for key in ("image_model_policy", "model_policy"):
+        value = context.get(key)
+        if isinstance(value, Mapping):
+            return value
+    tau_dag_node = context.get("tau_dag_node")
+    if isinstance(tau_dag_node, Mapping):
+        for key in ("image_model_policy", "model_policy"):
+            value = tau_dag_node.get(key)
+            if isinstance(value, Mapping):
+                return value
+    return None
+
+
+def _normalize_image_auth_and_model(auth: str, model: str) -> tuple[str, str]:
+    if "/" not in model:
+        return auth, model
+    prefix, _, suffix = model.partition("/")
+    if prefix in {"codex-oauth", "openai-api-key"}:
+        return auth or prefix, suffix
+    return auth, model
 
 
 def _review_panel_image_with_scillm(
