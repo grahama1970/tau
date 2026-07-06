@@ -91,6 +91,7 @@ from tau_coding.handoff_dispatch import (
 )
 from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
+from tau_coding.itar_boundary import write_itar_access_preflight_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -1460,6 +1461,17 @@ def main(
         try:
             options = _parse_research_query_gate_args(positional_args[1:])
             payload = write_research_query_safety_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "itar-access-preflight":
+        try:
+            options = _parse_itar_access_preflight_args(positional_args[1:])
+            payload = write_itar_access_preflight_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3558,6 +3570,74 @@ def _parse_research_query_gate_args(args: list[str]) -> dict[str, object]:
     }.items():
         if not isinstance(options.get(key), Path):
             raise RuntimeError(f"{flag} requires a value")
+    return options
+
+
+def _parse_itar_access_preflight_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau itar-access-preflight --actor-manifest <actor.json> "
+            "--data-boundary <boundary.json> --receipt <receipt.json> "
+            "[--approval-packet <approval.json>] [--required-boundary ITAR]"
+        )
+    options: dict[str, object] = {
+        "actor_manifest_path": None,
+        "data_boundary_path": None,
+        "approval_packet_path": None,
+        "receipt_path": None,
+        "required_boundary": "ITAR",
+    }
+    path_keys = {
+        "--actor-manifest": "actor_manifest_path",
+        "--data-boundary": "data_boundary_path",
+        "--approval-packet": "approval_packet_path",
+        "--receipt": "receipt_path",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--actor-manifest",
+            "--data-boundary",
+            "--approval-packet",
+            "--receipt",
+            "--required-boundary",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg in path_keys:
+                options[path_keys[arg]] = Path(value)
+            else:
+                options["required_boundary"] = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--actor-manifest",
+                "--data-boundary",
+                "--approval-packet",
+                "--receipt",
+                "--required-boundary",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            if key in path_keys:
+                options[path_keys[key]] = Path(value)
+            else:
+                options["required_boundary"] = value
+        else:
+            raise RuntimeError(f"Unknown itar-access-preflight option: {arg}")
+        index += 1
+    for key, flag in {
+        "actor_manifest_path": "--actor-manifest",
+        "data_boundary_path": "--data-boundary",
+        "receipt_path": "--receipt",
+    }.items():
+        if not isinstance(options.get(key), Path):
+            raise RuntimeError(f"{flag} requires a value")
+    if not isinstance(options["required_boundary"], str) or not options["required_boundary"].strip():
+        raise RuntimeError("--required-boundary requires a non-empty value")
     return options
 
 
