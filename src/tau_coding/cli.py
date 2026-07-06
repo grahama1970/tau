@@ -132,6 +132,7 @@ from tau_coding.project_dag import (
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
+from tau_coding.proof_index import build_proof_index
 from tau_coding.provider_config import (
     DEFAULT_MODEL,
     DEFAULT_PROVIDER_NAME,
@@ -1304,6 +1305,25 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "proof-index":
+        try:
+            options = _parse_proof_index_cli_args(positional_args[1:])
+            payload = build_proof_index(
+                Path(str(options["proofs_dir"])),
+                output_path=Path(str(options["output_path"])),
+                receipt_path=(
+                    Path(str(options["receipt_path"]))
+                    if options.get("receipt_path") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "dag-fail-closed-registry":
         try:
             output_path = _parse_dag_fail_closed_registry_args(positional_args[1:])
@@ -2369,6 +2389,45 @@ def _parse_evidence_validate_cli_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"unknown evidence-validate option: {arg}")
         index += 1
     return {"manifest": manifest, "receipt": receipt}
+
+
+def _parse_proof_index_cli_args(args: list[str]) -> dict[str, object]:
+    if not args or args[0] != "build":
+        raise RuntimeError(
+            "Usage: tau proof-index build <proofs-dir> --out <index.jsonl> "
+            "[--receipt <receipt.json>]"
+        )
+    if len(args) < 2:
+        raise RuntimeError(
+            "Usage: tau proof-index build <proofs-dir> --out <index.jsonl> "
+            "[--receipt <receipt.json>]"
+        )
+    proofs_dir = Path(args[1])
+    output_path: Path | None = None
+    receipt_path: Path | None = None
+    index = 2
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            output_path = Path(args[index])
+        elif arg.startswith("--out="):
+            output_path = Path(arg.partition("=")[2])
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown proof-index option: {arg}")
+        index += 1
+    if output_path is None:
+        raise RuntimeError("--out is required")
+    return {"proofs_dir": proofs_dir, "output_path": output_path, "receipt_path": receipt_path}
 
 
 def _parse_dag_expansion_validate_cli_args(args: list[str]) -> dict[str, object]:

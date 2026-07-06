@@ -82,6 +82,7 @@ Implemented local gates and receipt surfaces in this checkout include:
 - DAG signal and route-memory candidate receipts
 - adaptive DAG expansion validation, policy, and apply receipts
 - browser/CDP proof receipts
+- proof index build receipts
 - `tau.dag_error.v1` course-correction payloads
 
 These are containment and review mechanisms. They do not prove ITAR
@@ -118,6 +119,7 @@ work-order hash, and evidence artifacts.
 | Herdr cleanup/GC | Implemented with leases/approval gates | Does not prove arbitrary non-Tau cleanup. |
 | GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
+| Proof index | Implemented | Indexes receipt metadata and hashes; does not prove receipt semantic truth. |
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
 | Memory/evidence-case gate | Initial DAG pre-dispatch gate implemented | Validates observable Memory intent and separate evidence-case payloads; does not prove Memory truth. |
@@ -362,6 +364,14 @@ Run a bounded DAG through the product command:
 ```bash
 uv run tau run <dag-spec.json>
 uv run tau run-status <run-dir>
+```
+
+Build a local proof index when you need a machine-readable ledger over receipt
+artifacts:
+
+```bash
+uv run tau proof-index build experiments/goal-locked-subagents/proofs/real-world-sanity \
+  --out experiments/goal-locked-subagents/proofs/index.jsonl
 ```
 
 Use `uv run tau dag-run <dag-spec.json>` when you want the explicit
