@@ -1,3 +1,4 @@
+import hashlib
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -330,6 +331,26 @@ def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -
     assert payload["command"][0] == str(fake_omp)
     assert payload["stdout_path"]
     assert payload["stderr_path"]
+    stdout_path = Path(payload["stdout_path"])
+    stderr_path = Path(payload["stderr_path"])
+    assert payload["stdout_sha256"] == f"sha256:{_sha256(stdout_path)}"
+    assert payload["stdout_bytes"] == stdout_path.stat().st_size
+    assert payload["stderr_sha256"] == f"sha256:{_sha256(stderr_path)}"
+    assert payload["stderr_bytes"] == stderr_path.stat().st_size
+    assert payload["log_artifacts"] == [
+        {
+            "label": "stdout",
+            "path": str(stdout_path),
+            "sha256": f"sha256:{_sha256(stdout_path)}",
+            "bytes": stdout_path.stat().st_size,
+        },
+        {
+            "label": "stderr",
+            "path": str(stderr_path),
+            "sha256": f"sha256:{_sha256(stderr_path)}",
+            "bytes": stderr_path.stat().st_size,
+        },
+    ]
     stdout_payload = json.loads(Path(payload["stdout_path"]).read_text(encoding="utf-8"))
     assert stdout_payload["schema"] == "fake.omp.rpc.response"
     assert stdout_payload["received_type"] == "prompt"
@@ -461,7 +482,20 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert payload["scillm_run_status"] == "completed"
     assert payload["response_artifacts"] == ["events.jsonl"]
     assert payload["response_path"]
-    response_payload = json.loads(Path(payload["response_path"]).read_text(encoding="utf-8"))
+    response_path = Path(payload["response_path"])
+    assert payload["response_sha256"] == f"sha256:{_sha256(response_path)}"
+    assert payload["response_bytes"] == response_path.stat().st_size
+    assert payload["error_sha256"] is None
+    assert payload["error_bytes"] is None
+    assert payload["http_artifacts"] == [
+        {
+            "label": "response",
+            "path": str(response_path),
+            "sha256": f"sha256:{_sha256(response_path)}",
+            "bytes": response_path.stat().st_size,
+        }
+    ]
+    response_payload = json.loads(response_path.read_text(encoding="utf-8"))
     assert response_payload["run_id"] == "run-123"
     assert requests[0]["path"] == "/v1/scillm/opencode/runs"
     assert requests[0]["authorization"] == "Bearer test-token"
@@ -829,3 +863,7 @@ def _write_result(
     path = tmp_path / "worker-result.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

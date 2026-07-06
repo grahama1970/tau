@@ -244,6 +244,8 @@ payload = {
     "apply_launch_http_executed": apply_launch_receipt.get("http_executed"),
     "apply_launch_http_status": apply_launch_receipt.get("http_status"),
     "apply_launch_response_path": apply_launch_receipt.get("response_path"),
+    "apply_launch_response_sha256": apply_launch_receipt.get("response_sha256"),
+    "apply_launch_http_artifacts": apply_launch_receipt.get("http_artifacts", []),
     "apply_launch_run_id": apply_launch_receipt.get("run_id"),
     "model_provider_route": route,
     "proof_scope": {

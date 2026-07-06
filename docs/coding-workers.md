@@ -390,7 +390,8 @@ metadata before any external process launch.
 
 With `--apply`, `omp-worker-launch` invokes the configured command, writes
 captured stdout and stderr artifacts next to the receipt, and records
-`process_executed`, `exit_code`, `timed_out`, `stdout_path`, and `stderr_path`.
+`process_executed`, `exit_code`, `timed_out`, `stdout_path`, `stderr_path`,
+`stdout_sha256`, `stderr_sha256`, byte counts, and `log_artifacts`.
 This proves only that Tau sent a bounded request to a local process and captured
 the process result. It does not prove OMP accepted the request semantically, a
 real `oh-my-pi` binary was used, the worker result artifact is valid, code
@@ -408,9 +409,11 @@ surfaces/endpoints before any external call.
 With `--apply`, `scillm-worker-launch` posts the bounded request to the
 configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the
 receipt, and records `http_executed`, `http_status`, `response_path`,
-`run_id`, `session_id`, `scillm_run_status`, and response artifacts. Apply mode
-requires `--auth-token`; the token is never written to the receipt. This proves
-only that Tau sent the bounded request to the configured SciLLM endpoint and
+`response_sha256`, response byte count, `run_id`, `session_id`,
+`scillm_run_status`, response artifacts, and `http_artifacts`. HTTP error
+artifacts are also hash-bound when present. Apply mode requires
+`--auth-token`; the token is never written to the receipt. This proves only
+that Tau sent the bounded request to the configured SciLLM endpoint and
 captured its response. It does not prove OpenCode served the request
 correctly, a worker result artifact is valid, code changed, or code is correct.
 A worker result must still pass `scillm-worker-validate`.

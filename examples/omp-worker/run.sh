@@ -163,6 +163,9 @@ payload = {
     "apply_launch_process_executed": apply_launch_receipt.get("process_executed"),
     "apply_launch_exit_code": apply_launch_receipt.get("exit_code"),
     "apply_launch_stdout_path": apply_launch_receipt.get("stdout_path"),
+    "apply_launch_stdout_sha256": apply_launch_receipt.get("stdout_sha256"),
+    "apply_launch_stderr_sha256": apply_launch_receipt.get("stderr_sha256"),
+    "apply_launch_log_artifacts": apply_launch_receipt.get("log_artifacts", []),
     "proof_scope": {
         "proves": [
             "Tau built a dry-run OMP RPC launch request from a bounded work order.",

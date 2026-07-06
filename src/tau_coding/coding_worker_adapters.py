@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import json
 import subprocess
 import urllib.error
@@ -130,7 +131,15 @@ def write_omp_worker_launch_receipt(
         "command": command,
         "stdin_jsonl": [request_payload],
         "stdout_path": launch_result["stdout_path"],
+        "stdout_sha256": _artifact_sha256_uri(launch_result["stdout_path"]),
+        "stdout_bytes": _artifact_size(launch_result["stdout_path"]),
         "stderr_path": launch_result["stderr_path"],
+        "stderr_sha256": _artifact_sha256_uri(launch_result["stderr_path"]),
+        "stderr_bytes": _artifact_size(launch_result["stderr_path"]),
+        "log_artifacts": _artifact_descriptors(
+            ("stdout", launch_result["stdout_path"]),
+            ("stderr", launch_result["stderr_path"]),
+        ),
         "caller_skill": caller_skill,
         "model_provider_route": route,
         "alerts": alerts,
@@ -247,7 +256,15 @@ def write_scillm_worker_launch_receipt(
         "model_provider_route": route,
         "request_payload": request_payload,
         "response_path": launch_result["response_path"],
+        "response_sha256": _artifact_sha256_uri(launch_result["response_path"]),
+        "response_bytes": _artifact_size(launch_result["response_path"]),
         "error_path": launch_result["error_path"],
+        "error_sha256": _artifact_sha256_uri(launch_result["error_path"]),
+        "error_bytes": _artifact_size(launch_result["error_path"]),
+        "http_artifacts": _artifact_descriptors(
+            ("response", launch_result["response_path"]),
+            ("error", launch_result["error_path"]),
+        ),
         "response_schema": launch_result["response_schema"],
         "run_id": launch_result["run_id"],
         "session_id": launch_result["session_id"],
@@ -878,6 +895,42 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     resolved = path.expanduser().resolve()
     resolved.parent.mkdir(parents=True, exist_ok=True)
     resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _artifact_descriptors(*items: tuple[str, object]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for label, raw_path in items:
+        path = _artifact_path(raw_path)
+        if path is None:
+            continue
+        artifacts.append(
+            {
+                "label": label,
+                "path": str(path),
+                "sha256": _artifact_sha256_uri(path),
+                "bytes": path.stat().st_size,
+            }
+        )
+    return artifacts
+
+
+def _artifact_sha256_uri(raw_path: object) -> str | None:
+    path = _artifact_path(raw_path)
+    if path is None:
+        return None
+    return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+
+
+def _artifact_size(raw_path: object) -> int | None:
+    path = _artifact_path(raw_path)
+    return path.stat().st_size if path is not None else None
+
+
+def _artifact_path(raw_path: object) -> Path | None:
+    if not isinstance(raw_path, str | Path) or not raw_path:
+        return None
+    path = Path(raw_path).expanduser().resolve()
+    return path if path.exists() else None
 
 
 def _alert(code: str, message: str) -> dict[str, str]:

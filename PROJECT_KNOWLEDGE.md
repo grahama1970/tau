@@ -5,6 +5,28 @@
 
 ## Current Understanding
 
+- 2026-07-06 worker launch artifact hash binding rung:
+  `src/tau_coding/coding_worker_adapters.py` now hash-binds worker launch
+  artifacts. `tau.omp_worker_launch_receipt.v1` records `stdout_sha256`,
+  `stdout_bytes`, `stderr_sha256`, `stderr_bytes`, and `log_artifacts` for
+  bounded apply-mode process launch. `tau.scillm_worker_launch_receipt.v1`
+  records `response_sha256`, `response_bytes`, `error_sha256`, `error_bytes`,
+  and `http_artifacts` for bounded apply-mode HTTP launch artifacts.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `27
+  passed in 2.03s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-launch-artifact-hashes-v2` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-worker-launch-artifact-hashes-v2/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, and embedded
+  focused tests `104 passed in 2.51s`. This proves deterministic local artifact
+  hash/size binding for OMP stdout/stderr and SciLLM response artifacts in the
+  worker-launch receipts and copyable examples; it does not prove a real
+  `oh-my-pi` binary, live SciLLM/OpenCode serve execution, semantic code
+  correctness, provider/model quality, or legal compliance.
+
 - 2026-07-06 coding capability aggregate sanity receipt rung:
   `scripts/run-coding-capability-sanity.py` now runs the coding reliability
   example, OMP worker example, SciLLM worker example, focused ruff checks, and
