@@ -919,6 +919,98 @@ def test_project_dag_legacy_contract_still_runs_without_policy_profile(tmp_path:
     assert receipt.get("zero_trust_preflight_receipt") is None
 
 
+def test_project_dag_controlled_boundary_requires_itar_access_gate(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["data_boundary"] = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "goal_hash": "sha256:active-goal",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_ITAR_ACCESS_PREFLIGHT"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "missing_itar_access_preflight"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_actor_access_gate",
+        "next_agent": "goal-guardian",
+        "reason": "Run or repair the ITAR actor/access preflight receipt before DAG dispatch.",
+    }
+
+
+def test_project_dag_dispatches_when_containment_gate_receipts_pass(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    itar_receipt = _write_gate_receipt(
+        tmp_path / "itar-access-preflight-receipt.json",
+        schema="tau.itar_access_preflight_receipt.v1",
+        goal_hash="sha256:active-goal",
+    )
+    research_receipt = _write_gate_receipt(
+        tmp_path / "research-query-safety-receipt.json",
+        schema="tau.research_query_safety_receipt.v1",
+        goal_hash="sha256:active-goal",
+    )
+    sandbox_receipt = _write_gate_receipt(
+        tmp_path / "sandbox-run-receipt.json",
+        schema="tau.sandbox_run_receipt.v1",
+        goal_hash="sha256:active-goal",
+    )
+    package_receipt = _write_gate_receipt(
+        tmp_path / "compliance-package-validation-receipt.json",
+        schema="tau.compliance_package_validation_receipt.v1",
+        goal_hash="sha256:active-goal",
+        extra={"review_ready": True, "compliant": "NOT_CLAIMED"},
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["data_boundary"] = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "goal_hash": "sha256:active-goal",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    payload["requires_external_research"] = True
+    payload["requires_sandbox"] = True
+    payload["requires_compliance_package_validation"] = True
+    payload["itar_access_preflight_receipt"] = str(itar_receipt)
+    payload["research_query_safety_receipt"] = str(research_receipt)
+    payload["sandbox_run_receipt"] = str(sandbox_receipt)
+    payload["compliance_package_validation_receipt"] = str(package_receipt)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["selected_agents"] == ["coder", "reviewer"]
+    assert receipt["containment_gate_receipts"] == {
+        "itar_access_preflight": str(itar_receipt.resolve()),
+        "research_query_safety": str(research_receipt.resolve()),
+        "sandbox_run": str(sandbox_receipt.resolve()),
+        "compliance_package_validation": str(package_receipt.resolve()),
+    }
+
+
 def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_path: Path) -> None:
     contract_path = tmp_path / "bad-project-dag.json"
     contract_path.write_text(
@@ -1439,6 +1531,29 @@ def _write_contract(tmp_path: Path) -> Path:
     }
     path = tmp_path / "dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _write_gate_receipt(
+    path: Path,
+    *,
+    schema: str,
+    goal_hash: str,
+    extra: dict[str, object] | None = None,
+) -> Path:
+    payload: dict[str, object] = {
+        "schema": schema,
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "receipt_path": str(path),
+    }
+    if extra:
+        payload.update(extra)
+    path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 
 

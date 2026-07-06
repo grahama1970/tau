@@ -699,6 +699,56 @@ def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
     assert "production browser/chat UI rendering" in receipt["proof_scope"]["does_not_prove"]
 
 
+def test_build_checks_registers_itar_containment_dag_and_demo_checks(
+    tmp_path: Path,
+) -> None:
+    module = _load_runner_module()
+
+    checks = module.build_checks(
+        repo=Path(__file__).resolve().parents[1],
+        run_dir=tmp_path,
+        uv_bin="uv",
+        herdr_bin="herdr",
+        receipt_timeout_seconds=120,
+        provider_cleanup_mode="off",
+    )
+
+    by_id = {item.check_id: item for item in checks}
+    missing_gate = by_id["advanced.project_dag_itar_access_gate_missing_fail_closed"]
+    assert missing_gate.expected_status == "BLOCKED"
+    assert missing_gate.expected_verdict == "MISSING_ITAR_ACCESS_PREFLIGHT"
+    assert missing_gate.output_receipt == (
+        tmp_path / "containment-missing-itar-project-dag" / "run" / "dag-receipt.json"
+    )
+
+    all_gates = by_id["advanced.project_dag_containment_gates_pass"]
+    assert all_gates.expected_status == "PASS"
+    assert all_gates.expected_verdict == "PASS"
+    assert all_gates.output_receipt == (
+        tmp_path / "containment-all-gates-project-dag" / "run" / "dag-receipt.json"
+    )
+
+    redteam = by_id["advanced.zero_trust_redteam_itar_containment"]
+    assert redteam.expected_status == "PASS"
+    assert "zero-trust-redteam" in redteam.command
+    assert redteam.output_receipt == (
+        tmp_path
+        / "zero-trust-redteam-itar-containment"
+        / "zero-trust-redteam-receipt.json"
+    )
+
+    demo = by_id["advanced.itar_grade_containment_demo"]
+    assert demo.expected_status == "PASS"
+    demo_script = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "itar-grade-containment"
+        / "run.sh"
+    )
+    assert str(demo_script) in demo.command
+    assert demo.output_receipt == tmp_path / "itar-grade-containment-demo" / "demo-receipt.json"
+
+
 def _load_runner_module() -> ModuleType:
     path = Path(__file__).resolve().parents[1] / "scripts" / "run-real-world-sanity.py"
     spec = importlib.util.spec_from_file_location("run_real_world_sanity", path)

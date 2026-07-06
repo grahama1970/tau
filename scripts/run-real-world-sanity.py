@@ -277,6 +277,16 @@ def build_checks(
         scenario="command-policy-allowed",
         spec_flag=None,
     )
+    project_dag_containment_missing_itar = create_project_dag_containment_gate_fixture(
+        run_dir,
+        scenario="containment-missing-itar",
+        mutation="missing_itar",
+    )
+    project_dag_containment_all_gates = create_project_dag_containment_gate_fixture(
+        run_dir,
+        scenario="containment-all-gates",
+        mutation="all_gates",
+    )
     dag_expansion_tamper = create_dag_expansion_fixture(
         run_dir,
         scenario="dag-expansion-tampered-preview",
@@ -1420,6 +1430,50 @@ def build_checks(
             expected_verdict="COMMAND_POLICY_REJECTED",
         ),
         Check(
+            check_id="advanced.project_dag_itar_access_gate_missing_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects an ITAR-classified project DAG before dispatch when the "
+                "actor/access preflight receipt is missing."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_containment_missing_itar["contract"]),
+                "--receipt-dir",
+                str(project_dag_containment_missing_itar["run_dir"]),
+                "--agents-root",
+                str(project_dag_containment_missing_itar["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_ITAR_ACCESS_PREFLIGHT",
+            output_receipt=project_dag_containment_missing_itar["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_containment_gates_pass",
+            level="advanced",
+            purpose=(
+                "Tau dispatches a project DAG only after PASS ITAR actor/access, "
+                "research-query safety, sandbox, and compliance-package validation receipts "
+                "are referenced by the contract."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_containment_all_gates["contract"]),
+                "--receipt-dir",
+                str(project_dag_containment_all_gates["run_dir"]),
+                "--agents-root",
+                str(project_dag_containment_all_gates["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+            output_receipt=project_dag_containment_all_gates["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
             check_id="advanced.project_dag_ready_queue_cycle_fail_closed",
             level="advanced",
             purpose=(
@@ -1838,6 +1892,42 @@ def build_checks(
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
             output_receipt=github_apply_policy["transport_missing_policy_receipt"],
+        ),
+        Check(
+            check_id="advanced.zero_trust_redteam_itar_containment",
+            level="advanced",
+            purpose=(
+                "Tau runs the deterministic containment red-team suite and requires every "
+                "ITAR/exfiltration/Docker/public-mutation attack fixture to fail closed."
+            ),
+            command=[
+                *uv_tau,
+                "zero-trust-redteam",
+                "--run-dir",
+                str(run_dir / "zero-trust-redteam-itar-containment"),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            output_receipt=(
+                run_dir
+                / "zero-trust-redteam-itar-containment"
+                / "zero-trust-redteam-receipt.json"
+            ),
+        ),
+        Check(
+            check_id="advanced.itar_grade_containment_demo",
+            level="advanced",
+            purpose=(
+                "Tau runs the copyable ITAR-grade containment demo that blocks unsafe "
+                "research, actor access, and Docker policy paths before accepting local-only receipts."
+            ),
+            command=[
+                str(repo / "examples" / "itar-grade-containment" / "run.sh"),
+                str(run_dir / "itar-grade-containment-demo"),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            output_receipt=run_dir / "itar-grade-containment-demo" / "demo-receipt.json",
         ),
         Check(
             check_id="advanced.provider_readiness",
@@ -2570,6 +2660,66 @@ def create_project_dag_command_policy_fixture(
         coder_spec[spec_flag] = True
         write_json(coder_spec_path, coder_spec)
     contract["command_policy"] = str(policy_path)
+    write_json(contract_path, contract)
+    return fixture
+
+
+def create_project_dag_containment_gate_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    mutation: str,
+) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario=scenario,
+        goal_hash=f"sha256:rw-sanity-project-dag-{scenario}",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    fixture_dir = contract_path.parent
+    goal_hash = contract["goal"]["goal_hash"]
+    contract["data_boundary"] = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "goal_hash": goal_hash,
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    if mutation == "missing_itar":
+        write_json(contract_path, contract)
+        return fixture
+    if mutation != "all_gates":  # pragma: no cover - fixture guard.
+        raise AssertionError(f"unknown project DAG containment mutation: {mutation}")
+    contract["requires_external_research"] = True
+    contract["requires_sandbox"] = True
+    contract["requires_compliance_package_validation"] = True
+    itar_receipt = write_gate_receipt(
+        fixture_dir / "itar-access-preflight-receipt.json",
+        schema="tau.itar_access_preflight_receipt.v1",
+        goal_hash=goal_hash,
+    )
+    research_receipt = write_gate_receipt(
+        fixture_dir / "research-query-safety-receipt.json",
+        schema="tau.research_query_safety_receipt.v1",
+        goal_hash=goal_hash,
+    )
+    sandbox_receipt = write_gate_receipt(
+        fixture_dir / "sandbox-run-receipt.json",
+        schema="tau.sandbox_run_receipt.v1",
+        goal_hash=goal_hash,
+    )
+    package_receipt = write_gate_receipt(
+        fixture_dir / "compliance-package-validation-receipt.json",
+        schema="tau.compliance_package_validation_receipt.v1",
+        goal_hash=goal_hash,
+        extra={"review_ready": True, "compliant": "NOT_CLAIMED"},
+    )
+    contract["itar_access_preflight_receipt"] = str(itar_receipt)
+    contract["research_query_safety_receipt"] = str(research_receipt)
+    contract["sandbox_run_receipt"] = str(sandbox_receipt)
+    contract["compliance_package_validation_receipt"] = str(package_receipt)
     write_json(contract_path, contract)
     return fixture
 
@@ -5743,6 +5893,28 @@ def write_json(path: Path, payload: dict[str, Any]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def write_gate_receipt(
+    path: Path,
+    *,
+    schema: str,
+    goal_hash: str,
+    extra: dict[str, Any] | None = None,
+) -> Path:
+    payload: dict[str, Any] = {
+        "schema": schema,
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "receipt_path": str(path),
+    }
+    if extra:
+        payload.update(extra)
+    return write_json(path, payload)
 
 
 def write_text(path: Path, text: str) -> Path:

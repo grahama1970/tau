@@ -147,6 +147,10 @@ class ProjectDagContract:
     data_boundary: str | dict[str, Any] | None
     memory_intent: str | dict[str, Any] | None
     evidence_case: str | dict[str, Any] | None
+    research_query_safety_receipt: str | None
+    itar_access_preflight_receipt: str | None
+    sandbox_run_receipt: str | None
+    compliance_package_validation_receipt: str | None
 
 
 def run_project_dag_contract(
@@ -207,6 +211,26 @@ def run_project_dag_contract(
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
+    containment_alerts, containment_receipts = _containment_gate_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+    )
+    if containment_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(containment_alerts[0]["code"]).upper(),
+            alerts=containment_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+            containment_gate_receipts=containment_receipts,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     memory_alerts, memory_receipt, evidence_case_receipt = _memory_evidence_preflight(
         contract=contract,
         contract_path=resolved_contract_path,
@@ -224,6 +248,7 @@ def run_project_dag_contract(
             evidence_case_gate_receipt=evidence_case_receipt,
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=zero_trust_receipt,
+            containment_gate_receipts=containment_receipts,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -244,6 +269,7 @@ def run_project_dag_contract(
             evidence_case_gate_receipt=evidence_case_receipt,
             evidence_validation_receipt=evidence_validation_receipt,
             zero_trust_preflight_receipt=zero_trust_receipt,
+            containment_gate_receipts=containment_receipts,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -337,6 +363,11 @@ def run_project_dag_contract(
             if isinstance(evidence_case_receipt, dict)
             else None
         ),
+        "containment_gate_receipts": {
+            gate_name: gate_receipt.get("receipt_path")
+            for gate_name, gate_receipt in containment_receipts.items()
+            if isinstance(gate_receipt, dict)
+        },
         "artifacts": [
             str(start_path),
             str(loop_receipt_path),
@@ -358,6 +389,12 @@ def run_project_dag_contract(
                 and isinstance(evidence_validation_receipt.get("receipt_path"), str)
                 else []
             ),
+            *[
+                str(gate_receipt["receipt_path"])
+                for gate_receipt in containment_receipts.values()
+                if isinstance(gate_receipt, dict)
+                and isinstance(gate_receipt.get("receipt_path"), str)
+            ],
             *[
                 str(path)
                 for path in sorted((resolved_receipt_dir / "compiled-command-specs").rglob("*"))
@@ -918,6 +955,32 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if evidence_case is not None and not isinstance(evidence_case, (str, dict)):
         errors.append("evidence_case must be a string path or object when provided")
         evidence_case = None
+    research_query_safety_receipt = payload.get("research_query_safety_receipt")
+    if research_query_safety_receipt is not None and not isinstance(
+        research_query_safety_receipt, str
+    ):
+        errors.append("research_query_safety_receipt must be a string path when provided")
+        research_query_safety_receipt = None
+    itar_access_preflight_receipt = payload.get("itar_access_preflight_receipt")
+    if itar_access_preflight_receipt is not None and not isinstance(
+        itar_access_preflight_receipt, str
+    ):
+        errors.append("itar_access_preflight_receipt must be a string path when provided")
+        itar_access_preflight_receipt = None
+    sandbox_run_receipt = payload.get("sandbox_run_receipt")
+    if sandbox_run_receipt is not None and not isinstance(sandbox_run_receipt, str):
+        errors.append("sandbox_run_receipt must be a string path when provided")
+        sandbox_run_receipt = None
+    compliance_package_validation_receipt = payload.get(
+        "compliance_package_validation_receipt"
+    )
+    if compliance_package_validation_receipt is not None and not isinstance(
+        compliance_package_validation_receipt, str
+    ):
+        errors.append(
+            "compliance_package_validation_receipt must be a string path when provided"
+        )
+        compliance_package_validation_receipt = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -951,6 +1014,10 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         data_boundary=data_boundary,
         memory_intent=memory_intent,
         evidence_case=evidence_case,
+        research_query_safety_receipt=research_query_safety_receipt,
+        itar_access_preflight_receipt=itar_access_preflight_receipt,
+        sandbox_run_receipt=sandbox_run_receipt,
+        compliance_package_validation_receipt=compliance_package_validation_receipt,
     )
 
 
@@ -1077,6 +1144,219 @@ def _evidence_manifest_preflight(
             )
         )
     return alerts, receipt
+
+
+def _containment_gate_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    alerts: list[dict[str, Any]] = []
+    receipts: dict[str, dict[str, Any]] = {}
+    requirements = {
+        "itar_access_preflight": (
+            _requires_itar_access_preflight(contract),
+            contract.itar_access_preflight_receipt,
+            "tau.itar_access_preflight_receipt.v1",
+            "missing_itar_access_preflight",
+            "ITAR-classified DAGs require a PASS actor/access preflight receipt.",
+        ),
+        "research_query_safety": (
+            _requires_research_query_safety(contract),
+            contract.research_query_safety_receipt,
+            "tau.research_query_safety_receipt.v1",
+            "missing_research_query_safety",
+            "External research DAGs require a PASS research-query safety receipt.",
+        ),
+        "sandbox_run": (
+            _requires_sandbox_run(contract),
+            contract.sandbox_run_receipt,
+            "tau.sandbox_run_receipt.v1",
+            "missing_sandbox_run",
+            "Sandbox-required DAGs require a PASS sandbox run receipt.",
+        ),
+        "compliance_package_validation": (
+            _requires_compliance_package_validation(contract),
+            contract.compliance_package_validation_receipt,
+            "tau.compliance_package_validation_receipt.v1",
+            "missing_compliance_package_validation",
+            "Review-package DAGs require a PASS compliance package validation receipt.",
+        ),
+    }
+    for gate_name, (
+        required,
+        receipt_value,
+        expected_schema,
+        missing_code,
+        missing_message,
+    ) in requirements.items():
+        if not required and receipt_value is None:
+            continue
+        if receipt_value is None:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    missing_code,
+                    missing_message,
+                    {
+                        "gate": gate_name,
+                        "required_field": f"{gate_name}_receipt",
+                    },
+                )
+            )
+            continue
+        path = _contract_relative_path(receipt_value, contract_path)
+        assert path is not None
+        try:
+            receipt = _read_json_object(path.expanduser().resolve(), label=gate_name)
+        except RuntimeError as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    f"{gate_name}_unreadable",
+                    f"{gate_name} receipt could not be read.",
+                    {"gate": gate_name, "path": str(path), "errors": [str(exc)]},
+                )
+            )
+            continue
+        receipts[gate_name] = {
+            **receipt,
+            "receipt_path": str(path.expanduser().resolve()),
+        }
+        alerts.extend(
+            _containment_receipt_alerts(
+                gate_name=gate_name,
+                receipt=receipt,
+                path=path.expanduser().resolve(),
+                expected_schema=expected_schema,
+                contract=contract,
+            )
+        )
+    return alerts, receipts
+
+
+def _containment_receipt_alerts(
+    *,
+    gate_name: str,
+    receipt: dict[str, Any],
+    path: Path,
+    expected_schema: str,
+    contract: ProjectDagContract,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if receipt.get("schema") != expected_schema:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                f"{gate_name}_schema_mismatch",
+                f"{gate_name} receipt schema mismatch.",
+                {
+                    "gate": gate_name,
+                    "path": str(path),
+                    "expected_schema": expected_schema,
+                    "actual_schema": receipt.get("schema"),
+                },
+            )
+        )
+    if receipt.get("ok") is not True or receipt.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                f"{gate_name}_not_passed",
+                f"{gate_name} receipt did not PASS.",
+                {
+                    "gate": gate_name,
+                    "path": str(path),
+                    "status": receipt.get("status"),
+                    "ok": receipt.get("ok"),
+                    "alert_codes": receipt.get("alert_codes", []),
+                },
+            )
+        )
+    goal_hash = _receipt_goal_hash(receipt)
+    if goal_hash is not None and goal_hash != contract.goal["goal_hash"]:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                f"{gate_name}_goal_hash_mismatch",
+                f"{gate_name} receipt goal hash does not match the DAG goal.",
+                {
+                    "gate": gate_name,
+                    "path": str(path),
+                    "expected_goal_hash": contract.goal["goal_hash"],
+                    "actual_goal_hash": goal_hash,
+                },
+            )
+        )
+    if gate_name == "compliance_package_validation" and receipt.get("review_ready") is not True:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "compliance_package_not_review_ready",
+                "Compliance package validation receipt is not review-ready.",
+                {"gate": gate_name, "path": str(path)},
+            )
+        )
+    return alerts
+
+
+def _requires_itar_access_preflight(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_itar_access_preflight") is True:
+        return True
+    boundary = _embedded_data_boundary(contract)
+    if not boundary:
+        return False
+    classification = str(boundary.get("classification") or "").upper()
+    return classification == "ITAR" or boundary.get("itar") is True
+
+
+def _requires_research_query_safety(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_external_research") is True:
+        return True
+    for node in contract.nodes.values():
+        payload = _node_payload(contract, node.node_id)
+        if payload.get("requires_external_research") is True:
+            return True
+        if payload.get("external_research") is True:
+            return True
+    return False
+
+
+def _requires_sandbox_run(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_sandbox") is True:
+        return True
+    for node in contract.nodes.values():
+        payload = _node_payload(contract, node.node_id)
+        if payload.get("sandbox_required") is True or payload.get("requires_sandbox") is True:
+            return True
+    return False
+
+
+def _requires_compliance_package_validation(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_compliance_package_validation") is True:
+        return True
+    if contract.payload.get("requires_review_ready_package") is True:
+        return True
+    return False
+
+
+def _embedded_data_boundary(contract: ProjectDagContract) -> dict[str, Any] | None:
+    if isinstance(contract.data_boundary, dict):
+        return contract.data_boundary
+    return None
+
+
+def _receipt_goal_hash(receipt: dict[str, Any]) -> str | None:
+    goal_hash = receipt.get("goal_hash")
+    if isinstance(goal_hash, str) and goal_hash:
+        return goal_hash
+    for key in ("data_boundary", "policy_profile", "actor_manifest"):
+        value = receipt.get(key)
+        if isinstance(value, dict):
+            payload = value.get("payload")
+            if isinstance(payload, dict) and isinstance(payload.get("goal_hash"), str):
+                return payload["goal_hash"]
+    return None
 
 
 def _provider_policy_preflight(contract: ProjectDagContract) -> list[dict[str, Any]]:
@@ -1345,8 +1625,10 @@ def _pre_dispatch_blocked_receipt(
     evidence_case_gate_receipt: dict[str, Any] | None,
     evidence_validation_receipt: dict[str, Any] | None,
     zero_trust_preflight_receipt: dict[str, Any] | None = None,
+    containment_gate_receipts: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
+    containment_gate_receipts = containment_gate_receipts or {}
     if isinstance(zero_trust_preflight_receipt, dict) and isinstance(
         zero_trust_preflight_receipt.get("receipt_path"),
         str,
@@ -1367,6 +1649,9 @@ def _pre_dispatch_blocked_receipt(
         str,
     ):
         artifacts.append(str(evidence_case_gate_receipt["receipt_path"]))
+    for gate_receipt in containment_gate_receipts.values():
+        if isinstance(gate_receipt.get("receipt_path"), str):
+            artifacts.append(str(gate_receipt["receipt_path"]))
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": False,
@@ -1412,6 +1697,11 @@ def _pre_dispatch_blocked_receipt(
             if isinstance(zero_trust_preflight_receipt, dict)
             else None
         ),
+        "containment_gate_receipts": {
+            gate_name: gate_receipt.get("receipt_path")
+            for gate_name, gate_receipt in containment_gate_receipts.items()
+            if isinstance(gate_receipt, dict)
+        },
         "artifacts": artifacts,
         "proof_scope": {
             "mocked": False,
@@ -2401,6 +2691,61 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "repair_then_retry_or_reroute",
             "next_agent": "goal-guardian",
             "reason": "Repair zero-trust policy/data-boundary gates before DAG dispatch.",
+        }
+    if normalized in {
+        "missing_itar_access_preflight",
+        "itar_access_preflight_unreadable",
+        "itar_access_preflight_schema_mismatch",
+        "itar_access_preflight_not_passed",
+        "itar_access_preflight_goal_hash_mismatch",
+    }:
+        return {
+            "type": "repair_actor_access_gate",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Run or repair the ITAR actor/access preflight receipt before DAG dispatch."
+            ),
+        }
+    if normalized in {
+        "missing_research_query_safety",
+        "research_query_safety_unreadable",
+        "research_query_safety_schema_mismatch",
+        "research_query_safety_not_passed",
+        "research_query_safety_goal_hash_mismatch",
+    }:
+        return {
+            "type": "repair_research_query_gate",
+            "next_agent": "research-auditor",
+            "reason": (
+                "Run or repair the research-query safety receipt before external research."
+            ),
+        }
+    if normalized in {
+        "missing_sandbox_run",
+        "sandbox_run_unreadable",
+        "sandbox_run_schema_mismatch",
+        "sandbox_run_not_passed",
+        "sandbox_run_goal_hash_mismatch",
+    }:
+        return {
+            "type": "repair_sandbox_gate",
+            "next_agent": "goal-guardian",
+            "reason": "Run or repair the sandbox policy receipt before dispatch.",
+        }
+    if normalized in {
+        "missing_compliance_package_validation",
+        "compliance_package_validation_unreadable",
+        "compliance_package_validation_schema_mismatch",
+        "compliance_package_validation_not_passed",
+        "compliance_package_validation_goal_hash_mismatch",
+        "compliance_package_not_review_ready",
+    }:
+        return {
+            "type": "repair_review_package",
+            "next_agent": "reviewer",
+            "reason": (
+                "Validate the compliance package as review-ready before normal continuation."
+            ),
         }
     if normalized in {
         "non_local_ready_queue_node_not_allowed",
