@@ -1477,6 +1477,7 @@ def main(
                 receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
                 timeout_seconds=float(options["timeout_seconds"]),
                 backend=str(options["backend"]),
+                image=_optional_str(options.get("image")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3664,6 +3665,7 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
         "out": None,
         "timeout_seconds": 30.0,
         "backend": "bwrap",
+        "image": None,
         "command": [],
     }
     index = 0
@@ -3707,6 +3709,13 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
             options["backend"] = args[index]
         elif arg.startswith("--backend="):
             options["backend"] = arg.partition("=")[2]
+        elif arg == "--image":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--image requires a value")
+            options["image"] = args[index]
+        elif arg.startswith("--image="):
+            options["image"] = arg.partition("=")[2]
         else:
             raise RuntimeError(f"unknown sandbox-run option: {arg}")
         index += 1

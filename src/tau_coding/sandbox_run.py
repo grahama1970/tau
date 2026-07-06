@@ -6,14 +6,16 @@ import hashlib
 import json
 import shutil
 import subprocess
+import tempfile
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.sandbox_policy import SANDBOX_RUN_RECEIPT_SCHEMA, sandbox_policy_alerts
 
-SUPPORTED_BACKENDS = {"bwrap"}
+SUPPORTED_BACKENDS = {"bwrap", "docker", "docker-sbx"}
 
 
 def run_sandboxed_command(
@@ -24,6 +26,7 @@ def run_sandboxed_command(
     receipt_path: Path | None = None,
     timeout_seconds: float = 30.0,
     backend: str = "bwrap",
+    image: str | None = None,
 ) -> dict[str, Any]:
     """Run a command only when Tau can establish the requested sandbox boundary."""
 
@@ -39,6 +42,9 @@ def run_sandboxed_command(
         alerts.append(_alert("missing_command", "sandbox-run requires a command after --."))
     if backend not in SUPPORTED_BACKENDS:
         alerts.append(_alert("unsupported_backend", f"Unsupported sandbox backend: {backend}"))
+
+    if backend in {"docker", "docker-sbx"} and not image:
+        alerts.append(_alert("missing_docker_image", "Docker sandbox backend requires --image."))
 
     if not alerts and backend == "bwrap":
         probe = _probe_bwrap(backend_info["path"])
@@ -67,6 +73,38 @@ def run_sandboxed_command(
                 )
             )
 
+    if not alerts and backend in {"docker", "docker-sbx"}:
+        docker_receipt_path = (
+            receipt_path
+            if receipt_path is not None
+            else Path(tempfile.mkdtemp(prefix="tau-docker-sandbox-")) / "sandbox-receipt.json"
+        )
+        receipt = write_docker_sandbox_receipt(
+            image=str(image),
+            command=list(command),
+            receipt_path=docker_receipt_path,
+            backend=backend,
+            execute=True,
+            timeout_seconds=int(timeout_seconds),
+        )
+        receipt["policy_profile"] = {
+            "path": str(resolved_policy),
+            "sha256": f"sha256:{_sha256(resolved_policy)}",
+            "schema": policy_profile.get("schema"),
+        }
+        receipt["data_boundary"] = {
+            "path": str(resolved_boundary),
+            "sha256": f"sha256:{_sha256(resolved_boundary)}",
+            "schema": data_boundary.get("schema"),
+        }
+        receipt["network_egress"] = "denied"
+        receipt["provider_access"] = "denied"
+        receipt["external_research"] = "denied"
+        receipt["public_github_mutation"] = "denied"
+        if receipt_path is not None:
+            _write_json(receipt_path, receipt)
+        return receipt
+
     ok = not alerts
     receipt = {
         "schema": SANDBOX_RUN_RECEIPT_SCHEMA,
@@ -77,6 +115,7 @@ def run_sandboxed_command(
         "provider_live": False,
         "checked_at": _utc_stamp(),
         "backend": backend_info,
+        "image": image,
         "policy_profile": {
             "path": str(resolved_policy),
             "sha256": f"sha256:{_sha256(resolved_policy)}",

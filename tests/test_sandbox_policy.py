@@ -59,6 +59,40 @@ def test_sandbox_run_blocks_missing_bwrap_backend_before_execution(tmp_path: Pat
     assert "unsupported_backend" in receipt["alert_codes"]
 
 
+def test_sandbox_run_docker_backend_requires_image(tmp_path: Path) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+
+    receipt = run_sandboxed_command(
+        command=[sys.executable, "-c", "print('should-not-run')"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        backend="docker",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["command_executed"] is False
+    assert "missing_docker_image" in receipt["alert_codes"]
+
+
+def test_sandbox_run_docker_backend_uses_strict_docker_policy(tmp_path: Path) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+
+    receipt = run_sandboxed_command(
+        command=[sys.executable, "-c", "print('should-not-run')"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        backend="docker",
+        image="python:3.12",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["command_executed"] is False
+    assert receipt["backend"]["name"] == "docker"
+    assert "unpinned_image" in receipt["alert_codes"]
+    assert receipt["policy_profile"]["schema"] == "tau.policy_profile.v1"
+    assert receipt["data_boundary"]["schema"] == "tau.data_boundary.v1"
+
+
 def test_cli_sandbox_run_writes_blocked_receipt_for_policy_rejection(tmp_path: Path) -> None:
     policy = _policy_profile()
     policy["network"]["default"] = "allow"
@@ -89,6 +123,39 @@ def test_cli_sandbox_run_writes_blocked_receipt_for_policy_rejection(tmp_path: P
     assert payload["command_executed"] is False
     assert "network_not_default_deny" in payload["alert_codes"]
     assert receipt_path.exists()
+
+
+def test_cli_sandbox_run_docker_backend_writes_blocked_receipt(tmp_path: Path) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+    receipt_path = tmp_path / "sandbox-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "sandbox-run",
+            "--policy-profile",
+            str(policy_path),
+            "--data-boundary",
+            str(boundary_path),
+            "--backend",
+            "docker",
+            "--image",
+            "python:3.12",
+            "--out",
+            str(receipt_path),
+            "--",
+            sys.executable,
+            "-c",
+            "print('should-not-run')",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_executed"] is False
+    assert "unpinned_image" in payload["alert_codes"]
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == payload
 
 
 def _write_policy_inputs(
