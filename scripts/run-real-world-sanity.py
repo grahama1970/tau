@@ -278,6 +278,7 @@ def build_checks(
         spec_flag=None,
     )
     project_dag_provider_metadata = create_project_dag_provider_metadata_fixture(run_dir)
+    project_dag_gpt2_oauth_image = run_dir / "gpt2-oauth-image-project-dag"
     project_dag_containment_missing_itar = create_project_dag_containment_gate_fixture(
         run_dir,
         scenario="containment-missing-itar",
@@ -1450,6 +1451,29 @@ def build_checks(
             expected_status="PASS",
             expected_verdict="PASS",
             output_receipt=project_dag_provider_metadata["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_gpt2_oauth_image_generates",
+            level="advanced",
+            purpose=(
+                "Tau dispatches a real project DAG panel-creator node whose DAG "
+                "model_policy requires codex-oauth/gpt-2 image generation, and the "
+                "nested Scillm image receipt proves a PNG was created without fallback."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                project_dag_gpt2_oauth_image_sanity_command(
+                    repo=repo,
+                    run_dir=project_dag_gpt2_oauth_image,
+                    uv_tau=uv_tau,
+                ),
+            ],
+            timeout_seconds=240,
+            expected_status="PASS",
+            expected_provider_live=True,
+            output_receipt=project_dag_gpt2_oauth_image
+            / "gpt2-oauth-image-sanity-receipt.json",
         ),
         Check(
             check_id="advanced.project_dag_viewer_link_exports",
@@ -2742,6 +2766,237 @@ def create_project_dag_provider_metadata_fixture(run_dir: Path) -> dict[str, Pat
         contract["required_evidence"].append("provider_route_receipt")
     write_json(contract_path, contract)
     return fixture
+
+
+def project_dag_gpt2_oauth_image_sanity_command(
+    *,
+    repo: Path,
+    run_dir: Path,
+    uv_tau: list[str],
+) -> str:
+    command_payload = {
+        "repo": str(repo),
+        "run_dir": str(run_dir),
+        "uv_tau": uv_tau,
+    }
+    return f"""
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+payload = {json.dumps(command_payload, sort_keys=True)!r}
+config = json.loads(payload)
+repo = Path(config["repo"]).resolve()
+run_dir = Path(config["run_dir"]).resolve()
+if run_dir.exists():
+    shutil.rmtree(run_dir)
+run_dir.mkdir(parents=True, exist_ok=True)
+receipt_path = run_dir / "gpt2-oauth-image-sanity-receipt.json"
+dag_receipt_path = run_dir / "run" / "dag-receipt.json"
+image_receipt_path = (
+    run_dir
+    / "run"
+    / "command-loop"
+    / "command-artifacts"
+    / "command-loop-step-001"
+    / "scillm_image_generation_receipt.json"
+)
+image_path = run_dir / "artifacts" / "panel_gpt2_live.png"
+contract_path = run_dir / "dag-contract.json"
+contract = {{
+    "schema": "tau.dag_contract.v1",
+    "dag_id": "rw-sanity-gpt2-oauth-image",
+    "provider_sensitive": True,
+    "goal": {{
+        "goal_id": "rw-sanity-gpt2-oauth-image",
+        "goal_version": 1,
+        "goal_hash": "sha256:rw-sanity-gpt2-oauth-image",
+    }},
+    "target": {{
+        "repo": "grahama1970/tau",
+        "target": "real-world-sanity-gpt2-oauth-image",
+    }},
+    "context": {{
+        "persona_dream_panel": {{
+            "panel_id": "panel_gpt2_live",
+            "run_root": str(run_dir),
+            "image_path": str(image_path),
+            "visual_review_receipt": str(run_dir / "receipts" / "visual_review_receipt.json"),
+            "panel_prompt": (
+                "Create a simple 512x512 test image: a single blue square on a "
+                "white background. No text, no logos."
+            ),
+            "scillm_live_panel": "true",
+            "scillm_image_model": "flux",
+            "scillm_image_auth": "google-api-key",
+            "scillm_image_quality": "medium",
+            "scillm_base_url": "http://127.0.0.1:4001",
+            "write_receipts_to_panel_run_root": "true",
+        }}
+    }},
+    "entry_node": "panel-creator",
+    "terminal_nodes": ["human"],
+    "limits": {{
+        "resume": False,
+        "default_timeout_seconds": 180,
+        "max_total_attempts": 1,
+    }},
+    "nodes": [
+        {{
+            "id": "panel-creator",
+            "agent": "panel-creator",
+            "executor": "local",
+            "max_attempts": 1,
+            "command_spec": str(
+                repo
+                / "experiments"
+                / "goal-locked-subagents"
+                / "agent-command-specs"
+                / "panel-creator"
+                / "tau-dispatch-command.json"
+            ),
+            "model_policy": {{
+                "provider": "codex",
+                "auth": "codex-oauth",
+                "model": "gpt-2",
+            }},
+            "prompt_contract": {{
+                "schema": "tau.prompt_contract.v1",
+                "system_prompt": (
+                    "Use the DAG model_policy for image generation. "
+                    "Do not fall back to other image backends."
+                ),
+                "user_template": (
+                    "Generate the requested simple proof image and write receipts."
+                ),
+            }},
+            "required_evidence": [
+                "storyboard_creator_receipt.json",
+                "provider_route_receipt",
+            ],
+        }},
+        {{
+            "id": "human",
+            "agent": "human",
+            "executor": "human",
+        }},
+    ],
+    "edges": [{{"from": "panel-creator", "to": "human"}}],
+    "required_evidence": [
+        "dag-receipt.json",
+        "storyboard_creator_receipt.json",
+        "provider_route_receipt",
+    ],
+    "fail_closed_on": [
+        "goal_hash_mismatch",
+        "target_changed",
+        "unexpected_node",
+        "unexpected_edge",
+        "missing_required_evidence",
+        "max_attempts_exceeded",
+        "malformed_handoff",
+    ],
+}}
+contract_path.write_text(json.dumps(contract, indent=2, sort_keys=True) + "\\n")
+command = [
+    *config["uv_tau"],
+    "dag-run",
+    str(contract_path),
+    "--receipt-dir",
+    str(run_dir / "run"),
+    "--agents-root",
+    str(run_dir / "agents"),
+    "--command-spec-root",
+    str(repo / "experiments" / "goal-locked-subagents" / "agent-command-specs"),
+]
+completed = subprocess.run(
+    command,
+    cwd=repo,
+    text=True,
+    capture_output=True,
+    timeout=210,
+    check=False,
+)
+errors = []
+dag_receipt = {{}}
+if dag_receipt_path.exists():
+    dag_receipt = json.loads(dag_receipt_path.read_text(encoding="utf-8"))
+else:
+    errors.append("dag_receipt_missing")
+image_receipt = {{}}
+if image_receipt_path.exists():
+    image_receipt = json.loads(image_receipt_path.read_text(encoding="utf-8"))
+else:
+    errors.append("image_generation_receipt_missing")
+if image_receipt.get("ok") is not True:
+    errors.append("image_generation_not_ok")
+if image_receipt.get("live") is not True:
+    errors.append("image_generation_not_live")
+if image_receipt.get("model_policy_enforced") is not True:
+    errors.append("model_policy_not_enforced")
+if image_receipt.get("fallback_performed") is not False:
+    errors.append("fallback_performed_not_false")
+policy = image_receipt.get("image_policy")
+if not isinstance(policy, dict):
+    errors.append("image_policy_missing")
+else:
+    if policy.get("provider") != "codex":
+        errors.append("policy_provider_not_codex")
+    if policy.get("auth") != "codex-oauth":
+        errors.append("policy_auth_not_codex_oauth")
+    if policy.get("model") != "gpt-2":
+        errors.append("policy_model_not_gpt2")
+if not image_path.exists() or image_path.stat().st_size <= 0:
+    errors.append("image_artifact_missing_or_empty")
+if image_receipt.get("width") != 512 or image_receipt.get("height") != 512:
+    errors.append("image_dimensions_not_512")
+if not image_receipt.get("sha256"):
+    errors.append("image_sha256_missing")
+receipt = {{
+    "schema": "tau.real_world_sanity_gpt2_oauth_image_receipt.v1",
+    "status": "PASS" if not errors else "BLOCKED",
+    "ok": not errors,
+    "mocked": False,
+    "live": True,
+    "provider_live": not errors,
+    "contract_path": str(contract_path),
+    "dag_receipt": str(dag_receipt_path),
+    "dag_status": dag_receipt.get("status"),
+    "dag_verdict": dag_receipt.get("verdict"),
+    "selected_agents": dag_receipt.get("selected_agents"),
+    "observed_edges": dag_receipt.get("observed_edges"),
+    "image_receipt": str(image_receipt_path),
+    "image_path": str(image_path),
+    "image_sha256": image_receipt.get("sha256"),
+    "image_width": image_receipt.get("width"),
+    "image_height": image_receipt.get("height"),
+    "image_policy": image_receipt.get("image_policy"),
+    "model_policy_enforced": image_receipt.get("model_policy_enforced"),
+    "fallback_performed": image_receipt.get("fallback_performed"),
+    "command": command,
+    "dag_exit_code": completed.returncode,
+    "stdout_tail": completed.stdout[-4000:],
+    "stderr_tail": completed.stderr[-4000:],
+    "proof_scope": {{
+        "proves": [
+            "Tau dispatched a project DAG panel-creator node.",
+            "The node used DAG model_policy codex/codex-oauth/gpt-2 for image generation.",
+            "A live Scillm GPT-2 OAuth image receipt produced a local PNG without fallback.",
+        ],
+        "does_not_prove": [
+            "Full creator-reviewer-terminal DAG acceptance.",
+            "Provider/model semantic image quality.",
+            "Production storyboard acceptance.",
+            "Google, Flux, Fal, or other image backend behavior.",
+        ],
+    }},
+    "errors": errors,
+}}
+receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\\n")
+print(json.dumps(receipt, indent=2, sort_keys=True))
+raise SystemExit(0 if not errors else 1)
+"""
 
 
 def create_project_dag_containment_gate_fixture(

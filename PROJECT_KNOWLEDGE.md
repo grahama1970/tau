@@ -1,9 +1,43 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 16:58 EDT by agent
+**Last updated:** 2026-07-06 17:31 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GPT-2 OAuth image DAG sanity lane:
+  `scripts/run-real-world-sanity.py` now registers
+  `advanced.project_dag_gpt2_oauth_image_generates`, which dispatches the Tau
+  project-DAG `panel-creator` node under DAG `model_policy`
+  `provider:"codex"`, `auth:"codex-oauth"`, `model:"gpt-2"`. The fixture
+  intentionally leaves stale panel-local `scillm_image_model:"flux"` and
+  `scillm_image_auth:"google-api-key"` overrides in the panel context, then
+  validates the nested
+  `run/command-loop/command-artifacts/command-loop-step-001/scillm_image_generation_receipt.json`
+  for `ok:true`, `live:true`, `model_policy_enforced:true`,
+  `fallback_performed:false`, provider/auth/model policy, PNG dimensions, file
+  existence, and SHA-256. Focused proof: `uv run ruff check --select I,F
+  scripts/run-real-world-sanity.py tests/test_real_world_sanity_runner.py`
+  passed; `uv run pytest tests/test_real_world_sanity_runner.py -q` reported
+  `18 passed`; provider-live sanity proof `uv run python
+  scripts/run-real-world-sanity.py --repo . --levels advanced --checks
+  advanced.project_dag_gpt2_oauth_image_generates --label
+  tau-gpt2-oauth-image-dag-sanity-20260706 --receipt-timeout-seconds 300`
+  exited 0 and wrote
+  `experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T171907Z-tau-gpt2-oauth-image-dag-sanity-20260706/real-world-sanity-receipt.json`
+  with `schema:"tau.real_world_sanity_suite_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `mocked:false`, `provider_live:true`, `check_count:1`, and
+  `failed_check_count:0`. The nested proof receipt at
+  `experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T171907Z-tau-gpt2-oauth-image-dag-sanity-20260706/gpt2-oauth-image-project-dag/gpt2-oauth-image-sanity-receipt.json`
+  recorded `schema:"tau.real_world_sanity_gpt2_oauth_image_receipt.v1"`,
+  `status:"PASS"`, `live:true`, `provider_live:true`, `errors:[]`,
+  `selected_agents:["panel-creator"]`, observed edge
+  `panel-creator -> panel-reviewer`, and image
+  `artifacts/panel_gpt2_live.png` as a 512x512 PNG. This proves a live GPT-2
+  OAuth image was created through the Tau project-DAG `panel-creator` path while
+  DAG policy suppressed fallback; it does not prove full
+  creator/reviewer/terminal DAG acceptance, semantic image quality, storyboard
+  acceptance, non-Scillm backends, or production UI/browser rendering.
 
 - 2026-07-06 Phase 07 image model policy enforcement slice: the persona-dream
   panel creator now resolves live image generation from the Tau handoff's
