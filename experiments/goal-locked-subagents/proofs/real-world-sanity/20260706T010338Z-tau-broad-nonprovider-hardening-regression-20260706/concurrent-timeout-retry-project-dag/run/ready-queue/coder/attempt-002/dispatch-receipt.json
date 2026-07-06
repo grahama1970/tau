@@ -1,0 +1,75 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "\nimport runpy\nimport sys\nfrom pathlib import Path\n\nstate = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/command-specs/coder/attempt-count.txt')\nstate.parent.mkdir(parents=True, exist_ok=True)\ncount = int(state.read_text() or '0') if state.exists() else 0\nstate.write_text(str(count + 1))\nif count == 0:\n    import time; time.sleep(5)\nelse:\n    sys.argv = ['/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/project_dag_worker.py', '--role', 'coder', '--scenario', 'concurrent-timeout-retry']\n    runpy.run_path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/project_dag_worker.py', run_name='__main__')\n"
+      ],
+      "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:1dc8611e005d876da458861e0a3718bd0e515a0a7d114137475d10c480b37c3e",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"], \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-concurrent-timeout-retry\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-timeout-retry\", \"goal_id\": \"rw-sanity-project-dag-concurrent-timeout-retry\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"local\", \"name\": \"reviewer\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"coder\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"attempt\": 1, \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-timeout-retry\", \"kind\": \"creator_artifact\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"}], \"status\": \"PASS\", \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+      "timed_out": false,
+      "timeout_s": 1.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Creator produced attempt 1 artifact for reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"\n    ],\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-timeout-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-timeout-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-timeout-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-timeout-retry\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/run/ready-queue/coder/attempt-002/creator-artifact-attempt-1.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-timeout-retry"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "coder",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-timeout-retry\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-timeout-retry\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-timeout-retry\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-timeout-retry.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-timeout-retry-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:ae51e266dc83dc65f333627b91165d4f771cc3a7c168f112e320921d9ccc3ad4\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:coder",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "coder",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-timeout-retry"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

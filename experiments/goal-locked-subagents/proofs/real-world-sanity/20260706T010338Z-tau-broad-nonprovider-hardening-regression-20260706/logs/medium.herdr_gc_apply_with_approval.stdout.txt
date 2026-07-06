@@ -1,0 +1,151 @@
+{
+  "approval_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/herdr-gc-approval.json",
+  "approval_packet_sha256": "a831a6dbabf7dc7b19da20618d35e0677976d57319a18eb8193d072f01a5b251",
+  "approved": true,
+  "errors": [],
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "packet_summary": {
+    "action": "herdr_gc_apply",
+    "actor_auth_method": "manual",
+    "actor_id": "human:graham",
+    "approved": true,
+    "evidence_count": 1,
+    "expires_at": null,
+    "human_id": "human:graham",
+    "nonce": "real-world-sanity:herdr_gc_apply:herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-",
+    "schema": "tau.human_approval_packet.v1",
+    "signature_present": true,
+    "target_id": "herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-"
+  },
+  "proof_scope": {
+    "does_not_prove": [
+      "the gated mutation was executed",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "cryptographic signature validity beyond requiring a signature field"
+    ],
+    "proves": [
+      "Tau can fail closed before mutation or closure without a valid human approval packet",
+      "Tau can validate explicit human approval for a requested gated action",
+      "Tau writes a durable approval-gate receipt before any gated mutation command"
+    ]
+  },
+  "requested_action": "herdr_gc_apply",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/approval",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-06T01:03:39Z"
+}
+{
+  "alerts": [],
+  "applied_action_count": 1,
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-provider-readiness-gc",
+      "pane_count": 2,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 1,
+      "workspace_id": "w-rw-sanity-gc-stale"
+    }
+  ],
+  "approval_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/approval/approval-gate-receipt.json",
+  "approval_receipt_sha256": "sha256:eab32ba61d7246a779a0d55572ded99a11a64651e8bf6c74271ab6e27e9d9e96",
+  "approval_required": true,
+  "approval_target_id_expected": "herdr-gc:rw-sanity-generic-provider-,rw-sanity-provider-,tau-live-provider-,tau-provider-dag-,tau-generic-provider-,tau-traycer-",
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "agent_status": "done",
+      "focused": false,
+      "label": "rw-sanity-provider-readiness-gc",
+      "pane_count": 2,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 1,
+      "workspace_id": "w-rw-sanity-gc-stale"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+        "workspace",
+        "list"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"result\": {\n    \"workspaces\": [\n      {\n        \"agent_status\": \"done\",\n        \"focused\": false,\n        \"label\": \"rw-sanity-provider-readiness-gc\",\n        \"pane_count\": 2,\n        \"tab_count\": 1,\n        \"workspace_id\": \"w-rw-sanity-gc-stale\"\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+        "workspace",
+        "close",
+        "w-rw-sanity-gc-stale"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+        "workspace",
+        "get",
+        "w-rw-sanity-gc-stale"
+      ],
+      "returncode": 1,
+      "stderr": "",
+      "stdout": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\n"
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+  "herdr_surface": "fixture",
+  "include_current_workspace": false,
+  "label_prefixes": [
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-"
+  ],
+  "live": false,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "post_verified_absent_count": 1,
+  "proof_scope": {
+    "does_not_prove": [
+      "Cleanup of arbitrary non-Tau Herdr workspaces.",
+      "Deletion of Git worktrees or local proof artifacts.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
+      "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
+      "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+      "Tau Herdr GC apply requires an explicit approval receipt before mutation.",
+      "Apply mode verifies closed workspaces are no longer addressable through Herdr."
+    ]
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval",
+  "schema": "tau.herdr_gc_receipt.v1",
+  "skipped": [],
+  "skipped_count": 0,
+  "status": "PASS",
+  "timestamp": "2026-07-06T01:03:40Z",
+  "workspace_count": 1
+}

@@ -1,0 +1,54 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "print('not json')"
+      ],
+      "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-max-retries-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:8eafa96519de0555de1db40551e6de466d231ff64cfb5dd7289f89b96a9e8ef4",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "not json\n",
+      "timed_out": false,
+      "timeout_s": 20.0
+    }
+  ],
+  "errors": [
+    "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "live": false,
+  "mocked": true,
+  "ok": false,
+  "receipt_dir": null,
+  "response_projection": null,
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "coder",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-max-retries-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-max-retries\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-max-retries\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-max-retries\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-max-retries.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-max-retries-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:a566496724050dd1c9834c68b6f7dc8bb7b5bab29d91227e9bcd4f1dce5708ea\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:coder",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "coder",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-max-retries"
+    }
+  },
+  "status": "BLOCKED",
+  "stop_reason": "invalid_command_json"
+}

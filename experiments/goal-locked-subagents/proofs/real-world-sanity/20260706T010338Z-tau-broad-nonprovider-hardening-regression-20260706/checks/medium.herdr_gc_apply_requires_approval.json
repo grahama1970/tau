@@ -1,0 +1,110 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "missing_approval_receipt"
+        ],
+        "alert_count": 1,
+        "applied_action_count": 0,
+        "candidate_count": 1,
+        "command_results": [
+          {
+            "argv": [
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+              "workspace",
+              "list"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n  \"result\": {\n    \"workspaces\": [\n      {\n        \"agent_status\": \"done\",\n        \"focused\": false,\n        \"label\": \"rw-sanity-provider-readiness-gc\",\n        \"pane_count\": 2,\n        \"tab_count\": 1,\n        \"workspace_id\": \"w-rw-sanity-gc-stale\"\n      }\n    ]\n  }\n}\n"
+          }
+        ],
+        "herdr_bin": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+        "herdr_surface": "fixture",
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "post_verified_absent_count": 0,
+        "schema": "tau.herdr_gc_receipt.v1",
+        "status": "BLOCKED",
+        "workspace_count": 1
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/logs/medium.herdr_gc_apply_requires_approval.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/logs/medium.herdr_gc_apply_requires_approval.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.herdr_gc_apply_requires_approval",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "herdr-cleanup",
+    "gc",
+    "--run-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval",
+    "--apply",
+    "--herdr-bin",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr"
+  ],
+  "completed_at": "2026-07-06T01:03:38Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks broad Herdr GC apply when no approval receipt authorizes label-based workspace cleanup.",
+  "receipt_summary": {
+    "alert_codes": [
+      "missing_approval_receipt"
+    ],
+    "alert_count": 1,
+    "applied_action_count": 0,
+    "candidate_count": 1,
+    "command_results": [
+      {
+        "argv": [
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+          "workspace",
+          "list"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\n  \"result\": {\n    \"workspaces\": [\n      {\n        \"agent_status\": \"done\",\n        \"focused\": false,\n        \"label\": \"rw-sanity-provider-readiness-gc\",\n        \"pane_count\": 2,\n        \"tab_count\": 1,\n        \"workspace_id\": \"w-rw-sanity-gc-stale\"\n      }\n    ]\n  }\n}\n"
+      }
+    ],
+    "herdr_bin": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-herdr-gc-approval/fake-herdr",
+    "herdr_surface": "fixture",
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "post_verified_absent_count": 0,
+    "schema": "tau.herdr_gc_receipt.v1",
+    "status": "BLOCKED",
+    "workspace_count": 1
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T01:03:38Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/logs/medium.herdr_gc_apply_requires_approval.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/logs/medium.herdr_gc_apply_requires_approval.stdout.txt",
+  "timeout_seconds": 60
+}

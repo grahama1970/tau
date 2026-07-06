@@ -1,0 +1,19 @@
+{
+  "diagnostics": {
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-provider-readiness-status/readiness/opencode.readiness.json",
+    "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-provider-readiness-status/readiness/opencode.session-state.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/medium-provider-readiness-status/logs/opencode.visible.txt"
+  },
+  "pane_id": "w-rw-sanity-readiness:p6",
+  "provider_id": "opencode",
+  "ready": true,
+  "schema": "tau.provider_readiness.v1",
+  "source": "real_world_sanity_static_provider_readiness_fixture",
+  "state": "ready",
+  "terminal_id": "term-opencode",
+  "workspace_id": "w-rw-sanity-readiness"
+}

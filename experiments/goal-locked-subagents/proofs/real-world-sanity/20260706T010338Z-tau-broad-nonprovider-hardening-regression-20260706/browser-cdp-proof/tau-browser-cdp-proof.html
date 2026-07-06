@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tau Browser/CDP Proof</title>
+  <style>
+    body {
+      margin: 0;
+      background: #101417;
+      color: #f2f5f4;
+      font-family: system-ui, sans-serif;
+    }
+    main {
+      max-width: 860px;
+      margin: 64px auto;
+      padding: 32px;
+      border: 1px solid #40515a;
+      background: #182023;
+    }
+    code, pre {
+      color: #55e6c1;
+    }
+  </style>
+</head>
+<body>
+  <main id="tau-browser-proof" data-schema="tau.browser_cdp_proof.v1">
+    <h1>Tau Browser/CDP Proof</h1>
+    <p>Rendered by Surf browser transport for Tau proof boundary inspection.</p>
+    <p>Required handoff schema: <code>tau.agent_handoff.v1</code></p>
+    <p>Receipt schema: <code>tau.browser_cdp_proof.v1</code></p>
+    <pre id="proof-json">{
+  "handoff_schema": "tau.agent_handoff.v1",
+  "next_agent": "reviewer",
+  "run_id": "20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706-browser-cdp-proof",
+  "schema": "tau.browser_cdp_proof.v1"
+}</pre>
+  </main>
+</body>
+</html>
