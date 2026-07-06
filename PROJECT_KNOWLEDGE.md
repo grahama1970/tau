@@ -1,9 +1,36 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:31 EDT by agent
+**Last updated:** 2026-07-06 13:47 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 UX Lab live Tau DAG viewer loading: `pi-mono` commit
+  `0cac7d6c7` adds read-only loading for
+  `http://localhost:3002/#tau/dag?run=<run-dir>` through the Vite
+  `/tau-dag-live-run` endpoint. The viewer reuses
+  `TransportReactFlowDagWorkspace`, sources status from a real
+  `tau.dag_contract.v1` plus `tau.dag_receipt.v1`, and displays
+  `live_local_tau_run` with contract/receipt artifact paths instead of static
+  dashboard data. Focused adapter proof in `pi-mono/packages/ux-lab`:
+  `npm test -- tauDagEvidenceAdapter.test.ts` reported `1 passed`, `5 passed`.
+  Endpoint proof against the real Tau sanity artifact
+  `experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T161619Z-tau-dag-viewer-link-export-20260706/provider-metadata-project-dag`
+  returned HTTP `200` with `schema:"ux_lab.tau_dag_live_run_bundle.v1"`,
+  `source:"live_local_tau_run"`, the real contract path, and
+  `run/dag-receipt.json`. Fresh CDP proof
+  `~/.codex/hooks/verify-ui-cdp.sh --url <encoded live run route> --name
+  tau-dag-live-run-loading` wrote screenshot
+  `/tmp/codex-ui-verification/pi-mono/tau-dag-live-run-loading/20260706T174350Z.png`
+  and marker `.codex/ui-verification/latest.json`. Structural browser proof
+  `/tmp/tau-dag-live-run-structural-proof.json` recorded `ok:true`,
+  `mocked:false`, `live:true`, `provider_live:false`, `nodeCount:6`,
+  `edgeCount:5`, required visible text for `PASS`, `live:true`,
+  `live_local_tau_run`, `dag-contract.json`, and `run/dag-receipt.json`,
+  `overlaps:[]`, and no relevant console errors. This proves the UX Lab route
+  can load and render one real local Tau DAG run artifact; it does not prove
+  provider/model semantic quality, live GitHub mutation, arbitrary run
+  discovery, production access control, or future route correctness.
 
 - 2026-07-06 GPT-2 OAuth image DAG sanity lane:
   `scripts/run-real-world-sanity.py` now registers
