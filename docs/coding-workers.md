@@ -175,6 +175,10 @@ uv run tau debug-session-receipt \
   --out debug-session-receipt.json
 ```
 
+Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
+when debugger evidence is part of a high-stakes coding route. In zero-trust
+mode, Tau blocks debug receipts that omit policy or boundary metadata.
+
 Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code
 is correct.

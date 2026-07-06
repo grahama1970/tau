@@ -1,9 +1,25 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 18:25 EDT by agent
+**Last updated:** 2026-07-06 18:30 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debug-session zero-trust enforcement rung:
+  `src/tau_coding/debug_session_receipt.py` now supports zero-trust metadata on
+  `tau.debug_session_receipt.v1`; `src/tau_coding/cli.py` exposes it through
+  `uv run tau debug-session-receipt --zero-trust --policy-profile <policy.json>
+  --data-boundary <boundary.json>`. In zero-trust mode, Tau blocks structured
+  debugger evidence receipts that omit `policy_profile` or `data_boundary`,
+  while preserving the existing adapter, log-path, and non-claim checks.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py src/tau_coding/cli.py
+  tests/test_debug_session_receipt.py` -> pass; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `8 passed in 0.48s`. This proves
+  deterministic local policy/data-boundary presence gating for structured
+  debugger evidence in zero-trust mode; it does not prove live DAP adapter
+  launch, bug repair, semantic debug completeness, legal compliance,
+  provider/model quality, or runtime sandbox isolation.
 
 - 2026-07-06 commit-plan zero-trust enforcement rung:
   `src/tau_coding/commit_plan.py` now supports zero-trust metadata on

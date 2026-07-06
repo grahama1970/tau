@@ -8,6 +8,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+
 DEBUG_SESSION_PACKET_SCHEMA = "tau.debug_session_packet.v1"
 DEBUG_SESSION_RECEIPT_SCHEMA = "tau.debug_session_receipt.v1"
 SUPPORTED_ADAPTERS = {"debugpy", "lldb-dap", "dlv", "node"}
@@ -18,9 +20,16 @@ def write_debug_session_receipt(
     session_path: Path,
     output_path: Path,
     required: bool = False,
+    zero_trust: bool = False,
+    policy_profile: dict[str, Any] | None = None,
+    data_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     resolved_session = session_path.expanduser().resolve()
-    alerts: list[dict[str, Any]] = []
+    alerts: list[dict[str, Any]] = _coding_policy_alerts(
+        zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
+    )
     packet = _read_json_object(resolved_session, alerts)
     if packet.get("schema") != DEBUG_SESSION_PACKET_SCHEMA:
         alerts.append(
@@ -48,6 +57,9 @@ def write_debug_session_receipt(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "session_path": str(resolved_session),
         "target": packet.get("target"),
         "adapter": adapter,
@@ -121,6 +133,28 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     resolved = path.expanduser().resolve()
     resolved.parent.mkdir(parents=True, exist_ok=True)
     resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _coding_policy_alerts(
+    *,
+    zero_trust: bool,
+    policy_profile: dict[str, Any] | None,
+    data_boundary: dict[str, Any] | None,
+) -> list[dict[str, str]]:
+    alerts: list[dict[str, str]] = []
+    if zero_trust and policy_profile is None:
+        alerts.append(
+            _alert("missing_policy_profile", "zero-trust debug receipt requires policy_profile")
+        )
+    if zero_trust and data_boundary is None:
+        alerts.append(
+            _alert("missing_data_boundary", "zero-trust debug receipt requires data_boundary")
+        )
+    if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
+        alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
+    if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
+        alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    return alerts
 
 
 def _alert(code: str, message: str) -> dict[str, str]:

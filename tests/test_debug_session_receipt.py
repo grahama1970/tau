@@ -61,6 +61,37 @@ def test_debug_receipt_never_claims_fix_correctness(tmp_path: Path) -> None:
     assert "The code is correct." in receipt["proof_scope"]["does_not_prove"]
 
 
+def test_debug_receipt_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_policy_profile" in receipt["alert_codes"]
+    assert "missing_data_boundary" in receipt["alert_codes"]
+
+
+def test_debug_receipt_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["zero_trust"] is True
+    assert receipt["policy_profile"]["profile_id"] == "test"
+    assert receipt["data_boundary"]["classification"] == "public"
+
+
 def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     out = tmp_path / "debug-session-receipt.json"
@@ -80,6 +111,32 @@ def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == DEBUG_SESSION_RECEIPT_SCHEMA
+
+
+def test_cli_debug_session_zero_trust_missing_boundary_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    session = _write_debug_session(tmp_path)
+    out = tmp_path / "debug-session-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "debug-session-receipt",
+            "--session",
+            str(session),
+            "--out",
+            str(out),
+            "--zero-trust",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "missing_policy_profile" in payload["alert_codes"]
+    assert "missing_data_boundary" in payload["alert_codes"]
 
 
 def _write_debug_session(
