@@ -5,6 +5,28 @@
 
 ## Current Understanding
 
+- 2026-07-06 worker validation artifact hash binding rung:
+  `src/tau_coding/coding_worker_adapters.py` now hash-binds the exact work
+  order and worker-result JSON artifacts inspected by
+  `tau.omp_worker_receipt.v1` and `tau.scillm_worker_receipt.v1`. The receipts
+  record `work_order_sha256`, `work_order_bytes`, `result_sha256`,
+  `result_bytes`, and `validated_artifacts`. `examples/omp-worker/run.sh` and
+  `examples/scillm-worker/run.sh` surface those hashes in their demo receipts.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `27
+  passed in 2.01s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-validation-artifact-hashes` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-worker-validation-artifact-hashes/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, and embedded
+  focused tests `104 passed in 2.52s`. This proves deterministic local
+  artifact hash/size binding for worker validation receipts and copyable
+  examples; it does not prove a real `oh-my-pi` binary, live SciLLM/OpenCode
+  serve execution, semantic code correctness, provider/model quality, or legal
+  compliance.
+
 - 2026-07-06 worker launch artifact hash binding rung:
   `src/tau_coding/coding_worker_adapters.py` now hash-binds worker launch
   artifacts. `tau.omp_worker_launch_receipt.v1` records `stdout_sha256`,

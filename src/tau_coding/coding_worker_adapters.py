@@ -398,7 +398,15 @@ def _write_worker_receipt(
         "provider_live": False,
         "worker_kind": worker_kind,
         "work_order_path": str(resolved_work_order),
+        "work_order_sha256": _artifact_sha256_uri(resolved_work_order),
+        "work_order_bytes": _artifact_size(resolved_work_order),
         "result_path": str(resolved_result),
+        "result_sha256": _artifact_sha256_uri(resolved_result),
+        "result_bytes": _artifact_size(resolved_result),
+        "validated_artifacts": _artifact_descriptors(
+            ("work_order", resolved_work_order),
+            ("worker_result", resolved_result),
+        ),
         "work_order_schema": work_order.get("schema"),
         "result_schema": result.get("schema"),
         "dag_id": work_order.get("dag_id"),
@@ -423,6 +431,7 @@ def _write_worker_receipt(
         "proof_scope": {
             "proves": [
                 "Tau inspected an external coding worker result before accepting it.",
+                "Tau recorded hashes for the validated work order and worker result.",
                 "Tau checked goal hash, changed paths, required artifacts, test logs, "
                 "mutation claims, and research claims.",
             ],

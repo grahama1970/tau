@@ -82,6 +82,24 @@ def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Pa
     assert payload["schema"] == OMP_WORKER_RECEIPT_SCHEMA
     assert payload["status"] == "PASS"
     assert payload["next_recommended_route"] == "reviewer"
+    assert payload["work_order_sha256"] == f"sha256:{_sha256(work_order)}"
+    assert payload["work_order_bytes"] == work_order.stat().st_size
+    assert payload["result_sha256"] == f"sha256:{_sha256(result)}"
+    assert payload["result_bytes"] == result.stat().st_size
+    assert payload["validated_artifacts"] == [
+        {
+            "label": "work_order",
+            "path": str(work_order.resolve()),
+            "sha256": f"sha256:{_sha256(work_order)}",
+            "bytes": work_order.stat().st_size,
+        },
+        {
+            "label": "worker_result",
+            "path": str(result.resolve()),
+            "sha256": f"sha256:{_sha256(result)}",
+            "bytes": result.stat().st_size,
+        },
+    ]
 
 
 def test_worker_blocks_tests_passed_without_logs(tmp_path: Path) -> None:
@@ -220,6 +238,12 @@ def test_scillm_worker_records_model_provider_route(tmp_path: Path) -> None:
     assert payload["status"] == "PASS"
     assert payload["model_provider_route"]["surface"] == "opencode_serve"
     assert payload["model_provider_route"]["agent"] == "build"
+    assert payload["work_order_sha256"] == f"sha256:{_sha256(work_order)}"
+    assert payload["result_sha256"] == f"sha256:{_sha256(result)}"
+    assert [artifact["label"] for artifact in payload["validated_artifacts"]] == [
+        "work_order",
+        "worker_result",
+    ]
 
 
 def test_scillm_worker_nonclaims_model_truth(tmp_path: Path) -> None:
