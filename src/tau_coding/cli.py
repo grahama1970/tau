@@ -161,6 +161,7 @@ from tau_coding.provider_pane_poc import (
 )
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
+from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
 from tau_coding.run_status import build_run_status
@@ -1448,6 +1449,17 @@ def main(
                 source_path=source_path,
                 receipt_path=receipt_path,
             )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "research-query-gate":
+        try:
+            options = _parse_research_query_gate_args(positional_args[1:])
+            payload = write_research_query_safety_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3457,6 +3469,96 @@ def _parse_research_source_receipt_args(args: list[str]) -> tuple[Path, Path]:
     if receipt_path is None:
         raise RuntimeError("--receipt requires a value")
     return source_path, receipt_path
+
+
+def _parse_research_query_gate_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau research-query-gate --query <query> --method <method> "
+            "--policy-profile <policy.json> --data-boundary <boundary.json> "
+            "--receipt <receipt.json> [--authorization <auth.json>] "
+            "[--controlled-artifact <path> ...]"
+        )
+    options: dict[str, object] = {
+        "query": None,
+        "method": "brave-search",
+        "policy_profile_path": None,
+        "data_boundary_path": None,
+        "authorization_path": None,
+        "controlled_artifact_paths": [],
+        "receipt_path": None,
+    }
+    path_keys = {
+        "--policy-profile": "policy_profile_path",
+        "--data-boundary": "data_boundary_path",
+        "--authorization": "authorization_path",
+        "--receipt": "receipt_path",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--query",
+            "--method",
+            "--policy-profile",
+            "--data-boundary",
+            "--authorization",
+            "--controlled-artifact",
+            "--receipt",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--controlled-artifact":
+                artifacts = options["controlled_artifact_paths"]
+                if not isinstance(artifacts, list):
+                    raise RuntimeError("internal controlled artifact parser error")
+                artifacts.append(Path(value))
+            elif arg in path_keys:
+                options[path_keys[arg]] = Path(value)
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--query",
+                "--method",
+                "--policy-profile",
+                "--data-boundary",
+                "--authorization",
+                "--controlled-artifact",
+                "--receipt",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            if key == "--controlled-artifact":
+                artifacts = options["controlled_artifact_paths"]
+                if not isinstance(artifacts, list):
+                    raise RuntimeError("internal controlled artifact parser error")
+                artifacts.append(Path(value))
+            elif key in path_keys:
+                options[path_keys[key]] = Path(value)
+            else:
+                options[key.removeprefix("--").replace("-", "_")] = value
+        else:
+            raise RuntimeError(f"Unknown research-query-gate option: {arg}")
+        index += 1
+
+    query = options["query"]
+    if not isinstance(query, str) or not query.strip():
+        raise RuntimeError("--query requires a non-empty value")
+    method = options["method"]
+    if not isinstance(method, str) or not method.strip():
+        raise RuntimeError("--method requires a non-empty value")
+    for key, flag in {
+        "policy_profile_path": "--policy-profile",
+        "data_boundary_path": "--data-boundary",
+        "receipt_path": "--receipt",
+    }.items():
+        if not isinstance(options.get(key), Path):
+            raise RuntimeError(f"{flag} requires a value")
+    return options
 
 
 def _parse_generated_ticket_github_create_cli_args(
