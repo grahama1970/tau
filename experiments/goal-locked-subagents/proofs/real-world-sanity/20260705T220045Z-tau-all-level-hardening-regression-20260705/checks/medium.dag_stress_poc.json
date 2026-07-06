@@ -1,0 +1,70 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "rung_count": 10,
+        "schema": "tau.dag_stress_suite_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.dag_stress_poc.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.dag_stress_poc.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.dag_stress_poc",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-stress-poc",
+    "--label",
+    "rw-sanity-dag-stress",
+    "--run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-dag-stress-poc",
+    "--max-attempts",
+    "4"
+  ],
+  "completed_at": "2026-07-05T22:01:06Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau executes simple, retry, fan-out/fan-in, timeout, error, invalid-receipt, wrong-result, and model-missing scheduler rungs.",
+  "receipt_summary": {
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "rung_count": 10,
+    "schema": "tau.dag_stress_suite_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:01:05Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.dag_stress_poc.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.dag_stress_poc.stdout.txt",
+  "timeout_seconds": 120
+}

@@ -236,6 +236,22 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
             "scratch_worktree": str(tmp_path / "scratch-worktree"),
             "attempt_count": 1,
             "max_attempts": 2,
+            "alerts": [
+                {
+                    "schema": "tau.provider_dag_alert.v1",
+                    "severity": "BLOCK",
+                    "code": "coder_receipt_timeout",
+                    "node_id": "coder",
+                    "attempt": 1,
+                    "message": "Provider DAG coder node did not produce a bound receipt before timeout.",
+                    "errors": ["node_receipt_timeout: coder receipt did not appear before timeout"],
+                    "recommended_action": {
+                        "type": "reroute",
+                        "next_agent": "goal-guardian",
+                        "reason": "Provider DAG coder node did not produce a bound receipt before timeout.",
+                    },
+                }
+            ],
             "provider_sessions": {
                 "codex": {
                     "role": "coder",
@@ -320,6 +336,23 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
     assert status["provider_dag"]["attempt_count"] == 1
     assert status["provider_dag"]["provider_session_count"] == 2
     assert status["provider_dag"]["visible_subagent_count"] == 2
+    assert status["provider_dag"]["alert_count"] == 1
+    assert status["provider_dag"]["blocking_alert_count"] == 1
+    assert status["provider_dag"]["alerts"] == [
+        {
+            "severity": "BLOCK",
+            "code": "coder_receipt_timeout",
+            "node_id": "coder",
+            "attempt": 1,
+            "message": "Provider DAG coder node did not produce a bound receipt before timeout.",
+            "error_count": 1,
+            "recommended_action": {
+                "type": "reroute",
+                "next_agent": "goal-guardian",
+                "reason": "Provider DAG coder node did not produce a bound receipt before timeout.",
+            },
+        }
+    ]
     assert status["provider_dag"]["provider_sessions"]["codex"]["pane_id"] == "w1:p1"
     assert status["provider_dag"]["visible_subagents"]["planner"]["visible"] is True
     assert status["provider_dag"]["herdr_cleanup"]["mode"] == "dry-run"
@@ -672,6 +705,7 @@ def test_run_status_summarizes_herdr_gc_receipt_over_approval(
             "mode": "apply",
             "run_dir": str(tmp_path),
             "herdr_bin": "herdr",
+            "herdr_surface": "real",
             "approval_required": True,
             "approval_receipt": str(tmp_path / "approval-gate-receipt.json"),
             "approval_receipt_sha256": "sha256-gate",
@@ -702,6 +736,7 @@ def test_run_status_summarizes_herdr_gc_receipt_over_approval(
         "mode": "apply",
         "run_dir": str(tmp_path),
         "herdr_bin": "herdr",
+        "herdr_surface": "real",
         "approval_required": True,
         "approval_receipt": str(tmp_path / "approval-gate-receipt.json"),
         "approval_receipt_sha256": "sha256-gate",
@@ -1310,6 +1345,54 @@ def test_run_status_summarizes_github_handoff_transport_receipt(tmp_path: Path) 
         "errors": [
             "GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."
         ],
+    }
+
+
+def test_run_status_summarizes_research_source_receipt(tmp_path: Path) -> None:
+    source_packet = tmp_path / "research-source-packet.json"
+    _write_json(
+        tmp_path / "research-source-receipt.json",
+        {
+            "schema": "tau.research_source_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "source_packet": str(source_packet),
+            "source_packet_sha256": "sha256:packet",
+            "source_type": "paper",
+            "method": "arxiv",
+            "classification": "design_input",
+            "source_count": 2,
+            "arxiv_source_count": 2,
+            "review_required": True,
+            "errors": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["ok"] is True
+    assert status["status"] == "PASS"
+    assert status["detected_type"] == "research_source"
+    assert status["missing_required_artifacts"] == []
+    assert status["research_source"] == {
+        "schema": "tau.research_source_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "source_packet": str(source_packet),
+        "source_packet_sha256": "sha256:packet",
+        "source_type": "paper",
+        "method": "arxiv",
+        "classification": "design_input",
+        "source_count": 2,
+        "arxiv_source_count": 2,
+        "review_required": True,
+        "errors": [],
     }
 
 

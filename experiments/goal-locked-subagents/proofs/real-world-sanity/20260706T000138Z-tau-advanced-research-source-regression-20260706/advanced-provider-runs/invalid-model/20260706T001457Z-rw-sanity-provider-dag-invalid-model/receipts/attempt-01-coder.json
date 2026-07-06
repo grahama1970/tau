@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/invalid-model/20260706T001457Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+  ],
+  "attempt": 1,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/invalid-model/20260706T001457Z-rw-sanity-provider-dag-invalid-model/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260706T001457Z-rw-sanity-provider-dag-invalid-model",
+  "errors": [],
+  "goal_hash": "sha256:ea9e8c3a060c0ccabf6edd27f8a94195e227adb2993443131d4bc9045467234e",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w6Z:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e62a3673457c3",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/invalid-model/20260706T001457Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260706T001457Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "87b5ea2666c7ea1d7291a90d1838d6ec1960afb4615fe563f56b469f1481f306",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/invalid-model/20260706T001457Z-rw-sanity-provider-dag-invalid-model/work-orders/attempt-01-coder.json",
+  "work_order_sha256": "1938fa9359ef6f50fa68015ee68659fe47f06fe79c3cc5630a13cbeaf62bd8ea",
+  "workspace_id": "w6Z"
+}

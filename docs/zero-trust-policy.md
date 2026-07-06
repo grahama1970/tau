@@ -11,6 +11,10 @@ This slice adds three schemas:
 - `tau.data_boundary.v1`
 - `tau.zero_trust_preflight_receipt.v1`
 
+The research pre-query gate adds:
+
+- `tau.research_query_safety_receipt.v1`
+
 ## Policy Profile
 
 A policy profile states default-deny run policy for a high-stakes DAG lane. The
@@ -95,3 +99,27 @@ uv run tau zero-trust-doctor \
 The receipt proves only deterministic preflight inspection. It does not prove
 runtime sandbox enforcement, signed receipts, human identity verification,
 provider/model semantic safety, or compliance package completeness.
+
+## Research Query Gate
+
+Use `research-query-gate` before sending any controlled-boundary context to
+Brave, WebGPT, Dogpile, ArXiv, Perplexity, or another external research lane:
+
+```bash
+uv run tau research-query-gate \
+  --query "Find public NIST publications on secure research workflow review" \
+  --method brave-search \
+  --policy-profile policy-profile.json \
+  --data-boundary data-boundary.json \
+  --authorization research-query-authorization.json \
+  --receipt research-query-safety-receipt.json
+```
+
+For controlled work, the gate blocks when the data boundary disallows external
+research, policy denies external search, the query includes controlled-data
+markers, the query copies text from a declared controlled artifact, or the
+authorization packet is missing, expired, or mismatched.
+
+The gate is deliberately pre-query only. It writes
+`tau.research_query_safety_receipt.v1` and does not call external research
+services, write Memory, mutate GitHub, or prove legal/export compliance.

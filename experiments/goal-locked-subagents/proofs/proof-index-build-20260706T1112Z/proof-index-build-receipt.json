@@ -1,0 +1,85 @@
+{
+  "created_at": "2026-07-06T11:13:34.364616Z",
+  "error_count": 0,
+  "errors": [],
+  "indexed_receipt_count": 15145,
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "output_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/proof-index-build-20260706T1112Z/proof-index.jsonl",
+  "output_sha256": "sha256:81eeecb09cafb370c44558c74b06c726165f4ee314c408a3b799328e402b11f3",
+  "proof_scope": {
+    "does_not_prove": [
+      "Receipt semantic truth.",
+      "Provider/model semantic quality.",
+      "Live GitHub mutation.",
+      "Production Memory persistence."
+    ],
+    "proves": [
+      "Tau receipt-like JSON artifacts were scanned deterministically.",
+      "The proof index JSONL was written with stable path, hash, status, and boundary fields."
+    ]
+  },
+  "proofs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity",
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/proof-index-build-20260706T1112Z/proof-index-build-receipt.json",
+  "schema": "tau.proof_index_build_receipt.v1",
+  "schema_counts": {
+    "tau.agent_handoff_command_loop_receipt.v1": 207,
+    "tau.agent_handoff_dispatch_receipt.v1": 617,
+    "tau.agent_handoff_projection_receipt.v1": 270,
+    "tau.approval_gate_receipt.v1": 184,
+    "tau.dag_branch_lock_validation_receipt.v1": 12,
+    "tau.dag_expansion_apply_receipt.v1": 21,
+    "tau.dag_expansion_policy_receipt.v1": 21,
+    "tau.dag_expansion_validation_receipt.v1": 21,
+    "tau.dag_planner_receipt.v1": 201,
+    "tau.dag_receipt.v1": 382,
+    "tau.dag_route_memory_candidate_receipt.v1": 44,
+    "tau.dag_route_memory_sync_receipt.v1": 44,
+    "tau.dag_run_receipt.v1": 327,
+    "tau.dag_signal_receipt.v1": 94,
+    "tau.dag_stress_campaign_receipt.v1": 35,
+    "tau.dag_stress_node_receipt.v1": 5845,
+    "tau.dag_stress_rung_receipt.v1": 2450,
+    "tau.dag_stress_suite_receipt.v1": 245,
+    "tau.evidence_case_gate_receipt.v1": 21,
+    "tau.evidence_validation_receipt.v1": 35,
+    "tau.generic_dag_node_receipt.v1": 487,
+    "tau.generic_dag_run_receipt.v1": 112,
+    "tau.github_apply_policy_receipt.v1": 46,
+    "tau.github_handoff_transport_receipt.v1": 11,
+    "tau.github_projection_redaction_receipt.v1": 95,
+    "tau.herdr_cleanup_receipt.v1": 217,
+    "tau.herdr_gc_receipt.v1": 25,
+    "tau.memory_intent_gate_receipt.v1": 21,
+    "tau.orchestration_evidence_receipt.v1": 337,
+    "tau.provider_dag_node_receipt.v1": 402,
+    "tau.provider_pane_run_receipt.v1": 157,
+    "tau.provider_readiness_run_receipt.v1": 690,
+    "tau.real_world_sanity_check_receipt.v1": 1262,
+    "tau.real_world_sanity_suite_receipt.v1": 199,
+    "tau.research_source_receipt.v1": 8
+  },
+  "status": "PASS",
+  "status_counts": {
+    "BLOCKED": 2805,
+    "COMPLETED": 453,
+    "PASS": 11797,
+    "RUNNING": 1,
+    "WAITING": 89
+  },
+  "warning_count": 2,
+  "warnings": [
+    {
+      "code": "non_object_json",
+      "message": "JSON value is not an object",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010203Z-tau-route-memory-approved-sync-20260706/dag-route-memory-approval/approved-memory-requests.json"
+    },
+    {
+      "code": "non_object_json",
+      "message": "JSON value is not an object",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/dag-route-memory-approval/approved-memory-requests.json"
+    }
+  ]
+}

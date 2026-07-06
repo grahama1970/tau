@@ -1,0 +1,59 @@
+{
+  "alerts": [
+    {
+      "code": "missing_workspace_lease",
+      "evidence": {
+        "branch_type": "provider",
+        "node_id": "provider-node"
+      },
+      "message": "Provider branch locks require a Herdr workspace lease reference.",
+      "severity": "BLOCK"
+    }
+  ],
+  "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/dag-branch-locks/dag-contract.json",
+  "dag_contract_sha256": "sha256:e68d5351af491708feb93d4805a96971a0dcc20a9b30843817357feca827d722",
+  "dag_id": "rw-sanity-dag-branch-locks",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-dag-branch-locks",
+  "live": true,
+  "locks": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/dag-branch-locks/branch-locks.missing-workspace-lease.json",
+  "locks_sha256": "sha256:15ada8fdcdc1d9b066a06304d82c9b2f39e0b1ea7fe918f62cf8a619739720c0",
+  "memory_sync": false,
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider branch safety after execution.",
+      "GitHub mutation safety.",
+      "Concurrent scheduling of provider or mutating branches.",
+      "That the approval packet hash corresponds to a valid human approval packet."
+    ],
+    "proves": [
+      "DAG contract was inspected for provider and mutating branches.",
+      "Branch-lock metadata was checked against required provider/mutating nodes.",
+      "Side-effect authorization metadata was checked before scheduling.",
+      "No provider branch, mutating branch, route mutation, or DAG mutation was executed."
+    ]
+  },
+  "provided_lock_count": 2,
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/dag-branch-locks/branch-lock-validation.missing-workspace-lease.receipt.json",
+  "required_lock_count": 2,
+  "required_locks": [
+    {
+      "branch_type": "provider",
+      "node_id": "provider-node"
+    },
+    {
+      "branch_type": "mutating",
+      "node_id": "mutating-node"
+    }
+  ],
+  "route_mutation": false,
+  "schema": "tau.dag_branch_lock_validation_receipt.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:19:58Z",
+  "verdict": "MISSING_WORKSPACE_LEASE"
+}

@@ -1,0 +1,19 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl",
+  "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/inspect.json",
+  "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+  "provider_session_states": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.session-state.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.session-state.json"
+  ],
+  "provider_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/provider-readiness-spec.json",
+  "readiness_records": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json"
+  ],
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "run_id": "20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema": "tau.provider_readiness_runtime_manifest.v1",
+  "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/workstation.json"
+}

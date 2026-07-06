@@ -1,0 +1,21 @@
+ocked-subagents/proofs/real-
+world-sanity/20260706T000138
+Z-tau-advanced-research-sour
+ce-regression-20260706/advan
+ced-provider-runs/one-pass/2
+0260706T000333Z-rw-sanity-pr
+ovider-dag-one-pass/planner-
+receipt.json\nfinal_receipt:
+ /home/graham/workspace/expe
+riments/tau/experiments/goal
+-locked-subagents/proofs/rea
+l-world-sanity/20260706T0001
+38Z-tau-advanced-research-so
+urce-regression-20260706/adv
+anced-provider-runs/one-pass
+/20260706T000333Z-rw-sanity-
+provider-dag-one-pass/run-re
+ceipt.json\ncanonical truth:
+ Tau JSON receipts; this pan
+e is human-visible telemetry
+.\n

@@ -1,0 +1,114 @@
+{
+  "checkpoint_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/checkpoint.json",
+  "completed_node_count": 2,
+  "current_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/current-state.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "live": false,
+  "mocked": false,
+  "node_count": 2,
+  "nodes": [
+    {
+      "artifacts": [],
+      "attempt": null,
+      "attempt_count": 0,
+      "command_results": [],
+      "duration_seconds": 0.0,
+      "errors": [],
+      "finished_at": "2026-07-05T22:19:26Z",
+      "goal_hash": null,
+      "live": null,
+      "mocked": null,
+      "node_id": "planner",
+      "pane_id": null,
+      "provider_live": null,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/receipts/planner.json",
+      "resumed": true,
+      "role": "planner",
+      "started_at": "2026-07-05T22:19:26Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    },
+    {
+      "artifacts": [],
+      "attempt": null,
+      "attempt_count": 1,
+      "command_results": [
+        {
+          "argv": [
+            "python3",
+            "-c",
+            "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/receipts/coder.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'coder', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'coder completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+          ],
+          "elapsed_seconds": 0.022,
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "duration_seconds": 0.023,
+      "errors": [],
+      "finished_at": "2026-07-05T22:19:26Z",
+      "goal_hash": null,
+      "live": null,
+      "mocked": null,
+      "node_id": "coder",
+      "pane_id": null,
+      "provider_live": null,
+      "provider_status": null,
+      "provider_verdict": null,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/receipts/coder.json",
+      "resumed": false,
+      "role": "coder",
+      "started_at": "2026-07-05T22:19:26Z",
+      "status": "PASS",
+      "terminal_id": null,
+      "verdict": "PASS",
+      "visible_log_path": null,
+      "visible_log_sha256": null,
+      "work_order_path": null,
+      "work_order_sha256": null,
+      "workspace_id": null
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "resume_requested": true,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json"
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume",
+  "run_id": "rw-sanity-generic-dag-resume",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-resume/dag-spec.json",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:26Z",
+  "verdict": "PASS"
+}

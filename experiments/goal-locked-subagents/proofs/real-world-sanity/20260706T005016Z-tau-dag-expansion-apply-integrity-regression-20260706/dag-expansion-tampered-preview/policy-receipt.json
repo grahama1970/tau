@@ -1,0 +1,40 @@
+{
+  "alerts": [],
+  "applied": false,
+  "apply_allowed": true,
+  "dag_id": "rw-sanity-dag-expansion",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning."
+    ],
+    "proves": [
+      "Expansion validation receipt was checked for policy eligibility.",
+      "Policy decision was emitted as a receipt.",
+      "No DAG artifact was written by policy validation."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-preview/policy-receipt.json",
+  "recommended_next_command": "tau dag-expansion-apply --validation-receipt <receipt> --policy-receipt <policy-receipt.json> --out <expanded-dag.json> --receipt <apply-receipt.json>",
+  "require_clean_signal": false,
+  "route_mutation": false,
+  "schema": "tau.dag_expansion_policy_receipt.v1",
+  "signal_receipt": null,
+  "signal_receipt_sha256": null,
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:50:17Z",
+  "validation_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/dag-expansion-tampered-preview/validation-receipt.json",
+  "validation_receipt_sha256": "sha256:758258e315522f40e57ab752aba00e5e8951723410cd6cf5d52415e62810ec57",
+  "verdict": "PASS"
+}

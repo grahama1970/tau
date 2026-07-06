@@ -1,0 +1,43 @@
+{
+  "alert_codes": [
+    "inline_memory_evidence_rejected"
+  ],
+  "alert_count": 1,
+  "alerts": [
+    {
+      "code": "inline_memory_evidence_rejected",
+      "evidence": {
+        "inline_evidence_count": 1
+      },
+      "message": "Memory intent must route; evidence belongs in a separate evidence_case.",
+      "severity": "BLOCK"
+    }
+  ],
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-inline",
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "payload_schema": "memory.intent.v1",
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory truth.",
+      "Evidence-case artifact correctness.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected a Memory intent product before DAG dispatch.",
+      "Memory intent was treated as a routing/admissibility input, not inline evidence."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234631Z-tau-memory-evidence-gate-expanded-fixed-20260705/memory-evidence-inline-project-dag/run/memory-intent-gate-receipt.json",
+  "schema": "tau.memory_intent_gate_receipt.v1",
+  "source_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234631Z-tau-memory-evidence-gate-expanded-fixed-20260705/memory-evidence-inline-project-dag/memory-intent.json",
+  "source_sha256": "sha256:7176db1f20a9dc531c7c9edc0d6e9370b959cb93ca85b6dddd168948a6dc9f4c",
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-inline"
+  },
+  "timestamp": "2026-07-05T23:46:32Z"
+}

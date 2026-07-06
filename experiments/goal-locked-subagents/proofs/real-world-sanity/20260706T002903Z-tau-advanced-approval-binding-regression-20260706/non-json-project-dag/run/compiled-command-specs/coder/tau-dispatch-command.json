@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/non-json-project-dag/project_dag_worker.py",
+    "--role",
+    "coder",
+    "--scenario",
+    "non-json"
+  ],
+  "timeout_s": 20
+}

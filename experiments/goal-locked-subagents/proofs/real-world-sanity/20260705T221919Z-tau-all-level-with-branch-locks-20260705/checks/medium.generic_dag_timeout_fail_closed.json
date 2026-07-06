@@ -1,0 +1,123 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "blocked_node_count": 1,
+        "completed_node_count": 0,
+        "dispatched_node_count": 1,
+        "live": false,
+        "mocked": false,
+        "node_attempt_counts": {
+          "slow": 2
+        },
+        "node_count": 1,
+        "node_duration_seconds_max": 0.205,
+        "node_duration_seconds_total": 0.205,
+        "node_durations_seconds": {
+          "slow": 0.205
+        },
+        "node_error_counts": {
+          "slow": 1
+        },
+        "node_statuses": {
+          "slow": "BLOCKED"
+        },
+        "node_verdicts": {
+          "slow": "SUBAGENT_TIMEOUT"
+        },
+        "ok": false,
+        "provider_live": false,
+        "resume_requested": true,
+        "resume_source": {
+          "mode": "spec_path",
+          "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json"
+        },
+        "resumed_node_count": 0,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json",
+        "status": "BLOCKED",
+        "timed_node_count": 1,
+        "verdict": "SUBAGENT_TIMEOUT"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_timeout_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_timeout_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.generic_dag_timeout_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json"
+  ],
+  "completed_at": "2026-07-05T22:19:30Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "SUBAGENT_TIMEOUT",
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau retries a timed-out generic DAG worker up to max_attempts and then blocks with SUBAGENT_TIMEOUT.",
+  "receipt_summary": {
+    "blocked_node_count": 1,
+    "completed_node_count": 0,
+    "dispatched_node_count": 1,
+    "live": false,
+    "mocked": false,
+    "node_attempt_counts": {
+      "slow": 2
+    },
+    "node_count": 1,
+    "node_duration_seconds_max": 0.205,
+    "node_duration_seconds_total": 0.205,
+    "node_durations_seconds": {
+      "slow": 0.205
+    },
+    "node_error_counts": {
+      "slow": 1
+    },
+    "node_statuses": {
+      "slow": "BLOCKED"
+    },
+    "node_verdicts": {
+      "slow": "SUBAGENT_TIMEOUT"
+    },
+    "ok": false,
+    "provider_live": false,
+    "resume_requested": true,
+    "resume_source": {
+      "mode": "spec_path",
+      "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json"
+    },
+    "resumed_node_count": 0,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json",
+    "status": "BLOCKED",
+    "timed_node_count": 1,
+    "verdict": "SUBAGENT_TIMEOUT"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:29Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_timeout_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_timeout_fail_closed.stdout.txt",
+  "timeout_seconds": 90
+}

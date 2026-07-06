@@ -1,0 +1,75 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "preview_hash_mismatch"
+        ],
+        "alert_count": 1,
+        "applied": false,
+        "errors": [],
+        "live": true,
+        "memory_sync": false,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "schema": "tau.dag_expansion_apply_receipt.v1",
+        "status": "BLOCKED",
+        "verdict": "PREVIEW_HASH_MISMATCH"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.dag_expansion_apply_tampered_preview_fail_closed",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "\nimport json\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nuv_tau = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau']\ncontract = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/dag-contract.json')\nproposal = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/proposal.json')\nvalidation_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/validation-receipt.json')\npolicy_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/policy-receipt.json')\napply_receipt = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/apply-receipt.json')\npreview = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/expanded-dag.preview.json')\nout = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/expanded-dag.json')\n\n\ndef run(command, expected_exit):\n    completed = subprocess.run(command, capture_output=True, text=True)\n    if completed.stdout:\n        print(completed.stdout, end=\"\")\n    if completed.stderr:\n        print(completed.stderr, end=\"\", file=sys.stderr)\n    if completed.returncode != expected_exit:\n        raise SystemExit(completed.returncode)\n    return completed\n\n\nrun([\n    *uv_tau,\n    \"dag-expansion-validate\",\n    \"--dag-contract\",\n    str(contract),\n    \"--proposal\",\n    str(proposal),\n    \"--receipt\",\n    str(validation_receipt),\n    \"--preview\",\n    str(preview),\n], 0)\nrun([\n    *uv_tau,\n    \"dag-expansion-policy\",\n    \"--validation-receipt\",\n    str(validation_receipt),\n    \"--receipt\",\n    str(policy_receipt),\n], 0)\npayload = json.loads(preview.read_text(encoding=\"utf-8\"))\npayload[\"nodes\"].append({\n    \"id\": \"tampered\",\n    \"agent\": \"validator\",\n    \"executor\": \"local\",\n    \"max_attempts\": 1,\n    \"required_evidence\": [\"tampered_receipt\"],\n})\npayload[\"edges\"].append({\"from\": \"validator\", \"to\": \"tampered\"})\npreview.write_text(json.dumps(payload, indent=2, sort_keys=True) + \"\\n\", encoding=\"utf-8\")\ncompleted = run([\n    *uv_tau,\n    \"dag-expansion-apply\",\n    \"--validation-receipt\",\n    str(validation_receipt),\n    \"--policy-receipt\",\n    str(policy_receipt),\n    \"--out\",\n    str(out),\n    \"--receipt\",\n    str(apply_receipt),\n], 1)\nraise SystemExit(completed.returncode)\n"
+  ],
+  "completed_at": "2026-07-06T00:01:55Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "PREVIEW_HASH_MISMATCH",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/dag-expansion-tampered-preview/apply-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau validates an adaptive DAG expansion, records policy, then refuses to apply a tampered preview whose sha256 no longer matches validation.",
+  "receipt_summary": {
+    "alert_codes": [
+      "preview_hash_mismatch"
+    ],
+    "alert_count": 1,
+    "applied": false,
+    "errors": [],
+    "live": true,
+    "memory_sync": false,
+    "mocked": false,
+    "ok": false,
+    "provider_live": false,
+    "schema": "tau.dag_expansion_apply_receipt.v1",
+    "status": "BLOCKED",
+    "verdict": "PREVIEW_HASH_MISMATCH"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T00:01:53Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.dag_expansion_apply_tampered_preview_fail_closed.stdout.txt",
+  "timeout_seconds": 90
+}

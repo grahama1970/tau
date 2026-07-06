@@ -1,0 +1,91 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "dag_stress_campaign": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign-status/20260705T221942Z-rw-sanity-dag-campaign-status/campaign-receipt.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": null,
+  "dag_stress_campaign": {
+    "execution": "local_deterministic_tau_scheduler_campaign",
+    "failed_suite_count": 0,
+    "grading_dimensions": [
+      "dependency_ordering",
+      "retry_budget_accounting",
+      "receipt_presence",
+      "receipt_schema_rejection",
+      "timeout_classification",
+      "subagent_error_classification",
+      "wrong_result_max_iteration_classification",
+      "model_unavailable_classification"
+    ],
+    "live": false,
+    "max_budget": 3,
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "repetitions": 2,
+    "schema": "tau.dag_stress_campaign_receipt.v1",
+    "status": "PASS",
+    "status_counts": {
+      "BLOCKED": 42,
+      "PASS": 18
+    },
+    "suite_count": 6,
+    "total_rungs": 60,
+    "verdict_counts": {
+      "INVALID_RECEIPT": 6,
+      "MAX_ATTEMPTS_EXHAUSTED": 12,
+      "MODEL_UNAVAILABLE": 6,
+      "PASS": 18,
+      "SUBAGENT_ERROR": 6,
+      "SUBAGENT_TIMEOUT": 6,
+      "WRONG_RESULT_MAX_ITERATIONS": 6
+    }
+  },
+  "detected_type": "dag_stress_campaign",
+  "events": {
+    "count": 0,
+    "path": null
+  },
+  "evidence_validation": null,
+  "generic_dag": null,
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": null,
+  "project_dag": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-campaign-status/20260705T221942Z-rw-sanity-dag-campaign-status",
+  "run_receipt": null,
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:43Z"
+}

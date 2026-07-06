@@ -1,0 +1,65 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": false,
+        "provider_session_state_count": 0,
+        "runtime_manifest": null,
+        "schema": "tau.run_status.v1",
+        "status": "BLOCKED"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_stale_work_order_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_stale_work_order_status.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.generic_dag_stale_work_order_status",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "python",
+    "-c",
+    "import json, subprocess, sys\nproducer = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'dag-run', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/dag-spec.json']\nstatus_prefix = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'run-status']\nrun_dir_key = 'run_dir'\nproducer_expected = (1,)\nfirst = subprocess.run(producer, text=True, capture_output=True)\nsys.stderr.write(first.stderr)\nif first.returncode not in producer_expected:\n    sys.stdout.write(first.stdout)\n    raise SystemExit(first.returncode)\npayload = json.loads(first.stdout)\nrun_dir = payload[run_dir_key]\nsecond = subprocess.run([*status_prefix, run_dir], text=True, capture_output=True)\nsys.stderr.write(second.stderr)\nsys.stdout.write(second.stdout)\nraise SystemExit(second.returncode)"
+  ],
+  "completed_at": "2026-07-05T22:19:29Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau summarizes a stale work-order blocked generic DAG through the read-only run-status surface without requiring provider artifacts.",
+  "receipt_summary": {
+    "live": false,
+    "mocked": false,
+    "ok": false,
+    "provider_session_state_count": 0,
+    "runtime_manifest": null,
+    "schema": "tau.run_status.v1",
+    "status": "BLOCKED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:28Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_stale_work_order_status.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.generic_dag_stale_work_order_status.stdout.txt",
+  "timeout_seconds": 90
+}

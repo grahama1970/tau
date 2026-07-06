@@ -1,0 +1,11 @@
+{
+  "artifacts": [],
+  "attempt": 1,
+  "handoff_summary": "marker still missing",
+  "node_id": "reviewer",
+  "role": "reviewer",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:41.935498Z",
+  "verdict": "REVISE"
+}

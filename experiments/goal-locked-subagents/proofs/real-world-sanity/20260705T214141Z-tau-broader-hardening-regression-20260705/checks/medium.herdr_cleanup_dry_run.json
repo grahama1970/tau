@@ -1,0 +1,81 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "applied_action_count": 0,
+        "candidate_count": 1,
+        "command_results": [],
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "post_verified_absent_count": 0,
+        "resource_count": 1,
+        "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/medium-herdr-cleanup/runtime-manifest.json",
+        "runtime_manifest_sha256": "fcd569e273294b901efbd6a82bb894e340da083029c68f1d687ea8234820014e",
+        "schema": "tau.herdr_cleanup_receipt.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.herdr_cleanup_dry_run.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.herdr_cleanup_dry_run.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.herdr_cleanup_dry_run",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "herdr-cleanup",
+    "dry-run",
+    "--run-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/medium-herdr-cleanup"
+  ],
+  "completed_at": "2026-07-05T21:41:51Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau identifies run-owned Herdr cleanup candidates without mutating Herdr.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "applied_action_count": 0,
+    "candidate_count": 1,
+    "command_results": [],
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "post_verified_absent_count": 0,
+    "resource_count": 1,
+    "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/medium-herdr-cleanup/runtime-manifest.json",
+    "runtime_manifest_sha256": "fcd569e273294b901efbd6a82bb894e340da083029c68f1d687ea8234820014e",
+    "schema": "tau.herdr_cleanup_receipt.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T21:41:51Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.herdr_cleanup_dry_run.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T214141Z-tau-broader-hardening-regression-20260705/logs/medium.herdr_cleanup_dry_run.stdout.txt",
+  "timeout_seconds": 60
+}

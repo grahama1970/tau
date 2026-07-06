@@ -73,7 +73,12 @@ def write_github_apply_policy_receipt(
                 label="approval receipt",
                 errors=errors,
             )
-            _check_approval_receipt(approval_receipt, errors=errors, checks=checks)
+            _check_approval_receipt(
+                approval_receipt,
+                target=target,
+                errors=errors,
+                checks=checks,
+            )
 
     ok = not errors
     receipt = {
@@ -260,9 +265,18 @@ def _check_redaction_receipt(
         and receipt.get("status") == "PASS"
     )
     redacted_projection = receipt.get("redacted_projection")
+    expected_redacted_sha = receipt.get("redacted_projection_sha256")
     if not isinstance(redacted_projection, str) or not Path(redacted_projection).exists():
         ok = False
         errors.append("redaction receipt redacted_projection must exist")
+    elif not isinstance(expected_redacted_sha, str) or not expected_redacted_sha.strip():
+        ok = False
+        errors.append("redaction receipt redacted_projection_sha256 is required")
+    else:
+        actual_redacted_sha = _safe_file_sha256(Path(redacted_projection).expanduser().resolve())
+        if actual_redacted_sha != expected_redacted_sha:
+            ok = False
+            errors.append("redaction receipt redacted_projection_sha256 does not match artifact")
     if receipt.get("projection") != str(projection_path):
         ok = False
         errors.append("redaction receipt projection does not match checked projection")
@@ -274,19 +288,42 @@ def _check_redaction_receipt(
 def _check_approval_receipt(
     receipt: Mapping[str, Any],
     *,
+    target: Mapping[str, Any],
     errors: list[str],
     checks: list[dict[str, Any]],
 ) -> None:
+    packet_summary = receipt.get("packet_summary")
+    target_id = packet_summary.get("target_id") if isinstance(packet_summary, Mapping) else None
+    expected_target_id = _approval_target_id(target)
     ok = (
         receipt.get("schema") == APPROVAL_GATE_RECEIPT_SCHEMA
         and receipt.get("ok") is True
         and receipt.get("status") == "PASS"
         and receipt.get("approved") is True
         and receipt.get("requested_action") == "github_apply"
+        and target_id == expected_target_id
     )
-    checks.append({"code": "approval_receipt", "ok": ok})
+    checks.append(
+        {
+            "code": "approval_receipt",
+            "ok": ok,
+            "target_id": target_id,
+            "expected_target_id": expected_target_id,
+        }
+    )
+    if target_id != expected_target_id:
+        errors.append(
+            "approval receipt target_id must match GitHub projection target "
+            f"{expected_target_id}"
+        )
     if not ok:
         errors.append("approval receipt is not a passing github_apply approval receipt")
+
+
+def _approval_target_id(target: Mapping[str, Any]) -> str:
+    repo = target.get("repo")
+    target_ref = target.get("target")
+    return f"{repo}:{target_ref}"
 
 
 def _requires(policy: Mapping[str, Any], key: str) -> bool:

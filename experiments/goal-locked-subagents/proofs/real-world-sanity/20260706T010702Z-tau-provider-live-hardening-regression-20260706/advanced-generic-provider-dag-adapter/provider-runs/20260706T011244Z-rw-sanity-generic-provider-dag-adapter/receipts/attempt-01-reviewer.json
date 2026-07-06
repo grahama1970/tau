@@ -1,0 +1,28 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T011244Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:5d5ad1809b37fdf80e2263083a204ceed87cf44fe503cde5e046e98ce5dc2170",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w7A",
+  "pane_id": "w7A:p6",
+  "terminal_id": "term_655e6f8e5a863829",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T011244Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "2f214be998f6844a8ed20e79b2c5cbaaf1db7a72b1da4fe29538a1f979a593b1",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T011244Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS. target_file (message.txt) has no TODO line — content replaced with completion message. coder_receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields populated. force_revise is false. No violations found.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
@@ -19,9 +18,9 @@ from tau_coding.handoff_dispatch import (
     write_agent_handoff_command_loop_receipt,
 )
 from tau_coding.memory_evidence_gate import (
-    evaluate_memory_evidence_gate,
-    load_memory_gate_object,
-    write_memory_evidence_gate_receipts,
+    read_gate_payload,
+    write_evidence_case_gate_receipt,
+    write_memory_intent_gate_receipt,
 )
 from tau_coding.policy_profile import zero_trust_preflight_receipt
 
@@ -187,6 +186,10 @@ class ProjectDagContract:
     data_boundary: str | dict[str, Any] | None
     memory_intent: str | dict[str, Any] | None
     evidence_case: str | dict[str, Any] | None
+    research_query_safety_receipt: str | None
+    itar_access_preflight_receipt: str | None
+    sandbox_run_receipt: str | None
+    compliance_package_validation_receipt: str | None
 
 
 def run_project_dag_contract(
@@ -211,6 +214,22 @@ def run_project_dag_contract(
 
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    provider_policy_alerts = _provider_policy_preflight(contract)
+    if provider_policy_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(provider_policy_alerts[0]["code"]).upper(),
+            alerts=provider_policy_alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     zero_trust_alerts, zero_trust_receipt = _zero_trust_preflight(
         contract=contract,
         contract_path=resolved_contract_path,
@@ -224,10 +243,10 @@ def run_project_dag_contract(
             scheduler=scheduler,
             verdict=str(zero_trust_alerts[0]["code"]).upper(),
             alerts=zero_trust_alerts,
-            evidence_validation_receipt=None,
-            zero_trust_preflight_receipt=zero_trust_receipt,
             memory_intent_gate_receipt=None,
             evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -251,6 +270,26 @@ def run_project_dag_contract(
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
+    containment_alerts, containment_receipts = _containment_gate_preflight(
+        contract=contract,
+        contract_path=resolved_contract_path,
+    )
+    if containment_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(containment_alerts[0]["code"]).upper(),
+            alerts=containment_alerts,
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+            containment_gate_receipts=containment_receipts,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     evidence_manifest_alerts, evidence_validation_receipt = _evidence_manifest_preflight(
         contract=contract,
         contract_path=resolved_contract_path,
@@ -268,6 +307,7 @@ def run_project_dag_contract(
             zero_trust_preflight_receipt=zero_trust_receipt,
             memory_intent_gate_receipt=memory_intent_receipt,
             evidence_case_gate_receipt=evidence_case_receipt,
+            containment_gate_receipts=containment_receipts,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -368,6 +408,11 @@ def run_project_dag_contract(
             if isinstance(evidence_case_receipt, dict)
             else None
         ),
+        "containment_gate_receipts": {
+            gate_name: gate_receipt.get("receipt_path")
+            for gate_name, gate_receipt in containment_receipts.items()
+            if isinstance(gate_receipt, dict)
+        },
         "artifacts": [
             str(start_path),
             str(loop_receipt_path),
@@ -395,6 +440,12 @@ def run_project_dag_contract(
                 and isinstance(evidence_validation_receipt.get("receipt_path"), str)
                 else []
             ),
+            *[
+                str(gate_receipt["receipt_path"])
+                for gate_receipt in containment_receipts.values()
+                if isinstance(gate_receipt, dict)
+                and isinstance(gate_receipt.get("receipt_path"), str)
+            ],
             *[
                 str(path)
                 for path in sorted((resolved_receipt_dir / "compiled-command-specs").rglob("*"))
@@ -955,6 +1006,32 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if evidence_case is not None and not isinstance(evidence_case, (str, dict)):
         errors.append("evidence_case must be a string path or object when provided")
         evidence_case = None
+    research_query_safety_receipt = payload.get("research_query_safety_receipt")
+    if research_query_safety_receipt is not None and not isinstance(
+        research_query_safety_receipt, str
+    ):
+        errors.append("research_query_safety_receipt must be a string path when provided")
+        research_query_safety_receipt = None
+    itar_access_preflight_receipt = payload.get("itar_access_preflight_receipt")
+    if itar_access_preflight_receipt is not None and not isinstance(
+        itar_access_preflight_receipt, str
+    ):
+        errors.append("itar_access_preflight_receipt must be a string path when provided")
+        itar_access_preflight_receipt = None
+    sandbox_run_receipt = payload.get("sandbox_run_receipt")
+    if sandbox_run_receipt is not None and not isinstance(sandbox_run_receipt, str):
+        errors.append("sandbox_run_receipt must be a string path when provided")
+        sandbox_run_receipt = None
+    compliance_package_validation_receipt = payload.get(
+        "compliance_package_validation_receipt"
+    )
+    if compliance_package_validation_receipt is not None and not isinstance(
+        compliance_package_validation_receipt, str
+    ):
+        errors.append(
+            "compliance_package_validation_receipt must be a string path when provided"
+        )
+        compliance_package_validation_receipt = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
     node_ids = set(nodes)
@@ -988,6 +1065,10 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         data_boundary=data_boundary,
         memory_intent=memory_intent,
         evidence_case=evidence_case,
+        research_query_safety_receipt=research_query_safety_receipt,
+        itar_access_preflight_receipt=itar_access_preflight_receipt,
+        sandbox_run_receipt=sandbox_run_receipt,
+        compliance_package_validation_receipt=compliance_package_validation_receipt,
     )
 
 
@@ -1116,6 +1197,458 @@ def _evidence_manifest_preflight(
     return alerts, receipt
 
 
+def _containment_gate_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    alerts: list[dict[str, Any]] = []
+    receipts: dict[str, dict[str, Any]] = {}
+    requirements = {
+        "itar_access_preflight": (
+            _requires_itar_access_preflight(contract),
+            contract.itar_access_preflight_receipt,
+            "tau.itar_access_preflight_receipt.v1",
+            "missing_itar_access_preflight",
+            "ITAR-classified DAGs require a PASS actor/access preflight receipt.",
+        ),
+        "research_query_safety": (
+            _requires_research_query_safety(contract),
+            contract.research_query_safety_receipt,
+            "tau.research_query_safety_receipt.v1",
+            "missing_research_query_safety",
+            "External research DAGs require a PASS research-query safety receipt.",
+        ),
+        "sandbox_run": (
+            _requires_sandbox_run(contract),
+            contract.sandbox_run_receipt,
+            "tau.sandbox_run_receipt.v1",
+            "missing_sandbox_run",
+            "Sandbox-required DAGs require a PASS sandbox run receipt.",
+        ),
+        "compliance_package_validation": (
+            _requires_compliance_package_validation(contract),
+            contract.compliance_package_validation_receipt,
+            "tau.compliance_package_validation_receipt.v1",
+            "missing_compliance_package_validation",
+            "Review-package DAGs require a PASS compliance package validation receipt.",
+        ),
+    }
+    for gate_name, (
+        required,
+        receipt_value,
+        expected_schema,
+        missing_code,
+        missing_message,
+    ) in requirements.items():
+        if not required and receipt_value is None:
+            continue
+        if receipt_value is None:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    missing_code,
+                    missing_message,
+                    {
+                        "gate": gate_name,
+                        "required_field": f"{gate_name}_receipt",
+                    },
+                )
+            )
+            continue
+        path = _contract_relative_path(receipt_value, contract_path)
+        assert path is not None
+        try:
+            receipt = _read_json_object(path.expanduser().resolve(), label=gate_name)
+        except RuntimeError as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    f"{gate_name}_unreadable",
+                    f"{gate_name} receipt could not be read.",
+                    {"gate": gate_name, "path": str(path), "errors": [str(exc)]},
+                )
+            )
+            continue
+        receipts[gate_name] = {
+            **receipt,
+            "receipt_path": str(path.expanduser().resolve()),
+        }
+        alerts.extend(
+            _containment_receipt_alerts(
+                gate_name=gate_name,
+                receipt=receipt,
+                path=path.expanduser().resolve(),
+                expected_schema=expected_schema,
+                contract=contract,
+            )
+        )
+    return alerts, receipts
+
+
+def _containment_receipt_alerts(
+    *,
+    gate_name: str,
+    receipt: dict[str, Any],
+    path: Path,
+    expected_schema: str,
+    contract: ProjectDagContract,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    if receipt.get("schema") != expected_schema:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                f"{gate_name}_schema_mismatch",
+                f"{gate_name} receipt schema mismatch.",
+                {
+                    "gate": gate_name,
+                    "path": str(path),
+                    "expected_schema": expected_schema,
+                    "actual_schema": receipt.get("schema"),
+                },
+            )
+        )
+    if receipt.get("ok") is not True or receipt.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "BLOCK",
+                f"{gate_name}_not_passed",
+                f"{gate_name} receipt did not PASS.",
+                {
+                    "gate": gate_name,
+                    "path": str(path),
+                    "status": receipt.get("status"),
+                    "ok": receipt.get("ok"),
+                    "alert_codes": receipt.get("alert_codes", []),
+                },
+            )
+        )
+    goal_hash = _receipt_goal_hash(receipt)
+    if goal_hash is not None and goal_hash != contract.goal["goal_hash"]:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                f"{gate_name}_goal_hash_mismatch",
+                f"{gate_name} receipt goal hash does not match the DAG goal.",
+                {
+                    "gate": gate_name,
+                    "path": str(path),
+                    "expected_goal_hash": contract.goal["goal_hash"],
+                    "actual_goal_hash": goal_hash,
+                },
+            )
+        )
+    if gate_name == "compliance_package_validation" and receipt.get("review_ready") is not True:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "compliance_package_not_review_ready",
+                "Compliance package validation receipt is not review-ready.",
+                {"gate": gate_name, "path": str(path)},
+            )
+        )
+    return alerts
+
+
+def _requires_itar_access_preflight(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_itar_access_preflight") is True:
+        return True
+    boundary = _embedded_data_boundary(contract)
+    if not boundary:
+        return False
+    classification = str(boundary.get("classification") or "").upper()
+    return classification == "ITAR" or boundary.get("itar") is True
+
+
+def _requires_research_query_safety(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_external_research") is True:
+        return True
+    for node in contract.nodes.values():
+        payload = _node_payload(contract, node.node_id)
+        if payload.get("requires_external_research") is True:
+            return True
+        if payload.get("external_research") is True:
+            return True
+    return False
+
+
+def _requires_sandbox_run(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_sandbox") is True:
+        return True
+    for node in contract.nodes.values():
+        payload = _node_payload(contract, node.node_id)
+        if payload.get("sandbox_required") is True or payload.get("requires_sandbox") is True:
+            return True
+    return False
+
+
+def _requires_compliance_package_validation(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("requires_compliance_package_validation") is True:
+        return True
+    if contract.payload.get("requires_review_ready_package") is True:
+        return True
+    return False
+
+
+def _embedded_data_boundary(contract: ProjectDagContract) -> dict[str, Any] | None:
+    if isinstance(contract.data_boundary, dict):
+        return contract.data_boundary
+    return None
+
+
+def _receipt_goal_hash(receipt: dict[str, Any]) -> str | None:
+    goal_hash = receipt.get("goal_hash")
+    if isinstance(goal_hash, str) and goal_hash:
+        return goal_hash
+    for key in ("data_boundary", "policy_profile", "actor_manifest"):
+        value = receipt.get(key)
+        if isinstance(value, dict):
+            payload = value.get("payload")
+            if isinstance(payload, dict) and isinstance(payload.get("goal_hash"), str):
+                return payload["goal_hash"]
+    return None
+
+
+def _provider_policy_preflight(contract: ProjectDagContract) -> list[dict[str, Any]]:
+    if not _provider_sensitive_contract(contract):
+        return []
+    alerts: list[dict[str, Any]] = []
+    for node in contract.nodes.values():
+        if node.executor == "human":
+            continue
+        node_payload = _node_payload(contract, node.node_id)
+        model_policy = node_payload.get("model_policy")
+        if not isinstance(model_policy, dict):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "provider_policy_missing",
+                    "Provider-sensitive DAG node is missing model_policy.",
+                    {"node_id": node.node_id, "agent": node.agent},
+                )
+            )
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "model_unspecified",
+                    "Provider-sensitive DAG node does not specify an explicit model.",
+                    {"node_id": node.node_id, "agent": node.agent},
+                )
+            )
+        else:
+            missing_policy_fields = [
+                field
+                for field in ("provider", "auth")
+                if not isinstance(model_policy.get(field), str) or not model_policy.get(field)
+            ]
+            if missing_policy_fields:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "provider_policy_missing",
+                        "Provider-sensitive DAG node model_policy is missing provider/auth fields.",
+                        {
+                            "node_id": node.node_id,
+                            "agent": node.agent,
+                            "missing": missing_policy_fields,
+                        },
+                    )
+                )
+            if not isinstance(model_policy.get("model"), str) or not model_policy.get("model"):
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "model_unspecified",
+                        "Provider-sensitive DAG node does not specify an explicit model.",
+                        {"node_id": node.node_id, "agent": node.agent},
+                    )
+                )
+        prompt_contract = node_payload.get("prompt_contract")
+        if not _valid_prompt_contract(prompt_contract):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_prompt_contract",
+                    "Provider-sensitive DAG node is missing an explicit prompt contract.",
+                    {"node_id": node.node_id, "agent": node.agent},
+                )
+            )
+        if not _has_provider_route_evidence(node.required_evidence):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "missing_required_evidence",
+                    "Provider-sensitive DAG node is missing required provider-route evidence.",
+                    {
+                        "node_id": node.node_id,
+                        "agent": node.agent,
+                        "missing": ["provider_route_receipt"],
+                        "required_evidence": list(node.required_evidence),
+                    },
+                )
+            )
+    return alerts
+
+
+def _provider_sensitive_contract(contract: ProjectDagContract) -> bool:
+    if contract.payload.get("provider_sensitive") is True:
+        return True
+    if contract.payload.get("requires_provider_route") is True:
+        return True
+    context_text = json.dumps(contract.context, sort_keys=True)
+    provider_markers = (
+        "scillm_image_model",
+        "scillm_image_auth",
+        "provider_route",
+        "provider_model",
+        "oauth",
+    )
+    if any(marker in context_text for marker in provider_markers):
+        return True
+    for node_id in contract.nodes:
+        node_payload = _node_payload(contract, node_id)
+        if any(
+            key in node_payload
+            for key in (
+                "model_policy",
+                "prompt_contract",
+                "provider_route",
+                "requires_provider_route",
+            )
+        ):
+            return True
+    return False
+
+
+def _valid_prompt_contract(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    path = value.get("path")
+    if isinstance(path, str) and path:
+        return True
+    schema = value.get("schema")
+    if isinstance(schema, str) and schema:
+        return True
+    system = value.get("system_prompt") or value.get("system")
+    user = value.get("user_template") or value.get("user_prompt") or value.get("user")
+    return isinstance(system, str) and bool(system) and isinstance(user, str) and bool(user)
+
+
+def _has_provider_route_evidence(required_evidence: tuple[str, ...]) -> bool:
+    markers = (
+        "provider_route",
+        "model_route",
+        "model_policy",
+        "oauth",
+        "auth_route",
+        "provider_receipt",
+    )
+    return any(any(marker in item for marker in markers) for item in required_evidence)
+
+
+def _node_dispatch_metadata(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+    *,
+    include_context: bool,
+) -> dict[str, Any]:
+    node_payload = _node_payload(contract, node.node_id)
+    metadata: dict[str, Any] = {
+        "dag_id": contract.dag_id,
+        "node_id": node.node_id,
+        "agent": node.agent,
+        "executor": node.executor,
+        "goal": contract.goal,
+        "target": contract.target,
+        "required_evidence": list(node.required_evidence),
+    }
+    for key in ("provider", "model_policy", "prompt_contract", "provider_route"):
+        value = node_payload.get(key)
+        if value is not None:
+            metadata[key] = value
+    if node_payload.get("requires_provider_route") is True:
+        metadata["requires_provider_route"] = True
+    if include_context:
+        metadata["context"] = node.context
+    return metadata
+
+
+def _attach_node_dispatch_context(
+    context: dict[str, Any],
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+) -> None:
+    metadata = _node_dispatch_metadata(contract, node, include_context=True)
+    context["dag_node_id"] = node.node_id
+    context["dag_agent_role"] = node.agent
+    context["tau_dag_node"] = metadata
+    for key in ("provider", "model_policy", "prompt_contract", "provider_route"):
+        if key in metadata:
+            context[key] = metadata[key]
+    if metadata.get("requires_provider_route") is True:
+        context["requires_provider_route"] = True
+
+
+def _memory_evidence_preflight(
+    *,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None, dict[str, Any] | None]:
+    if contract.memory_intent is None and contract.evidence_case is None:
+        if contract.policy_profile is None:
+            return [], None, None
+        policy_profile, _, policy_alerts = _resolve_policy_object(
+            contract.policy_profile,
+            contract_path=contract_path,
+            field_name="policy_profile",
+        )
+        if policy_alerts:
+            return policy_alerts, None, None
+        memory_policy = (
+            policy_profile.get("memory") if isinstance(policy_profile, dict) else None
+        )
+        if not isinstance(memory_policy, dict) or memory_policy.get("intent_required") is not True:
+            return [], None, None
+    memory_intent, memory_path, memory_read_alerts = read_gate_payload(
+        contract.memory_intent,
+        contract_path=contract_path,
+        label="memory_intent",
+    )
+    memory_receipt = write_memory_intent_gate_receipt(
+        memory_intent=memory_intent,
+        memory_intent_path=memory_path,
+        dag_contract=contract.payload,
+        receipt_path=receipt_dir / "memory-intent-gate-receipt.json",
+    )
+    if contract.policy_profile is not None:
+        _rewrite_alert_code(
+            memory_receipt,
+            old="inline_memory_evidence_rejected",
+            new="intent_contains_inline_evidence",
+        )
+    evidence_case, evidence_case_path, evidence_read_alerts = read_gate_payload(
+        contract.evidence_case,
+        contract_path=contract_path,
+        label="evidence_case",
+    )
+    evidence_case_receipt = write_evidence_case_gate_receipt(
+        evidence_case=evidence_case,
+        evidence_case_path=evidence_case_path,
+        dag_contract=contract.payload,
+        memory_intent_receipt=memory_receipt,
+        receipt_path=receipt_dir / "evidence-case-gate-receipt.json",
+    )
+    alerts = [
+        *memory_read_alerts,
+        *memory_receipt.get("alerts", []),
+        *evidence_read_alerts,
+        *evidence_case_receipt.get("alerts", []),
+    ]
+    return alerts, memory_receipt, evidence_case_receipt
+
+
 def _contract_relative_path(value: str | None, contract_path: Path) -> Path | None:
     if value is None:
         return None
@@ -1161,79 +1694,6 @@ def _zero_trust_preflight(
     return alerts, receipt
 
 
-def _memory_evidence_preflight(
-    *,
-    contract: ProjectDagContract,
-    contract_path: Path,
-    receipt_dir: Path,
-) -> tuple[list[dict[str, Any]], dict[str, Any] | None, dict[str, Any] | None]:
-    if (
-        contract.policy_profile is None
-        and contract.memory_intent is None
-        and contract.evidence_case is None
-    ):
-        return [], None, None
-    policy_profile, _, policy_alerts = _resolve_policy_object(
-        contract.policy_profile,
-        contract_path=contract_path,
-        field_name="policy_profile",
-    )
-    data_boundary, _, boundary_alerts = _resolve_policy_object(
-        contract.data_boundary,
-        contract_path=contract_path,
-        field_name="data_boundary",
-    )
-    memory_intent, memory_intent_path, intent_load_alerts = load_memory_gate_object(
-        contract.memory_intent,
-        contract_path=contract_path,
-        field_name="memory_intent",
-    )
-    evidence_case, evidence_case_path, evidence_load_alerts = load_memory_gate_object(
-        contract.evidence_case,
-        contract_path=contract_path,
-        field_name="evidence_case",
-    )
-    intent_receipt, evidence_receipt = evaluate_memory_evidence_gate(
-        policy_profile=policy_profile,
-        data_boundary=data_boundary,
-        memory_intent=memory_intent,
-        evidence_case=evidence_case,
-        memory_intent_path=memory_intent_path,
-        evidence_case_path=evidence_case_path,
-    )
-    intent_receipt, evidence_receipt = write_memory_evidence_gate_receipts(
-        receipt_dir=receipt_dir,
-        intent_receipt=intent_receipt,
-        evidence_receipt=evidence_receipt,
-    )
-    alerts = [
-        *policy_alerts,
-        *boundary_alerts,
-        *intent_load_alerts,
-        *evidence_load_alerts,
-        *intent_receipt["alerts"],
-        *evidence_receipt["alerts"],
-    ]
-    if alerts:
-        intent_receipt["ok"] = False
-        intent_receipt["status"] = "BLOCKED"
-        intent_receipt["alerts"] = [
-            *policy_alerts,
-            *boundary_alerts,
-            *intent_load_alerts,
-            *intent_receipt["alerts"],
-        ]
-        intent_receipt["alert_codes"] = [alert["code"] for alert in intent_receipt["alerts"]]
-        evidence_receipt["ok"] = False
-        evidence_receipt["status"] = "BLOCKED"
-        evidence_receipt["allowed_to_dispatch"] = False
-        evidence_receipt["alerts"] = [*evidence_load_alerts, *evidence_receipt["alerts"]]
-        evidence_receipt["alert_codes"] = [alert["code"] for alert in evidence_receipt["alerts"]]
-        _write_json(Path(str(intent_receipt["receipt_path"])), intent_receipt)
-        _write_json(Path(str(evidence_receipt["receipt_path"])), evidence_receipt)
-    return alerts, intent_receipt, evidence_receipt
-
-
 def _resolve_policy_object(
     value: str | dict[str, Any] | None,
     *,
@@ -1274,12 +1734,14 @@ def _pre_dispatch_blocked_receipt(
     scheduler: str,
     verdict: str,
     alerts: list[dict[str, Any]],
+    memory_intent_gate_receipt: dict[str, Any] | None,
+    evidence_case_gate_receipt: dict[str, Any] | None,
     evidence_validation_receipt: dict[str, Any] | None,
     zero_trust_preflight_receipt: dict[str, Any] | None = None,
-    memory_intent_gate_receipt: dict[str, Any] | None = None,
-    evidence_case_gate_receipt: dict[str, Any] | None = None,
+    containment_gate_receipts: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
+    containment_gate_receipts = containment_gate_receipts or {}
     if isinstance(zero_trust_preflight_receipt, dict) and isinstance(
         zero_trust_preflight_receipt.get("receipt_path"),
         str,
@@ -1300,6 +1762,9 @@ def _pre_dispatch_blocked_receipt(
         str,
     ):
         artifacts.append(str(evidence_case_gate_receipt["receipt_path"]))
+    for gate_receipt in containment_gate_receipts.values():
+        if isinstance(gate_receipt.get("receipt_path"), str):
+            artifacts.append(str(gate_receipt["receipt_path"]))
     receipt = {
         "schema": DAG_RECEIPT_SCHEMA,
         "ok": False,
@@ -1330,11 +1795,6 @@ def _pre_dispatch_blocked_receipt(
             if isinstance(evidence_validation_receipt, dict)
             else None
         ),
-        "zero_trust_preflight_receipt": (
-            zero_trust_preflight_receipt.get("receipt_path")
-            if isinstance(zero_trust_preflight_receipt, dict)
-            else None
-        ),
         "memory_intent_gate_receipt": (
             memory_intent_gate_receipt.get("receipt_path")
             if isinstance(memory_intent_gate_receipt, dict)
@@ -1345,6 +1805,16 @@ def _pre_dispatch_blocked_receipt(
             if isinstance(evidence_case_gate_receipt, dict)
             else None
         ),
+        "zero_trust_preflight_receipt": (
+            zero_trust_preflight_receipt.get("receipt_path")
+            if isinstance(zero_trust_preflight_receipt, dict)
+            else None
+        ),
+        "containment_gate_receipts": {
+            gate_name: gate_receipt.get("receipt_path")
+            for gate_name, gate_receipt in containment_gate_receipts.items()
+            if isinstance(gate_receipt, dict)
+        },
         "artifacts": artifacts,
         "proof_scope": {
             "mocked": False,
@@ -1481,7 +1951,12 @@ def _compile_command_specs(
             raise RuntimeError(f"command_spec for node {node.node_id} does not exist: {source}")
         target = compiled_root / node.node_id / "tau-dispatch-command.json"
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
+        _write_compiled_command_spec(
+            source=source,
+            target=target,
+            contract=contract,
+            node=node,
+        )
     if fallback_root is not None:
         for node in contract.nodes.values():
             if node.command_spec:
@@ -1493,8 +1968,29 @@ def _compile_command_specs(
             if source.is_file():
                 target = compiled_root / node.node_id / "tau-dispatch-command.json"
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(source, target)
+                _write_compiled_command_spec(
+                    source=source,
+                    target=target,
+                    contract=contract,
+                    node=node,
+                )
     return compiled_root
+
+
+def _write_compiled_command_spec(
+    *,
+    source: Path,
+    target: Path,
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+) -> None:
+    payload = _read_json_object(source, label=f"command_spec:{node.node_id}")
+    payload["tau_dag_node"] = _node_dispatch_metadata(
+        contract,
+        node,
+        include_context=False,
+    )
+    target.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _write_dag_agent_registry(*, contract: ProjectDagContract, receipt_dir: Path) -> Path:
@@ -1532,6 +2028,7 @@ def _start_handoff(contract: ProjectDagContract, *, contract_path: Path) -> dict
         contract_context=contract.context,
         node_context=entry.context,
     )
+    _attach_node_dispatch_context(context, contract, entry)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -1905,8 +2402,7 @@ def _node_start_handoff(
         contract_context=contract.context,
         node_context=node.context,
     )
-    context["dag_node_id"] = node.node_id
-    context["dag_agent_role"] = node.agent
+    _attach_node_dispatch_context(context, contract, node)
     return {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -2220,6 +2716,61 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
                 "continuation."
             ),
         }
+    if normalized == "memory_route_not_dispatchable":
+        return {
+            "type": "request_memory_clarification",
+            "next_agent": "human",
+            "reason": (
+                "Memory routed to clarification or deflection; resolve that "
+                "route before DAG dispatch."
+            ),
+        }
+    if normalized in {
+        "invalid_memory_intent_schema",
+        "memory_first_required",
+        "missing_memory_route",
+        "memory_intent_low_confidence",
+        "memory_intent_goal_hash_mismatch",
+        "memory_intent_target_mismatch",
+        "inline_memory_evidence_rejected",
+        "memory_intent_unreadable",
+    }:
+        return {
+            "type": "repair_memory_intent",
+            "next_agent": "goal-guardian",
+            "reason": "Repair or regenerate the Memory intent gate before DAG dispatch.",
+        }
+    if normalized in {
+        "missing_evidence_case",
+        "invalid_evidence_case_schema",
+        "missing_evidence_case_id",
+        "missing_evidence_case_hash",
+        "evidence_case_goal_hash_mismatch",
+        "evidence_case_target_mismatch",
+        "missing_evidence_case_data_boundary_hash",
+        "missing_evidence_case_policy_hash",
+        "invalid_evidence_case_support_artifacts",
+        "memory_intent_gate_not_passed",
+        "evidence_case_unreadable",
+    }:
+        return {
+            "type": "repair_evidence_case",
+            "next_agent": "reviewer",
+            "reason": "Repair or regenerate the evidence case before DAG dispatch.",
+        }
+    if normalized in {
+        "provider_policy_missing",
+        "model_unspecified",
+        "missing_prompt_contract",
+    }:
+        return {
+            "type": "repair_provider_policy",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Add explicit model_policy, prompt_contract, provider/auth/model route, "
+                "and provider-route evidence before dispatch."
+            ),
+        }
     if normalized in {
         "missing_required_evidence",
         "missing_reviewer_verdict",
@@ -2303,6 +2854,61 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "reason": (
                 "Repair Graph Memory intent and create-evidence-case artifacts before "
                 "zero-trust DAG dispatch."
+            ),
+        }
+    if normalized in {
+        "missing_itar_access_preflight",
+        "itar_access_preflight_unreadable",
+        "itar_access_preflight_schema_mismatch",
+        "itar_access_preflight_not_passed",
+        "itar_access_preflight_goal_hash_mismatch",
+    }:
+        return {
+            "type": "repair_actor_access_gate",
+            "next_agent": "goal-guardian",
+            "reason": (
+                "Run or repair the ITAR actor/access preflight receipt before DAG dispatch."
+            ),
+        }
+    if normalized in {
+        "missing_research_query_safety",
+        "research_query_safety_unreadable",
+        "research_query_safety_schema_mismatch",
+        "research_query_safety_not_passed",
+        "research_query_safety_goal_hash_mismatch",
+    }:
+        return {
+            "type": "repair_research_query_gate",
+            "next_agent": "research-auditor",
+            "reason": (
+                "Run or repair the research-query safety receipt before external research."
+            ),
+        }
+    if normalized in {
+        "missing_sandbox_run",
+        "sandbox_run_unreadable",
+        "sandbox_run_schema_mismatch",
+        "sandbox_run_not_passed",
+        "sandbox_run_goal_hash_mismatch",
+    }:
+        return {
+            "type": "repair_sandbox_gate",
+            "next_agent": "goal-guardian",
+            "reason": "Run or repair the sandbox policy receipt before dispatch.",
+        }
+    if normalized in {
+        "missing_compliance_package_validation",
+        "compliance_package_validation_unreadable",
+        "compliance_package_validation_schema_mismatch",
+        "compliance_package_validation_not_passed",
+        "compliance_package_validation_goal_hash_mismatch",
+        "compliance_package_not_review_ready",
+    }:
+        return {
+            "type": "repair_review_package",
+            "next_agent": "reviewer",
+            "reason": (
+                "Validate the compliance package as review-ready before normal continuation."
             ),
         }
     if normalized in {
@@ -2658,6 +3264,15 @@ def _alert(
         "message": message,
         "evidence": evidence,
     }
+
+
+def _rewrite_alert_code(receipt: dict[str, Any], *, old: str, new: str) -> None:
+    for alert in receipt.get("alerts", []):
+        if isinstance(alert, dict) and alert.get("code") == old:
+            alert["code"] = new
+    receipt["alert_codes"] = [
+        new if code == old else code for code in receipt.get("alert_codes", [])
+    ]
 
 
 def _required_mapping(value: dict[str, Any], key: str, errors: list[str]) -> dict[str, Any]:

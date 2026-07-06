@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T011007Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:c4b167f639296e247644be3e8242bf2789e033dc02681b9e73ba4afec81f905a",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w79",
+  "pane_id": "w79:p6",
+  "terminal_id": "term_655e6ef8233c7820",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011007Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T011007Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "4e482659b1bf74fa3886ada37bbd6c388fe67378a131257cf37f6ad7f9a4fc40",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011007Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "sha256sum opencode.visible.txt",
+    "jq . attempt-01-reviewer.json (read work order)",
+    "jq . attempt-01-coder.json (read coder receipt)",
+    "cat message.txt (read target file)"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011007Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T011007Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (clean completion message), coder receipt is schema-valid with all required fields, force_revise is false.",
+  "errors": [],
+  "policy_exceptions": []
+}

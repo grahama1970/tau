@@ -1,0 +1,109 @@
+{
+  "alerts": [],
+  "applied_action_count": 1,
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "applied": true,
+      "focused": false,
+      "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+      "pane_count": 8,
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "returncode": 0,
+      "tab_count": 4,
+      "workspace_id": "w4C"
+    }
+  ],
+  "approval_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-apply-after-branch-lock-regression-20260705/approval-gate-receipt.json",
+  "approval_receipt_sha256": "sha256:98364922ccd3d40740b497bf151809c039e3de25fe2ad54d0e68df5bc0dc0abe",
+  "approval_required": true,
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "agent_status": "idle",
+      "focused": false,
+      "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+      "pane_count": 8,
+      "reason": "stale Tau/real-world-sanity workspace label",
+      "tab_count": 4,
+      "workspace_id": "w4C"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "list"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:list\",\"result\":{\"type\":\"workspace_list\",\"workspaces\":[{\"active_tab_id\":\"w11:t1\",\"agent_status\":\"done\",\"focused\":true,\"label\":\"chatterbox\",\"number\":1,\"pane_count\":6,\"tab_count\":6,\"workspace_id\":\"w11\"},{\"active_tab_id\":\"w4C:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-provider-dag-max-exhaustion-readiness\",\"number\":2,\"pane_count\":8,\"tab_count\":4,\"workspace_id\":\"w4C\"}]}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w4C"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w4C"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w4C not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "include_current_workspace": false,
+  "label_prefixes": [
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-"
+  ],
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "post_verified_absent_count": 1,
+  "proof_scope": {
+    "does_not_prove": [
+      "Cleanup of arbitrary non-Tau Herdr workspaces.",
+      "Deletion of Git worktrees or local proof artifacts.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected Herdr workspace state through the Herdr API/CLI surface.",
+      "Tau selected only stale Tau/real-world-sanity workspace labels for GC.",
+      "Tau protected the current, focused, and non-idle/non-done workspaces by default.",
+      "Tau Herdr GC apply requires an explicit approval receipt before mutation.",
+      "Apply mode verifies closed workspaces are no longer addressable through Herdr."
+    ]
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/herdr-gc-apply-after-branch-lock-regression-20260705",
+  "schema": "tau.herdr_gc_receipt.v1",
+  "skipped": [],
+  "skipped_count": 0,
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:36:37Z",
+  "workspace_count": 2
+}

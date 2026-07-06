@@ -21,6 +21,15 @@ from typing import Any
 
 RECEIPT_SCHEMA = "tau.real_world_sanity_suite_receipt.v1"
 CHECK_SCHEMA = "tau.real_world_sanity_check_receipt.v1"
+HERDR_GC_DEFAULT_LABEL_PREFIXES = (
+    "rw-sanity-generic-provider-",
+    "rw-sanity-provider-",
+    "tau-live-provider-",
+    "tau-provider-dag-",
+    "tau-generic-provider-",
+    "tau-traycer-",
+)
+HERDR_GC_DEFAULT_TARGET_ID = f"herdr-gc:{','.join(HERDR_GC_DEFAULT_LABEL_PREFIXES)}"
 
 
 @dataclass(frozen=True)
@@ -100,9 +109,13 @@ def main() -> int:
         provider_cleanup_mode=args.provider_cleanup_mode,
     )
     selected_checks = [check for check in checks if check.level in selected_levels]
-    selected_check_ids = {check_id.strip() for check_id in args.checks.split(",") if check_id.strip()}
+    selected_check_ids = {
+        check_id.strip() for check_id in args.checks.split(",") if check_id.strip()
+    }
     if selected_check_ids:
-        selected_checks = [check for check in selected_checks if check.check_id in selected_check_ids]
+        selected_checks = [
+            check for check in selected_checks if check.check_id in selected_check_ids
+        ]
         missing = sorted(selected_check_ids - {check.check_id for check in selected_checks})
         if missing:
             raise SystemExit(f"unknown or unselected check ids: {', '.join(missing)}")
@@ -181,6 +194,16 @@ def build_checks(
         scenario="concurrent-max-retries",
         goal_hash="sha256:rw-sanity-project-dag-concurrent-max-retries",
     )
+    project_dag_concurrent_pointless_test_drift = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-pointless-test-drift",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-pointless-test-drift",
+    )
+    project_dag_concurrent_brave_required = create_project_dag_fixture(
+        run_dir,
+        scenario="concurrent-brave-required",
+        goal_hash="sha256:rw-sanity-project-dag-concurrent-brave-required",
+    )
     project_dag_complex = create_project_dag_fixture(
         run_dir,
         scenario="complex",
@@ -217,8 +240,26 @@ def build_checks(
         scenario="ready-queue-provider-policy",
         mutation="provider",
     )
-    project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(
-        run_dir
+    project_dag_evidence_manifest_goal_drift = create_project_dag_evidence_manifest_fixture(run_dir)
+    project_dag_memory_evidence_valid = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-valid",
+        mutation="valid",
+    )
+    project_dag_memory_evidence_inline = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-inline",
+        mutation="inline_evidence",
+    )
+    project_dag_memory_evidence_clarify = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-clarify",
+        mutation="clarify_route",
+    )
+    project_dag_memory_evidence_missing_hash = create_project_dag_memory_evidence_fixture(
+        run_dir,
+        scenario="memory-evidence-missing-hash",
+        mutation="missing_case_hash",
     )
     evidence_manifest_valid = create_evidence_manifest_valid_fixture(run_dir)
     project_dag_command_policy_network = create_project_dag_command_policy_fixture(
@@ -236,8 +277,29 @@ def build_checks(
         scenario="command-policy-allowed",
         spec_flag=None,
     )
-    dag_expansion_tamper = create_dag_expansion_fixture(run_dir)
+    project_dag_provider_metadata = create_project_dag_provider_metadata_fixture(run_dir)
+    project_dag_containment_missing_itar = create_project_dag_containment_gate_fixture(
+        run_dir,
+        scenario="containment-missing-itar",
+        mutation="missing_itar",
+    )
+    project_dag_containment_all_gates = create_project_dag_containment_gate_fixture(
+        run_dir,
+        scenario="containment-all-gates",
+        mutation="all_gates",
+    )
+    dag_expansion_tamper = create_dag_expansion_fixture(
+        run_dir,
+        scenario="dag-expansion-tampered-preview",
+    )
+    dag_expansion_source_tamper = create_dag_expansion_fixture(
+        run_dir,
+        scenario="dag-expansion-tampered-source",
+    )
+    dag_branch_locks = create_dag_branch_locks_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
+    research_source = create_research_source_fixture(run_dir)
+    proof_index = create_proof_index_fixture(run_dir)
     github_apply_policy = create_github_apply_policy_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
@@ -712,6 +774,30 @@ def build_checks(
             output_receipt=cleanup_gc["run_dir"] / "herdr-gc-receipt.json",
         ),
         Check(
+            check_id="medium.herdr_gc_apply_wrong_approval_target",
+            level="medium",
+            purpose=(
+                "Tau blocks broad Herdr GC apply when the approval receipt target "
+                "does not match the configured GC label-prefix scope."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                herdr_gc_apply_wrong_target_command(
+                    uv_tau=uv_tau,
+                    fixture_dir=cleanup_gc["wrong_target_run_dir"],
+                    herdr_bin=cleanup_gc["wrong_target_herdr_bin"],
+                    approval_packet_path=cleanup_gc["wrong_target_approval_packet"],
+                    approval_run_dir=cleanup_gc["wrong_target_approval_run_dir"],
+                    receipt_path=cleanup_gc["wrong_target_run_dir"] / "herdr-gc-receipt.json",
+                ),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=cleanup_gc["wrong_target_run_dir"] / "herdr-gc-receipt.json",
+        ),
+        Check(
             check_id="medium.orchestration_evidence_status",
             level="medium",
             purpose="Tau summarizes a standalone orchestration evidence receipt through the read-only run-status surface.",
@@ -882,6 +968,27 @@ def build_checks(
             expected_status="PASS",
         ),
         Check(
+            check_id="medium.proof_index_build",
+            level="medium",
+            purpose=(
+                "Tau builds a machine-readable proof index over a dedicated fixture source "
+                "inside the current sanity run directory and writes a proof-index build receipt."
+            ),
+            command=[
+                *uv_tau,
+                "proof-index",
+                "build",
+                str(proof_index["source_dir"]),
+                "--out",
+                str(proof_index["output"]),
+                "--receipt",
+                str(proof_index["receipt"]),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            output_receipt=proof_index["receipt"],
+        ),
+        Check(
             check_id="medium.project_dag_reviewer_repair_loop",
             level="medium",
             purpose=(
@@ -989,6 +1096,52 @@ def build_checks(
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
             expected_verdict="INVALID_COMMAND_JSON",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_pointless_test_drift_course_correction",
+            level="advanced",
+            purpose=(
+                "Tau blocks a ready-queue subagent that emits test-only churn instead of "
+                "task evidence and writes a course-correction artifact."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_pointless_test_drift["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_pointless_test_drift["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_pointless_test_drift["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="POINTLESS_UNIT_TEST_DRIFT",
+        ),
+        Check(
+            check_id="advanced.project_dag_ready_queue_brave_required_after_two_attempts",
+            level="advanced",
+            purpose=(
+                "Tau stops normal retry after two failed ready-queue attempts and requires "
+                "$brave-search before a third attempt can proceed."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_concurrent_brave_required["contract"]),
+                "--receipt-dir",
+                str(project_dag_concurrent_brave_required["run_dir"]),
+                "--agents-root",
+                str(project_dag_concurrent_brave_required["agents_root"]),
+                "--scheduler",
+                "bounded-ready-queue",
+            ],
+            timeout_seconds=120,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
         ),
         Check(
             check_id="advanced.project_dag_reviewer_goal_drift_fail_closed",
@@ -1129,6 +1282,94 @@ def build_checks(
             output_receipt=evidence_manifest_valid["receipt"],
         ),
         Check(
+            check_id="advanced.project_dag_memory_evidence_gate_valid_dispatches",
+            level="advanced",
+            purpose=(
+                "Tau accepts valid Memory intent plus separate evidence case "
+                "and still dispatches the project DAG to coder and reviewer."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_valid["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_valid["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_valid["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(0,),
+            expected_status="PASS",
+            expected_verdict="PASS",
+            output_receipt=project_dag_memory_evidence_valid["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_memory_evidence_gate_inline_evidence_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when Memory intent "
+                "contains inline evidence instead of a separate evidence case."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_inline["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_inline["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_inline["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="INLINE_MEMORY_EVIDENCE_REJECTED",
+            output_receipt=project_dag_memory_evidence_inline["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_memory_evidence_gate_clarify_route_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when Memory routes "
+                "to CLARIFY instead of an actionable execution route."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_clarify["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_clarify["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_clarify["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MEMORY_ROUTE_NOT_DISPATCHABLE",
+            output_receipt=project_dag_memory_evidence_clarify["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_memory_evidence_gate_missing_case_hash_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a project DAG before dispatch when the separate "
+                "evidence case lacks a stable case hash."
+            ),
+            command=[
+                *uv_tau,
+                "run",
+                str(project_dag_memory_evidence_missing_hash["contract"]),
+                "--receipt-dir",
+                str(project_dag_memory_evidence_missing_hash["run_dir"]),
+                "--agents-root",
+                str(project_dag_memory_evidence_missing_hash["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_EVIDENCE_CASE_HASH",
+            output_receipt=project_dag_memory_evidence_missing_hash["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
             check_id="advanced.project_dag_command_policy_network_fail_closed",
             level="advanced",
             purpose=(
@@ -1188,6 +1429,71 @@ def build_checks(
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
             expected_verdict="COMMAND_POLICY_REJECTED",
+        ),
+        Check(
+            check_id="advanced.project_dag_provider_metadata_propagates",
+            level="advanced",
+            purpose=(
+                "Tau propagates provider-sensitive node model_policy and prompt_contract "
+                "into the dispatched node handoff so the node can emit provider_route_receipt."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_provider_metadata["contract"]),
+                "--receipt-dir",
+                str(project_dag_provider_metadata["run_dir"]),
+                "--agents-root",
+                str(project_dag_provider_metadata["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+            output_receipt=project_dag_provider_metadata["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_itar_access_gate_missing_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects an ITAR-classified project DAG before dispatch when the "
+                "actor/access preflight receipt is missing."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_containment_missing_itar["contract"]),
+                "--receipt-dir",
+                str(project_dag_containment_missing_itar["run_dir"]),
+                "--agents-root",
+                str(project_dag_containment_missing_itar["agents_root"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_ITAR_ACCESS_PREFLIGHT",
+            output_receipt=project_dag_containment_missing_itar["run_dir"] / "dag-receipt.json",
+        ),
+        Check(
+            check_id="advanced.project_dag_containment_gates_pass",
+            level="advanced",
+            purpose=(
+                "Tau dispatches a project DAG only after PASS ITAR actor/access, "
+                "research-query safety, sandbox, and compliance-package validation receipts "
+                "are referenced by the contract."
+            ),
+            command=[
+                *uv_tau,
+                "dag-run",
+                str(project_dag_containment_all_gates["contract"]),
+                "--receipt-dir",
+                str(project_dag_containment_all_gates["run_dir"]),
+                "--agents-root",
+                str(project_dag_containment_all_gates["agents_root"]),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            expected_verdict="PASS",
+            output_receipt=project_dag_containment_all_gates["run_dir"] / "dag-receipt.json",
         ),
         Check(
             check_id="advanced.project_dag_ready_queue_cycle_fail_closed",
@@ -1286,6 +1592,76 @@ def build_checks(
             output_receipt=dag_expansion_tamper["apply_receipt"],
         ),
         Check(
+            check_id="advanced.dag_expansion_apply_tampered_source_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau validates an adaptive DAG expansion, records policy, then refuses "
+                "to apply when the source DAG contract no longer matches validation."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                dag_expansion_source_tamper_apply_command(
+                    uv_tau=uv_tau,
+                    contract=dag_expansion_source_tamper["contract"],
+                    proposal=dag_expansion_source_tamper["proposal"],
+                    validation_receipt=dag_expansion_source_tamper["validation_receipt"],
+                    policy_receipt=dag_expansion_source_tamper["policy_receipt"],
+                    apply_receipt=dag_expansion_source_tamper["apply_receipt"],
+                    out=dag_expansion_source_tamper["out"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="SOURCE_DAG_CONTRACT_HASH_MISMATCH",
+            output_receipt=dag_expansion_source_tamper["apply_receipt"],
+        ),
+        Check(
+            check_id="advanced.dag_branch_locks_validate_pass",
+            level="advanced",
+            purpose=(
+                "Tau validates provider and mutating DAG branch locks with approval "
+                "packet hash binding before side-effecting branches are schedulable."
+            ),
+            command=[
+                *uv_tau,
+                "dag-branch-locks-validate",
+                "--dag-contract",
+                str(dag_branch_locks["contract"]),
+                "--locks",
+                str(dag_branch_locks["valid_locks"]),
+                "--receipt",
+                str(dag_branch_locks["valid_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            output_receipt=dag_branch_locks["valid_receipt"],
+        ),
+        Check(
+            check_id="advanced.dag_branch_locks_missing_workspace_lease_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks provider branch scheduling when branch locks omit the "
+                "required Herdr workspace lease reference."
+            ),
+            command=[
+                *uv_tau,
+                "dag-branch-locks-validate",
+                "--dag-contract",
+                str(dag_branch_locks["contract"]),
+                "--locks",
+                str(dag_branch_locks["missing_workspace_lease_locks"]),
+                "--receipt",
+                str(dag_branch_locks["missing_workspace_lease_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="MISSING_WORKSPACE_LEASE",
+            output_receipt=dag_branch_locks["missing_workspace_lease_receipt"],
+        ),
+        Check(
             check_id="advanced.dag_route_memory_apply_requires_approval",
             level="advanced",
             purpose=(
@@ -1309,6 +1685,53 @@ def build_checks(
             output_receipt=route_memory_apply["sync_receipt"],
         ),
         Check(
+            check_id="advanced.dag_route_memory_apply_approval_target_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau projects route-memory candidates locally, then blocks Memory "
+                "sync apply when the memory_upsert approval targets a different DAG."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                route_memory_apply_wrong_approval_target_command(
+                    uv_tau=uv_tau,
+                    signal=route_memory_apply["signal"],
+                    candidate_receipt=route_memory_apply["approval_mismatch_candidate_receipt"],
+                    sync_receipt=route_memory_apply["approval_mismatch_sync_receipt"],
+                    approval_receipt=route_memory_apply["approval_mismatch_receipt"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            expected_verdict="APPROVAL_TARGET_MISMATCH",
+            output_receipt=route_memory_apply["approval_mismatch_sync_receipt"],
+        ),
+        Check(
+            check_id="advanced.dag_route_memory_apply_with_approval_syncs",
+            level="advanced",
+            purpose=(
+                "Tau projects route-memory candidates locally, then performs an "
+                "approved Memory /upsert against a local HTTP endpoint."
+            ),
+            command=[
+                sys.executable,
+                "-c",
+                route_memory_apply_with_approval_command(
+                    uv_tau=uv_tau,
+                    signal=route_memory_apply["signal"],
+                    candidate_receipt=route_memory_apply["approved_candidate_receipt"],
+                    sync_receipt=route_memory_apply["approved_sync_receipt"],
+                    approval_receipt=route_memory_apply["approved_receipt"],
+                    memory_requests=route_memory_apply["approved_memory_requests"],
+                ),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            output_receipt=route_memory_apply["approved_sync_receipt"],
+        ),
+        Check(
             check_id="advanced.dag_route_memory_dry_run_projects_documents",
             level="advanced",
             purpose=(
@@ -1328,6 +1751,45 @@ def build_checks(
             timeout_seconds=90,
             expected_status="PASS",
             output_receipt=route_memory_apply["dry_run_sync_receipt"],
+        ),
+        Check(
+            check_id="advanced.research_source_arxiv_packet_passes",
+            level="advanced",
+            purpose=(
+                "Tau accepts a source-bearing ArXiv research packet as review-required "
+                "design input without treating it as closure proof."
+            ),
+            command=[
+                *uv_tau,
+                "research-source-receipt",
+                "--source",
+                str(research_source["valid_source"]),
+                "--receipt",
+                str(research_source["valid_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_status="PASS",
+            output_receipt=research_source["valid_receipt"],
+        ),
+        Check(
+            check_id="advanced.research_source_arxiv_metadata_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau rejects a packet that claims method:arxiv but cites a generic "
+                "non-ArXiv source without an arxiv_id."
+            ),
+            command=[
+                *uv_tau,
+                "research-source-receipt",
+                "--source",
+                str(research_source["invalid_source"]),
+                "--receipt",
+                str(research_source["invalid_receipt"]),
+            ],
+            timeout_seconds=60,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=research_source["invalid_receipt"],
         ),
         Check(
             check_id="advanced.github_apply_policy_missing_gates_fail_closed",
@@ -1378,6 +1840,60 @@ def build_checks(
             output_receipt=github_apply_policy["positive_receipt"],
         ),
         Check(
+            check_id="advanced.github_apply_policy_redaction_hash_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a GitHub apply projection when the redacted projection "
+                "artifact no longer matches the passing redaction receipt hash."
+            ),
+            command=[
+                *uv_tau,
+                "github-apply-policy-check",
+                "--projection",
+                str(github_apply_policy["tamper_projection"]),
+                "--policy",
+                str(github_apply_policy["tamper_policy"]),
+                "--receipt",
+                str(github_apply_policy["tamper_receipt"]),
+                "--approval-receipt",
+                str(github_apply_policy["tamper_approval"]),
+                "--redaction-receipt",
+                str(github_apply_policy["tamper_redaction"]),
+                "--preflight-ready",
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=github_apply_policy["tamper_receipt"],
+        ),
+        Check(
+            check_id="advanced.github_apply_policy_approval_target_fail_closed",
+            level="advanced",
+            purpose=(
+                "Tau blocks a GitHub apply projection when the approval receipt "
+                "target does not match the projection repo and issue target."
+            ),
+            command=[
+                *uv_tau,
+                "github-apply-policy-check",
+                "--projection",
+                str(github_apply_policy["approval_mismatch_projection"]),
+                "--policy",
+                str(github_apply_policy["approval_mismatch_policy"]),
+                "--receipt",
+                str(github_apply_policy["approval_mismatch_receipt"]),
+                "--approval-receipt",
+                str(github_apply_policy["approval_mismatch_approval"]),
+                "--redaction-receipt",
+                str(github_apply_policy["approval_mismatch_redaction"]),
+                "--preflight-ready",
+            ],
+            timeout_seconds=90,
+            expected_exit_codes=(1,),
+            expected_status="BLOCKED",
+            output_receipt=github_apply_policy["approval_mismatch_receipt"],
+        ),
+        Check(
             check_id="advanced.github_handoff_transport_apply_requires_policy_receipt",
             level="advanced",
             purpose=(
@@ -1398,6 +1914,42 @@ def build_checks(
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
             output_receipt=github_apply_policy["transport_missing_policy_receipt"],
+        ),
+        Check(
+            check_id="advanced.zero_trust_redteam_itar_containment",
+            level="advanced",
+            purpose=(
+                "Tau runs the deterministic containment red-team suite and requires every "
+                "ITAR/exfiltration/Docker/public-mutation attack fixture to fail closed."
+            ),
+            command=[
+                *uv_tau,
+                "zero-trust-redteam",
+                "--run-dir",
+                str(run_dir / "zero-trust-redteam-itar-containment"),
+            ],
+            timeout_seconds=90,
+            expected_status="PASS",
+            output_receipt=(
+                run_dir
+                / "zero-trust-redteam-itar-containment"
+                / "zero-trust-redteam-receipt.json"
+            ),
+        ),
+        Check(
+            check_id="advanced.itar_grade_containment_demo",
+            level="advanced",
+            purpose=(
+                "Tau runs the copyable ITAR-grade containment demo that blocks unsafe "
+                "research, actor access, and Docker policy paths before accepting local-only receipts."
+            ),
+            command=[
+                str(repo / "examples" / "itar-grade-containment" / "run.sh"),
+                str(run_dir / "itar-grade-containment-demo"),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            output_receipt=run_dir / "itar-grade-containment-demo" / "demo-receipt.json",
         ),
         Check(
             check_id="advanced.provider_readiness",
@@ -1579,7 +2131,7 @@ def build_checks(
             timeout_seconds=180,
             expected_exit_codes=(1,),
             expected_status="BLOCKED",
-            expected_verdict="REVIEWER_RECEIPT_INVALID",
+            expected_verdict="REVIEWER_SEND_FAILED",
         ),
         Check(
             check_id="advanced.browser_cdp_proof",
@@ -1663,6 +2215,8 @@ def create_project_dag_fixture(
         "concurrent-timeout-retry",
         "concurrent-non-json-retry",
         "concurrent-max-retries",
+        "concurrent-pointless-test-drift",
+        "concurrent-brave-required",
         "ready-queue-cycle",
         "ready-queue-mutating",
         "ready-queue-provider-policy",
@@ -1707,6 +2261,21 @@ def create_project_dag_fixture(
         elif scenario == "concurrent-max-retries" and agent == "coder":
             command = ["python3", "-c", "print('not json')"]
             timeout_s = 20
+        elif scenario == "concurrent-pointless-test-drift" and agent == "coder":
+            command = [
+                "python3",
+                "-c",
+                (
+                    "print('============================= test session starts ============================='); "
+                    "print('collected 12 items'); "
+                    "print('tests/test_probe.py ....'); "
+                    "raise SystemExit(1)"
+                ),
+            ]
+            timeout_s = 20
+        elif scenario == "concurrent-brave-required" and agent == "coder":
+            command = ["python3", "-c", "print('not json')"]
+            timeout_s = 20
         elif scenario == "non-json" and agent == "reviewer":
             command = ["python3", "-c", "print('not json')"]
             timeout_s = 20
@@ -1733,6 +2302,8 @@ def create_project_dag_fixture(
         max_attempts = 2
     node_max_attempts = 2 if scenario in {"medium", *concurrent_scenarios} else 1
     if scenario == "max-steps":
+        node_max_attempts = 3
+    if scenario == "concurrent-brave-required":
         node_max_attempts = 3
     nodes = [
         {
@@ -1925,6 +2496,7 @@ def create_evidence_manifest_valid_fixture(run_dir: Path) -> dict[str, Path]:
         evidence_dir / "reviewer-verdict.json",
         {
             "schema": "tau.reviewer_verdict.v1",
+            "kind": "reviewer_verdict",
             "goal_hash": goal_hash,
             "reviewed_node_id": "coder",
             "verdict": "PASS",
@@ -1970,6 +2542,7 @@ def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Pat
         evidence_dir / "creator-artifact.json",
         {
             "schema": "tau.creator_artifact.v1",
+            "kind": "creator_artifact",
             "goal_hash": contract["goal"]["goal_hash"],
             "summary": "Preflight evidence manifest creator artifact.",
         },
@@ -1978,6 +2551,7 @@ def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Pat
         evidence_dir / "reviewer-verdict.json",
         {
             "schema": "tau.reviewer_verdict.v1",
+            "kind": "reviewer_verdict",
             "goal_hash": "sha256:stale-rw-sanity-reviewer-goal",
             "reviewed_node_id": "coder",
             "verdict": "PASS",
@@ -2014,6 +2588,60 @@ def create_project_dag_evidence_manifest_fixture(run_dir: Path) -> dict[str, Pat
     return fixture
 
 
+def create_project_dag_memory_evidence_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    mutation: str,
+) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario=scenario,
+        goal_hash=f"sha256:rw-sanity-project-dag-{scenario}",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    fixture_dir = contract_path.parent
+    memory_intent = {
+        "schema": "memory.intent.v1",
+        "memory_first": True,
+        "route": "ANSWER",
+        "confidence": 0.91,
+        "goal_hash": contract["goal"]["goal_hash"],
+        "target": contract["target"],
+        "summary": "Memory intent routes the DAG to deterministic local execution.",
+    }
+    evidence_case = {
+        "schema": "tau.evidence_case.v1",
+        "case_id": f"{scenario}-case",
+        "case_sha256": "sha256:" + ("1" * 64),
+        "goal_hash": contract["goal"]["goal_hash"],
+        "target": contract["target"],
+        "support_artifacts": [],
+    }
+    if mutation == "valid":
+        pass
+    elif mutation == "inline_evidence":
+        memory_intent["evidence"] = [
+            {
+                "statement": "Inline evidence must be rejected; use a separate evidence case.",
+            }
+        ]
+    elif mutation == "clarify_route":
+        memory_intent["route"] = "CLARIFY"
+        memory_intent["summary"] = "Memory needs human clarification before execution."
+    elif mutation == "missing_case_hash":
+        evidence_case.pop("case_sha256", None)
+    else:  # pragma: no cover - fixture guard.
+        raise AssertionError(f"unknown project DAG memory/evidence mutation: {mutation}")
+    memory_intent_path = write_json(fixture_dir / "memory-intent.json", memory_intent)
+    evidence_case_path = write_json(fixture_dir / "evidence-case.json", evidence_case)
+    contract["memory_intent"] = str(memory_intent_path)
+    contract["evidence_case"] = str(evidence_case_path)
+    write_json(contract_path, contract)
+    return fixture
+
+
 def create_project_dag_command_policy_fixture(
     run_dir: Path,
     *,
@@ -2039,6 +2667,16 @@ def create_project_dag_command_policy_fixture(
         },
     )
     coder_spec_path = Path(contract["nodes"][0]["command_spec"])
+    for node in contract.get("nodes", []):
+        if not isinstance(node, dict):
+            continue
+        spec_path_text = node.get("command_spec")
+        if not isinstance(spec_path_text, str):
+            continue
+        spec_path = Path(spec_path_text)
+        spec = read_json(spec_path)
+        spec["cwd"] = str(fixture_dir)
+        write_json(spec_path, spec)
     if spec_flag is not None:
         coder_spec = read_json(coder_spec_path)
         coder_spec[spec_flag] = True
@@ -2048,8 +2686,103 @@ def create_project_dag_command_policy_fixture(
     return fixture
 
 
-def create_dag_expansion_fixture(run_dir: Path) -> dict[str, Path]:
-    fixture_dir = run_dir / "dag-expansion-tampered-preview"
+def create_project_dag_provider_metadata_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario="provider-metadata",
+        goal_hash="sha256:rw-sanity-project-dag-provider-metadata",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    contract["provider_sensitive"] = True
+    for node in contract["nodes"]:
+        if not isinstance(node, dict) or node.get("executor") == "human":
+            continue
+        node["model_policy"] = {
+            "provider": "scillm",
+            "auth": "codex-oauth",
+            "model": "gpt-image-2",
+        }
+        node["prompt_contract"] = {
+            "schema": "tau.prompt_contract.v1",
+            "system_prompt": "Stay inside the immutable provider metadata sanity goal.",
+            "user_template": "Use provider route metadata before claiming PASS.",
+        }
+        evidence = node.get("required_evidence")
+        if isinstance(evidence, list) and "provider_route_receipt" not in evidence:
+            evidence.append("provider_route_receipt")
+    if "provider_route_receipt" not in contract["required_evidence"]:
+        contract["required_evidence"].append("provider_route_receipt")
+    write_json(contract_path, contract)
+    return fixture
+
+
+def create_project_dag_containment_gate_fixture(
+    run_dir: Path,
+    *,
+    scenario: str,
+    mutation: str,
+) -> dict[str, Path]:
+    fixture = create_project_dag_fixture(
+        run_dir,
+        scenario=scenario,
+        goal_hash=f"sha256:rw-sanity-project-dag-{scenario}",
+    )
+    contract_path = fixture["contract"]
+    contract = read_json(contract_path)
+    fixture_dir = contract_path.parent
+    goal_hash = contract["goal"]["goal_hash"]
+    contract["data_boundary"] = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "goal_hash": goal_hash,
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    if mutation == "missing_itar":
+        write_json(contract_path, contract)
+        return fixture
+    if mutation != "all_gates":  # pragma: no cover - fixture guard.
+        raise AssertionError(f"unknown project DAG containment mutation: {mutation}")
+    contract["requires_external_research"] = True
+    contract["requires_sandbox"] = True
+    contract["requires_compliance_package_validation"] = True
+    itar_receipt = write_gate_receipt(
+        fixture_dir / "itar-access-preflight-receipt.json",
+        schema="tau.itar_access_preflight_receipt.v1",
+        goal_hash=goal_hash,
+    )
+    research_receipt = write_gate_receipt(
+        fixture_dir / "research-query-safety-receipt.json",
+        schema="tau.research_query_safety_receipt.v1",
+        goal_hash=goal_hash,
+    )
+    sandbox_receipt = write_gate_receipt(
+        fixture_dir / "sandbox-run-receipt.json",
+        schema="tau.sandbox_run_receipt.v1",
+        goal_hash=goal_hash,
+    )
+    package_receipt = write_gate_receipt(
+        fixture_dir / "compliance-package-validation-receipt.json",
+        schema="tau.compliance_package_validation_receipt.v1",
+        goal_hash=goal_hash,
+        extra={"review_ready": True, "compliant": "NOT_CLAIMED"},
+    )
+    contract["itar_access_preflight_receipt"] = str(itar_receipt)
+    contract["research_query_safety_receipt"] = str(research_receipt)
+    contract["sandbox_run_receipt"] = str(sandbox_receipt)
+    contract["compliance_package_validation_receipt"] = str(package_receipt)
+    write_json(contract_path, contract)
+    return fixture
+
+
+def create_dag_expansion_fixture(
+    run_dir: Path,
+    *,
+    scenario: str = "dag-expansion-tampered-preview",
+) -> dict[str, Path]:
+    fixture_dir = run_dir / scenario
     fixture_dir.mkdir(parents=True, exist_ok=True)
     contract = {
         "schema": "tau.dag_contract.v1",
@@ -2128,6 +2861,143 @@ def create_dag_expansion_fixture(run_dir: Path) -> dict[str, Path]:
         "apply_receipt": fixture_dir / "apply-receipt.json",
         "preview": fixture_dir / "expanded-dag.preview.json",
         "out": fixture_dir / "expanded-dag.json",
+    }
+
+
+def create_dag_branch_locks_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "dag-branch-locks"
+    goal_hash = "sha256:rw-sanity-dag-branch-locks"
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "rw-sanity-dag-branch-locks",
+        "goal": {
+            "goal_id": "rw-sanity-dag-branch-locks",
+            "goal_version": 1,
+            "goal_hash": goal_hash,
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-dag-branch-locks",
+        },
+        "entry_node": "provider-node",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 3,
+        },
+        "nodes": [
+            {
+                "id": "provider-node",
+                "agent": "provider-agent",
+                "executor": "provider",
+                "max_attempts": 1,
+                "required_evidence": ["provider_receipt"],
+                "provider": {"adapter": "generic-provider-dag-node"},
+            },
+            {
+                "id": "mutating-node",
+                "agent": "coder",
+                "executor": "local",
+                "max_attempts": 1,
+                "required_evidence": ["mutation_receipt"],
+                "mutates": True,
+            },
+            {
+                "id": "human",
+                "agent": "human",
+                "executor": "human",
+            },
+        ],
+        "edges": [
+            {"from": "provider-node", "to": "mutating-node"},
+            {"from": "mutating-node", "to": "human"},
+        ],
+        "required_evidence": ["provider_receipt", "mutation_receipt"],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+        ],
+    }
+    contract_path = write_json(fixture_dir / "dag-contract.json", contract)
+    provider_approval = write_json(
+        fixture_dir / "provider-approval.json",
+        {
+            "schema": "tau.human_approval_packet.v1",
+            "approved": True,
+            "actor": {"id": "human:graham", "auth_method": "manual"},
+            "action": "provider_branch_scheduling",
+            "target": {"id": "rw-sanity-dag-branch-locks"},
+            "reason": "Approve provider branch lock fixture.",
+            "evidence": ["dag-contract.json"],
+            "nonce": "rw-sanity-provider-branch-lock",
+            "signature": "manual-rw-sanity-signature",
+        },
+    )
+    mutating_approval = write_json(
+        fixture_dir / "mutating-approval.json",
+        {
+            "schema": "tau.human_approval_packet.v1",
+            "approved": True,
+            "actor": {"id": "human:graham", "auth_method": "manual"},
+            "action": "working_tree_mutation",
+            "target": {"id": "rw-sanity-dag-branch-locks"},
+            "reason": "Approve mutating branch lock fixture.",
+            "evidence": ["dag-contract.json"],
+            "nonce": "rw-sanity-mutating-branch-lock",
+            "signature": "manual-rw-sanity-signature",
+        },
+    )
+    locks = {
+        "schema": "tau.dag_branch_locks.v1",
+        "dag_id": contract["dag_id"],
+        "goal_hash": goal_hash,
+        "approval_packets": [
+            str(provider_approval.name),
+            str(mutating_approval.name),
+        ],
+        "locks": [
+            {
+                "node_id": "provider-node",
+                "branch_type": "provider",
+                "lock_id": "rw-sanity-lock-provider",
+                "owner": "goal-guardian",
+                "actor_identity": "human:graham",
+                "approval_packet_sha256": f"sha256:{sha256_file(provider_approval)}",
+                "allowed_paths": ["experiments/goal-locked-subagents/proofs/provider/**"],
+                "side_effect_class": "provider",
+                "workspace_lease": "rw-sanity-workspace-lease",
+                "expires_at": "2099-01-01T00:00:00Z",
+                "rollback_policy": "required",
+            },
+            {
+                "node_id": "mutating-node",
+                "branch_type": "mutating",
+                "lock_id": "rw-sanity-lock-mutating",
+                "owner": "goal-guardian",
+                "actor_identity": "human:graham",
+                "approval_packet_sha256": f"sha256:{sha256_file(mutating_approval)}",
+                "allowed_paths": ["src/tau_coding/example.py"],
+                "side_effect_class": "filesystem",
+                "expires_at": "2099-01-01T00:00:00Z",
+                "rollback_policy": "required",
+            },
+        ],
+    }
+    missing_workspace_lease = json.loads(json.dumps(locks))
+    missing_workspace_lease["locks"][0].pop("workspace_lease")
+    return {
+        "contract": contract_path,
+        "valid_locks": write_json(fixture_dir / "branch-locks.valid.json", locks),
+        "missing_workspace_lease_locks": write_json(
+            fixture_dir / "branch-locks.missing-workspace-lease.json",
+            missing_workspace_lease,
+        ),
+        "valid_receipt": fixture_dir / "branch-lock-validation.valid.receipt.json",
+        "missing_workspace_lease_receipt": fixture_dir
+        / "branch-lock-validation.missing-workspace-lease.receipt.json",
     }
 
 
@@ -2215,6 +3085,88 @@ raise SystemExit(completed.returncode)
 """
 
 
+def dag_expansion_source_tamper_apply_command(
+    *,
+    uv_tau: list[str],
+    contract: Path,
+    proposal: Path,
+    validation_receipt: Path,
+    policy_receipt: Path,
+    apply_receipt: Path,
+    out: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+contract = Path({str(contract)!r})
+proposal = Path({str(proposal)!r})
+validation_receipt = Path({str(validation_receipt)!r})
+policy_receipt = Path({str(policy_receipt)!r})
+apply_receipt = Path({str(apply_receipt)!r})
+out = Path({str(out)!r})
+preview = contract.parent / "expanded-dag.preview.json"
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-expansion-validate",
+    "--dag-contract",
+    str(contract),
+    "--proposal",
+    str(proposal),
+    "--receipt",
+    str(validation_receipt),
+    "--preview",
+    str(preview),
+], 0)
+run([
+    *uv_tau,
+    "dag-expansion-policy",
+    "--validation-receipt",
+    str(validation_receipt),
+    "--receipt",
+    str(policy_receipt),
+], 0)
+payload = json.loads(contract.read_text(encoding="utf-8"))
+payload["nodes"].append({{
+    "id": "source-tamper",
+    "agent": "validator",
+    "executor": "local",
+    "max_attempts": 1,
+    "required_evidence": ["tampered_source"],
+}})
+contract.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+completed = run([
+    *uv_tau,
+    "dag-expansion-apply",
+    "--validation-receipt",
+    str(validation_receipt),
+    "--policy-receipt",
+    str(policy_receipt),
+    "--out",
+    str(out),
+    "--receipt",
+    str(apply_receipt),
+], 1)
+raise SystemExit(completed.returncode)
+"""
+
+
 def create_route_memory_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "dag-route-memory-approval"
     fixture_dir.mkdir(parents=True, exist_ok=True)
@@ -2252,6 +3204,38 @@ def create_route_memory_fixture(run_dir: Path) -> dict[str, Path]:
         "signal": write_json(fixture_dir / "dag-signal-receipt.json", signal),
         "candidate_receipt": fixture_dir / "candidate-receipt.json",
         "sync_receipt": fixture_dir / "sync-receipt.json",
+        "approval_mismatch_candidate_receipt": fixture_dir
+        / "approval-mismatch-candidate-receipt.json",
+        "approval_mismatch_sync_receipt": fixture_dir / "approval-mismatch-sync-receipt.json",
+        "approval_mismatch_receipt": write_json(
+            fixture_dir / "approval-mismatch-receipt.json",
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "approved": True,
+                "requested_action": "memory_upsert",
+                "packet_summary": {
+                    "target_id": "route-memory:other-dag:tau_route_memory",
+                },
+            },
+        ),
+        "approved_candidate_receipt": fixture_dir / "approved-candidate-receipt.json",
+        "approved_sync_receipt": fixture_dir / "approved-sync-receipt.json",
+        "approved_memory_requests": fixture_dir / "approved-memory-requests.json",
+        "approved_receipt": write_json(
+            fixture_dir / "approved-memory-upsert-receipt.json",
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "approved": True,
+                "requested_action": "memory_upsert",
+                "packet_summary": {
+                    "target_id": "route-memory:rw-sanity-route-memory:tau_route_memory",
+                },
+            },
+        ),
         "dry_run_candidate_receipt": fixture_dir / "dry-run-candidate-receipt.json",
         "dry_run_sync_receipt": fixture_dir / "dry-run-sync-receipt.json",
     }
@@ -2356,12 +3340,281 @@ raise SystemExit(completed.returncode)
 """
 
 
+def route_memory_apply_wrong_approval_target_command(
+    *,
+    uv_tau: list[str],
+    signal: Path,
+    candidate_receipt: Path,
+    sync_receipt: Path,
+    approval_receipt: Path,
+) -> str:
+    return f"""
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+signal = Path({str(signal)!r})
+candidate_receipt = Path({str(candidate_receipt)!r})
+sync_receipt = Path({str(sync_receipt)!r})
+approval_receipt = Path({str(approval_receipt)!r})
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "dag-route-memory-candidates",
+    "--signal-receipt",
+    str(signal),
+    "--receipt",
+    str(candidate_receipt),
+], 0)
+completed = run([
+    *uv_tau,
+    "dag-route-memory-sync",
+    "--candidate-receipt",
+    str(candidate_receipt),
+    "--receipt",
+    str(sync_receipt),
+    "--apply",
+    "--approval-receipt",
+    str(approval_receipt),
+], 1)
+raise SystemExit(completed.returncode)
+"""
+
+
+def route_memory_apply_with_approval_command(
+    *,
+    uv_tau: list[str],
+    signal: Path,
+    candidate_receipt: Path,
+    sync_receipt: Path,
+    approval_receipt: Path,
+    memory_requests: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+signal = Path({str(signal)!r})
+candidate_receipt = Path({str(candidate_receipt)!r})
+sync_receipt = Path({str(sync_receipt)!r})
+approval_receipt = Path({str(approval_receipt)!r})
+memory_requests = Path({str(memory_requests)!r})
+requests = []
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        length = int(self.headers.get("content-length", "0") or "0")
+        body = self.rfile.read(length)
+        payload = json.loads(body.decode("utf-8")) if body else {{}}
+        requests.append({{"path": self.path, "payload": payload}})
+        documents = payload.get("documents") if isinstance(payload, dict) else []
+        response = {{
+            "ok": True,
+            "received": len(documents) if isinstance(documents, list) else 0,
+        }}
+        response_bytes = json.dumps(response).encode("utf-8")
+        self.send_response(200)
+        self.send_header("content-type", "application/json")
+        self.send_header("content-length", str(len(response_bytes)))
+        self.end_headers()
+        self.wfile.write(response_bytes)
+
+    def log_message(self, format, *args):
+        return
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+thread = threading.Thread(target=server.serve_forever, daemon=True)
+thread.start()
+try:
+    run([
+        *uv_tau,
+        "dag-route-memory-candidates",
+        "--signal-receipt",
+        str(signal),
+        "--receipt",
+        str(candidate_receipt),
+    ], 0)
+    completed = run([
+        *uv_tau,
+        "dag-route-memory-sync",
+        "--candidate-receipt",
+        str(candidate_receipt),
+        "--receipt",
+        str(sync_receipt),
+        "--apply",
+        "--approval-receipt",
+        str(approval_receipt),
+        "--memory-url",
+        f"http://127.0.0.1:{{server.server_port}}",
+    ], 0)
+finally:
+    server.shutdown()
+    server.server_close()
+    thread.join(timeout=2)
+
+memory_requests.write_text(json.dumps(requests, indent=2, sort_keys=True), encoding="utf-8")
+payload = json.loads(sync_receipt.read_text(encoding="utf-8"))
+if payload.get("memory_sync") is not True:
+    raise SystemExit("expected memory_sync true")
+if payload.get("sync_status") != "SYNCED":
+    raise SystemExit(f"expected SYNCED, got {{payload.get('sync_status')}}")
+if len(requests) != 1 or requests[0].get("path") != "/upsert":
+    raise SystemExit(f"expected one /upsert request, got {{requests}}")
+documents = requests[0]["payload"].get("documents")
+if not isinstance(documents, list) or len(documents) != payload.get("projected_document_count"):
+    raise SystemExit("Memory /upsert document count did not match receipt")
+raise SystemExit(completed.returncode)
+"""
+
+
+def create_research_source_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "research-source-arxiv"
+    invalid_dir = run_dir / "research-source-arxiv-invalid"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    invalid_dir.mkdir(parents=True, exist_ok=True)
+    valid_packet = {
+        "schema": "tau.research_source_packet.v1",
+        "source_type": "paper",
+        "method": "arxiv",
+        "query": "adaptive DAG multi-agent routing references for Tau",
+        "retrieved_at": "2026-07-05T13:40:00Z",
+        "classification": "design_input",
+        "sources": [
+            {
+                "title": "Graph of Thoughts: Solving Elaborate Problems with Large Language Models",
+                "url": "https://arxiv.org/abs/2308.09687",
+                "arxiv_id": "2308.09687",
+                "relevance": "HIGH",
+                "claims_supported": ["graph-structured reasoning inspiration"],
+            },
+            {
+                "title": "Adaptive Graph of Thoughts: Test-Time Adaptive Reasoning",
+                "url": "https://arxiv.org/abs/2502.05078",
+                "arxiv_id": "2502.05078",
+                "relevance": "HIGH",
+                "claims_supported": ["bounded dynamic DAG expansion inspiration"],
+            },
+        ],
+        "summary": "Source-bearing ArXiv packet for Tau adaptive DAG design review.",
+        "limitations": [
+            "Research is design input only.",
+            "Local Tau receipts and validators remain required before closure.",
+        ],
+    }
+    invalid_packet = {
+        **valid_packet,
+        "sources": [
+            {
+                "title": "Generic web article mislabeled as ArXiv",
+                "url": "https://example.com/not-arxiv",
+                "relevance": "HIGH",
+                "claims_supported": ["generic distributed-agent claim"],
+            }
+        ],
+    }
+    return {
+        "valid_source": write_json(fixture_dir / "research-source-packet.json", valid_packet),
+        "valid_receipt": fixture_dir / "research-source-receipt.json",
+        "invalid_source": write_json(
+            invalid_dir / "research-source-packet.json",
+            invalid_packet,
+        ),
+        "invalid_receipt": invalid_dir / "research-source-receipt.json",
+    }
+
+
+def create_proof_index_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-proof-index"
+    source_dir = fixture_dir / "source"
+    write_json(
+        source_dir / "dag" / "dag-receipt.json",
+        {
+            "schema": "tau.dag_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "rw-sanity-proof-index",
+            "goal_hash": "sha256:rw-sanity-proof-index",
+            "proof_scope": {
+                "proves": ["fixture DAG receipt is indexable"],
+                "does_not_prove": ["provider/model semantic quality"],
+            },
+        },
+    )
+    write_json(
+        source_dir / "monitor" / "monitor-receipt.json",
+        {
+            "schema": "tau.monitor_receipt.v1",
+            "ok": False,
+            "status": "REVIEW",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "rw-sanity-proof-index",
+            "goal": {"goal_hash": "sha256:rw-sanity-proof-index"},
+            "claims": {
+                "proves": ["fixture monitor receipt is indexable"],
+                "does_not_prove": ["hidden chain-of-thought correctness"],
+            },
+        },
+    )
+    write_json(
+        source_dir / "ignore" / "metadata.json",
+        {
+            "schema": "tau.metadata.v1",
+            "status": "PASS",
+        },
+    )
+    return {
+        "source_dir": source_dir,
+        "output": fixture_dir / "proof-index.jsonl",
+        "receipt": fixture_dir / "proof-index-build-receipt.json",
+    }
+
+
 def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "github-apply-policy-missing-gates"
     positive_dir = run_dir / "github-apply-policy-all-gates"
+    tamper_dir = run_dir / "github-apply-policy-redaction-tamper"
+    approval_mismatch_dir = run_dir / "github-apply-policy-approval-mismatch"
     transport_dir = run_dir / "github-handoff-transport-apply-missing-policy"
     fixture_dir.mkdir(parents=True, exist_ok=True)
     positive_dir.mkdir(parents=True, exist_ok=True)
+    tamper_dir.mkdir(parents=True, exist_ok=True)
+    approval_mismatch_dir.mkdir(parents=True, exist_ok=True)
     transport_dir.mkdir(parents=True, exist_ok=True)
     goal_hash = "sha256:rw-sanity-github-apply-policy"
     projection = {
@@ -2391,6 +3644,16 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     }
     positive_projection_path = positive_dir / "projection.json"
     positive_redacted_projection_path = positive_dir / "projection.redacted.json"
+    tamper_projection_path = tamper_dir / "projection.json"
+    tamper_redacted_projection_path = tamper_dir / "projection.redacted.json"
+    approval_mismatch_projection_path = approval_mismatch_dir / "projection.json"
+    approval_mismatch_redacted_projection_path = approval_mismatch_dir / "projection.redacted.json"
+    write_json(positive_projection_path, projection)
+    write_json(positive_redacted_projection_path, projection)
+    write_json(tamper_projection_path, projection)
+    write_json(tamper_redacted_projection_path, projection)
+    write_json(approval_mismatch_projection_path, projection)
+    write_json(approval_mismatch_redacted_projection_path, projection)
     approval_receipt = {
         "schema": "tau.approval_gate_receipt.v1",
         "ok": True,
@@ -2399,6 +3662,9 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "live": True,
         "approved": True,
         "requested_action": "github_apply",
+        "packet_summary": {
+            "target_id": "grahama1970/tau:issue#47",
+        },
         "errors": [],
     }
     redaction_receipt = {
@@ -2409,9 +3675,31 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "live": True,
         "projection": str(positive_projection_path.resolve()),
         "redacted_projection": str(positive_redacted_projection_path.resolve()),
+        "redacted_projection_sha256": sha256_file(positive_redacted_projection_path),
         "redaction_count": 1,
         "errors": [],
     }
+    tamper_redaction_receipt = dict(redaction_receipt)
+    tamper_redaction_receipt["projection"] = str(tamper_projection_path.resolve())
+    tamper_redaction_receipt["redacted_projection"] = str(tamper_redacted_projection_path.resolve())
+    tamper_redaction_receipt["redacted_projection_sha256"] = sha256_file(
+        tamper_redacted_projection_path
+    )
+    write_json(tamper_redacted_projection_path, {"tampered": True})
+    approval_mismatch_receipt = dict(approval_receipt)
+    approval_mismatch_receipt["packet_summary"] = {
+        "target_id": "grahama1970/tau:issue#999",
+    }
+    approval_mismatch_redaction_receipt = dict(redaction_receipt)
+    approval_mismatch_redaction_receipt["projection"] = str(
+        approval_mismatch_projection_path.resolve()
+    )
+    approval_mismatch_redaction_receipt["redacted_projection"] = str(
+        approval_mismatch_redacted_projection_path.resolve()
+    )
+    approval_mismatch_redaction_receipt["redacted_projection_sha256"] = sha256_file(
+        approval_mismatch_redacted_projection_path
+    )
     handoff = {
         "schema": "tau.agent_handoff.v1",
         "github": {
@@ -2446,8 +3734,8 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
         "projection": write_json(fixture_dir / "projection.json", projection),
         "policy": write_json(fixture_dir / "github-apply-policy.json", policy),
         "receipt": fixture_dir / "github-apply-policy-receipt.json",
-        "positive_projection": write_json(positive_projection_path, projection),
-        "positive_redacted_projection": write_json(positive_redacted_projection_path, projection),
+        "positive_projection": positive_projection_path,
+        "positive_redacted_projection": positive_redacted_projection_path,
         "positive_policy": write_json(positive_dir / "github-apply-policy.json", policy),
         "positive_approval": write_json(
             positive_dir / "approval-gate-receipt.json",
@@ -2458,6 +3746,33 @@ def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
             redaction_receipt,
         ),
         "positive_receipt": positive_dir / "github-apply-policy-receipt.json",
+        "tamper_projection": tamper_projection_path,
+        "tamper_redacted_projection": tamper_redacted_projection_path,
+        "tamper_policy": write_json(tamper_dir / "github-apply-policy.json", policy),
+        "tamper_approval": write_json(
+            tamper_dir / "approval-gate-receipt.json",
+            approval_receipt,
+        ),
+        "tamper_redaction": write_json(
+            tamper_dir / "github-redaction-receipt.json",
+            tamper_redaction_receipt,
+        ),
+        "tamper_receipt": tamper_dir / "github-apply-policy-receipt.json",
+        "approval_mismatch_projection": approval_mismatch_projection_path,
+        "approval_mismatch_redacted_projection": approval_mismatch_redacted_projection_path,
+        "approval_mismatch_policy": write_json(
+            approval_mismatch_dir / "github-apply-policy.json",
+            policy,
+        ),
+        "approval_mismatch_approval": write_json(
+            approval_mismatch_dir / "approval-gate-receipt.json",
+            approval_mismatch_receipt,
+        ),
+        "approval_mismatch_redaction": write_json(
+            approval_mismatch_dir / "github-redaction-receipt.json",
+            approval_mismatch_redaction_receipt,
+        ),
+        "approval_mismatch_receipt": approval_mismatch_dir / "github-apply-policy-receipt.json",
         "handoff": write_json(transport_dir / "handoff.json", handoff),
         "handoff_goal_hash": goal_hash,
         "transport_missing_policy_receipt": transport_dir
@@ -2541,7 +3856,7 @@ else:
 
 
 def project_dag_worker_script() -> str:
-    return r'''#!/usr/bin/env python3
+    return r"""#!/usr/bin/env python3
 import argparse
 import json
 import os
@@ -2584,18 +3899,28 @@ def coder_response(payload, artifact_dir, scenario):
         "summary": "Creator artifact for real-world project DAG sanity.",
     }
     artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    evidence = [
+        {
+            "kind": "creator_artifact",
+            "path": str(artifact),
+            "attempt": attempt,
+            "goal_hash": payload["goal"]["goal_hash"],
+        }
+    ]
+    if scenario == "provider-metadata" and provider_metadata_present(payload):
+        provider_artifact = write_provider_route_artifact(payload, artifact_dir, "coder")
+        evidence.append(
+            {
+                "kind": "provider_route_receipt",
+                "path": str(provider_artifact),
+                "goal_hash": payload["goal"]["goal_hash"],
+            }
+        )
     return handoff(
         payload,
         previous_subagent="coder",
         result_status="PASS",
-        evidence=[
-            {
-                "kind": "creator_artifact",
-                "path": str(artifact),
-                "attempt": attempt,
-                "goal_hash": payload["goal"]["goal_hash"],
-            }
-        ],
+        evidence=evidence,
         next_agent="reviewer",
         next_executor="local",
         summary=f"Creator produced attempt {attempt} artifact for reviewer.",
@@ -2660,24 +3985,63 @@ def reviewer_response(payload, artifact_dir, scenario):
         "verdict": verdict,
     }
     artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    evidence = [
+        {
+            "kind": "reviewer_verdict",
+            "path": str(artifact),
+            "reviewed_node_id": "coder",
+            "creator_attempt": attempt,
+            "goal_hash": verdict_goal_hash,
+            "verdict": verdict,
+        }
+    ]
+    if scenario == "provider-metadata" and provider_metadata_present(payload):
+        provider_artifact = write_provider_route_artifact(payload, artifact_dir, "reviewer")
+        evidence.append(
+            {
+                "kind": "provider_route_receipt",
+                "path": str(provider_artifact),
+                "goal_hash": payload["goal"]["goal_hash"],
+            }
+        )
     return handoff(
         payload,
         previous_subagent="reviewer",
         result_status=verdict,
-        evidence=[
-            {
-                "kind": "reviewer_verdict",
-                "path": str(artifact),
-                "reviewed_node_id": "coder",
-                "creator_attempt": attempt,
-                "goal_hash": verdict_goal_hash,
-                "verdict": verdict,
-            }
-        ],
+        evidence=evidence,
         next_agent=next_agent,
         next_executor=next_executor,
         summary=f"Reviewer returned {verdict} for creator attempt {attempt}.",
     )
+
+
+def provider_metadata_present(payload):
+    context = payload.get("context") if isinstance(payload, dict) else {}
+    if not isinstance(context, dict):
+        return False
+    node = context.get("tau_dag_node")
+    return (
+        isinstance(context.get("model_policy"), dict)
+        and isinstance(context.get("prompt_contract"), dict)
+        and isinstance(node, dict)
+        and isinstance(node.get("model_policy"), dict)
+        and isinstance(node.get("prompt_contract"), dict)
+    )
+
+
+def write_provider_route_artifact(payload, artifact_dir, role):
+    artifact = artifact_dir / f"{role}-provider-route-receipt.json"
+    context = payload["context"]
+    artifact_payload = {
+        "schema": "tau.provider_route_receipt.v1",
+        "kind": "provider_route_receipt",
+        "role": role,
+        "goal_hash": payload["goal"]["goal_hash"],
+        "model_policy": context["model_policy"],
+        "prompt_contract": context["prompt_contract"],
+    }
+    artifact.write_text(json.dumps(artifact_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return artifact
 
 
 def handoff(payload, *, previous_subagent, result_status, evidence, next_agent, next_executor, summary):
@@ -2721,7 +4085,7 @@ def evidence_items(payload, kind):
 
 if __name__ == "__main__":
     raise SystemExit(main())
-'''
+"""
 
 
 def create_generic_dag_resume_fixture(run_dir: Path) -> Path:
@@ -2945,16 +4309,16 @@ def create_cleanup_status_fixture(run_dir: Path) -> dict[str, Path]:
 def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "medium-herdr-cleanup-session"
     manifest_payload = {
-            "schema": "tau.provider_dag_runtime_manifest.v1",
-            "run_id": "rw-sanity-herdr-cleanup-session",
-            "provider_sessions": {
-                "codex": {
-                    "workspace_id": "w-rw-sanity-session-cleanup",
-                    "pane_id": "w-rw-sanity-session-cleanup:p5",
-                    "terminal_id": "term-codex",
-                    "session": "session-rw-sanity-codex",
-                }
-            },
+        "schema": "tau.provider_dag_runtime_manifest.v1",
+        "run_id": "rw-sanity-herdr-cleanup-session",
+        "provider_sessions": {
+            "codex": {
+                "workspace_id": "w-rw-sanity-session-cleanup",
+                "pane_id": "w-rw-sanity-session-cleanup:p5",
+                "terminal_id": "term-codex",
+                "session": "session-rw-sanity-codex",
+            }
+        },
     }
     blocked_dir = fixture_dir / "blocked"
     owned_dir = fixture_dir / "owned"
@@ -3004,23 +4368,23 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
     owned_herdr.write_text(
         "#!/usr/bin/env bash\n"
         f"CALLS={json.dumps(str(owned_herdr_calls))}\n"
-        "printf '{\"argv\":[' >> \"$CALLS\"\n"
+        'printf \'{"argv":[\' >> "$CALLS"\n'
         "first=1\n"
-        "for arg in \"$@\"; do\n"
-        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$CALLS\"; fi\n"
+        'for arg in "$@"; do\n'
+        '  if [ "$first" = 0 ]; then printf \',\' >> "$CALLS"; fi\n'
         "  first=0\n"
-        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$CALLS\"\n"
+        '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$CALLS"\n'
         "done\n"
         "printf ']}\\n' >> \"$CALLS\"\n"
-        "if [ \"$1 $2 $3\" = \"session get session-rw-sanity-codex\" ]; then\n"
-        "  printf '{\"error\":{\"code\":\"session_not_found\",\"message\":\"session not found\"}}\\n'\n"
+        'if [ "$1 $2 $3" = "session get session-rw-sanity-codex" ]; then\n'
+        '  printf \'{"error":{"code":"session_not_found","message":"session not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
-        "if [ \"$1 $2 $3\" = \"workspace get w-rw-sanity-session-cleanup\" ]; then\n"
-        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\\n'\n"
+        'if [ "$1 $2 $3" = "workspace get w-rw-sanity-session-cleanup" ]; then\n'
+        '  printf \'{"error":{"code":"workspace_not_found","message":"workspace not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
-        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
+        'printf \'{"result":{"type":"ok"}}\\n\'\n',
         encoding="utf-8",
     )
     owned_herdr.chmod(0o755)
@@ -3037,7 +4401,9 @@ def create_cleanup_session_fixture(run_dir: Path) -> dict[str, Path]:
 
 def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "medium-herdr-gc-approval"
+    wrong_target_dir = run_dir / "medium-herdr-gc-wrong-target"
     fixture_dir.mkdir(parents=True, exist_ok=True)
+    wrong_target_dir.mkdir(parents=True, exist_ok=True)
     workspaces_path = write_json(
         fixture_dir / "workspaces.json",
         {
@@ -3055,40 +4421,76 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
             }
         },
     )
+    wrong_target_workspaces_path = write_json(
+        wrong_target_dir / "workspaces.json",
+        {
+            "result": {
+                "workspaces": [
+                    {
+                        "workspace_id": "w-rw-sanity-gc-wrong-target",
+                        "label": "rw-sanity-provider-readiness-gc",
+                        "agent_status": "done",
+                        "focused": False,
+                        "pane_count": 2,
+                        "tab_count": 1,
+                    }
+                ]
+            }
+        },
+    )
     calls_path = fixture_dir / "herdr-calls.jsonl"
+    wrong_target_calls_path = wrong_target_dir / "herdr-calls.jsonl"
     herdr_bin = fixture_dir / "fake-herdr"
+    wrong_target_herdr_bin = wrong_target_dir / "fake-herdr"
     approval_packet_path = write_json(
         fixture_dir / "herdr-gc-approval.json",
         approval_packet(
             action="herdr_gc_apply",
-            target_id="rw-sanity-provider-readiness-gc",
+            target_id=HERDR_GC_DEFAULT_TARGET_ID,
             reason="Authorize fake-Herdr GC apply for real-world sanity proof.",
         ),
     )
-    herdr_bin.write_text(
-        "#!/usr/bin/env bash\n"
-        f"HERDR_GC_CALLS={str(calls_path)!r}\n"
-        f"HERDR_GC_WORKSPACES={str(workspaces_path)!r}\n"
-        "printf '{\"argv\":[' >> \"$HERDR_GC_CALLS\"\n"
-        "first=1\n"
-        "for arg in \"$@\"; do\n"
-        "  if [ \"$first\" = 0 ]; then printf ',' >> \"$HERDR_GC_CALLS\"; fi\n"
-        "  first=0\n"
-        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$HERDR_GC_CALLS\"\n"
-        "done\n"
-        "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
-        "if [ \"$1 $2\" = \"workspace list\" ]; then\n"
-        "  cat \"$HERDR_GC_WORKSPACES\"\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1 $2\" = \"workspace get\" ]; then\n"
-        "  printf '{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace not found\"}}\\n'\n"
-        "  exit 1\n"
-        "fi\n"
-        "printf '{\"result\":{\"type\":\"ok\"}}\\n'\n",
-        encoding="utf-8",
+    wrong_target_approval_packet_path = write_json(
+        wrong_target_dir / "herdr-gc-wrong-target-approval.json",
+        approval_packet(
+            action="herdr_gc_apply",
+            target_id="herdr-gc:other-prefix",
+            reason="Intentionally wrong Herdr GC target for fail-closed sanity proof.",
+        ),
     )
-    herdr_bin.chmod(0o755)
+
+    def write_fake_herdr(path: Path, *, calls: Path, workspaces: Path) -> None:
+        path.write_text(
+            "#!/usr/bin/env bash\n"
+            f"HERDR_GC_CALLS={str(calls)!r}\n"
+            f"HERDR_GC_WORKSPACES={str(workspaces)!r}\n"
+            'printf \'{"argv":[\' >> "$HERDR_GC_CALLS"\n'
+            "first=1\n"
+            'for arg in "$@"; do\n'
+            '  if [ "$first" = 0 ]; then printf \',\' >> "$HERDR_GC_CALLS"; fi\n'
+            "  first=0\n"
+            '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_GC_CALLS"\n'
+            "done\n"
+            "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
+            'if [ "$1 $2" = "workspace list" ]; then\n'
+            '  cat "$HERDR_GC_WORKSPACES"\n'
+            "  exit 0\n"
+            "fi\n"
+            'if [ "$1 $2" = "workspace get" ]; then\n'
+            '  printf \'{"error":{"code":"workspace_not_found","message":"workspace not found"}}\\n\'\n'
+            "  exit 1\n"
+            "fi\n"
+            'printf \'{"result":{"type":"ok"}}\\n\'\n',
+            encoding="utf-8",
+        )
+        path.chmod(0o755)
+
+    write_fake_herdr(herdr_bin, calls=calls_path, workspaces=workspaces_path)
+    write_fake_herdr(
+        wrong_target_herdr_bin,
+        calls=wrong_target_calls_path,
+        workspaces=wrong_target_workspaces_path,
+    )
     return {
         "run_dir": fixture_dir,
         "herdr_bin": herdr_bin,
@@ -3096,6 +4498,12 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
         "calls": calls_path,
         "approval_packet": approval_packet_path,
         "approval_run_dir": fixture_dir / "approval",
+        "wrong_target_run_dir": wrong_target_dir,
+        "wrong_target_herdr_bin": wrong_target_herdr_bin,
+        "wrong_target_workspaces": wrong_target_workspaces_path,
+        "wrong_target_calls": wrong_target_calls_path,
+        "wrong_target_approval_packet": wrong_target_approval_packet_path,
+        "wrong_target_approval_run_dir": wrong_target_dir / "approval",
     }
 
 
@@ -3161,6 +4569,73 @@ if payload.get("applied_action_count") != 1:
     raise SystemExit("expected exactly one applied action")
 if payload.get("post_verified_absent_count") != 1:
     raise SystemExit("expected exactly one post-verified absent workspace")
+raise SystemExit(completed.returncode)
+"""
+
+
+def herdr_gc_apply_wrong_target_command(
+    *,
+    uv_tau: list[str],
+    fixture_dir: Path,
+    herdr_bin: Path,
+    approval_packet_path: Path,
+    approval_run_dir: Path,
+    receipt_path: Path,
+) -> str:
+    return f"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+uv_tau = {uv_tau!r}
+fixture_dir = Path({str(fixture_dir)!r})
+herdr_bin = Path({str(herdr_bin)!r})
+approval_packet_path = Path({str(approval_packet_path)!r})
+approval_run_dir = Path({str(approval_run_dir)!r})
+receipt_path = Path({str(receipt_path)!r})
+approval_receipt = approval_run_dir / "approval-gate-receipt.json"
+
+
+def run(command, expected_exit):
+    completed = subprocess.run(command, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout, end="")
+    if completed.stderr:
+        print(completed.stderr, end="", file=sys.stderr)
+    if completed.returncode != expected_exit:
+        raise SystemExit(completed.returncode)
+    return completed
+
+
+run([
+    *uv_tau,
+    "approval-gate-check",
+    "--approval-packet",
+    str(approval_packet_path),
+    "--requested-action",
+    "herdr_gc_apply",
+    "--run-dir",
+    str(approval_run_dir),
+], 0)
+completed = run([
+    *uv_tau,
+    "herdr-cleanup",
+    "gc",
+    "--run-dir",
+    str(fixture_dir),
+    "--apply",
+    "--approval-receipt",
+    str(approval_receipt),
+    "--herdr-bin",
+    str(herdr_bin),
+], 1)
+payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+codes = [alert.get("code") for alert in payload.get("alerts", [])]
+if "approval_target_mismatch" not in codes:
+    raise SystemExit(f"expected approval_target_mismatch, got {{codes}}")
+if payload.get("applied_actions"):
+    raise SystemExit("expected no applied actions for wrong approval target")
 raise SystemExit(completed.returncode)
 """
 
@@ -3361,7 +4836,9 @@ def create_provider_readiness_status_fixture(run_dir: Path) -> dict[str, Path]:
                 "ready": True,
                 "source": "real_world_sanity_static_provider_readiness_fixture",
                 "process": {"alive": True, "command": command},
-                "evidence": {"visible_log_path": str(fixture_dir / f"logs/{provider_id}.visible.txt")},
+                "evidence": {
+                    "visible_log_path": str(fixture_dir / f"logs/{provider_id}.visible.txt")
+                },
             },
         )
     write_text(
@@ -4065,8 +5542,9 @@ def run_post_check_cleanup(
         "status": "PASS" if not errors else "BLOCKED",
         "ok": not errors,
         "mocked": False,
-        "live": check.post_cleanup_mode == "apply",
+        "live": parsed.get("live") if isinstance(parsed, dict) else False,
         "mode": check.post_cleanup_mode,
+        "herdr_surface": parsed.get("herdr_surface") if isinstance(parsed, dict) else None,
         "command": command,
         "exit_code": completed.returncode,
         "run_dir": str(provider_run_dir),
@@ -4113,7 +5591,9 @@ def _cleanup_workspace_ids(manifest: dict[str, Any]) -> set[str]:
             continue
         try:
             record = read_json(Path(path_text))
-        except (OSError, json.JSONDecodeError):
+        except OSError:
+            continue
+        except json.JSONDecodeError:
             continue
         if record.get("workspace_id"):
             workspace_ids.add(str(record["workspace_id"]))
@@ -4329,11 +5809,16 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "feature_counts",
         "item_count",
         "manifest_sha256",
+        "required_lock_count",
+        "provided_lock_count",
         "provider_session_state_count",
         "scheduler",
         "max_concurrency",
         "max_observed_concurrency",
         "execution_seconds",
+        "herdr_bin",
+        "herdr_surface",
+        "workspace_count",
         "resource_count",
         "candidate_count",
         "runtime_manifest",
@@ -4351,6 +5836,13 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "memory_sync",
         "sync_status",
         "projected_document_count",
+        "source_packet_sha256",
+        "source_type",
+        "method",
+        "classification",
+        "source_count",
+        "arxiv_source_count",
+        "review_required",
         "actions",
         "requirements",
         "preflight_ready",
@@ -4360,6 +5852,13 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "commands",
         "command_results",
         "preflight_results",
+        "indexed_receipt_count",
+        "output_path",
+        "output_sha256",
+        "error_count",
+        "warning_count",
+        "schema_counts",
+        "status_counts",
         "dag_error",
         "errors",
     )
@@ -4369,6 +5868,12 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         summary["alert_count"] = len(alerts)
         summary["alert_codes"] = [
             item.get("code") for item in alerts if isinstance(item, dict) and item.get("code")
+        ]
+    course_corrections = payload.get("course_correction_artifacts")
+    if isinstance(course_corrections, list):
+        summary["course_correction_artifact_count"] = len(course_corrections)
+        summary["course_correction_artifacts"] = [
+            str(item) for item in course_corrections if isinstance(item, str)
         ]
     applied_actions = payload.get("applied_actions")
     if isinstance(applied_actions, list):
@@ -4448,6 +5953,7 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
                 "ok",
                 "mocked",
                 "live",
+                "herdr_surface",
                 "runtime_manifest",
                 "runtime_manifest_sha256",
                 "resource_count",
@@ -4462,7 +5968,9 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 def _post_verified_absent_count(value: list[Any]) -> int:
-    return sum(1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True)
+    return sum(
+        1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True
+    )
 
 
 def receipt_live_value(payload: dict[str, Any] | None) -> Any:
@@ -4487,6 +5995,28 @@ def write_json(path: Path, payload: dict[str, Any]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def write_gate_receipt(
+    path: Path,
+    *,
+    schema: str,
+    goal_hash: str,
+    extra: dict[str, Any] | None = None,
+) -> Path:
+    payload: dict[str, Any] = {
+        "schema": schema,
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "receipt_path": str(path),
+    }
+    if extra:
+        payload.update(extra)
+    return write_json(path, payload)
 
 
 def write_text(path: Path, text: str) -> Path:

@@ -1,0 +1,8 @@
+{
+  "provider_session_states": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-provider-lifecycle/readiness/codex.session-state.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-provider-lifecycle/readiness/opencode.session-state.json"
+  ],
+  "run_id": "rw-sanity-provider-lifecycle",
+  "schema": "tau.provider_readiness_runtime_manifest.v1"
+}

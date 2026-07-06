@@ -1,0 +1,10 @@
+{
+  "attempt": 2,
+  "depends_on": [
+    "creator"
+  ],
+  "node_id": "reviewer",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-status/20260705T221940Z-rw-sanity-dag-stress-status/rungs/02-creator-reviewer-retry/receipts/reviewer-attempt-02.json",
+  "role": "reviewer",
+  "schema": "tau.dag_stress_work_order.v1"
+}

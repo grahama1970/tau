@@ -1,0 +1,50 @@
+{
+  "attempt": 2,
+  "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json",
+  "dag_id": "20260706T001028Z-rw-sanity-provider-dag-repair",
+  "forbidden_actions": [
+    "modify_files",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "force_revise": false,
+  "goal": {
+    "goal_hash": "sha256:fd1b02b5823ab140d211513688aa67063d53d65b6c5d0636343afecd85d70a42",
+    "goal_id": "20260706T001028Z-rw-sanity-provider-dag-repair",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w6X:p6",
+    "terminal_id": "term_655e61a3114ba7ac",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T001028Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+    "workspace_id": "w6X"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "reviewer",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "reviewer"
+  },
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/receipts/attempt-02-reviewer.json",
+  "required_evidence": [
+    "coder_receipt_reviewed",
+    "target_file_reviewed"
+  ],
+  "run_id": "20260706T001028Z-rw-sanity-provider-dag-repair",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/repair-loop/20260706T001028Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+  "task": "Review target_file and the coder receipt. If force_revise is true, return REVISE with actionable feedback even if the file is acceptable. Otherwise return PASS if the TODO line is gone and the coder receipt is schema-valid enough to inspect; otherwise return REVISE.",
+  "work_order_sha256": "622cadf7b0673c8e2b7d7572eb46d571cfb71d21db9acb659c569837cbbfd20d"
+}

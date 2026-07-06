@@ -1,0 +1,74 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "ok": true,
+        "schema": "tau.agent_handoff_command_loop_receipt.v1",
+        "status": "WAITING"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/simple.local_handoff_loop.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/simple.local_handoff_loop.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "simple.local_handoff_loop",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "handoff-command-loop",
+    "--start",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/simple-handoff-loop/start-handoff.json",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/simple-handoff-loop/agents",
+    "--command-spec-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/simple-handoff-loop/command-specs",
+    "--active-goal-hash",
+    "sha256:active-goal",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/simple-handoff-loop/receipts",
+    "--max-steps",
+    "4"
+  ],
+  "completed_at": "2026-07-05T22:19:22Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "WAITING",
+  "expected_verdict": null,
+  "level": "simple",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/simple-handoff-loop/receipts/command-loop-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "A real Tau handoff command loop routes goal-guardian to verifier to human.",
+  "receipt_summary": {
+    "errors": [],
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "schema": "tau.agent_handoff_command_loop_receipt.v1",
+    "status": "WAITING"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:20Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/simple.local_handoff_loop.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/simple.local_handoff_loop.stdout.txt",
+  "timeout_seconds": 90
+}

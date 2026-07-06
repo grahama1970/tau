@@ -1,0 +1,78 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "--project",
+        "/home/graham/workspace/experiments/tau",
+        "python",
+        "-c",
+        "import json; from tau_coding.cli import project_agent_handoff_adapter_command; print(json.dumps(project_agent_handoff_adapter_command(result_status='COMPLETED', result_summary='Verifier adapter consumed the guardian handoff.', next_agent='human', next_executor='human', next_reason='Human should decide the next bounded step.', required_evidence='Human posts the next schema-valid route.', stop_condition='Human route is posted.')))"
+      ],
+      "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/simple-handoff-loop/command-specs/project-or-harness-verifier/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:9f5d2caadbdbdc1370db20c117086b61e08d8ab741856252299cbb1701d6893e",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"schema\": \"tau.agent_handoff.v1\", \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"local-sanity\"}, \"goal\": {\"goal_hash\": \"sha256:active-goal\", \"goal_id\": \"goal-real-world-sanity\", \"goal_version\": 1}, \"previous_subagent\": \"project-or-harness-verifier\", \"context\": {\"summary\": \"Registry command adapter handled route for project-or-harness-verifier.\", \"artifacts\": []}, \"result\": {\"status\": \"COMPLETED\", \"summary\": \"Verifier adapter consumed the guardian handoff.\", \"evidence\": [\"tau handoff-agent-adapter emitted this schema-valid response from stdin\"]}, \"rationale\": \"project-or-harness-verifier completed one bounded adapter turn; routing follows the configured next agent.\", \"next_agent\": {\"name\": \"human\", \"executor\": \"human\", \"reason\": \"Human should decide the next bounded step.\"}, \"required_evidence\": [\"Human posts the next schema-valid route.\"], \"stop_condition\": \"Human route is posted.\"}\n",
+      "timed_out": false,
+      "timeout_s": 10.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 2,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `COMPLETED`\n- Summary: Verifier adapter consumed the guardian handoff.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Human route is posted.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"Registry command adapter handled route for project-or-harness-verifier.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"local-sanity\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:active-goal\",\n    \"goal_id\": \"goal-real-world-sanity\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Human should decide the next bounded step.\"\n  },\n  \"previous_subagent\": \"project-or-harness-verifier\",\n  \"rationale\": \"project-or-harness-verifier completed one bounded adapter turn; routing follows the configured next agent.\",\n  \"required_evidence\": [\n    \"Human posts the next schema-valid route.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"tau handoff-agent-adapter emitted this schema-valid response from stdin\"\n    ],\n    \"status\": \"COMPLETED\",\n    \"summary\": \"Verifier adapter consumed the guardian handoff.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Human route is posted.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "local-sanity"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "project-or-harness-verifier",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Active goal hash was preserved.\n- Next agent: `project-or-harness-verifier`\n- Executor: `local`\n- Stop condition: Verifier route is posted.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [],\n    \"summary\": \"Goal guardian verified that the handoff preserved the active goal hash.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"local-sanity\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:active-goal\",\n    \"goal_id\": \"goal-real-world-sanity\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"project-or-harness-verifier\",\n    \"reason\": \"Verifier should inspect preserved-goal receipt.\"\n  },\n  \"previous_subagent\": \"goal-guardian\",\n  \"rationale\": \"Goal preservation passed, so the next bounded agent can continue without a human goal amendment.\",\n  \"required_evidence\": [\n    \"Verifier posts the next schema-valid route.\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      \"TAU_HANDOFF_ACTIVE_GOAL_HASH matched handoff.goal.goal_hash\"\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Active goal hash was preserved.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Verifier route is posted.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:project-or-harness-verifier",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "project-or-harness-verifier",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "local-sanity"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

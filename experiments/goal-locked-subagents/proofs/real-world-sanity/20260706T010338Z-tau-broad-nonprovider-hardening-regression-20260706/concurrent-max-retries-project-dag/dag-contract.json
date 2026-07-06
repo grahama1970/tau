@@ -1,0 +1,104 @@
+{
+  "dag_id": "rw-sanity-project-dag-concurrent-max-retries",
+  "edges": [
+    {
+      "from": "start",
+      "to": "research"
+    },
+    {
+      "from": "start",
+      "to": "coder"
+    },
+    {
+      "from": "research",
+      "to": "reviewer"
+    },
+    {
+      "from": "coder",
+      "to": "reviewer"
+    },
+    {
+      "condition": "reviewer_pass_or_block",
+      "from": "reviewer",
+      "to": "human"
+    }
+  ],
+  "entry_node": "start",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff",
+    "reviewer_goal_hash_mismatch"
+  ],
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-project-dag-concurrent-max-retries",
+    "goal_id": "rw-sanity-project-dag-concurrent-max-retries",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 20,
+    "max_concurrency": 2,
+    "max_total_attempts": 4,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "goal-guardian",
+      "executor": "scheduler",
+      "id": "start",
+      "max_attempts": 1,
+      "required_evidence": []
+    },
+    {
+      "agent": "research-auditor",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-max-retries-project-dag/command-specs/research-auditor/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "research",
+      "max_attempts": 1,
+      "required_evidence": [
+        "source_summary"
+      ]
+    },
+    {
+      "agent": "coder",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-max-retries-project-dag/command-specs/coder/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "coder",
+      "max_attempts": 2,
+      "required_evidence": [
+        "creator_artifact"
+      ]
+    },
+    {
+      "agent": "reviewer",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/concurrent-max-retries-project-dag/command-specs/reviewer/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "reviewer",
+      "max_attempts": 1,
+      "required_evidence": [
+        "reviewer_verdict"
+      ],
+      "reviewer": {
+        "requires_goal_hash": true,
+        "reviews_node": "coder"
+      }
+    }
+  ],
+  "required_evidence": [
+    "source_summary",
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-concurrent-max-retries"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T010744Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:edbe71b4a17884e3cd48f440efe3dde34f2947cb41999b9192ce79d7df335026",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w78",
+  "pane_id": "w78:p5",
+  "terminal_id": "term_655e6e6f92567816",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T010744Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "dfb95491dc478972cbf57757b506aea90596123ab73c7e1edbdf65d0cb6e7dd7",
+  "work_order_sha256": "c14dcb895227cc8ca4d786efd92ff6a935dbd0c4dd601a9f020c8e2a61ab056e",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "pwd && sed -n '1,240p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T010744Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+    "sed -n '1,120p' message.txt",
+    "find . -maxdepth 2 -type f -print",
+    "test -f message.txt && test \"$(sed -n '1p' message.txt)\" = \"Completed implementation for the Tau provider DAG coder POC.\""
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/one-pass/20260706T010744Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the target file with a short completed implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

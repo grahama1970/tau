@@ -1,0 +1,91 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+  "alerts": [],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/start-handoff.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/command-loop/command-loop-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/memory-intent-gate-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/evidence-case-gate-receipt.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json"
+  ],
+  "command_loop_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/command-loop/command-loop-receipt.json",
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:045f703094790c4b7ce5a0c87416475aa1a5b80fe5c2397337520d44b2581aaa",
+  "dag_id": "rw-sanity-project-dag-memory-evidence-valid",
+  "edge_count": 3,
+  "entry_node": "coder",
+  "errors": [],
+  "evidence_case_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/evidence-case-gate-receipt.json",
+  "evidence_validation_receipt": null,
+  "execution": "project_agent_dag_via_handoff_command_loop",
+  "live": true,
+  "max_steps": 3,
+  "memory_intent_gate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/memory-intent-gate-receipt.json",
+  "mocked": false,
+  "node_attempts": {
+    "coder": 1,
+    "reviewer": 1
+  },
+  "node_count": 2,
+  "observed_edges": [
+    {
+      "from_agent": "coder",
+      "from_node": "coder",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    },
+    {
+      "from_agent": "reviewer",
+      "from_node": "reviewer",
+      "to_agent": "human",
+      "to_node": "human"
+    }
+  ],
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "Parallel DAG scheduling.",
+      "GitHub mutation or ticket closure.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Entry node was compiled into a tau.agent_handoff.v1 start handoff.",
+      "Node routing was executed by the real local command-loop subprocess runner.",
+      "Observed edges and retry counts were checked against the DAG contract.",
+      "Reviewer verdict evidence was checked against the immutable goal hash."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [
+    {
+      "creator_attempt": 1,
+      "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+      "kind": "reviewer_verdict",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+      "reviewed_node_id": "coder",
+      "verdict": "PASS"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run",
+  "scheduler": "handoff-loop",
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [
+    "coder",
+    "reviewer"
+  ],
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-valid"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-06T00:01:48Z",
+  "verdict": "PASS"
+}

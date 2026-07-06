@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T000333Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:e798b312f895f940772455c11b8611759c5e29b21309bacab6adb1f7a1c00f78",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w6T",
+  "pane_id": "w6T:p6",
+  "terminal_id": "term_655e6016f51eb791",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T000333Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "ade72747e45d7340b1cf6aa78c5d70fc930bf06ead41f8a78bebf59c274801d0",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work-order JSON",
+    "read target_file (message.txt)",
+    "read coder receipt (attempt-01-coder.json)",
+    "sha256sum opencode.visible.txt",
+    "ls scratch-worktree"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/one-pass/20260706T000333Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has no remaining TODO line — contains a completed implementation message. Coder receipt is valid JSON conforming to tau.provider_dag_node_receipt.v1 with all required fields present. force_revise is false, so no revision requested.",
+  "errors": [],
+  "policy_exceptions": []
+}

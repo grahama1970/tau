@@ -1,0 +1,13 @@
+{
+  "artifacts": [],
+  "commands_run": [
+    "preexisting planner receipt for resume proof"
+  ],
+  "errors": [],
+  "handoff_summary": "planner receipt existed before dag-run",
+  "node_id": "planner",
+  "policy_exceptions": [],
+  "schema": "tau.generic_dag_node_receipt.v1",
+  "status": "PASS",
+  "verdict": "PASS"
+}

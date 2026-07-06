@@ -1,0 +1,1502 @@
+{
+  "all_provider_structured_ready": true,
+  "command_results": [
+    {
+      "argv": [
+        "codex",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "codex-cli 0.142.5\n"
+    },
+    {
+      "argv": [
+        "opencode",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "1.17.9\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "doctor",
+        "--json",
+        "--herdr-bin",
+        "herdr"
+      ],
+      "returncode": 0,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"herdr_bin\": \"/home/graham/.local/share/mise/installs/herdr/latest/herdr\",\n  \"ok\": true,\n  \"status\": {\n    \"argv\": [\n      \"herdr\",\n      \"status\"\n    ],\n    \"parsed\": \"client:\\n  version: 0.7.1\\n  channel: stable\\n  protocol: 14\\n\\nserver:\\n  status: running\\n  version: 0.7.1\\n  protocol: 14\\n  compatible: yes\\n  socket: /home/graham/.config/herdr/herdr.sock\\n\\nupdate:\\n  restart_needed: no\",\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"client:\\n  version: 0.7.1\\n  channel: stable\\n  protocol: 14\\n\\nserver:\\n  status: running\\n  version: 0.7.1\\n  protocol: 14\\n  compatible: yes\\n  socket: /home/graham/.config/herdr/herdr.sock\\n\\nupdate:\\n  restart_needed: no\\n\"\n  },\n  \"version\": {\n    \"argv\": [\n      \"herdr\",\n      \"--version\"\n    ],\n    \"parsed\": \"herdr 0.7.1\",\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"herdr 0.7.1\\n\"\n  }\n}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "workstation",
+        "create",
+        "--repo",
+        "/home/graham/workspace/experiments/tau",
+        "--label",
+        "rw-sanity-provider-dag-max-exhaustion-readiness",
+        "--run-root",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations",
+        "--herdr-bin",
+        "herdr",
+        "--tab",
+        "providers",
+        "--tab",
+        "logs",
+        "--tab",
+        "receipts",
+        "--json"
+      ],
+      "returncode": 0,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"agents\": {},\n  \"created_at\": \"20260705T222952Z\",\n  \"cwd\": \"/home/graham/workspace/experiments/tau\",\n  \"events_jsonl\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl\",\n  \"kind\": \"herdr-workstation\",\n  \"label\": \"rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"repo\": \"/home/graham/workspace/experiments/tau\",\n  \"run_dir\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"run_id\": \"20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"schema_version\": 1,\n  \"session\": \"default\",\n  \"tabs\": {\n    \"logs\": \"w63:t3\",\n    \"providers\": \"w63:t2\",\n    \"receipts\": \"w63:t4\"\n  },\n  \"updated_at\": \"20260705T222952Z\",\n  \"workspace_id\": \"w63\",\n  \"worktree\": {\n    \"base\": null,\n    \"branch\": null,\n    \"enabled\": false,\n    \"path\": null,\n    \"raw\": null\n  }\n}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "agent",
+        "start",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/workstation.json",
+        "--name",
+        "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+        "--role",
+        "codex",
+        "--command",
+        "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+        "--tab",
+        "providers",
+        "--work-order",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json",
+        "--env",
+        "TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+        "--env",
+        "TAU_PROVIDER_READINESS_PROVIDER=codex",
+        "--herdr-bin",
+        "herdr",
+        "--json"
+      ],
+      "returncode": 0,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"agents\": {\n    \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\": {\n      \"command\": \"'codex' '--cd' '/home/graham/workspace/experiments/tau'\",\n      \"last_start_result\": {\n        \"argv\": [\n          \"herdr\",\n          \"agent\",\n          \"start\",\n          \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n          \"--cwd\",\n          \"/home/graham/workspace/experiments/tau\",\n          \"--workspace\",\n          \"w63\",\n          \"--tab\",\n          \"w63:t2\",\n          \"--env\",\n          \"TAU_ROLE=codex\",\n          \"--env\",\n          \"TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n          \"--env\",\n          \"TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"--env\",\n          \"TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json\",\n          \"--env\",\n          \"TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"--env\",\n          \"TAU_PROVIDER_READINESS_PROVIDER=codex\",\n          \"--no-focus\",\n          \"--\",\n          \"codex\",\n          \"--cd\",\n          \"/home/graham/workspace/experiments/tau\"\n        ],\n        \"parsed\": {\n          \"id\": \"cli:agent:start\",\n          \"result\": {\n            \"agent\": {\n              \"agent_status\": \"unknown\",\n              \"cwd\": \"/home/graham/workspace/experiments/tau\",\n              \"focused\": false,\n              \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n              \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n              \"pane_id\": \"w63:p5\",\n              \"revision\": 0,\n              \"tab_id\": \"w63:t2\",\n              \"terminal_id\": \"term_655e4b25be8326b8\",\n              \"workspace_id\": \"w63\"\n            },\n            \"argv\": [\n              \"codex\",\n              \"--cd\",\n              \"/home/graham/workspace/experiments/tau\"\n            ],\n            \"type\": \"agent_started\"\n          }\n        },\n        \"returncode\": 0,\n        \"stderr\": \"\",\n        \"stdout\": \"{\\\"id\\\":\\\"cli:agent:start\\\",\\\"result\\\":{\\\"agent\\\":{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\\\",\\\"pane_id\\\":\\\"w63:p5\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b25be8326b8\\\",\\\"workspace_id\\\":\\\"w63\\\"},\\\"argv\\\":[\\\"codex\\\",\\\"--cd\\\",\\\"/home/graham/workspace/experiments/tau\\\"],\\\"type\\\":\\\"agent_started\\\"}}\\n\"\n      },\n      \"role\": \"codex\",\n      \"started_at\": \"20260705T222953Z\",\n      \"tab\": \"providers\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json\"\n    }\n  },\n  \"created_at\": \"20260705T222952Z\",\n  \"cwd\": \"/home/graham/workspace/experiments/tau\",\n  \"events_jsonl\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl\",\n  \"kind\": \"herdr-workstation\",\n  \"label\": \"rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"repo\": \"/home/graham/workspace/experiments/tau\",\n  \"run_dir\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"run_id\": \"20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"schema_version\": 1,\n  \"session\": \"default\",\n  \"tabs\": {\n    \"logs\": \"w63:t3\",\n    \"providers\": \"w63:t2\",\n    \"receipts\": \"w63:t4\"\n  },\n  \"updated_at\": \"20260705T222953Z\",\n  \"workspace_id\": \"w63\",\n  \"worktree\": {\n    \"base\": null,\n    \"branch\": null,\n    \"enabled\": false,\n    \"path\": null,\n    \"raw\": null\n  }\n}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "agent",
+        "start",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/workstation.json",
+        "--name",
+        "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+        "--role",
+        "opencode",
+        "--command",
+        "'opencode' '/home/graham/workspace/experiments/tau'",
+        "--tab",
+        "providers",
+        "--work-order",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json",
+        "--env",
+        "TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+        "--env",
+        "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+        "--herdr-bin",
+        "herdr",
+        "--split",
+        "right",
+        "--json"
+      ],
+      "returncode": 0,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"agents\": {\n    \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\": {\n      \"command\": \"'codex' '--cd' '/home/graham/workspace/experiments/tau'\",\n      \"last_start_result\": {\n        \"argv\": [\n          \"herdr\",\n          \"agent\",\n          \"start\",\n          \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n          \"--cwd\",\n          \"/home/graham/workspace/experiments/tau\",\n          \"--workspace\",\n          \"w63\",\n          \"--tab\",\n          \"w63:t2\",\n          \"--env\",\n          \"TAU_ROLE=codex\",\n          \"--env\",\n          \"TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n          \"--env\",\n          \"TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"--env\",\n          \"TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json\",\n          \"--env\",\n          \"TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"--env\",\n          \"TAU_PROVIDER_READINESS_PROVIDER=codex\",\n          \"--no-focus\",\n          \"--\",\n          \"codex\",\n          \"--cd\",\n          \"/home/graham/workspace/experiments/tau\"\n        ],\n        \"parsed\": {\n          \"id\": \"cli:agent:start\",\n          \"result\": {\n            \"agent\": {\n              \"agent_status\": \"unknown\",\n              \"cwd\": \"/home/graham/workspace/experiments/tau\",\n              \"focused\": false,\n              \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n              \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n              \"pane_id\": \"w63:p5\",\n              \"revision\": 0,\n              \"tab_id\": \"w63:t2\",\n              \"terminal_id\": \"term_655e4b25be8326b8\",\n              \"workspace_id\": \"w63\"\n            },\n            \"argv\": [\n              \"codex\",\n              \"--cd\",\n              \"/home/graham/workspace/experiments/tau\"\n            ],\n            \"type\": \"agent_started\"\n          }\n        },\n        \"returncode\": 0,\n        \"stderr\": \"\",\n        \"stdout\": \"{\\\"id\\\":\\\"cli:agent:start\\\",\\\"result\\\":{\\\"agent\\\":{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\\\",\\\"pane_id\\\":\\\"w63:p5\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b25be8326b8\\\",\\\"workspace_id\\\":\\\"w63\\\"},\\\"argv\\\":[\\\"codex\\\",\\\"--cd\\\",\\\"/home/graham/workspace/experiments/tau\\\"],\\\"type\\\":\\\"agent_started\\\"}}\\n\"\n      },\n      \"role\": \"codex\",\n      \"started_at\": \"20260705T222953Z\",\n      \"tab\": \"providers\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json\"\n    },\n    \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\": {\n      \"command\": \"'opencode' '/home/graham/workspace/experiments/tau'\",\n      \"last_start_result\": {\n        \"argv\": [\n          \"herdr\",\n          \"agent\",\n          \"start\",\n          \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n          \"--cwd\",\n          \"/home/graham/workspace/experiments/tau\",\n          \"--workspace\",\n          \"w63\",\n          \"--tab\",\n          \"w63:t2\",\n          \"--env\",\n          \"TAU_ROLE=opencode\",\n          \"--env\",\n          \"TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n          \"--env\",\n          \"TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"--env\",\n          \"TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json\",\n          \"--env\",\n          \"TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"--env\",\n          \"TAU_PROVIDER_READINESS_PROVIDER=opencode\",\n          \"--no-focus\",\n          \"--split\",\n          \"right\",\n          \"--\",\n          \"opencode\",\n          \"/home/graham/workspace/experiments/tau\"\n        ],\n        \"parsed\": {\n          \"id\": \"cli:agent:start\",\n          \"result\": {\n            \"agent\": {\n              \"agent_status\": \"unknown\",\n              \"cwd\": \"/home/graham/workspace/experiments/tau\",\n              \"focused\": false,\n              \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n              \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n              \"pane_id\": \"w63:p6\",\n              \"revision\": 0,\n              \"tab_id\": \"w63:t2\",\n              \"terminal_id\": \"term_655e4b26422e66b9\",\n              \"workspace_id\": \"w63\"\n            },\n            \"argv\": [\n              \"opencode\",\n              \"/home/graham/workspace/experiments/tau\"\n            ],\n            \"type\": \"agent_started\"\n          }\n        },\n        \"returncode\": 0,\n        \"stderr\": \"\",\n        \"stdout\": \"{\\\"id\\\":\\\"cli:agent:start\\\",\\\"result\\\":{\\\"agent\\\":{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\\\",\\\"pane_id\\\":\\\"w63:p6\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b26422e66b9\\\",\\\"workspace_id\\\":\\\"w63\\\"},\\\"argv\\\":[\\\"opencode\\\",\\\"/home/graham/workspace/experiments/tau\\\"],\\\"type\\\":\\\"agent_started\\\"}}\\n\"\n      },\n      \"role\": \"opencode\",\n      \"started_at\": \"20260705T222954Z\",\n      \"tab\": \"providers\",\n      \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json\"\n    }\n  },\n  \"created_at\": \"20260705T222952Z\",\n  \"cwd\": \"/home/graham/workspace/experiments/tau\",\n  \"events_jsonl\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl\",\n  \"kind\": \"herdr-workstation\",\n  \"label\": \"rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"repo\": \"/home/graham/workspace/experiments/tau\",\n  \"run_dir\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"run_id\": \"20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n  \"schema_version\": 1,\n  \"session\": \"default\",\n  \"tabs\": {\n    \"logs\": \"w63:t3\",\n    \"providers\": \"w63:t2\",\n    \"receipts\": \"w63:t4\"\n  },\n  \"updated_at\": \"20260705T222954Z\",\n  \"workspace_id\": \"w63\",\n  \"worktree\": {\n    \"base\": null,\n    \"branch\": null,\n    \"enabled\": false,\n    \"path\": null,\n    \"raw\": null\n  }\n}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n  \u2502\n\u2502\n  \u2502\n\u2502 model:       loading   /model to\nchange \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n  \u2502\n\u2502 permissions: YOLO mode\n  \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u256f\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 default \u00b7 ~/workspace/experi\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n\u2502\n\u2502\n\u2502\n\u2502 model:       gpt-5.5 medium   /model\nto change \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n\u2502\n\u2502 permissions: YOLO mode\n\u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\n  Tip: New Use /fast to enable our\n  fastest inference with increased plan\n  usage.\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 medium \u00b7 ~/workspace/experim\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "\u26a0 Heads up, you have less than 25% of\n  your weekly limit left. Run /status\n  for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)\n\u2502\n\u2502\n\u2502\n\u2502 model:       gpt-5.5 medium   /model\nto change \u2502\n\u2502 directory:   ~/\u2026/experiments/tau\n\u2502\n\u2502 permissions: YOLO mode\n\u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\n  Tip: New Use /fast to enable our\n  fastest inference with increased plan\n  usage.\n\n\u2022 You have 2 usage limit resets\navailable. Run /usage to use one.\n\n\n\u203a Use /skills to list available skills\n\n  gpt-5.5 medium \u00b7 ~/workspace/experim\u2026\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "get",
+        "w63:p5"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:pane:get\",\"result\":{\"pane\":{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w63:p5\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b25be8326b8\",\"workspace_id\":\"w63\"},\"type\":\"pane_info\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "process-info",
+        "--pane",
+        "w63:p5"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:pane:process_info\",\"result\":{\"process_info\":{\"foreground_process_group_id\":2469386,\"foreground_processes\":[{\"argv\":[\"node\",\"/home/graham/.nvm/versions/node/v22.15.0/bin/codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"cmdline\":\"node /home/graham/.nvm/versions/node/v22.15.0/bin/codex --cd /home/graham/workspace/experiments/tau\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"node\",\"pid\":2469386},{\"argv\":[\"/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"cmdline\":\"/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex --cd /home/graham/workspace/experiments/tau\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"codex\",\"pid\":2469515}],\"pane_id\":\"w63:p5\",\"shell_pid\":2469386},\"type\":\"pane_process_info\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w63:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "get",
+        "w63:p6"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:pane:get\",\"result\":{\"pane\":{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w63:p6\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b26422e66b9\",\"workspace_id\":\"w63\"},\"type\":\"pane_info\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "process-info",
+        "--pane",
+        "w63:p6"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:pane:process_info\",\"result\":{\"process_info\":{\"foreground_process_group_id\":2470010,\"foreground_processes\":[{\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"cmdline\":\"opencode /home/graham/workspace/experiments/tau\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"opencode\",\"pid\":2470010}],\"pane_id\":\"w63:p6\",\"shell_pid\":2470010},\"type\":\"pane_process_info\"}}\n"
+    },
+    {
+      "argv": [
+        "/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/run.sh",
+        "workstation",
+        "inspect",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/workstation.json",
+        "--herdr-bin",
+        "herdr"
+      ],
+      "returncode": 0,
+      "stderr": "warning: `VIRTUAL_ENV=.venv` does not match the project environment path `/home/graham/workspace/experiments/agent-skills/skills/herdr-workstation/.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "stdout": "{\n  \"agents\": {\n    \"argv\": [\n      \"herdr\",\n      \"agent\",\n      \"list\"\n    ],\n    \"parsed\": {\n      \"id\": \"cli:agent:list\",\n      \"result\": {\n        \"agents\": [\n          {\n            \"agent\": \"codex\",\n            \"agent_session\": {\n              \"agent\": \"codex\",\n              \"kind\": \"id\",\n              \"source\": \"herdr:codex\",\n              \"value\": \"019f2275-2c9f-73c0-bdd2-ae759d861c49\"\n            },\n            \"agent_status\": \"done\",\n            \"cwd\": \"/home/graham/workspace/experiments/chatterbox\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/chatterbox\",\n            \"pane_id\": \"w11:p1\",\n            \"revision\": 0,\n            \"tab_id\": \"w11:t1\",\n            \"terminal_id\": \"term_6559e98b5ff98d2\",\n            \"workspace_id\": \"w11\"\n          },\n          {\n            \"agent\": \"cursor\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/chatterbox\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/chatterbox\",\n            \"pane_id\": \"w11:p4\",\n            \"revision\": 0,\n            \"tab_id\": \"w11:t4\",\n            \"terminal_id\": \"term_655cd72ee5eae37b\",\n            \"workspace_id\": \"w11\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_session\": {\n              \"agent\": \"codex\",\n              \"kind\": \"id\",\n              \"source\": \"herdr:codex\",\n              \"value\": \"019f2fa8-5e65-7631-8068-13205b2eaeed\"\n            },\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/chatterbox\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/chatterbox\",\n            \"pane_id\": \"w11:p6\",\n            \"revision\": 0,\n            \"tab_id\": \"w11:t6\",\n            \"terminal_id\": \"term_655d114609faa3a5\",\n            \"workspace_id\": \"w11\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_session\": {\n              \"agent\": \"codex\",\n              \"kind\": \"id\",\n              \"source\": \"herdr:codex\",\n              \"value\": \"019f2a46-4dd8-74e1-a2e9-43bc8b55f55b\"\n            },\n            \"agent_status\": \"working\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"pane_id\": \"w11:p7\",\n            \"revision\": 0,\n            \"tab_id\": \"w11:t7\",\n            \"terminal_id\": \"term_655db929920d63a6\",\n            \"workspace_id\": \"w11\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_session\": {\n              \"agent\": \"codex\",\n              \"kind\": \"id\",\n              \"source\": \"herdr:codex\",\n              \"value\": \"019f1828-d18c-7502-9041-842a19091118\"\n            },\n            \"agent_status\": \"done\",\n            \"cwd\": \"/home/graham/workspace/experiments/agent-skills\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/agent-skills\",\n            \"pane_id\": \"w11:p8\",\n            \"revision\": 0,\n            \"tab_id\": \"w11:t8\",\n            \"terminal_id\": \"term_655dbba1ea4973a7\",\n            \"workspace_id\": \"w11\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/agent-skills\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/agent-skills\",\n            \"pane_id\": \"w11:p9\",\n            \"revision\": 0,\n            \"tab_id\": \"w11:t9\",\n            \"terminal_id\": \"term_655dcf7770a5e3a8\",\n            \"workspace_id\": \"w11\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"name\": \"20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-orchestrator\",\n            \"pane_id\": \"w4C:p8\",\n            \"revision\": 0,\n            \"tab_id\": \"w4C:t1\",\n            \"terminal_id\": \"term_655e1bbd265c14a3\",\n            \"workspace_id\": \"w4C\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"name\": \"20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-planner\",\n            \"pane_id\": \"w4C:p7\",\n            \"revision\": 0,\n            \"tab_id\": \"w4C:t1\",\n            \"terminal_id\": \"term_655e1bbcd9f814a2\",\n            \"workspace_id\": \"w4C\"\n          },\n          {\n            \"agent\": \"opencode\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"name\": \"20260705t185713z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n            \"pane_id\": \"w4C:p6\",\n            \"revision\": 0,\n            \"tab_id\": \"w4C:t2\",\n            \"terminal_id\": \"term_655e1b9e6725a4a1\",\n            \"workspace_id\": \"w4C\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"name\": \"20260705t185713z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n            \"pane_id\": \"w4C:p5\",\n            \"revision\": 0,\n            \"tab_id\": \"w4C:t2\",\n            \"terminal_id\": \"term_655e1b9df98774a0\",\n            \"workspace_id\": \"w4C\"\n          },\n          {\n            \"agent\": \"opencode\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n            \"pane_id\": \"w63:p6\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t2\",\n            \"terminal_id\": \"term_655e4b26422e66b9\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n            \"pane_id\": \"w63:p5\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t2\",\n            \"terminal_id\": \"term_655e4b25be8326b8\",\n            \"workspace_id\": \"w63\"\n          }\n        ],\n        \"type\": \"agent_list\"\n      }\n    },\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"{\\\"id\\\":\\\"cli:agent:list\\\",\\\"result\\\":{\\\"agents\\\":[{\\\"agent\\\":\\\"codex\\\",\\\"agent_session\\\":{\\\"agent\\\":\\\"codex\\\",\\\"kind\\\":\\\"id\\\",\\\"source\\\":\\\"herdr:codex\\\",\\\"value\\\":\\\"019f2275-2c9f-73c0-bdd2-ae759d861c49\\\"},\\\"agent_status\\\":\\\"done\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/chatterbox\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/chatterbox\\\",\\\"pane_id\\\":\\\"w11:p1\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w11:t1\\\",\\\"terminal_id\\\":\\\"term_6559e98b5ff98d2\\\",\\\"workspace_id\\\":\\\"w11\\\"},{\\\"agent\\\":\\\"cursor\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/chatterbox\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/chatterbox\\\",\\\"pane_id\\\":\\\"w11:p4\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w11:t4\\\",\\\"terminal_id\\\":\\\"term_655cd72ee5eae37b\\\",\\\"workspace_id\\\":\\\"w11\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_session\\\":{\\\"agent\\\":\\\"codex\\\",\\\"kind\\\":\\\"id\\\",\\\"source\\\":\\\"herdr:codex\\\",\\\"value\\\":\\\"019f2fa8-5e65-7631-8068-13205b2eaeed\\\"},\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/chatterbox\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/chatterbox\\\",\\\"pane_id\\\":\\\"w11:p6\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w11:t6\\\",\\\"terminal_id\\\":\\\"term_655d114609faa3a5\\\",\\\"workspace_id\\\":\\\"w11\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_session\\\":{\\\"agent\\\":\\\"codex\\\",\\\"kind\\\":\\\"id\\\",\\\"source\\\":\\\"herdr:codex\\\",\\\"value\\\":\\\"019f2a46-4dd8-74e1-a2e9-43bc8b55f55b\\\"},\\\"agent_status\\\":\\\"working\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"pane_id\\\":\\\"w11:p7\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w11:t7\\\",\\\"terminal_id\\\":\\\"term_655db929920d63a6\\\",\\\"workspace_id\\\":\\\"w11\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_session\\\":{\\\"agent\\\":\\\"codex\\\",\\\"kind\\\":\\\"id\\\",\\\"source\\\":\\\"herdr:codex\\\",\\\"value\\\":\\\"019f1828-d18c-7502-9041-842a19091118\\\"},\\\"agent_status\\\":\\\"done\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/agent-skills\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/agent-skills\\\",\\\"pane_id\\\":\\\"w11:p8\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w11:t8\\\",\\\"terminal_id\\\":\\\"term_655dbba1ea4973a7\\\",\\\"workspace_id\\\":\\\"w11\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/agent-skills\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/agent-skills\\\",\\\"pane_id\\\":\\\"w11:p9\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w11:t9\\\",\\\"terminal_id\\\":\\\"term_655dcf7770a5e3a8\\\",\\\"workspace_id\\\":\\\"w11\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-orchestrator\\\",\\\"pane_id\\\":\\\"w4C:p8\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w4C:t1\\\",\\\"terminal_id\\\":\\\"term_655e1bbd265c14a3\\\",\\\"workspace_id\\\":\\\"w4C\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-planner\\\",\\\"pane_id\\\":\\\"w4C:p7\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w4C:t1\\\",\\\"terminal_id\\\":\\\"term_655e1bbcd9f814a2\\\",\\\"workspace_id\\\":\\\"w4C\\\"},{\\\"agent\\\":\\\"opencode\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t185713z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\\\",\\\"pane_id\\\":\\\"w4C:p6\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w4C:t2\\\",\\\"terminal_id\\\":\\\"term_655e1b9e6725a4a1\\\",\\\"workspace_id\\\":\\\"w4C\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t185713z-rw-sanity-provider-dag-max-exhaustion-coder-codex\\\",\\\"pane_id\\\":\\\"w4C:p5\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w4C:t2\\\",\\\"terminal_id\\\":\\\"term_655e1b9df98774a0\\\",\\\"workspace_id\\\":\\\"w4C\\\"},{\\\"agent\\\":\\\"opencode\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\\\",\\\"pane_id\\\":\\\"w63:p6\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b26422e66b9\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\\\",\\\"pane_id\\\":\\\"w63:p5\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b25be8326b8\\\",\\\"workspace_id\\\":\\\"w63\\\"}],\\\"type\\\":\\\"agent_list\\\"}}\\n\"\n  },\n  \"manifest\": {\n    \"agents\": {\n      \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\": {\n        \"command\": \"'codex' '--cd' '/home/graham/workspace/experiments/tau'\",\n        \"last_start_result\": {\n          \"argv\": [\n            \"herdr\",\n            \"agent\",\n            \"start\",\n            \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n            \"--cwd\",\n            \"/home/graham/workspace/experiments/tau\",\n            \"--workspace\",\n            \"w63\",\n            \"--tab\",\n            \"w63:t2\",\n            \"--env\",\n            \"TAU_ROLE=codex\",\n            \"--env\",\n            \"TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n            \"--env\",\n            \"TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n            \"--env\",\n            \"TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json\",\n            \"--env\",\n            \"TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n            \"--env\",\n            \"TAU_PROVIDER_READINESS_PROVIDER=codex\",\n            \"--no-focus\",\n            \"--\",\n            \"codex\",\n            \"--cd\",\n            \"/home/graham/workspace/experiments/tau\"\n          ],\n          \"parsed\": {\n            \"id\": \"cli:agent:start\",\n            \"result\": {\n              \"agent\": {\n                \"agent_status\": \"unknown\",\n                \"cwd\": \"/home/graham/workspace/experiments/tau\",\n                \"focused\": false,\n                \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n                \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n                \"pane_id\": \"w63:p5\",\n                \"revision\": 0,\n                \"tab_id\": \"w63:t2\",\n                \"terminal_id\": \"term_655e4b25be8326b8\",\n                \"workspace_id\": \"w63\"\n              },\n              \"argv\": [\n                \"codex\",\n                \"--cd\",\n                \"/home/graham/workspace/experiments/tau\"\n              ],\n              \"type\": \"agent_started\"\n            }\n          },\n          \"returncode\": 0,\n          \"stderr\": \"\",\n          \"stdout\": \"{\\\"id\\\":\\\"cli:agent:start\\\",\\\"result\\\":{\\\"agent\\\":{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\\\",\\\"pane_id\\\":\\\"w63:p5\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b25be8326b8\\\",\\\"workspace_id\\\":\\\"w63\\\"},\\\"argv\\\":[\\\"codex\\\",\\\"--cd\\\",\\\"/home/graham/workspace/experiments/tau\\\"],\\\"type\\\":\\\"agent_started\\\"}}\\n\"\n        },\n        \"role\": \"codex\",\n        \"started_at\": \"20260705T222953Z\",\n        \"tab\": \"providers\",\n        \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json\"\n      },\n      \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\": {\n        \"command\": \"'opencode' '/home/graham/workspace/experiments/tau'\",\n        \"last_start_result\": {\n          \"argv\": [\n            \"herdr\",\n            \"agent\",\n            \"start\",\n            \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n            \"--cwd\",\n            \"/home/graham/workspace/experiments/tau\",\n            \"--workspace\",\n            \"w63\",\n            \"--tab\",\n            \"w63:t2\",\n            \"--env\",\n            \"TAU_ROLE=opencode\",\n            \"--env\",\n            \"TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n            \"--env\",\n            \"TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n            \"--env\",\n            \"TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json\",\n            \"--env\",\n            \"TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n            \"--env\",\n            \"TAU_PROVIDER_READINESS_PROVIDER=opencode\",\n            \"--no-focus\",\n            \"--split\",\n            \"right\",\n            \"--\",\n            \"opencode\",\n            \"/home/graham/workspace/experiments/tau\"\n          ],\n          \"parsed\": {\n            \"id\": \"cli:agent:start\",\n            \"result\": {\n              \"agent\": {\n                \"agent_status\": \"unknown\",\n                \"cwd\": \"/home/graham/workspace/experiments/tau\",\n                \"focused\": false,\n                \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n                \"name\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n                \"pane_id\": \"w63:p6\",\n                \"revision\": 0,\n                \"tab_id\": \"w63:t2\",\n                \"terminal_id\": \"term_655e4b26422e66b9\",\n                \"workspace_id\": \"w63\"\n              },\n              \"argv\": [\n                \"opencode\",\n                \"/home/graham/workspace/experiments/tau\"\n              ],\n              \"type\": \"agent_started\"\n            }\n          },\n          \"returncode\": 0,\n          \"stderr\": \"\",\n          \"stdout\": \"{\\\"id\\\":\\\"cli:agent:start\\\",\\\"result\\\":{\\\"agent\\\":{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"name\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\\\",\\\"pane_id\\\":\\\"w63:p6\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b26422e66b9\\\",\\\"workspace_id\\\":\\\"w63\\\"},\\\"argv\\\":[\\\"opencode\\\",\\\"/home/graham/workspace/experiments/tau\\\"],\\\"type\\\":\\\"agent_started\\\"}}\\n\"\n        },\n        \"role\": \"opencode\",\n        \"started_at\": \"20260705T222954Z\",\n        \"tab\": \"providers\",\n        \"work_order\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json\"\n      }\n    },\n    \"created_at\": \"20260705T222952Z\",\n    \"cwd\": \"/home/graham/workspace/experiments/tau\",\n    \"events_jsonl\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl\",\n    \"kind\": \"herdr-workstation\",\n    \"label\": \"rw-sanity-provider-dag-max-exhaustion-readiness\",\n    \"repo\": \"/home/graham/workspace/experiments/tau\",\n    \"run_dir\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n    \"run_id\": \"20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness\",\n    \"schema_version\": 1,\n    \"session\": \"default\",\n    \"tabs\": {\n      \"logs\": \"w63:t3\",\n      \"providers\": \"w63:t2\",\n      \"receipts\": \"w63:t4\"\n    },\n    \"updated_at\": \"20260705T222954Z\",\n    \"workspace_id\": \"w63\",\n    \"worktree\": {\n      \"base\": null,\n      \"branch\": null,\n      \"enabled\": false,\n      \"path\": null,\n      \"raw\": null\n    }\n  },\n  \"panes\": {\n    \"argv\": [\n      \"herdr\",\n      \"pane\",\n      \"list\",\n      \"--workspace\",\n      \"w63\"\n    ],\n    \"parsed\": {\n      \"id\": \"cli:pane:list\",\n      \"result\": {\n        \"panes\": [\n          {\n            \"agent_status\": \"unknown\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"pane_id\": \"w63:p1\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t1\",\n            \"terminal_id\": \"term_655e4b24ec0776b4\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"pane_id\": \"w63:p2\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t2\",\n            \"terminal_id\": \"term_655e4b25033e66b5\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent\": \"opencode\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"label\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\n            \"pane_id\": \"w63:p6\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t2\",\n            \"terminal_id\": \"term_655e4b26422e66b9\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent\": \"codex\",\n            \"agent_status\": \"idle\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"label\": \"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\n            \"pane_id\": \"w63:p5\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t2\",\n            \"terminal_id\": \"term_655e4b25be8326b8\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"pane_id\": \"w63:p3\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t3\",\n            \"terminal_id\": \"term_655e4b2515ce56b6\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"focused\": false,\n            \"foreground_cwd\": \"/home/graham/workspace/experiments/tau\",\n            \"pane_id\": \"w63:p4\",\n            \"revision\": 0,\n            \"tab_id\": \"w63:t4\",\n            \"terminal_id\": \"term_655e4b2528dfb6b7\",\n            \"workspace_id\": \"w63\"\n          }\n        ],\n        \"type\": \"pane_list\"\n      }\n    },\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"{\\\"id\\\":\\\"cli:pane:list\\\",\\\"result\\\":{\\\"panes\\\":[{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"pane_id\\\":\\\"w63:p1\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t1\\\",\\\"terminal_id\\\":\\\"term_655e4b24ec0776b4\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"pane_id\\\":\\\"w63:p2\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b25033e66b5\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent\\\":\\\"opencode\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"label\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\\\",\\\"pane_id\\\":\\\"w63:p6\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b26422e66b9\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent\\\":\\\"codex\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"label\\\":\\\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\\\",\\\"pane_id\\\":\\\"w63:p5\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"terminal_id\\\":\\\"term_655e4b25be8326b8\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"pane_id\\\":\\\"w63:p3\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t3\\\",\\\"terminal_id\\\":\\\"term_655e4b2515ce56b6\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"focused\\\":false,\\\"foreground_cwd\\\":\\\"/home/graham/workspace/experiments/tau\\\",\\\"pane_id\\\":\\\"w63:p4\\\",\\\"revision\\\":0,\\\"tab_id\\\":\\\"w63:t4\\\",\\\"terminal_id\\\":\\\"term_655e4b2528dfb6b7\\\",\\\"workspace_id\\\":\\\"w63\\\"}],\\\"type\\\":\\\"pane_list\\\"}}\\n\"\n  },\n  \"tabs\": {\n    \"argv\": [\n      \"herdr\",\n      \"tab\",\n      \"list\",\n      \"--workspace\",\n      \"w63\"\n    ],\n    \"parsed\": {\n      \"id\": \"cli:tab:list\",\n      \"result\": {\n        \"tabs\": [\n          {\n            \"agent_status\": \"unknown\",\n            \"focused\": false,\n            \"label\": \"1\",\n            \"number\": 1,\n            \"pane_count\": 1,\n            \"tab_id\": \"w63:t1\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent_status\": \"idle\",\n            \"focused\": false,\n            \"label\": \"providers\",\n            \"number\": 2,\n            \"pane_count\": 3,\n            \"tab_id\": \"w63:t2\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"focused\": false,\n            \"label\": \"logs\",\n            \"number\": 3,\n            \"pane_count\": 1,\n            \"tab_id\": \"w63:t3\",\n            \"workspace_id\": \"w63\"\n          },\n          {\n            \"agent_status\": \"unknown\",\n            \"focused\": false,\n            \"label\": \"receipts\",\n            \"number\": 4,\n            \"pane_count\": 1,\n            \"tab_id\": \"w63:t4\",\n            \"workspace_id\": \"w63\"\n          }\n        ],\n        \"type\": \"tab_list\"\n      }\n    },\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"{\\\"id\\\":\\\"cli:tab:list\\\",\\\"result\\\":{\\\"tabs\\\":[{\\\"agent_status\\\":\\\"unknown\\\",\\\"focused\\\":false,\\\"label\\\":\\\"1\\\",\\\"number\\\":1,\\\"pane_count\\\":1,\\\"tab_id\\\":\\\"w63:t1\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent_status\\\":\\\"idle\\\",\\\"focused\\\":false,\\\"label\\\":\\\"providers\\\",\\\"number\\\":2,\\\"pane_count\\\":3,\\\"tab_id\\\":\\\"w63:t2\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"focused\\\":false,\\\"label\\\":\\\"logs\\\",\\\"number\\\":3,\\\"pane_count\\\":1,\\\"tab_id\\\":\\\"w63:t3\\\",\\\"workspace_id\\\":\\\"w63\\\"},{\\\"agent_status\\\":\\\"unknown\\\",\\\"focused\\\":false,\\\"label\\\":\\\"receipts\\\",\\\"number\\\":4,\\\"pane_count\\\":1,\\\"tab_id\\\":\\\"w63:t4\\\",\\\"workspace_id\\\":\\\"w63\\\"}],\\\"type\\\":\\\"tab_list\\\"}}\\n\"\n  },\n  \"workspace\": {\n    \"argv\": [\n      \"herdr\",\n      \"workspace\",\n      \"get\",\n      \"w63\"\n    ],\n    \"parsed\": {\n      \"id\": \"cli:workspace:get\",\n      \"result\": {\n        \"type\": \"workspace_info\",\n        \"workspace\": {\n          \"active_tab_id\": \"w63:t1\",\n          \"agent_status\": \"idle\",\n          \"focused\": false,\n          \"label\": \"rw-sanity-provider-dag-max-exhaustion-readiness\",\n          \"number\": 3,\n          \"pane_count\": 6,\n          \"tab_count\": 4,\n          \"workspace_id\": \"w63\"\n        }\n      }\n    },\n    \"returncode\": 0,\n    \"stderr\": \"\",\n    \"stdout\": \"{\\\"id\\\":\\\"cli:workspace:get\\\",\\\"result\\\":{\\\"type\\\":\\\"workspace_info\\\",\\\"workspace\\\":{\\\"active_tab_id\\\":\\\"w63:t1\\\",\\\"agent_status\\\":\\\"idle\\\",\\\"focused\\\":false,\\\"label\\\":\\\"rw-sanity-provider-dag-max-exhaustion-readiness\\\",\\\"number\\\":3,\\\"pane_count\\\":6,\\\"tab_count\\\":4,\\\"workspace_id\\\":\\\"w63\\\"}}}\\n\"\n  }\n}\n"
+    }
+  ],
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl",
+  "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/inspect.json",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "provider-native session.ready events",
+      "semantic Codex/OpenCode task completion",
+      "coder -> reviewer dependency execution",
+      "real repository mutation",
+      "remote Tailscale monitoring",
+      "GitHub ticket closure workflow"
+    ],
+    "proves": [
+      "Tau can allocate real Codex and OpenCode provider panes through Herdr",
+      "Tau can capture structured Herdr pane/process state per provider",
+      "Tau can emit tau.provider_readiness.v1 records per provider",
+      "Tau can emit tau.provider_session_state.v1 lifecycle records per provider",
+      "Tau can gate PASS on structured state instead of visible TUI prompt text",
+      "Tau captures visible TUI text only as diagnostic evidence"
+    ]
+  },
+  "provider_session_states": [
+    {
+      "auth_status": "unknown",
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "interstitial_kind": null,
+      "interstitial_present": false,
+      "observed_at": "2026-07-05T22:29:59Z",
+      "pane_id": "w63:p5",
+      "process_alive": true,
+      "provider_api_available": false,
+      "provider_event_log_path": null,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+      "ready": true,
+      "schema": "tau.provider_session_state.v1",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e4b25be8326b8",
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+      "workspace_id": "w63"
+    },
+    {
+      "auth_status": "unknown",
+      "foreground_command": "opencode",
+      "interstitial_kind": null,
+      "interstitial_present": false,
+      "observed_at": "2026-07-05T22:30:30Z",
+      "pane_id": "w63:p6",
+      "process_alive": true,
+      "provider_api_available": false,
+      "provider_event_log_path": null,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+      "ready": true,
+      "schema": "tau.provider_session_state.v1",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e4b26422e66b9",
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+      "workspace_id": "w63"
+    }
+  ],
+  "readiness_records": [
+    {
+      "diagnostics": {
+        "interstitial_visible": false,
+        "provider_initializing_visible": false,
+        "readiness_actions": [
+          "provider_initializing_visible"
+        ],
+        "visible_prompt_is_gate": false,
+        "visible_prompt_observed": true
+      },
+      "evidence": {
+        "foreground_argv": [
+          "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "foreground_cwd": "/home/graham/workspace/experiments/tau",
+        "foreground_pid": 2469515,
+        "pane_agent_status": "idle",
+        "pane_cwd": "/home/graham/workspace/experiments/tau",
+        "pane_label": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+        "process_alive": true,
+        "provider_event_log_path": null,
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+        "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.session-state.json",
+        "readiness_probe_attempt_count": 1,
+        "readiness_probe_samples": [
+          {
+            "attempt": 1,
+            "command_matches": true,
+            "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+            "pane_get_returncode": 0,
+            "process_alive": true,
+            "process_info_returncode": 0,
+            "ready": true,
+            "state": "ready"
+          }
+        ],
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt"
+      },
+      "observed_at": "2026-07-05T22:29:59Z",
+      "pane_id": "w63:p5",
+      "provider_id": "codex",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-05T22:29:59Z",
+        "pane_id": "w63:p5",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e4b25be8326b8",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/codex.visible.txt",
+        "workspace_id": "w63"
+      },
+      "ready": true,
+      "run_id": "20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+      "schema": "tau.provider_readiness.v1",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e4b25be8326b8",
+      "workspace_id": "w63"
+    },
+    {
+      "diagnostics": {
+        "interstitial_visible": false,
+        "provider_initializing_visible": false,
+        "readiness_actions": [],
+        "visible_prompt_is_gate": false,
+        "visible_prompt_observed": false
+      },
+      "evidence": {
+        "foreground_argv": [
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "foreground_command": "opencode",
+        "foreground_cwd": "/home/graham/workspace/experiments/tau",
+        "foreground_pid": 2470010,
+        "pane_agent_status": "idle",
+        "pane_cwd": "/home/graham/workspace/experiments/tau",
+        "pane_label": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+        "process_alive": true,
+        "provider_event_log_path": null,
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+        "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.session-state.json",
+        "readiness_probe_attempt_count": 1,
+        "readiness_probe_samples": [
+          {
+            "attempt": 1,
+            "command_matches": true,
+            "foreground_command": "opencode",
+            "pane_get_returncode": 0,
+            "process_alive": true,
+            "process_info_returncode": 0,
+            "ready": true,
+            "state": "ready"
+          }
+        ],
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt"
+      },
+      "observed_at": "2026-07-05T22:30:30Z",
+      "pane_id": "w63:p6",
+      "provider_id": "opencode",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "opencode",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-05T22:30:30Z",
+        "pane_id": "w63:p6",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "opencode",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e4b26422e66b9",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+        "workspace_id": "w63"
+      },
+      "ready": true,
+      "run_id": "20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+      "schema": "tau.provider_readiness.v1",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e4b26422e66b9",
+      "workspace_id": "w63"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "run_id": "20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/runtime-manifest.json",
+  "schema": "tau.provider_readiness_run_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:30:30Z",
+  "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/workstation.json"
+}

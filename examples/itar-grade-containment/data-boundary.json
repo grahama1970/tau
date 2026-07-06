@@ -1,0 +1,12 @@
+{
+  "schema": "tau.data_boundary.v1",
+  "classification": "ITAR",
+  "export_controlled": true,
+  "itar": true,
+  "technical_data": true,
+  "external_provider_allowed": false,
+  "external_research_allowed": true,
+  "public_repo_allowed": false,
+  "foreign_person_access": "prohibited",
+  "notes": ["Demo fixture only; not a compliance determination."]
+}

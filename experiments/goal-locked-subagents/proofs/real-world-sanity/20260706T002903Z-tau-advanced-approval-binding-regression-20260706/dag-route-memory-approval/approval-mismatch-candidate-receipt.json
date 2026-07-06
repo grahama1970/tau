@@ -1,0 +1,58 @@
+{
+  "accepted_candidate_count": 1,
+  "accepted_candidates": [
+    {
+      "confidence": 1.0,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "memory_sync_candidate": true,
+      "route_key": "coder:coder->reviewer:reviewer",
+      "source": "deterministic_dag_receipt_pass",
+      "source_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/dag-route-memory-approval/dag-receipt.json",
+      "source_signal_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/dag-route-memory-approval/dag-signal-receipt.json",
+      "sync_reason": "local_candidate_receipt_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    }
+  ],
+  "alerts": [],
+  "dag_id": "rw-sanity-route-memory",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-route-memory",
+  "live": true,
+  "memory_sync": false,
+  "min_confidence": 1.0,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory route learning.",
+      "Runtime route mutation.",
+      "Adaptive DAG expansion application.",
+      "Provider/model semantic quality.",
+      "Future route correctness."
+    ],
+    "proves": [
+      "DAG signal receipt was inspected deterministically.",
+      "Route reinforcement candidates were quality-gated locally.",
+      "Accepted candidates were not synced to Memory or applied to routing."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/dag-route-memory-approval/approval-mismatch-candidate-receipt.json",
+  "rejected_candidate_count": 0,
+  "rejected_candidates": [],
+  "route_mutation": false,
+  "scheduler": "bounded-ready-queue",
+  "schema": "tau.dag_route_memory_candidate_receipt.v1",
+  "source_signal_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/dag-route-memory-approval/dag-signal-receipt.json",
+  "source_signal_receipt_sha256": "sha256:f1f79001d1c265bed92dcbccf106ef6f1af6b13dc0421ca7a33f4d8d38f782b2",
+  "status": "PASS",
+  "sync_reason": "local_candidate_receipt_only",
+  "sync_status": "NOT_SYNCED",
+  "timestamp": "2026-07-06T00:29:22Z",
+  "verdict": "PASS"
+}

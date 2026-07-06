@@ -46,6 +46,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     ) or _read_optional_json(artifacts["dag_expansion_apply_short"])
     github_apply_policy = _read_optional_json(artifacts["github_apply_policy"])
     github_handoff_transport = _read_optional_json(artifacts["github_handoff_transport"])
+    research_source = _read_optional_json(artifacts["research_source"])
     lifecycle_states = _load_lifecycle_states(resolved, runtime_manifest, run_receipt)
     readiness_records = _load_readiness_records(resolved, runtime_manifest, run_receipt)
     events_path = _event_path(resolved, run_receipt, runtime_manifest)
@@ -71,6 +72,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         dag_expansion_apply=dag_expansion_apply,
         github_apply_policy=github_apply_policy,
         github_handoff_transport=github_handoff_transport,
+        research_source=research_source,
     )
     status = _overall_status(
         run_receipt,
@@ -93,6 +95,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         dag_expansion_validation,
         github_apply_policy,
         github_handoff_transport,
+        research_source,
     )
     missing = [
         name
@@ -129,6 +132,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
             dag_expansion_validation,
             github_apply_policy,
             github_handoff_transport,
+            research_source,
         ),
         "run_dir": str(resolved),
         "detected_type": detected_type,
@@ -174,6 +178,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         ),
         "github_apply_policy": _github_apply_policy_summary(github_apply_policy),
         "github_handoff_transport": _github_handoff_transport_summary(github_handoff_transport),
+        "research_source": _research_source_summary(research_source),
         "proof_scope": {
             "proves": [
                 "Tau can summarize known run artifacts from one run directory",
@@ -221,6 +226,7 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
         "dag_expansion_apply_short": run_dir / "apply-receipt.json",
         "github_apply_policy": run_dir / "github-apply-policy-receipt.json",
         "github_handoff_transport": run_dir / "github-transport-missing-policy-receipt.json",
+        "research_source": run_dir / "research-source-receipt.json",
     }
 
 
@@ -251,6 +257,7 @@ def _missing_required_artifact(
         "browser_cdp_proof",
         "github_apply_policy",
         "github_handoff_transport",
+        "research_source",
         "project_dag",
     }:
         return False
@@ -269,6 +276,7 @@ def _missing_required_artifact(
         "browser_cdp_proof",
         "github_apply_policy",
         "github_handoff_transport",
+        "research_source",
         "project_dag",
     }:
         return False
@@ -297,6 +305,7 @@ def _detected_type(
     dag_expansion_apply: dict[str, Any],
     github_apply_policy: dict[str, Any],
     github_handoff_transport: dict[str, Any],
+    research_source: dict[str, Any],
 ) -> str:
     schema = str(
         run_receipt.get("schema")
@@ -318,6 +327,7 @@ def _detected_type(
         or dag_stress_campaign.get("schema")
         or github_apply_policy.get("schema")
         or github_handoff_transport.get("schema")
+        or research_source.get("schema")
         or runtime_manifest.get("schema")
         or ""
     )
@@ -365,6 +375,8 @@ def _detected_type(
         return "github_apply_policy"
     if schema == "tau.github_handoff_transport_receipt.v1":
         return "github_handoff_transport"
+    if schema == "tau.research_source_receipt.v1":
+        return "research_source"
     if schema:
         return schema.removeprefix("tau.").removesuffix(".v1")
     return "unknown"
@@ -391,6 +403,7 @@ def _overall_status(
     dag_expansion_validation: dict[str, Any],
     github_apply_policy: dict[str, Any],
     github_handoff_transport: dict[str, Any],
+    research_source: dict[str, Any],
 ) -> str:
     for payload in (
         run_receipt,
@@ -413,6 +426,7 @@ def _overall_status(
         dag_stress_campaign,
         github_apply_policy,
         github_handoff_transport,
+        research_source,
     ):
         status = payload.get("status")
         if isinstance(status, str) and status:
@@ -656,6 +670,8 @@ def _provider_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
     attempt_records = attempts if isinstance(attempts, list) else []
     provider_sessions = payload.get("provider_sessions")
     visible_subagents = payload.get("visible_subagents")
+    alerts = payload.get("alerts")
+    alert_records = alerts if isinstance(alerts, list) else []
     return {
         "schema": payload.get("schema"),
         "status": payload.get("status"),
@@ -669,6 +685,17 @@ def _provider_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "max_attempts": payload.get("max_attempts"),
         "provider_session_count": _count(provider_sessions),
         "visible_subagent_count": _count(visible_subagents),
+        "alert_count": len(alert_records),
+        "blocking_alert_count": sum(
+            1
+            for alert in alert_records
+            if isinstance(alert, dict) and alert.get("severity") == "BLOCK"
+        ),
+        "alerts": [
+            _provider_dag_alert_summary(alert)
+            for alert in alert_records
+            if isinstance(alert, dict)
+        ],
         "visible_subagents": _role_summary_map(visible_subagents),
         "provider_sessions": _role_summary_map(provider_sessions),
         "attempts": [
@@ -835,6 +862,18 @@ def _provider_dag_attempt_summary(attempt: dict[str, Any]) -> dict[str, Any]:
             attempt.get("reviewer_receipt_path")
         ),
         "errors": attempt.get("errors"),
+    }
+
+
+def _provider_dag_alert_summary(alert: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "severity": alert.get("severity"),
+        "code": alert.get("code"),
+        "node_id": alert.get("node_id"),
+        "attempt": alert.get("attempt"),
+        "message": alert.get("message"),
+        "error_count": _count(alert.get("errors")),
+        "recommended_action": alert.get("recommended_action"),
     }
 
 
@@ -1032,6 +1071,7 @@ def _herdr_gc_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "mode": payload.get("mode"),
         "run_dir": payload.get("run_dir"),
         "herdr_bin": payload.get("herdr_bin"),
+        "herdr_surface": payload.get("herdr_surface"),
         "approval_required": payload.get("approval_required"),
         "approval_receipt": payload.get("approval_receipt"),
         "approval_receipt_sha256": payload.get("approval_receipt_sha256"),
@@ -1493,6 +1533,28 @@ def _github_handoff_transport_summary(payload: dict[str, Any]) -> dict[str, Any]
         "command_count": _count(payload.get("commands")),
         "command_result_count": len(command_result_records),
         "preflight_result_count": _count(payload.get("preflight_results")),
+        "errors": payload.get("errors"),
+    }
+
+
+def _research_source_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("schema") != "tau.research_source_receipt.v1":
+        return None
+    return {
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+        "source_packet": payload.get("source_packet"),
+        "source_packet_sha256": payload.get("source_packet_sha256"),
+        "source_type": payload.get("source_type"),
+        "method": payload.get("method"),
+        "classification": payload.get("classification"),
+        "source_count": payload.get("source_count"),
+        "arxiv_source_count": payload.get("arxiv_source_count"),
+        "review_required": payload.get("review_required"),
         "errors": payload.get("errors"),
     }
 

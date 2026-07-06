@@ -1,0 +1,33 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w6Y",
+  "pane_id": "w6Y:p6",
+  "terminal_id": "term_655e6218871cf7b8",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "cfff8a0908b6d0916603190188da90052973410a4b2b08f276d6f80eaedc8c24",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read target_file (scratch-worktree/message.txt)",
+    "read coder_receipt (receipts/attempt-02-coder.json)",
+    "read coder work order (work-orders/attempt-02-coder.json)",
+    "read previous reviewer receipt (receipts/attempt-01-reviewer.json)",
+    "read codex visible log (logs/codex.visible.txt)",
+    "sha256sum on opencode visible_log_path"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "REVISE (force_revise=true): target_file progressed from TODO to completion notice but still lacks substantive content. The coder followed its work order spec (replace TODO with short completion message), but the previous reviewer feedback asked for substantive output rather than a status note — a spec-level mismatch. The codex visible log captures only the CLI startup banner, not the coder's stdout/stderr, so provider-level log capture remains unresolved. The coder receipt commands_run field is still vague ('python deterministic visible coder'). Since max_attempts=2 is exhausted, this node cannot be retried; escalation or spec reconciliation required.",
+  "errors": [],
+  "policy_exceptions": []
+}

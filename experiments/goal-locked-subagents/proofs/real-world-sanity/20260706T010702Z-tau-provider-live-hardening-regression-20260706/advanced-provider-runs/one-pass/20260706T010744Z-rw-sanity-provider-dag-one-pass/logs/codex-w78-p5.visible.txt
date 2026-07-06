@@ -1,0 +1,22 @@
+
+• Ran uv run python - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +22 lines
+  └ receipt field check PASS
+
+───────────────────────────────────────────────────────────
+
+• Evidence with counts/results: JSON parsed successfully
+  once, receipt field check printed receipt field check
+  PASS, and the fresh visible-log SHA still matches the
+  receipt value. I’m adding those validation commands to
+  the receipt’s command list, then I’ll run the same checks
+  one last time as the stop condition.
+
+• Working (1m 41s • esc to interrupt)
+
+
+› Write tests for @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

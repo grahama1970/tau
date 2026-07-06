@@ -1,0 +1,4 @@
+{"argv":["workspace","list"]}
+{"argv":["workspace","list"]}
+{"argv":["workspace","close","w-rw-sanity-gc-stale"]}
+{"argv":["workspace","get","w-rw-sanity-gc-stale"]}

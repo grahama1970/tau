@@ -1,0 +1,115 @@
+{
+  "alerts": [
+    {
+      "code": "missing_session_ownership",
+      "evidence": {
+        "required_next": "record tau.herdr_session_ownership.v1 before session cleanup apply",
+        "sessions": [
+          "session-rw-sanity-codex"
+        ]
+      },
+      "message": "Apply cleanup requires explicit Herdr session ownership before stopping sessions.",
+      "severity": "BLOCK"
+    }
+  ],
+  "applied_actions": [],
+  "candidate_count": 2,
+  "candidates": [
+    {
+      "action": "session_stop",
+      "reason": "run-owned session recorded in runtime manifest",
+      "roles": [
+        "codex"
+      ],
+      "session": "session-rw-sanity-codex"
+    },
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w-rw-sanity-session-cleanup:p5"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex"
+      ],
+      "workspace_id": "w-rw-sanity-session-cleanup"
+    }
+  ],
+  "command_results": [],
+  "current_workspace": "w11",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+      "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
+      "Tau apply cleanup requires explicit session ownership before stopping recorded sessions"
+    ]
+  },
+  "resource_count": 2,
+  "resources": [
+    {
+      "kind": "session",
+      "roles": [
+        "codex"
+      ],
+      "session": "session-rw-sanity-codex",
+      "sources": [
+        "provider_sessions"
+      ]
+    },
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w-rw-sanity-session-cleanup:p5"
+      ],
+      "roles": [
+        "codex"
+      ],
+      "sources": [
+        "provider_sessions"
+      ],
+      "terminal_ids": [
+        "term-codex"
+      ],
+      "workspace_id": "w-rw-sanity-session-cleanup"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/runtime-manifest.json",
+  "runtime_manifest_sha256": "ebfeff33a864c0c1512b65e57e0c1f574c52de7d725fa2310547e77f3ff87294",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "session_ownership": null,
+  "session_ownership_payload": null,
+  "session_ownership_sha256": null,
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:19:34Z",
+  "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/herdr-workspace-lease.json",
+  "workspace_lease_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-05T22:19:19Z",
+    "dag_id": "rw-sanity-herdr-cleanup-session",
+    "expires_at": "2026-07-06T22:19:19Z",
+    "owner": "tau-real-world-sanity",
+    "run_id": "rw-sanity-herdr-cleanup-session",
+    "schema": "tau.herdr_workspace_lease.v1",
+    "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/runtime-manifest.json",
+    "workspace_ids": [
+      "w-rw-sanity-session-cleanup"
+    ]
+  },
+  "workspace_lease_sha256": "a53955d840478f469c9790ea063fc0fb1a7e550b1e989129ab66ced5499e5f11"
+}

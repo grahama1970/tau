@@ -1,0 +1,21 @@
+raham/workspace/experiments/tau/experiments/goal-locked-sub
+agents/proofs/real-world-sanity/20260706T010702Z-tau-provid
+er-live-hardening-regression-20260706/advanced-provider-run
+s/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-ma
+x-exhaustion\ndag_spec: /home/graham/workspace/experiments/
+tau/experiments/goal-locked-subagents/proofs/real-world-san
+ity/20260706T010702Z-tau-provider-live-hardening-regression
+-20260706/advanced-provider-runs/max-exhaustion/20260706T01
+1709Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\n
+planner_receipt: /home/graham/workspace/experiments/tau/exp
+eriments/goal-locked-subagents/proofs/real-world-sanity/202
+60706T010702Z-tau-provider-live-hardening-regression-202607
+06/advanced-provider-runs/max-exhaustion/20260706T011709Z-r
+w-sanity-provider-dag-max-exhaustion/planner-receipt.json\n
+final_receipt: /home/graham/workspace/experiments/tau/exper
+iments/goal-locked-subagents/proofs/real-world-sanity/20260
+706T010702Z-tau-provider-live-hardening-regression-20260706
+/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-
+sanity-provider-dag-max-exhaustion/run-receipt.json\ncanoni
+cal truth: Tau JSON receipts; this pane is human-visible te
+lemetry.\n

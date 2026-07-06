@@ -1,0 +1,13 @@
+{
+  "cleanup_policy": "apply",
+  "created_at": "2026-07-05T22:53:21Z",
+  "dag_id": "rw-sanity-provider-dag-invalid-model",
+  "expires_at": "2026-07-06T22:53:21Z",
+  "owner": "tau-orchestrator",
+  "run_id": "20260705T225220Z-rw-sanity-provider-dag-invalid-model",
+  "schema": "tau.herdr_workspace_lease.v1",
+  "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T225220Z-tau-provider-herdr-surface-summary-v2-20260705/advanced-provider-runs/invalid-model/20260705T225220Z-rw-sanity-provider-dag-invalid-model/runtime-manifest.json",
+  "workspace_ids": [
+    "w68"
+  ]
+}

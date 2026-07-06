@@ -1,0 +1,42 @@
+{
+  "context": {
+    "artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/dag-contract.json"
+    ],
+    "summary": "Dispatch DAG contract rw-sanity-project-dag-memory-evidence-valid."
+  },
+  "github": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-valid"
+  },
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+    "goal_id": "rw-sanity-project-dag-memory-evidence-valid",
+    "goal_version": 1
+  },
+  "next_agent": {
+    "executor": "local",
+    "name": "coder",
+    "reason": "Entry node for DAG rw-sanity-project-dag-memory-evidence-valid using role coder."
+  },
+  "previous_subagent": "human",
+  "rationale": "The DAG contract is the authoritative workflow and immutable goal boundary.",
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "result": {
+    "evidence": [
+      {
+        "kind": "dag_contract",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/dag-contract.json",
+        "schema": "tau.dag_contract.v1",
+        "sha256": "sha256:cfc642ce8bf309efee98a5eebd3b12ba4b282a0fc5a1eda4cb8e9f0dab16a851"
+      }
+    ],
+    "status": "DAG_DISPATCH_REQUESTED",
+    "summary": "Tau is dispatching entry node coder."
+  },
+  "schema": "tau.agent_handoff.v1",
+  "stop_condition": "Stop at a terminal DAG node or any fail-closed invariant violation."
+}

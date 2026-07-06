@@ -1,0 +1,82 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "live": true,
+        "memory_sync": false,
+        "mocked": false,
+        "ok": true,
+        "provided_lock_count": 2,
+        "provider_live": false,
+        "required_lock_count": 2,
+        "schema": "tau.dag_branch_lock_validation_receipt.v1",
+        "status": "PASS",
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/logs/advanced.dag_branch_locks_validate_pass.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/logs/advanced.dag_branch_locks_validate_pass.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.dag_branch_locks_validate_pass",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-branch-locks-validate",
+    "--dag-contract",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/dag-branch-locks/dag-contract.json",
+    "--locks",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/dag-branch-locks/branch-locks.valid.json",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/dag-branch-locks/branch-lock-validation.valid.receipt.json"
+  ],
+  "completed_at": "2026-07-05T22:18:29Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/dag-branch-locks/branch-lock-validation.valid.receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau validates provider and mutating DAG branch locks with approval packet hash binding before side-effecting branches are schedulable.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "errors": [],
+    "live": true,
+    "memory_sync": false,
+    "mocked": false,
+    "ok": true,
+    "provided_lock_count": 2,
+    "provider_live": false,
+    "required_lock_count": 2,
+    "schema": "tau.dag_branch_lock_validation_receipt.v1",
+    "status": "PASS",
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:18:29Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/logs/advanced.dag_branch_locks_validate_pass.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221829Z-tau-branch-lock-sanity-20260705/logs/advanced.dag_branch_locks_validate_pass.stdout.txt",
+  "timeout_seconds": 60
+}

@@ -1,0 +1,22 @@
+        rw-sanity-provider-dag-one-pass-readiness/logs/code
+        x.visible.txt",
+    27 +    "sed -n '1,80p' message.txt",
+    28 +    "jq -e '.schema == \"tau.provider_dag_node_rece
+        ipt.v1\" and .status == \"PASS\" and .verdict == \"
+        PASS\" and .work_order_sha256 == \"813d18f65693f39a
+        68147a495aab91bedab43bb317ee24f7a9703015254cdf41\"'
+         receipts/attempt-01-coder.json",
+    29 +    "sha256sum provider-readiness/20260706T000333Z-
+        rw-sanity-provider-dag-one-pass-readiness/logs/code
+        x.visible.txt receipts/attempt-01-coder.json scratc
+        h-worktree/message.txt",
+    30 +    "find scratch-worktree receipts -maxdepth 2 -ty
+        pe f -print"
+    31    ],
+
+• Working (1m 23s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

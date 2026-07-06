@@ -1,0 +1,32 @@
+{
+  "alert_codes": [],
+  "alert_count": 0,
+  "alerts": [],
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "payload_schema": "tau.evidence_case.v1",
+  "proof_scope": {
+    "does_not_prove": [
+      "Evidence-case semantic completeness.",
+      "Memory truth.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected a separate evidence case before DAG dispatch.",
+      "Evidence case goal, target, and policy/boundary references were checked."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/evidence-case-gate-receipt.json",
+  "schema": "tau.evidence_case_gate_receipt.v1",
+  "source_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/evidence-case.json",
+  "source_sha256": "sha256:08ae5bbcdbccedfd096695bab15f612b033b458b462294ae904581109bf67a15",
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-valid"
+  },
+  "timestamp": "2026-07-06T00:01:48Z"
+}

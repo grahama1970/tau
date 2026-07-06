@@ -1,0 +1,21 @@
+bagents/proofs/real-world-sanity/20260706T010702Z-tau-provi
+der-live-hardening-regression-20260706/advanced-generic-pro
+vider-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-
+generic-provider-dag-adapter\ndag_spec: /home/graham/worksp
+ace/experiments/tau/experiments/goal-locked-subagents/proof
+s/real-world-sanity/20260706T010702Z-tau-provider-live-hard
+ening-regression-20260706/advanced-generic-provider-dag-ada
+pter/provider-runs/20260706T011244Z-rw-sanity-generic-provi
+der-dag-adapter/dag-spec.json\nplanner_receipt: /home/graha
+m/workspace/experiments/tau/experiments/goal-locked-subagen
+ts/proofs/real-world-sanity/20260706T010702Z-tau-provider-l
+ive-hardening-regression-20260706/advanced-generic-provider
+-dag-adapter/provider-runs/20260706T011244Z-rw-sanity-gener
+ic-provider-dag-adapter/planner-receipt.json\nfinal_receipt
+: /home/graham/workspace/experiments/tau/experiments/goal-l
+ocked-subagents/proofs/real-world-sanity/20260706T010702Z-t
+au-provider-live-hardening-regression-20260706/advanced-gen
+eric-provider-dag-adapter/provider-runs/20260706T011244Z-rw
+-sanity-generic-provider-dag-adapter/run-receipt.json\ncano
+nical truth: Tau JSON receipts; this pane is human-visible
+telemetry.\n

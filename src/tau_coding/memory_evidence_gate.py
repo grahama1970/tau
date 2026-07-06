@@ -1,20 +1,262 @@
-"""Memory intent and evidence-case gate for zero-trust DAG dispatch."""
+"""Memory intent and evidence-case pre-dispatch gates for Tau DAGs."""
 
 from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 MEMORY_INTENT_GATE_RECEIPT_SCHEMA = "tau.memory_intent_gate_receipt.v1"
 EVIDENCE_CASE_GATE_RECEIPT_SCHEMA = "tau.evidence_case_gate_receipt.v1"
 
-INTENT_SCHEMA = "memory.intent.v1"
-EVIDENCE_CASE_SCHEMA = "memory.evidence_case.v1"
-BLOCKING_ROUTES = {"CLARIFY", "DEFLECT"}
+
+def write_memory_intent_gate_receipt(
+    *,
+    memory_intent: Mapping[str, Any] | None,
+    memory_intent_path: Path | None = None,
+    dag_contract: Mapping[str, Any] | None = None,
+    receipt_path: Path,
+) -> dict[str, Any]:
+    """Validate that Memory intent can be used as a Tau dispatch input."""
+
+    alerts: list[dict[str, Any]] = []
+    goal_hash = _goal_hash(dag_contract)
+    target = _target(dag_contract)
+
+    if memory_intent is None:
+        alerts.append(_alert("missing_memory_intent", "DAG requires memory_intent."))
+    else:
+        schema = memory_intent.get("schema")
+        if not isinstance(schema, str) or not schema.startswith("memory."):
+            alerts.append(
+                _alert(
+                    "invalid_memory_intent_schema",
+                    "memory_intent.schema must be a memory.* schema.",
+                    {"observed_schema": schema},
+                )
+            )
+        if memory_intent.get("memory_first") is not True:
+            alerts.append(
+                _alert(
+                    "memory_first_required",
+                    "memory_intent.memory_first must be true before DAG dispatch.",
+                )
+            )
+        route = _route(memory_intent)
+        if not route:
+            alerts.append(
+                _alert(
+                    "missing_memory_route",
+                    "memory_intent must declare route, action, or intent.",
+                )
+            )
+        elif route in {"CLARIFY", "DEFLECT", "NO_MATCH"}:
+            alerts.append(
+                _alert(
+                    "memory_route_not_dispatchable",
+                    "Memory route requires clarification or deflection before DAG dispatch.",
+                    {"route": route},
+                )
+            )
+        confidence = memory_intent.get("confidence")
+        if confidence is not None and not _confidence_ok(confidence):
+            alerts.append(
+                _alert(
+                    "memory_intent_low_confidence",
+                    "memory_intent.confidence is below the dispatch threshold.",
+                    {"confidence": confidence, "minimum": 0.5},
+                )
+            )
+        observed_goal_hash = memory_intent.get("goal_hash")
+        if goal_hash and observed_goal_hash is not None and observed_goal_hash != goal_hash:
+            alerts.append(
+                _alert(
+                    "memory_intent_goal_hash_mismatch",
+                    "memory_intent.goal_hash does not match DAG goal hash.",
+                    {"expected_goal_hash": goal_hash, "observed_goal_hash": observed_goal_hash},
+                )
+            )
+        observed_target = memory_intent.get("target")
+        if target and isinstance(observed_target, Mapping) and dict(observed_target) != target:
+            alerts.append(
+                _alert(
+                    "memory_intent_target_mismatch",
+                    "memory_intent.target does not match DAG target.",
+                    {"expected_target": target, "observed_target": dict(observed_target)},
+                )
+            )
+        evidence = memory_intent.get("evidence")
+        if isinstance(evidence, list) and evidence:
+            alerts.append(
+                _alert(
+                    "inline_memory_evidence_rejected",
+                    "Memory intent must route; evidence belongs in a separate evidence_case.",
+                    {"inline_evidence_count": len(evidence)},
+                )
+            )
+
+    return _write_receipt(
+        schema=MEMORY_INTENT_GATE_RECEIPT_SCHEMA,
+        receipt_path=receipt_path,
+        source_path=memory_intent_path,
+        payload=memory_intent,
+        goal_hash=goal_hash,
+        target=target,
+        alerts=alerts,
+        proves=[
+            "Tau inspected a Memory intent product before DAG dispatch.",
+            "Memory intent was treated as a routing/admissibility input, not inline evidence.",
+        ],
+        does_not_prove=[
+            "Memory truth.",
+            "Evidence-case artifact correctness.",
+            "Provider/model semantic quality.",
+        ],
+    )
+
+
+def write_evidence_case_gate_receipt(
+    *,
+    evidence_case: Mapping[str, Any] | None,
+    evidence_case_path: Path | None = None,
+    dag_contract: Mapping[str, Any] | None = None,
+    memory_intent_receipt: Mapping[str, Any] | None = None,
+    receipt_path: Path,
+) -> dict[str, Any]:
+    """Validate that a separate evidence case backs a dispatchable Memory route."""
+
+    alerts: list[dict[str, Any]] = []
+    goal_hash = _goal_hash(dag_contract)
+    target = _target(dag_contract)
+
+    if evidence_case is None:
+        alerts.append(_alert("missing_evidence_case", "DAG requires evidence_case."))
+    else:
+        schema = evidence_case.get("schema")
+        if not isinstance(schema, str) or "evidence" not in schema:
+            alerts.append(
+                _alert(
+                    "invalid_evidence_case_schema",
+                    "evidence_case.schema must be an evidence-case schema.",
+                    {"observed_schema": schema},
+                )
+            )
+        case_hash = _string(evidence_case.get("case_sha256")) or _string(
+            evidence_case.get("sha256")
+        )
+        if not _valid_sha256(case_hash):
+            alerts.append(
+                _alert(
+                    "missing_evidence_case_hash",
+                    "evidence_case must include case_sha256 or sha256.",
+                )
+            )
+        observed_goal_hash = evidence_case.get("goal_hash")
+        if goal_hash and observed_goal_hash is not None and observed_goal_hash != goal_hash:
+            alerts.append(
+                _alert(
+                    "evidence_case_goal_hash_mismatch",
+                    "evidence_case.goal_hash does not match DAG goal hash.",
+                    {"expected_goal_hash": goal_hash, "observed_goal_hash": observed_goal_hash},
+                )
+            )
+        observed_target = evidence_case.get("target")
+        if target and isinstance(observed_target, Mapping) and dict(observed_target) != target:
+            alerts.append(
+                _alert(
+                    "evidence_case_target_mismatch",
+                    "evidence_case.target does not match DAG target.",
+                    {"expected_target": target, "observed_target": dict(observed_target)},
+                )
+            )
+        boundary_hash = _string(evidence_case.get("data_boundary_sha256"))
+        policy_hash = _string(evidence_case.get("policy_profile_sha256"))
+        if (
+            dag_contract
+            and dag_contract.get("data_boundary") is not None
+            and not boundary_hash
+            and evidence_case.get("data_boundary") is None
+        ):
+            alerts.append(
+                _alert(
+                    "missing_evidence_case_data_boundary_hash",
+                    "evidence_case must cite data_boundary_sha256 when DAG has a data_boundary.",
+                )
+            )
+        if (
+            dag_contract
+            and dag_contract.get("policy_profile") is not None
+            and not policy_hash
+            and evidence_case.get("policy_profile") is None
+        ):
+            alerts.append(
+                _alert(
+                    "missing_evidence_case_policy_hash",
+                    "evidence_case must cite policy_profile_sha256 when DAG has a policy_profile.",
+                )
+            )
+        support = evidence_case.get("support_artifacts")
+        if support is not None and not isinstance(support, list):
+            alerts.append(
+                _alert(
+                    "invalid_evidence_case_support_artifacts",
+                    "evidence_case.support_artifacts must be a list when present.",
+                )
+            )
+
+    memory_ok = (
+        isinstance(memory_intent_receipt, Mapping)
+        and memory_intent_receipt.get("ok") is True
+    )
+    if memory_intent_receipt is not None and not memory_ok:
+        alerts.append(
+            _alert(
+                "memory_intent_gate_not_passed",
+                "Evidence case cannot pass until memory_intent gate passes.",
+                {"memory_intent_status": memory_intent_receipt.get("status")},
+            )
+        )
+
+    return _write_receipt(
+        schema=EVIDENCE_CASE_GATE_RECEIPT_SCHEMA,
+        receipt_path=receipt_path,
+        source_path=evidence_case_path,
+        payload=evidence_case,
+        goal_hash=goal_hash,
+        target=target,
+        alerts=alerts,
+        proves=[
+            "Tau inspected a separate evidence case before DAG dispatch.",
+            "Evidence case goal, target, and policy/boundary references were checked.",
+        ],
+        does_not_prove=[
+            "Evidence-case semantic completeness.",
+            "Memory truth.",
+            "Provider/model semantic quality.",
+        ],
+    )
+
+
+def read_gate_payload(
+    value: str | Mapping[str, Any] | None,
+    *,
+    contract_path: Path,
+    label: str,
+) -> tuple[dict[str, Any] | None, Path | None, list[dict[str, Any]]]:
+    if value is None:
+        return None, None, []
+    if isinstance(value, Mapping):
+        return dict(value), None, []
+    path = Path(value)
+    if not path.is_absolute():
+        path = contract_path.parent / path
+    resolved = path.expanduser().resolve()
+    try:
+        return _read_json_object(resolved, label=label), resolved, []
+    except RuntimeError as exc:
+        return None, resolved, [_alert(f"{label}_unreadable", str(exc))]
 
 
 def evaluate_memory_evidence_gate(
@@ -26,31 +268,36 @@ def evaluate_memory_evidence_gate(
     memory_intent_path: Path | None = None,
     evidence_case_path: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Return memory-intent and evidence-case gate receipts."""
+    """Evaluate Memory intent and evidence-case inputs without writing files.
+
+    This compatibility API backs the local HTTP route and older tests. DAG dispatch uses
+    the split file-backed receipt functions above.
+    """
 
     memory_policy = policy_profile.get("memory") if isinstance(policy_profile, Mapping) else {}
     if not isinstance(memory_policy, Mapping):
         memory_policy = {}
-
     intent_required = memory_policy.get("intent_required") is True
     min_confidence = _float_value(memory_policy.get("min_intent_confidence"), default=0.0)
     clarify_blocks = memory_policy.get("clarify_blocks_dispatch", True) is not False
     deflect_blocks = memory_policy.get("deflect_blocks_dispatch", True) is not False
-    evidence_required_routes = _string_set(memory_policy.get("evidence_case_required_for"))
+    required_routes = _string_set(memory_policy.get("evidence_case_required_for"))
 
-    intent_alerts: list[dict[str, Any]] = []
-    route = _route(memory_intent)
-    evidence_case_required = _evidence_case_required(
-        memory_intent=memory_intent,
-        route=route,
-        required_routes=evidence_required_routes,
+    route = _route(memory_intent) if isinstance(memory_intent, Mapping) else None
+    evidence_case_required = (
+        isinstance(memory_intent, Mapping)
+        and (
+            memory_intent.get("evidence_case_required") is True
+            or (route is not None and route in required_routes)
+        )
     )
 
+    intent_alerts: list[dict[str, Any]] = []
     if intent_required and memory_intent is None:
         intent_alerts.append(_alert("missing_memory_intent", "Memory intent is required."))
-    elif memory_intent is not None:
+    elif isinstance(memory_intent, Mapping):
         intent_alerts.extend(
-            _validate_intent(
+            _compat_intent_alerts(
                 memory_intent,
                 route=route,
                 min_confidence=min_confidence,
@@ -59,7 +306,7 @@ def evaluate_memory_evidence_gate(
             )
         )
 
-    evidence_receipt = _evidence_case_receipt(
+    evidence_receipt = _compat_evidence_case_receipt(
         evidence_case=evidence_case,
         evidence_case_path=evidence_case_path,
         data_boundary=data_boundary,
@@ -71,7 +318,7 @@ def evaluate_memory_evidence_gate(
             _alert(
                 "missing_evidence_case",
                 "Intent requires a separate evidence case before dispatch.",
-                errors=evidence_receipt.get("alert_codes", []),
+                {"errors": evidence_receipt.get("alert_codes", [])},
             )
         )
 
@@ -123,58 +370,27 @@ def evaluate_memory_evidence_gate(
     return intent_receipt, evidence_receipt
 
 
-def load_memory_gate_object(
-    value: str | dict[str, Any] | None,
-    *,
-    contract_path: Path,
-    field_name: str,
-) -> tuple[dict[str, Any] | None, Path | None, list[dict[str, Any]]]:
-    """Resolve an inline memory-gate object or a contract-relative JSON path."""
-
-    if value is None:
-        return None, None, []
-    if isinstance(value, dict):
-        return value, None, []
-    path = Path(value)
-    if not path.is_absolute():
-        path = contract_path.parent / path
-    try:
-        payload = _read_json_object(path.expanduser().resolve())
-    except RuntimeError as exc:
-        return (
-            None,
-            path,
-            [
-                _alert(
-                    f"invalid_{field_name}",
-                    f"{field_name} could not be read.",
-                    errors=[str(exc)],
-                )
-            ],
-        )
-    return payload, path.expanduser().resolve(), []
-
-
 def write_memory_evidence_gate_receipts(
     *,
     receipt_dir: Path,
     intent_receipt: dict[str, Any],
     evidence_receipt: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Write gate receipts and return copies with receipt paths."""
+    """Write compatibility gate receipts and return copies with receipt paths."""
 
-    receipt_dir.mkdir(parents=True, exist_ok=True)
-    intent_path = receipt_dir / "memory-intent-gate-receipt.json"
-    evidence_path = receipt_dir / "evidence-case-gate-receipt.json"
+    resolved_dir = receipt_dir.expanduser().resolve()
+    resolved_dir.mkdir(parents=True, exist_ok=True)
+    intent_path = resolved_dir / "memory-intent-gate-receipt.json"
+    evidence_path = resolved_dir / "evidence-case-gate-receipt.json"
     intent_payload = {**intent_receipt, "receipt_path": str(intent_path)}
     evidence_payload = {**evidence_receipt, "receipt_path": str(evidence_path)}
     intent_payload["evidence_case_receipt"] = str(evidence_path)
-    _write_json(intent_path, intent_payload)
-    _write_json(evidence_path, evidence_payload)
+    intent_path.write_text(json.dumps(intent_payload, indent=2, sort_keys=True) + "\n")
+    evidence_path.write_text(json.dumps(evidence_payload, indent=2, sort_keys=True) + "\n")
     return intent_payload, evidence_payload
 
 
-def _validate_intent(
+def _compat_intent_alerts(
     payload: Mapping[str, Any],
     *,
     route: str | None,
@@ -183,7 +399,7 @@ def _validate_intent(
     deflect_blocks: bool,
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
-    if payload.get("schema") != INTENT_SCHEMA:
+    if payload.get("schema") != "memory.intent.v1":
         alerts.append(_alert("invalid_memory_intent_schema", "Memory intent schema is invalid."))
     if payload.get("memory_first") is not True:
         alerts.append(_alert("memory_first_not_true", "Memory intent must set memory_first true."))
@@ -201,7 +417,7 @@ def _validate_intent(
             _alert(
                 "intent_confidence_too_low",
                 "Memory intent confidence is below policy threshold.",
-                errors=[f"{confidence} < {min_confidence}"],
+                {"errors": [f"{confidence} < {min_confidence}"]},
             )
         )
     if "evidence" in payload or "evidence_case" in payload:
@@ -214,7 +430,7 @@ def _validate_intent(
     return alerts
 
 
-def _evidence_case_receipt(
+def _compat_evidence_case_receipt(
     *,
     evidence_case: Mapping[str, Any] | None,
     evidence_case_path: Path | None,
@@ -225,28 +441,29 @@ def _evidence_case_receipt(
     alerts: list[dict[str, Any]] = []
     if evidence_case_required and evidence_case is None:
         alerts.append(_alert("missing_evidence_case", "Evidence case is required."))
-    elif evidence_case is not None:
-        if evidence_case.get("schema") != EVIDENCE_CASE_SCHEMA:
-            alerts.append(
-                _alert("invalid_evidence_case_schema", "Evidence case schema is invalid.")
-            )
+    elif isinstance(evidence_case, Mapping):
+        if evidence_case.get("schema") != "memory.evidence_case.v1":
+            alerts.append(_alert("invalid_evidence_case_schema", "Evidence case schema is invalid."))
         if not evidence_case.get("sha256"):
             alerts.append(_alert("evidence_case_hash_missing", "Evidence case hash is missing."))
-        if _boundary_key(evidence_case.get("data_boundary")) != _boundary_key(data_boundary):
+        if _compat_boundary_key(evidence_case.get("data_boundary")) != _compat_boundary_key(
+            data_boundary
+        ):
             alerts.append(
                 _alert(
                     "evidence_case_boundary_mismatch",
                     "Evidence case data boundary does not match DAG data boundary.",
                 )
             )
-        if _policy_key(evidence_case.get("policy_profile")) != _policy_key(policy_profile):
+        if _compat_policy_key(evidence_case.get("policy_profile")) != _compat_policy_key(
+            policy_profile
+        ):
             alerts.append(
                 _alert(
                     "evidence_case_policy_mismatch",
                     "Evidence case policy profile does not match DAG policy profile.",
                 )
             )
-
     ok = not alerts
     return {
         "schema": EVIDENCE_CASE_GATE_RECEIPT_SCHEMA,
@@ -264,70 +481,12 @@ def _evidence_case_receipt(
         "question": (
             evidence_case.get("question") if isinstance(evidence_case, Mapping) else None
         ),
-        "data_boundary": _boundary_key(data_boundary),
-        "policy_profile": _policy_key(policy_profile),
+        "data_boundary": _compat_boundary_key(data_boundary),
+        "policy_profile": _compat_policy_key(policy_profile),
         "allowed_to_dispatch": ok,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
     }
-
-
-def _evidence_case_required(
-    *,
-    memory_intent: Mapping[str, Any] | None,
-    route: str | None,
-    required_routes: set[str],
-) -> bool:
-    if isinstance(memory_intent, Mapping) and memory_intent.get("evidence_case_required") is True:
-        return True
-    return route in required_routes
-
-
-def _boundary_key(value: object) -> object:
-    if not isinstance(value, Mapping):
-        return value
-    return {
-        "schema": value.get("schema"),
-        "classification": value.get("classification"),
-        "export_controlled": value.get("export_controlled"),
-        "itar": value.get("itar"),
-        "technical_data": value.get("technical_data"),
-    }
-
-
-def _policy_key(value: object) -> object:
-    if not isinstance(value, Mapping):
-        return value
-    return {
-        "schema": value.get("schema"),
-        "profile_id": value.get("profile_id"),
-        "default_decision": value.get("default_decision"),
-    }
-
-
-def _source_payload(payload: Mapping[str, Any] | None, *, path: Path | None) -> dict[str, Any]:
-    return {
-        "present": payload is not None,
-        "path": str(path) if path else None,
-        "sha256": f"sha256:{_sha256(path)}" if path else None,
-    }
-
-
-def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:
-    payload: dict[str, Any] = {
-        "severity": "BLOCK",
-        "code": code,
-        "message": message,
-    }
-    if errors:
-        payload["errors"] = errors
-    return payload
-
-
-def _route(payload: Mapping[str, Any] | None) -> str | None:
-    if not isinstance(payload, Mapping) or not isinstance(payload.get("route"), str):
-        return None
-    return str(payload["route"]).upper()
 
 
 def _float_value(value: object, *, default: float | None) -> float | None:
@@ -339,40 +498,169 @@ def _float_value(value: object, *, default: float | None) -> float | None:
 
 
 def _string_set(value: object) -> set[str]:
-    if not isinstance(value, list):
-        return set()
-    return {str(item).upper() for item in value if isinstance(item, str) and item}
+    if isinstance(value, list):
+        return {item.strip().upper() for item in value if isinstance(item, str) and item.strip()}
+    return set()
 
 
 def _list_value(payload: Mapping[str, Any] | None, key: str) -> list[Any]:
-    if not isinstance(payload, Mapping) or not isinstance(payload.get(key), list):
-        return []
-    value = payload[key]
-    assert isinstance(value, list)
-    return value
+    if isinstance(payload, Mapping) and isinstance(payload.get(key), list):
+        return list(payload[key])
+    return []
 
 
-def _read_json_object(path: Path) -> dict[str, Any]:
+def _source_payload(payload: Mapping[str, Any] | None, *, path: Path | None) -> dict[str, Any]:
+    return {
+        "path": str(path) if path else None,
+        "sha256": f"sha256:{_sha256(path)}" if path else None,
+        "inline": dict(payload) if path is None and isinstance(payload, Mapping) else None,
+    }
+
+
+def _compat_boundary_key(value: object) -> dict[str, Any] | None:
+    if not isinstance(value, Mapping):
+        return None
+    return {
+        "schema": value.get("schema"),
+        "classification": value.get("classification"),
+        "export_controlled": value.get("export_controlled"),
+        "itar": value.get("itar"),
+        "technical_data": value.get("technical_data"),
+    }
+
+
+def _compat_policy_key(value: object) -> dict[str, Any] | None:
+    if not isinstance(value, Mapping):
+        return None
+    return {
+        "schema": value.get("schema"),
+        "profile_id": value.get("profile_id"),
+        "default_decision": value.get("default_decision"),
+    }
+
+
+def _write_receipt(
+    *,
+    schema: str,
+    receipt_path: Path,
+    source_path: Path | None,
+    payload: Mapping[str, Any] | None,
+    goal_hash: str | None,
+    target: dict[str, Any] | None,
+    alerts: list[dict[str, Any]],
+    proves: list[str],
+    does_not_prove: list[str],
+) -> dict[str, Any]:
+    ok = not alerts
+    resolved_receipt = receipt_path.expanduser().resolve()
+    receipt = {
+        "schema": schema,
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "source_path": str(source_path) if source_path else None,
+        "source_sha256": f"sha256:{_sha256(source_path)}" if source_path else None,
+        "goal_hash": goal_hash,
+        "target": target,
+        "alert_count": len(alerts),
+        "alert_codes": [alert["code"] for alert in alerts],
+        "alerts": alerts,
+        "receipt_path": str(resolved_receipt),
+        "proof_scope": {
+            "proves": proves,
+            "does_not_prove": does_not_prove,
+        },
+        "timestamp": _utc_stamp(),
+    }
+    if payload is not None:
+        receipt["payload_schema"] = payload.get("schema")
+    resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
+    resolved_receipt.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return receipt
+
+
+def _alert(code: str, message: str, evidence: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {
+        "severity": "BLOCK",
+        "code": code,
+        "message": message,
+        "evidence": evidence or {},
+    }
+
+
+def _goal_hash(dag_contract: Mapping[str, Any] | None) -> str | None:
+    if not isinstance(dag_contract, Mapping):
+        return None
+    goal = dag_contract.get("goal")
+    if isinstance(goal, Mapping):
+        return _string(goal.get("goal_hash"))
+    return None
+
+
+def _target(dag_contract: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(dag_contract, Mapping):
+        return None
+    target = dag_contract.get("target")
+    if isinstance(target, Mapping):
+        return dict(target)
+    return None
+
+
+def _route(payload: Mapping[str, Any]) -> str | None:
+    for key in ("route", "action", "intent"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip().upper()
+    return None
+
+
+def _confidence_ok(value: object) -> bool:
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, (int, float)):
+        return float(value) >= 0.5
+    return False
+
+
+def _string(value: object) -> str | None:
+    if isinstance(value, str) and value:
+        return value
+    return None
+
+
+def _valid_sha256(value: str | None) -> bool:
+    if not value:
+        return False
+    raw = value.removeprefix("sha256:")
+    if len(raw) != 64:
+        return False
+    try:
+        int(raw, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError as exc:
-        raise RuntimeError(f"could not read JSON file {path}: {exc}") from exc
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"invalid JSON file {path}: {exc}") from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} is not readable JSON: {exc}") from exc
     if not isinstance(payload, dict):
-        raise RuntimeError(f"JSON file must contain an object: {path}")
+        raise RuntimeError(f"{label} root must be an object: {path}")
     return payload
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def _sha256(path: Path | None) -> str | None:
+def _sha256(path: Path | None) -> str:
     if path is None:
-        return None
+        return ""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _utc_stamp() -> str:
-    return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")

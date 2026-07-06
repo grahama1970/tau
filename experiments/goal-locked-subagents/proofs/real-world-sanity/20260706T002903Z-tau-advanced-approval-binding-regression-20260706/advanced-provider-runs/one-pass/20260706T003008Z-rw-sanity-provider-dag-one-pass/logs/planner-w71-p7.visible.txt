@@ -1,0 +1,21 @@
+08Z-rw-sanity-provider-dag-one-pass\nrun_dir: /home/graham/
+workspace/experiments/tau/experiments/goal-locked-subagents
+/proofs/real-world-sanity/20260706T002903Z-tau-advanced-app
+roval-binding-regression-20260706/advanced-provider-runs/on
+e-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\nda
+g_spec: /home/graham/workspace/experiments/tau/experiments/
+goal-locked-subagents/proofs/real-world-sanity/20260706T002
+903Z-tau-advanced-approval-binding-regression-20260706/adva
+nced-provider-runs/one-pass/20260706T003008Z-rw-sanity-prov
+ider-dag-one-pass/dag-spec.json\nplanner_receipt: /home/gra
+ham/workspace/experiments/tau/experiments/goal-locked-subag
+ents/proofs/real-world-sanity/20260706T002903Z-tau-advanced
+-approval-binding-regression-20260706/advanced-provider-run
+s/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass
+/planner-receipt.json\nfinal_receipt: /home/graham/workspac
+e/experiments/tau/experiments/goal-locked-subagents/proofs/
+real-world-sanity/20260706T002903Z-tau-advanced-approval-bi
+nding-regression-20260706/advanced-provider-runs/one-pass/2
+0260706T003008Z-rw-sanity-provider-dag-one-pass/run-receipt
+.json\ncanonical truth: Tau JSON receipts; this pane is hum
+an-visible telemetry.\n

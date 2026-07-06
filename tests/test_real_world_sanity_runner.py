@@ -21,6 +21,7 @@ def test_summarize_receipt_includes_provider_dag_cleanup_summary() -> None:
                 "ok": True,
                 "mocked": False,
                 "live": True,
+                "herdr_surface": "real",
                 "runtime_manifest": "/tmp/run/runtime-manifest.json",
                 "runtime_manifest_sha256": "manifest-sha-test",
                 "resource_count": 1,
@@ -39,6 +40,7 @@ def test_summarize_receipt_includes_provider_dag_cleanup_summary() -> None:
         "ok": True,
         "mocked": False,
         "live": True,
+        "herdr_surface": "real",
         "runtime_manifest": "/tmp/run/runtime-manifest.json",
         "runtime_manifest_sha256": "manifest-sha-test",
         "resource_count": 1,
@@ -86,6 +88,67 @@ def test_summarize_receipt_includes_cleanup_apply_absence_counts() -> None:
         "applied_action_count": 1,
         "post_verified_absent_count": 1,
     }
+
+
+def test_summarize_receipt_includes_herdr_gc_surface_boundary() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.herdr_gc_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "mode": "apply",
+            "herdr_bin": "/tmp/fake-herdr",
+            "herdr_surface": "fixture",
+            "workspace_count": 1,
+            "candidate_count": 1,
+            "applied_actions": [
+                {
+                    "workspace_id": "w1",
+                    "applied": True,
+                    "post_verified_absent": True,
+                }
+            ],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.herdr_gc_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "herdr_bin": "/tmp/fake-herdr",
+        "herdr_surface": "fixture",
+        "workspace_count": 1,
+        "candidate_count": 1,
+        "applied_action_count": 1,
+        "post_verified_absent_count": 1,
+    }
+
+
+def test_summarize_receipt_includes_course_correction_artifacts() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.dag_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
+            "course_correction_artifacts": [
+                "/tmp/run/course-corrections/coder-attempt-002-brave.json"
+            ],
+        }
+    )
+
+    assert summary["course_correction_artifact_count"] == 1
+    assert summary["course_correction_artifacts"] == [
+        "/tmp/run/course-corrections/coder-attempt-002-brave.json"
+    ]
 
 
 def test_summarize_receipt_includes_generic_dag_node_timing() -> None:
@@ -249,6 +312,45 @@ def test_summarize_receipt_includes_github_transport_fields() -> None:
     }
 
 
+def test_summarize_receipt_includes_branch_lock_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.dag_branch_lock_validation_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "verdict": "MISSING_WORKSPACE_LEASE",
+            "required_lock_count": 2,
+            "provided_lock_count": 2,
+            "alerts": [
+                {
+                    "severity": "BLOCK",
+                    "code": "missing_workspace_lease",
+                    "message": "Provider branch locks require a Herdr workspace lease reference.",
+                }
+            ],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.dag_branch_lock_validation_receipt.v1",
+        "ok": False,
+        "status": "BLOCKED",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "verdict": "MISSING_WORKSPACE_LEASE",
+        "required_lock_count": 2,
+        "provided_lock_count": 2,
+        "alert_count": 1,
+        "alert_codes": ["missing_workspace_lease"],
+    }
+
+
 def test_summarize_receipt_includes_route_memory_sync_fields() -> None:
     module = _load_runner_module()
 
@@ -277,6 +379,46 @@ def test_summarize_receipt_includes_route_memory_sync_fields() -> None:
         "memory_sync": False,
         "sync_status": "DRY_RUN",
         "projected_document_count": 2,
+        "errors": [],
+    }
+
+
+def test_summarize_receipt_includes_research_source_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.research_source_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "source_packet_sha256": "sha256:packet",
+            "source_type": "paper",
+            "method": "arxiv",
+            "classification": "design_input",
+            "source_count": 2,
+            "arxiv_source_count": 2,
+            "review_required": True,
+            "errors": [],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.research_source_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "source_packet_sha256": "sha256:packet",
+        "source_type": "paper",
+        "method": "arxiv",
+        "classification": "design_input",
+        "source_count": 2,
+        "arxiv_source_count": 2,
+        "review_required": True,
         "errors": [],
     }
 
@@ -461,6 +603,69 @@ def test_summarize_receipt_includes_provider_lifecycle_probe_state() -> None:
     }
 
 
+def test_summarize_receipt_includes_proof_index_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.proof_index_build_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "indexed_receipt_count": 12,
+            "error_count": 0,
+            "warning_count": 1,
+            "output_path": "/tmp/proof-index.jsonl",
+            "output_sha256": "sha256:index",
+            "schema_counts": {"tau.dag_receipt.v1": 4},
+            "status_counts": {"PASS": 12},
+            "errors": [],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.proof_index_build_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "indexed_receipt_count": 12,
+        "output_path": "/tmp/proof-index.jsonl",
+        "output_sha256": "sha256:index",
+        "error_count": 0,
+        "warning_count": 1,
+        "schema_counts": {"tau.dag_receipt.v1": 4},
+        "status_counts": {"PASS": 12},
+        "errors": [],
+    }
+
+
+def test_build_checks_registers_proof_index_build(tmp_path: Path) -> None:
+    module = _load_runner_module()
+
+    checks = module.build_checks(
+        repo=Path(__file__).resolve().parents[1],
+        run_dir=tmp_path,
+        uv_bin="uv",
+        herdr_bin="herdr",
+        receipt_timeout_seconds=120,
+        provider_cleanup_mode="off",
+    )
+
+    check = next(item for item in checks if item.check_id == "medium.proof_index_build")
+    assert check.level == "medium"
+    assert check.expected_status == "PASS"
+    assert check.output_receipt == tmp_path / "medium-proof-index" / "proof-index-build-receipt.json"
+    assert check.command[:4] == ["uv", "run", "--project", str(Path(__file__).resolve().parents[1])]
+    assert check.command[4:7] == ["tau", "proof-index", "build"]
+    assert str(tmp_path / "medium-proof-index" / "source") in check.command
+    assert "--out" in check.command
+    assert "--receipt" in check.command
+
+
 def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
     module = _load_runner_module()
 
@@ -492,6 +697,63 @@ def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
     )
     assert "Surf-backed browser proof checks" in " ".join(receipt["proof_scope"]["proves"])
     assert "production browser/chat UI rendering" in receipt["proof_scope"]["does_not_prove"]
+
+
+def test_build_checks_registers_itar_containment_dag_and_demo_checks(
+    tmp_path: Path,
+) -> None:
+    module = _load_runner_module()
+
+    checks = module.build_checks(
+        repo=Path(__file__).resolve().parents[1],
+        run_dir=tmp_path,
+        uv_bin="uv",
+        herdr_bin="herdr",
+        receipt_timeout_seconds=120,
+        provider_cleanup_mode="off",
+    )
+
+    by_id = {item.check_id: item for item in checks}
+    provider_metadata = by_id["advanced.project_dag_provider_metadata_propagates"]
+    assert provider_metadata.expected_status == "PASS"
+    assert provider_metadata.expected_verdict == "PASS"
+    assert provider_metadata.output_receipt == (
+        tmp_path / "provider-metadata-project-dag" / "run" / "dag-receipt.json"
+    )
+
+    missing_gate = by_id["advanced.project_dag_itar_access_gate_missing_fail_closed"]
+    assert missing_gate.expected_status == "BLOCKED"
+    assert missing_gate.expected_verdict == "MISSING_ITAR_ACCESS_PREFLIGHT"
+    assert missing_gate.output_receipt == (
+        tmp_path / "containment-missing-itar-project-dag" / "run" / "dag-receipt.json"
+    )
+
+    all_gates = by_id["advanced.project_dag_containment_gates_pass"]
+    assert all_gates.expected_status == "PASS"
+    assert all_gates.expected_verdict == "PASS"
+    assert all_gates.output_receipt == (
+        tmp_path / "containment-all-gates-project-dag" / "run" / "dag-receipt.json"
+    )
+
+    redteam = by_id["advanced.zero_trust_redteam_itar_containment"]
+    assert redteam.expected_status == "PASS"
+    assert "zero-trust-redteam" in redteam.command
+    assert redteam.output_receipt == (
+        tmp_path
+        / "zero-trust-redteam-itar-containment"
+        / "zero-trust-redteam-receipt.json"
+    )
+
+    demo = by_id["advanced.itar_grade_containment_demo"]
+    assert demo.expected_status == "PASS"
+    demo_script = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "itar-grade-containment"
+        / "run.sh"
+    )
+    assert str(demo_script) in demo.command
+    assert demo.output_receipt == tmp_path / "itar-grade-containment-demo" / "demo-receipt.json"
 
 
 def _load_runner_module() -> ModuleType:

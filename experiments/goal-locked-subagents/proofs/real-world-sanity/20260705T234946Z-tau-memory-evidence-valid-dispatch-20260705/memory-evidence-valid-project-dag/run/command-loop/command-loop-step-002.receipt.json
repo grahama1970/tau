@@ -1,0 +1,79 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json"
+  ],
+  "command_results": [
+    {
+      "command": [
+        "python3",
+        "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/project_dag_worker.py",
+        "--role",
+        "reviewer",
+        "--scenario",
+        "memory-evidence-valid"
+      ],
+      "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/compiled-command-specs/reviewer/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:3d0c829c354a4dac546856b6cc800af6165d5c1155019ee156b2d1aa5e84af36",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"context\": {\"artifacts\": [\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\"], \"summary\": \"Reviewer returned PASS for creator attempt 1.\"}, \"github\": {\"repo\": \"grahama1970/tau\", \"target\": \"scratch-project-dag-memory-evidence-valid\"}, \"goal\": {\"goal_hash\": \"sha256:rw-sanity-project-dag-memory-evidence-valid\", \"goal_id\": \"rw-sanity-project-dag-memory-evidence-valid\", \"goal_version\": 1}, \"next_agent\": {\"executor\": \"human\", \"name\": \"human\", \"reason\": \"Continue according to the project DAG contract.\"}, \"previous_subagent\": \"reviewer\", \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\", \"required_evidence\": [\"creator_artifact\", \"reviewer_verdict\"], \"result\": {\"evidence\": [{\"creator_attempt\": 1, \"goal_hash\": \"sha256:rw-sanity-project-dag-memory-evidence-valid\", \"kind\": \"reviewer_verdict\", \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\", \"reviewed_node_id\": \"coder\", \"verdict\": \"PASS\"}], \"status\": \"PASS\", \"summary\": \"Reviewer returned PASS for creator attempt 1.\"}, \"schema\": \"tau.agent_handoff.v1\", \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"}\n",
+      "timed_out": false,
+      "timeout_s": 20.0
+    }
+  ],
+  "errors": [],
+  "live": true,
+  "loop_step": 2,
+  "mocked": false,
+  "ok": true,
+  "receipt_dir": null,
+  "response_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Reviewer returned PASS for creator attempt 1.\n- Next agent: `human`\n- Executor: `human`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\"\n    ],\n    \"summary\": \"Reviewer returned PASS for creator attempt 1.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-memory-evidence-valid\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-memory-evidence-valid\",\n    \"goal_id\": \"rw-sanity-project-dag-memory-evidence-valid\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"human\",\n    \"name\": \"human\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"reviewer\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"creator_attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-memory-evidence-valid\",\n        \"kind\": \"reviewer_verdict\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json\",\n        \"reviewed_node_id\": \"coder\",\n        \"verdict\": \"PASS\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Reviewer returned PASS for creator attempt 1.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:human",
+        "executor:human"
+      ],
+      "remove": []
+    },
+    "next_agent": "human",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-memory-evidence-valid"
+    }
+  },
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "reviewer",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `PASS`\n- Summary: Creator produced attempt 1 artifact for reviewer.\n- Next agent: `reviewer`\n- Executor: `local`\n- Stop condition: Stop at human or a fail-closed DAG invariant.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n    ],\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-memory-evidence-valid\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-memory-evidence-valid\",\n    \"goal_id\": \"rw-sanity-project-dag-memory-evidence-valid\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"reviewer\",\n    \"reason\": \"Continue according to the project DAG contract.\"\n  },\n  \"previous_subagent\": \"coder\",\n  \"rationale\": \"The DAG contract controls routing and immutable-goal checks.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"attempt\": 1,\n        \"goal_hash\": \"sha256:rw-sanity-project-dag-memory-evidence-valid\",\n        \"kind\": \"creator_artifact\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T234946Z-tau-memory-evidence-valid-dispatch-20260705/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-001/creator-artifact-attempt-1.json\"\n      }\n    ],\n    \"status\": \"PASS\",\n    \"summary\": \"Creator produced attempt 1 artifact for reviewer.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at human or a fail-closed DAG invariant.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:reviewer",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "reviewer",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-memory-evidence-valid"
+    }
+  },
+  "status": "COMPLETED",
+  "stop_reason": "response_consumed"
+}

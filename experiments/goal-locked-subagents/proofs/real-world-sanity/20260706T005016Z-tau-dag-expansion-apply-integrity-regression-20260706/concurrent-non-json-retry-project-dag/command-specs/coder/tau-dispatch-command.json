@@ -1,0 +1,8 @@
+{
+  "command": [
+    "python3",
+    "-c",
+    "\nimport runpy\nimport sys\nfrom pathlib import Path\n\nstate = Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/concurrent-non-json-retry-project-dag/command-specs/coder/attempt-count.txt')\nstate.parent.mkdir(parents=True, exist_ok=True)\ncount = int(state.read_text() or '0') if state.exists() else 0\nstate.write_text(str(count + 1))\nif count == 0:\n    print('not json')\nelse:\n    sys.argv = ['/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/concurrent-non-json-retry-project-dag/project_dag_worker.py', '--role', 'coder', '--scenario', 'concurrent-non-json-retry']\n    runpy.run_path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/concurrent-non-json-retry-project-dag/project_dag_worker.py', run_name='__main__')\n"
+  ],
+  "timeout_s": 20
+}

@@ -1,15 +1,13 @@
 # Zero-Trust Red-Team Suite
 
-Tau's zero-trust red-team suite is a deterministic adversarial containment
-check. It does not run a raw agent swarm. It calls Tau's existing gates with
-malicious or incompatible inputs and passes only when Tau blocks the path with
-the expected alert.
+Tau's zero-trust red-team suite is a deterministic local containment check. It
+does not call external providers, research services, Memory, GitHub, Docker, or
+browsers.
 
-## Command
+Run it with:
 
 ```bash
-uv run python scripts/run-zero-trust-redteam.py \
-  --out-dir /tmp/tau-zero-trust-redteam
+uv run tau zero-trust-redteam --run-dir /tmp/tau-zero-trust-redteam
 ```
 
 The command writes:
@@ -18,50 +16,29 @@ The command writes:
 /tmp/tau-zero-trust-redteam/zero-trust-redteam-receipt.json
 ```
 
-Receipt schema:
+with schema `tau.zero_trust_redteam_receipt.v1`.
 
-```text
-tau.zero_trust_redteam_receipt.v1
-```
+## Current Attempts
 
-## Covered Attempts
+The current suite passes only when Tau blocks each malicious fixture:
 
-The first suite covers these malicious or unsafe paths:
+- controlled snippet in an external research query;
+- foreign-person actor on an ITAR boundary;
+- unverified human approval actor;
+- cloud provider branch under a provider-deny policy;
+- provider metadata hidden in DAG node `model_policy` / `prompt_contract`
+  fields under a provider-deny policy;
+- public mutation under a GitHub public-mutation deny policy;
+- public GitHub projection metadata under a public-mutation deny policy;
+- blocked signed-receipt verification in a review package;
+- approved/sanitized research lane swapped back to a controlled-data query;
+- unverified actor provenance inside a review package;
+- sandbox receipt that claims command execution with unsafe Docker policy.
 
-```text
-skip_memory_intent
-inline_fake_evidence
-clarify_route_dispatch
-evidence_case_boundary_mismatch
-external_provider_request
-external_research_request
-public_repo_mutation_request
-tampered_signed_receipt
-sandbox_backend_missing
-```
+Each attempt records the expected alert code and the observed alert codes.
 
-Each attempt is marked PASS only when the relevant Tau gate returns a blocked
-receipt or verification result with the expected alert/error.
+## Non-Claims
 
-## Proof Boundary
-
-This suite proves:
-
-- Tau ran deterministic adversarial checks against zero-trust gates.
-- Tau observed expected fail-closed alerts for the covered malicious paths.
-
-It does not prove:
-
-- ITAR compliance
-- export-control legal sufficiency
-- runtime sandbox enforcement on the host
-- provider/model semantic safety
-- coverage of every possible malicious agent path
-- that a DAG or agent swarm is trustworthy
-
-## Extension Rule
-
-Add new malicious attempts by connecting them to a real Tau gate first. Do not
-add a red-team case that only checks a string in a synthetic fixture. The suite
-is useful only when it exercises the same validators, preflight receipts, or
-runtime gates that production DAG dispatch would use.
+This suite is not exhaustive malicious-agent coverage. It does not prove ITAR
+compliance, runtime sandbox isolation, provider/model semantic quality, live
+GitHub mutation safety, or Docker isolation.

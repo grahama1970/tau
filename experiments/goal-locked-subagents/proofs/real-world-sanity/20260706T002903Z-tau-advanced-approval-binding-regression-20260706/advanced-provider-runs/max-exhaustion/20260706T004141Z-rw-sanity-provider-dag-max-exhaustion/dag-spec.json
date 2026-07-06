@@ -1,0 +1,70 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/events.jsonl",
+  "goal": {
+    "goal_hash": "sha256:e010ff64484d6a278ff9b5f7a640f56e5adc9cc8a7b546f79077805d2b2554ea",
+    "goal_id": "rw-sanity-provider-dag-max-exhaustion",
+    "goal_version": 1
+  },
+  "label": "rw-sanity-provider-dag-max-exhaustion",
+  "logs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/logs",
+  "max_attempts": 2,
+  "nodes": [
+    {
+      "depends_on": [],
+      "node_id": "coder",
+      "provider_id": "tau-deterministic-visible",
+      "receipt_schema": "tau.provider_dag_node_receipt.v1",
+      "role": "coder"
+    },
+    {
+      "depends_on": [
+        "coder"
+      ],
+      "node_id": "reviewer",
+      "provider_id": "opencode",
+      "receipt_schema": "tau.provider_dag_node_receipt.v1",
+      "role": "reviewer"
+    }
+  ],
+  "orchestrator": {
+    "handoff": "orchestrator executes the DAG spec and emits the final receipt.",
+    "subagent": "orchestrator"
+  },
+  "planner": {
+    "handoff": "planner creates the DAG spec only; it does not execute providers.",
+    "subagent": "planner"
+  },
+  "policy": {
+    "allow_visible_text_readiness_gate": false,
+    "forbidden": [
+      "ticket_closure",
+      "tailscale_proof",
+      "real_repo_mutation"
+    ],
+    "max_attempts": 2,
+    "require_structured_readiness": true
+  },
+  "proof_controls": {
+    "allow_final_forced_revise": true,
+    "coder_mode": "deterministic-visible",
+    "force_reviewer_revise_attempts": [
+      1,
+      2
+    ],
+    "reviewer_model": null
+  },
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/receipts",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion",
+  "run_id": "20260706T004141Z-rw-sanity-provider-dag-max-exhaustion",
+  "schema": "tau.dag_run_spec.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+  "work_order_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/work-orders"
+}

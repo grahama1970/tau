@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "import json; print(json.dumps({'schema': 'tau.agent_handoff.v1', 'github': {'repo': 'grahama1970/tau', 'target': 'issue:63'}, 'goal': {'goal_id': 'issue-63', 'goal_version': 1, 'goal_hash': 'sha256:issue-63-provider-sensitive'}, 'previous_subagent': 'panel-creator', 'context': {'summary': 'panel-creator response.', 'artifacts': []}, 'result': {'status': 'PASS', 'summary': 'panel-creator passed.', 'evidence': [{'kind': 'storyboard_creator_receipt.json'}, {'kind': 'provider_route_receipt'}]}, 'rationale': 'Issue #63 positive provider-sensitive DAG fixture.', 'next_agent': {'name': 'panel-reviewer', 'executor': 'local', 'reason': 'Continue along DAG route.'}, 'required_evidence': ['provider_route_receipt'], 'stop_condition': 'Stop at human.'}))"
+  ],
+  "cwd": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z",
+  "timeout_s": 5
+}

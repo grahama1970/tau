@@ -1,0 +1,13 @@
+{
+  "cleanup_policy": "apply",
+  "created_at": "2026-07-06T00:29:03Z",
+  "dag_id": "rw-sanity-herdr-cleanup-session",
+  "expires_at": "2026-07-07T00:29:03Z",
+  "owner": "tau-real-world-sanity",
+  "run_id": "rw-sanity-herdr-cleanup-session",
+  "schema": "tau.herdr_session_ownership.v1",
+  "session_ids": [
+    "session-rw-sanity-codex"
+  ],
+  "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-herdr-cleanup-session/owned/runtime-manifest.json"
+}

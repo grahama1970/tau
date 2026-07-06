@@ -1,0 +1,21 @@
+eal-world-sanity/20260706T00
+2903Z-tau-advanced-approval-
+binding-regression-20260706/
+advanced-provider-runs/max-e
+xhaustion/20260706T004141Z-r
+w-sanity-provider-dag-max-ex
+haustion/planner-receipt.jso
+n\nfinal_receipt: /home/grah
+am/workspace/experiments/tau
+/experiments/goal-locked-sub
+agents/proofs/real-world-san
+ity/20260706T002903Z-tau-adv
+anced-approval-binding-regre
+ssion-20260706/advanced-prov
+ider-runs/max-exhaustion/202
+60706T004141Z-rw-sanity-prov
+ider-dag-max-exhaustion/run-
+receipt.json\ncanonical trut
+h: Tau JSON receipts; this p
+ane is human-visible telemet
+ry.\n

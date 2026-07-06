@@ -1,0 +1,61 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "provider_session_state_count": 0,
+        "runtime_manifest": null,
+        "schema": "tau.run_status.v1",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.provider_dag_plan_status.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.provider_dag_plan_status.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.provider_dag_plan_status",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "import json, subprocess, sys\nproducer = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'provider-dag-plan', '--label', 'rw-sanity-plan-status', '--run-root', '/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan-status', '--max-attempts', '2']\nstatus_prefix = ['uv', 'run', '--project', '/home/graham/workspace/experiments/tau', 'tau', 'run-status']\nrun_dir_key = 'run_dir'\nproducer_expected = (0,)\nfirst = subprocess.run(producer, text=True, capture_output=True)\nsys.stderr.write(first.stderr)\nif first.returncode not in producer_expected:\n    sys.stdout.write(first.stdout)\n    raise SystemExit(first.returncode)\npayload = json.loads(first.stdout)\nrun_dir = payload[run_dir_key]\nsecond = subprocess.run([*status_prefix, run_dir], text=True, capture_output=True)\nsys.stderr.write(second.stderr)\nsys.stdout.write(second.stdout)\nraise SystemExit(second.returncode)"
+  ],
+  "completed_at": "2026-07-05T22:19:24Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau summarizes a provider DAG planner-only run through the read-only run-status surface.",
+  "receipt_summary": {
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_session_state_count": 0,
+    "runtime_manifest": null,
+    "schema": "tau.run_status.v1",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:23Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.provider_dag_plan_status.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.provider_dag_plan_status.stdout.txt",
+  "timeout_seconds": 120
+}

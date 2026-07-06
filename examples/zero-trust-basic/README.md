@@ -1,21 +1,14 @@
 # Zero-Trust Basic Example
 
-This example shows the first usable Tau zero-trust path: a DAG opts into a
-policy profile and data boundary, then Tau runs the policy/data-boundary
-preflight before any dispatch.
-
-Run:
+This example exercises Tau's local zero-trust preflight without dispatching a
+subagent. It proves policy and data-boundary compatibility only.
 
 ```bash
-./run.sh
+./examples/zero-trust-basic/run.sh
 ```
 
-The script writes `out/zero-trust-preflight-receipt.json` and prints a compact
-summary. The expected receipt is `expected-receipt.json`.
+The script writes a `tau.zero_trust_preflight_receipt.v1` receipt under `/tmp`
+and prints the receipt path plus compact status fields.
 
-This example is intentionally boring. It proves only that Tau can inspect the
-example policy and boundary and emit a passing zero-trust preflight receipt. It
-does not prove DAG dispatch, sandbox enforcement, ITAR compliance,
-export-control legal sufficiency, signed provenance, human identity
-verification, provider/model semantic safety, or compliance package
-completeness.
+This does not prove ITAR compliance, sandbox enforcement, provider/model
+semantic safety, GitHub mutation, or human identity verification.

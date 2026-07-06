@@ -1,4 +1,6 @@
 import json
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -83,6 +85,23 @@ def test_route_memory_candidates_reject_low_confidence(tmp_path: Path) -> None:
     assert receipt["accepted_candidate_count"] == 1
     assert receipt["rejected_candidate_count"] == 1
     assert receipt["rejected_candidates"][0]["rejection_reason"] == "confidence_below_threshold"
+
+
+def test_route_memory_candidates_reject_missing_route_fields(tmp_path: Path) -> None:
+    payload = _signal_receipt()
+    del payload["route_reinforcement_candidates"][1]["to_node"]
+    signal_path = _write_signal(tmp_path, payload)
+
+    receipt = write_dag_route_memory_candidate_receipt(
+        signal_receipt_path=signal_path,
+        receipt_path=tmp_path / "route-memory.json",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["accepted_candidate_count"] == 1
+    assert receipt["rejected_candidate_count"] == 1
+    assert receipt["rejected_candidates"][0]["rejection_reason"] == "missing_route_fields"
+    assert receipt["rejected_candidates"][0]["missing_route_fields"] == ["to_node"]
 
 
 def test_route_memory_candidates_block_when_no_candidate_meets_gate(tmp_path: Path) -> None:
@@ -201,6 +220,58 @@ def test_route_memory_sync_apply_blocks_wrong_approval_action(tmp_path: Path) ->
     assert any(alert["code"] == "approval_action_mismatch" for alert in receipt["alerts"])
 
 
+def test_route_memory_sync_apply_blocks_wrong_approval_target(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    approval_path = _write_approval_receipt(
+        tmp_path,
+        requested_action="memory_upsert",
+        target_id="route-memory:other-dag:tau_route_memory",
+    )
+
+    receipt = write_dag_route_memory_sync_receipt(
+        candidate_receipt_path=candidate_path,
+        receipt_path=tmp_path / "sync.json",
+        approval_receipt_path=approval_path,
+        apply=True,
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["memory_sync"] is False
+    assert any(alert["code"] == "approval_target_mismatch" for alert in receipt["alerts"])
+
+
+def test_route_memory_sync_apply_posts_to_memory_with_approval(tmp_path: Path) -> None:
+    candidate_path = _write_candidate_receipt(tmp_path)
+    approval_path = _write_approval_receipt(tmp_path, requested_action="memory_upsert")
+    server, requests = _start_memory_server()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        receipt = write_dag_route_memory_sync_receipt(
+            candidate_receipt_path=candidate_path,
+            receipt_path=tmp_path / "sync.json",
+            approval_receipt_path=approval_path,
+            apply=True,
+            memory_url=f"http://127.0.0.1:{server.server_port}",
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["memory_sync"] is True
+    assert receipt["sync_status"] == "SYNCED"
+    assert receipt["projected_document_count"] == 2
+    assert receipt["memory_response"] == {"ok": True, "received": 2}
+    assert len(requests) == 1
+    assert requests[0]["path"] == "/upsert"
+    assert requests[0]["payload"]["collection"] == "tau_route_memory"
+    assert len(requests[0]["payload"]["documents"]) == 2
+
+
 def test_cli_route_memory_sync_writes_dry_run_receipt(tmp_path: Path) -> None:
     candidate_path = _write_candidate_receipt(tmp_path)
     receipt_path = tmp_path / "sync.json"
@@ -265,7 +336,12 @@ def _write_candidate_receipt(tmp_path: Path) -> Path:
     return candidate_path
 
 
-def _write_approval_receipt(tmp_path: Path, *, requested_action: str) -> Path:
+def _write_approval_receipt(
+    tmp_path: Path,
+    *,
+    requested_action: str,
+    target_id: str = "route-memory:route-memory-test:tau_route_memory",
+) -> Path:
     path = tmp_path / "approval-receipt.json"
     path.write_text(
         json.dumps(
@@ -275,11 +351,42 @@ def _write_approval_receipt(tmp_path: Path, *, requested_action: str) -> Path:
                 "status": "PASS",
                 "approved": True,
                 "requested_action": requested_action,
+                "packet_summary": {
+                    "target_id": target_id,
+                },
             }
         ),
         encoding="utf-8",
     )
     return path
+
+
+def _start_memory_server() -> tuple[ThreadingHTTPServer, list[dict[str, object]]]:
+    requests: list[dict[str, object]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            length = int(self.headers.get("content-length", "0") or "0")
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8")) if body else {}
+            requests.append({"path": self.path, "payload": payload})
+            documents = payload.get("documents") if isinstance(payload, dict) else []
+            response = {
+                "ok": True,
+                "received": len(documents) if isinstance(documents, list) else 0,
+            }
+            response_bytes = json.dumps(response).encode("utf-8")
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(response_bytes)))
+            self.end_headers()
+            self.wfile.write(response_bytes)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    return server, requests
 
 
 def _signal_receipt() -> dict[str, object]:

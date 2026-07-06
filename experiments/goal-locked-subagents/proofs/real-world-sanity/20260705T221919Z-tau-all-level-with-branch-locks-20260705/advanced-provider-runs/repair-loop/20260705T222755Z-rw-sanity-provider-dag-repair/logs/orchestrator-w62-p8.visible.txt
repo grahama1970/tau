@@ -1,0 +1,37 @@
+rovider-dag-repair
+/dag-spec.json\npl
+anner_receipt: /ho
+me/graham/workspac
+e/experiments/tau/
+experiments/goal-l
+ocked-subagents/pr
+oofs/real-world-sa
+nity/20260705T2219
+19Z-tau-all-level-
+with-branch-locks-
+20260705/advanced-
+provider-runs/repa
+ir-loop/20260705T2
+22755Z-rw-sanity-p
+rovider-dag-repair
+/planner-receipt.j
+son\nfinal_receipt
+: /home/graham/wor
+kspace/experiments
+/tau/experiments/g
+oal-locked-subagen
+ts/proofs/real-wor
+ld-sanity/20260705
+T221919Z-tau-all-l
+evel-with-branch-l
+ocks-20260705/adva
+nced-provider-runs
+/repair-loop/20260
+705T222755Z-rw-san
+ity-provider-dag-r
+epair/run-receipt.
+json\ncanonical tr
+uth: Tau JSON rece
+ipts; this pane is
+ human-visible tel
+emetry.\n

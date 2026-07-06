@@ -1,0 +1,69 @@
+{
+  "diagnostics": {
+    "interstitial_visible": false,
+    "provider_initializing_visible": false,
+    "readiness_actions": [],
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": false
+  },
+  "evidence": {
+    "foreground_argv": [
+      "opencode",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "foreground_command": "opencode",
+    "foreground_cwd": "/home/graham/workspace/experiments/tau",
+    "foreground_pid": 2877748,
+    "pane_agent_status": "idle",
+    "pane_cwd": "/home/graham/workspace/experiments/tau",
+    "pane_label": "20260706t001231z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+    "process_alive": true,
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+    "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.session-state.json",
+    "readiness_probe_attempt_count": 1,
+    "readiness_probe_samples": [
+      {
+        "attempt": 1,
+        "command_matches": true,
+        "foreground_command": "opencode",
+        "pane_get_returncode": 0,
+        "process_alive": true,
+        "process_info_returncode": 0,
+        "ready": true,
+        "state": "ready"
+      }
+    ],
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt"
+  },
+  "observed_at": "2026-07-06T00:13:09Z",
+  "pane_id": "w6Y:p6",
+  "provider_id": "opencode",
+  "provider_session_state": {
+    "auth_status": "unknown",
+    "foreground_command": "opencode",
+    "interstitial_kind": null,
+    "interstitial_present": false,
+    "observed_at": "2026-07-06T00:13:09Z",
+    "pane_id": "w6Y:p6",
+    "process_alive": true,
+    "provider_api_available": false,
+    "provider_event_log_path": null,
+    "provider_id": "opencode",
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/readiness/opencode.readiness.json",
+    "ready": true,
+    "schema": "tau.provider_session_state.v1",
+    "source": "herdr_process_info",
+    "state": "ready",
+    "terminal_id": "term_655e6218871cf7b8",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+    "workspace_id": "w6Y"
+  },
+  "ready": true,
+  "run_id": "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+  "schema": "tau.provider_readiness.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e6218871cf7b8",
+  "workspace_id": "w6Y"
+}

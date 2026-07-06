@@ -374,6 +374,9 @@ def run_provider_dag_orchestrator(
             expected_goal_hash=str(spec["goal"]["goal_hash"]),
             expected_dag_id=run_id,
             timeout_seconds=receipt_timeout_seconds,
+            herdr_bin=herdr_bin,
+            cwd=resolved_repo,
+            command_results=command_results,
         )
         if coder_errors:
             attempts.append(
@@ -386,7 +389,11 @@ def run_provider_dag_orchestrator(
                     errors=coder_errors,
                 )
             )
-            final_verdict = "CODER_RECEIPT_INVALID"
+            final_verdict = _receipt_failure_verdict(
+                role="CODER",
+                receipt=coder_receipt,
+                errors=coder_errors,
+            )
             break
         reached.add("coder_receipt_validated")
         _append_event(
@@ -459,8 +466,19 @@ def run_provider_dag_orchestrator(
             expected_goal_hash=str(spec["goal"]["goal_hash"]),
             expected_dag_id=run_id,
             timeout_seconds=receipt_timeout_seconds,
+            herdr_bin=herdr_bin,
+            cwd=resolved_repo,
+            command_results=command_results,
         )
         if reviewer_errors:
+            reviewer_worker_exit_errors = _visible_worker_exit_errors(
+                reviewer_worker,
+                herdr_bin=herdr_bin,
+                cwd=resolved_repo,
+                command_results=command_results,
+            )
+            if reviewer_worker_exit_errors:
+                reviewer_errors.extend(reviewer_worker_exit_errors)
             attempts.append(
                 _attempt_record(
                     attempt=attempt,
@@ -471,7 +489,14 @@ def run_provider_dag_orchestrator(
                     errors=reviewer_errors,
                 )
             )
-            final_verdict = "REVIEWER_RECEIPT_INVALID"
+            if reviewer_worker_exit_errors and not reviewer_receipt:
+                final_verdict = "REVIEWER_SEND_FAILED"
+            else:
+                final_verdict = _receipt_failure_verdict(
+                    role="REVIEWER",
+                    receipt=reviewer_receipt,
+                    errors=reviewer_errors,
+                )
             break
         reached.add("reviewer_receipt_validated")
         _append_event(
@@ -556,6 +581,11 @@ def run_provider_dag_orchestrator(
         "attempt_count": len(attempts),
         "max_attempts": max_attempts,
         "attempts": attempts,
+        "alerts": _provider_dag_alerts(
+            status=final_status,
+            verdict=final_verdict,
+            attempts=attempts,
+        ),
         "command_results": command_results,
         "proof_scope": {
             "proves": _provider_dag_proof_claims(reached),
@@ -657,6 +687,7 @@ def _run_provider_dag_cleanup(
         "ok": receipt.get("ok"),
         "mocked": receipt.get("mocked"),
         "live": receipt.get("live"),
+        "herdr_surface": receipt.get("herdr_surface"),
         "candidate_count": receipt.get("candidate_count"),
         "resource_count": receipt.get("resource_count"),
         "workspace_lease": receipt.get("workspace_lease"),
@@ -1024,6 +1055,8 @@ Rules:
 - Modify only target_file.
 - Write a JSON receipt exactly here:
 {receipt_path}
+- Copy the exact work_order_sha256 field from the work order into the receipt.
+  Do not replace it with sha256sum output for the work-order file.
 
 Receipt JSON shape:
 {{
@@ -1071,6 +1104,8 @@ Rules:
   concrete feedback for the next coder attempt.
 - Write a JSON receipt exactly here:
 {receipt_path}
+- Copy the exact work_order_sha256 field from the work order into the receipt.
+  Do not replace it with sha256sum output for the work-order file.
 
 Receipt JSON shape:
 {{
@@ -1107,19 +1142,13 @@ def _send_pane_prompt(
     cwd: Path,
     timeout_seconds: float,
 ) -> list[subprocess.CompletedProcess[str]]:
-    send_text = _run_pane_command(
-        [herdr_bin, "pane", "send-text", pane_id, text + "\n"],
+    payload = text if text.endswith("\n") else f"{text}\n"
+    send_prompt = _run_pane_command(
+        [herdr_bin, "pane", "run", pane_id, payload],
         cwd=cwd,
         timeout_seconds=timeout_seconds,
     )
-    if send_text.returncode != 0:
-        return [send_text]
-    send_enter = _run_pane_command(
-        [herdr_bin, "pane", "send-keys", pane_id, "enter"],
-        cwd=cwd,
-        timeout_seconds=timeout_seconds,
-    )
-    return [send_text, send_enter]
+    return [send_prompt]
 
 
 def _run_pane_command(
@@ -1173,6 +1202,9 @@ def _wait_for_node_receipt(
     expected_goal_hash: str,
     expected_dag_id: str,
     timeout_seconds: float,
+    herdr_bin: str | None = None,
+    cwd: Path | None = None,
+    command_results: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     deadline = time.monotonic() + timeout_seconds
     last_errors: list[str] = [f"receipt did not appear: {path}"]
@@ -1189,6 +1221,7 @@ def _wait_for_node_receipt(
                 expected_herdr=expected_herdr,
                 expected_goal_hash=expected_goal_hash,
                 expected_dag_id=expected_dag_id,
+                allowed_paths=_work_order_allowed_paths(work_order_path),
             )
             if not errors:
                 return receipt, []
@@ -1200,7 +1233,120 @@ def _wait_for_node_receipt(
         except RuntimeError as exc:
             return {}, [str(exc)]
         return receipt, last_errors
-    return {}, last_errors
+    refreshed_herdr = _refresh_expected_visible_log(
+        expected_herdr,
+        herdr_bin=herdr_bin,
+        cwd=cwd,
+        command_results=command_results,
+    )
+    return {}, _missing_receipt_errors(
+        receipt_path=path,
+        expected_node_id=expected_node_id,
+        expected_provider_id=expected_provider_id,
+        expected_attempt=expected_attempt,
+        work_order_path=work_order_path,
+        work_order_sha256=work_order_sha256,
+        expected_herdr=refreshed_herdr,
+    )
+
+
+def _refresh_expected_visible_log(
+    expected_herdr: dict[str, Any],
+    *,
+    herdr_bin: str | None,
+    cwd: Path | None,
+    command_results: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    visible_log_path = str(expected_herdr.get("visible_log_path") or "")
+    pane_id = str(expected_herdr.get("pane_id") or "")
+    if not herdr_bin or cwd is None or not visible_log_path or not pane_id:
+        return expected_herdr
+    read = _run_pane_command(
+        [herdr_bin, "pane", "read", pane_id, "--source", "visible", "--lines", "160"],
+        cwd=cwd,
+        timeout_seconds=10.0,
+    )
+    if command_results is not None:
+        command_results.append(_command_result_dict(read))
+    visible_path = Path(visible_log_path)
+    if read.returncode == 0:
+        visible_path.write_text(read.stdout, encoding="utf-8")
+    return expected_herdr
+
+
+def _receipt_failure_verdict(
+    *,
+    role: str,
+    receipt: dict[str, Any],
+    errors: list[str],
+) -> str:
+    if not receipt and any(error.startswith("node_receipt_timeout") for error in errors):
+        return f"{role}_RECEIPT_TIMEOUT"
+    return f"{role}_RECEIPT_INVALID"
+
+
+def _missing_receipt_errors(
+    *,
+    receipt_path: Path,
+    expected_node_id: str,
+    expected_provider_id: str,
+    expected_attempt: int,
+    work_order_path: Path,
+    work_order_sha256: str,
+    expected_herdr: dict[str, Any],
+) -> list[str]:
+    errors = [
+        f"node_receipt_timeout: {expected_node_id} receipt did not appear before timeout",
+        f"node_receipt_missing: {receipt_path}",
+        f"provider_id: {expected_provider_id}",
+        f"attempt: {expected_attempt}",
+        f"work_order_path: {work_order_path}",
+        f"work_order_sha256: {work_order_sha256}",
+    ]
+    visible_log_path = str(expected_herdr.get("visible_log_path") or "")
+    if not visible_log_path:
+        errors.append("visible_log_missing: expected visible_log_path was not recorded")
+        return errors
+    visible_path = Path(visible_log_path)
+    errors.append(f"visible_log_path: {visible_log_path}")
+    visible_log_sha256 = _file_sha256(visible_path)
+    if visible_log_sha256:
+        errors.append(f"visible_log_sha256: {visible_log_sha256}")
+    try:
+        visible_text = visible_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        errors.append(f"visible_log_unreadable: {exc}")
+        return errors
+    if _work_order_delivery_observed(
+        visible_text,
+        work_order_path=work_order_path,
+        work_order_sha256=work_order_sha256,
+    ):
+        errors.append(
+            "work_order_delivered_but_receipt_missing: visible log contains the "
+            "dispatched work_order_path or work_order_sha256"
+        )
+    else:
+        errors.append(
+            "work_order_delivery_not_observed: visible log does not contain the "
+            "dispatched work_order_path or work_order_sha256"
+        )
+    return errors
+
+
+def _work_order_delivery_observed(
+    visible_text: str,
+    *,
+    work_order_path: Path,
+    work_order_sha256: str,
+) -> bool:
+    if str(work_order_path) in visible_text or work_order_sha256 in visible_text:
+        return True
+    return (
+        work_order_path.name in visible_text
+        and "Receipt JSON shape" in visible_text
+        and PROVIDER_DAG_NODE_RECEIPT_SCHEMA in visible_text
+    )
 
 
 def _validate_node_receipt(
@@ -1214,6 +1360,7 @@ def _validate_node_receipt(
     expected_herdr: dict[str, Any],
     expected_goal_hash: str,
     expected_dag_id: str,
+    allowed_paths: list[Path] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     if receipt.get("schema") != PROVIDER_DAG_NODE_RECEIPT_SCHEMA:
@@ -1259,9 +1406,62 @@ def _validate_node_receipt(
     for key in ("changed_files", "commands_run", "artifacts", "errors", "policy_exceptions"):
         if not isinstance(receipt.get(key), list):
             errors.append(f"{key} must be a list")
+    if allowed_paths is None:
+        allowed_paths = _work_order_allowed_paths(work_order_path)
+    allowed_path_errors = _receipt_allowed_path_errors(
+        receipt,
+        allowed_paths=allowed_paths,
+    )
+    errors.extend(allowed_path_errors)
+    if str(receipt.get("status") or "").upper() == "PASS":
+        if receipt.get("errors"):
+            errors.append("PASS receipt errors must be empty")
+        if receipt.get("policy_exceptions"):
+            errors.append("PASS receipt policy_exceptions must be empty")
     if not isinstance(receipt.get("handoff_summary"), str) or not receipt.get("handoff_summary"):
         errors.append("handoff_summary must be a non-empty string")
     return errors
+
+
+def _work_order_allowed_paths(work_order_path: Path) -> list[Path]:
+    try:
+        work_order = _read_json_object(work_order_path, label="provider DAG work order")
+    except RuntimeError:
+        return []
+    target = work_order.get("target")
+    if not isinstance(target, dict):
+        return []
+    raw_paths = target.get("allowed_paths")
+    if not isinstance(raw_paths, list):
+        return []
+    return [Path(path) for path in raw_paths if isinstance(path, str) and path]
+
+
+def _receipt_allowed_path_errors(
+    receipt: dict[str, Any],
+    *,
+    allowed_paths: list[Path],
+) -> list[str]:
+    errors: list[str] = []
+    normalized_allowed = {_normalize_receipt_path(path) for path in allowed_paths}
+    if not normalized_allowed:
+        errors.append("work order target.allowed_paths must include at least one path")
+        return errors
+    for key in ("changed_files", "artifacts"):
+        value = receipt.get(key)
+        if not isinstance(value, list):
+            continue
+        for item in value:
+            if not isinstance(item, str) or not item:
+                errors.append(f"{key} entries must be non-empty strings")
+                continue
+            if _normalize_receipt_path(Path(item)) not in normalized_allowed:
+                errors.append(f"{key} entry is outside work order allowed_paths: {item}")
+    return errors
+
+
+def _normalize_receipt_path(path: Path) -> str:
+    return str(path.expanduser().resolve(strict=False))
 
 
 def _provider_visible_log_path(provider_record: dict[str, Any]) -> str:
@@ -1359,6 +1559,50 @@ def _attempt_record(
         "reviewer_verdict": reviewer_receipt.get("verdict"),
         "errors": errors,
     }
+
+
+def _provider_dag_alerts(
+    *,
+    status: str,
+    verdict: str,
+    attempts: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if status == "PASS":
+        return []
+    last_attempt = attempts[-1] if attempts else {}
+    errors = last_attempt.get("errors") if isinstance(last_attempt.get("errors"), list) else []
+    node_id = "reviewer" if verdict.startswith("REVIEWER_") else "coder"
+    code = verdict.lower() if verdict else "provider_dag_blocked"
+    message = _provider_dag_alert_message(verdict=verdict, node_id=node_id)
+    return [
+        {
+            "schema": "tau.provider_dag_alert.v1",
+            "severity": "BLOCK",
+            "code": code,
+            "node_id": node_id,
+            "attempt": last_attempt.get("attempt"),
+            "message": message,
+            "errors": errors,
+            "recommended_action": {
+                "type": "reroute",
+                "next_agent": "goal-guardian",
+                "reason": message,
+            },
+        }
+    ]
+
+
+def _provider_dag_alert_message(*, verdict: str, node_id: str) -> str:
+    if verdict.endswith("_RECEIPT_TIMEOUT"):
+        return (
+            f"Provider DAG {node_id} node did not produce a bound receipt before timeout; "
+            "inspect visible log and work-order delivery before retrying."
+        )
+    if verdict.endswith("_SEND_FAILED"):
+        return f"Provider DAG {node_id} prompt dispatch failed before receipt wait."
+    if verdict.endswith("_RECEIPT_INVALID"):
+        return f"Provider DAG {node_id} receipt was missing required binding fields or hashes."
+    return f"Provider DAG blocked with verdict {verdict}."
 
 
 def _provider_map(readiness_receipt: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -1689,7 +1933,7 @@ def _start_visible_opencode_run_pane(
     agent = payload.get("result", {}).get("agent", {}) if isinstance(payload, dict) else {}
     if not isinstance(agent, dict):
         agent = {}
-    return {
+    record = {
         "role": "reviewer",
         "provider_id": "opencode",
         "workspace_id": agent.get("workspace_id") or workspace_id,
@@ -1701,6 +1945,83 @@ def _start_visible_opencode_run_pane(
         "reviewer_model": model,
         "readiness_pane_id": provider_record.get("pane_id"),
     }
+    startup_error = _probe_visible_worker_startup(
+        record,
+        herdr_bin=herdr_bin,
+        cwd=repo,
+        command_results=command_results,
+    )
+    if startup_error:
+        record["visible"] = False
+        record["error"] = startup_error
+    return record
+
+
+def _probe_visible_worker_startup(
+    record: dict[str, Any],
+    *,
+    herdr_bin: str,
+    cwd: Path,
+    command_results: list[dict[str, Any]],
+) -> str:
+    pane_id = str(record.get("pane_id") or "")
+    if not pane_id:
+        return "provider worker did not report a pane_id"
+    time.sleep(1.0)
+    read = _run_pane_command(
+        [herdr_bin, "pane", "read", pane_id, "--source", "visible", "--lines", "80"],
+        cwd=cwd,
+        timeout_seconds=10.0,
+    )
+    command_results.append(_command_result_dict(read))
+    if read.returncode != 0:
+        detail = (read.stderr or read.stdout or "no output").strip()
+        return f"provider worker exited before receipt wait: {detail}"
+    visible = read.stdout or ""
+    if _provider_startup_failure_observed(visible):
+        return f"provider worker reported startup failure: {_compact_error_text(visible)}"
+    return ""
+
+
+def _provider_startup_failure_observed(visible_text: str) -> bool:
+    lower = visible_text.lower()
+    markers = (
+        "invalid model",
+        "model not found",
+        "model_not_found",
+        "not-a-real-model",
+        "unknown model",
+    )
+    return any(marker in lower for marker in markers)
+
+
+def _visible_worker_exit_errors(
+    record: dict[str, Any],
+    *,
+    herdr_bin: str,
+    cwd: Path,
+    command_results: list[dict[str, Any]],
+) -> list[str]:
+    pane_id = str(record.get("pane_id") or "")
+    if not pane_id:
+        return []
+    read = _run_pane_command(
+        [herdr_bin, "pane", "read", pane_id, "--source", "visible", "--lines", "120"],
+        cwd=cwd,
+        timeout_seconds=10.0,
+    )
+    command_results.append(_command_result_dict(read))
+    if read.returncode == 0:
+        return []
+    detail = (read.stderr or read.stdout or "no output").strip()
+    return [f"provider_worker_exited_before_receipt: {detail}"]
+
+
+def _compact_error_text(text: str, *, limit: int = 240) -> str:
+    compact = " ".join(line.strip() for line in text.splitlines() if line.strip())
+    if len(compact) <= limit:
+        return compact
+    return f"{compact[: limit - 3]}..."
 
 
 def _capture_visible_logs(

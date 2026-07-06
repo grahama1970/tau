@@ -1,0 +1,32 @@
+{
+  "alert_codes": [],
+  "alert_count": 0,
+  "alerts": [],
+  "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+  "live": true,
+  "mocked": false,
+  "ok": true,
+  "payload_schema": "memory.intent.v1",
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory truth.",
+      "Evidence-case artifact correctness.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau inspected a Memory intent product before DAG dispatch.",
+      "Memory intent was treated as a routing/admissibility input, not inline evidence."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/run/memory-intent-gate-receipt.json",
+  "schema": "tau.memory_intent_gate_receipt.v1",
+  "source_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/memory-evidence-valid-project-dag/memory-intent.json",
+  "source_sha256": "sha256:ebf8b37217765003e39a0aa224e972b8847184b9da20f03408e080b46fc535bb",
+  "status": "PASS",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-memory-evidence-valid"
+  },
+  "timestamp": "2026-07-06T00:01:48Z"
+}

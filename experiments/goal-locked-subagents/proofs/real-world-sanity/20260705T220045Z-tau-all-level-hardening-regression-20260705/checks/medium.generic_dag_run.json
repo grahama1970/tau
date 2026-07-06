@@ -1,0 +1,143 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "blocked_node_count": 0,
+        "completed_node_count": 3,
+        "dispatched_node_count": 3,
+        "live": false,
+        "mocked": false,
+        "node_attempt_counts": {
+          "coder": 1,
+          "planner": 1,
+          "reviewer": 1
+        },
+        "node_count": 3,
+        "node_duration_seconds_max": 0.026,
+        "node_duration_seconds_total": 0.071,
+        "node_durations_seconds": {
+          "coder": 0.023,
+          "planner": 0.026,
+          "reviewer": 0.022
+        },
+        "node_error_counts": {
+          "coder": 0,
+          "planner": 0,
+          "reviewer": 0
+        },
+        "node_statuses": {
+          "coder": "PASS",
+          "planner": "PASS",
+          "reviewer": "PASS"
+        },
+        "node_verdicts": {
+          "coder": "PASS",
+          "planner": "PASS",
+          "reviewer": "PASS"
+        },
+        "ok": true,
+        "provider_live": false,
+        "resume_requested": true,
+        "resume_source": {
+          "mode": "spec_path",
+          "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-generic-dag/dag-spec.json"
+        },
+        "resumed_node_count": 0,
+        "schema": "tau.generic_dag_run_receipt.v1",
+        "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-generic-dag/dag-spec.json",
+        "status": "PASS",
+        "timed_node_count": 3,
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.generic_dag_run.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.generic_dag_run.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.generic_dag_run",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-generic-dag/dag-spec.json"
+  ],
+  "completed_at": "2026-07-05T22:00:50Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau executes a generic schema-validated local subprocess DAG with planner -> coder -> reviewer dependencies.",
+  "receipt_summary": {
+    "blocked_node_count": 0,
+    "completed_node_count": 3,
+    "dispatched_node_count": 3,
+    "live": false,
+    "mocked": false,
+    "node_attempt_counts": {
+      "coder": 1,
+      "planner": 1,
+      "reviewer": 1
+    },
+    "node_count": 3,
+    "node_duration_seconds_max": 0.026,
+    "node_duration_seconds_total": 0.071,
+    "node_durations_seconds": {
+      "coder": 0.023,
+      "planner": 0.026,
+      "reviewer": 0.022
+    },
+    "node_error_counts": {
+      "coder": 0,
+      "planner": 0,
+      "reviewer": 0
+    },
+    "node_statuses": {
+      "coder": "PASS",
+      "planner": "PASS",
+      "reviewer": "PASS"
+    },
+    "node_verdicts": {
+      "coder": "PASS",
+      "planner": "PASS",
+      "reviewer": "PASS"
+    },
+    "ok": true,
+    "provider_live": false,
+    "resume_requested": true,
+    "resume_source": {
+      "mode": "spec_path",
+      "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-generic-dag/dag-spec.json"
+    },
+    "resumed_node_count": 0,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/medium-generic-dag/dag-spec.json",
+    "status": "PASS",
+    "timed_node_count": 3,
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:00:50Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.generic_dag_run.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T220045Z-tau-all-level-hardening-regression-20260705/logs/medium.generic_dag_run.stdout.txt",
+  "timeout_seconds": 90
+}

@@ -1,0 +1,484 @@
+{
+  "agents": {
+    "argv": [
+      "herdr",
+      "agent",
+      "list"
+    ],
+    "parsed": {
+      "id": "cli:agent:list",
+      "result": {
+        "agents": [
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2275-2c9f-73c0-bdd2-ae759d861c49"
+            },
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p1",
+            "revision": 0,
+            "tab_id": "w11:t1",
+            "terminal_id": "term_6559e98b5ff98d2",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "cursor",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p4",
+            "revision": 0,
+            "tab_id": "w11:t4",
+            "terminal_id": "term_655cd72ee5eae37b",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2fa8-5e65-7631-8068-13205b2eaeed"
+            },
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p6",
+            "revision": 0,
+            "tab_id": "w11:t6",
+            "terminal_id": "term_655d114609faa3a5",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2a46-4dd8-74e1-a2e9-43bc8b55f55b"
+            },
+            "agent_status": "working",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w11:p7",
+            "revision": 0,
+            "tab_id": "w11:t7",
+            "terminal_id": "term_655db929920d63a6",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1828-d18c-7502-9041-842a19091118"
+            },
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/agent-skills",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/agent-skills",
+            "pane_id": "w11:p8",
+            "revision": 0,
+            "tab_id": "w11:t8",
+            "terminal_id": "term_655dbba1ea4973a7",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/agent-skills",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/agent-skills",
+            "pane_id": "w11:p9",
+            "revision": 0,
+            "tab_id": "w11:t9",
+            "terminal_id": "term_655dcf7770a5e3a8",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260706T000201Z-rw-sanity-provider-readiness-codex",
+            "pane_id": "w6R:p5",
+            "revision": 0,
+            "tab_id": "w6R:t2",
+            "terminal_id": "term_655e5fbefaa1e784",
+            "workspace_id": "w6R"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "pane_id": "w7C:p6",
+            "revision": 0,
+            "tab_id": "w7C:t2",
+            "terminal_id": "term_655e708acec4b83e",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "pane_id": "w7C:p5",
+            "revision": 0,
+            "tab_id": "w7C:t2",
+            "terminal_id": "term_655e708a608e083d",
+            "workspace_id": "w7C"
+          }
+        ],
+        "type": "agent_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:agent:list\",\"result\":{\"agents\":[{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2275-2c9f-73c0-bdd2-ae759d861c49\"},\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p1\",\"revision\":0,\"tab_id\":\"w11:t1\",\"terminal_id\":\"term_6559e98b5ff98d2\",\"workspace_id\":\"w11\"},{\"agent\":\"cursor\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p4\",\"revision\":0,\"tab_id\":\"w11:t4\",\"terminal_id\":\"term_655cd72ee5eae37b\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2fa8-5e65-7631-8068-13205b2eaeed\"},\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p6\",\"revision\":0,\"tab_id\":\"w11:t6\",\"terminal_id\":\"term_655d114609faa3a5\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2a46-4dd8-74e1-a2e9-43bc8b55f55b\"},\"agent_status\":\"working\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w11:p7\",\"revision\":0,\"tab_id\":\"w11:t7\",\"terminal_id\":\"term_655db929920d63a6\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1828-d18c-7502-9041-842a19091118\"},\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"pane_id\":\"w11:p8\",\"revision\":0,\"tab_id\":\"w11:t8\",\"terminal_id\":\"term_655dbba1ea4973a7\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"pane_id\":\"w11:p9\",\"revision\":0,\"tab_id\":\"w11:t9\",\"terminal_id\":\"term_655dcf7770a5e3a8\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T000201Z-rw-sanity-provider-readiness-codex\",\"pane_id\":\"w6R:p5\",\"revision\":0,\"tab_id\":\"w6R:t2\",\"terminal_id\":\"term_655e5fbefaa1e784\",\"workspace_id\":\"w6R\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w7C:p6\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e708acec4b83e\",\"workspace_id\":\"w7C\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w7C:p5\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e708a608e083d\",\"workspace_id\":\"w7C\"}],\"type\":\"agent_list\"}}\n"
+  },
+  "manifest": {
+    "agents": {
+      "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex": {
+        "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w7C",
+            "--tab",
+            "w7C:t2",
+            "--env",
+            "TAU_ROLE=codex",
+            "--env",
+            "TAU_AGENT_NAME=20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260706T011710Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json",
+            "--env",
+            "TAU_PROVIDER_READINESS_RUN_ID=20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_PROVIDER_READINESS_PROVIDER=codex",
+            "--no-focus",
+            "--",
+            "codex",
+            "--cd",
+            "/home/graham/workspace/experiments/tau"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+                "pane_id": "w7C:p5",
+                "revision": 0,
+                "tab_id": "w7C:t2",
+                "terminal_id": "term_655e708a608e083d",
+                "workspace_id": "w7C"
+              },
+              "argv": [
+                "codex",
+                "--cd",
+                "/home/graham/workspace/experiments/tau"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w7C:p5\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e708a608e083d\",\"workspace_id\":\"w7C\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "codex",
+        "started_at": "20260706T011711Z",
+        "tab": "providers",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json"
+      },
+      "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode": {
+        "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w7C",
+            "--tab",
+            "w7C:t2",
+            "--env",
+            "TAU_ROLE=opencode",
+            "--env",
+            "TAU_AGENT_NAME=20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260706T011710Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json",
+            "--env",
+            "TAU_PROVIDER_READINESS_RUN_ID=20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+            "--no-focus",
+            "--split",
+            "right",
+            "--",
+            "opencode",
+            "/home/graham/workspace/experiments/tau"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+                "pane_id": "w7C:p6",
+                "revision": 0,
+                "tab_id": "w7C:t2",
+                "terminal_id": "term_655e708acec4b83e",
+                "workspace_id": "w7C"
+              },
+              "argv": [
+                "opencode",
+                "/home/graham/workspace/experiments/tau"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w7C:p6\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e708acec4b83e\",\"workspace_id\":\"w7C\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "opencode",
+        "started_at": "20260706T011711Z",
+        "tab": "providers",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json"
+      }
+    },
+    "created_at": "20260706T011710Z",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260706T011710Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl",
+    "kind": "herdr-workstation",
+    "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+    "repo": "/home/graham/workspace/experiments/tau",
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T011709Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260706T011710Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+    "run_id": "20260706T011710Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+    "schema_version": 1,
+    "session": "default",
+    "tabs": {
+      "logs": "w7C:t3",
+      "providers": "w7C:t2",
+      "receipts": "w7C:t4"
+    },
+    "updated_at": "20260706T011711Z",
+    "workspace_id": "w7C",
+    "worktree": {
+      "base": null,
+      "branch": null,
+      "enabled": false,
+      "path": null,
+      "raw": null
+    }
+  },
+  "panes": {
+    "argv": [
+      "herdr",
+      "pane",
+      "list",
+      "--workspace",
+      "w7C"
+    ],
+    "parsed": {
+      "id": "cli:pane:list",
+      "result": {
+        "panes": [
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w7C:p1",
+            "revision": 0,
+            "tab_id": "w7C:t1",
+            "terminal_id": "term_655e7089b1cdf839",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w7C:p2",
+            "revision": 0,
+            "tab_id": "w7C:t2",
+            "terminal_id": "term_655e7089c74e283a",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "pane_id": "w7C:p6",
+            "revision": 0,
+            "tab_id": "w7C:t2",
+            "terminal_id": "term_655e708acec4b83e",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "pane_id": "w7C:p5",
+            "revision": 0,
+            "tab_id": "w7C:t2",
+            "terminal_id": "term_655e708a608e083d",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w7C:p3",
+            "revision": 0,
+            "tab_id": "w7C:t3",
+            "terminal_id": "term_655e7089da3e683b",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w7C:p4",
+            "revision": 0,
+            "tab_id": "w7C:t4",
+            "terminal_id": "term_655e7089ed23b83c",
+            "workspace_id": "w7C"
+          }
+        ],
+        "type": "pane_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:pane:list\",\"result\":{\"panes\":[{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w7C:p1\",\"revision\":0,\"tab_id\":\"w7C:t1\",\"terminal_id\":\"term_655e7089b1cdf839\",\"workspace_id\":\"w7C\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w7C:p2\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e7089c74e283a\",\"workspace_id\":\"w7C\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260706t011709z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w7C:p6\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e708acec4b83e\",\"workspace_id\":\"w7C\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260706t011709z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w7C:p5\",\"revision\":0,\"tab_id\":\"w7C:t2\",\"terminal_id\":\"term_655e708a608e083d\",\"workspace_id\":\"w7C\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w7C:p3\",\"revision\":0,\"tab_id\":\"w7C:t3\",\"terminal_id\":\"term_655e7089da3e683b\",\"workspace_id\":\"w7C\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w7C:p4\",\"revision\":0,\"tab_id\":\"w7C:t4\",\"terminal_id\":\"term_655e7089ed23b83c\",\"workspace_id\":\"w7C\"}],\"type\":\"pane_list\"}}\n"
+  },
+  "tabs": {
+    "argv": [
+      "herdr",
+      "tab",
+      "list",
+      "--workspace",
+      "w7C"
+    ],
+    "parsed": {
+      "id": "cli:tab:list",
+      "result": {
+        "tabs": [
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "1",
+            "number": 1,
+            "pane_count": 1,
+            "tab_id": "w7C:t1",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent_status": "idle",
+            "focused": false,
+            "label": "providers",
+            "number": 2,
+            "pane_count": 3,
+            "tab_id": "w7C:t2",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "logs",
+            "number": 3,
+            "pane_count": 1,
+            "tab_id": "w7C:t3",
+            "workspace_id": "w7C"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "receipts",
+            "number": 4,
+            "pane_count": 1,
+            "tab_id": "w7C:t4",
+            "workspace_id": "w7C"
+          }
+        ],
+        "type": "tab_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:tab:list\",\"result\":{\"tabs\":[{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"1\",\"number\":1,\"pane_count\":1,\"tab_id\":\"w7C:t1\",\"workspace_id\":\"w7C\"},{\"agent_status\":\"idle\",\"focused\":false,\"label\":\"providers\",\"number\":2,\"pane_count\":3,\"tab_id\":\"w7C:t2\",\"workspace_id\":\"w7C\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"logs\",\"number\":3,\"pane_count\":1,\"tab_id\":\"w7C:t3\",\"workspace_id\":\"w7C\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"receipts\",\"number\":4,\"pane_count\":1,\"tab_id\":\"w7C:t4\",\"workspace_id\":\"w7C\"}],\"type\":\"tab_list\"}}\n"
+  },
+  "workspace": {
+    "argv": [
+      "herdr",
+      "workspace",
+      "get",
+      "w7C"
+    ],
+    "parsed": {
+      "id": "cli:workspace:get",
+      "result": {
+        "type": "workspace_info",
+        "workspace": {
+          "active_tab_id": "w7C:t1",
+          "agent_status": "idle",
+          "focused": false,
+          "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+          "number": 3,
+          "pane_count": 6,
+          "tab_count": 4,
+          "workspace_id": "w7C"
+        }
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:workspace:get\",\"result\":{\"type\":\"workspace_info\",\"workspace\":{\"active_tab_id\":\"w7C:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-provider-dag-max-exhaustion-readiness\",\"number\":3,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w7C\"}}}\n"
+  }
+}

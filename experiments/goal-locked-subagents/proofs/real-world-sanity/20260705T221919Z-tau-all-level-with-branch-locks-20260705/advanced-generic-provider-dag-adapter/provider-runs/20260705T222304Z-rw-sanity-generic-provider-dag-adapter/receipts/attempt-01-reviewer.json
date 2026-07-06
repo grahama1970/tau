@@ -1,0 +1,23 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T222304Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:35c80dda1b418e41caaf07c20d2d8aca531058515aaefa970d73fd58d6e85bc9",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w50",
+  "pane_id": "w50:p6",
+  "terminal_id": "term_655e49a21ac4869b",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T222304Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260705T222304Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "a834f708af59fbb4d092ecfe131766741ecc5b1d0f88a1fc620af247c87ee8a7",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T222304Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum visible_log_path", "jq . work_order", "read target_file and coder_receipt"],
+  "artifacts": ["/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T222304Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt", "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-generic-provider-dag-adapter/provider-runs/20260705T222304Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"],
+  "handoff_summary": "PASS. target_file (message.txt) has no TODO line — replaced with completion message. coder receipt is schema-valid (tau.provider_dag_node_receipt.v1), includes all expected fields (dag_id, goal_hash, node_id, provider_id, attempt, visible_log_path+sha256, commands_run, changed_files, artifacts, handoff_summary). force_revise is false, no issues found.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "tau.research_query_authorization.v1",
+  "approved": true,
+  "allowed_methods": ["brave-search"],
+  "data_boundary_classification": "ITAR",
+  "approver": {
+    "id": "human:demo"
+  },
+  "expires_at": "2099-01-01T00:00:00Z"
+}

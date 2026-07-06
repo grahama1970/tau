@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T011501Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:49727d3b9beddedbcce4e5f4f2c1f96b426692c6b2500e392e84721434bf2601",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w7B",
+  "pane_id": "w7B:p6",
+  "terminal_id": "term_655e701120326832",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T011501Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "992623c12e1ad8d11ccf798be76c628050f74a001457efd58b937a72093b026c",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "cat work-orders/attempt-01-reviewer.json",
+    "cat scratch-worktree/message.txt",
+    "cat receipts/attempt-01-coder.json",
+    "sha256sum provider-readiness/*/logs/opencode.visible.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: force_revise=true. target_file is present and contains a completion message, but lacks evidence of which provider DAG hardening step was implemented. Next coder should include a timestamp, the specific DAG edge or readiness gate exercised, and a structured status that downstream nodes can validate (e.g. 'provider=codex, edge=readiness, result=pass, ts=...'). Coder receipt is schema-valid and self-consistent.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,21 @@
+ocked-subagents/proofs/real-
+world-sanity/20260706T010702
+Z-tau-provider-live-hardenin
+g-regression-20260706/advanc
+ed-provider-runs/max-exhaust
+ion/20260706T011709Z-rw-sani
+ty-provider-dag-max-exhausti
+on/planner-receipt.json\nfin
+al_receipt: /home/graham/wor
+kspace/experiments/tau/exper
+iments/goal-locked-subagents
+/proofs/real-world-sanity/20
+260706T010702Z-tau-provider-
+live-hardening-regression-20
+260706/advanced-provider-run
+s/max-exhaustion/20260706T01
+1709Z-rw-sanity-provider-dag
+-max-exhaustion/run-receipt.
+json\ncanonical truth: Tau J
+SON receipts; this pane is h
+uman-visible telemetry.\n

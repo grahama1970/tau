@@ -1,0 +1,38 @@
+{
+  "created_at": "2026-07-06T11:33:32.221244Z",
+  "error_count": 0,
+  "errors": [],
+  "indexed_receipt_count": 2,
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "output_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index.jsonl",
+  "output_sha256": "sha256:dfa83b9a3707d4752098a9334a4b8af799233ab043c6ce509d6b92b23fa583c7",
+  "proof_scope": {
+    "does_not_prove": [
+      "Receipt semantic truth.",
+      "Provider/model semantic quality.",
+      "Live GitHub mutation.",
+      "Production Memory persistence."
+    ],
+    "proves": [
+      "Tau receipt-like JSON artifacts were scanned deterministically.",
+      "The proof index JSONL was written with stable path, hash, status, and boundary fields."
+    ]
+  },
+  "proofs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/source",
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index-build-receipt.json",
+  "schema": "tau.proof_index_build_receipt.v1",
+  "schema_counts": {
+    "tau.dag_receipt.v1": 1,
+    "tau.monitor_receipt.v1": 1
+  },
+  "status": "PASS",
+  "status_counts": {
+    "PASS": 1,
+    "REVIEW": 1
+  },
+  "warning_count": 0,
+  "warnings": []
+}

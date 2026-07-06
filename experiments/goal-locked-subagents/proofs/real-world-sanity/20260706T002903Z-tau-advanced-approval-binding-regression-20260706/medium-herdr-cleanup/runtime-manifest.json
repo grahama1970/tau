@@ -1,0 +1,23 @@
+{
+  "provider_sessions": {
+    "codex": {
+      "pane_id": "w-rw-sanity-cleanup:p5",
+      "terminal_id": "term-codex",
+      "workspace_id": "w-rw-sanity-cleanup"
+    }
+  },
+  "run_id": "rw-sanity-herdr-cleanup",
+  "schema": "tau.provider_dag_runtime_manifest.v1",
+  "visible_subagents": {
+    "orchestrator": {
+      "pane_id": "w-rw-sanity-cleanup:p8",
+      "terminal_id": "term-orchestrator",
+      "workspace_id": "w-rw-sanity-cleanup"
+    },
+    "planner": {
+      "pane_id": "w-rw-sanity-cleanup:p7",
+      "terminal_id": "term-planner",
+      "workspace_id": "w-rw-sanity-cleanup"
+    }
+  }
+}

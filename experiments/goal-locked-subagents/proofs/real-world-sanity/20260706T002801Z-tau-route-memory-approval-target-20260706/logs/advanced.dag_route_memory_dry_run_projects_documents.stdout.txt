@@ -1,0 +1,123 @@
+{
+  "accepted_candidate_count": 1,
+  "accepted_candidates": [
+    {
+      "confidence": 1.0,
+      "from_agent": "coder",
+      "from_node": "coder",
+      "memory_sync_candidate": true,
+      "route_key": "coder:coder->reviewer:reviewer",
+      "source": "deterministic_dag_receipt_pass",
+      "source_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dag-receipt.json",
+      "source_signal_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dag-signal-receipt.json",
+      "sync_reason": "local_candidate_receipt_only",
+      "sync_status": "NOT_SYNCED",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    }
+  ],
+  "alerts": [],
+  "dag_id": "rw-sanity-route-memory",
+  "dag_mutation": false,
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-route-memory",
+  "live": true,
+  "memory_sync": false,
+  "min_confidence": 1.0,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Memory route learning.",
+      "Runtime route mutation.",
+      "Adaptive DAG expansion application.",
+      "Provider/model semantic quality.",
+      "Future route correctness."
+    ],
+    "proves": [
+      "DAG signal receipt was inspected deterministically.",
+      "Route reinforcement candidates were quality-gated locally.",
+      "Accepted candidates were not synced to Memory or applied to routing."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dry-run-candidate-receipt.json",
+  "rejected_candidate_count": 0,
+  "rejected_candidates": [],
+  "route_mutation": false,
+  "scheduler": "bounded-ready-queue",
+  "schema": "tau.dag_route_memory_candidate_receipt.v1",
+  "source_signal_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dag-signal-receipt.json",
+  "source_signal_receipt_sha256": "sha256:f53e133e0b8ef6a036dfc4834742037f8eb50b00f4694547833dc6218bf16da1",
+  "status": "PASS",
+  "sync_reason": "local_candidate_receipt_only",
+  "sync_status": "NOT_SYNCED",
+  "timestamp": "2026-07-06T00:28:04Z",
+  "verdict": "PASS"
+}
+{
+  "alerts": [],
+  "apply": false,
+  "approval_receipt": null,
+  "approval_receipt_sha256": null,
+  "candidate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dry-run-candidate-receipt.json",
+  "candidate_receipt_sha256": "sha256:2474a5fba618a7d0f6718474ad132d942748347f7cd8315956b00d80e44db20b",
+  "collection": "tau_route_memory",
+  "dag_id": "rw-sanity-route-memory",
+  "dag_mutation": false,
+  "documents": [
+    {
+      "_key": "tau-route-67f7ae2025d4bfaf98281a887618c906",
+      "confidence": 1.0,
+      "dag_id": "rw-sanity-route-memory",
+      "from_agent": "coder",
+      "from_node": "coder",
+      "goal_hash": "sha256:rw-sanity-route-memory",
+      "kind": "tau_route_memory_signal",
+      "memory_sync_candidate": true,
+      "observed_at": "2026-07-06T00:28:05Z",
+      "retrieval_text": "Tau DAG route memory signal coder:coder->reviewer:reviewer for rw-sanity-route-memory goal sha256:rw-sanity-route-memory",
+      "route_key": "coder:coder->reviewer:reviewer",
+      "schema": "tau.route_memory_signal.v1",
+      "source": "deterministic_dag_receipt_pass",
+      "source_candidate_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dry-run-candidate-receipt.json",
+      "source_dag_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dag-receipt.json",
+      "source_signal_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dag-signal-receipt.json",
+      "sync_source": "tau.dag_route_memory_sync_receipt.v1",
+      "to_agent": "reviewer",
+      "to_node": "reviewer"
+    }
+  ],
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-route-memory",
+  "live": true,
+  "memory_response": null,
+  "memory_sync": false,
+  "memory_url": "http://127.0.0.1:8601",
+  "mocked": false,
+  "ok": true,
+  "projected_document_count": 1,
+  "proof_scope": {
+    "does_not_prove": [
+      "Future route correctness.",
+      "Runtime route mutation.",
+      "Adaptive DAG expansion application.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Route-memory candidate receipt was inspected deterministically.",
+      "Accepted candidates were projected into Memory /upsert document shape.",
+      "No Memory write was attempted in dry-run mode."
+    ]
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002801Z-tau-route-memory-approval-target-20260706/dag-route-memory-approval/dry-run-sync-receipt.json",
+  "route_mutation": false,
+  "schema": "tau.dag_route_memory_sync_receipt.v1",
+  "status": "PASS",
+  "sync_status": "DRY_RUN",
+  "timestamp": "2026-07-06T00:28:05Z",
+  "verdict": "PASS"
+}

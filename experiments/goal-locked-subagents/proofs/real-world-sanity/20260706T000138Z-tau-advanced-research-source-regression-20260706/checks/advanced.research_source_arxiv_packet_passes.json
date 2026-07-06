@@ -1,0 +1,82 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "arxiv_source_count": 2,
+        "classification": "design_input",
+        "errors": [],
+        "live": false,
+        "method": "arxiv",
+        "mocked": false,
+        "ok": true,
+        "provider_live": false,
+        "review_required": true,
+        "schema": "tau.research_source_receipt.v1",
+        "source_count": 2,
+        "source_packet_sha256": "c380264235c4afeb76481f6ac0d8092335d181fac0c8af43fcdba43839316e5c",
+        "source_type": "paper",
+        "status": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.research_source_arxiv_packet_passes.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.research_source_arxiv_packet_passes.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.research_source_arxiv_packet_passes",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "research-source-receipt",
+    "--source",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/research-source-arxiv/research-source-packet.json",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/research-source-arxiv/research-source-receipt.json"
+  ],
+  "completed_at": "2026-07-06T00:01:58Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "advanced",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/research-source-arxiv/research-source-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau accepts a source-bearing ArXiv research packet as review-required design input without treating it as closure proof.",
+  "receipt_summary": {
+    "arxiv_source_count": 2,
+    "classification": "design_input",
+    "errors": [],
+    "live": false,
+    "method": "arxiv",
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "review_required": true,
+    "schema": "tau.research_source_receipt.v1",
+    "source_count": 2,
+    "source_packet_sha256": "c380264235c4afeb76481f6ac0d8092335d181fac0c8af43fcdba43839316e5c",
+    "source_type": "paper",
+    "status": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T00:01:58Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.research_source_arxiv_packet_passes.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.research_source_arxiv_packet_passes.stdout.txt",
+  "timeout_seconds": 60
+}

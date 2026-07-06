@@ -1,0 +1,22 @@
+    35 +  ],
+    36 +  "handoff_summary": "Replaced the TODO line in the
+         scratch worktree target file with a completed prov
+        ider DAG coder implementation message.",
+    37 +  "errors": [],
+    38 +  "policy_exceptions": []
+    39 +}
+
+───────────────────────────────────────────────────────────
+
+• The receipt has been added. I’m doing a deterministic
+  final check now: JSON parses, the copied work-order hash
+  matches the work-order field, the target content matches
+  the required replacement, and the scoped git status only
+  shows the expected files.
+
+• Working (4m 01s • esc to interrupt)
+
+
+› Improve documentation in @filename
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

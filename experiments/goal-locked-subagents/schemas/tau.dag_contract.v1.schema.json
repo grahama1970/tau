@@ -29,6 +29,12 @@
       "type": "string",
       "minLength": 1
     },
+    "provider_sensitive": {
+      "type": "boolean"
+    },
+    "requires_provider_route": {
+      "type": "boolean"
+    },
     "goal": {
       "type": "object",
       "additionalProperties": true,
@@ -144,6 +150,69 @@
               },
               "requires_goal_hash": {
                 "type": "boolean"
+              }
+            }
+          },
+          "model_policy": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["provider", "auth", "model"],
+            "properties": {
+              "provider": {
+                "type": "string",
+                "minLength": 1
+              },
+              "auth": {
+                "type": "string",
+                "minLength": 1
+              },
+              "model": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "prompt_contract": {
+            "type": "object",
+            "additionalProperties": true,
+            "anyOf": [
+              {
+                "required": ["path"]
+              },
+              {
+                "required": ["schema"]
+              },
+              {
+                "required": ["system_prompt", "user_template"]
+              },
+              {
+                "required": ["system", "user"]
+              }
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "schema": {
+                "type": "string",
+                "minLength": 1
+              },
+              "system_prompt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "user_template": {
+                "type": "string",
+                "minLength": 1
+              },
+              "system": {
+                "type": "string",
+                "minLength": 1
+              },
+              "user": {
+                "type": "string",
+                "minLength": 1
               }
             }
           }

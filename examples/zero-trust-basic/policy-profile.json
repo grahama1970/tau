@@ -1,36 +1,30 @@
 {
+  "schema": "tau.policy_profile.v1",
+  "profile_id": "zero-trust-basic-local-only",
   "default_decision": "deny",
-  "filesystem": {
-    "read_denylist": [
-      "~/.ssh/**",
-      "secrets/**"
-    ],
-    "write_allowlist": [
-      "./out/**",
-      "./scratch/**"
-    ]
+  "requires_data_boundary": true,
+  "network": {
+    "default": "deny",
+    "allowed_domains": []
   },
-  "github": {
-    "dry_run_projection": "allow",
-    "public_mutation": "deny"
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow_with_approval"
+  },
+  "research": {
+    "external_search": "deny",
+    "manual_sanitized_receipt": "allow_with_review"
   },
   "memory": {
     "read": "allow",
     "write": "approval_required"
   },
-  "network": {
-    "allowed_domains": [],
-    "default": "deny"
+  "github": {
+    "dry_run_projection": "allow",
+    "public_mutation": "deny"
   },
-  "profile_id": "zero-trust-basic-local-only",
-  "providers": {
-    "cloud_llm": "deny",
-    "local_model": "allow_with_approval"
-  },
-  "requires_data_boundary": true,
-  "research": {
-    "external_search": "deny",
-    "manual_sanitized_receipt": "allow_with_review"
-  },
-  "schema": "tau.policy_profile.v1"
+  "filesystem": {
+    "write_allowlist": [],
+    "read_denylist": []
+  }
 }

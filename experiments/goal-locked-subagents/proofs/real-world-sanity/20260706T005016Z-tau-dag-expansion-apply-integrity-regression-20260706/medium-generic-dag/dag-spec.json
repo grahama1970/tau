@@ -1,0 +1,51 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/events.jsonl",
+  "nodes": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/receipts/planner.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'planner', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'planner completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "planner",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/receipts/planner.json",
+      "role": "planner",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python3",
+        "-c",
+        "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/receipts/coder.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'coder', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'coder completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+      ],
+      "depends_on": [
+        "planner"
+      ],
+      "max_attempts": 1,
+      "node_id": "coder",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/receipts/coder.json",
+      "role": "coder",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python3",
+        "-c",
+        "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/receipts/reviewer.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'reviewer', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'reviewer completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+      ],
+      "depends_on": [
+        "coder"
+      ],
+      "max_attempts": 1,
+      "node_id": "reviewer",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag/receipts/reviewer.json",
+      "role": "reviewer",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T005016Z-tau-dag-expansion-apply-integrity-regression-20260706/medium-generic-dag",
+  "run_id": "rw-sanity-generic-dag",
+  "schema": "tau.generic_dag_spec.v1"
+}

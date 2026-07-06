@@ -107,8 +107,12 @@ def write_dag_route_memory_sync_receipt(
 
     resolved_candidate_path = candidate_receipt_path.expanduser().resolve()
     resolved_receipt_path = receipt_path.expanduser().resolve()
-    resolved_approval_path = approval_receipt_path.expanduser().resolve() if approval_receipt_path else None
-    candidate_receipt = _read_json_object(resolved_candidate_path, label="DAG route-memory candidate receipt")
+    resolved_approval_path = (
+        approval_receipt_path.expanduser().resolve() if approval_receipt_path else None
+    )
+    candidate_receipt = _read_json_object(
+        resolved_candidate_path, label="DAG route-memory candidate receipt"
+    )
     approval_receipt = (
         _read_json_object(resolved_approval_path, label="approval gate receipt")
         if resolved_approval_path
@@ -125,10 +129,16 @@ def write_dag_route_memory_sync_receipt(
     sync_response: dict[str, Any] | None = None
     if apply and not alerts:
         try:
-            with httpx.Client(base_url=memory_url.rstrip("/"), timeout=httpx.Timeout(10.0, connect=2.0)) as client:
-                response = client.post("/upsert", json={"collection": collection, "documents": documents})
+            with httpx.Client(
+                base_url=memory_url.rstrip("/"), timeout=httpx.Timeout(10.0, connect=2.0)
+            ) as client:
+                response = client.post(
+                    "/upsert", json={"collection": collection, "documents": documents}
+                )
                 response.raise_for_status()
-                sync_response = response.json() if response.content else {"status_code": response.status_code}
+                sync_response = (
+                    response.json() if response.content else {"status_code": response.status_code}
+                )
         except (httpx.HTTPError, json.JSONDecodeError) as exc:
             alerts.append(
                 _alert(
@@ -160,7 +170,9 @@ def write_dag_route_memory_sync_receipt(
         "memory_url": memory_url,
         "apply": apply,
         "memory_sync": bool(apply and status == "PASS"),
-        "sync_status": "SYNCED" if apply and status == "PASS" else ("BLOCKED" if alerts else "DRY_RUN"),
+        "sync_status": "SYNCED"
+        if apply and status == "PASS"
+        else ("BLOCKED" if alerts else "DRY_RUN"),
         "projected_document_count": len(documents),
         "documents": documents,
         "memory_response": sync_response,
@@ -238,6 +250,11 @@ def _gate_candidates(
     rejected: list[dict[str, Any]] = []
     for candidate in _dict_list(signal.get("route_reinforcement_candidates")):
         confidence = _float_or_zero(candidate.get("confidence"))
+        missing_route_fields = [
+            key
+            for key in ("from_node", "to_node", "from_agent", "to_agent")
+            if not isinstance(candidate.get(key), str) or not candidate.get(key)
+        ]
         route = {
             "route_key": _route_key(candidate),
             "from_node": candidate.get("from_node"),
@@ -252,17 +269,24 @@ def _gate_candidates(
             "sync_status": "NOT_SYNCED",
             "sync_reason": "local_candidate_receipt_only",
         }
-        if confidence >= min_confidence and candidate.get("sync_status") == "NOT_SYNCED":
+        if (
+            not missing_route_fields
+            and confidence >= min_confidence
+            and candidate.get("sync_status") == "NOT_SYNCED"
+        ):
             accepted.append(route)
         else:
+            if missing_route_fields:
+                rejection_reason = "missing_route_fields"
+            elif confidence < min_confidence:
+                rejection_reason = "confidence_below_threshold"
+            else:
+                rejection_reason = "candidate_already_synced_or_unknown_sync_state"
             rejected.append(
                 {
                     **route,
-                    "rejection_reason": (
-                        "confidence_below_threshold"
-                        if confidence < min_confidence
-                        else "candidate_already_synced_or_unknown_sync_state"
-                    ),
+                    "missing_route_fields": missing_route_fields,
+                    "rejection_reason": rejection_reason,
                 }
             )
     return accepted, rejected
@@ -296,7 +320,9 @@ def _sync_gate_alerts(
             )
         )
     if not collection:
-        alerts.append(_alert("BLOCK", "missing_collection", "Memory sync collection is required.", {}))
+        alerts.append(
+            _alert("BLOCK", "missing_collection", "Memory sync collection is required.", {})
+        )
     if int(candidate_receipt.get("accepted_candidate_count") or 0) <= 0:
         alerts.append(
             _alert(
@@ -311,6 +337,8 @@ def _sync_gate_alerts(
             _approval_alerts(
                 approval_receipt=approval_receipt,
                 approval_receipt_path=approval_receipt_path,
+                candidate_receipt=candidate_receipt,
+                collection=collection,
             )
         )
     return alerts
@@ -320,6 +348,8 @@ def _approval_alerts(
     *,
     approval_receipt: dict[str, Any] | None,
     approval_receipt_path: Path | None,
+    candidate_receipt: dict[str, Any],
+    collection: str,
 ) -> list[dict[str, Any]]:
     if approval_receipt_path is None:
         return [
@@ -371,10 +401,31 @@ def _approval_alerts(
                 {"requested_action": approval_receipt.get("requested_action")},
             )
         )
+    packet_summary = approval_receipt.get("packet_summary")
+    target_id = packet_summary.get("target_id") if isinstance(packet_summary, dict) else None
+    expected_target_id = _approval_target_id(candidate_receipt, collection=collection)
+    if target_id != expected_target_id:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_target_mismatch",
+                "Route-memory apply approval must target this DAG and Memory collection.",
+                {
+                    "target_id": target_id,
+                    "expected_target_id": expected_target_id,
+                },
+            )
+        )
     return alerts
 
 
-def _memory_documents(candidate_receipt: dict[str, Any], *, collection: str) -> list[dict[str, Any]]:
+def _approval_target_id(candidate_receipt: dict[str, Any], *, collection: str) -> str:
+    return f"route-memory:{candidate_receipt.get('dag_id')}:{collection}"
+
+
+def _memory_documents(
+    candidate_receipt: dict[str, Any], *, collection: str
+) -> list[dict[str, Any]]:
     documents: list[dict[str, Any]] = []
     for candidate in _dict_list(candidate_receipt.get("accepted_candidates")):
         route_key = str(candidate.get("route_key") or "")

@@ -1,0 +1,67 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/events.jsonl",
+  "goal": {
+    "goal_hash": "sha256:995bdf3883a8795a4a302b6dd49e200fb8b462235c71f4866a57e18562c7b6db",
+    "goal_id": "rw-sanity-plan",
+    "goal_version": 1
+  },
+  "label": "rw-sanity-plan",
+  "logs_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/logs",
+  "max_attempts": 2,
+  "nodes": [
+    {
+      "depends_on": [],
+      "node_id": "coder",
+      "provider_id": "codex",
+      "receipt_schema": "tau.provider_dag_node_receipt.v1",
+      "role": "coder"
+    },
+    {
+      "depends_on": [
+        "coder"
+      ],
+      "node_id": "reviewer",
+      "provider_id": "opencode",
+      "receipt_schema": "tau.provider_dag_node_receipt.v1",
+      "role": "reviewer"
+    }
+  ],
+  "orchestrator": {
+    "handoff": "orchestrator executes the DAG spec and emits the final receipt.",
+    "subagent": "orchestrator"
+  },
+  "planner": {
+    "handoff": "planner creates the DAG spec only; it does not execute providers.",
+    "subagent": "planner"
+  },
+  "policy": {
+    "allow_visible_text_readiness_gate": false,
+    "forbidden": [
+      "ticket_closure",
+      "tailscale_proof",
+      "real_repo_mutation"
+    ],
+    "max_attempts": 2,
+    "require_structured_readiness": true
+  },
+  "proof_controls": {
+    "allow_final_forced_revise": false,
+    "coder_mode": "codex",
+    "force_reviewer_revise_attempts": [],
+    "reviewer_model": null
+  },
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/receipts",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan",
+  "run_id": "20260705T221923Z-rw-sanity-plan",
+  "schema": "tau.dag_run_spec.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/scratch-worktree/message.txt",
+  "work_order_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-dag-plan/20260705T221923Z-rw-sanity-plan/work-orders"
+}

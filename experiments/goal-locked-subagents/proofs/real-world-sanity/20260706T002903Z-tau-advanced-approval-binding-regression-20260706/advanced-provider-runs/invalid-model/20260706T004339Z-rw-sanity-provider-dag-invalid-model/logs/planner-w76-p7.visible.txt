@@ -1,0 +1,21 @@
+aham/workspace/experiments/tau/experiments/goal-locked-suba
+gents/proofs/real-world-sanity/20260706T002903Z-tau-advance
+d-approval-binding-regression-20260706/advanced-provider-ru
+ns/invalid-model/20260706T004339Z-rw-sanity-provider-dag-in
+valid-model\ndag_spec: /home/graham/workspace/experiments/t
+au/experiments/goal-locked-subagents/proofs/real-world-sani
+ty/20260706T002903Z-tau-advanced-approval-binding-regressio
+n-20260706/advanced-provider-runs/invalid-model/20260706T00
+4339Z-rw-sanity-provider-dag-invalid-model/dag-spec.json\np
+lanner_receipt: /home/graham/workspace/experiments/tau/expe
+riments/goal-locked-subagents/proofs/real-world-sanity/2026
+0706T002903Z-tau-advanced-approval-binding-regression-20260
+706/advanced-provider-runs/invalid-model/20260706T004339Z-r
+w-sanity-provider-dag-invalid-model/planner-receipt.json\nf
+inal_receipt: /home/graham/workspace/experiments/tau/experi
+ments/goal-locked-subagents/proofs/real-world-sanity/202607
+06T002903Z-tau-advanced-approval-binding-regression-2026070
+6/advanced-provider-runs/invalid-model/20260706T004339Z-rw-
+sanity-provider-dag-invalid-model/run-receipt.json\ncanonic
+al truth: Tau JSON receipts; this pane is human-visible tel
+emetry.\n

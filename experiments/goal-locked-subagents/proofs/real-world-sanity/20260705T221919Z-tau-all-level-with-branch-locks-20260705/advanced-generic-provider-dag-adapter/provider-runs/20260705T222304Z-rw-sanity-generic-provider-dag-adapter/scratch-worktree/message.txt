@@ -1,0 +1,1 @@
+Completed implementation for the Tau provider DAG adapter coder node.

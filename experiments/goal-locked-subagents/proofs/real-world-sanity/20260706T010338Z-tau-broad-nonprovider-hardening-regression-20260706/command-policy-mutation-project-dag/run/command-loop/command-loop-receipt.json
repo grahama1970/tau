@@ -1,0 +1,17 @@
+{
+  "artifacts": [],
+  "dispatches": [],
+  "errors": [
+    "agent dispatch command spec /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/command-policy-mutation-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json mutates state but command policy does not allow mutation"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/command-policy-mutation-project-dag/run/command-loop",
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.agent_handoff_command_loop_receipt.v1",
+  "status": "BLOCKED",
+  "step_count": 1,
+  "stop_reason": "command_policy_rejected",
+  "terminal_agent": "coder"
+}

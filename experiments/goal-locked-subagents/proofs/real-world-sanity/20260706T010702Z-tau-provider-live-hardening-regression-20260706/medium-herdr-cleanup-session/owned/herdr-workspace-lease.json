@@ -1,0 +1,13 @@
+{
+  "cleanup_policy": "apply",
+  "created_at": "2026-07-06T01:07:02Z",
+  "dag_id": "rw-sanity-herdr-cleanup-session",
+  "expires_at": "2026-07-07T01:07:02Z",
+  "owner": "tau-real-world-sanity",
+  "run_id": "rw-sanity-herdr-cleanup-session",
+  "schema": "tau.herdr_workspace_lease.v1",
+  "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/medium-herdr-cleanup-session/owned/runtime-manifest.json",
+  "workspace_ids": [
+    "w-rw-sanity-session-cleanup"
+  ]
+}

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+HERDR_GC_CALLS='/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-herdr-gc-approval/herdr-calls.jsonl'
+HERDR_GC_WORKSPACES='/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-herdr-gc-approval/workspaces.json'
+printf '{"argv":[' >> "$HERDR_GC_CALLS"
+first=1
+for arg in "$@"; do
+  if [ "$first" = 0 ]; then printf ',' >> "$HERDR_GC_CALLS"; fi
+  first=0
+  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end="")' "$arg" >> "$HERDR_GC_CALLS"
+done
+printf ']}\n' >> "$HERDR_GC_CALLS"
+if [ "$1 $2" = "workspace list" ]; then
+  cat "$HERDR_GC_WORKSPACES"
+  exit 0
+fi
+if [ "$1 $2" = "workspace get" ]; then
+  printf '{"error":{"code":"workspace_not_found","message":"workspace not found"}}\n'
+  exit 1
+fi
+printf '{"result":{"type":"ok"}}\n'

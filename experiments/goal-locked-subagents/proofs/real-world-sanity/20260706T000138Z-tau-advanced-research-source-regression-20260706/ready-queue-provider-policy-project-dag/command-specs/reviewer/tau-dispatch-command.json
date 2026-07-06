@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/ready-queue-provider-policy-project-dag/project_dag_worker.py",
+    "--role",
+    "reviewer",
+    "--scenario",
+    "ready-queue-provider-policy"
+  ],
+  "timeout_s": 20
+}

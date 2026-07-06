@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260705T222755Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:bde31e23e5466bc926dc0e43e387d7c68261b5a40ec8dbb0b66bd8ea851b8865",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w62",
+  "pane_id": "w62:p6",
+  "terminal_id": "term_655e4ab720d5f6ad",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "3786e5b19b017f4d7c799a26752df996b6436163be57af00c31811b2d16487f3",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read target_file message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "sha256sum opencode.visible.txt",
+    "grep for TODO markers in target_file"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE: target_file content is minimal — only a status line. Enrich message.txt with concrete details: add a timestamp, the provider_id that wrote it, the attempt number, and a list of allowed paths or a summary of what was accomplished. For example: 'Written by codex at 2026-07-05T22:28:00Z attempt 1. Allowed paths: [scratch-worktree/message.txt, receipts/attempt-01-coder.json]. Goal hash: sha256:bde31e...'",
+  "errors": [],
+  "policy_exceptions": []
+}

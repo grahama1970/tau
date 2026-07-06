@@ -1,0 +1,71 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "provider_live": false,
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_error.v1",
+        "status": "BLOCKED",
+        "verdict": "DAG_CONTRACT_INVALID"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_bad_contract_course_correction.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_bad_contract_course_correction.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_bad_contract_course_correction",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/bad-contract-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/bad-contract-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/bad-contract-project-dag/agents"
+  ],
+  "completed_at": "2026-07-06T00:29:12Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "DAG_CONTRACT_INVALID",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau rejects a malformed project-agent DAG before dispatch and returns a project-agent-readable tau.dag_error.v1 course-correction payload.",
+  "receipt_summary": {
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "provider_live": false,
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_error.v1",
+    "status": "BLOCKED",
+    "verdict": "DAG_CONTRACT_INVALID"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T00:29:11Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_bad_contract_course_correction.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_bad_contract_course_correction.stdout.txt",
+  "timeout_seconds": 60
+}

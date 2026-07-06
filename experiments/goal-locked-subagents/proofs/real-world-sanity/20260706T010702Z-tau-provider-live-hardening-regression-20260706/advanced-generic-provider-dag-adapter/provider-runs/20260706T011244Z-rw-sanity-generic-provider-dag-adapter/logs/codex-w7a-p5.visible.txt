@@ -1,0 +1,22 @@
+        ning-regression-20260706/advanced-generic-provider-
+        dag-adapter/provider-runs/20260706T011244Z-rw-sanit
+        y-generic-provider-dag-adapter/provider-readiness/2
+        0260706T011244Z-rw-sanity-generic-provider-dag-adap
+        ter-readiness/logs/codex.visible.txt",
+    31 +    "jq -r '.visible_log_sha256' /home/graham/works
+        pace/experiments/tau/experiments/goal-locked-subage
+        nts/proofs/real-world-sanity/20260706T010702Z-tau-p
+        rovider-live-hardening-regression-20260706/advanced
+        -generic-provider-dag-adapter/provider-runs/2026070
+        6T011244Z-rw-sanity-generic-provider-dag-adapter/re
+        ceipts/attempt-01-coder.json",
+    32 +    "apply_patch: updated receipt commands_run with
+         verification commands"
+    33    ],
+
+• Working (1m 38s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

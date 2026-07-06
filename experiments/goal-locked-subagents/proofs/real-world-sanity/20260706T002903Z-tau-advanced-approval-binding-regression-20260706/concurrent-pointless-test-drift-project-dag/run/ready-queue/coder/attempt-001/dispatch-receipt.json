@@ -1,0 +1,54 @@
+{
+  "artifacts": [],
+  "command_results": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "print('============================= test session starts ============================='); print('collected 12 items'); print('tests/test_probe.py ....'); raise SystemExit(1)"
+      ],
+      "command_spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/concurrent-pointless-test-drift-project-dag/run/compiled-command-specs/coder/tau-dispatch-command.json",
+      "command_spec_sha256": "sha256:069e1b82677ff9ac9ddccb6a0d186fec8722eb72019c97a115384ecd61754e92",
+      "exit_code": 1,
+      "stderr": "",
+      "stdout": "============================= test session starts =============================\ncollected 12 items\ntests/test_probe.py ....\n",
+      "timed_out": false,
+      "timeout_s": 20.0
+    }
+  ],
+  "errors": [
+    "command exited 1"
+  ],
+  "live": false,
+  "mocked": true,
+  "ok": false,
+  "receipt_dir": null,
+  "response_projection": null,
+  "runner": "command",
+  "schema": "tau.agent_handoff_dispatch_receipt.v1",
+  "selected_agent": "coder",
+  "start_projection": {
+    "comment": {
+      "body": "## Tau Agent Handoff\n\n- Result: `DAG_NODE_READY`\n- Summary: Dependencies are satisfied for DAG node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/concurrent-pointless-test-drift-project-dag/dag-contract.json\"\n    ],\n    \"dag_agent_role\": \"coder\",\n    \"dag_node_id\": \"coder\",\n    \"summary\": \"Dispatch ready DAG node coder.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-concurrent-pointless-test-drift\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-concurrent-pointless-test-drift\",\n    \"goal_id\": \"rw-sanity-project-dag-concurrent-pointless-test-drift\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Ready DAG node coder in rw-sanity-project-dag-concurrent-pointless-test-drift.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/concurrent-pointless-test-drift-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:f9ad76fcb1c1018e4a95a6c3a36d29351bc4686b9a3ac506f8dcbeae59c37086\"\n      }\n    ],\n    \"status\": \"DAG_NODE_READY\",\n    \"summary\": \"Dependencies are satisfied for DAG node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+    },
+    "dry_run": true,
+    "errors": [],
+    "labels": {
+      "add": [
+        "agent-work",
+        "next:coder",
+        "executor:local"
+      ],
+      "remove": []
+    },
+    "next_agent": "coder",
+    "ok": true,
+    "schema": "tau.agent_handoff_projection_receipt.v1",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-pointless-test-drift"
+    }
+  },
+  "status": "BLOCKED",
+  "stop_reason": "command_failed"
+}

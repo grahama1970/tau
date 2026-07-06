@@ -1,0 +1,122 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "checkpoint": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/checkpoint.json",
+    "current_state": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/current-state.json",
+    "run_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/run-receipt.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": {
+    "active_node_id": null,
+    "blocked_nodes": [
+      "planner"
+    ],
+    "completed_nodes": [],
+    "ready_nodes": [],
+    "schema": "tau.generic_dag_checkpoint.v1",
+    "status": "BLOCKED",
+    "verdict": "SUBAGENT_ERROR"
+  },
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "detected_type": "generic_dag",
+  "events": {
+    "count": 6,
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/events.jsonl"
+  },
+  "evidence_validation": null,
+  "generic_dag": {
+    "blocked_node_count": 1,
+    "completed_node_count": 0,
+    "dispatched_node_count": 1,
+    "live": false,
+    "mocked": false,
+    "node_count": 1,
+    "nodes": [
+      {
+        "artifact_count": 0,
+        "artifacts": {},
+        "attempt_count": 1,
+        "duration_seconds": 0.013,
+        "error_count": 1,
+        "errors": [
+          "python3 -c raise SystemExit('stale work-order receipt should not be resumed') exited 1: stale work-order receipt should not be resumed"
+        ],
+        "finished_at": "2026-07-05T22:19:29Z",
+        "live": null,
+        "node_id": "planner",
+        "provider_live": null,
+        "provider_status": null,
+        "provider_verdict": null,
+        "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/receipts/planner.json",
+        "resumed": false,
+        "role": "planner",
+        "started_at": "2026-07-05T22:19:29Z",
+        "status": "BLOCKED",
+        "verdict": "SUBAGENT_ERROR",
+        "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/work-orders/planner.json",
+        "work_order_sha256": "6c476e008970aba909ddeba557f524c3c32ec9bb2d23848fbad64f49391f4ea9"
+      }
+    ],
+    "ok": false,
+    "provider_live": false,
+    "resume_requested": true,
+    "resume_source": {
+      "mode": "spec_path",
+      "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/dag-spec.json"
+    },
+    "resumed_node_count": 0,
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order/dag-spec.json",
+    "status": "BLOCKED",
+    "verdict": "SUBAGENT_ERROR"
+  },
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": false,
+  "orchestration_evidence": null,
+  "project_dag": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-stale-work-order",
+  "run_receipt": {
+    "completed_node_count": 0,
+    "live": false,
+    "mocked": false,
+    "node_count": 1,
+    "ok": false,
+    "run_id": "rw-sanity-generic-dag-stale-work-order",
+    "schema": "tau.generic_dag_run_receipt.v1",
+    "status": "BLOCKED",
+    "verdict": "SUBAGENT_ERROR"
+  },
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:19:29Z"
+}

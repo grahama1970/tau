@@ -58,6 +58,7 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_campaign,
     run_dag_stress_poc,
 )
+from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
     load_generated_ticket,
@@ -93,6 +94,7 @@ from tau_coding.handoff_dispatch import (
 from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.init_project import initialize_tau_project
+from tau_coding.itar_boundary import write_itar_access_preflight_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -114,6 +116,7 @@ from tau_coding.media_explainer_orchestration import (
     run_media_explainer_smoke,
 )
 from tau_coding.orchestration_evidence import build_orchestration_evidence
+from tau_coding.package_validate import write_compliance_package_validation_receipt
 from tau_coding.persona_dream_panel_proof import (
     DEFAULT_AGENT_REGISTRY_ROOT as DEFAULT_PERSONA_DREAM_PANEL_AGENT_ROOT,
 )
@@ -134,6 +137,7 @@ from tau_coding.project_dag import (
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
+from tau_coding.proof_index import build_proof_index
 from tau_coding.provenance import (
     build_actor_manifest,
     build_environment_manifest,
@@ -168,6 +172,7 @@ from tau_coding.provider_pane_poc import (
 from tau_coding.provider_runtime import create_model_provider
 from tau_coding.receipt_signing import sign_receipt, verify_signed_receipt
 from tau_coding.rendering import PrintOutputMode, create_event_renderer
+from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
 from tau_coding.run_report import write_run_report
@@ -199,6 +204,7 @@ from tau_coding.tui.proof import (
     render_textual_tui_memory_stage_proof,
 )
 from tau_coding.visible_dag_poc import inspect_visible_dag_run, run_visible_dag_poc
+from tau_coding.zero_trust_redteam import run_zero_trust_redteam
 
 app = typer.Typer(
     name="tau",
@@ -1037,31 +1043,9 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-run":
+    if prompt_option is None and command in {"dag-run", "run"}:
         try:
-            options = _parse_generic_dag_run_cli_args(positional_args[1:])
-            spec_path = options["spec_path"]
-            if _dag_run_schema(Path(spec_path)) == DAG_CONTRACT_SCHEMA:
-                try:
-                    payload = run_project_dag_contract(
-                        contract_path=Path(spec_path),
-                        receipt_dir=options.get("receipt_dir"),
-                        agents_root=Path(str(options["agents_root"])),
-                        command_spec_root=options.get("command_spec_root"),
-                        scheduler=str(options["scheduler"]),
-                    )
-                except RuntimeError as exc:
-                    payload = dag_contract_error_payload(
-                        contract_path=Path(spec_path),
-                        receipt_dir=options.get("receipt_dir"),
-                        error=str(exc),
-                        scheduler=str(options["scheduler"]),
-                    )
-            else:
-                payload = run_generic_dag(
-                    spec_path=Path(spec_path),
-                    resume=bool(options["resume"]),
-                )
+            payload = _run_dag_cli_command(positional_args[1:], command_name=str(command))
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -1436,6 +1420,25 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
+    if prompt_option is None and command == "proof-index":
+        try:
+            options = _parse_proof_index_cli_args(positional_args[1:])
+            payload = build_proof_index(
+                Path(str(options["proofs_dir"])),
+                output_path=Path(str(options["output_path"])),
+                receipt_path=(
+                    Path(str(options["receipt_path"]))
+                    if options.get("receipt_path") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
     if prompt_option is None and command == "verify-signed-receipt":
         try:
             options = _parse_verify_signed_receipt_cli_args(positional_args[1:])
@@ -1644,6 +1647,63 @@ def main(
                 source_path=source_path,
                 receipt_path=receipt_path,
             )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "research-query-gate":
+        try:
+            options = _parse_research_query_gate_args(positional_args[1:])
+            payload = write_research_query_safety_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "itar-access-preflight":
+        try:
+            options = _parse_itar_access_preflight_args(positional_args[1:])
+            payload = write_itar_access_preflight_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "compliance-package-validate":
+        try:
+            options = _parse_compliance_package_validate_args(positional_args[1:])
+            payload = write_compliance_package_validation_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "zero-trust-redteam":
+        try:
+            run_dir = _parse_zero_trust_redteam_args(positional_args[1:])
+            payload = run_zero_trust_redteam(run_dir=run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command in {"docker-sandbox-check", "docker-sandbox-run"}:
+        try:
+            options = _parse_docker_sandbox_check_args(positional_args[1:])
+            if command == "docker-sandbox-run":
+                options["execute"] = True
+            payload = write_docker_sandbox_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2412,10 +2472,39 @@ def _parse_orchestration_evidence_cli_args(args: list[str]) -> Path:
     return Path(args[0])
 
 
-def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
+def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, object]:
+    options = _parse_generic_dag_run_cli_args(args, command_name=command_name)
+    spec_path = Path(str(options["spec_path"]))
+    if _dag_run_schema(spec_path) == DAG_CONTRACT_SCHEMA:
+        try:
+            return run_project_dag_contract(
+                contract_path=spec_path,
+                receipt_dir=options.get("receipt_dir"),
+                agents_root=Path(str(options["agents_root"])),
+                command_spec_root=options.get("command_spec_root"),
+                scheduler=str(options["scheduler"]),
+            )
+        except RuntimeError as exc:
+            return dag_contract_error_payload(
+                contract_path=spec_path,
+                receipt_dir=options.get("receipt_dir"),
+                error=str(exc),
+                scheduler=str(options["scheduler"]),
+            )
+    return run_generic_dag(
+        spec_path=spec_path,
+        resume=bool(options["resume"]),
+    )
+
+
+def _parse_generic_dag_run_cli_args(
+    args: list[str],
+    *,
+    command_name: str = "dag-run",
+) -> dict[str, object]:
     if not args:
         raise RuntimeError(
-            "Usage: tau dag-run <dag-spec> [--no-resume] "
+            f"Usage: tau {command_name} <dag-spec> [--no-resume] "
             "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>] "
             "[--scheduler <handoff-loop|bounded-ready-queue>]"
         )
@@ -2456,7 +2545,7 @@ def _parse_generic_dag_run_cli_args(args: list[str]) -> dict[str, object]:
                 raise RuntimeError("--scheduler requires a value")
             scheduler = args[index]
         else:
-            raise RuntimeError(f"unknown dag-run option: {arg}")
+            raise RuntimeError(f"unknown {command_name} option: {arg}")
         index += 1
     return {
         "spec_path": spec_path,
@@ -2585,6 +2674,45 @@ def _parse_evidence_validate_cli_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"unknown evidence-validate option: {arg}")
         index += 1
     return {"manifest": manifest, "receipt": receipt}
+
+
+def _parse_proof_index_cli_args(args: list[str]) -> dict[str, object]:
+    if not args or args[0] != "build":
+        raise RuntimeError(
+            "Usage: tau proof-index build <proofs-dir> --out <index.jsonl> "
+            "[--receipt <receipt.json>]"
+        )
+    if len(args) < 2:
+        raise RuntimeError(
+            "Usage: tau proof-index build <proofs-dir> --out <index.jsonl> "
+            "[--receipt <receipt.json>]"
+        )
+    proofs_dir = Path(args[1])
+    output_path: Path | None = None
+    receipt_path: Path | None = None
+    index = 2
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            output_path = Path(args[index])
+        elif arg.startswith("--out="):
+            output_path = Path(arg.partition("=")[2])
+        elif arg == "--receipt":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt requires a value")
+            receipt_path = Path(args[index])
+        elif arg.startswith("--receipt="):
+            receipt_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown proof-index option: {arg}")
+        index += 1
+    if output_path is None:
+        raise RuntimeError("--out is required")
+    return {"proofs_dir": proofs_dir, "output_path": output_path, "receipt_path": receipt_path}
 
 
 def _parse_dag_expansion_validate_cli_args(args: list[str]) -> dict[str, object]:
@@ -4007,6 +4135,297 @@ def _parse_research_source_receipt_args(args: list[str]) -> tuple[Path, Path]:
     if receipt_path is None:
         raise RuntimeError("--receipt requires a value")
     return source_path, receipt_path
+
+
+def _parse_research_query_gate_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau research-query-gate --query <query> --method <method> "
+            "--policy-profile <policy.json> --data-boundary <boundary.json> "
+            "--receipt <receipt.json> [--authorization <auth.json>] "
+            "[--controlled-artifact <path> ...]"
+        )
+    options: dict[str, object] = {
+        "query": None,
+        "method": "brave-search",
+        "policy_profile_path": None,
+        "data_boundary_path": None,
+        "authorization_path": None,
+        "controlled_artifact_paths": [],
+        "receipt_path": None,
+    }
+    path_keys = {
+        "--policy-profile": "policy_profile_path",
+        "--data-boundary": "data_boundary_path",
+        "--authorization": "authorization_path",
+        "--receipt": "receipt_path",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--query",
+            "--method",
+            "--policy-profile",
+            "--data-boundary",
+            "--authorization",
+            "--controlled-artifact",
+            "--receipt",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--controlled-artifact":
+                artifacts = options["controlled_artifact_paths"]
+                if not isinstance(artifacts, list):
+                    raise RuntimeError("internal controlled artifact parser error")
+                artifacts.append(Path(value))
+            elif arg in path_keys:
+                options[path_keys[arg]] = Path(value)
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--query",
+                "--method",
+                "--policy-profile",
+                "--data-boundary",
+                "--authorization",
+                "--controlled-artifact",
+                "--receipt",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            if key == "--controlled-artifact":
+                artifacts = options["controlled_artifact_paths"]
+                if not isinstance(artifacts, list):
+                    raise RuntimeError("internal controlled artifact parser error")
+                artifacts.append(Path(value))
+            elif key in path_keys:
+                options[path_keys[key]] = Path(value)
+            else:
+                options[key.removeprefix("--").replace("-", "_")] = value
+        else:
+            raise RuntimeError(f"Unknown research-query-gate option: {arg}")
+        index += 1
+
+    query = options["query"]
+    if not isinstance(query, str) or not query.strip():
+        raise RuntimeError("--query requires a non-empty value")
+    method = options["method"]
+    if not isinstance(method, str) or not method.strip():
+        raise RuntimeError("--method requires a non-empty value")
+    for key, flag in {
+        "policy_profile_path": "--policy-profile",
+        "data_boundary_path": "--data-boundary",
+        "receipt_path": "--receipt",
+    }.items():
+        if not isinstance(options.get(key), Path):
+            raise RuntimeError(f"{flag} requires a value")
+    return options
+
+
+def _parse_itar_access_preflight_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau itar-access-preflight --actor-manifest <actor.json> "
+            "--data-boundary <boundary.json> --receipt <receipt.json> "
+            "[--approval-packet <approval.json>] [--required-boundary ITAR]"
+        )
+    options: dict[str, object] = {
+        "actor_manifest_path": None,
+        "data_boundary_path": None,
+        "approval_packet_path": None,
+        "receipt_path": None,
+        "required_boundary": "ITAR",
+    }
+    path_keys = {
+        "--actor-manifest": "actor_manifest_path",
+        "--data-boundary": "data_boundary_path",
+        "--approval-packet": "approval_packet_path",
+        "--receipt": "receipt_path",
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--actor-manifest",
+            "--data-boundary",
+            "--approval-packet",
+            "--receipt",
+            "--required-boundary",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg in path_keys:
+                options[path_keys[arg]] = Path(value)
+            else:
+                options["required_boundary"] = value
+        elif any(
+            arg.startswith(f"{flag}=")
+            for flag in (
+                "--actor-manifest",
+                "--data-boundary",
+                "--approval-packet",
+                "--receipt",
+                "--required-boundary",
+            )
+        ):
+            key, _, value = arg.partition("=")
+            if key in path_keys:
+                options[path_keys[key]] = Path(value)
+            else:
+                options["required_boundary"] = value
+        else:
+            raise RuntimeError(f"Unknown itar-access-preflight option: {arg}")
+        index += 1
+    for key, flag in {
+        "actor_manifest_path": "--actor-manifest",
+        "data_boundary_path": "--data-boundary",
+        "receipt_path": "--receipt",
+    }.items():
+        if not isinstance(options.get(key), Path):
+            raise RuntimeError(f"{flag} requires a value")
+    if not isinstance(options["required_boundary"], str) or not options["required_boundary"].strip():
+        raise RuntimeError("--required-boundary requires a non-empty value")
+    return options
+
+
+def _parse_compliance_package_validate_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError(
+            "Usage: tau compliance-package-validate <package-dir> "
+            "--receipt <receipt.json> [--policy itar-local-only]"
+        )
+    options: dict[str, object] = {
+        "package_dir": Path(args[0]),
+        "receipt_path": None,
+        "policy": "itar-local-only",
+    }
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--receipt", "--policy"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--receipt":
+                options["receipt_path"] = Path(args[index])
+            else:
+                options["policy"] = args[index]
+        elif arg.startswith("--receipt="):
+            options["receipt_path"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--policy="):
+            options["policy"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown compliance-package-validate option: {arg}")
+        index += 1
+    if not isinstance(options["receipt_path"], Path):
+        raise RuntimeError("--receipt requires a value")
+    if not isinstance(options["policy"], str) or not options["policy"].strip():
+        raise RuntimeError("--policy requires a non-empty value")
+    return options
+
+
+def _parse_zero_trust_redteam_args(args: list[str]) -> Path:
+    run_dir: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown zero-trust-redteam option: {arg}")
+        index += 1
+    if run_dir is None:
+        raise RuntimeError("Usage: tau zero-trust-redteam --run-dir <dir>")
+    return run_dir
+
+
+def _parse_docker_sandbox_check_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "image": None,
+        "command": [],
+        "receipt_path": None,
+        "backend": "docker",
+        "network": "none",
+        "user": "65532:65532",
+        "read_only_rootfs": True,
+        "cap_drop": ["ALL"],
+        "no_new_privileges": True,
+        "privileged": False,
+        "host_network": False,
+        "docker_socket_mounted": False,
+        "mounts": [],
+        "execute": False,
+        "timeout_seconds": 30,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--image", "--receipt", "--backend", "--network", "--user", "--mount"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--receipt":
+                options["receipt_path"] = Path(value)
+            elif arg == "--mount":
+                mounts = options["mounts"]
+                if not isinstance(mounts, list):
+                    raise RuntimeError("internal mount parser error")
+                mounts.append(value)
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = value
+        elif arg == "--command":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command requires at least one value")
+            options["command"] = args[index:]
+            break
+        elif arg == "--privileged":
+            options["privileged"] = True
+        elif arg == "--execute":
+            options["execute"] = True
+        elif arg in {"--timeout", "--timeout-seconds"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            try:
+                options["timeout_seconds"] = int(args[index])
+            except ValueError as exc:
+                raise RuntimeError(f"{arg} must be an integer") from exc
+        elif arg == "--host-network":
+            options["host_network"] = True
+            options["network"] = "host"
+        elif arg == "--docker-socket-mounted":
+            options["docker_socket_mounted"] = True
+        elif arg == "--no-read-only-rootfs":
+            options["read_only_rootfs"] = False
+        elif arg == "--allow-new-privileges":
+            options["no_new_privileges"] = False
+        elif arg == "--no-cap-drop-all":
+            options["cap_drop"] = []
+        else:
+            raise RuntimeError(f"Unknown docker-sandbox-check option: {arg}")
+        index += 1
+    if not isinstance(options["image"], str) or not options["image"].strip():
+        raise RuntimeError("--image requires a non-empty value")
+    if not isinstance(options["receipt_path"], Path):
+        raise RuntimeError("--receipt requires a value")
+    command = options["command"]
+    if not isinstance(command, list) or not command:
+        raise RuntimeError("--command requires at least one value")
+    return options
 
 
 def _parse_generated_ticket_github_create_cli_args(

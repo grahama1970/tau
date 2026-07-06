@@ -1,0 +1,96 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "error_count": 0,
+        "errors": [],
+        "indexed_receipt_count": 2,
+        "live": false,
+        "mocked": false,
+        "ok": true,
+        "output_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index.jsonl",
+        "output_sha256": "sha256:dfa83b9a3707d4752098a9334a4b8af799233ab043c6ce509d6b92b23fa583c7",
+        "provider_live": false,
+        "schema": "tau.proof_index_build_receipt.v1",
+        "schema_counts": {
+          "tau.dag_receipt.v1": 1,
+          "tau.monitor_receipt.v1": 1
+        },
+        "status": "PASS",
+        "status_counts": {
+          "PASS": 1,
+          "REVIEW": 1
+        },
+        "warning_count": 0
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/logs/medium.proof_index_build.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/logs/medium.proof_index_build.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.proof_index_build",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "proof-index",
+    "build",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/source",
+    "--out",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index.jsonl",
+    "--receipt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index-build-receipt.json"
+  ],
+  "completed_at": "2026-07-06T11:33:32Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": false,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index-build-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau builds a machine-readable proof index over a dedicated fixture source inside the current sanity run directory and writes a proof-index build receipt.",
+  "receipt_summary": {
+    "error_count": 0,
+    "errors": [],
+    "indexed_receipt_count": 2,
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "output_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/medium-proof-index/proof-index.jsonl",
+    "output_sha256": "sha256:dfa83b9a3707d4752098a9334a4b8af799233ab043c6ce509d6b92b23fa583c7",
+    "provider_live": false,
+    "schema": "tau.proof_index_build_receipt.v1",
+    "schema_counts": {
+      "tau.dag_receipt.v1": 1,
+      "tau.monitor_receipt.v1": 1
+    },
+    "status": "PASS",
+    "status_counts": {
+      "PASS": 1,
+      "REVIEW": 1
+    },
+    "warning_count": 0
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T11:33:31Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/logs/medium.proof_index_build.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T113331Z-tau-proof-index-sanity-fixture-final2-20260706/logs/medium.proof_index_build.stdout.txt",
+  "timeout_seconds": 120
+}

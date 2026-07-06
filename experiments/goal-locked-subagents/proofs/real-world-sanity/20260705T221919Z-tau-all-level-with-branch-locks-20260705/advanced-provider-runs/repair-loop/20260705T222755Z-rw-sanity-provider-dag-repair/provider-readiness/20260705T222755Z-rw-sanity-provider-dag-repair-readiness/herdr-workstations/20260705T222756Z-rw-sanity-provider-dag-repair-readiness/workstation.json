@@ -1,0 +1,156 @@
+{
+  "agents": {
+    "20260705t222755z-rw-sanity-provider-dag-repair-coder-codex": {
+      "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260705t222755z-rw-sanity-provider-dag-repair-coder-codex",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w62",
+          "--tab",
+          "w62:t2",
+          "--env",
+          "TAU_ROLE=codex",
+          "--env",
+          "TAU_AGENT_NAME=20260705t222755z-rw-sanity-provider-dag-repair-coder-codex",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/herdr-workstations/20260705T222756Z-rw-sanity-provider-dag-repair-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/work-orders/codex.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260705T222755Z-rw-sanity-provider-dag-repair-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=codex",
+          "--no-focus",
+          "--",
+          "codex",
+          "--cd",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260705t222755z-rw-sanity-provider-dag-repair-coder-codex",
+              "pane_id": "w62:p5",
+              "revision": 0,
+              "tab_id": "w62:t2",
+              "terminal_id": "term_655e4ab69d14b6ac",
+              "workspace_id": "w62"
+            },
+            "argv": [
+              "codex",
+              "--cd",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t222755z-rw-sanity-provider-dag-repair-coder-codex\",\"pane_id\":\"w62:p5\",\"revision\":0,\"tab_id\":\"w62:t2\",\"terminal_id\":\"term_655e4ab69d14b6ac\",\"workspace_id\":\"w62\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "codex",
+      "started_at": "20260705T222757Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/work-orders/codex.json"
+    },
+    "20260705t222755z-rw-sanity-provider-dag-repair-reviewer-opencode": {
+      "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+      "last_start_result": {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260705t222755z-rw-sanity-provider-dag-repair-reviewer-opencode",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w62",
+          "--tab",
+          "w62:t2",
+          "--env",
+          "TAU_ROLE=opencode",
+          "--env",
+          "TAU_AGENT_NAME=20260705t222755z-rw-sanity-provider-dag-repair-reviewer-opencode",
+          "--env",
+          "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/herdr-workstations/20260705T222756Z-rw-sanity-provider-dag-repair-readiness",
+          "--env",
+          "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/work-orders/opencode.json",
+          "--env",
+          "TAU_PROVIDER_READINESS_RUN_ID=20260705T222755Z-rw-sanity-provider-dag-repair-readiness",
+          "--env",
+          "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+          "--no-focus",
+          "--split",
+          "right",
+          "--",
+          "opencode",
+          "/home/graham/workspace/experiments/tau"
+        ],
+        "parsed": {
+          "id": "cli:agent:start",
+          "result": {
+            "agent": {
+              "agent_status": "unknown",
+              "cwd": "/home/graham/workspace/experiments/tau",
+              "focused": false,
+              "foreground_cwd": "/home/graham/workspace/experiments/tau",
+              "name": "20260705t222755z-rw-sanity-provider-dag-repair-reviewer-opencode",
+              "pane_id": "w62:p6",
+              "revision": 0,
+              "tab_id": "w62:t2",
+              "terminal_id": "term_655e4ab720d5f6ad",
+              "workspace_id": "w62"
+            },
+            "argv": [
+              "opencode",
+              "/home/graham/workspace/experiments/tau"
+            ],
+            "type": "agent_started"
+          }
+        },
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t222755z-rw-sanity-provider-dag-repair-reviewer-opencode\",\"pane_id\":\"w62:p6\",\"revision\":0,\"tab_id\":\"w62:t2\",\"terminal_id\":\"term_655e4ab720d5f6ad\",\"workspace_id\":\"w62\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+      },
+      "role": "opencode",
+      "started_at": "20260705T222757Z",
+      "tab": "providers",
+      "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/work-orders/opencode.json"
+    }
+  },
+  "created_at": "20260705T222756Z",
+  "cwd": "/home/graham/workspace/experiments/tau",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/herdr-workstations/20260705T222756Z-rw-sanity-provider-dag-repair-readiness/events.jsonl",
+  "kind": "herdr-workstation",
+  "label": "rw-sanity-provider-dag-repair-readiness",
+  "repo": "/home/graham/workspace/experiments/tau",
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/herdr-workstations/20260705T222756Z-rw-sanity-provider-dag-repair-readiness",
+  "run_id": "20260705T222756Z-rw-sanity-provider-dag-repair-readiness",
+  "schema_version": 1,
+  "session": "default",
+  "tabs": {
+    "logs": "w62:t3",
+    "providers": "w62:t2",
+    "receipts": "w62:t4"
+  },
+  "updated_at": "20260705T222757Z",
+  "workspace_id": "w62",
+  "worktree": {
+    "base": null,
+    "branch": null,
+    "enabled": false,
+    "path": null,
+    "raw": null
+  }
+}

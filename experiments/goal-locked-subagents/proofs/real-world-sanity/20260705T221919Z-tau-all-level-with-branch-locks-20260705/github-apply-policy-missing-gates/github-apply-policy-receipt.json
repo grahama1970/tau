@@ -1,0 +1,79 @@
+{
+  "actions": [
+    "comment",
+    "label"
+  ],
+  "approval_receipt": null,
+  "approval_receipt_sha256": null,
+  "checks": [
+    {
+      "code": "repo_allowlist",
+      "ok": true,
+      "repo": "grahama1970/tau"
+    },
+    {
+      "code": "action_denylist",
+      "denied_hits": [],
+      "ok": true
+    },
+    {
+      "allowed_misses": [],
+      "code": "action_allowlist",
+      "ok": true
+    },
+    {
+      "code": "preflight_required",
+      "ok": false,
+      "required": true
+    },
+    {
+      "code": "redaction_required",
+      "ok": false
+    },
+    {
+      "code": "approval_required",
+      "ok": false
+    }
+  ],
+  "errors": [
+    "preflight is required by policy but --preflight-ready was not supplied",
+    "redaction receipt is required by policy",
+    "approval receipt is required by policy"
+  ],
+  "live": false,
+  "mocked": false,
+  "ok": false,
+  "policy": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/github-apply-policy-missing-gates/github-apply-policy.json",
+  "policy_sha256": "28cbd949df01780f0dd82ce5b5106686a32a04e678b31ec1acd51f6d52e186ff",
+  "preflight_ready": false,
+  "projection": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/github-apply-policy-missing-gates/projection.json",
+  "projection_sha256": "d0e0830893f134b3ceaa717b7f840edecc66ced3558675b256a177e187a51fad",
+  "proof_scope": {
+    "does_not_prove": [
+      "Live GitHub mutation.",
+      "GitHub auth actually succeeds.",
+      "Semantic safety of the projected public comment.",
+      "Human acceptance of the projection content."
+    ],
+    "proves": [
+      "A GitHub projection and apply policy were inspected deterministically.",
+      "Repo/action allowlists and denial checks were evaluated before apply.",
+      "Required approval, redaction, and preflight gates fail closed when missing."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/github-apply-policy-missing-gates/github-apply-policy-receipt.json",
+  "redaction_receipt": null,
+  "redaction_receipt_sha256": null,
+  "requirements": {
+    "approval_packet": true,
+    "preflight": true,
+    "redaction": true
+  },
+  "schema": "tau.github_apply_policy_receipt.v1",
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue#47"
+  }
+}

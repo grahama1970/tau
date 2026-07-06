@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "attempt": 2,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260706T011501Z-rw-sanity-provider-dag-repair",
+  "errors": [],
+  "goal_hash": "sha256:49727d3b9beddedbcce4e5f4f2c1f96b426692c6b2500e392e84721434bf2601",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w7B:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e701091537831",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T011501Z-rw-sanity-provider-dag-repair-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "a3df59ea4b095a45da02e4c93b8d9c1ba025c659830fa5f804fb236b3d9dd187",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/advanced-provider-runs/repair-loop/20260706T011501Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "work_order_sha256": "c4a6533ef858213eba34fd1f91a4d8da3bcd0d8f5496a09dbbeb201b3a4974fd",
+  "workspace_id": "w7B"
+}

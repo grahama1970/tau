@@ -1,0 +1,16 @@
+{
+  "schema": "tau.human_approval_packet.v1",
+  "approved": true,
+  "actor": {
+    "id": "human:demo",
+    "auth_method": "manual"
+  },
+  "action": "provider_branch_scheduling",
+  "target": {
+    "id": "itar-grade-containment-demo"
+  },
+  "reason": "Demo approval packet for actor/access preflight only.",
+  "evidence": ["actor-manifest-verified.json"],
+  "nonce": "itar-grade-demo",
+  "signature": "demo-signature"
+}

@@ -78,6 +78,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `medium.herdr_cleanup_session_apply_fail_closed`: Tau blocks Herdr cleanup apply when a run records a Herdr session candidate, because session stop/delete remains unsupported until Tau records stronger session ownership.
 - `medium.herdr_gc_apply_requires_approval`: Tau blocks broad Herdr GC apply when no approval receipt authorizes label-based workspace cleanup.
 - `medium.herdr_gc_apply_with_approval`: Tau generates an approval-gate receipt for `herdr_gc_apply`, then applies broad Herdr GC against a fake Herdr CLI and verifies the workspace is absent afterward.
+- `medium.herdr_gc_apply_wrong_approval_target`: Tau blocks broad Herdr GC apply when the approval receipt target does not match the configured GC label-prefix scope.
 - `medium.orchestration_evidence_status`: Tau summarizes a standalone orchestration evidence receipt through the read-only `tau run-status` surface.
 - `medium.provider_lifecycle_status`: Tau summarizes provider lifecycle state artifacts through the read-only `tau run-status` surface.
 - `medium.provider_lifecycle_crashed_ready_fail_closed`: Tau normalizes a provider readiness record that claims ready but has no live foreground process as crashed, not schedulable.
@@ -88,6 +89,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `medium.dag_stress_status`: Tau summarizes a deterministic DAG stress suite through the read-only `tau run-status` surface.
 - `medium.dag_stress_campaign`: repeated scheduler stress across retry budgets.
 - `medium.dag_stress_campaign_status`: Tau summarizes a deterministic DAG stress campaign through the read-only `tau run-status` surface.
+- `medium.proof_index_build`: Tau builds a machine-readable proof index over a dedicated fixture source inside the current sanity run directory and writes a `tau.proof_index_build_receipt.v1` receipt.
 
 ## Advanced
 
@@ -98,17 +100,30 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `advanced.project_dag_bad_contract_course_correction`: Tau rejects an invalid project DAG contract and emits a `tau.dag_error.v1` course-correction JSON payload for project agents.
 - `advanced.project_dag_evidence_manifest_goal_hash_fail_closed`: Tau rejects a project DAG before dispatch when a typed evidence manifest contains an artifact whose goal hash differs from the immutable DAG goal.
 - `advanced.evidence_manifest_validates_clean_artifact`: Tau validates a typed evidence manifest whose artifact hash, schema, validator namespace, and goal hash all match.
+- `advanced.project_dag_memory_evidence_gate_valid_dispatches`: Tau accepts valid Memory intent plus a separate evidence case, writes gate receipts, and still dispatches the DAG to coder/reviewer.
+- `advanced.project_dag_memory_evidence_gate_inline_evidence_fail_closed`: Tau rejects a project DAG before dispatch when Memory intent carries inline evidence instead of routing to a separate evidence case; the DAG error recommends repairing the Memory intent before dispatch.
+- `advanced.project_dag_memory_evidence_gate_clarify_route_fail_closed`: Tau rejects a project DAG before dispatch when Memory routes to CLARIFY instead of an actionable execution route; the DAG error recommends returning to a human/goal-guardian route.
+- `advanced.project_dag_memory_evidence_gate_missing_case_hash_fail_closed`: Tau rejects a project DAG before dispatch when the separate evidence case lacks a stable case hash; the DAG error recommends repairing the evidence case before dispatch.
 - `advanced.project_dag_command_policy_network_fail_closed`: Tau emits a project-agent-readable `command_policy_rejected` DAG error when a command spec declares network use without policy approval.
 - `advanced.project_dag_command_policy_allows_local_spec`: Tau runs a project DAG through a command-spec trust policy when the local command root and cwd are allowed.
 - `advanced.project_dag_command_policy_mutation_fail_closed`: Tau emits a project-agent-readable `command_policy_rejected` DAG error when a command spec declares mutation without policy approval.
 - `advanced.project_dag_ready_queue_cycle_fail_closed`: Tau blocks a bounded ready-queue project DAG when the declared graph contains a cycle.
 - `advanced.project_dag_ready_queue_mutating_branch_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares mutating behavior before branch locks exist.
 - `advanced.project_dag_ready_queue_provider_policy_fail_closed`: Tau blocks bounded ready-queue scheduling when a concurrent node declares provider-live behavior before provider branch policy exists.
+- `advanced.project_dag_ready_queue_pointless_test_drift_course_correction`: Tau blocks a ready-queue subagent that emits test-only churn instead of task evidence and writes a `tau.course_correction.v1` artifact.
+- `advanced.project_dag_ready_queue_brave_required_after_two_attempts`: Tau stops normal retry after two failed ready-queue attempts and requires `$brave-search` before a third attempt can proceed.
 - `advanced.dag_expansion_apply_tampered_preview_fail_closed`: Tau validates and policy-checks an adaptive DAG expansion, then blocks `dag-expansion-apply` when the expanded preview artifact no longer matches the validation hash.
+- `advanced.dag_expansion_apply_tampered_source_fail_closed`: Tau validates and policy-checks an adaptive DAG expansion, then blocks `dag-expansion-apply` when the source DAG contract no longer matches the validation hash.
 - `advanced.dag_route_memory_dry_run_projects_documents`: Tau projects clean route-memory candidates into Memory document shape without writing to Memory.
 - `advanced.dag_route_memory_apply_requires_approval`: Tau projects route-memory candidates locally, then blocks Memory sync apply when no `memory_upsert` approval receipt is supplied.
+- `advanced.dag_route_memory_apply_approval_target_fail_closed`: Tau projects route-memory candidates locally, then blocks Memory sync apply when the `memory_upsert` approval targets a different DAG/collection.
+- `advanced.dag_route_memory_apply_with_approval_syncs`: Tau projects route-memory candidates locally, then performs an approved Memory `/upsert` against a local HTTP endpoint.
+- `advanced.research_source_arxiv_packet_passes`: Tau accepts a source-bearing ArXiv research packet as review-required design input without treating research as closure proof.
+- `advanced.research_source_arxiv_metadata_fail_closed`: Tau rejects a packet that claims `method:"arxiv"` but cites a generic non-ArXiv source without an `arxiv_id`.
 - `advanced.github_apply_policy_missing_gates_fail_closed`: Tau blocks a GitHub apply projection when policy-required approval, preflight, and redaction gates are missing.
 - `advanced.github_apply_policy_all_gates_pass`: Tau allows a GitHub apply projection to pass local policy only when approval, preflight, and redaction evidence are all supplied; this is still non-mutating and does not post to GitHub.
+- `advanced.github_apply_policy_redaction_hash_fail_closed`: Tau blocks a GitHub apply projection when the redacted projection artifact no longer matches the redaction receipt hash.
+- `advanced.github_apply_policy_approval_target_fail_closed`: Tau blocks a GitHub apply projection when the approval receipt target does not match the projection repo and issue target.
 - `advanced.provider_readiness`: Herdr allocates visible Codex and OpenCode provider panes, writes structured `tau.provider_session_state.v1` lifecycle records, and records post-check cleanup when provider cleanup is enabled.
 - `advanced.provider_dag_one_pass`: live visible Codex coder and OpenCode reviewer complete a one-pass scratch DAG.
 - `advanced.generic_provider_dag_adapter`: generic DAG executes a provider-backed adapter node and carries `provider_live` evidence in the generic run receipt.

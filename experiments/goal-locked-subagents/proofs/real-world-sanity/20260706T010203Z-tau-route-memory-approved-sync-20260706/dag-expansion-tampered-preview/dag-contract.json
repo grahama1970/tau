@@ -1,0 +1,63 @@
+{
+  "dag_id": "rw-sanity-dag-expansion",
+  "edges": [
+    {
+      "from": "coder",
+      "to": "reviewer"
+    },
+    {
+      "from": "reviewer",
+      "to": "human"
+    }
+  ],
+  "entry_node": "coder",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence"
+  ],
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-dag-expansion",
+    "goal_id": "rw-sanity-dag-expansion",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 30,
+    "max_total_attempts": 3,
+    "resume": true
+  },
+  "nodes": [
+    {
+      "agent": "coder",
+      "executor": "local",
+      "id": "coder",
+      "max_attempts": 1,
+      "required_evidence": [
+        "creator_artifact"
+      ]
+    },
+    {
+      "agent": "reviewer",
+      "executor": "local",
+      "id": "reviewer",
+      "max_attempts": 1,
+      "required_evidence": [
+        "reviewer_verdict"
+      ]
+    }
+  ],
+  "required_evidence": [
+    "creator_artifact",
+    "reviewer_verdict"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-dag-expansion"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}

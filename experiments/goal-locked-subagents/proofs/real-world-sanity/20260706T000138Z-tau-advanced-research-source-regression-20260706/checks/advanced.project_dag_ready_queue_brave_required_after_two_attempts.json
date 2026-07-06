@@ -1,0 +1,251 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "brave_search_required_after_two_attempts"
+        ],
+        "alert_count": 1,
+        "course_correction_artifact_count": 1,
+        "course_correction_artifacts": [
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json"
+        ],
+        "dag_error": {
+          "active_goal_hash": "sha256:rw-sanity-project-dag-concurrent-brave-required",
+          "attempts": 2,
+          "dag_id": "rw-sanity-project-dag-concurrent-brave-required",
+          "evidence": {
+            "alert_codes": [
+              "brave_search_required_after_two_attempts"
+            ],
+            "alert_count": 1,
+            "errors": [
+              "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+            ],
+            "primary_alert": {
+              "code": "brave_search_required_after_two_attempts",
+              "evidence": {
+                "agent": "coder",
+                "attempts": 2,
+                "course_correction_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json",
+                "max_attempts": 3,
+                "node_id": "coder",
+                "stop_reason": "invalid_command_json"
+              },
+              "message": "Node reached two failed attempts and must use $brave-search before retry.",
+              "severity": "BLOCK"
+            }
+          },
+          "failed_agent": "coder",
+          "failed_node": "coder",
+          "failure_code": "brave_search_required_after_two_attempts",
+          "max_attempts": 3,
+          "message": "Node reached two failed attempts and must use $brave-search before retry.",
+          "proof_scope": {
+            "does_not_prove": [
+              "The recommended action has been executed.",
+              "The project agent accepted or applied the course correction.",
+              "Provider/model semantic quality."
+            ],
+            "proves": [
+              "Tau detected a blocked DAG execution.",
+              "Tau packaged the primary failure as a project-agent course-correction payload.",
+              "No DAG route, goal, target, or handoff was mutated by this error contract."
+            ]
+          },
+          "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-receipt.json",
+          "recommended_action": {
+            "next_agent": "goal-guardian",
+            "reason": "Require $brave-search research before another attempt.",
+            "type": "run_brave_search_then_retry"
+          },
+          "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run",
+          "scheduler": "bounded-ready-queue",
+          "schema": "tau.dag_error.v1",
+          "severity": "BLOCK",
+          "status": "BLOCKED",
+          "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-project-dag-concurrent-brave-required"
+          },
+          "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+        },
+        "errors": [
+          "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+        ],
+        "execution_seconds": 0.447266,
+        "live": true,
+        "max_concurrency": 2,
+        "max_observed_concurrency": 1,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 2,
+          "research": 1
+        },
+        "node_count": 4,
+        "observed_edges": [],
+        "ok": false,
+        "provider_live": false,
+        "reviewer_verdicts": [],
+        "scheduler": "bounded-ready-queue",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "coder"
+        ],
+        "status": "BLOCKED",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-concurrent-brave-required"
+        },
+        "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.project_dag_ready_queue_brave_required_after_two_attempts.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.project_dag_ready_queue_brave_required_after_two_attempts.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_ready_queue_brave_required_after_two_attempts",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "dag-run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/agents",
+    "--scheduler",
+    "bounded-ready-queue"
+  ],
+  "completed_at": "2026-07-06T00:01:44Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau stops normal retry after two failed ready-queue attempts and requires $brave-search before a third attempt can proceed.",
+  "receipt_summary": {
+    "alert_codes": [
+      "brave_search_required_after_two_attempts"
+    ],
+    "alert_count": 1,
+    "course_correction_artifact_count": 1,
+    "course_correction_artifacts": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json"
+    ],
+    "dag_error": {
+      "active_goal_hash": "sha256:rw-sanity-project-dag-concurrent-brave-required",
+      "attempts": 2,
+      "dag_id": "rw-sanity-project-dag-concurrent-brave-required",
+      "evidence": {
+        "alert_codes": [
+          "brave_search_required_after_two_attempts"
+        ],
+        "alert_count": 1,
+        "errors": [
+          "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+        ],
+        "primary_alert": {
+          "code": "brave_search_required_after_two_attempts",
+          "evidence": {
+            "agent": "coder",
+            "attempts": 2,
+            "course_correction_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/course-corrections/coder-attempt-002-brave_search_required_after_two_attempts.json",
+            "max_attempts": 3,
+            "node_id": "coder",
+            "stop_reason": "invalid_command_json"
+          },
+          "message": "Node reached two failed attempts and must use $brave-search before retry.",
+          "severity": "BLOCK"
+        }
+      },
+      "failed_agent": "coder",
+      "failed_node": "coder",
+      "failure_code": "brave_search_required_after_two_attempts",
+      "max_attempts": 3,
+      "message": "Node reached two failed attempts and must use $brave-search before retry.",
+      "proof_scope": {
+        "does_not_prove": [
+          "The recommended action has been executed.",
+          "The project agent accepted or applied the course correction.",
+          "Provider/model semantic quality."
+        ],
+        "proves": [
+          "Tau detected a blocked DAG execution.",
+          "Tau packaged the primary failure as a project-agent course-correction payload.",
+          "No DAG route, goal, target, or handoff was mutated by this error contract."
+        ]
+      },
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run/dag-receipt.json",
+      "recommended_action": {
+        "next_agent": "goal-guardian",
+        "reason": "Require $brave-search research before another attempt.",
+        "type": "run_brave_search_then_retry"
+      },
+      "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/concurrent-brave-required-project-dag/run",
+      "scheduler": "bounded-ready-queue",
+      "schema": "tau.dag_error.v1",
+      "severity": "BLOCK",
+      "status": "BLOCKED",
+      "target": {
+        "repo": "grahama1970/tau",
+        "target": "scratch-project-dag-concurrent-brave-required"
+      },
+      "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+    },
+    "errors": [
+      "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+    ],
+    "execution_seconds": 0.447266,
+    "live": true,
+    "max_concurrency": 2,
+    "max_observed_concurrency": 1,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 2,
+      "research": 1
+    },
+    "node_count": 4,
+    "observed_edges": [],
+    "ok": false,
+    "provider_live": false,
+    "reviewer_verdicts": [],
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "coder",
+      "coder"
+    ],
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-concurrent-brave-required"
+    },
+    "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T00:01:43Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.project_dag_ready_queue_brave_required_after_two_attempts.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.project_dag_ready_queue_brave_required_after_two_attempts.stdout.txt",
+  "timeout_seconds": 120
+}

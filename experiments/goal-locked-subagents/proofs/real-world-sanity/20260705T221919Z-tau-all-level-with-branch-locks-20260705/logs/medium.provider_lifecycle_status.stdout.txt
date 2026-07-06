@@ -1,0 +1,136 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "run_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle/run-receipt.json",
+    "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle/runtime-manifest.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "detected_type": "provider_readiness",
+  "events": {
+    "count": 0,
+    "path": null
+  },
+  "evidence_validation": null,
+  "generic_dag": null,
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": null,
+  "project_dag": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": {
+    "all_provider_structured_ready": false,
+    "inspect_path": null,
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "provider_session_state_count": 2,
+    "readiness": [],
+    "readiness_record_count": 0,
+    "ready_count": 0,
+    "run_id": "rw-sanity-provider-lifecycle",
+    "schema": "tau.provider_readiness_run_receipt.v1",
+    "state_counts": {
+      "auth_required": 1,
+      "ready": 1
+    },
+    "status": "PASS",
+    "workstation_manifest": null
+  },
+  "provider_session_states": [
+    {
+      "auth_status": null,
+      "foreground_command": "codex",
+      "interstitial_kind": null,
+      "interstitial_present": null,
+      "observed_at": null,
+      "pane_id": "w-rw-sanity-lifecycle:p5",
+      "process_alive": true,
+      "provider_api_available": null,
+      "provider_event_log_path": null,
+      "provider_id": "codex",
+      "provider_readiness_path": null,
+      "provider_readiness_sha256": null,
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle/readiness/codex.session-state.json",
+      "provider_session_state_sha256": "4d1c542e803e02b8d6e2c8e00b0d12d66e9007ae01730fc00d9a6e0cdfd53108",
+      "ready": true,
+      "schema": "tau.provider_session_state.v1",
+      "source": "real_world_sanity_static_provider_lifecycle_fixture",
+      "state": "ready",
+      "terminal_id": "term-codex",
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle/logs/codex.visible.txt",
+      "workspace_id": "w-rw-sanity-lifecycle"
+    },
+    {
+      "auth_status": null,
+      "foreground_command": "opencode",
+      "interstitial_kind": null,
+      "interstitial_present": null,
+      "observed_at": null,
+      "pane_id": "w-rw-sanity-lifecycle:p6",
+      "process_alive": true,
+      "provider_api_available": null,
+      "provider_event_log_path": null,
+      "provider_id": "opencode",
+      "provider_readiness_path": null,
+      "provider_readiness_sha256": null,
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle/readiness/opencode.session-state.json",
+      "provider_session_state_sha256": "d6c625554758e726325dc11d40602e3da7aa6066baaa07179f023d6bdb43fce4",
+      "ready": false,
+      "schema": "tau.provider_session_state.v1",
+      "source": "real_world_sanity_static_provider_lifecycle_fixture",
+      "state": "auth_required",
+      "terminal_id": "term-opencode",
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle/logs/opencode.visible.txt",
+      "workspace_id": "w-rw-sanity-lifecycle"
+    }
+  ],
+  "real_world_sanity": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-lifecycle",
+  "run_receipt": {
+    "all_provider_structured_ready": false,
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "run_id": "rw-sanity-provider-lifecycle",
+    "schema": "tau.provider_readiness_run_receipt.v1",
+    "status": "PASS"
+  },
+  "runtime_manifest": {
+    "events_jsonl": null,
+    "provider_session_state_count": 2,
+    "readiness_record_count": 0,
+    "run_id": "rw-sanity-provider-lifecycle",
+    "schema": "tau.provider_readiness_runtime_manifest.v1"
+  },
+  "schema": "tau.run_status.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:37Z"
+}

@@ -1,0 +1,79 @@
+{
+  "approval_gate": {
+    "approval_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-approval-gates/closure-mismatch-approval.json",
+    "approval_packet_sha256": "3c75337e9fd547e0e44c5fac753b4a088b55897d019d063a04c76bc2169b5008",
+    "approved": false,
+    "errors": [
+      "action must match requested_action github_ticket_closure"
+    ],
+    "ok": false,
+    "packet_summary": {
+      "action": "working_tree_mutation",
+      "actor_auth_method": "manual",
+      "actor_id": "human:graham",
+      "approved": true,
+      "evidence_count": 1,
+      "expires_at": null,
+      "human_id": "human:graham",
+      "nonce": "real-world-sanity:working_tree_mutation:github-ticket-closure",
+      "schema": "tau.human_approval_packet.v1",
+      "signature_present": true,
+      "target_id": "github-ticket-closure"
+    },
+    "requested_action": "github_ticket_closure",
+    "schema": "tau.approval_gate_receipt.v1",
+    "status": "BLOCKED"
+  },
+  "artifacts": {
+    "approval_gate": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-approval-gates/blocked/approval-gate-receipt.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "detected_type": "approval_gate",
+  "events": {
+    "count": 0,
+    "path": null
+  },
+  "evidence_validation": null,
+  "generic_dag": null,
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": false,
+  "orchestration_evidence": null,
+  "project_dag": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": null,
+  "provider_session_states": [],
+  "real_world_sanity": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-approval-gates/blocked",
+  "run_receipt": null,
+  "runtime_manifest": null,
+  "schema": "tau.run_status.v1",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:19:32Z"
+}

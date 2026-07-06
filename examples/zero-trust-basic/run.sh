@@ -1,28 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
-mkdir -p out
+EXAMPLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${EXAMPLE_DIR}/../.." && pwd)"
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-tau-zero-trust-basic"
+RUN_DIR="${TMPDIR:-/tmp}/${RUN_ID}"
+RECEIPT="${RUN_DIR}/zero-trust-preflight-receipt.json"
 
+mkdir -p "${RUN_DIR}"
+
+cd "${REPO_ROOT}"
 uv run tau zero-trust-doctor \
-  --policy-profile policy-profile.json \
-  --data-boundary data-boundary.json \
-  --dag-contract dag.json \
-  --receipt out/zero-trust-preflight-receipt.json
+  --policy-profile "${EXAMPLE_DIR}/policy-profile.json" \
+  --data-boundary "${EXAMPLE_DIR}/data-boundary.json" \
+  --dag-contract "${EXAMPLE_DIR}/dag-contract.json" \
+  --receipt "${RECEIPT}" >/dev/null
 
-python3 - <<'PY'
-import json
-from pathlib import Path
-
-receipt = json.loads(Path("out/zero-trust-preflight-receipt.json").read_text())
-summary = {
-    "schema": receipt.get("schema"),
-    "ok": receipt.get("ok"),
-    "status": receipt.get("status"),
-    "mocked": receipt.get("mocked"),
-    "live": receipt.get("live"),
-    "provider_live": receipt.get("provider_live"),
-    "alert_codes": receipt.get("alert_codes"),
-}
-print(json.dumps(summary, indent=2, sort_keys=True))
-PY
+jq '{
+  receipt: "'"${RECEIPT}"'",
+  schema,
+  status,
+  ok,
+  mocked,
+  live,
+  provider_live,
+  alert_count: (.alerts | length),
+  does_not_prove: .proof_scope.does_not_prove
+}' "${RECEIPT}"

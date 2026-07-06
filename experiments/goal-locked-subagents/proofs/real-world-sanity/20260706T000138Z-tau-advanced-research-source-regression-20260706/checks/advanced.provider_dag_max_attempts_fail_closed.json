@@ -1,0 +1,614 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "revise"
+        ],
+        "alert_count": 1,
+        "attempt_count": 2,
+        "command_results": [
+          {
+            "argv": [
+              "herdr",
+              "agent",
+              "start",
+              "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-planner",
+              "--cwd",
+              "/home/graham/workspace/experiments/tau",
+              "--workspace",
+              "w6Y",
+              "--no-focus",
+              "--",
+              "bash",
+              "-lc",
+              "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-planner\",\"pane_id\":\"w6Y:p7\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623bcd0707b9\",\"workspace_id\":\"w6Y\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "agent",
+              "start",
+              "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-orchestrator",
+              "--cwd",
+              "/home/graham/workspace/experiments/tau",
+              "--workspace",
+              "w6Y",
+              "--no-focus",
+              "--",
+              "bash",
+              "-lc",
+              "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-orchestrator\",\"pane_id\":\"w6Y:p8\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623c211ae7ba\",\"workspace_id\":\"w6Y\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "agent",
+              "start",
+              "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-01",
+              "--cwd",
+              "/home/graham/workspace/experiments/tau",
+              "--workspace",
+              "w6Y",
+              "--no-focus",
+              "--",
+              "python3",
+              "-c",
+              "import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))",
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-01\",\"pane_id\":\"w6Y:p9\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623c804f87bb\",\"workspace_id\":\"w6Y\"},\"argv\":[\"python3\",\"-c\",\"import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json\"],\"type\":\"agent_started\"}}\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "agent",
+              "start",
+              "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-01",
+              "--cwd",
+              "/home/graham/workspace/experiments/tau",
+              "--workspace",
+              "w6Y",
+              "--no-focus",
+              "--",
+              "opencode",
+              "run",
+              "--dir",
+              "/home/graham/workspace/experiments/tau",
+              "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\",\n  \"goal_hash\": \"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": 1,\n  \"workspace_id\": \"w6Y\",\n  \"pane_id\": \"w6Y:p6\",\n  \"terminal_id\": \"term_655e6218871cf7b8\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after review>\",\n  \"work_order_sha256\": \"56f9da120ff2c55b1f291605356ef9ce612c10a57db07a350d07c09ff5306db6\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-01\",\"pane_id\":\"w6Y:pA\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623ce036c7bc\",\"workspace_id\":\"w6Y\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json\\n- Copy the exact work_order_sha256 field from the work order into the receipt.\\n  Do not replace it with sha256sum output for the work-order file.\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"dag_id\\\": \\\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\",\\n  \\\"goal_hash\\\": \\\"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": 1,\\n  \\\"workspace_id\\\": \\\"w6Y\\\",\\n  \\\"pane_id\\\": \\\"w6Y:p6\\\",\\n  \\\"terminal_id\\\": \\\"term_655e6218871cf7b8\\\",\\n  \\\"visible_log_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\\\",\\n  \\\"visible_log_sha256\\\": \\\"<sha256 of visible_log_path after review>\\\",\\n  \\\"work_order_sha256\\\": \\\"56f9da120ff2c55b1f291605356ef9ce612c10a57db07a350d07c09ff5306db6\\\",\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:pA",
+              "--source",
+              "visible",
+              "--lines",
+              "80"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": ""
+          },
+          {
+            "argv": [
+              "herdr",
+              "agent",
+              "start",
+              "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-02",
+              "--cwd",
+              "/home/graham/workspace/experiments/tau",
+              "--workspace",
+              "w6Y",
+              "--no-focus",
+              "--",
+              "python3",
+              "-c",
+              "import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))",
+              "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-02\",\"pane_id\":\"w6Y:pB\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e6269264ce7bd\",\"workspace_id\":\"w6Y\"},\"argv\":[\"python3\",\"-c\",\"import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json\"],\"type\":\"agent_started\"}}\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "agent",
+              "start",
+              "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-02",
+              "--cwd",
+              "/home/graham/workspace/experiments/tau",
+              "--workspace",
+              "w6Y",
+              "--no-focus",
+              "--",
+              "opencode",
+              "run",
+              "--dir",
+              "/home/graham/workspace/experiments/tau",
+              "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\",\n  \"goal_hash\": \"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": 2,\n  \"workspace_id\": \"w6Y\",\n  \"pane_id\": \"w6Y:p6\",\n  \"terminal_id\": \"term_655e6218871cf7b8\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after review>\",\n  \"work_order_sha256\": \"cfff8a0908b6d0916603190188da90052973410a4b2b08f276d6f80eaedc8c24\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-02\",\"pane_id\":\"w6Y:pC\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e626988d397be\",\"workspace_id\":\"w6Y\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json\\n- Copy the exact work_order_sha256 field from the work order into the receipt.\\n  Do not replace it with sha256sum output for the work-order file.\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"dag_id\\\": \\\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\",\\n  \\\"goal_hash\\\": \\\"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": 2,\\n  \\\"workspace_id\\\": \\\"w6Y\\\",\\n  \\\"pane_id\\\": \\\"w6Y:p6\\\",\\n  \\\"terminal_id\\\": \\\"term_655e6218871cf7b8\\\",\\n  \\\"visible_log_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\\\",\\n  \\\"visible_log_sha256\\\": \\\"<sha256 of visible_log_path after review>\\\",\\n  \\\"work_order_sha256\\\": \\\"cfff8a0908b6d0916603190188da90052973410a4b2b08f276d6f80eaedc8c24\\\",\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:pC",
+              "--source",
+              "visible",
+              "--lines",
+              "80"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": ""
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:p5",
+              "--source",
+              "visible",
+              "--lines",
+              "120"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "  left. Run /status for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)                     \u2502\n\u2502                                                \u2502\n\u2502 model:       gpt-5.5 medium   /model to change \u2502\n\u2502 directory:   ~/workspace/experiments/tau       \u2502\n\u2502 permissions: YOLO mode                         \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\n  Tip: Press Tab to queue a message when a task is running;\n  otherwise it sends immediately (except !).\n\n\u2022 You have 2 usage limit resets available. Run /usage to\nuse one.\n\n\n\u203a Implement {feature}\n\n  gpt-5.5 medium \u00b7 ~/workspace/experiments/tau\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:p6",
+              "--source",
+              "visible",
+              "--lines",
+              "120"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": ""
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:p7",
+              "--source",
+              "visible",
+              "--lines",
+              "120"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "raham/workspace/experiments/tau/experiments/goal-locked-sub\nagents/proofs/real-world-sanity/20260706T000138Z-tau-advanc\ned-research-source-regression-20260706/advanced-provider-ru\nns/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-m\nax-exhaustion\\ndag_spec: /home/graham/workspace/experiments\n/tau/experiments/goal-locked-subagents/proofs/real-world-sa\nnity/20260706T000138Z-tau-advanced-research-source-regressi\non-20260706/advanced-provider-runs/max-exhaustion/20260706T\n001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\n\\nplanner_receipt: /home/graham/workspace/experiments/tau/e\nxperiments/goal-locked-subagents/proofs/real-world-sanity/2\n0260706T000138Z-tau-advanced-research-source-regression-202\n60706/advanced-provider-runs/max-exhaustion/20260706T001231\nZ-rw-sanity-provider-dag-max-exhaustion/planner-receipt.jso\nn\\nfinal_receipt: /home/graham/workspace/experiments/tau/ex\nperiments/goal-locked-subagents/proofs/real-world-sanity/20\n260706T000138Z-tau-advanced-research-source-regression-2026\n0706/advanced-provider-runs/max-exhaustion/20260706T001231Z\n-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\nca\nnonical truth: Tau JSON receipts; this pane is human-visibl\ne telemetry.\\n\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:p8",
+              "--source",
+              "visible",
+              "--lines",
+              "120"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "l-world-sanity/20260706T0001\n38Z-tau-advanced-research-so\nurce-regression-20260706/adv\nanced-provider-runs/max-exha\nustion/20260706T001231Z-rw-s\nanity-provider-dag-max-exhau\nstion/planner-receipt.json\\n\nfinal_receipt: /home/graham/\nworkspace/experiments/tau/ex\nperiments/goal-locked-subage\nnts/proofs/real-world-sanity\n/20260706T000138Z-tau-advanc\ned-research-source-regressio\nn-20260706/advanced-provider\n-runs/max-exhaustion/2026070\n6T001231Z-rw-sanity-provider\n-dag-max-exhaustion/run-rece\nipt.json\\ncanonical truth: T\nau JSON receipts; this pane\nis human-visible telemetry.\\\nn\n"
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:pB",
+              "--source",
+              "visible",
+              "--lines",
+              "120"
+            ],
+            "returncode": 1,
+            "stderr": "{\"code\":\"pane_not_found\",\"message\":\"pane w6Y:pB not found\"}\n",
+            "stdout": ""
+          },
+          {
+            "argv": [
+              "herdr",
+              "pane",
+              "read",
+              "w6Y:pC",
+              "--source",
+              "visible",
+              "--lines",
+              "120"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "ocked-subagen\nts/proofs/rea\nl-world-sanit\ny/20260706T00\n0138Z-tau-adv\nanced-researc\nh-source-regr\nession-202607\n06/advanced-p\nrovider-runs/\nmax-exhaustio\nn/20260706T00\n1231Z-rw-sani\nty-provider-d\nag-max-exhaus\ntion/receipts\n/attempt-02-r\neviewer.json\nWrote file su\nccessfully.\n"
+          }
+        ],
+        "herdr_cleanup": {
+          "applied_action_count": 1,
+          "candidate_count": 1,
+          "herdr_surface": "real",
+          "live": true,
+          "mocked": false,
+          "mode": "apply",
+          "ok": true,
+          "post_verified_absent_count": 1,
+          "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/herdr-cleanup-receipt.json",
+          "resource_count": 1,
+          "status": "PASS"
+        },
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/runtime-manifest.json",
+        "schema": "tau.dag_run_receipt.v1",
+        "status": "BLOCKED",
+        "verdict": "REVISE"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.provider_dag_max_attempts_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.provider_dag_max_attempts_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.provider_dag_max_attempts_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "provider-dag-poc",
+    "--label",
+    "rw-sanity-provider-dag-max-exhaustion",
+    "--run-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion",
+    "--max-attempts",
+    "2",
+    "--receipt-timeout-seconds",
+    "300",
+    "--force-reviewer-revise-attempts",
+    "1,2",
+    "--allow-final-forced-revise",
+    "--coder-mode",
+    "deterministic-visible",
+    "--herdr-bin",
+    "herdr",
+    "--no-install-integrations",
+    "--cleanup-mode",
+    "apply"
+  ],
+  "completed_at": "2026-07-06T00:14:57Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": "REVISE",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": true,
+  "purpose": "Live provider DAG blocks when reviewer revisions exhaust max attempts.",
+  "receipt_summary": {
+    "alert_codes": [
+      "revise"
+    ],
+    "alert_count": 1,
+    "attempt_count": 2,
+    "command_results": [
+      {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-planner",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w6Y",
+          "--no-focus",
+          "--",
+          "bash",
+          "-lc",
+          "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-planner\",\"pane_id\":\"w6Y:p7\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623bcd0707b9\",\"workspace_id\":\"w6Y\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-orchestrator",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w6Y",
+          "--no-focus",
+          "--",
+          "bash",
+          "-lc",
+          "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-orchestrator\",\"pane_id\":\"w6Y:p8\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623c211ae7ba\",\"workspace_id\":\"w6Y\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-01",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w6Y",
+          "--no-focus",
+          "--",
+          "python3",
+          "-c",
+          "import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))",
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-01\",\"pane_id\":\"w6Y:p9\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623c804f87bb\",\"workspace_id\":\"w6Y\"},\"argv\":[\"python3\",\"-c\",\"import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-coder.json\"],\"type\":\"agent_started\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-01",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w6Y",
+          "--no-focus",
+          "--",
+          "opencode",
+          "run",
+          "--dir",
+          "/home/graham/workspace/experiments/tau",
+          "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\",\n  \"goal_hash\": \"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": 1,\n  \"workspace_id\": \"w6Y\",\n  \"pane_id\": \"w6Y:p6\",\n  \"terminal_id\": \"term_655e6218871cf7b8\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after review>\",\n  \"work_order_sha256\": \"56f9da120ff2c55b1f291605356ef9ce612c10a57db07a350d07c09ff5306db6\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-01\",\"pane_id\":\"w6Y:pA\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e623ce036c7bc\",\"workspace_id\":\"w6Y\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-reviewer.json\\n- Copy the exact work_order_sha256 field from the work order into the receipt.\\n  Do not replace it with sha256sum output for the work-order file.\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"dag_id\\\": \\\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\",\\n  \\\"goal_hash\\\": \\\"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": 1,\\n  \\\"workspace_id\\\": \\\"w6Y\\\",\\n  \\\"pane_id\\\": \\\"w6Y:p6\\\",\\n  \\\"terminal_id\\\": \\\"term_655e6218871cf7b8\\\",\\n  \\\"visible_log_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\\\",\\n  \\\"visible_log_sha256\\\": \\\"<sha256 of visible_log_path after review>\\\",\\n  \\\"work_order_sha256\\\": \\\"56f9da120ff2c55b1f291605356ef9ce612c10a57db07a350d07c09ff5306db6\\\",\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:pA",
+          "--source",
+          "visible",
+          "--lines",
+          "80"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-02",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w6Y",
+          "--no-focus",
+          "--",
+          "python3",
+          "-c",
+          "import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))",
+          "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-coder-attempt-02\",\"pane_id\":\"w6Y:pB\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e6269264ce7bd\",\"workspace_id\":\"w6Y\"},\"argv\":[\"python3\",\"-c\",\"import hashlib, json, sys; from pathlib import Path; wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); target=Path(wo['target_file']); target.write_text('completed implementation by deterministic visible coder attempt %s\\\\n' % wo['attempt'], encoding='utf-8'); receipt=Path(wo['receipt_path']); receipt.parent.mkdir(parents=True, exist_ok=True); payload={'schema':'tau.provider_dag_node_receipt.v1','dag_id':wo['dag_id'],'goal_hash':wo['goal']['goal_hash'],'node_id':'coder','provider_id':wo['provider_id'],'attempt':wo['attempt'],'workspace_id':wo['herdr']['workspace_id'],'pane_id':wo['herdr']['pane_id'],'terminal_id':wo['herdr']['terminal_id'],'visible_log_path':wo['herdr'].get('visible_log_path'),'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,'work_order_sha256':wo['work_order_sha256'],'status':'PASS','verdict':'PASS','work_order_path':str(Path(sys.argv[1])),'changed_files':[str(target)],'commands_run':['python deterministic visible coder'],'artifacts':[str(target)],'handoff_summary':'Deterministic visible coder updated the scratch target file.','errors':[],'policy_exceptions':[]}; receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\\\n', encoding='utf-8'); print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))\",\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-coder.json\"],\"type\":\"agent_started\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "agent",
+          "start",
+          "20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-02",
+          "--cwd",
+          "/home/graham/workspace/experiments/tau",
+          "--workspace",
+          "w6Y",
+          "--no-focus",
+          "--",
+          "opencode",
+          "run",
+          "--dir",
+          "/home/graham/workspace/experiments/tau",
+          "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\",\n  \"goal_hash\": \"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": 2,\n  \"workspace_id\": \"w6Y\",\n  \"pane_id\": \"w6Y:p6\",\n  \"terminal_id\": \"term_655e6218871cf7b8\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after review>\",\n  \"work_order_sha256\": \"cfff8a0908b6d0916603190188da90052973410a4b2b08f276d6f80eaedc8c24\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-reviewer-attempt-02\",\"pane_id\":\"w6Y:pC\",\"revision\":0,\"tab_id\":\"w6Y:t1\",\"terminal_id\":\"term_655e626988d397be\",\"workspace_id\":\"w6Y\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-reviewer.json\\n- Copy the exact work_order_sha256 field from the work order into the receipt.\\n  Do not replace it with sha256sum output for the work-order file.\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"dag_id\\\": \\\"20260706T001231Z-rw-sanity-provider-dag-max-exhaustion\\\",\\n  \\\"goal_hash\\\": \\\"sha256:ff2cf5692fc97c06e8d7fd578eb098fe638bd895b511edac0cddf132142b8acc\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": 2,\\n  \\\"workspace_id\\\": \\\"w6Y\\\",\\n  \\\"pane_id\\\": \\\"w6Y:p6\\\",\\n  \\\"terminal_id\\\": \\\"term_655e6218871cf7b8\\\",\\n  \\\"visible_log_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt\\\",\\n  \\\"visible_log_sha256\\\": \\\"<sha256 of visible_log_path after review>\\\",\\n  \\\"work_order_sha256\\\": \\\"cfff8a0908b6d0916603190188da90052973410a4b2b08f276d6f80eaedc8c24\\\",\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:pC",
+          "--source",
+          "visible",
+          "--lines",
+          "80"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:p5",
+          "--source",
+          "visible",
+          "--lines",
+          "120"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "  left. Run /status for a breakdown.\n\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 >_ OpenAI Codex (v0.142.5)                     \u2502\n\u2502                                                \u2502\n\u2502 model:       gpt-5.5 medium   /model to change \u2502\n\u2502 directory:   ~/workspace/experiments/tau       \u2502\n\u2502 permissions: YOLO mode                         \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n\n  Tip: Press Tab to queue a message when a task is running;\n  otherwise it sends immediately (except !).\n\n\u2022 You have 2 usage limit resets available. Run /usage to\nuse one.\n\n\n\u203a Implement {feature}\n\n  gpt-5.5 medium \u00b7 ~/workspace/experiments/tau\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:p6",
+          "--source",
+          "visible",
+          "--lines",
+          "120"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:p7",
+          "--source",
+          "visible",
+          "--lines",
+          "120"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "raham/workspace/experiments/tau/experiments/goal-locked-sub\nagents/proofs/real-world-sanity/20260706T000138Z-tau-advanc\ned-research-source-regression-20260706/advanced-provider-ru\nns/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-m\nax-exhaustion\\ndag_spec: /home/graham/workspace/experiments\n/tau/experiments/goal-locked-subagents/proofs/real-world-sa\nnity/20260706T000138Z-tau-advanced-research-source-regressi\non-20260706/advanced-provider-runs/max-exhaustion/20260706T\n001231Z-rw-sanity-provider-dag-max-exhaustion/dag-spec.json\n\\nplanner_receipt: /home/graham/workspace/experiments/tau/e\nxperiments/goal-locked-subagents/proofs/real-world-sanity/2\n0260706T000138Z-tau-advanced-research-source-regression-202\n60706/advanced-provider-runs/max-exhaustion/20260706T001231\nZ-rw-sanity-provider-dag-max-exhaustion/planner-receipt.jso\nn\\nfinal_receipt: /home/graham/workspace/experiments/tau/ex\nperiments/goal-locked-subagents/proofs/real-world-sanity/20\n260706T000138Z-tau-advanced-research-source-regression-2026\n0706/advanced-provider-runs/max-exhaustion/20260706T001231Z\n-rw-sanity-provider-dag-max-exhaustion/run-receipt.json\\nca\nnonical truth: Tau JSON receipts; this pane is human-visibl\ne telemetry.\\n\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:p8",
+          "--source",
+          "visible",
+          "--lines",
+          "120"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "l-world-sanity/20260706T0001\n38Z-tau-advanced-research-so\nurce-regression-20260706/adv\nanced-provider-runs/max-exha\nustion/20260706T001231Z-rw-s\nanity-provider-dag-max-exhau\nstion/planner-receipt.json\\n\nfinal_receipt: /home/graham/\nworkspace/experiments/tau/ex\nperiments/goal-locked-subage\nnts/proofs/real-world-sanity\n/20260706T000138Z-tau-advanc\ned-research-source-regressio\nn-20260706/advanced-provider\n-runs/max-exhaustion/2026070\n6T001231Z-rw-sanity-provider\n-dag-max-exhaustion/run-rece\nipt.json\\ncanonical truth: T\nau JSON receipts; this pane\nis human-visible telemetry.\\\nn\n"
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:pB",
+          "--source",
+          "visible",
+          "--lines",
+          "120"
+        ],
+        "returncode": 1,
+        "stderr": "{\"code\":\"pane_not_found\",\"message\":\"pane w6Y:pB not found\"}\n",
+        "stdout": ""
+      },
+      {
+        "argv": [
+          "herdr",
+          "pane",
+          "read",
+          "w6Y:pC",
+          "--source",
+          "visible",
+          "--lines",
+          "120"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "ocked-subagen\nts/proofs/rea\nl-world-sanit\ny/20260706T00\n0138Z-tau-adv\nanced-researc\nh-source-regr\nession-202607\n06/advanced-p\nrovider-runs/\nmax-exhaustio\nn/20260706T00\n1231Z-rw-sani\nty-provider-d\nag-max-exhaus\ntion/receipts\n/attempt-02-r\neviewer.json\nWrote file su\nccessfully.\n"
+      }
+    ],
+    "herdr_cleanup": {
+      "applied_action_count": 1,
+      "candidate_count": 1,
+      "herdr_surface": "real",
+      "live": true,
+      "mocked": false,
+      "mode": "apply",
+      "ok": true,
+      "post_verified_absent_count": 1,
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/herdr-cleanup-receipt.json",
+      "resource_count": 1,
+      "status": "PASS"
+    },
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T001231Z-rw-sanity-provider-dag-max-exhaustion/runtime-manifest.json",
+    "schema": "tau.dag_run_receipt.v1",
+    "status": "BLOCKED",
+    "verdict": "REVISE"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T00:12:31Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.provider_dag_max_attempts_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000138Z-tau-advanced-research-source-regression-20260706/logs/advanced.provider_dag_max_attempts_fail_closed.stdout.txt",
+  "timeout_seconds": 780
+}

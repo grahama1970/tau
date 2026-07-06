@@ -1,0 +1,22 @@
+  left. Run /status for a breakdown.
+
+╭────────────────────────────────────────────────╮
+│ >_ OpenAI Codex (v0.142.5)                     │
+│                                                │
+│ model:       gpt-5.5 medium   /model to change │
+│ directory:   ~/workspace/experiments/tau       │
+│ permissions: YOLO mode                         │
+╰────────────────────────────────────────────────╯
+
+  Tip: Paste an image with Ctrl+V to attach it to your next
+  message.
+
+• You have 2 usage limit resets available. Run /usage to
+use one.
+
+• Booting MCP server: codex_apps (0s • esc to interrupt)
+
+
+› Use /skills to list available skills
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

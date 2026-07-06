@@ -1,0 +1,61 @@
+{
+  "agent": "coder",
+  "attempt": 2,
+  "blocked_report_required": {
+    "fields": [
+      "blocker_summary",
+      "attempted_fix",
+      "why_test_churn_is_not_progress",
+      "next_non_test_action",
+      "brave_search_receipt_path"
+    ],
+    "reason": "Blocked subagents must report the blocker and course correction instead of continuing non-essential deterministic unit tests.",
+    "required": true
+  },
+  "code": "brave_search_required_after_two_attempts",
+  "dag_id": "rw-sanity-project-dag-concurrent-brave-required",
+  "errors": [
+    "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "goal_hash": "sha256:rw-sanity-project-dag-concurrent-brave-required",
+  "live": false,
+  "mocked": false,
+  "node_id": "coder",
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Brave Search has been executed.",
+      "The next retry will pass.",
+      "Provider/model semantic quality."
+    ],
+    "proves": [
+      "Tau detected a subagent course-correction condition.",
+      "Tau stopped normal retry before expanding attempt count.",
+      "Tau wrote the Brave Search requirement as a durable artifact."
+    ]
+  },
+  "provider_live": false,
+  "reason": "Node has failed two attempts; require $brave-search research before another retry.",
+  "required_action": {
+    "command": [
+      "python",
+      ".pi/skills/brave-search/brave_search.py",
+      "web",
+      "grahama1970/tau scratch-project-dag-concurrent-brave-required coder coder invalid_command_json command stdout was not JSON: Expecting value: line 1 column 1 (char 0)",
+      "--count",
+      "5"
+    ],
+    "query": "grahama1970/tau scratch-project-dag-concurrent-brave-required coder coder invalid_command_json command stdout was not JSON: Expecting value: line 1 column 1 (char 0)",
+    "receipt_required": true,
+    "skill": "brave-search",
+    "skill_reference": "$brave-search"
+  },
+  "schema": "tau.course_correction.v1",
+  "status": "REQUIRED",
+  "stop_reason": "invalid_command_json",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-concurrent-brave-required"
+  },
+  "timestamp": "2026-07-05T22:58:14Z"
+}

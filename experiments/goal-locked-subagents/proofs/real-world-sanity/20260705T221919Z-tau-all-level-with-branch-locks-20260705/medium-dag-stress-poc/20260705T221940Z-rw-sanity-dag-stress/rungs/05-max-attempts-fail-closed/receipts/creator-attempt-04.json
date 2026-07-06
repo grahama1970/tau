@@ -1,0 +1,13 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-dag-stress-poc/20260705T221940Z-rw-sanity-dag-stress/rungs/05-max-attempts-fail-closed/scratch/artifact.txt"
+  ],
+  "attempt": 4,
+  "handoff_summary": "attempt 4",
+  "node_id": "creator",
+  "role": "creator",
+  "schema": "tau.dag_stress_node_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:40.327856Z",
+  "verdict": "PASS"
+}

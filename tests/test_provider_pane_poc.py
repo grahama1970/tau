@@ -1,13 +1,19 @@
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 from tau_coding.cli import _parse_provider_dag_poc_cli_args
 from tau_coding.provider_dag_poc import (
     _coder_work_order,
+    _reviewer_prompt,
     _reviewer_work_order,
     _run_provider_dag_cleanup,
+    _send_pane_prompt,
+    _start_visible_opencode_run_pane,
     _validate_node_receipt,
+    _visible_worker_exit_errors,
+    _wait_for_node_receipt,
     inspect_provider_dag_run,
     plan_provider_dag_poc,
     run_provider_dag_orchestrator,
@@ -18,6 +24,7 @@ from tau_coding.provider_pane_poc import (
     _default_provider_panes,
     _pane_record,
     _provider_agent_name,
+    _provider_initializing_visible,
     inspect_provider_pane_run,
     inspect_provider_readiness_run,
 )
@@ -503,6 +510,17 @@ def test_compact_readiness_samples_preserves_probe_attempts() -> None:
     ]
 
 
+def test_codex_model_loading_visible_is_provider_initializing() -> None:
+    assert (
+        _provider_initializing_visible(
+            "codex",
+            "OpenAI Codex\nmodel:       loading   /model to change\n\n› Explain this codebase",
+        )
+        is True
+    )
+    assert _provider_initializing_visible("opencode", "model: loading") is False
+
+
 def test_inspect_provider_dag_run_summarizes_attempts(tmp_path: Path) -> None:
     events = tmp_path / "events.jsonl"
     events.write_text(
@@ -864,6 +882,7 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
 
     stale_receipt = dict(receipt)
     stale_receipt["work_order_sha256"] = "stale"
+    stale_receipt["workspace_id"] = "wrong-workspace"
     stale_receipt["pane_id"] = "wrong-pane"
     stale_receipt["visible_log_path"] = "wrong-log"
     stale_receipt["visible_log_sha256"] = "stale-log-sha"
@@ -880,9 +899,254 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
     )
 
     assert "work_order_sha256 must match the dispatched work order" in stale_errors
+    assert "workspace_id must be w1" in stale_errors
     assert "pane_id must be w1:p5" in stale_errors
     assert f"visible_log_path must be {visible_log}" in stale_errors
     assert "visible_log_sha256 must match visible_log_path contents" in stale_errors
+
+    out_of_scope = tmp_path / "outside.txt"
+    out_of_scope.write_text("outside\n", encoding="utf-8")
+    unsafe_receipt = dict(receipt)
+    unsafe_receipt["changed_files"] = [str(target_file), str(out_of_scope)]
+    unsafe_receipt["artifacts"] = [str(out_of_scope)]
+    unsafe_receipt["errors"] = ["ignored error"]
+    unsafe_receipt["policy_exceptions"] = ["ignored policy exception"]
+    unsafe_errors = _validate_node_receipt(
+        unsafe_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256=str(work_order["work_order_sha256"]),
+        expected_herdr=work_order["herdr"],
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+        allowed_paths=[Path(path) for path in work_order["target"]["allowed_paths"]],
+    )
+
+    assert f"changed_files entry is outside work order allowed_paths: {out_of_scope}" in unsafe_errors
+    assert f"artifacts entry is outside work order allowed_paths: {out_of_scope}" in unsafe_errors
+    assert "PASS receipt errors must be empty" in unsafe_errors
+    assert "PASS receipt policy_exceptions must be empty" in unsafe_errors
+
+
+def test_provider_node_receipt_timeout_reports_delivery_diagnostics(tmp_path: Path) -> None:
+    visible_log = tmp_path / "codex.visible.txt"
+    visible_log.write_text("OpenAI Codex\n› Find and fix a bug in @filename\n", encoding="utf-8")
+    work_order_path = tmp_path / "work-orders" / "attempt-01-coder.json"
+    work_order_path.parent.mkdir()
+    work_order_path.write_text('{"schema":"tau.provider_dag_work_order.v1"}\n', encoding="utf-8")
+    missing_receipt = tmp_path / "receipts" / "attempt-01-coder.json"
+
+    receipt, errors = _wait_for_node_receipt(
+        missing_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256="sha256:work-order",
+        expected_herdr={
+            "workspace_id": "w1",
+            "pane_id": "w1:p5",
+            "terminal_id": "term-codex",
+            "visible_log_path": str(visible_log),
+        },
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+        timeout_seconds=0.01,
+    )
+
+    assert receipt == {}
+    assert any(error.startswith("node_receipt_timeout: coder") for error in errors)
+    assert f"node_receipt_missing: {missing_receipt}" in errors
+    assert f"visible_log_path: {visible_log}" in errors
+    assert any(
+        error.startswith("work_order_delivery_not_observed: visible log does not contain")
+        for error in errors
+    )
+
+
+def test_provider_node_receipt_timeout_reports_delivered_work_order(tmp_path: Path) -> None:
+    work_order_path = tmp_path / "work-orders" / "attempt-01-coder.json"
+    work_order_path.parent.mkdir()
+    work_order_path.write_text('{"schema":"tau.provider_dag_work_order.v1"}\n', encoding="utf-8")
+    visible_log = tmp_path / "codex.visible.txt"
+    visible_log.write_text(
+        "› provider-runs/run/work-orders/attempt-01-coder.json\n"
+        "Receipt JSON shape:\n"
+        '{"schema":"tau.provider_dag_node_receipt.v1"}\n',
+        encoding="utf-8",
+    )
+    missing_receipt = tmp_path / "receipts" / "attempt-01-coder.json"
+
+    receipt, errors = _wait_for_node_receipt(
+        missing_receipt,
+        expected_node_id="coder",
+        expected_provider_id="codex",
+        expected_attempt=1,
+        work_order_path=work_order_path,
+        work_order_sha256="sha256:work-order",
+        expected_herdr={
+            "workspace_id": "w1",
+            "pane_id": "w1:p5",
+            "terminal_id": "term-codex",
+            "visible_log_path": str(visible_log),
+        },
+        expected_goal_hash="sha256:goal",
+        expected_dag_id="dag-001",
+        timeout_seconds=0.01,
+    )
+
+    assert receipt == {}
+    assert any(
+        error.startswith("work_order_delivered_but_receipt_missing: visible log contains")
+        for error in errors
+    )
+    assert not any(error.startswith("work_order_delivery_not_observed") for error in errors)
+
+
+def test_reviewer_prompt_requires_canonical_work_order_sha256(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    visible_log = tmp_path / "opencode.visible.txt"
+    visible_log.write_text("opencode visible output\n", encoding="utf-8")
+    work_order_path = tmp_path / "attempt-01-reviewer.json"
+    receipt_path = tmp_path / "attempt-01-reviewer-receipt.json"
+    coder_receipt_path = tmp_path / "attempt-01-coder.json"
+    work_order = _reviewer_work_order(
+        run_id="run-001",
+        dag_id="run-001",
+        goal_hash="sha256:goal",
+        attempt=1,
+        max_attempts=1,
+        repo=repo,
+        scratch_dir=scratch,
+        target_file=scratch / "message.txt",
+        receipt_path=receipt_path,
+        coder_receipt_path=coder_receipt_path,
+        force_revise=True,
+        provider_record={
+            "workspace_id": "w1",
+            "pane_id": "w1:p6",
+            "terminal_id": "term-opencode",
+            "visible_log_path": str(visible_log),
+        },
+    )
+    work_order_path.write_text(json.dumps(work_order), encoding="utf-8")
+
+    prompt = _reviewer_prompt(work_order_path, receipt_path)
+
+    assert "Copy the exact work_order_sha256 field from the work order" in prompt
+    assert "Do not replace it with sha256sum output for the work-order file" in prompt
+    assert f'"work_order_sha256": "{work_order["work_order_sha256"]}"' in prompt
+
+
+def test_start_visible_opencode_run_pane_blocks_immediate_pane_exit(
+    monkeypatch, tmp_path: Path
+) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run(argv, *, cwd, timeout_seconds):
+        calls.append(argv)
+        if argv[:3] == ["herdr", "agent", "start"]:
+            payload = {
+                "result": {
+                    "agent": {
+                        "workspace_id": "w1",
+                        "pane_id": "w1:pA",
+                        "terminal_id": "term-reviewer",
+                        "tab_id": "w1:t1",
+                    }
+                }
+            }
+            return subprocess.CompletedProcess(argv, 0, json.dumps(payload), "")
+        if argv[:3] == ["herdr", "pane", "read"]:
+            return subprocess.CompletedProcess(
+                argv,
+                1,
+                "",
+                '{"code":"pane_not_found","message":"pane w1:pA not found"}\n',
+            )
+        raise AssertionError(f"unexpected argv: {argv}")
+
+    monkeypatch.setattr("tau_coding.provider_dag_poc.time.sleep", lambda _seconds: None)
+    monkeypatch.setattr("tau_coding.provider_dag_poc._run_pane_command", fake_run)
+    command_results: list[dict] = []
+
+    record = _start_visible_opencode_run_pane(
+        run_id="run-001",
+        attempt=1,
+        repo=tmp_path,
+        provider_record={"workspace_id": "w1", "pane_id": "w1:p6"},
+        prompt="review this",
+        model="openai/not-a-real-model",
+        herdr_bin="herdr",
+        command_results=command_results,
+    )
+
+    assert record["visible"] is False
+    assert record["error"].startswith("provider worker exited before receipt wait")
+    assert any(call[:3] == ["herdr", "pane", "read"] for call in calls)
+    assert len(command_results) == 2
+
+
+def test_visible_worker_exit_errors_reports_vanished_pane(monkeypatch, tmp_path: Path) -> None:
+    def fake_run(argv, *, cwd, timeout_seconds):
+        return subprocess.CompletedProcess(
+            argv,
+            1,
+            "",
+            '{"code":"pane_not_found","message":"pane w1:pA not found"}\n',
+        )
+
+    monkeypatch.setattr("tau_coding.provider_dag_poc._run_pane_command", fake_run)
+    command_results: list[dict] = []
+
+    errors = _visible_worker_exit_errors(
+        {"pane_id": "w1:pA"},
+        herdr_bin="herdr",
+        cwd=tmp_path,
+        command_results=command_results,
+    )
+
+    assert errors == [
+        'provider_worker_exited_before_receipt: {"code":"pane_not_found","message":"pane w1:pA not found"}'
+    ]
+    assert len(command_results) == 1
+
+
+def test_provider_prompt_send_uses_herdr_pane_run(monkeypatch, tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run_pane_command(argv, *, cwd, timeout_seconds):
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(
+        "tau_coding.provider_dag_poc._run_pane_command",
+        fake_run_pane_command,
+    )
+
+    results = _send_pane_prompt(
+        herdr_bin="herdr",
+        pane_id="w1:p5",
+        text="Read work order /tmp/work-order.json",
+        cwd=tmp_path,
+        timeout_seconds=5,
+    )
+
+    assert len(results) == 1
+    assert calls == [
+        [
+            "herdr",
+            "pane",
+            "run",
+            "w1:p5",
+            "Read work order /tmp/work-order.json\n",
+        ]
+    ]
 
 
 def test_plan_provider_dag_poc_records_forced_reviewer_revise_attempts(tmp_path: Path) -> None:
@@ -1126,7 +1390,8 @@ def test_provider_dag_cleanup_apply_summarizes_verified_absence(
     cleanup = _run_provider_dag_cleanup(run_dir=tmp_path, mode="apply", herdr_bin=str(fake_herdr))
 
     assert cleanup["status"] == "PASS"
-    assert cleanup["live"] is True
+    assert cleanup["live"] is False
+    assert cleanup["herdr_surface"] == "fixture"
     assert cleanup["applied_action_count"] == 1
     assert cleanup["post_verified_absent_count"] == 1
     receipt = json.loads((tmp_path / "herdr-cleanup-receipt.json").read_text(encoding="utf-8"))

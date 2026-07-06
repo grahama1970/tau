@@ -1,0 +1,51 @@
+{
+  "arxiv_source_count": 0,
+  "classification": "design_input",
+  "errors": [
+    "sources[0].arxiv_id is required when method is arxiv",
+    "sources[0].url must cite arxiv.org when method is arxiv"
+  ],
+  "limitations": [
+    "Research is design input only.",
+    "Local Tau receipts and validators remain required before closure."
+  ],
+  "live": false,
+  "method": "arxiv",
+  "mocked": false,
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "The cited sources are true.",
+      "The research was fetched live by this command.",
+      "The research is sufficient for implementation or closure.",
+      "Any Tau runtime behavior changed because of the research."
+    ],
+    "proves": [
+      "A research source packet was inspected deterministically.",
+      "Required source metadata, source URLs, relevance labels, and classifications were validated.",
+      "Research is marked review-required before it can affect Tau routing or implementation."
+    ]
+  },
+  "provider_live": false,
+  "query": "adaptive DAG multi-agent routing references for Tau",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000046Z-tau-research-source-summary-fields-20260706/research-source-arxiv-invalid/research-source-receipt.json",
+  "retrieved_at": "2026-07-05T13:40:00Z",
+  "review_required": true,
+  "schema": "tau.research_source_receipt.v1",
+  "source_count": 1,
+  "source_packet": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T000046Z-tau-research-source-summary-fields-20260706/research-source-arxiv-invalid/research-source-packet.json",
+  "source_packet_sha256": "98e99a9348f2dc670efd276f727570e910541ac86ffdd957ec0a28eeca557e11",
+  "source_type": "paper",
+  "sources": [
+    {
+      "claims_supported": [
+        "generic distributed-agent claim"
+      ],
+      "relevance": "HIGH",
+      "title": "Generic web article mislabeled as ArXiv",
+      "url": "https://example.com/not-arxiv"
+    }
+  ],
+  "status": "BLOCKED",
+  "summary": "Source-bearing ArXiv packet for Tau adaptive DAG design review."
+}

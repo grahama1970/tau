@@ -1,0 +1,166 @@
+{
+  "approval_gate": null,
+  "artifacts": {
+    "run_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/run-receipt.json",
+    "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/runtime-manifest.json"
+  },
+  "browser_cdp_proof": null,
+  "checkpoint": null,
+  "cleanup": null,
+  "dag_expansion": null,
+  "dag_stress": null,
+  "dag_stress_campaign": null,
+  "detected_type": "provider_readiness",
+  "events": {
+    "count": 1,
+    "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/events.jsonl"
+  },
+  "evidence_validation": null,
+  "generic_dag": null,
+  "github_apply_policy": null,
+  "github_handoff_transport": null,
+  "herdr_gc": null,
+  "live": false,
+  "missing_required_artifacts": [],
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": null,
+  "project_dag": null,
+  "proof_scope": {
+    "does_not_prove": [
+      "new provider execution",
+      "Herdr workspace cleanup unless a cleanup receipt is present",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "production browser/chat UI rendering"
+    ],
+    "proves": [
+      "Tau can summarize known run artifacts from one run directory",
+      "Tau can expose checkpoint/current-state, lifecycle, cleanup, approval, and evidence status without mutation",
+      "Tau can expose project DAG dag-receipt.json failures without requiring provider runtime manifests"
+    ]
+  },
+  "provider_dag": null,
+  "provider_dag_planner": null,
+  "provider_pane": null,
+  "provider_readiness": {
+    "all_provider_structured_ready": true,
+    "inspect_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/inspect.json",
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "provider_live": false,
+    "provider_session_state_count": 2,
+    "readiness": [
+      {
+        "pane_id": "w-rw-sanity-readiness:p5",
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/readiness/codex.readiness.json",
+        "provider_readiness_sha256": "c3114113b2a8e338093a22268d21aff6c250b7d931fe9dd2c71d78c0158bf0c2",
+        "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/readiness/codex.session-state.json",
+        "provider_session_state_sha256": "c6dfad8601d99dbe23f51b30b773ef32d5bc4844cab3e640a79c9735dc58c454",
+        "ready": true,
+        "source": "real_world_sanity_static_provider_readiness_fixture",
+        "state": "ready",
+        "terminal_id": "term-codex",
+        "visible_prompt_is_gate": false,
+        "visible_prompt_observed": true,
+        "workspace_id": "w-rw-sanity-readiness"
+      },
+      {
+        "pane_id": "w-rw-sanity-readiness:p6",
+        "provider_id": "opencode",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/readiness/opencode.readiness.json",
+        "provider_readiness_sha256": "bef9288374d5644daf21f640aa6094282475d293852492a92d916bc1aa1bcc67",
+        "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/readiness/opencode.session-state.json",
+        "provider_session_state_sha256": "610408ddebeb1e79e1185f71153a6f758209d2352797a26723d96ba62c952a34",
+        "ready": true,
+        "source": "real_world_sanity_static_provider_readiness_fixture",
+        "state": "ready",
+        "terminal_id": "term-opencode",
+        "visible_prompt_is_gate": false,
+        "visible_prompt_observed": true,
+        "workspace_id": "w-rw-sanity-readiness"
+      }
+    ],
+    "readiness_record_count": 2,
+    "ready_count": 2,
+    "run_id": "rw-sanity-provider-readiness-status",
+    "schema": "tau.provider_readiness_run_receipt.v1",
+    "state_counts": {
+      "ready": 2
+    },
+    "status": "PASS",
+    "workstation_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/workstation.json"
+  },
+  "provider_session_states": [
+    {
+      "auth_status": null,
+      "foreground_command": "codex",
+      "interstitial_kind": null,
+      "interstitial_present": null,
+      "observed_at": null,
+      "pane_id": "w-rw-sanity-readiness:p5",
+      "process_alive": true,
+      "provider_api_available": null,
+      "provider_event_log_path": null,
+      "provider_id": "codex",
+      "provider_readiness_path": null,
+      "provider_readiness_sha256": null,
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/readiness/codex.session-state.json",
+      "provider_session_state_sha256": "c6dfad8601d99dbe23f51b30b773ef32d5bc4844cab3e640a79c9735dc58c454",
+      "ready": true,
+      "schema": "tau.provider_session_state.v1",
+      "source": "real_world_sanity_static_provider_readiness_fixture",
+      "state": "ready",
+      "terminal_id": "term-codex",
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/logs/codex.visible.txt",
+      "workspace_id": "w-rw-sanity-readiness"
+    },
+    {
+      "auth_status": null,
+      "foreground_command": "opencode",
+      "interstitial_kind": null,
+      "interstitial_present": null,
+      "observed_at": null,
+      "pane_id": "w-rw-sanity-readiness:p6",
+      "process_alive": true,
+      "provider_api_available": null,
+      "provider_event_log_path": null,
+      "provider_id": "opencode",
+      "provider_readiness_path": null,
+      "provider_readiness_sha256": null,
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/readiness/opencode.session-state.json",
+      "provider_session_state_sha256": "610408ddebeb1e79e1185f71153a6f758209d2352797a26723d96ba62c952a34",
+      "ready": true,
+      "schema": "tau.provider_session_state.v1",
+      "source": "real_world_sanity_static_provider_readiness_fixture",
+      "state": "ready",
+      "terminal_id": "term-opencode",
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/logs/opencode.visible.txt",
+      "workspace_id": "w-rw-sanity-readiness"
+    }
+  ],
+  "real_world_sanity": null,
+  "route_memory": null,
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status",
+  "run_receipt": {
+    "all_provider_structured_ready": true,
+    "live": false,
+    "mocked": false,
+    "ok": true,
+    "run_id": "rw-sanity-provider-readiness-status",
+    "schema": "tau.provider_readiness_run_receipt.v1",
+    "status": "PASS"
+  },
+  "runtime_manifest": {
+    "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-provider-readiness-status/events.jsonl",
+    "provider_session_state_count": 2,
+    "readiness_record_count": 2,
+    "run_id": "rw-sanity-provider-readiness-status",
+    "schema": "tau.provider_readiness_runtime_manifest.v1"
+  },
+  "schema": "tau.run_status.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-05T22:19:38Z"
+}

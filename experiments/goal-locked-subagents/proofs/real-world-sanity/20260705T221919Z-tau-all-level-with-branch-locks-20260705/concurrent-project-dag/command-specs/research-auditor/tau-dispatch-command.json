@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/concurrent-project-dag/project_dag_worker.py",
+    "--role",
+    "research-auditor",
+    "--scenario",
+    "concurrent"
+  ],
+  "timeout_s": 20
+}

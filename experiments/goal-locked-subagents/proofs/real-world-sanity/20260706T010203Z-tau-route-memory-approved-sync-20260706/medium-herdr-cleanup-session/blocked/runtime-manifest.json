@@ -1,0 +1,12 @@
+{
+  "provider_sessions": {
+    "codex": {
+      "pane_id": "w-rw-sanity-session-cleanup:p5",
+      "session": "session-rw-sanity-codex",
+      "terminal_id": "term-codex",
+      "workspace_id": "w-rw-sanity-session-cleanup"
+    }
+  },
+  "run_id": "rw-sanity-herdr-cleanup-session",
+  "schema": "tau.provider_dag_runtime_manifest.v1"
+}

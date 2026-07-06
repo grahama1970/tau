@@ -1,0 +1,30 @@
+{
+  "agent_name": "20260706t003008z-rw-sanity-provider-dag-one-pass-reviewer-opencode",
+  "command": [
+    "opencode",
+    "/home/graham/workspace/experiments/tau"
+  ],
+  "dag": {
+    "agent": "reviewer",
+    "dag_id": "20260706T003008Z-rw-sanity-provider-dag-one-pass",
+    "node_id": "reviewer"
+  },
+  "does_not_own": [
+    "semantic task execution",
+    "GitHub ticket closure",
+    "remote Tailscale monitoring proof"
+  ],
+  "owns": [
+    "launch an interactive provider session in a visible Herdr pane"
+  ],
+  "provider_id": "opencode",
+  "role": "opencode",
+  "run_id": "20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness",
+  "schema": "tau.provider_pane_work_order.v1",
+  "status_reporting": {
+    "reason": "This POC proves provider session launch, not provider task execution.",
+    "required": false
+  },
+  "summary": "Provider pane launch smoke only. Do not modify files or claim task completion from this work order.",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/work-orders/opencode.json"
+}

@@ -1,0 +1,521 @@
+{
+  "agents": {
+    "argv": [
+      "herdr",
+      "agent",
+      "list"
+    ],
+    "parsed": {
+      "id": "cli:agent:list",
+      "result": {
+        "agents": [
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2275-2c9f-73c0-bdd2-ae759d861c49"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p1",
+            "revision": 0,
+            "tab_id": "w11:t1",
+            "terminal_id": "term_6559e98b5ff98d2",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "cursor",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p4",
+            "revision": 0,
+            "tab_id": "w11:t4",
+            "terminal_id": "term_655cd72ee5eae37b",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2fa8-5e65-7631-8068-13205b2eaeed"
+            },
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/chatterbox",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/chatterbox",
+            "pane_id": "w11:p6",
+            "revision": 0,
+            "tab_id": "w11:t6",
+            "terminal_id": "term_655d114609faa3a5",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f2a46-4dd8-74e1-a2e9-43bc8b55f55b"
+            },
+            "agent_status": "working",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w11:p7",
+            "revision": 0,
+            "tab_id": "w11:t7",
+            "terminal_id": "term_655db929920d63a6",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_session": {
+              "agent": "codex",
+              "kind": "id",
+              "source": "herdr:codex",
+              "value": "019f1828-d18c-7502-9041-842a19091118"
+            },
+            "agent_status": "done",
+            "cwd": "/home/graham/workspace/experiments/agent-skills",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/agent-skills",
+            "pane_id": "w11:p8",
+            "revision": 0,
+            "tab_id": "w11:t8",
+            "terminal_id": "term_655dbba1ea4973a7",
+            "workspace_id": "w11"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/agent-skills",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/agent-skills",
+            "pane_id": "w11:p9",
+            "revision": 0,
+            "tab_id": "w11:t9",
+            "terminal_id": "term_655dcf7770a5e3a8",
+            "workspace_id": "w11"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-orchestrator",
+            "pane_id": "w4C:p8",
+            "revision": 0,
+            "tab_id": "w4C:t1",
+            "terminal_id": "term_655e1bbd265c14a3",
+            "workspace_id": "w4C"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-planner",
+            "pane_id": "w4C:p7",
+            "revision": 0,
+            "tab_id": "w4C:t1",
+            "terminal_id": "term_655e1bbcd9f814a2",
+            "workspace_id": "w4C"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260705t185713z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "pane_id": "w4C:p6",
+            "revision": 0,
+            "tab_id": "w4C:t2",
+            "terminal_id": "term_655e1b9e6725a4a1",
+            "workspace_id": "w4C"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260705t185713z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "pane_id": "w4C:p5",
+            "revision": 0,
+            "tab_id": "w4C:t2",
+            "terminal_id": "term_655e1b9df98774a0",
+            "workspace_id": "w4C"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "pane_id": "w63:p6",
+            "revision": 0,
+            "tab_id": "w63:t2",
+            "terminal_id": "term_655e4b26422e66b9",
+            "workspace_id": "w63"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "name": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "pane_id": "w63:p5",
+            "revision": 0,
+            "tab_id": "w63:t2",
+            "terminal_id": "term_655e4b25be8326b8",
+            "workspace_id": "w63"
+          }
+        ],
+        "type": "agent_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:agent:list\",\"result\":{\"agents\":[{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2275-2c9f-73c0-bdd2-ae759d861c49\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p1\",\"revision\":0,\"tab_id\":\"w11:t1\",\"terminal_id\":\"term_6559e98b5ff98d2\",\"workspace_id\":\"w11\"},{\"agent\":\"cursor\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p4\",\"revision\":0,\"tab_id\":\"w11:t4\",\"terminal_id\":\"term_655cd72ee5eae37b\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2fa8-5e65-7631-8068-13205b2eaeed\"},\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/chatterbox\",\"pane_id\":\"w11:p6\",\"revision\":0,\"tab_id\":\"w11:t6\",\"terminal_id\":\"term_655d114609faa3a5\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f2a46-4dd8-74e1-a2e9-43bc8b55f55b\"},\"agent_status\":\"working\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w11:p7\",\"revision\":0,\"tab_id\":\"w11:t7\",\"terminal_id\":\"term_655db929920d63a6\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_session\":{\"agent\":\"codex\",\"kind\":\"id\",\"source\":\"herdr:codex\",\"value\":\"019f1828-d18c-7502-9041-842a19091118\"},\"agent_status\":\"done\",\"cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"pane_id\":\"w11:p8\",\"revision\":0,\"tab_id\":\"w11:t8\",\"terminal_id\":\"term_655dbba1ea4973a7\",\"workspace_id\":\"w11\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/agent-skills\",\"pane_id\":\"w11:p9\",\"revision\":0,\"tab_id\":\"w11:t9\",\"terminal_id\":\"term_655dcf7770a5e3a8\",\"workspace_id\":\"w11\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-orchestrator\",\"pane_id\":\"w4C:p8\",\"revision\":0,\"tab_id\":\"w4C:t1\",\"terminal_id\":\"term_655e1bbd265c14a3\",\"workspace_id\":\"w4C\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705T185713Z-rw-sanity-provider-dag-max-exhaustion-planner\",\"pane_id\":\"w4C:p7\",\"revision\":0,\"tab_id\":\"w4C:t1\",\"terminal_id\":\"term_655e1bbcd9f814a2\",\"workspace_id\":\"w4C\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t185713z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w4C:p6\",\"revision\":0,\"tab_id\":\"w4C:t2\",\"terminal_id\":\"term_655e1b9e6725a4a1\",\"workspace_id\":\"w4C\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t185713z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w4C:p5\",\"revision\":0,\"tab_id\":\"w4C:t2\",\"terminal_id\":\"term_655e1b9df98774a0\",\"workspace_id\":\"w4C\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w63:p6\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b26422e66b9\",\"workspace_id\":\"w63\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w63:p5\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b25be8326b8\",\"workspace_id\":\"w63\"}],\"type\":\"agent_list\"}}\n"
+  },
+  "manifest": {
+    "agents": {
+      "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex": {
+        "command": "'codex' '--cd' '/home/graham/workspace/experiments/tau'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w63",
+            "--tab",
+            "w63:t2",
+            "--env",
+            "TAU_ROLE=codex",
+            "--env",
+            "TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json",
+            "--env",
+            "TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_PROVIDER_READINESS_PROVIDER=codex",
+            "--no-focus",
+            "--",
+            "codex",
+            "--cd",
+            "/home/graham/workspace/experiments/tau"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+                "pane_id": "w63:p5",
+                "revision": 0,
+                "tab_id": "w63:t2",
+                "terminal_id": "term_655e4b25be8326b8",
+                "workspace_id": "w63"
+              },
+              "argv": [
+                "codex",
+                "--cd",
+                "/home/graham/workspace/experiments/tau"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w63:p5\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b25be8326b8\",\"workspace_id\":\"w63\"},\"argv\":[\"codex\",\"--cd\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "codex",
+        "started_at": "20260705T222953Z",
+        "tab": "providers",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/codex.json"
+      },
+      "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode": {
+        "command": "'opencode' '/home/graham/workspace/experiments/tau'",
+        "last_start_result": {
+          "argv": [
+            "herdr",
+            "agent",
+            "start",
+            "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "--cwd",
+            "/home/graham/workspace/experiments/tau",
+            "--workspace",
+            "w63",
+            "--tab",
+            "w63:t2",
+            "--env",
+            "TAU_ROLE=opencode",
+            "--env",
+            "TAU_AGENT_NAME=20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "--env",
+            "TAU_RUN_DIR=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_WORK_ORDER=/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json",
+            "--env",
+            "TAU_PROVIDER_READINESS_RUN_ID=20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+            "--env",
+            "TAU_PROVIDER_READINESS_PROVIDER=opencode",
+            "--no-focus",
+            "--split",
+            "right",
+            "--",
+            "opencode",
+            "/home/graham/workspace/experiments/tau"
+          ],
+          "parsed": {
+            "id": "cli:agent:start",
+            "result": {
+              "agent": {
+                "agent_status": "unknown",
+                "cwd": "/home/graham/workspace/experiments/tau",
+                "focused": false,
+                "foreground_cwd": "/home/graham/workspace/experiments/tau",
+                "name": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+                "pane_id": "w63:p6",
+                "revision": 0,
+                "tab_id": "w63:t2",
+                "terminal_id": "term_655e4b26422e66b9",
+                "workspace_id": "w63"
+              },
+              "argv": [
+                "opencode",
+                "/home/graham/workspace/experiments/tau"
+              ],
+              "type": "agent_started"
+            }
+          },
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w63:p6\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b26422e66b9\",\"workspace_id\":\"w63\"},\"argv\":[\"opencode\",\"/home/graham/workspace/experiments/tau\"],\"type\":\"agent_started\"}}\n"
+        },
+        "role": "opencode",
+        "started_at": "20260705T222954Z",
+        "tab": "providers",
+        "work_order": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/work-orders/opencode.json"
+      }
+    },
+    "created_at": "20260705T222952Z",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness/events.jsonl",
+    "kind": "herdr-workstation",
+    "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+    "repo": "/home/graham/workspace/experiments/tau",
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/max-exhaustion/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260705T222951Z-rw-sanity-provider-dag-max-exhaustion-readiness/herdr-workstations/20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+    "run_id": "20260705T222952Z-rw-sanity-provider-dag-max-exhaustion-readiness",
+    "schema_version": 1,
+    "session": "default",
+    "tabs": {
+      "logs": "w63:t3",
+      "providers": "w63:t2",
+      "receipts": "w63:t4"
+    },
+    "updated_at": "20260705T222954Z",
+    "workspace_id": "w63",
+    "worktree": {
+      "base": null,
+      "branch": null,
+      "enabled": false,
+      "path": null,
+      "raw": null
+    }
+  },
+  "panes": {
+    "argv": [
+      "herdr",
+      "pane",
+      "list",
+      "--workspace",
+      "w63"
+    ],
+    "parsed": {
+      "id": "cli:pane:list",
+      "result": {
+        "panes": [
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w63:p1",
+            "revision": 0,
+            "tab_id": "w63:t1",
+            "terminal_id": "term_655e4b24ec0776b4",
+            "workspace_id": "w63"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w63:p2",
+            "revision": 0,
+            "tab_id": "w63:t2",
+            "terminal_id": "term_655e4b25033e66b5",
+            "workspace_id": "w63"
+          },
+          {
+            "agent": "opencode",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode",
+            "pane_id": "w63:p6",
+            "revision": 0,
+            "tab_id": "w63:t2",
+            "terminal_id": "term_655e4b26422e66b9",
+            "workspace_id": "w63"
+          },
+          {
+            "agent": "codex",
+            "agent_status": "idle",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "label": "20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex",
+            "pane_id": "w63:p5",
+            "revision": 0,
+            "tab_id": "w63:t2",
+            "terminal_id": "term_655e4b25be8326b8",
+            "workspace_id": "w63"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w63:p3",
+            "revision": 0,
+            "tab_id": "w63:t3",
+            "terminal_id": "term_655e4b2515ce56b6",
+            "workspace_id": "w63"
+          },
+          {
+            "agent_status": "unknown",
+            "cwd": "/home/graham/workspace/experiments/tau",
+            "focused": false,
+            "foreground_cwd": "/home/graham/workspace/experiments/tau",
+            "pane_id": "w63:p4",
+            "revision": 0,
+            "tab_id": "w63:t4",
+            "terminal_id": "term_655e4b2528dfb6b7",
+            "workspace_id": "w63"
+          }
+        ],
+        "type": "pane_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:pane:list\",\"result\":{\"panes\":[{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w63:p1\",\"revision\":0,\"tab_id\":\"w63:t1\",\"terminal_id\":\"term_655e4b24ec0776b4\",\"workspace_id\":\"w63\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w63:p2\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b25033e66b5\",\"workspace_id\":\"w63\"},{\"agent\":\"opencode\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-reviewer-opencode\",\"pane_id\":\"w63:p6\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b26422e66b9\",\"workspace_id\":\"w63\"},{\"agent\":\"codex\",\"agent_status\":\"idle\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"label\":\"20260705t222951z-rw-sanity-provider-dag-max-exhaustion-coder-codex\",\"pane_id\":\"w63:p5\",\"revision\":0,\"tab_id\":\"w63:t2\",\"terminal_id\":\"term_655e4b25be8326b8\",\"workspace_id\":\"w63\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w63:p3\",\"revision\":0,\"tab_id\":\"w63:t3\",\"terminal_id\":\"term_655e4b2515ce56b6\",\"workspace_id\":\"w63\"},{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"pane_id\":\"w63:p4\",\"revision\":0,\"tab_id\":\"w63:t4\",\"terminal_id\":\"term_655e4b2528dfb6b7\",\"workspace_id\":\"w63\"}],\"type\":\"pane_list\"}}\n"
+  },
+  "tabs": {
+    "argv": [
+      "herdr",
+      "tab",
+      "list",
+      "--workspace",
+      "w63"
+    ],
+    "parsed": {
+      "id": "cli:tab:list",
+      "result": {
+        "tabs": [
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "1",
+            "number": 1,
+            "pane_count": 1,
+            "tab_id": "w63:t1",
+            "workspace_id": "w63"
+          },
+          {
+            "agent_status": "idle",
+            "focused": false,
+            "label": "providers",
+            "number": 2,
+            "pane_count": 3,
+            "tab_id": "w63:t2",
+            "workspace_id": "w63"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "logs",
+            "number": 3,
+            "pane_count": 1,
+            "tab_id": "w63:t3",
+            "workspace_id": "w63"
+          },
+          {
+            "agent_status": "unknown",
+            "focused": false,
+            "label": "receipts",
+            "number": 4,
+            "pane_count": 1,
+            "tab_id": "w63:t4",
+            "workspace_id": "w63"
+          }
+        ],
+        "type": "tab_list"
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:tab:list\",\"result\":{\"tabs\":[{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"1\",\"number\":1,\"pane_count\":1,\"tab_id\":\"w63:t1\",\"workspace_id\":\"w63\"},{\"agent_status\":\"idle\",\"focused\":false,\"label\":\"providers\",\"number\":2,\"pane_count\":3,\"tab_id\":\"w63:t2\",\"workspace_id\":\"w63\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"logs\",\"number\":3,\"pane_count\":1,\"tab_id\":\"w63:t3\",\"workspace_id\":\"w63\"},{\"agent_status\":\"unknown\",\"focused\":false,\"label\":\"receipts\",\"number\":4,\"pane_count\":1,\"tab_id\":\"w63:t4\",\"workspace_id\":\"w63\"}],\"type\":\"tab_list\"}}\n"
+  },
+  "workspace": {
+    "argv": [
+      "herdr",
+      "workspace",
+      "get",
+      "w63"
+    ],
+    "parsed": {
+      "id": "cli:workspace:get",
+      "result": {
+        "type": "workspace_info",
+        "workspace": {
+          "active_tab_id": "w63:t1",
+          "agent_status": "idle",
+          "focused": false,
+          "label": "rw-sanity-provider-dag-max-exhaustion-readiness",
+          "number": 3,
+          "pane_count": 6,
+          "tab_count": 4,
+          "workspace_id": "w63"
+        }
+      }
+    },
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "{\"id\":\"cli:workspace:get\",\"result\":{\"type\":\"workspace_info\",\"workspace\":{\"active_tab_id\":\"w63:t1\",\"agent_status\":\"idle\",\"focused\":false,\"label\":\"rw-sanity-provider-dag-max-exhaustion-readiness\",\"number\":3,\"pane_count\":6,\"tab_count\":4,\"workspace_id\":\"w63\"}}}\n"
+  }
+}

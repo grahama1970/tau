@@ -1,0 +1,89 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 1,
+      "receipt_summary": {
+        "alert_codes": [
+          "missing_session_ownership"
+        ],
+        "alert_count": 1,
+        "applied_action_count": 0,
+        "candidate_count": 2,
+        "command_results": [],
+        "live": true,
+        "mocked": false,
+        "ok": false,
+        "post_verified_absent_count": 0,
+        "resource_count": 2,
+        "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/runtime-manifest.json",
+        "runtime_manifest_sha256": "ebfeff33a864c0c1512b65e57e0c1f574c52de7d725fa2310547e77f3ff87294",
+        "schema": "tau.herdr_cleanup_receipt.v1",
+        "status": "BLOCKED"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.herdr_cleanup_session_apply_fail_closed.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.herdr_cleanup_session_apply_fail_closed.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "medium.herdr_cleanup_session_apply_fail_closed",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "herdr-cleanup",
+    "apply",
+    "--run-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked",
+    "--workspace-lease",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/herdr-workspace-lease.json",
+    "--herdr-bin",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/should-not-run-herdr"
+  ],
+  "completed_at": "2026-07-05T22:19:34Z",
+  "errors": [],
+  "exit_code": 1,
+  "expected_exit_codes": [
+    1
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "BLOCKED",
+  "expected_verdict": null,
+  "level": "medium",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": null,
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau blocks Herdr cleanup apply when a run records a session candidate, because session stop/delete requires explicit session ownership.",
+  "receipt_summary": {
+    "alert_codes": [
+      "missing_session_ownership"
+    ],
+    "alert_count": 1,
+    "applied_action_count": 0,
+    "candidate_count": 2,
+    "command_results": [],
+    "live": true,
+    "mocked": false,
+    "ok": false,
+    "post_verified_absent_count": 0,
+    "resource_count": 2,
+    "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-herdr-cleanup-session/blocked/runtime-manifest.json",
+    "runtime_manifest_sha256": "ebfeff33a864c0c1512b65e57e0c1f574c52de7d725fa2310547e77f3ff87294",
+    "schema": "tau.herdr_cleanup_receipt.v1",
+    "status": "BLOCKED"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-05T22:19:33Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.herdr_cleanup_session_apply_fail_closed.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/logs/medium.herdr_cleanup_session_apply_fail_closed.stdout.txt",
+  "timeout_seconds": 60
+}

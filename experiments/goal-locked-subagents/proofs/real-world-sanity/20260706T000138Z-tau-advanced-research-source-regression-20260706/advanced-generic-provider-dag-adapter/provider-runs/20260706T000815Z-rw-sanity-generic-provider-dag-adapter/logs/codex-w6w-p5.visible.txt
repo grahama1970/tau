@@ -1,0 +1,22 @@
+        ource-regression-20260706/advanced-generic-provider
+        -dag-adapter/provider-runs/20260706T000815Z-rw-sani
+        ty-generic-provider-dag-adapter/provider-readiness/
+        20260706T000815Z-rw-sanity-generic-provider-dag-ada
+        pter-readiness/logs/codex.visible.txt",
+    30 +    "nl -ba /home/graham/workspace/experiments/tau/
+        experiments/goal-locked-subagents/proofs/real-world
+        -sanity/20260706T000138Z-tau-advanced-research-sour
+        ce-regression-20260706/advanced-generic-provider-da
+        g-adapter/provider-runs/20260706T000815Z-rw-sanity-
+        generic-provider-dag-adapter/scratch-worktree/messa
+        ge.txt"
+    31    ],
+
+───────────────────────────────────────────────────────────
+
+• Working (1m 31s • esc to interrupt)
+
+
+› Explain this codebase
+
+  gpt-5.5 medium · ~/workspace/experiments/tau

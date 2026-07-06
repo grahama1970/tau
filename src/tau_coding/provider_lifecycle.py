@@ -156,6 +156,8 @@ def _normalized_state(
         return "auth_required"
     if interstitial_present:
         return "interstitial"
+    if diagnostics.get("provider_initializing_visible") is True:
+        return "blocked"
     if not process_alive:
         return "crashed"
     if raw_state in PROVIDER_SESSION_STATES:

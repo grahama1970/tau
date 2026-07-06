@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T003948Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:147ff9a8716c066f4cac849cccb88150197d3713b3cebd09c36132499f75eff1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w74",
+  "pane_id": "w74:p6",
+  "terminal_id": "term_655e68313405e7ef",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T003948Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "f8ceb877d4d419806f462dcb5070f3df09e7576b529a9d64a3f006df84373be3",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-01-coder.json",
+    "sha256sum opencode.visible.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "force_revise=true: target_file TODO is removed and coder receipt is schema-valid, but REVISE required. Target message.txt is a single minimal line — next coder attempt should expand it with more descriptive content (e.g., what was implemented, by which provider/attempt). Coder receipt commands_run field is vague ('python deterministic visible coder') — next attempt should log precise invocation. Visible log for opencode is empty (no commands emitted yet, expected for first reviewer).",
+  "errors": [],
+  "policy_exceptions": []
+}

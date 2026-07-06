@@ -1,0 +1,9 @@
+{
+  "approval_packet": "human-approved-proceed-with-real-herdr-gc-apply-20260705",
+  "approval_packet_sha256": "sha256:manual-approval-recorded-in-chat",
+  "errors": [],
+  "ok": true,
+  "requested_action": "herdr_gc_apply",
+  "schema": "tau.approval_gate_receipt.v1",
+  "status": "PASS"
+}

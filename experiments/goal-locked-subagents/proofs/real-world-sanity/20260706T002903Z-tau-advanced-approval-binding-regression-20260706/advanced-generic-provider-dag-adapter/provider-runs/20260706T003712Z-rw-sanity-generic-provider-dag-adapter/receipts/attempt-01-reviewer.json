@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T003712Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:f3b7e79ac5c840479a4bd3ba63329c9cf2393dd431de5b61f88c95bd6f278dd6",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w73",
+  "pane_id": "w73:p6",
+  "terminal_id": "term_655e679ce9e2a7e6",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003712Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T003712Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "71a93700c6a2abe3f4987000b8db3a9f88de7317dd3f909557365d7dfe508d13",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003712Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum opencode.visible.txt", "write attempt-01-reviewer.json"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003712Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003712Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file (message.txt) has the TODO line removed and now reads 'Completed implementation for the provider DAG coder node.' The coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with all required fields present. force_revise is false, and both review conditions are satisfied.",
+  "errors": [],
+  "policy_exceptions": []
+}

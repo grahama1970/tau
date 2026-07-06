@@ -813,6 +813,228 @@ def test_project_dag_zero_trust_blocks_external_provider_when_policy_denies(
     assert receipt["alerts"][0]["code"] == "external_provider_denied"
 
 
+def test_project_dag_blocks_underspecified_provider_sensitive_contract_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_provider_sensitive_contract(tmp_path, complete=False)
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    alert_codes = {alert["code"] for alert in receipt["alerts"]}
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "PROVIDER_POLICY_MISSING"
+    assert receipt["selected_agents"] == []
+    assert not (tmp_path / "run" / "command-loop").exists()
+    assert receipt["dag_error"]["schema"] == DAG_ERROR_SCHEMA
+    assert receipt["dag_error"]["failure_code"] == "provider_policy_missing"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_provider_policy",
+        "next_agent": "goal-guardian",
+        "reason": (
+            "Add explicit model_policy, prompt_contract, provider/auth/model route, "
+            "and provider-route evidence before dispatch."
+        ),
+    }
+    assert {
+        "provider_policy_missing",
+        "model_unspecified",
+        "missing_prompt_contract",
+        "missing_required_evidence",
+    }.issubset(alert_codes)
+    assert all(alert["evidence"]["node_id"] in {"panel-creator", "panel-reviewer"} for alert in receipt["alerts"])
+
+
+def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_evidence(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_provider_sensitive_contract(tmp_path, complete=True)
+    _write_stdin_capture_response_spec(
+        tmp_path,
+        "panel-creator",
+        _persona_dream_provider_handoff(
+            "panel-creator",
+            "panel-reviewer",
+            [
+                {"kind": "storyboard_creator_receipt.json"},
+                {"kind": "provider_route_receipt"},
+            ],
+        ),
+    )
+    _write_response_spec(
+        tmp_path,
+        "panel-reviewer",
+        _persona_dream_provider_handoff(
+            "panel-reviewer",
+            "human",
+            [
+                {"kind": "storyboard_review_verdict.json"},
+                {"kind": "provider_route_receipt"},
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["selected_agents"] == ["panel-creator", "panel-reviewer"]
+    compiled_creator_spec = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "compiled-command-specs"
+            / "panel-creator"
+            / "tau-dispatch-command.json"
+        ).read_text(encoding="utf-8")
+    )
+    request = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-001"
+            / "request.json"
+        ).read_text(encoding="utf-8")
+    )
+    model_policy = {
+        "provider": "scillm",
+        "auth": "codex-oauth",
+        "model": "gpt-image-2",
+    }
+    prompt_contract = {
+        "schema": "tau.prompt_contract.v1",
+        "system_prompt": "Stay inside the immutable storyboard goal.",
+        "user_template": "Use the provider route evidence before claiming PASS.",
+    }
+    assert compiled_creator_spec["tau_dag_node"]["model_policy"] == model_policy
+    assert compiled_creator_spec["tau_dag_node"]["prompt_contract"] == prompt_contract
+    assert compiled_creator_spec["tau_dag_node"]["required_evidence"] == [
+        "storyboard_creator_receipt.json",
+        "provider_route_receipt",
+    ]
+    assert request["context"]["model_policy"] == model_policy
+    assert request["context"]["prompt_contract"] == prompt_contract
+    assert request["context"]["tau_dag_node"]["model_policy"] == model_policy
+    assert request["context"]["tau_dag_node"]["prompt_contract"] == prompt_contract
+
+
+def test_project_dag_memory_evidence_gate_allows_valid_artifacts(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(tmp_path)
+    evidence_case_path = _write_evidence_case(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert Path(tmp_path / "run" / "memory-intent-gate-receipt.json").exists()
+    assert Path(tmp_path / "run" / "evidence-case-gate-receipt.json").exists()
+
+
+def test_project_dag_memory_evidence_gate_blocks_inline_evidence(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(
+        tmp_path,
+        overrides={"evidence": [{"statement": "inline evidence must not dispatch"}]},
+    )
+    evidence_case_path = _write_evidence_case(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INLINE_MEMORY_EVIDENCE_REJECTED"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "inline_memory_evidence_rejected"
+    assert receipt["memory_intent_gate_receipt"] == str(
+        tmp_path / "run" / "memory-intent-gate-receipt.json"
+    )
+    assert receipt["evidence_case_gate_receipt"] == str(
+        tmp_path / "run" / "evidence-case-gate-receipt.json"
+    )
+    assert receipt["dag_error"]["recommended_action"]["type"] == "repair_memory_intent"
+
+
+def test_project_dag_memory_evidence_gate_blocks_clarify_route(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(tmp_path, overrides={"route": "CLARIFY"})
+    evidence_case_path = _write_evidence_case(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MEMORY_ROUTE_NOT_DISPATCHABLE"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "memory_route_not_dispatchable"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "request_memory_clarification",
+        "next_agent": "human",
+        "reason": (
+            "Memory routed to clarification or deflection; resolve that "
+            "route before DAG dispatch."
+        ),
+    }
+
+
+def test_project_dag_memory_evidence_gate_blocks_missing_case_hash(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    memory_path = _write_memory_intent(tmp_path)
+    evidence_case_path = _write_evidence_case(tmp_path, overrides={"case_sha256": None})
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["memory_intent"] = str(memory_path)
+    payload["evidence_case"] = str(evidence_case_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_EVIDENCE_CASE_HASH"
+    assert receipt["alerts"][0]["code"] == "missing_evidence_case_hash"
+    assert receipt["dag_error"]["recommended_action"]["type"] == "repair_evidence_case"
+
+
 def test_project_dag_legacy_contract_still_runs_without_policy_profile(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
@@ -826,6 +1048,98 @@ def test_project_dag_legacy_contract_still_runs_without_policy_profile(tmp_path:
 
     assert receipt["ok"] is True
     assert receipt.get("zero_trust_preflight_receipt") is None
+
+
+def test_project_dag_controlled_boundary_requires_itar_access_gate(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["data_boundary"] = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "goal_hash": "sha256:active-goal",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_ITAR_ACCESS_PREFLIGHT"
+    assert receipt["selected_agents"] == []
+    assert receipt["alerts"][0]["code"] == "missing_itar_access_preflight"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_actor_access_gate",
+        "next_agent": "goal-guardian",
+        "reason": "Run or repair the ITAR actor/access preflight receipt before DAG dispatch.",
+    }
+
+
+def test_project_dag_dispatches_when_containment_gate_receipts_pass(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    itar_receipt = _write_gate_receipt(
+        tmp_path / "itar-access-preflight-receipt.json",
+        schema="tau.itar_access_preflight_receipt.v1",
+        goal_hash="sha256:active-goal",
+    )
+    research_receipt = _write_gate_receipt(
+        tmp_path / "research-query-safety-receipt.json",
+        schema="tau.research_query_safety_receipt.v1",
+        goal_hash="sha256:active-goal",
+    )
+    sandbox_receipt = _write_gate_receipt(
+        tmp_path / "sandbox-run-receipt.json",
+        schema="tau.sandbox_run_receipt.v1",
+        goal_hash="sha256:active-goal",
+    )
+    package_receipt = _write_gate_receipt(
+        tmp_path / "compliance-package-validation-receipt.json",
+        schema="tau.compliance_package_validation_receipt.v1",
+        goal_hash="sha256:active-goal",
+        extra={"review_ready": True, "compliant": "NOT_CLAIMED"},
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["data_boundary"] = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "ITAR",
+        "goal_hash": "sha256:active-goal",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+    }
+    payload["requires_external_research"] = True
+    payload["requires_sandbox"] = True
+    payload["requires_compliance_package_validation"] = True
+    payload["itar_access_preflight_receipt"] = str(itar_receipt)
+    payload["research_query_safety_receipt"] = str(research_receipt)
+    payload["sandbox_run_receipt"] = str(sandbox_receipt)
+    payload["compliance_package_validation_receipt"] = str(package_receipt)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["selected_agents"] == ["coder", "reviewer"]
+    assert receipt["containment_gate_receipts"] == {
+        "itar_access_preflight": str(itar_receipt.resolve()),
+        "research_query_safety": str(research_receipt.resolve()),
+        "sandbox_run": str(sandbox_receipt.resolve()),
+        "compliance_package_validation": str(package_receipt.resolve()),
+    }
 
 
 def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_path: Path) -> None:
@@ -1127,6 +1441,36 @@ def test_project_dag_command_policy_blocks_denied_command_before_dispatch(
     }
 
 
+def test_project_dag_command_policy_blocks_implicit_cwd_when_roots_are_restricted(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    policy_path = _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["command_policy"] = str(policy_path)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff("coder", "reviewer", _creator_evidence()),
+        include_cwd=False,
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "COMMAND_POLICY_REJECTED"
+    assert "cwd must be explicit when command policy allowed_cwd_roots is set" in "\n".join(
+        receipt["errors"]
+    )
+
+
 def test_project_dag_ready_queue_command_policy_blocks_denied_command(
     tmp_path: Path,
 ) -> None:
@@ -1321,6 +1665,29 @@ def _write_contract(tmp_path: Path) -> Path:
     return path
 
 
+def _write_gate_receipt(
+    path: Path,
+    *,
+    schema: str,
+    goal_hash: str,
+    extra: dict[str, object] | None = None,
+) -> Path:
+    payload: dict[str, object] = {
+        "schema": schema,
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "goal_hash": goal_hash,
+        "receipt_path": str(path),
+    }
+    if extra:
+        payload.update(extra)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
 def _write_repeated_reviewer_contract(tmp_path: Path) -> Path:
     (tmp_path / "agents").mkdir()
     spec_root = tmp_path / "specs"
@@ -1398,6 +1765,114 @@ def _write_repeated_reviewer_contract(tmp_path: Path) -> Path:
     return path
 
 
+def _write_provider_sensitive_contract(tmp_path: Path, *, complete: bool) -> Path:
+    (tmp_path / "agents").mkdir(exist_ok=True)
+    spec_root = tmp_path / "specs"
+    creator_evidence = ["storyboard_creator_receipt.json"]
+    reviewer_evidence = ["storyboard_review_verdict.json"]
+    if complete:
+        creator_evidence.append("provider_route_receipt")
+        reviewer_evidence.append("provider_route_receipt")
+    nodes: list[dict[str, object]] = [
+        {
+            "id": "panel-creator",
+            "agent": "panel-creator",
+            "executor": "local",
+            "max_attempts": 2,
+            "command_spec": str(spec_root / "panel-creator" / "tau-dispatch-command.json"),
+            "required_evidence": creator_evidence,
+        },
+        {
+            "id": "panel-reviewer",
+            "agent": "panel-reviewer",
+            "executor": "local",
+            "max_attempts": 2,
+            "command_spec": str(spec_root / "panel-reviewer" / "tau-dispatch-command.json"),
+            "required_evidence": reviewer_evidence,
+        },
+        {
+            "id": "human",
+            "agent": "human",
+            "executor": "human",
+        },
+    ]
+    if complete:
+        for node in nodes:
+            if node["id"] == "human":
+                continue
+            node["model_policy"] = {
+                "provider": "scillm",
+                "auth": "codex-oauth",
+                "model": "gpt-image-2",
+            }
+            node["prompt_contract"] = {
+                "schema": "tau.prompt_contract.v1",
+                "system_prompt": "Stay inside the immutable storyboard goal.",
+                "user_template": "Use the provider route evidence before claiming PASS.",
+            }
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "persona-dream-phase-07-storyboard-packet-panel-review",
+        "provider_sensitive": True,
+        "goal": {
+            "goal_id": "persona-dream-phase-07-storyboard-panels-accepted",
+            "goal_version": 1,
+            "goal_hash": "sha256:phase07-storyboard-panels-accepted-20260705",
+        },
+        "target": {
+            "repo": "grahama1970/agent-skills",
+            "target": "skills/persona-dream/reports/pipeline-complete/phase_07_storyboard_live_tau",
+        },
+        "entry_node": "panel-creator",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 120,
+            "max_total_attempts": 4,
+        },
+        "nodes": nodes,
+        "edges": [
+            {"from": "panel-creator", "to": "panel-reviewer"},
+            {"from": "panel-reviewer", "to": "human"},
+        ],
+        "required_evidence": [
+            "dag-receipt.json",
+            *creator_evidence,
+            *reviewer_evidence,
+        ],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "max_attempts_exceeded",
+            "malformed_handoff",
+        ],
+    }
+    path = tmp_path / "provider-sensitive-dag-contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    return path
+
+
+def _persona_dream_provider_handoff(
+    previous: str,
+    next_agent: str,
+    evidence: list[dict],
+) -> dict:
+    payload = _handoff(previous, next_agent, evidence)
+    payload["github"] = {
+        "repo": "grahama1970/agent-skills",
+        "target": "skills/persona-dream/reports/pipeline-complete/phase_07_storyboard_live_tau",
+    }
+    payload["goal"] = {
+        "goal_id": "persona-dream-phase-07-storyboard-panels-accepted",
+        "goal_version": 1,
+        "goal_hash": "sha256:phase07-storyboard-panels-accepted-20260705",
+    }
+    return payload
+
+
 def _write_yaml_contract(tmp_path: Path) -> Path:
     (tmp_path / "agents").mkdir()
     spec_root = tmp_path / "specs"
@@ -1470,6 +1945,46 @@ def _write_data_boundary(tmp_path: Path, overrides: dict[str, object] | None = N
     payload = _public_data_boundary()
     if overrides:
         payload.update(overrides)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _write_memory_intent(
+    tmp_path: Path,
+    *,
+    overrides: dict[str, object] | None = None,
+) -> Path:
+    payload: dict[str, object] = {
+        "schema": "memory.intent.v1",
+        "memory_first": True,
+        "route": "ANSWER",
+        "confidence": 0.91,
+        "goal_hash": "sha256:active-goal",
+        "target": {"repo": "grahama1970/tau", "target": "scratch-creator-reviewer"},
+    }
+    if overrides:
+        payload.update(overrides)
+    path = tmp_path / "memory-intent.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _write_evidence_case(
+    tmp_path: Path,
+    *,
+    overrides: dict[str, object | None] | None = None,
+) -> Path:
+    payload: dict[str, object | None] = {
+        "schema": "tau.evidence_case.v1",
+        "case_id": "case-001",
+        "case_sha256": "sha256:" + ("1" * 64),
+        "goal_hash": "sha256:active-goal",
+        "target": {"repo": "grahama1970/tau", "target": "scratch-creator-reviewer"},
+        "support_artifacts": [],
+    }
+    if overrides:
+        payload.update(overrides)
+    path = tmp_path / "evidence-case.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 
@@ -1697,6 +2212,7 @@ def _write_response_spec(
     *,
     sleep_seconds: float = 0.0,
     timeout_s: float = 5,
+    include_cwd: bool = True,
 ) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1704,17 +2220,18 @@ def _write_response_spec(
     if sleep_seconds:
         code += f"import time; time.sleep({sleep_seconds!r}); "
     code += f"print({json.dumps(json.dumps(response))})"
+    payload: dict[str, object] = {
+        "command": [
+            sys.executable,
+            "-c",
+            code,
+        ],
+        "timeout_s": timeout_s,
+    }
+    if include_cwd:
+        payload["cwd"] = str(tmp_path)
     spec_path.write_text(
-        json.dumps(
-            {
-                "command": [
-                    sys.executable,
-                    "-c",
-                    code,
-                ],
-                "timeout_s": timeout_s,
-            }
-        ),
+        json.dumps(payload),
         encoding="utf-8",
     )
 

@@ -1,0 +1,73 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/timeout-project-dag/run/command-loop/command-loop-step-001.receipt.json"
+  ],
+  "dispatches": [
+    {
+      "artifacts": [],
+      "command_results": [
+        {
+          "command": [
+            "python3",
+            "-c",
+            "import time; time.sleep(5)"
+          ],
+          "exit_code": null,
+          "stderr": "",
+          "stdout": "",
+          "timed_out": true,
+          "timeout_s": 0.1
+        }
+      ],
+      "errors": [
+        "command timed out after 0.1s"
+      ],
+      "live": false,
+      "loop_step": 1,
+      "mocked": true,
+      "ok": false,
+      "receipt_dir": null,
+      "response_projection": null,
+      "runner": "command",
+      "schema": "tau.agent_handoff_dispatch_receipt.v1",
+      "selected_agent": "coder",
+      "start_projection": {
+        "comment": {
+          "body": "## Tau Agent Handoff\n\n- Result: `DAG_DISPATCH_REQUESTED`\n- Summary: Tau is dispatching entry node coder.\n- Next agent: `coder`\n- Executor: `local`\n- Stop condition: Stop at a terminal DAG node or any fail-closed invariant violation.\n\n<!-- tau-agent-handoff:v1 -->\n```json\n{\n  \"context\": {\n    \"artifacts\": [\n      \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/timeout-project-dag/dag-contract.json\"\n    ],\n    \"summary\": \"Dispatch DAG contract rw-sanity-project-dag-timeout.\"\n  },\n  \"github\": {\n    \"repo\": \"grahama1970/tau\",\n    \"target\": \"scratch-project-dag-timeout\"\n  },\n  \"goal\": {\n    \"goal_hash\": \"sha256:rw-sanity-project-dag-timeout\",\n    \"goal_id\": \"rw-sanity-project-dag-timeout\",\n    \"goal_version\": 1\n  },\n  \"next_agent\": {\n    \"executor\": \"local\",\n    \"name\": \"coder\",\n    \"reason\": \"Entry node for DAG rw-sanity-project-dag-timeout using role coder.\"\n  },\n  \"previous_subagent\": \"human\",\n  \"rationale\": \"The DAG contract is the authoritative workflow and immutable goal boundary.\",\n  \"required_evidence\": [\n    \"creator_artifact\",\n    \"reviewer_verdict\"\n  ],\n  \"result\": {\n    \"evidence\": [\n      {\n        \"kind\": \"dag_contract\",\n        \"path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/timeout-project-dag/dag-contract.json\",\n        \"schema\": \"tau.dag_contract.v1\",\n        \"sha256\": \"sha256:34bbed1d3fcfe9f678add6b4a160205eb0636a622beb3e63aadaec0ec5143992\"\n      }\n    ],\n    \"status\": \"DAG_DISPATCH_REQUESTED\",\n    \"summary\": \"Tau is dispatching entry node coder.\"\n  },\n  \"schema\": \"tau.agent_handoff.v1\",\n  \"stop_condition\": \"Stop at a terminal DAG node or any fail-closed invariant violation.\"\n}\n```\n"
+        },
+        "dry_run": true,
+        "errors": [],
+        "labels": {
+          "add": [
+            "agent-work",
+            "next:coder",
+            "executor:local"
+          ],
+          "remove": []
+        },
+        "next_agent": "coder",
+        "ok": true,
+        "schema": "tau.agent_handoff_projection_receipt.v1",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-timeout"
+        }
+      },
+      "status": "BLOCKED",
+      "stop_reason": "command_timeout"
+    }
+  ],
+  "errors": [
+    "command timed out after 0.1s"
+  ],
+  "live": true,
+  "mocked": false,
+  "ok": false,
+  "receipt_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/timeout-project-dag/run/command-loop",
+  "runner": "agent-registry-command-loop",
+  "schema": "tau.agent_handoff_command_loop_receipt.v1",
+  "status": "BLOCKED",
+  "step_count": 1,
+  "stop_reason": "command_timeout",
+  "terminal_agent": "coder"
+}

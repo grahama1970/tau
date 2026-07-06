@@ -1,0 +1,85 @@
+{
+  "checkpoint_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/checkpoint.json",
+  "completed_node_count": 0,
+  "current_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/current-state.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/events.jsonl",
+  "execution": "local_subprocess_receipt_gated_dag",
+  "live": false,
+  "mocked": false,
+  "node_count": 1,
+  "nodes": [
+    {
+      "attempt_count": 2,
+      "command_results": [
+        {
+          "argv": [
+            "python3",
+            "-c",
+            "import time; time.sleep(5)"
+          ],
+          "elapsed_seconds": 0.102,
+          "returncode": 124,
+          "stderr": "timed out after 0.1s",
+          "stdout": ""
+        },
+        {
+          "argv": [
+            "python3",
+            "-c",
+            "import time; time.sleep(5)"
+          ],
+          "elapsed_seconds": 0.103,
+          "returncode": 124,
+          "stderr": "timed out after 0.1s",
+          "stdout": ""
+        }
+      ],
+      "duration_seconds": 0.205,
+      "errors": [
+        "python3 -c import time; time.sleep(5) exited 124: timed out after 0.1s"
+      ],
+      "finished_at": "2026-07-05T22:19:30Z",
+      "node_id": "slow",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/receipts/slow.json",
+      "resumed": false,
+      "role": "worker",
+      "started_at": "2026-07-05T22:19:30Z",
+      "status": "BLOCKED",
+      "verdict": "SUBAGENT_TIMEOUT",
+      "work_order_path": null,
+      "work_order_sha256": null
+    }
+  ],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "remote Tailscale monitoring",
+      "GitHub ticket closure",
+      "production repository mutation",
+      "live provider CLI execution",
+      "Herdr pane visibility"
+    ],
+    "proves": [
+      "Tau can validate a generic DAG spec",
+      "Tau can execute local subprocess workers in dependency order",
+      "Tau can gate downstream nodes on schema-valid node receipts",
+      "Tau can resume from existing valid node receipts",
+      "Tau can reject stale work-order receipts when work_order_sha256 no longer matches",
+      "Tau can write durable checkpoint and current-state artifacts",
+      "Tau can fail closed on timeout, non-zero exit, invalid receipt, or blocked verdict"
+    ]
+  },
+  "provider_live": false,
+  "resume_requested": true,
+  "resume_source": {
+    "mode": "spec_path",
+    "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json"
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout",
+  "run_id": "rw-sanity-generic-dag-timeout",
+  "schema": "tau.generic_dag_run_receipt.v1",
+  "spec_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/medium-generic-dag-timeout/dag-spec.json",
+  "status": "BLOCKED",
+  "timestamp": "2026-07-05T22:19:30Z",
+  "verdict": "SUBAGENT_TIMEOUT"
+}

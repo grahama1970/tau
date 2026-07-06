@@ -1,0 +1,2 @@
+{"kind": "stress_spec_created", "rung_id": "10-model-unavailable", "schema": "tau.dag_stress_event.v1", "timestamp": "2026-07-05T22:19:42.514007Z"}
+{"attempt": 1, "kind": "provider_resolution_failed", "model": "gpt-model-that-no-longer-exists", "node_id": "creator", "provider_id": "codex", "reason": "model_not_found", "schema": "tau.dag_stress_event.v1", "timestamp": "2026-07-05T22:19:42.514122Z"}

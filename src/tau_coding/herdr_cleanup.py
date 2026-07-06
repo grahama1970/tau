@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -63,9 +64,7 @@ def run_herdr_cleanup(
     )
     alerts = [*lease_alerts, *session_alerts]
     resolved_lease_path = (
-        workspace_lease_path.expanduser().resolve()
-        if workspace_lease_path is not None
-        else None
+        workspace_lease_path.expanduser().resolve() if workspace_lease_path is not None else None
     )
     if resolved_lease_path is not None and resolved_lease_path.is_file():
         lease_payload = _read_json_object(resolved_lease_path, label="workspace lease")
@@ -75,10 +74,7 @@ def run_herdr_cleanup(
         else None
     )
     session_ownership_payload: dict[str, Any] | None = None
-    if (
-        resolved_session_ownership_path is not None
-        and resolved_session_ownership_path.is_file()
-    ):
+    if resolved_session_ownership_path is not None and resolved_session_ownership_path.is_file():
         session_ownership_payload = _read_json_object(
             resolved_session_ownership_path,
             label="session ownership",
@@ -105,8 +101,7 @@ def run_herdr_cleanup(
                 command_results.append(_command_result_dict(verify_result))
                 verify_error_code = _json_error_code(verify_result)
                 post_verified_absent = (
-                    verify_result.returncode != 0
-                    and verify_error_code == "workspace_not_found"
+                    verify_result.returncode != 0 and verify_error_code == "workspace_not_found"
                 )
                 applied_actions.append(
                     {
@@ -156,9 +151,11 @@ def run_herdr_cleanup(
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": mode == "apply",
+        "live": mode == "apply" and _herdr_surface(herdr_bin) == "real",
         "mode": mode,
         "run_dir": str(resolved_run_dir),
+        "herdr_bin": herdr_bin,
+        "herdr_surface": _herdr_surface(herdr_bin),
         "runtime_manifest": str(resolved_run_dir / "runtime-manifest.json"),
         "runtime_manifest_sha256": _file_sha256(resolved_run_dir / "runtime-manifest.json"),
         "resource_count": len(resources),
@@ -221,9 +218,7 @@ def run_herdr_gc(
     resolved_run_dir = run_dir.expanduser().resolve()
     resolved_run_dir.mkdir(parents=True, exist_ok=True)
     resolved_approval_path = (
-        approval_receipt_path.expanduser().resolve()
-        if approval_receipt_path is not None
-        else None
+        approval_receipt_path.expanduser().resolve() if approval_receipt_path is not None else None
     )
     current_workspace = os.environ.get("HERDR_WORKSPACE_ID") or ""
     list_result = subprocess.run(
@@ -251,7 +246,11 @@ def run_herdr_gc(
             "pane_count": workspace.get("pane_count"),
             "tab_count": workspace.get("tab_count"),
         }
-        if current_workspace and workspace_id == current_workspace and not include_current_workspace:
+        if (
+            current_workspace
+            and workspace_id == current_workspace
+            and not include_current_workspace
+        ):
             skipped.append({**base, "reason": "current_workspace"})
         elif focused:
             skipped.append({**base, "reason": "focused_workspace"})
@@ -269,7 +268,9 @@ def run_herdr_gc(
     approval_alerts = _approval_receipt_alerts(
         approval_receipt_path=resolved_approval_path,
         apply=apply,
+        label_prefixes=label_prefixes,
     )
+    herdr_surface = _herdr_surface(herdr_bin)
     applied_actions: list[dict[str, Any]] = []
     if apply and not approval_alerts:
         for candidate in candidates:
@@ -309,16 +310,18 @@ def run_herdr_gc(
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": apply,
+        "live": herdr_surface == "real" and list_result.returncode == 0,
         "mode": "apply" if apply else "dry-run",
         "run_dir": str(resolved_run_dir),
         "herdr_bin": herdr_bin,
+        "herdr_surface": herdr_surface,
         "approval_receipt": str(resolved_approval_path) if resolved_approval_path else None,
         "approval_receipt_sha256": (
             f"sha256:{_file_sha256(resolved_approval_path)}"
             if resolved_approval_path and resolved_approval_path.is_file()
             else None
         ),
+        "approval_target_id_expected": _gc_approval_target_id(label_prefixes),
         "approval_required": apply,
         "label_prefixes": list(label_prefixes),
         "current_workspace": current_workspace or None,
@@ -355,6 +358,20 @@ def run_herdr_gc(
     return receipt
 
 
+def _herdr_surface(herdr_bin: str) -> str:
+    discovered = shutil.which("herdr")
+    if not discovered:
+        return "fixture"
+    try:
+        if Path(herdr_bin).name == herdr_bin:
+            candidate = Path(discovered).resolve()
+        else:
+            candidate = Path(herdr_bin).expanduser().resolve()
+        return "real" if candidate == Path(discovered).resolve() else "fixture"
+    except OSError:
+        return "fixture"
+
+
 def _load_runtime_manifest(run_dir: Path) -> dict[str, Any]:
     manifest_path = run_dir / "runtime-manifest.json"
     manifest = _read_json_object(manifest_path, label="runtime manifest")
@@ -364,7 +381,9 @@ def _load_runtime_manifest(run_dir: Path) -> dict[str, Any]:
 
 def _resources_from_manifest(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     resources: dict[tuple[str, str], dict[str, Any]] = {}
-    manifest_dir = Path(str(manifest.get("_manifest_dir") or manifest.get("run_dir") or ".")).expanduser()
+    manifest_dir = Path(
+        str(manifest.get("_manifest_dir") or manifest.get("run_dir") or ".")
+    ).expanduser()
 
     def add_record(source: str, role: str, record: Any) -> None:
         if not isinstance(record, dict):
@@ -408,10 +427,15 @@ def _resources_from_manifest(manifest: dict[str, Any]) -> list[dict[str, Any]]:
             for role, record in records.items():
                 add_record(source_key, str(role), record)
     for source_key in ("provider_session_states", "readiness_records"):
-        for index, record in enumerate(_records_from_path_list(manifest.get(source_key), manifest_dir)):
+        for index, record in enumerate(
+            _records_from_path_list(manifest.get(source_key), manifest_dir)
+        ):
             role = str(record.get("provider_id") or record.get("role") or f"{source_key}-{index}")
             add_record(source_key, role, record)
-    return sorted(resources.values(), key=lambda item: (str(item["kind"]), str(item.get("workspace_id") or item.get("session"))))
+    return sorted(
+        resources.values(),
+        key=lambda item: (str(item["kind"]), str(item.get("workspace_id") or item.get("session"))),
+    )
 
 
 def _records_from_path_list(value: Any, manifest_dir: Path) -> list[dict[str, Any]]:
@@ -429,7 +453,7 @@ def _records_from_path_list(value: Any, manifest_dir: Path) -> list[dict[str, An
             path = manifest_dir / path
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         if isinstance(payload, dict):
             records.append(payload)
@@ -446,7 +470,11 @@ def _candidate_actions(
     for resource in resources:
         if resource.get("kind") == "workspace":
             workspace_id = str(resource["workspace_id"])
-            if current_workspace and workspace_id == current_workspace and not include_current_workspace:
+            if (
+                current_workspace
+                and workspace_id == current_workspace
+                and not include_current_workspace
+            ):
                 continue
             candidates.append(
                 {
@@ -716,6 +744,7 @@ def _approval_receipt_alerts(
     *,
     approval_receipt_path: Path | None,
     apply: bool,
+    label_prefixes: tuple[str, ...],
 ) -> list[dict[str, Any]]:
     if not apply:
         return []
@@ -771,7 +800,26 @@ def _approval_receipt_alerts(
                 },
             )
         )
+    packet_summary = approval.get("packet_summary")
+    target_id = packet_summary.get("target_id") if isinstance(packet_summary, dict) else None
+    expected_target_id = _gc_approval_target_id(label_prefixes)
+    if target_id != expected_target_id:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "approval_target_mismatch",
+                "Herdr GC approval receipt target_id does not authorize this GC scope.",
+                {
+                    "expected": expected_target_id,
+                    "observed": target_id,
+                },
+            )
+        )
     return alerts
+
+
+def _gc_approval_target_id(label_prefixes: tuple[str, ...]) -> str:
+    return f"herdr-gc:{','.join(label_prefixes)}"
 
 
 def _lease_workspace_ids(lease: dict[str, Any]) -> list[str]:

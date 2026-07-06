@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+CALLS="/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010702Z-tau-provider-live-hardening-regression-20260706/medium-herdr-cleanup-session/owned/owned-herdr-calls.jsonl"
+printf '{"argv":[' >> "$CALLS"
+first=1
+for arg in "$@"; do
+  if [ "$first" = 0 ]; then printf ',' >> "$CALLS"; fi
+  first=0
+  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end="")' "$arg" >> "$CALLS"
+done
+printf ']}\n' >> "$CALLS"
+if [ "$1 $2 $3" = "session get session-rw-sanity-codex" ]; then
+  printf '{"error":{"code":"session_not_found","message":"session not found"}}\n'
+  exit 1
+fi
+if [ "$1 $2 $3" = "workspace get w-rw-sanity-session-cleanup" ]; then
+  printf '{"error":{"code":"workspace_not_found","message":"workspace not found"}}\n'
+  exit 1
+fi
+printf '{"result":{"type":"ok"}}\n'

@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "attempt": 2,
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "python deterministic visible coder"
+  ],
+  "dag_id": "20260705T222755Z-rw-sanity-provider-dag-repair",
+  "errors": [],
+  "goal_hash": "sha256:bde31e23e5466bc926dc0e43e387d7c68261b5a40ec8dbb0b66bd8ea851b8865",
+  "handoff_summary": "Deterministic visible coder updated the scratch target file.",
+  "node_id": "coder",
+  "pane_id": "w62:p5",
+  "policy_exceptions": [],
+  "provider_id": "codex",
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "status": "PASS",
+  "terminal_id": "term_655e4ab69d14b6ac",
+  "verdict": "PASS",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/provider-readiness/20260705T222755Z-rw-sanity-provider-dag-repair-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "b1969754264f52015c52ef8643e40dd213e252ade8d83b8e9f28fb50e9b865d8",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T221919Z-tau-all-level-with-branch-locks-20260705/advanced-provider-runs/repair-loop/20260705T222755Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-coder.json",
+  "work_order_sha256": "be1493489a2f46b6da2395d939e6213459505ae4dea7fd61e52f6bccd7cee60e",
+  "workspace_id": "w62"
+}

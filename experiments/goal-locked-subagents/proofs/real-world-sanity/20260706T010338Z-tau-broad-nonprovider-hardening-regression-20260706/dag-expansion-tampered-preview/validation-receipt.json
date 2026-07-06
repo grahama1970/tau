@@ -1,0 +1,57 @@
+{
+  "alerts": [],
+  "applied": false,
+  "dag_contract": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/dag-expansion-tampered-preview/dag-contract.json",
+  "dag_contract_sha256": "sha256:bc3dbb74e1c4251e5b1a4010ee2bed0f8185cd9ee0572ea9f021d8573bb27c1d",
+  "dag_id": "rw-sanity-dag-expansion",
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-dag-expansion",
+  "limits": {
+    "allow_command_spec_change": false,
+    "allow_goal_change": false,
+    "allow_new_executors": false,
+    "allow_target_change": false,
+    "allow_terminal_node_change": false,
+    "max_depth_delta": 1,
+    "max_new_edges": 4,
+    "max_new_nodes": 2
+  },
+  "live": true,
+  "memory_sync": false,
+  "mocked": false,
+  "mutated_source_dag": false,
+  "ok": true,
+  "preview_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/dag-expansion-tampered-preview/expanded-dag.preview.json",
+  "preview_sha256": "sha256:33fd8f15035b6916f95df6ef227d225c5de5a241832d46226a776ddae9542858",
+  "proof_scope": {
+    "does_not_prove": [
+      "Adaptive DAG expansion application.",
+      "Runtime route mutation.",
+      "Provider/model semantic quality.",
+      "Memory route learning.",
+      "Mutating branch safety."
+    ],
+    "proves": [
+      "DAG expansion proposal was inspected deterministically.",
+      "Immutable goal, target, terminal node, executor, command-spec, depth, node, and edge limits were checked.",
+      "No expansion was applied to a running DAG.",
+      "No source DAG contract mutation, route mutation, Memory write, GitHub mutation, provider call, or command dispatch occurred."
+    ]
+  },
+  "proposal": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/dag-expansion-tampered-preview/proposal.json",
+  "proposal_sha256": "sha256:d35aca4a778b4555870a3e1de2b10742746bd0c02b49e5e3f7db0dde47dadbc5",
+  "proposal_summary": {
+    "new_edge_count": 2,
+    "new_node_count": 1,
+    "phase": null,
+    "proposal_id": "rw-sanity-expansion-proposal",
+    "proposed_by": "reviewer"
+  },
+  "provider_calls": false,
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T010338Z-tau-broad-nonprovider-hardening-regression-20260706/dag-expansion-tampered-preview/validation-receipt.json",
+  "schema": "tau.dag_expansion_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-06T01:03:52Z",
+  "verdict": "PASS"
+}

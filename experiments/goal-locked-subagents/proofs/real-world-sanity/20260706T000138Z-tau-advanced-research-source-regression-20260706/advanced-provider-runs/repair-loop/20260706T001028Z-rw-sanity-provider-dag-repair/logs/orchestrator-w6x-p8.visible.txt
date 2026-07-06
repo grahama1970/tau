@@ -1,0 +1,21 @@
+ocked-subagents/proofs/real-
+world-sanity/20260706T000138
+Z-tau-advanced-research-sour
+ce-regression-20260706/advan
+ced-provider-runs/repair-loo
+p/20260706T001028Z-rw-sanity
+-provider-dag-repair/planner
+-receipt.json\nfinal_receipt
+: /home/graham/workspace/exp
+eriments/tau/experiments/goa
+l-locked-subagents/proofs/re
+al-world-sanity/20260706T000
+138Z-tau-advanced-research-s
+ource-regression-20260706/ad
+vanced-provider-runs/repair-
+loop/20260706T001028Z-rw-san
+ity-provider-dag-repair/run-
+receipt.json\ncanonical trut
+h: Tau JSON receipts; this p
+ane is human-visible telemet
+ry.\n

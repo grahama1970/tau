@@ -1,0 +1,98 @@
+{
+  "dag_id": "issue-63-provider-sensitive-dag",
+  "edges": [
+    {
+      "from": "panel-creator",
+      "to": "panel-reviewer"
+    },
+    {
+      "from": "panel-reviewer",
+      "to": "human"
+    }
+  ],
+  "entry_node": "panel-creator",
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "unexpected_node",
+    "unexpected_edge",
+    "missing_required_evidence",
+    "max_attempts_exceeded",
+    "malformed_handoff"
+  ],
+  "goal": {
+    "goal_hash": "sha256:issue-63-provider-sensitive",
+    "goal_id": "issue-63",
+    "goal_version": 1
+  },
+  "limits": {
+    "default_timeout_seconds": 30,
+    "max_total_attempts": 2,
+    "resume": false
+  },
+  "nodes": [
+    {
+      "agent": "panel-creator",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/specs/panel-creator/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "panel-creator",
+      "max_attempts": 1,
+      "model_policy": {
+        "auth": "codex-oauth",
+        "model": "gpt-image-2",
+        "provider": "scillm"
+      },
+      "prompt_contract": {
+        "schema": "tau.prompt_contract.v1",
+        "system_prompt": "Stay inside the immutable storyboard goal.",
+        "user_template": "Use provider-route receipts before claiming PASS."
+      },
+      "required_evidence": [
+        "storyboard_creator_receipt.json",
+        "provider_route_receipt"
+      ]
+    },
+    {
+      "agent": "panel-reviewer",
+      "command_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/issue-63-provider-sensitive-dag-validation-20260706T1219Z/good/specs/panel-reviewer/tau-dispatch-command.json",
+      "executor": "local",
+      "id": "panel-reviewer",
+      "max_attempts": 1,
+      "model_policy": {
+        "auth": "codex-oauth",
+        "model": "gpt-image-2",
+        "provider": "scillm"
+      },
+      "prompt_contract": {
+        "schema": "tau.prompt_contract.v1",
+        "system_prompt": "Stay inside the immutable storyboard goal.",
+        "user_template": "Use provider-route receipts before claiming PASS."
+      },
+      "required_evidence": [
+        "storyboard_review_verdict.json",
+        "provider_route_receipt"
+      ]
+    },
+    {
+      "agent": "human",
+      "executor": "human",
+      "id": "human"
+    }
+  ],
+  "provider_sensitive": true,
+  "required_evidence": [
+    "dag-receipt.json",
+    "storyboard_creator_receipt.json",
+    "provider_route_receipt",
+    "storyboard_review_verdict.json",
+    "provider_route_receipt"
+  ],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "issue:63"
+  },
+  "terminal_nodes": [
+    "human"
+  ]
+}
