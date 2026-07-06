@@ -32,10 +32,13 @@ is a JSON array string of exact replacement operations:
 ```
 
 `tau.code_patch_receipt.v1` blocks stale base hashes, missing anchors,
-disallowed or generated paths, goal-hash mismatches, malformed patch operations,
-and post-hash mismatches. Passing the receipt proves only that the deterministic
-patch gate ran and the before/after hashes matched. It does not prove semantic
-correctness, test success, production safety, or agent truthfulness.
+disallowed, explicitly forbidden, or generated paths, goal-hash mismatches,
+malformed patch operations, and post-hash mismatches. The receipt records the
+active `policy_profile`, `data_boundary`, `allowed_paths`, `forbidden_paths`,
+and built-in generated-path patterns. Passing the receipt proves only that the
+deterministic patch gate ran and the before/after hashes matched. It does not
+prove semantic correctness, test success, production safety, or agent
+truthfulness.
 
 CLI:
 

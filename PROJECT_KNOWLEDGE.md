@@ -456,7 +456,10 @@
   `tau.code_patch_receipt.v1` for deterministic hash-bound exact replacement
   patches. It blocks stale base hashes, missing anchors, disallowed or generated
   paths, goal-hash mismatches, malformed patch operations, missing zero-trust
-  policy/data-boundary inputs, and post-hash mismatches.
+  policy/data-boundary inputs, explicit `forbidden_paths`, and post-hash
+  mismatches. The code-patch receipt now preserves the active zero-trust flag,
+  `policy_profile`, `data_boundary`, `allowed_paths`, `forbidden_paths`, and
+  built-in generated-path patterns that were evaluated.
   `src/tau_coding/review_findings.py` adds `tau.review_findings.v1` validation
   with P0/P1/P2/P3 routing to PASS/REVISE/BLOCKED and required evidence for
   P0/P1. `src/tau_coding/cli.py` exposes `uv run tau code-patch ...` and
@@ -469,7 +472,15 @@
   src/tau_coding/cli.py tests/test_code_patch.py tests/test_review_findings.py
   tests/test_course_correction.py` -> pass; `uv run pytest
   tests/test_code_patch.py tests/test_review_findings.py
-  tests/test_course_correction.py -q` -> `20 passed in 0.48s`. This proves
+  tests/test_course_correction.py -q` -> `26 passed in 0.44s`. Narrow
+  code-patch proof: `uv run pytest tests/test_code_patch.py -q` -> `10 passed
+  in 0.41s`. Aggregate proof: `scripts/run-coding-capability-sanity.py
+  --run-dir /tmp/tau-coding-capability-sanity-code-patch-boundary` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-boundary/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded coding receipt tests
+  `100 passed in 2.46s`. This proves
   deterministic local coding receipt validation and routing for the tested
   cases; it does not prove semantic code correctness, full suite health, live
   provider execution, OMP/SciLLM worker integration, LSP/DAP integration,

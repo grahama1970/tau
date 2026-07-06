@@ -104,6 +104,51 @@ def test_code_patch_blocks_disallowed_path(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_blocks_explicit_forbidden_path(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "generated_client.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/generated_client.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+        forbidden_paths=["src/generated_client.py"],
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "forbidden_path" in receipt["alert_codes"]
+    assert receipt["forbidden_paths"] == ["src/generated_client.py"]
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_blocks_generated_path_pattern(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "generated" / "example.py"
+    target.parent.mkdir(parents=True)
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/generated/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "forbidden_path" in receipt["alert_codes"]
+    assert "**/generated/**" in receipt["generated_path_patterns"]
+    assert target.read_text(encoding="utf-8") == before
+
+
 def test_code_patch_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()
@@ -155,6 +200,35 @@ def test_code_patch_zero_trust_requires_policy_and_data_boundary(tmp_path: Path)
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_receipt_records_policy_and_data_boundary(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "local"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["zero_trust"] is True
+    assert receipt["policy_profile"]["profile_id"] == "local"
+    assert receipt["data_boundary"]["classification"] == "public"
+    assert receipt["allowed_paths"] == ["src/**", "tests/**"]
+
+
 def test_cli_code_patch_writes_receipt(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()
@@ -201,6 +275,7 @@ def _write_patch(
     after: str,
     patch: str,
     anchors: list[dict[str, str]] | None = None,
+    forbidden_paths: list[str] | None = None,
 ) -> Path:
     payload = {
         "schema": CODE_PATCH_SCHEMA,
@@ -208,6 +283,7 @@ def _write_patch(
         "target_file": target_file,
         "base_file_sha256": f"sha256:{_sha256_text(before)}",
         "allowed_paths": ["src/**", "tests/**"],
+        "forbidden_paths": forbidden_paths or [],
         "anchors": anchors or [{"kind": "line_span", "value": before.strip()}],
         "patch": patch,
         "rationale": "exercise hash-bound patch receipt",
