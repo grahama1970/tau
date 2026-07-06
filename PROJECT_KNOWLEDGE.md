@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:28 EDT by agent
+**Last updated:** 2026-07-06 17:35 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding reliability Round 2 slice:
+  `src/tau_coding/lsp_receipts.py` adds `tau.lsp_diagnostics_receipt.v1`,
+  `tau.lsp_symbol_receipt.v1`, and `tau.lsp_rename_receipt.v1` for local
+  diagnostics, symbol lookup, and read-only rename planning. Diagnostics use
+  Ruff when available and fall back to Python AST parsing, recording inspected
+  files, severity counts, adapter availability, and explicit non-claims.
+  `src/tau_coding/commit_plan.py` adds `tau.commit_plan_receipt.v1` for dry-run
+  Git working-tree commit grouping with high-risk path alerts and apply blocked
+  pending approval. `src/tau_coding/cli.py` exposes `uv run tau
+  lsp-diagnostics`, `uv run tau lsp-symbols`, `uv run tau lsp-rename-plan`, and
+  `uv run tau commit-plan`. Focused proof before docs update:
+  `uv run ruff check --select I,F,E501 src/tau_coding/lsp_receipts.py
+  src/tau_coding/commit_plan.py src/tau_coding/cli.py
+  tests/test_lsp_receipts.py tests/test_commit_plan.py` -> pass; `uv run
+  pytest tests/test_lsp_receipts.py tests/test_commit_plan.py -q` -> `11
+  passed in 0.61s`. This proves deterministic local receipt generation and CLI
+  wiring for the tested cases; it does not prove semantic code correctness,
+  complete language-server parity, safe rename application, commits were
+  created, full-suite health, live providers, OMP/SciLLM workers, debugger/DAP
+  integration, GitHub mutation, or legal compliance.
 
 - 2026-07-06 coding reliability Round 1 slice:
   `src/tau_coding/code_patch.py` adds `tau.code_patch.v1` and

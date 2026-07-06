@@ -39,6 +39,7 @@ from tau_coding.browser_cdp_proof import (
     write_browser_cdp_proof,
 )
 from tau_coding.code_patch import apply_code_patch_receipt
+from tau_coding.commit_plan import write_commit_plan_receipt
 from tau_coding.compliance_package import build_compliance_evidence_package
 from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.credentials import FileCredentialStore
@@ -113,6 +114,11 @@ from tau_coding.loop_validation import (
     validate_loop2_contract_file,
     validate_loop_receipt_with_loop2_contracts,
     validate_native_loop2_run_with_contracts,
+)
+from tau_coding.lsp_receipts import (
+    write_lsp_diagnostics_receipt,
+    write_lsp_rename_plan_receipt,
+    write_lsp_symbol_receipt,
 )
 from tau_coding.media_explainer_orchestration import (
     inspect_media_explainer_run,
@@ -1651,6 +1657,61 @@ def main(
                 findings_path=Path(str(options["findings"])),
                 receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
                 expected_goal_hash=_optional_str(options.get("goal_hash")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "lsp-diagnostics":
+        try:
+            options = _parse_lsp_diagnostics_cli_args(positional_args[1:])
+            payload = write_lsp_diagnostics_receipt(
+                workspace=Path(str(options["workspace"])),
+                output_path=Path(str(options["out"])),
+                required=bool(options["required"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "lsp-symbols":
+        try:
+            options = _parse_lsp_symbols_cli_args(positional_args[1:])
+            payload = write_lsp_symbol_receipt(
+                workspace=Path(str(options["workspace"])),
+                query=str(options["query"]),
+                output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "lsp-rename-plan":
+        try:
+            options = _parse_lsp_rename_plan_cli_args(positional_args[1:])
+            payload = write_lsp_rename_plan_receipt(
+                workspace=Path(str(options["workspace"])),
+                symbol=str(options["symbol"]),
+                new_name=str(options["new_name"]),
+                output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "commit-plan":
+        try:
+            options = _parse_commit_plan_cli_args(positional_args[1:])
+            payload = write_commit_plan_receipt(
+                repo=Path(str(options["repo"])),
+                output_path=Path(str(options["out"])),
+                apply=bool(options["apply"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4197,6 +4258,126 @@ def _parse_review_findings_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if not _optional_str(options.get("findings")):
         raise RuntimeError("Usage: tau review-findings --findings <findings.json>")
+    return options
+
+
+def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "workspace": ".",
+        "out": None,
+        "required": False,
+        "policy_profile": None,
+        "data_boundary": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--workspace", "--out", "--policy-profile", "--data-boundary"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--workspace="):
+            options["workspace"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg == "--required":
+            options["required"] = True
+        else:
+            raise RuntimeError(f"unknown lsp-diagnostics option: {arg}")
+        index += 1
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau lsp-diagnostics --workspace <path> --out <receipt>")
+    return options
+
+
+def _parse_lsp_symbols_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"workspace": ".", "query": None, "out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--workspace", "--query", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--workspace="):
+            options["workspace"] = arg.partition("=")[2]
+        elif arg.startswith("--query="):
+            options["query"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown lsp-symbols option: {arg}")
+        index += 1
+    if not _optional_str(options.get("query")):
+        raise RuntimeError(
+            "Usage: tau lsp-symbols --workspace <path> --query <symbol> --out <receipt>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau lsp-symbols --workspace <path> --query <symbol> --out <receipt>"
+        )
+    return options
+
+
+def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"workspace": ".", "symbol": None, "new_name": None, "out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--workspace", "--symbol", "--new-name", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--workspace="):
+            options["workspace"] = arg.partition("=")[2]
+        elif arg.startswith("--symbol="):
+            options["symbol"] = arg.partition("=")[2]
+        elif arg.startswith("--new-name="):
+            options["new_name"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown lsp-rename-plan option: {arg}")
+        index += 1
+    if not _optional_str(options.get("symbol")) or not _optional_str(options.get("new_name")):
+        raise RuntimeError(
+            "Usage: tau lsp-rename-plan --symbol <symbol> --new-name <name> --out <receipt>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau lsp-rename-plan --symbol <symbol> --new-name <name> --out <receipt>"
+        )
+    return options
+
+
+def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"repo": ".", "out": None, "apply": False}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--repo", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--repo="):
+            options["repo"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg == "--apply":
+            options["apply"] = True
+        else:
+            raise RuntimeError(f"unknown commit-plan option: {arg}")
+        index += 1
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau commit-plan --repo <repo> --out <receipt>")
     return options
 
 

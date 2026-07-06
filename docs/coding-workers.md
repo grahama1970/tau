@@ -102,6 +102,55 @@ These triggers route coding failures away from blind retry and toward bounded
 next actions such as fresh patch receipts, structured review, debugger evidence,
 quarantine, goal-guardian review, or human review.
 
+### LSP-Style Diagnostics And Rename Planning
+
+`tau.lsp_diagnostics_receipt.v1` records local diagnostics evidence for a
+workspace. Tau uses Ruff when available and falls back to Python AST parsing for
+syntax evidence. The receipt records the adapter used, inspected files,
+diagnostics, severity counts, and whether the adapter was available.
+
+CLI:
+
+```bash
+uv run tau lsp-diagnostics --workspace . --out lsp-diagnostics-receipt.json
+```
+
+`tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
+symbol lookup and rename planning. Rename planning does not apply edits by
+default; it records references and planned edits as evidence for review.
+
+CLI:
+
+```bash
+uv run tau lsp-symbols --workspace . --query Example --out lsp-symbols.json
+uv run tau lsp-rename-plan \
+  --workspace . \
+  --symbol Example \
+  --new-name BetterExample \
+  --out lsp-rename-plan.json
+```
+
+These receipts do not prove semantic correctness, complete language-server
+parity, or that a rename is safe to apply.
+
+### Atomic Commit Planning
+
+`tau.commit_plan_receipt.v1` inspects a Git working tree and proposes dry-run
+commit groups for source, tests, docs, and lockfiles. It records changed files,
+dependency order, risk level, required evidence per group, lockfile handling,
+and approval requirements.
+
+CLI:
+
+```bash
+uv run tau commit-plan --repo . --out commit-plan-receipt.json
+```
+
+The command is dry-run by default. `--apply` is intentionally blocked unless a
+future approval lane authorizes commit application. High-risk paths such as
+`.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and
+`package-lock.json` are flagged for approval.
+
 ## Intended Worker Adapters
 
 External coding workers remain untrusted. Tau should wrap them with work orders,
