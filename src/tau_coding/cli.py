@@ -1504,9 +1504,11 @@ def main(
             raise typer.Exit(1)
         raise typer.Exit()
 
-    if prompt_option is None and command == "docker-sandbox-check":
+    if prompt_option is None and command in {"docker-sandbox-check", "docker-sandbox-run"}:
         try:
             options = _parse_docker_sandbox_check_args(positional_args[1:])
+            if command == "docker-sandbox-run":
+                options["execute"] = True
             payload = write_docker_sandbox_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -3748,6 +3750,8 @@ def _parse_docker_sandbox_check_args(args: list[str]) -> dict[str, object]:
         "host_network": False,
         "docker_socket_mounted": False,
         "mounts": [],
+        "execute": False,
+        "timeout_seconds": 30,
     }
     index = 0
     while index < len(args):
@@ -3774,6 +3778,16 @@ def _parse_docker_sandbox_check_args(args: list[str]) -> dict[str, object]:
             break
         elif arg == "--privileged":
             options["privileged"] = True
+        elif arg == "--execute":
+            options["execute"] = True
+        elif arg in {"--timeout", "--timeout-seconds"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            try:
+                options["timeout_seconds"] = int(args[index])
+            except ValueError as exc:
+                raise RuntimeError(f"{arg} must be an integer") from exc
         elif arg == "--host-network":
             options["host_network"] = True
             options["network"] = "host"

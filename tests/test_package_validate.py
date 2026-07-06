@@ -169,6 +169,73 @@ def test_compliance_package_validate_blocks_empty_signed_verification(
     assert "signed_receipt_verification_empty" in receipt["alert_codes"]
 
 
+def test_compliance_package_validate_accepts_runtime_sandbox_receipt(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    _write_json(
+        package_dir / "sandbox-run-receipt.json",
+        {
+            "schema": "tau.sandbox_run_receipt.v1",
+            "status": "PASS",
+            "live": True,
+            "command_executed": True,
+            "goal_hash": "sha256:g",
+            "backend": {
+                "name": "docker",
+                "image": "busybox@sha256:" + ("a" * 64),
+            },
+            "policy": {
+                "network": "none",
+                "privileged": False,
+                "docker_socket_mounted": False,
+                "host_network": False,
+            },
+            "execution": {
+                "command_executed": True,
+                "exit_code": 0,
+                "stdout_path": "/tmp/stdout.txt",
+                "stderr_path": "/tmp/stderr.txt",
+                "alerts": [],
+            },
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["alert_codes"] == []
+
+
+def test_compliance_package_validate_blocks_spoofed_sandbox_execution(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    _write_json(
+        package_dir / "sandbox-run-receipt.json",
+        {
+            "schema": "tau.sandbox_run_receipt.v1",
+            "status": "PASS",
+            "command_executed": True,
+            "goal_hash": "sha256:g",
+            "backend": {"name": "docker", "image": "busybox:latest"},
+            "policy": {"network": "host", "privileged": True},
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "sandbox_execution_not_review_ready" in receipt["alert_codes"]
+    assert "sandbox_policy_not_review_ready" in receipt["alert_codes"]
+
+
 def test_compliance_package_validate_blocks_data_boundary_hash_mismatch(
     tmp_path: Path,
 ) -> None:

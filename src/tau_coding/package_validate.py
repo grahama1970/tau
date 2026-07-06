@@ -436,7 +436,7 @@ def _sandbox_run_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[di
     backend = payload.get("backend")
     backend_map = backend if isinstance(backend, Mapping) else {}
 
-    if payload.get("command_executed") is True:
+    if payload.get("command_executed") is True and not _accepted_sandbox_execution(payload):
         alerts.append(
             _alert(
                 "sandbox_execution_not_review_ready",
@@ -478,6 +478,21 @@ def _sandbox_run_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[di
             )
         )
     return alerts
+
+
+def _accepted_sandbox_execution(payload: Mapping[str, Any]) -> bool:
+    execution = payload.get("execution")
+    if not isinstance(execution, Mapping):
+        return False
+    if payload.get("status") != "PASS" or payload.get("live") is not True:
+        return False
+    if execution.get("command_executed") is not True or execution.get("exit_code") != 0:
+        return False
+    if execution.get("alerts"):
+        return False
+    return isinstance(execution.get("stdout_path"), str) and isinstance(
+        execution.get("stderr_path"), str
+    )
 
 
 def _signed_receipt_verification_alerts(

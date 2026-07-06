@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -26,8 +28,10 @@ def write_docker_sandbox_receipt(
     host_network: bool = False,
     docker_socket_mounted: bool = False,
     mounts: list[str] | None = None,
+    execute: bool = False,
+    timeout_seconds: int = 30,
 ) -> dict[str, Any]:
-    """Validate Docker sandbox policy and build a non-executed run command."""
+    """Validate Docker sandbox policy and optionally execute a constrained run."""
 
     resolved_receipt = receipt_path.expanduser().resolve()
     cap_drop_values = cap_drop or ["ALL"]
@@ -45,7 +49,10 @@ def write_docker_sandbox_receipt(
         docker_socket_mounted=docker_socket_mounted,
         mounts=mount_values,
     )
+    if timeout_seconds <= 0:
+        alerts.append(_alert("invalid_timeout", "Docker sandbox timeout must be positive."))
     ok = not alerts
+    cidfile = resolved_receipt.with_suffix(".container-id.txt") if execute and ok else None
     docker_command = (
         _docker_run_command(
             image=image,
@@ -56,16 +63,25 @@ def write_docker_sandbox_receipt(
             cap_drop=cap_drop_values,
             no_new_privileges=no_new_privileges,
             mounts=mount_values,
+            cidfile=cidfile,
         )
         if ok
         else []
     )
+    execution = _execute_docker_command(
+        docker_command=docker_command,
+        receipt_path=resolved_receipt,
+        timeout_seconds=timeout_seconds,
+    ) if execute and ok else None
+    if execution is not None:
+        alerts.extend(execution["alerts"])
+        ok = execution["ok"]
     receipt: dict[str, Any] = {
         "schema": SANDBOX_RUN_RECEIPT_SCHEMA,
         "ok": ok,
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
-        "live": False,
+        "live": bool(execution),
         "provider_live": False,
         "backend": {
             "name": backend,
@@ -85,7 +101,8 @@ def write_docker_sandbox_receipt(
         },
         "command": command,
         "docker_command": docker_command,
-        "command_executed": False,
+        "command_executed": bool(execution and execution["command_executed"]),
+        "execution": execution,
         "alerts": alerts,
         "alert_codes": [str(alert["code"]) for alert in alerts],
         "recommended_action": _recommended_action(alerts),
@@ -94,13 +111,15 @@ def write_docker_sandbox_receipt(
             "proves": [
                 "Tau inspected Docker sandbox policy before container execution.",
                 "Tau blocked unsafe Docker settings before building an executable command.",
-                "No Docker command was executed by this first-slice gate.",
+                (
+                    "Tau executed the Docker command and captured stdout/stderr artifacts."
+                    if execution and execution["command_executed"]
+                    else "No Docker command was executed by this policy check."
+                ),
             ],
             "does_not_prove": [
                 "Runtime sandbox isolation.",
-                "Docker daemon availability.",
                 "Docker Sandboxes microVM availability.",
-                "The agent command executed successfully.",
                 "ITAR compliance.",
             ],
         },
@@ -164,6 +183,7 @@ def _docker_run_command(
     cap_drop: list[str],
     no_new_privileges: bool,
     mounts: list[str],
+    cidfile: Path | None = None,
 ) -> list[str]:
     docker_command = [
         "docker",
@@ -174,6 +194,8 @@ def _docker_run_command(
         "--user",
         user,
     ]
+    if cidfile is not None:
+        docker_command.extend(["--cidfile", str(cidfile)])
     if read_only_rootfs:
         docker_command.append("--read-only")
     for cap in cap_drop:
@@ -185,6 +207,86 @@ def _docker_run_command(
     docker_command.append(image)
     docker_command.extend(command)
     return docker_command
+
+
+def _execute_docker_command(
+    *,
+    docker_command: list[str],
+    receipt_path: Path,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    stdout_path = receipt_path.with_suffix(".stdout.txt")
+    stderr_path = receipt_path.with_suffix(".stderr.txt")
+    cidfile_path = receipt_path.with_suffix(".container-id.txt")
+    alerts: list[dict[str, Any]] = []
+    docker_bin = shutil.which("docker")
+    if docker_bin is None:
+        alerts.append(_alert("docker_unavailable", "Docker executable was not found on PATH."))
+        return {
+            "ok": False,
+            "command_executed": False,
+            "exit_code": None,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+            "container_id_path": str(cidfile_path),
+            "container_id": None,
+            "alerts": alerts,
+        }
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        completed = subprocess.run(
+            docker_command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout_path.write_text(exc.stdout or "", encoding="utf-8")
+        stderr_path.write_text(exc.stderr or "", encoding="utf-8")
+        alerts.append(
+            _alert(
+                "docker_command_timeout",
+                f"Docker sandbox command timed out after {timeout_seconds} seconds.",
+            )
+        )
+        return {
+            "ok": False,
+            "command_executed": True,
+            "exit_code": None,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+            "container_id_path": str(cidfile_path),
+            "container_id": _read_cidfile(cidfile_path),
+            "alerts": alerts,
+        }
+    stdout_path.write_text(completed.stdout, encoding="utf-8")
+    stderr_path.write_text(completed.stderr, encoding="utf-8")
+    if completed.returncode != 0:
+        alerts.append(
+            _alert(
+                "docker_command_nonzero",
+                f"Docker sandbox command exited with code {completed.returncode}.",
+            )
+        )
+    return {
+        "ok": completed.returncode == 0,
+        "command_executed": True,
+        "exit_code": completed.returncode,
+        "stdout_path": str(stdout_path),
+        "stderr_path": str(stderr_path),
+        "container_id_path": str(cidfile_path),
+        "container_id": _read_cidfile(cidfile_path),
+        "alerts": alerts,
+    }
+
+
+def _read_cidfile(path: Path) -> str | None:
+    try:
+        value = path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return value or None
 
 
 def _image_digest(image: str) -> str | None:
