@@ -650,6 +650,7 @@ def test_committed_reviewer_overlay_command_spec_loads() -> None:
     assert "--next-agent" in spec["command"]
     assert "human" in spec["command"]
     assert spec["timeout_s"] == 30.0
+    assert spec["timeout_s_source"] == "command_spec"
 
 
 def test_committed_research_auditor_overlay_command_spec_loads() -> None:
@@ -664,6 +665,7 @@ def test_committed_research_auditor_overlay_command_spec_loads() -> None:
     assert spec["command"] == ["uv", "run", "tau", "handoff-research-auditor-adapter"]
     assert spec["cwd"] == Path(".")
     assert spec["timeout_s"] == 30.0
+    assert spec["timeout_s_source"] == "command_spec"
 
 
 def test_committed_persona_dream_panel_overlay_specs_run_fail_closed_chain() -> None:
