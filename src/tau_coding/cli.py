@@ -1684,6 +1684,11 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
+                baseline_receipt_path=(
+                    Path(str(options["baseline_receipt"]))
+                    if options.get("baseline_receipt") is not None
+                    else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4416,11 +4421,18 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "baseline_receipt": None,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--workspace", "--out", "--policy-profile", "--data-boundary"}:
+        if arg in {
+            "--workspace",
+            "--out",
+            "--policy-profile",
+            "--data-boundary",
+            "--baseline-receipt",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -4433,6 +4445,8 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--baseline-receipt="):
+            options["baseline_receipt"] = arg.partition("=")[2]
         elif arg == "--required":
             options["required"] = True
         elif arg == "--zero-trust":

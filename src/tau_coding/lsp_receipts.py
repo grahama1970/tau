@@ -33,6 +33,7 @@ def write_lsp_diagnostics_receipt(
     zero_trust: bool = False,
     policy_profile: Mapping[str, Any] | None = None,
     data_boundary: Mapping[str, Any] | None = None,
+    baseline_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     resolved_workspace = workspace.expanduser().resolve()
     alerts = _coding_policy_alerts(
@@ -57,6 +58,13 @@ def write_lsp_diagnostics_receipt(
         alerts.append(_alert("lsp_server_unavailable", "required diagnostics adapter unavailable"))
 
     severity_counts = _severity_counts(diagnostics)
+    baseline = _read_baseline_receipt(baseline_receipt_path, alerts)
+    baseline_counts = (
+        _normalize_severity_counts(baseline.get("severity_counts"))
+        if baseline is not None
+        else None
+    )
+    diagnostic_delta = _diagnostic_delta(severity_counts, baseline_counts)
     ok = not alerts
     payload = {
         "schema": LSP_DIAGNOSTICS_RECEIPT_SCHEMA,
@@ -76,7 +84,18 @@ def write_lsp_diagnostics_receipt(
         "diagnostics": diagnostics,
         "diagnostic_count": len(diagnostics),
         "severity_counts": severity_counts,
-        "diagnostics_increased": "NOT_EVALUATED",
+        "baseline_receipt_path": (
+            str(baseline_receipt_path.expanduser().resolve())
+            if baseline_receipt_path is not None
+            else None
+        ),
+        "baseline_severity_counts": baseline_counts,
+        "diagnostic_delta": diagnostic_delta,
+        "diagnostics_increased": (
+            _diagnostics_increased(diagnostic_delta)
+            if diagnostic_delta is not None
+            else "NOT_EVALUATED"
+        ),
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": _lsp_proof_scope("diagnostics"),
@@ -270,6 +289,58 @@ def _severity_counts(diagnostics: list[dict[str, Any]]) -> dict[str, int]:
         else:
             counts["information"] += 1
     return counts
+
+
+def _read_baseline_receipt(
+    baseline_receipt_path: Path | None,
+    alerts: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    if baseline_receipt_path is None:
+        return None
+    resolved = baseline_receipt_path.expanduser().resolve()
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        alerts.append(
+            _alert("baseline_receipt_unreadable", f"baseline receipt is unreadable: {exc}")
+        )
+        return None
+    if not isinstance(payload, dict):
+        alerts.append(_alert("baseline_receipt_not_object", "baseline receipt must be an object"))
+        return None
+    if payload.get("schema") != LSP_DIAGNOSTICS_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "invalid_baseline_receipt_schema",
+                f"baseline receipt schema must be {LSP_DIAGNOSTICS_RECEIPT_SCHEMA}",
+            )
+        )
+        return None
+    return payload
+
+
+def _normalize_severity_counts(value: object) -> dict[str, int]:
+    counts = {"error": 0, "warning": 0, "information": 0, "hint": 0}
+    if not isinstance(value, Mapping):
+        return counts
+    for key in counts:
+        raw = value.get(key)
+        if isinstance(raw, int) and raw >= 0:
+            counts[key] = raw
+    return counts
+
+
+def _diagnostic_delta(
+    current: dict[str, int],
+    baseline: dict[str, int] | None,
+) -> dict[str, int] | None:
+    if baseline is None:
+        return None
+    return {key: current.get(key, 0) - baseline.get(key, 0) for key in sorted(current)}
+
+
+def _diagnostics_increased(delta: dict[str, int]) -> bool:
+    return any(value > 0 for value in delta.values())
 
 
 def _coding_policy_alerts(

@@ -200,22 +200,33 @@
   GitHub auth, GitHub object existence, content freshness, live mutation safety,
   legal compliance, or provider/model quality.
 
-- 2026-07-06 LSP symbol/rename zero-trust enforcement rung:
+- 2026-07-06 LSP diagnostics/symbol/rename evidence rung:
   `src/tau_coding/lsp_receipts.py` now applies the same zero-trust
   policy/data-boundary presence gate to `tau.lsp_symbol_receipt.v1` and
-  `tau.lsp_rename_receipt.v1` that diagnostics already use. `src/tau_coding/cli.py`
-  exposes the gate through `uv run tau lsp-symbols --zero-trust ...` and
-  `uv run tau lsp-rename-plan --zero-trust ...`. In zero-trust mode, Tau blocks
-  symbol and rename-plan receipts that omit `policy_profile` or
-  `data_boundary`, while preserving the read-only/no-apply behavior for rename
-  planning. Focused proof: `uv run ruff check --select I,F,E501
+  `tau.lsp_rename_receipt.v1` that diagnostics already use, and
+  `tau.lsp_diagnostics_receipt.v1` now accepts `--baseline-receipt` to record
+  `baseline_severity_counts`, `diagnostic_delta`, and `diagnostics_increased`
+  for before/after coding evidence. `src/tau_coding/cli.py` exposes these
+  through `uv run tau lsp-diagnostics --baseline-receipt <receipt> ...`,
+  `uv run tau lsp-symbols --zero-trust ...`, and `uv run tau
+  lsp-rename-plan --zero-trust ...`. In zero-trust mode, Tau blocks symbol and
+  rename-plan receipts that omit `policy_profile` or `data_boundary`, while
+  preserving the read-only/no-apply behavior for rename planning. Focused
+  proof: `uv run ruff check --select I,F,E501
   src/tau_coding/lsp_receipts.py src/tau_coding/cli.py tests/test_lsp_receipts.py`
-  -> pass; `uv run pytest tests/test_lsp_receipts.py -q` -> `12 passed in
-  0.56s`. This proves deterministic local policy/data-boundary presence gating
-  across LSP diagnostics, symbols, and rename planning; it does not prove
-  semantic code correctness, full language-server parity, safe rename
+  docs/coding-workers.md` -> pass; `uv run pytest tests/test_lsp_receipts.py
+  -q` -> `14 passed in 0.63s`. This proves deterministic local
+  policy/data-boundary presence gating across LSP diagnostics, symbols, and
+  rename planning plus baseline diagnostics regression recording; it does not
+  prove semantic code correctness, full language-server parity, safe rename
   application, legal compliance, provider/model quality, or runtime sandbox
   isolation.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-baseline-final` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-lsp-baseline-final/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:8`, `failed_check_count:0`, and embedded coding receipt tests
+  `102 passed in 2.55s`.
 
 - 2026-07-06 worker substrate evidence enforcement rung:
   `src/tau_coding/coding_worker_adapters.py` now requires high-stakes

@@ -29,6 +29,26 @@ def test_lsp_diagnostics_receipt_records_counts(tmp_path: Path) -> None:
     assert payload["diagnostics_increased"] == "NOT_EVALUATED"
 
 
+def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def ok():\n    return 1\n", encoding="utf-8")
+    baseline = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "baseline-diagnostics.json",
+    )
+    source.write_text("def broken(:\n    return 1\n", encoding="utf-8")
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "after-diagnostics.json",
+        baseline_receipt_path=Path(baseline["receipt_path"]),
+    )
+
+    assert payload["baseline_severity_counts"] == baseline["severity_counts"]
+    assert payload["diagnostic_delta"]["error"] > 0
+    assert payload["diagnostics_increased"] is True
+
+
 def test_lsp_diagnostics_blocks_when_server_unavailable_if_required(tmp_path: Path) -> None:
     payload = write_lsp_diagnostics_receipt(
         workspace=tmp_path / "missing",
@@ -239,3 +259,33 @@ def test_cli_lsp_diagnostics_zero_trust_missing_boundary_exits_blocked(
     assert payload["status"] == "BLOCKED"
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_cli_lsp_diagnostics_accepts_baseline_receipt(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("value = 1\n", encoding="utf-8")
+    baseline = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "baseline.json",
+    )
+    source.write_text("def broken(:\n    return 1\n", encoding="utf-8")
+    out = tmp_path / "after.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "lsp-diagnostics",
+            "--workspace",
+            str(tmp_path),
+            "--out",
+            str(out),
+            "--baseline-receipt",
+            str(baseline["receipt_path"]),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["diagnostics_increased"] is True
+    assert payload["baseline_receipt_path"] == str(Path(baseline["receipt_path"]))

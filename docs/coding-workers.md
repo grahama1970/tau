@@ -122,6 +122,19 @@ CLI:
 uv run tau lsp-diagnostics --workspace . --out lsp-diagnostics-receipt.json
 ```
 
+To compare a post-change workspace against a previous diagnostics receipt:
+
+```bash
+uv run tau lsp-diagnostics \
+  --workspace . \
+  --baseline-receipt before-diagnostics.json \
+  --out after-diagnostics.json
+```
+
+The receipt records `baseline_severity_counts`, `diagnostic_delta`, and
+`diagnostics_increased`. This is a regression signal for Tau course correction,
+not proof that the code is semantically correct.
+
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when LSP evidence is part of a high-stakes coding route. In zero-trust mode,
 Tau blocks diagnostics, symbol, and rename-plan receipts that omit the policy
