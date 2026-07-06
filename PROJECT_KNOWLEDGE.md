@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 17:45 EDT by agent
+**Last updated:** 2026-07-06 17:50 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 OMP/SciLLM coding worker validation rung:
+  `src/tau_coding/coding_worker_adapters.py` adds `tau.executor.omp.v1`,
+  `tau.omp_worker_result.v1`, `tau.omp_worker_receipt.v1`,
+  `tau.executor.scillm_worker.v1`, `tau.scillm_worker_result.v1`, and
+  `tau.scillm_worker_receipt.v1` validation. `src/tau_coding/cli.py` exposes
+  `uv run tau omp-worker-validate` and `uv run tau scillm-worker-validate`.
+  The validators block missing worker results, invalid schemas, goal-hash
+  mismatch, changed files outside allowed paths, missing required artifacts,
+  prose-only results, PASS test claims without logs, public GitHub mutation
+  without apply-policy receipt, external research without research receipts, and
+  high-stakes workers without Herdr/sandbox substrate. The SciLLM route is
+  aligned with the current `scillm/SKILL.md` OpenCode serve contract:
+  multi-step repo work should use `/v1/scillm/opencode/runs` with agent
+  profiles and skills, not chat completions or raw OpenCode ports. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `10 passed in 0.50s`. This proves
+  deterministic local worker result validation and CLI wiring for the tested
+  cases; it does not prove Tau launched OMP or SciLLM, live Herdr/sandbox
+  execution, worker trustworthiness, semantic code correctness, provider/model
+  quality, GitHub mutation, or legal compliance.
 
 - 2026-07-06 coding reliability basic example:
   `examples/coding-reliability-basic/run.sh` creates a temporary Git repo,

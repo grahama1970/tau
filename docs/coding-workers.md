@@ -188,15 +188,38 @@ External coding workers remain untrusted. Tau should wrap them with work orders,
 allowed/forbidden paths, goal hashes, policy/data-boundary metadata, and required
 result artifacts.
 
-Planned adapters:
+Current validation adapters:
 
-- `tau.executor.omp.v1`
-- `tau.omp_worker_receipt.v1`
-- `tau.executor.scillm_worker.v1`
+- `tau.executor.omp.v1` work orders validated into `tau.omp_worker_receipt.v1`
+- `tau.executor.scillm_worker.v1` work orders validated into
+  `tau.scillm_worker_receipt.v1`
 
-These adapters should reject prose-only results, goal-hash drift, disallowed
-file changes, missing test logs, public GitHub mutation without policy receipts,
-and external research without sanitized-query authorization.
+These adapters reject missing results, invalid schemas, prose-only results,
+goal-hash drift, disallowed file changes, missing required artifacts, PASS test
+claims without durable logs, public GitHub mutation without policy receipts, and
+external research without research-query/source receipts. High-stakes work
+orders must name an allowed execution substrate such as Herdr-visible execution
+or a sandbox.
+
+CLI:
+
+```bash
+uv run tau omp-worker-validate \
+  --work-order omp-work-order.json \
+  --result omp-result.json \
+  --out omp-worker-receipt.json
+
+uv run tau scillm-worker-validate \
+  --work-order scillm-work-order.json \
+  --result scillm-result.json \
+  --out scillm-worker-receipt.json
+```
+
+For SciLLM coding delegates, Tau should use the OpenCode serve surface
+(`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
+`scillm-debugger`, not chat completions or raw OpenCode ports. The current Tau
+receipt validates the declared model/provider route; it does not prove Tau
+launched the worker.
 
 ## Non-Claims
 
@@ -207,6 +230,7 @@ Tau does not claim:
 - a passing patch receipt proves semantic correctness
 - LSP or tests prove full safety
 - worker adapters make OMP or SciLLM trusted
+- worker validation proves Tau launched the worker
 - policy/data-boundary gates are legal compliance
 
 The design goal is narrower: make coding-agent output bounded, inspectable,

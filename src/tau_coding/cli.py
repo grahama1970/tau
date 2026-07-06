@@ -39,6 +39,10 @@ from tau_coding.browser_cdp_proof import (
     write_browser_cdp_proof,
 )
 from tau_coding.code_patch import apply_code_patch_receipt
+from tau_coding.coding_worker_adapters import (
+    write_omp_worker_receipt,
+    write_scillm_worker_receipt,
+)
 from tau_coding.commit_plan import write_commit_plan_receipt
 from tau_coding.compliance_package import build_compliance_evidence_package
 from tau_coding.course_correction import write_course_correction_receipt
@@ -1732,6 +1736,38 @@ def main(
                     else None
                 ),
                 required_receipts=[Path(str(path)) for path in options["required_receipts"]],
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "omp-worker-validate":
+        try:
+            options = _parse_worker_validate_cli_args(
+                positional_args[1:],
+                command="omp-worker-validate",
+            )
+            payload = write_omp_worker_receipt(
+                work_order_path=Path(str(options["work_order"])),
+                result_path=Path(str(options["result"])),
+                output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "scillm-worker-validate":
+        try:
+            options = _parse_worker_validate_cli_args(
+                positional_args[1:],
+                command="scillm-worker-validate",
+            )
+            payload = write_scillm_worker_receipt(
+                work_order_path=Path(str(options["work_order"])),
+                result_path=Path(str(options["result"])),
+                output_path=Path(str(options["out"])),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4433,6 +4469,40 @@ def _parse_orchestration_reliability_cli_args(args: list[str]) -> dict[str, obje
         raise RuntimeError(
             "Usage: tau orchestration-reliability "
             "(--run-dir <dir> | --dag-receipt <receipt>) --out <receipt>"
+        )
+    return options
+
+
+def _parse_worker_validate_cli_args(args: list[str], *, command: str) -> dict[str, object]:
+    options: dict[str, object] = {"work_order": None, "result": None, "out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--work-order", "--result", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--work-order="):
+            options["work_order"] = arg.partition("=")[2]
+        elif arg.startswith("--result="):
+            options["result"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown {command} option: {arg}")
+        index += 1
+    if not _optional_str(options.get("work_order")):
+        raise RuntimeError(
+            f"Usage: tau {command} --work-order <json> --result <json> --out <receipt>"
+        )
+    if not _optional_str(options.get("result")):
+        raise RuntimeError(
+            f"Usage: tau {command} --work-order <json> --result <json> --out <receipt>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            f"Usage: tau {command} --work-order <json> --result <json> --out <receipt>"
         )
     return options
 
