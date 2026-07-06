@@ -1,0 +1,21 @@
+-locked-subagents/proofs/rea
+l-world-sanity/20260706T0029
+03Z-tau-advanced-approval-bi
+nding-regression-20260706/ad
+vanced-provider-runs/repair-
+loop/20260706T003948Z-rw-san
+ity-provider-dag-repair/plan
+ner-receipt.json\nfinal_rece
+ipt: /home/graham/workspace/
+experiments/tau/experiments/
+goal-locked-subagents/proofs
+/real-world-sanity/20260706T
+002903Z-tau-advanced-approva
+l-binding-regression-2026070
+6/advanced-provider-runs/rep
+air-loop/20260706T003948Z-rw
+-sanity-provider-dag-repair/
+run-receipt.json\ncanonical
+truth: Tau JSON receipts; th
+is pane is human-visible tel
+emetry.\n

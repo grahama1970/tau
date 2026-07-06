@@ -1,0 +1,53 @@
+{
+  "auth": {
+    "method": "unknown",
+    "status": "unknown"
+  },
+  "diagnostics": {
+    "pane_agent_status": "idle",
+    "pane_label": "20260706t004339z-rw-sanity-provider-dag-invalid-model-coder-codex",
+    "readiness_state": "ready",
+    "visible_prompt_is_gate": false,
+    "visible_prompt_observed": true
+  },
+  "evidence": {
+    "provider_event_log_path": null,
+    "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/invalid-model/20260706T004339Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260706T004339Z-rw-sanity-provider-dag-invalid-model-readiness/readiness/codex.readiness.json",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/invalid-model/20260706T004339Z-rw-sanity-provider-dag-invalid-model/provider-readiness/20260706T004339Z-rw-sanity-provider-dag-invalid-model-readiness/logs/codex.visible.txt"
+  },
+  "interstitial": {
+    "kind": null,
+    "present": false,
+    "safe_actions": [
+      "provider_initializing_visible"
+    ]
+  },
+  "observed_at": "2026-07-06T00:43:44Z",
+  "pane_id": "w76:p5",
+  "process": {
+    "alive": true,
+    "argv": [
+      "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "--cd",
+      "/home/graham/workspace/experiments/tau"
+    ],
+    "command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "cwd": "/home/graham/workspace/experiments/tau",
+    "foreground": true,
+    "pid": 3000586
+  },
+  "provider_api": {
+    "available": false,
+    "endpoint": "none",
+    "last_event_type": null
+  },
+  "provider_id": "codex",
+  "provider_session_id": null,
+  "ready": true,
+  "run_id": "20260706T004339Z-rw-sanity-provider-dag-invalid-model-readiness",
+  "schema": "tau.provider_session_state.v1",
+  "source": "herdr_process_info",
+  "state": "ready",
+  "terminal_id": "term_655e690d2f223806",
+  "workspace_id": "w76"
+}

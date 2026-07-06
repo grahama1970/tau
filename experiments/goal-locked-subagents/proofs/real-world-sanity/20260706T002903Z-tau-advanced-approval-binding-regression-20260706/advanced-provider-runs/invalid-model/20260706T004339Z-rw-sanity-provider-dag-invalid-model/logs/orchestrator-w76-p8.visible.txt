@@ -1,0 +1,21 @@
+cked-subagents/proofs/real-w
+orld-sanity/20260706T002903Z
+-tau-advanced-approval-bindi
+ng-regression-20260706/advan
+ced-provider-runs/invalid-mo
+del/20260706T004339Z-rw-sani
+ty-provider-dag-invalid-mode
+l/planner-receipt.json\nfina
+l_receipt: /home/graham/work
+space/experiments/tau/experi
+ments/goal-locked-subagents/
+proofs/real-world-sanity/202
+60706T002903Z-tau-advanced-a
+pproval-binding-regression-2
+0260706/advanced-provider-ru
+ns/invalid-model/20260706T00
+4339Z-rw-sanity-provider-dag
+-invalid-model/run-receipt.j
+son\ncanonical truth: Tau JS
+ON receipts; this pane is hu
+man-visible telemetry.\n

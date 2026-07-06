@@ -1,0 +1,32 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T004141Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:e010ff64484d6a278ff9b5f7a640f56e5adc9cc8a7b546f79077805d2b2554ea",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w75",
+  "pane_id": "w75:p6",
+  "terminal_id": "term_655e689d752807fb",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "547c2e000dadecb653aff5695248096d980af5b53eb538f2d0b1fbf326c52fc2",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read work order JSON",
+    "read target_file scratch-worktree/message.txt",
+    "read coder receipt attempt-02-coder.json",
+    "sha256sum visible log",
+    "write reviewer receipt attempt-02-reviewer.json"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "force_revise=true triggered REVISE. Target file message.txt contains implementation text from coder attempt 2, TODO line is removed. Coder receipt is schema-valid tau.provider_dag_node_receipt.v1 with PASS status. Reviewer rejecting per force_revise directive to exercise max-exhaustion path. Concrete feedback: message.txt content is minimal (single line) — expand to include the full goal output such as reading timestamp, provider_id, and attempt details. Also add an additional evidence file proving the coder executed the intended transformation (e.g., diff or before/after snapshot of the worktree). This is attempt 2 of 2 — max_attempts exhausted, DAG should transition to max-exhaustion state.",
+  "errors": [],
+  "policy_exceptions": []
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T003449Z-rw-sanity-generic-provider-dag-adapter",
+  "goal_hash": "sha256:1424874582268dce6a0756ce1d9dbe0e120df9fe3491bf58877b43ad66beeeea",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w72",
+  "pane_id": "w72:p5",
+  "terminal_id": "term_655e671398ea27dc",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T003449Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "64500aac2a4c29881539bac6f08c6d78592ece555b89e2926cb752e6840646fd",
+  "work_order_sha256": "98bb19cfe2c369dd0e4a9e799dd3dc968243008e75c2b82a6ef09dad1e1d6753",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/work-orders/attempt-01-coder.json",
+    "pwd",
+    "ls -la",
+    "sed -n '1,120p' message.txt",
+    "apply_patch update message.txt",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/provider-readiness/20260706T003449Z-rw-sanity-generic-provider-dag-adapter-readiness/logs/codex.visible.txt",
+    "sed -n '1,80p' message.txt",
+    "ls -la /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/receipts",
+    "apply_patch add receipts/attempt-01-coder.json",
+    "apply_patch update receipts/attempt-01-coder.json",
+    "jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+    "jq -r '.work_order_sha256, .status, .verdict, (.changed_files | length), (.artifacts | length)' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/receipts/attempt-01-coder.json",
+    "sed -n '1,20p' /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-generic-provider-dag-adapter/provider-runs/20260706T003449Z-rw-sanity-generic-provider-dag-adapter/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the target file TODO with a short completed implementation message and wrote the coder node receipt.",
+  "errors": [],
+  "policy_exceptions": []
+}

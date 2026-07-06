@@ -1,0 +1,39 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T003008Z-rw-sanity-provider-dag-one-pass",
+  "goal_hash": "sha256:0c38fba1b5bbfe01ea411d901cc398f9ee8ef76bfe028bee74b933a3944ee28e",
+  "node_id": "coder",
+  "provider_id": "codex",
+  "attempt": 1,
+  "workspace_id": "w71",
+  "pane_id": "w71:p5",
+  "terminal_id": "term_655e66083d9c57d3",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+  "visible_log_sha256": "5568cd84a3de3026c8c7fe759ba004d857278622c44e0a47a1ac02d4f0299645",
+  "work_order_sha256": "25dba9c53630bed6d22c62c53fd4d29ec3dd341cd8e30a41fe824366bd8b60ab",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+  "changed_files": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "commands_run": [
+    "sed -n '1,240p' /home/graham/workspace/experiments/agent-skills/skills/tau/SKILL.md",
+    "sed -n '241,520p' /home/graham/workspace/experiments/agent-skills/skills/tau/SKILL.md",
+    "pwd && jq . /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json",
+    "git status --short",
+    "sed -n '1,80p' message.txt",
+    "ls -la && find . -maxdepth 2 -type f -print",
+    "test -f /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt && wc -c /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+    "sed -n '1,20p' message.txt",
+    "! grep -n 'TODO' message.txt",
+    "sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+    "test -e /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json; echo $?"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/scratch-worktree/message.txt"
+  ],
+  "handoff_summary": "Replaced the TODO line in the scratch worktree target file with a completed provider DAG coder implementation message.",
+  "errors": [],
+  "policy_exceptions": []
+}

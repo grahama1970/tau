@@ -1,0 +1,13 @@
+{
+  "dag_id": "rw-sanity-project-dag-bad-contract",
+  "edges": [],
+  "goal": {
+    "goal_hash": "sha256:rw-sanity-project-dag-bad-contract",
+    "goal_id": "rw-sanity-project-dag-bad-contract"
+  },
+  "nodes": [],
+  "schema": "tau.dag_contract.v1",
+  "target": {
+    "repo": "grahama1970/tau"
+  }
+}

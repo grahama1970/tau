@@ -1,0 +1,36 @@
+{
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-generic-dag-resume/events.jsonl",
+  "nodes": [
+    {
+      "command": [
+        "python3",
+        "-c",
+        "raise SystemExit('planner command should have been resumed')"
+      ],
+      "depends_on": [],
+      "max_attempts": 1,
+      "node_id": "planner",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-generic-dag-resume/receipts/planner.json",
+      "role": "planner",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "python3",
+        "-c",
+        "import json; from pathlib import Path; path=Path('/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-generic-dag-resume/receipts/coder.json'); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({'schema': 'tau.generic_dag_node_receipt.v1', 'node_id': 'coder', 'status': 'PASS', 'verdict': 'PASS', 'artifacts': [], 'commands_run': ['python3 inline receipt writer'], 'handoff_summary': 'coder completed by real-world sanity worker', 'errors': [], 'policy_exceptions': []}, sort_keys=True), encoding='utf-8')"
+      ],
+      "depends_on": [
+        "planner"
+      ],
+      "max_attempts": 1,
+      "node_id": "coder",
+      "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-generic-dag-resume/receipts/coder.json",
+      "role": "coder",
+      "timeout_seconds": 30
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/medium-generic-dag-resume",
+  "run_id": "rw-sanity-generic-dag-resume",
+  "schema": "tau.generic_dag_spec.v1"
+}

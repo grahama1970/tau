@@ -1,0 +1,31 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T004141Z-rw-sanity-provider-dag-max-exhaustion",
+  "goal_hash": "sha256:e010ff64484d6a278ff9b5f7a640f56e5adc9cc8a7b546f79077805d2b2554ea",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 1,
+  "workspace_id": "w75",
+  "pane_id": "w75:p6",
+  "terminal_id": "term_655e689d752807fb",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/provider-readiness/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "e48fec2acdd3a4648e091ef89058647c6ec8e7ba9dbd01af6f147f8097499965",
+  "status": "PASS",
+  "verdict": "REVISE",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/work-orders/attempt-01-reviewer.json",
+  "changed_files": [],
+  "commands_run": [
+    "read target_file",
+    "read coder_receipt_path",
+    "read visible_log_path",
+    "sha256sum visible_log_path"
+  ],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/max-exhaustion/20260706T004141Z-rw-sanity-provider-dag-max-exhaustion/receipts/attempt-01-coder.json"
+  ],
+  "handoff_summary": "REVISE per force_revise: true. target_file TODO is resolved, coder receipt is schema-valid. Issues: (1) visible_log_path is empty (0 bytes) — opencode produced no visible output during this attempt, which undermines observability. (2) target_file content is minimal — should include the original TODO line state and the resolved output per the goal spec for auditable progression tracking across attempts. (3) coder receipt handoff_summary is generic — should describe what was actually written and what changed.",
+  "errors": [],
+  "policy_exceptions": []
+}

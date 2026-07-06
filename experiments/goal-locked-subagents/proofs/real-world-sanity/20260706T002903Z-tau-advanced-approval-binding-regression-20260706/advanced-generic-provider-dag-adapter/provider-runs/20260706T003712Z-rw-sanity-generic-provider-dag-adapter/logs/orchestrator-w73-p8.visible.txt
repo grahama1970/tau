@@ -1,0 +1,21 @@
+T002903Z-tau-advanced-approv
+al-binding-regression-202607
+06/advanced-generic-provider
+-dag-adapter/provider-runs/2
+0260706T003712Z-rw-sanity-ge
+neric-provider-dag-adapter/p
+lanner-receipt.json\nfinal_r
+eceipt: /home/graham/workspa
+ce/experiments/tau/experimen
+ts/goal-locked-subagents/pro
+ofs/real-world-sanity/202607
+06T002903Z-tau-advanced-appr
+oval-binding-regression-2026
+0706/advanced-generic-provid
+er-dag-adapter/provider-runs
+/20260706T003712Z-rw-sanity-
+generic-provider-dag-adapter
+/run-receipt.json\ncanonical
+ truth: Tau JSON receipts; t
+his pane is human-visible te
+lemetry.\n

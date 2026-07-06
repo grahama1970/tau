@@ -1,0 +1,164 @@
+{
+  "alerts": [],
+  "applied_actions": [
+    {
+      "action": "workspace_close",
+      "applied": true,
+      "pane_ids": [
+        "w74:p5",
+        "w74:p6",
+        "w74:pB",
+        "w74:p8",
+        "w74:p7",
+        "w74:pC"
+      ],
+      "post_verified_absent": true,
+      "post_verify_action": "workspace_get",
+      "post_verify_error_code": "workspace_not_found",
+      "post_verify_returncode": 1,
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "returncode": 0,
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w74"
+    }
+  ],
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "action": "workspace_close",
+      "pane_ids": [
+        "w74:p5",
+        "w74:p6",
+        "w74:pB",
+        "w74:p8",
+        "w74:p7",
+        "w74:pC"
+      ],
+      "reason": "run-owned workspace recorded in runtime manifest",
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "workspace_id": "w74"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "close",
+        "w74"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:workspace:close\",\"result\":{\"type\":\"ok\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "workspace",
+        "get",
+        "w74"
+      ],
+      "returncode": 1,
+      "stderr": "{\"error\":{\"code\":\"workspace_not_found\",\"message\":\"workspace w74 not found\"},\"id\":\"cli:workspace:get\"}\n",
+      "stdout": ""
+    }
+  ],
+  "current_workspace": "w11",
+  "herdr_bin": "herdr",
+  "herdr_surface": "real",
+  "include_current_workspace": false,
+  "lease_required": true,
+  "live": true,
+  "mocked": false,
+  "mode": "apply",
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "global regex cleanup of unrelated Herdr resources",
+      "Git worktree deletion",
+      "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1"
+    ],
+    "proves": [
+      "Tau can identify Herdr workspace/session resources recorded by one run",
+      "Tau cleanup defaults to audit/dry-run before mutation",
+      "Tau refuses to close the current Herdr workspace unless explicitly allowed",
+      "Tau apply cleanup requires a Herdr workspace lease before mutation",
+      "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+      "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
+      "Tau apply cleanup requires explicit session ownership before stopping recorded sessions"
+    ]
+  },
+  "resource_count": 1,
+  "resources": [
+    {
+      "kind": "workspace",
+      "pane_ids": [
+        "w74:p5",
+        "w74:p6",
+        "w74:pB",
+        "w74:p8",
+        "w74:p7",
+        "w74:pC"
+      ],
+      "roles": [
+        "codex",
+        "opencode",
+        "coder",
+        "orchestrator",
+        "planner",
+        "reviewer"
+      ],
+      "sources": [
+        "provider_sessions",
+        "visible_subagents"
+      ],
+      "terminal_ids": [
+        "term_655e6830beb877ee",
+        "term_655e68313405e7ef",
+        "term_655e68745fb4e7f4",
+        "term_655e6852bea3b7f1",
+        "term_655e68524c00f7f0",
+        "term_655e6874ca4467f5"
+      ],
+      "workspace_id": "w74"
+    }
+  ],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/runtime-manifest.json",
+  "runtime_manifest_sha256": "d19f6e99ea9d746e8b6bdf607890e5b179a8454a0cfa7fb29a5853a31bf8333a",
+  "schema": "tau.herdr_cleanup_receipt.v1",
+  "session_ownership": null,
+  "session_ownership_payload": null,
+  "session_ownership_sha256": null,
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:41:41Z",
+  "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/herdr-workspace-lease.json",
+  "workspace_lease_payload": {
+    "cleanup_policy": "apply",
+    "created_at": "2026-07-06T00:41:40Z",
+    "dag_id": "rw-sanity-provider-dag-repair",
+    "expires_at": "2026-07-07T00:41:40Z",
+    "owner": "tau-orchestrator",
+    "run_id": "20260706T003948Z-rw-sanity-provider-dag-repair",
+    "schema": "tau.herdr_workspace_lease.v1",
+    "source_runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/runtime-manifest.json",
+    "workspace_ids": [
+      "w74"
+    ]
+  },
+  "workspace_lease_sha256": "41e20ec07b684d9f1219243797032c5ae3de5cd3d33f70ba3cd6992daaf8b8c8"
+}

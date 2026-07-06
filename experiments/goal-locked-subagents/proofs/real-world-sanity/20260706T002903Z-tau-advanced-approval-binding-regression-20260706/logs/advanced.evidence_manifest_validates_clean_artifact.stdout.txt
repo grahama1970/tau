@@ -1,0 +1,44 @@
+{
+  "checked_items": [
+    {
+      "actual_sha256": "sha256:a5c8b4ff69e8cad1d8182c959dff6a283fdf084cae4adb27c2d81c42e1346cea",
+      "errors": [],
+      "index": 0,
+      "kind": "reviewer_verdict",
+      "observed_goal_hash": "sha256:rw-sanity-evidence-manifest-valid",
+      "observed_kind": "reviewer_verdict",
+      "observed_schema": "tau.reviewer_verdict.v1",
+      "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/evidence-manifest-valid/evidence/reviewer-verdict.json",
+      "schema": "tau.reviewer_verdict.v1",
+      "sha256": "sha256:a5c8b4ff69e8cad1d8182c959dff6a283fdf084cae4adb27c2d81c42e1346cea",
+      "valid": true,
+      "validator": "tau evidence-validate reviewer-verdict"
+    }
+  ],
+  "dag_id": "rw-sanity-evidence-manifest-valid",
+  "errors": [],
+  "goal_hash": "sha256:rw-sanity-evidence-manifest-valid",
+  "item_count": 1,
+  "live": true,
+  "manifest_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/evidence-manifest-valid/evidence-manifest.json",
+  "manifest_sha256": "sha256:b58b17ac756fdf4270614a3947be9133a5d1260ff03a1e497291a448fd86a972",
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "Semantic correctness of the artifact contents beyond declared schema/hash checks.",
+      "Provider/model quality.",
+      "GitHub, Memory, or browser/UI side effects."
+    ],
+    "proves": [
+      "Tau inspected a typed evidence manifest.",
+      "Every listed evidence item was checked for path existence and sha256 match.",
+      "JSON evidence items with declared schemas were checked against their root schema field and goal hash."
+    ]
+  },
+  "provider_live": false,
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/evidence-manifest-valid/evidence-validation-receipt.json",
+  "schema": "tau.evidence_validation_receipt.v1",
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:29:13Z"
+}

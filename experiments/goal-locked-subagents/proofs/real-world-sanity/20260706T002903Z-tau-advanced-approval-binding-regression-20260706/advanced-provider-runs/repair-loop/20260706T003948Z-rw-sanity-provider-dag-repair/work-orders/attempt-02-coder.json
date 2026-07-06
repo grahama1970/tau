@@ -1,0 +1,48 @@
+{
+  "attempt": 2,
+  "dag_id": "20260706T003948Z-rw-sanity-provider-dag-repair",
+  "forbidden_actions": [
+    "modify_tau_repository",
+    "github_mutation",
+    "tailscale_access"
+  ],
+  "goal": {
+    "goal_hash": "sha256:147ff9a8716c066f4cac849cccb88150197d3713b3cebd09c36132499f75eff1",
+    "goal_id": "20260706T003948Z-rw-sanity-provider-dag-repair",
+    "goal_version": 1
+  },
+  "herdr": {
+    "pane_id": "w74:p5",
+    "terminal_id": "term_655e6830beb877ee",
+    "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T003948Z-rw-sanity-provider-dag-repair-readiness/logs/codex.visible.txt",
+    "workspace_id": "w74"
+  },
+  "max_attempts": 2,
+  "node": {
+    "agent": "coder",
+    "attempt": 2,
+    "max_attempts": 2,
+    "node_id": "coder"
+  },
+  "node_id": "coder",
+  "provider_id": "codex",
+  "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json",
+  "required_evidence": [
+    "target_file_updated",
+    "node_receipt_written"
+  ],
+  "reviewer_feedback": "force_revise=true: target_file TODO is removed and coder receipt is schema-valid, but REVISE required. Target message.txt is a single minimal line \u2014 next coder attempt should expand it with more descriptive content (e.g., what was implemented, by which provider/attempt). Coder receipt commands_run field is vague ('python deterministic visible coder') \u2014 next attempt should log precise invocation. Visible log for opencode is empty (no commands emitted yet, expected for first reviewer).",
+  "run_id": "20260706T003948Z-rw-sanity-provider-dag-repair",
+  "schema": "tau.provider_dag_work_order.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/scratch-worktree",
+  "target": {
+    "allowed_paths": [
+      "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt"
+    ],
+    "repo": "/home/graham/workspace/experiments/tau",
+    "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/scratch-worktree"
+  },
+  "target_file": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+  "task": "Modify only target_file. Replace the TODO line with a short completed implementation message. Then write the node receipt JSON exactly at receipt_path.",
+  "work_order_sha256": "97e72cf2c309c7133f6b43dd377d75028bb40b58b064e3334592a010f1a5235b"
+}

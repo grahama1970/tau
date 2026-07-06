@@ -1,0 +1,134 @@
+{
+  "active_goal_hash": "sha256:rw-sanity-project-dag-ready-queue-provider-policy",
+  "alerts": [
+    {
+      "code": "non_local_ready_queue_node_not_allowed",
+      "evidence": {
+        "node_ids": [
+          "coder"
+        ]
+      },
+      "message": "Bounded ready-queue scheduler only dispatches local command nodes in this slice.",
+      "severity": "BLOCK"
+    },
+    {
+      "code": "provider_node_not_allowed",
+      "evidence": {
+        "node_ids": [
+          "coder"
+        ]
+      },
+      "message": "Bounded ready-queue scheduler does not accept provider branches until branch locks exist.",
+      "severity": "BLOCK"
+    }
+  ],
+  "artifacts": [],
+  "command_spec_root": null,
+  "contract_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/ready-queue-provider-policy-project-dag/dag-contract.json",
+  "contract_sha256": "sha256:cf7314f8c2a3fd4013a601261b0f6c2fd13aa717d41cd82e91823b0607a57875",
+  "course_correction_artifacts": [],
+  "dag_error": {
+    "active_goal_hash": "sha256:rw-sanity-project-dag-ready-queue-provider-policy",
+    "attempts": 0,
+    "dag_id": "rw-sanity-project-dag-ready-queue-provider-policy",
+    "evidence": {
+      "alert_codes": [
+        "non_local_ready_queue_node_not_allowed",
+        "provider_node_not_allowed"
+      ],
+      "alert_count": 2,
+      "errors": [],
+      "primary_alert": {
+        "code": "non_local_ready_queue_node_not_allowed",
+        "evidence": {
+          "node_ids": [
+            "coder"
+          ]
+        },
+        "message": "Bounded ready-queue scheduler only dispatches local command nodes in this slice.",
+        "severity": "BLOCK"
+      }
+    },
+    "failed_agent": "coder",
+    "failed_node": "coder",
+    "failure_code": "non_local_ready_queue_node_not_allowed",
+    "max_attempts": 2,
+    "message": "Bounded ready-queue scheduler only dispatches local command nodes in this slice.",
+    "proof_scope": {
+      "does_not_prove": [
+        "The recommended action has been executed.",
+        "The project agent accepted or applied the course correction.",
+        "Provider/model semantic quality."
+      ],
+      "proves": [
+        "Tau detected a blocked DAG execution.",
+        "Tau packaged the primary failure as a project-agent course-correction payload.",
+        "No DAG route, goal, target, or handoff was mutated by this error contract."
+      ]
+    },
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/ready-queue-provider-policy-project-dag/run/dag-receipt.json",
+    "recommended_action": {
+      "next_agent": "goal-guardian",
+      "reason": "This branch requires an explicit policy or branch-lock gate before execution.",
+      "type": "request_policy_gate"
+    },
+    "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/ready-queue-provider-policy-project-dag/run",
+    "scheduler": "bounded-ready-queue",
+    "schema": "tau.dag_error.v1",
+    "severity": "BLOCK",
+    "status": "BLOCKED",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-ready-queue-provider-policy"
+    },
+    "verdict": "NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED"
+  },
+  "dag_id": "rw-sanity-project-dag-ready-queue-provider-policy",
+  "dispatches": [],
+  "edge_count": 5,
+  "entry_node": "start",
+  "errors": [],
+  "execution": "project_agent_dag_bounded_ready_queue",
+  "execution_seconds": 0.0,
+  "live": true,
+  "max_concurrency": 2,
+  "max_observed_concurrency": 0,
+  "max_steps": 4,
+  "mocked": false,
+  "node_artifacts": {},
+  "node_attempts": {},
+  "node_count": 4,
+  "observed_edges": [],
+  "ok": false,
+  "proof_scope": {
+    "does_not_prove": [
+      "Provider/model semantic quality.",
+      "GitHub mutation or ticket closure.",
+      "Mutating branch safety.",
+      "Unbounded autonomous operation."
+    ],
+    "live": true,
+    "mocked": false,
+    "proves": [
+      "DAG contract parsed and validated.",
+      "Bounded ready-queue scheduler preflight checked acyclicity, local-only execution, provider branches, and mutating branches."
+    ]
+  },
+  "provider_live": false,
+  "reviewer_verdicts": [],
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/ready-queue-provider-policy-project-dag/run",
+  "scheduler": "bounded-ready-queue",
+  "scheduler_events": [],
+  "schema": "tau.dag_receipt.v1",
+  "selected_agents": [],
+  "status": "BLOCKED",
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "scratch-project-dag-ready-queue-provider-policy"
+  },
+  "terminal_nodes": [
+    "human"
+  ],
+  "timestamp": "2026-07-06T00:29:18Z",
+  "verdict": "NON_LOCAL_READY_QUEUE_NODE_NOT_ALLOWED"
+}

@@ -1,0 +1,398 @@
+{
+  "alerts": [],
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "coder_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json",
+      "coder_status": "PASS",
+      "coder_verdict": "PASS",
+      "errors": [],
+      "reviewer_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-reviewer.json",
+      "reviewer_status": "PASS",
+      "reviewer_verdict": "PASS"
+    }
+  ],
+  "command_results": [
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260706T003008Z-rw-sanity-provider-dag-one-pass-planner",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w71",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau planner subagent visible monitor\\\\nrun_id: 20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T003008Z-rw-sanity-provider-dag-one-pass-planner\",\"pane_id\":\"w71:p7\",\"revision\":0,\"tab_id\":\"w71:t1\",\"terminal_id\":\"term_655e66299291c7d5\",\"workspace_id\":\"w71\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau planner subagent visible monitor\\\\\\\\nrun_id: 20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260706T003008Z-rw-sanity-provider-dag-one-pass-orchestrator",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w71",
+        "--no-focus",
+        "--",
+        "bash",
+        "-lc",
+        "printf '%s\\n' \"Tau orchestrator subagent visible monitor\\\\nrun_id: 20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\n\"; exec sleep 86400"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T003008Z-rw-sanity-provider-dag-one-pass-orchestrator\",\"pane_id\":\"w71:p8\",\"revision\":0,\"tab_id\":\"w71:t1\",\"terminal_id\":\"term_655e6629e72847d6\",\"workspace_id\":\"w71\"},\"argv\":[\"bash\",\"-lc\",\"printf '%s\\\\n' \\\"Tau orchestrator subagent visible monitor\\\\\\\\nrun_id: 20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\\\\\nrun_dir: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\\\\\\\\ndag_spec: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/dag-spec.json\\\\\\\\nplanner_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/planner-receipt.json\\\\\\\\nfinal_receipt: /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/run-receipt.json\\\\\\\\ncanonical truth: Tau JSON receipts; this pane is human-visible telemetry.\\\\\\\\n\\\"; exec sleep 86400\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "run",
+        "w71:p5",
+        "Tau provider DAG POC coder task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify the Tau repository.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Modify only target_file.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-coder.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260706T003008Z-rw-sanity-provider-dag-one-pass\",\n  \"goal_hash\": \"sha256:0c38fba1b5bbfe01ea411d901cc398f9ee8ef76bfe028bee74b933a3944ee28e\",\n  \"node_id\": \"coder\",\n  \"provider_id\": \"codex\",\n  \"attempt\": 1,\n  \"workspace_id\": \"w71\",\n  \"pane_id\": \"w71:p5\",\n  \"terminal_id\": \"term_655e66083d9c57d3\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after your work>\",\n  \"work_order_sha256\": \"25dba9c53630bed6d22c62c53fd4d29ec3dd341cd8e30a41fe824366bd8b60ab\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-coder.json\",\n  \"changed_files\": [\"<target_file>\"],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\"],\n  \"handoff_summary\": \"What changed.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}\n"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "agent",
+        "start",
+        "20260706T003008Z-rw-sanity-provider-dag-one-pass-reviewer-attempt-01",
+        "--cwd",
+        "/home/graham/workspace/experiments/tau",
+        "--workspace",
+        "w71",
+        "--no-focus",
+        "--",
+        "opencode",
+        "run",
+        "--dir",
+        "/home/graham/workspace/experiments/tau",
+        "Tau provider DAG POC reviewer task.\n\nRead this work order JSON:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\n\nRules:\n- Operate only inside the scratch_worktree named in the work order.\n- Do not modify files except the reviewer receipt.\n- Do not use GitHub.\n- Do not use Tailscale.\n- Review target_file and coder_receipt_path.\n- If the work order has \"force_revise\": true, write verdict \"REVISE\" with\n  concrete feedback for the next coder attempt.\n- Write a JSON receipt exactly here:\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-reviewer.json\n- Copy the exact work_order_sha256 field from the work order into the receipt.\n  Do not replace it with sha256sum output for the work-order file.\n\nReceipt JSON shape:\n{\n  \"schema\": \"tau.provider_dag_node_receipt.v1\",\n  \"dag_id\": \"20260706T003008Z-rw-sanity-provider-dag-one-pass\",\n  \"goal_hash\": \"sha256:0c38fba1b5bbfe01ea411d901cc398f9ee8ef76bfe028bee74b933a3944ee28e\",\n  \"node_id\": \"reviewer\",\n  \"provider_id\": \"opencode\",\n  \"attempt\": 1,\n  \"workspace_id\": \"w71\",\n  \"pane_id\": \"w71:p6\",\n  \"terminal_id\": \"term_655e6608af5577d4\",\n  \"visible_log_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt\",\n  \"visible_log_sha256\": \"<sha256 of visible_log_path after review>\",\n  \"work_order_sha256\": \"2815889105cf6ad2041115f20f68d0cd3de528a2fe3fbea4919dfc661e0ff96f\",\n  \"status\": \"PASS\",\n  \"verdict\": \"PASS or REVISE\",\n  \"work_order_path\": \"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\",\n  \"changed_files\": [],\n  \"commands_run\": [\"<commands you ran>\"],\n  \"artifacts\": [\"<target_file>\", \"<coder_receipt_path>\"],\n  \"handoff_summary\": \"Review finding or pass rationale.\",\n  \"errors\": [],\n  \"policy_exceptions\": []\n}"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"id\":\"cli:agent:start\",\"result\":{\"agent\":{\"agent_status\":\"unknown\",\"cwd\":\"/home/graham/workspace/experiments/tau\",\"focused\":false,\"foreground_cwd\":\"/home/graham/workspace/experiments/tau\",\"name\":\"20260706T003008Z-rw-sanity-provider-dag-one-pass-reviewer-attempt-01\",\"pane_id\":\"w71:p9\",\"revision\":0,\"tab_id\":\"w71:t1\",\"terminal_id\":\"term_655e66e7229f17d7\",\"workspace_id\":\"w71\"},\"argv\":[\"opencode\",\"run\",\"--dir\",\"/home/graham/workspace/experiments/tau\",\"Tau provider DAG POC reviewer task.\\n\\nRead this work order JSON:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\\n\\nRules:\\n- Operate only inside the scratch_worktree named in the work order.\\n- Do not modify files except the reviewer receipt.\\n- Do not use GitHub.\\n- Do not use Tailscale.\\n- Review target_file and coder_receipt_path.\\n- If the work order has \\\"force_revise\\\": true, write verdict \\\"REVISE\\\" with\\n  concrete feedback for the next coder attempt.\\n- Write a JSON receipt exactly here:\\n/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/receipts/attempt-01-reviewer.json\\n- Copy the exact work_order_sha256 field from the work order into the receipt.\\n  Do not replace it with sha256sum output for the work-order file.\\n\\nReceipt JSON shape:\\n{\\n  \\\"schema\\\": \\\"tau.provider_dag_node_receipt.v1\\\",\\n  \\\"dag_id\\\": \\\"20260706T003008Z-rw-sanity-provider-dag-one-pass\\\",\\n  \\\"goal_hash\\\": \\\"sha256:0c38fba1b5bbfe01ea411d901cc398f9ee8ef76bfe028bee74b933a3944ee28e\\\",\\n  \\\"node_id\\\": \\\"reviewer\\\",\\n  \\\"provider_id\\\": \\\"opencode\\\",\\n  \\\"attempt\\\": 1,\\n  \\\"workspace_id\\\": \\\"w71\\\",\\n  \\\"pane_id\\\": \\\"w71:p6\\\",\\n  \\\"terminal_id\\\": \\\"term_655e6608af5577d4\\\",\\n  \\\"visible_log_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt\\\",\\n  \\\"visible_log_sha256\\\": \\\"<sha256 of visible_log_path after review>\\\",\\n  \\\"work_order_sha256\\\": \\\"2815889105cf6ad2041115f20f68d0cd3de528a2fe3fbea4919dfc661e0ff96f\\\",\\n  \\\"status\\\": \\\"PASS\\\",\\n  \\\"verdict\\\": \\\"PASS or REVISE\\\",\\n  \\\"work_order_path\\\": \\\"/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/work-orders/attempt-01-reviewer.json\\\",\\n  \\\"changed_files\\\": [],\\n  \\\"commands_run\\\": [\\\"<commands you ran>\\\"],\\n  \\\"artifacts\\\": [\\\"<target_file>\\\", \\\"<coder_receipt_path>\\\"],\\n  \\\"handoff_summary\\\": \\\"Review finding or pass rationale.\\\",\\n  \\\"errors\\\": [],\\n  \\\"policy_exceptions\\\": []\\n}\"],\"type\":\"agent_started\"}}\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w71:p9",
+        "--source",
+        "visible",
+        "--lines",
+        "80"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w71:p5",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "    35 +  ],\n    36 +  \"handoff_summary\": \"Replaced the TODO line in the\n         scratch worktree target file with a completed prov\n        ider DAG coder implementation message.\",\n    37 +  \"errors\": [],\n    38 +  \"policy_exceptions\": []\n    39 +}\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u2022 The receipt has been added. I\u2019m doing a deterministic\n  final check now: JSON parses, the copied work-order hash\n  matches the work-order field, the target content matches\n  the required replacement, and the scoped git status only\n  shows the expected files.\n\n\u2022 Working (4m 01s \u2022 esc to interrupt)\n\n\n\u203a Improve documentation in @filename\n\n  gpt-5.5 medium \u00b7 ~/workspace/experiments/tau\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w71:p6",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w71:p7",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "08Z-rw-sanity-provider-dag-one-pass\\nrun_dir: /home/graham/\nworkspace/experiments/tau/experiments/goal-locked-subagents\n/proofs/real-world-sanity/20260706T002903Z-tau-advanced-app\nroval-binding-regression-20260706/advanced-provider-runs/on\ne-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\\nda\ng_spec: /home/graham/workspace/experiments/tau/experiments/\ngoal-locked-subagents/proofs/real-world-sanity/20260706T002\n903Z-tau-advanced-approval-binding-regression-20260706/adva\nnced-provider-runs/one-pass/20260706T003008Z-rw-sanity-prov\nider-dag-one-pass/dag-spec.json\\nplanner_receipt: /home/gra\nham/workspace/experiments/tau/experiments/goal-locked-subag\nents/proofs/real-world-sanity/20260706T002903Z-tau-advanced\n-approval-binding-regression-20260706/advanced-provider-run\ns/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass\n/planner-receipt.json\\nfinal_receipt: /home/graham/workspac\ne/experiments/tau/experiments/goal-locked-subagents/proofs/\nreal-world-sanity/20260706T002903Z-tau-advanced-approval-bi\nnding-regression-20260706/advanced-provider-runs/one-pass/2\n0260706T003008Z-rw-sanity-provider-dag-one-pass/run-receipt\n.json\\ncanonical truth: Tau JSON receipts; this pane is hum\nan-visible telemetry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w71:p8",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "-locked-subagents/proofs/rea\nl-world-sanity/20260706T0029\n03Z-tau-advanced-approval-bi\nnding-regression-20260706/ad\nvanced-provider-runs/one-pas\ns/20260706T003008Z-rw-sanity\n-provider-dag-one-pass/plann\ner-receipt.json\\nfinal_recei\npt: /home/graham/workspace/e\nxperiments/tau/experiments/g\noal-locked-subagents/proofs/\nreal-world-sanity/20260706T0\n02903Z-tau-advanced-approval\n-binding-regression-20260706\n/advanced-provider-runs/one-\npass/20260706T003008Z-rw-san\nity-provider-dag-one-pass/ru\nn-receipt.json\\ncanonical tr\nuth: Tau JSON receipts; this\n pane is human-visible telem\netry.\\n\n"
+    },
+    {
+      "argv": [
+        "herdr",
+        "pane",
+        "read",
+        "w71:p9",
+        "--source",
+        "visible",
+        "--lines",
+        "120"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "ocked-subagen\nts/proofs/rea\nl-world-sanit\ny/20260706T00\n2903Z-tau-adv\nanced-approva\nl-binding-reg\nression-20260\n706/advanced-\nprovider-runs\n/one-pass/202\n60706T003008Z\n-rw-sanity-pr\novider-dag-on\ne-pass/receip\nts/attempt-01\n-reviewer.jso\nn\nWrote file su\nccessfully.\n"
+    }
+  ],
+  "dag_spec": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/dag-spec.json",
+  "events_jsonl": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/events.jsonl",
+  "herdr_cleanup": {
+    "applied_action_count": 1,
+    "candidate_count": 1,
+    "herdr_surface": "real",
+    "live": true,
+    "mocked": false,
+    "mode": "apply",
+    "ok": true,
+    "post_verified_absent_count": 1,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/herdr-cleanup-receipt.json",
+    "resource_count": 1,
+    "status": "PASS",
+    "workspace_lease": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/herdr-workspace-lease.json",
+    "workspace_lease_sha256": "d3865d2650c1f16b198a230ae88f2f7423ab2b5f09c2ba588ac98a2d55fc692d"
+  },
+  "herdr_cleanup_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/herdr-cleanup-receipt.json",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "orchestration_evidence": {
+    "errors": [],
+    "feature_counts": {
+      "agent_lineage": 4,
+      "agent_messages": 2,
+      "doctor": 1,
+      "execution_timeline": 6,
+      "provider_capabilities": 2,
+      "review_comments": 1,
+      "worktree_session_bindings": 4
+    },
+    "live": true,
+    "mocked": false,
+    "ok": true,
+    "provider_live": true,
+    "receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/orchestration-evidence-receipt.json",
+    "status": "PASS"
+  },
+  "orchestration_evidence_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/orchestration-evidence-receipt.json",
+  "proof_scope": {
+    "does_not_prove": [
+      "GitHub ticket closure",
+      "remote Tailscale monitoring",
+      "general semantic coding quality beyond the scratch fixture task",
+      "unbounded autonomous repair",
+      "production repository mutation"
+    ],
+    "proves": [
+      "Tau orchestrator can consume a planner-created tau.dag_run_spec.v1",
+      "Tau exposes planner, orchestrator, coder, and reviewer roles as Herdr-visible subagents",
+      "Tau requires structured provider readiness before dispatch",
+      "Tau can dispatch a bounded coder work order to Codex in a Herdr pane",
+      "Tau waits for and validates a canonical coder node receipt",
+      "Tau dispatches the reviewer only after the coder receipt validates",
+      "Tau waits for and validates a canonical reviewer node receipt",
+      "Tau stops the while loop on reviewer PASS, failure, or max attempts"
+    ]
+  },
+  "provider_readiness_receipt": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness-receipt.json",
+  "provider_sessions": {
+    "codex": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w71:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-06T00:30:14Z",
+        "pane_id": "w71:p5",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e66083d9c57d3",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+        "workspace_id": "w71"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.session-state.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e66083d9c57d3",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w71"
+    },
+    "opencode": {
+      "foreground_command": "opencode",
+      "pane_id": "w71:p6",
+      "process_alive": true,
+      "provider_id": "opencode",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/opencode.readiness.json",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "opencode",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-06T00:30:44Z",
+        "pane_id": "w71:p6",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "opencode",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/opencode.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e6608af5577d4",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+        "workspace_id": "w71"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/opencode.session-state.json",
+      "ready": true,
+      "role": "reviewer",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e6608af5577d4",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/opencode.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w71"
+    }
+  },
+  "run_dir": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass",
+  "run_id": "20260706T003008Z-rw-sanity-provider-dag-one-pass",
+  "runtime_manifest": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/runtime-manifest.json",
+  "schema": "tau.dag_run_receipt.v1",
+  "scratch_worktree": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/scratch-worktree",
+  "status": "PASS",
+  "timestamp": "2026-07-06T00:34:48Z",
+  "verdict": "PASS",
+  "visible_subagents": {
+    "coder": {
+      "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "pane_id": "w71:p5",
+      "process_alive": true,
+      "provider_id": "codex",
+      "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+      "provider_session_state": {
+        "auth_status": "unknown",
+        "foreground_command": "/home/graham/.nvm/versions/node/v22.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "interstitial_kind": null,
+        "interstitial_present": false,
+        "observed_at": "2026-07-06T00:30:14Z",
+        "pane_id": "w71:p5",
+        "process_alive": true,
+        "provider_api_available": false,
+        "provider_event_log_path": null,
+        "provider_id": "codex",
+        "provider_readiness_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.readiness.json",
+        "ready": true,
+        "schema": "tau.provider_session_state.v1",
+        "source": "herdr_process_info",
+        "state": "ready",
+        "terminal_id": "term_655e66083d9c57d3",
+        "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+        "workspace_id": "w71"
+      },
+      "provider_session_state_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/readiness/codex.session-state.json",
+      "ready": true,
+      "role": "coder",
+      "source": "herdr_process_info",
+      "state": "ready",
+      "terminal_id": "term_655e66083d9c57d3",
+      "visible": true,
+      "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/one-pass/20260706T003008Z-rw-sanity-provider-dag-one-pass/provider-readiness/20260706T003008Z-rw-sanity-provider-dag-one-pass-readiness/logs/codex.visible.txt",
+      "visible_prompt_is_gate": false,
+      "workspace_id": "w71"
+    },
+    "orchestrator": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w71:p8",
+      "provider_id": "tau",
+      "role": "orchestrator",
+      "tab_id": "w71:t1",
+      "terminal_id": "term_655e6629e72847d6",
+      "visible": true,
+      "workspace_id": "w71"
+    },
+    "planner": {
+      "command": "bash -lc <tau-visible-monitor>",
+      "pane_id": "w71:p7",
+      "provider_id": "tau",
+      "role": "planner",
+      "tab_id": "w71:t1",
+      "terminal_id": "term_655e66299291c7d5",
+      "visible": true,
+      "workspace_id": "w71"
+    },
+    "reviewer": {
+      "command": "opencode run --dir <repo> [--model <reviewer-model>] <reviewer-prompt>",
+      "pane_id": "w71:p9",
+      "provider_id": "opencode",
+      "readiness_pane_id": "w71:p6",
+      "reviewer_model": null,
+      "role": "reviewer",
+      "tab_id": "w71:t1",
+      "terminal_id": "term_655e66e7229f17d7",
+      "visible": true,
+      "workspace_id": "w71"
+    }
+  }
+}

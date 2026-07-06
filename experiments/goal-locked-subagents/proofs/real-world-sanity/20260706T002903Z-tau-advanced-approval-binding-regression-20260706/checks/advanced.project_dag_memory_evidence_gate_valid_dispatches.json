@@ -1,0 +1,151 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "errors": [],
+      "exit_code": 0,
+      "receipt_summary": {
+        "alert_codes": [],
+        "alert_count": 0,
+        "errors": [],
+        "live": true,
+        "mocked": false,
+        "node_attempts": {
+          "coder": 1,
+          "reviewer": 1
+        },
+        "node_count": 2,
+        "observed_edges": [
+          {
+            "from_agent": "coder",
+            "from_node": "coder",
+            "to_agent": "reviewer",
+            "to_node": "reviewer"
+          },
+          {
+            "from_agent": "reviewer",
+            "from_node": "reviewer",
+            "to_agent": "human",
+            "to_node": "human"
+          }
+        ],
+        "ok": true,
+        "provider_live": false,
+        "reviewer_verdicts": [
+          {
+            "creator_attempt": 1,
+            "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+            "kind": "reviewer_verdict",
+            "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+            "reviewed_node_id": "coder",
+            "verdict": "PASS"
+          }
+        ],
+        "scheduler": "handoff-loop",
+        "schema": "tau.dag_receipt.v1",
+        "selected_agents": [
+          "coder",
+          "reviewer"
+        ],
+        "status": "PASS",
+        "target": {
+          "repo": "grahama1970/tau",
+          "target": "scratch-project-dag-memory-evidence-valid"
+        },
+        "verdict": "PASS"
+      },
+      "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_memory_evidence_gate_valid_dispatches.stderr.txt",
+      "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_memory_evidence_gate_valid_dispatches.stdout.txt",
+      "timed_out": false
+    }
+  ],
+  "check_id": "advanced.project_dag_memory_evidence_gate_valid_dispatches",
+  "command": [
+    "uv",
+    "run",
+    "--project",
+    "/home/graham/workspace/experiments/tau",
+    "tau",
+    "run",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/dag-contract.json",
+    "--receipt-dir",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/run",
+    "--agents-root",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/agents"
+  ],
+  "completed_at": "2026-07-06T00:29:13Z",
+  "errors": [],
+  "exit_code": 0,
+  "expected_exit_codes": [
+    0
+  ],
+  "expected_min_provider_session_states": 0,
+  "expected_status": "PASS",
+  "expected_verdict": "PASS",
+  "level": "advanced",
+  "live": true,
+  "max_attempts": 1,
+  "mocked": false,
+  "ok": true,
+  "output_receipt_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/run/dag-receipt.json",
+  "post_cleanup": null,
+  "provider_live": false,
+  "purpose": "Tau accepts valid Memory intent plus separate evidence case and still dispatches the project DAG to coder and reviewer.",
+  "receipt_summary": {
+    "alert_codes": [],
+    "alert_count": 0,
+    "errors": [],
+    "live": true,
+    "mocked": false,
+    "node_attempts": {
+      "coder": 1,
+      "reviewer": 1
+    },
+    "node_count": 2,
+    "observed_edges": [
+      {
+        "from_agent": "coder",
+        "from_node": "coder",
+        "to_agent": "reviewer",
+        "to_node": "reviewer"
+      },
+      {
+        "from_agent": "reviewer",
+        "from_node": "reviewer",
+        "to_agent": "human",
+        "to_node": "human"
+      }
+    ],
+    "ok": true,
+    "provider_live": false,
+    "reviewer_verdicts": [
+      {
+        "creator_attempt": 1,
+        "goal_hash": "sha256:rw-sanity-project-dag-memory-evidence-valid",
+        "kind": "reviewer_verdict",
+        "path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/memory-evidence-valid-project-dag/run/command-loop/command-artifacts/command-loop-step-002/reviewer-verdict-attempt-1.json",
+        "reviewed_node_id": "coder",
+        "verdict": "PASS"
+      }
+    ],
+    "scheduler": "handoff-loop",
+    "schema": "tau.dag_receipt.v1",
+    "selected_agents": [
+      "coder",
+      "reviewer"
+    ],
+    "status": "PASS",
+    "target": {
+      "repo": "grahama1970/tau",
+      "target": "scratch-project-dag-memory-evidence-valid"
+    },
+    "verdict": "PASS"
+  },
+  "schema": "tau.real_world_sanity_check_receipt.v1",
+  "started_at": "2026-07-06T00:29:13Z",
+  "status": "PASS",
+  "stderr_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_memory_evidence_gate_valid_dispatches.stderr.txt",
+  "stdout_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/logs/advanced.project_dag_memory_evidence_gate_valid_dispatches.stdout.txt",
+  "timeout_seconds": 90
+}

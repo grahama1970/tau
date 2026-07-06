@@ -1,0 +1,26 @@
+{
+  "schema": "tau.provider_dag_node_receipt.v1",
+  "dag_id": "20260706T003948Z-rw-sanity-provider-dag-repair",
+  "goal_hash": "sha256:147ff9a8716c066f4cac849cccb88150197d3713b3cebd09c36132499f75eff1",
+  "node_id": "reviewer",
+  "provider_id": "opencode",
+  "attempt": 2,
+  "workspace_id": "w74",
+  "pane_id": "w74:p6",
+  "terminal_id": "term_655e68313405e7ef",
+  "visible_log_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T003948Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt",
+  "visible_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "work_order_sha256": "d9594aad35828fc55f240ca47c990415a613094ce3556e467ce0eec33da73804",
+  "status": "PASS",
+  "verdict": "PASS",
+  "work_order_path": "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/work-orders/attempt-02-reviewer.json",
+  "changed_files": [],
+  "commands_run": ["sha256sum /home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/provider-readiness/20260706T003948Z-rw-sanity-provider-dag-repair-readiness/logs/opencode.visible.txt"],
+  "artifacts": [
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/scratch-worktree/message.txt",
+    "/home/graham/workspace/experiments/tau/experiments/goal-locked-subagents/proofs/real-world-sanity/20260706T002903Z-tau-advanced-approval-binding-regression-20260706/advanced-provider-runs/repair-loop/20260706T003948Z-rw-sanity-provider-dag-repair/receipts/attempt-02-coder.json"
+  ],
+  "handoff_summary": "PASS: target_file has no TODO line (content: 'completed implementation by deterministic visible coder attempt 2'), coder receipt is schema-valid with all required fields populated. No revision needed.",
+  "errors": [],
+  "policy_exceptions": []
+}
