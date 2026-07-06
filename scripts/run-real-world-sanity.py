@@ -288,6 +288,7 @@ def build_checks(
     dag_branch_locks = create_dag_branch_locks_fixture(run_dir)
     route_memory_apply = create_route_memory_fixture(run_dir)
     research_source = create_research_source_fixture(run_dir)
+    proof_index = create_proof_index_fixture(run_dir)
     github_apply_policy = create_github_apply_policy_fixture(run_dir)
     generic_dag_spec = create_generic_dag_fixture(run_dir)
     generic_dag_resume_spec = create_generic_dag_resume_fixture(run_dir)
@@ -954,6 +955,27 @@ def build_checks(
             ],
             timeout_seconds=240,
             expected_status="PASS",
+        ),
+        Check(
+            check_id="medium.proof_index_build",
+            level="medium",
+            purpose=(
+                "Tau builds a machine-readable proof index over a dedicated fixture source "
+                "inside the current sanity run directory and writes a proof-index build receipt."
+            ),
+            command=[
+                *uv_tau,
+                "proof-index",
+                "build",
+                str(proof_index["source_dir"]),
+                "--out",
+                str(proof_index["output"]),
+                "--receipt",
+                str(proof_index["receipt"]),
+            ],
+            timeout_seconds=120,
+            expected_status="PASS",
+            output_receipt=proof_index["receipt"],
         ),
         Check(
             check_id="medium.project_dag_reviewer_repair_loop",
@@ -3329,6 +3351,57 @@ def create_research_source_fixture(run_dir: Path) -> dict[str, Path]:
     }
 
 
+def create_proof_index_fixture(run_dir: Path) -> dict[str, Path]:
+    fixture_dir = run_dir / "medium-proof-index"
+    source_dir = fixture_dir / "source"
+    write_json(
+        source_dir / "dag" / "dag-receipt.json",
+        {
+            "schema": "tau.dag_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "rw-sanity-proof-index",
+            "goal_hash": "sha256:rw-sanity-proof-index",
+            "proof_scope": {
+                "proves": ["fixture DAG receipt is indexable"],
+                "does_not_prove": ["provider/model semantic quality"],
+            },
+        },
+    )
+    write_json(
+        source_dir / "monitor" / "monitor-receipt.json",
+        {
+            "schema": "tau.monitor_receipt.v1",
+            "ok": False,
+            "status": "REVIEW",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "dag_id": "rw-sanity-proof-index",
+            "goal": {"goal_hash": "sha256:rw-sanity-proof-index"},
+            "claims": {
+                "proves": ["fixture monitor receipt is indexable"],
+                "does_not_prove": ["hidden chain-of-thought correctness"],
+            },
+        },
+    )
+    write_json(
+        source_dir / "ignore" / "metadata.json",
+        {
+            "schema": "tau.metadata.v1",
+            "status": "PASS",
+        },
+    )
+    return {
+        "source_dir": source_dir,
+        "output": fixture_dir / "proof-index.jsonl",
+        "receipt": fixture_dir / "proof-index-build-receipt.json",
+    }
+
+
 def create_github_apply_policy_fixture(run_dir: Path) -> dict[str, Path]:
     fixture_dir = run_dir / "github-apply-policy-missing-gates"
     positive_dir = run_dir / "github-apply-policy-all-gates"
@@ -5527,6 +5600,13 @@ def summarize_receipt(payload: dict[str, Any] | None) -> dict[str, Any] | None:
         "commands",
         "command_results",
         "preflight_results",
+        "indexed_receipt_count",
+        "output_path",
+        "output_sha256",
+        "error_count",
+        "warning_count",
+        "schema_counts",
+        "status_counts",
         "dag_error",
         "errors",
     )

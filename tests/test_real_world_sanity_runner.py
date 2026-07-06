@@ -603,6 +603,69 @@ def test_summarize_receipt_includes_provider_lifecycle_probe_state() -> None:
     }
 
 
+def test_summarize_receipt_includes_proof_index_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.proof_index_build_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "indexed_receipt_count": 12,
+            "error_count": 0,
+            "warning_count": 1,
+            "output_path": "/tmp/proof-index.jsonl",
+            "output_sha256": "sha256:index",
+            "schema_counts": {"tau.dag_receipt.v1": 4},
+            "status_counts": {"PASS": 12},
+            "errors": [],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.proof_index_build_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "indexed_receipt_count": 12,
+        "output_path": "/tmp/proof-index.jsonl",
+        "output_sha256": "sha256:index",
+        "error_count": 0,
+        "warning_count": 1,
+        "schema_counts": {"tau.dag_receipt.v1": 4},
+        "status_counts": {"PASS": 12},
+        "errors": [],
+    }
+
+
+def test_build_checks_registers_proof_index_build(tmp_path: Path) -> None:
+    module = _load_runner_module()
+
+    checks = module.build_checks(
+        repo=Path(__file__).resolve().parents[1],
+        run_dir=tmp_path,
+        uv_bin="uv",
+        herdr_bin="herdr",
+        receipt_timeout_seconds=120,
+        provider_cleanup_mode="off",
+    )
+
+    check = next(item for item in checks if item.check_id == "medium.proof_index_build")
+    assert check.level == "medium"
+    assert check.expected_status == "PASS"
+    assert check.output_receipt == tmp_path / "medium-proof-index" / "proof-index-build-receipt.json"
+    assert check.command[:4] == ["uv", "run", "--project", str(Path(__file__).resolve().parents[1])]
+    assert check.command[4:7] == ["tau", "proof-index", "build"]
+    assert str(tmp_path / "medium-proof-index" / "source") in check.command
+    assert "--out" in check.command
+    assert "--receipt" in check.command
+
+
 def test_build_checks_registers_browser_cdp_proof(tmp_path: Path) -> None:
     module = _load_runner_module()
 

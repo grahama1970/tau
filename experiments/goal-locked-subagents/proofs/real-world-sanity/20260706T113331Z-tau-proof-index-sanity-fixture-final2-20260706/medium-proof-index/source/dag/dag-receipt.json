@@ -1,0 +1,18 @@
+{
+  "dag_id": "rw-sanity-proof-index",
+  "goal_hash": "sha256:rw-sanity-proof-index",
+  "live": false,
+  "mocked": false,
+  "ok": true,
+  "proof_scope": {
+    "does_not_prove": [
+      "provider/model semantic quality"
+    ],
+    "proves": [
+      "fixture DAG receipt is indexable"
+    ]
+  },
+  "provider_live": false,
+  "schema": "tau.dag_receipt.v1",
+  "status": "PASS"
+}

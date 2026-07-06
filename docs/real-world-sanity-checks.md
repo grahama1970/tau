@@ -89,6 +89,7 @@ experiments/goal-locked-subagents/proofs/real-world-sanity/<run-id>/real-world-s
 - `medium.dag_stress_status`: Tau summarizes a deterministic DAG stress suite through the read-only `tau run-status` surface.
 - `medium.dag_stress_campaign`: repeated scheduler stress across retry budgets.
 - `medium.dag_stress_campaign_status`: Tau summarizes a deterministic DAG stress campaign through the read-only `tau run-status` surface.
+- `medium.proof_index_build`: Tau builds a machine-readable proof index over a dedicated fixture source inside the current sanity run directory and writes a `tau.proof_index_build_receipt.v1` receipt.
 
 ## Advanced
 
