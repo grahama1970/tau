@@ -118,6 +118,7 @@ from tau_coding.media_explainer_orchestration import (
     run_media_explainer_smoke,
 )
 from tau_coding.orchestration_evidence import build_orchestration_evidence
+from tau_coding.orchestration_redteam import run_orchestration_redteam
 from tau_coding.orchestration_reliability import write_orchestration_reliability_receipt
 from tau_coding.package_validate import write_compliance_package_validation_receipt
 from tau_coding.persona_dream_panel_proof import (
@@ -1793,6 +1794,17 @@ def main(
         try:
             run_dir = _parse_zero_trust_redteam_args(positional_args[1:])
             payload = run_zero_trust_redteam(run_dir=run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "orchestration-redteam":
+        try:
+            run_dir = _parse_orchestration_redteam_args(positional_args[1:])
+            payload = run_orchestration_redteam(run_dir=run_dir)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -4749,6 +4761,26 @@ def _parse_zero_trust_redteam_args(args: list[str]) -> Path:
         index += 1
     if run_dir is None:
         raise RuntimeError("Usage: tau zero-trust-redteam --run-dir <dir>")
+    return run_dir
+
+
+def _parse_orchestration_redteam_args(args: list[str]) -> Path:
+    run_dir: Path | None = None
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--run-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--run-dir requires a value")
+            run_dir = Path(args[index])
+        elif arg.startswith("--run-dir="):
+            run_dir = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"Unknown orchestration-redteam option: {arg}")
+        index += 1
+    if run_dir is None:
+        raise RuntimeError("Usage: tau orchestration-redteam --run-dir <dir>")
     return run_dir
 
 
