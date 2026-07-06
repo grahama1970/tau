@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -18,6 +19,7 @@ def test_orchestration_reliability_passes_clean_run(tmp_path: Path) -> None:
     payload = write_orchestration_reliability_receipt(
         dag_receipt_path=dag_receipt,
         output_path=tmp_path / "orchestration-reliability.json",
+        required_receipts=[artifact],
     )
 
     assert payload["schema"] == ORCHESTRATION_RELIABILITY_RECEIPT_SCHEMA
@@ -27,6 +29,21 @@ def test_orchestration_reliability_passes_clean_run(tmp_path: Path) -> None:
     assert payload["required_evidence_present"] is True
     assert payload["retry_budget_respected"] is True
     assert payload["terminal_condition_valid"] is True
+    assert payload["dag_receipt_sha256"] == f"sha256:{_sha256(dag_receipt)}"
+    assert payload["dag_receipt_bytes"] == dag_receipt.stat().st_size
+    assert payload["required_receipts"]["present_artifacts"] == [
+        {
+            "path": str(artifact.resolve()),
+            "sha256": f"sha256:{_sha256(artifact)}",
+            "bytes": artifact.stat().st_size,
+        }
+    ]
+    assert payload["inspected_artifacts"][0] == {
+        "label": "dag_receipt",
+        "path": str(dag_receipt.resolve()),
+        "sha256": f"sha256:{_sha256(dag_receipt)}",
+        "bytes": dag_receipt.stat().st_size,
+    }
 
 
 def test_orchestration_reliability_blocks_missing_receipt(tmp_path: Path) -> None:
@@ -121,3 +138,7 @@ def _write_dag_receipt(
     path = tmp_path / "dag-receipt.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

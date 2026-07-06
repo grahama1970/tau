@@ -7,6 +7,11 @@ It does not answer whether the agent was correct. It answers whether Tau had
 enough receipts, gates, route evidence, and course-correction artifacts to treat
 the orchestration as controlled.
 
+The receipt binds the inspected DAG receipt and explicitly required receipts by
+path, SHA-256, and byte count. These hashes prove which local JSON artifacts Tau
+read for this reliability summary; they do not prove the claims inside those
+artifacts are true.
+
 ## Command
 
 ```bash
@@ -30,6 +35,7 @@ The receipt blocks when:
 - no DAG or run receipt is found;
 - goal hash drift is reported;
 - unexpected DAG routes are reported;
+- an explicitly required receipt artifact is missing;
 - retry budget is exceeded without handled correction;
 - a Herdr observation gate blocks without an embedded course-correction payload;
 - a run is blocked without a DAG error or course-correction artifact.

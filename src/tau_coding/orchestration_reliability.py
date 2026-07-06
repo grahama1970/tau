@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
@@ -136,6 +137,11 @@ def write_orchestration_reliability_receipt(
         "provider_live": _provider_live(dag_receipt, herdr_gates),
         "run_dir": str(resolved_run_dir) if resolved_run_dir is not None else None,
         "dag_receipt_path": _path_for_payload(dag_receipt),
+        "dag_receipt_sha256": _payload_path_sha256_uri(dag_receipt),
+        "dag_receipt_bytes": _payload_path_size(dag_receipt),
+        "inspected_artifacts": _inspected_artifacts(
+            ("dag_receipt", _path_for_payload(dag_receipt)),
+        ),
         "dag_status": dag_receipt.get("status"),
         "dag_verdict": dag_receipt.get("verdict"),
         "dag_id": dag_receipt.get("dag_id"),
@@ -335,13 +341,15 @@ def _terminal_condition_valid(dag_receipt: Mapping[str, Any]) -> bool:
 def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, list[str]]:
     present: list[str] = []
     missing: list[str] = []
+    present_artifacts: list[dict[str, Any]] = []
     for receipt in required_receipts:
         resolved = receipt.expanduser().resolve()
         if resolved.exists():
             present.append(str(resolved))
+            present_artifacts.append(_artifact_descriptor(resolved))
         else:
             missing.append(str(resolved))
-    return {"present": present, "missing": missing}
+    return {"present": present, "missing": missing, "present_artifacts": present_artifacts}
 
 
 def _read_first_json(paths: list[Path]) -> dict[str, Any]:
@@ -389,6 +397,47 @@ def _provider_live(dag_receipt: dict[str, Any], herdr_gates: list[dict[str, Any]
 def _path_for_payload(payload: dict[str, Any]) -> str | None:
     value = payload.get("_path")
     return str(value) if isinstance(value, str) and value else None
+
+
+def _payload_path_sha256_uri(payload: dict[str, Any]) -> str | None:
+    path = _path_for_payload(payload)
+    if path is None:
+        return None
+    resolved = Path(path).expanduser().resolve()
+    if not resolved.exists():
+        return None
+    return f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}"
+
+
+def _payload_path_size(payload: dict[str, Any]) -> int | None:
+    path = _path_for_payload(payload)
+    if path is None:
+        return None
+    resolved = Path(path).expanduser().resolve()
+    return resolved.stat().st_size if resolved.exists() else None
+
+
+def _inspected_artifacts(*items: tuple[str, str | None]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for label, raw_path in items:
+        if raw_path is None:
+            continue
+        resolved = Path(raw_path).expanduser().resolve()
+        if not resolved.exists():
+            continue
+        descriptor = _artifact_descriptor(resolved)
+        descriptor["label"] = label
+        artifacts.append(descriptor)
+    return artifacts
+
+
+def _artifact_descriptor(path: Path) -> dict[str, Any]:
+    resolved = path.expanduser().resolve()
+    return {
+        "path": str(resolved),
+        "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
+        "bytes": resolved.stat().st_size,
+    }
 
 
 def _utc_stamp() -> str:

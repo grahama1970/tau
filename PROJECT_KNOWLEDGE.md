@@ -5,6 +5,26 @@
 
 ## Current Understanding
 
+- 2026-07-06 orchestration reliability artifact hash binding rung:
+  `src/tau_coding/orchestration_reliability.py` now records
+  `dag_receipt_sha256`, `dag_receipt_bytes`, `inspected_artifacts`, and
+  `required_receipts.present_artifacts` with SHA-256 hashes and byte counts for
+  the local JSON receipts used to summarize orchestration reliability. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> pass; `uv run pytest
+  tests/test_orchestration_reliability.py -q` -> `5 passed in 0.38s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-orchestration-reliability-artifact-hashes`
+  exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-orchestration-reliability-artifact-hashes/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, and embedded
+  focused tests `104 passed in 2.52s`. This proves deterministic local artifact
+  hash/size binding for DAG and required receipt inputs to
+  `tau.orchestration_reliability_receipt.v1`; it does not prove agent
+  truthfulness, code correctness, provider/model quality, human acceptance,
+  GitHub mutation, or future route correctness.
+
 - 2026-07-06 LSP inspected artifact hash binding rung:
   `src/tau_coding/lsp_receipts.py` now records `inspected_artifacts` with
   SHA-256 hashes and byte counts for source files inspected by
