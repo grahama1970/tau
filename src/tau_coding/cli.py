@@ -93,6 +93,7 @@ from tau_coding.handoff_dispatch import (
     write_agent_handoff_dispatch_receipt,
 )
 from tau_coding.herdr_cleanup import run_herdr_cleanup, run_herdr_gc
+from tau_coding.herdr_observation_gate import write_herdr_observation_gate_receipt
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.init_project import initialize_tau_project
 from tau_coding.itar_boundary import write_itar_access_preflight_receipt
@@ -1572,6 +1573,41 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("next_allowed") is False else 0)
+
+    if prompt_option is None and command == "herdr-observation-gate":
+        try:
+            options = _parse_herdr_observation_gate_cli_args(positional_args[1:])
+            payload = write_herdr_observation_gate_receipt(
+                Path(str(options["out"])),
+                snapshot_path=Path(str(options["snapshot"])),
+                expected_receipt_path=(
+                    Path(str(options["expected_receipt"]))
+                    if options.get("expected_receipt") is not None
+                    else None
+                ),
+                expected_workspace_id=_optional_str(options.get("expected_workspace_id")),
+                expected_pane_id=_optional_str(options.get("expected_pane_id")),
+                expected_terminal_id=_optional_str(options.get("expected_terminal_id")),
+                run_id=_optional_str(options.get("run_id")),
+                dag_id=_optional_str(options.get("dag_id")),
+                goal_hash=_optional_str(options.get("goal_hash")),
+                node_id=_optional_str(options.get("node_id")),
+                agent=_optional_str(options.get("agent")),
+                attempt=_optional_int(options.get("attempt")),
+                receipt_overdue=bool(options["receipt_overdue"]),
+                receipt_timeout_seconds=(
+                    float(options["receipt_timeout_seconds"])
+                    if options.get("receipt_timeout_seconds") is not None
+                    else None
+                ),
+                mocked=bool(options["mocked"]),
+                live=bool(options["live"]),
+                provider_live=bool(options["provider_live"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
     if prompt_option is None and command == "loop2-serve":
         try:
@@ -3835,6 +3871,107 @@ def _parse_course_correction_cli_args(args: list[str]) -> dict[str, object]:
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau course-correction --trigger <code> --out <receipt.json>")
     return options
+
+
+def _parse_herdr_observation_gate_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "snapshot": None,
+        "out": None,
+        "expected_receipt": None,
+        "expected_workspace_id": None,
+        "expected_pane_id": None,
+        "expected_terminal_id": None,
+        "run_id": None,
+        "dag_id": None,
+        "goal_hash": None,
+        "node_id": None,
+        "agent": None,
+        "attempt": None,
+        "receipt_timeout_seconds": None,
+        "receipt_overdue": False,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--snapshot",
+            "--out",
+            "--expected-receipt",
+            "--expected-workspace-id",
+            "--expected-pane-id",
+            "--expected-terminal-id",
+            "--run-id",
+            "--dag-id",
+            "--goal-hash",
+            "--node-id",
+            "--agent",
+            "--attempt",
+            "--receipt-timeout-seconds",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            _set_herdr_observation_gate_option(options, arg, args[index])
+        elif arg.startswith("--snapshot="):
+            options["snapshot"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--expected-receipt="):
+            options["expected_receipt"] = arg.partition("=")[2]
+        elif arg.startswith("--expected-workspace-id="):
+            options["expected_workspace_id"] = arg.partition("=")[2]
+        elif arg.startswith("--expected-pane-id="):
+            options["expected_pane_id"] = arg.partition("=")[2]
+        elif arg.startswith("--expected-terminal-id="):
+            options["expected_terminal_id"] = arg.partition("=")[2]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg.startswith("--dag-id="):
+            options["dag_id"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--node-id="):
+            options["node_id"] = arg.partition("=")[2]
+        elif arg.startswith("--agent="):
+            options["agent"] = arg.partition("=")[2]
+        elif arg.startswith("--attempt="):
+            options["attempt"] = int(arg.partition("=")[2])
+        elif arg.startswith("--receipt-timeout-seconds="):
+            options["receipt_timeout_seconds"] = float(arg.partition("=")[2])
+        elif arg == "--receipt-overdue":
+            options["receipt_overdue"] = True
+        elif arg == "--mocked":
+            options["mocked"] = True
+            options["live"] = False
+        elif arg == "--live":
+            options["live"] = True
+        elif arg == "--provider-live":
+            options["provider_live"] = True
+        else:
+            raise RuntimeError(f"unknown herdr-observation-gate option: {arg}")
+        index += 1
+    if not _optional_str(options.get("snapshot")):
+        raise RuntimeError("Usage: tau herdr-observation-gate --snapshot <json> --out <json>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau herdr-observation-gate --snapshot <json> --out <json>")
+    return options
+
+
+def _set_herdr_observation_gate_option(
+    options: dict[str, object],
+    arg: str,
+    value: str,
+) -> None:
+    key = arg.removeprefix("--").replace("-", "_")
+    if arg in {"--attempt"}:
+        options[key] = int(value)
+    elif arg == "--receipt-timeout-seconds":
+        options[key] = float(value)
+    else:
+        options[key] = value
 
 
 def _set_course_correction_option(

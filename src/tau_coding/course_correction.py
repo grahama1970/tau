@@ -173,6 +173,14 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["start_parallel_duplicate_without_policy"],
             ["herdr_monitor_snapshot", "visible_log_excerpt"],
         )
+    if trigger == "herdr_binding_mismatch":
+        return _policy(
+            "block_run",
+            "Herdr workspace, pane, or terminal identity does not match the dispatched work.",
+            ["goal-guardian", "human"],
+            ["continue_with_unbound_pane", "accept_unbound_receipt"],
+            ["fresh_herdr_snapshot", "work_order_binding_receipt"],
+        )
     if trigger in {"pointless_unit_test_drift", "test_churn_without_progress"}:
         return _policy(
             "stop_test_churn_report_blocker_and_replan",
