@@ -380,7 +380,9 @@ examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
 `examples/omp-worker` validates a bounded OMP-shaped worker result. By default
 it uses a fixture result and marks the demo `mocked:true`, `live:false`; it
 also writes a dry-run `omp-worker-launch-receipt.json` showing the exact OMP
-RPC command and prompt frame Tau would send. Set
+RPC command and prompt frame Tau would send, plus a deterministic
+`omp-worker-launch-apply-receipt.json` using a local `fake-omp` executable to
+exercise process launch and stdout/stderr capture. Set
 `OMP_WORKER_RESULT=/path/to/tau.omp_worker_result.v1.json` to validate an
 external worker artifact. The launch receipt can also be generated directly:
 
@@ -398,7 +400,9 @@ replace result validation.
 worker result. By default it uses a fixture result and marks the demo
 `mocked:true`, `live:false`; it also writes a dry-run
 `scillm-worker-launch-receipt.json` showing the exact OpenCode-serve request
-Tau would send. Set
+Tau would send, plus a deterministic `scillm-worker-launch-apply-receipt.json`
+using a local SciLLM-compatible fixture server to exercise HTTP post and
+response capture. Set
 `SCILLM_WORKER_RESULT=/path/to/tau.scillm_worker_result.v1.json` to validate an
 external worker artifact. The work order records the correct coding-delegate
 surface, `/v1/scillm/opencode/runs`, with an OpenCode agent profile such as

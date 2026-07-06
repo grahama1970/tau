@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:25 EDT by agent
+**Last updated:** 2026-07-06 23:58 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -14,15 +14,34 @@
   `uv run ruff check --select I,F,E501
   scripts/run-coding-capability-sanity.py` -> pass;
   `scripts/run-coding-capability-sanity.py --run-dir
-  /tmp/tau-coding-capability-sanity-scillm-apply-final` exited 0 and wrote
-  `/tmp/tau-coding-capability-sanity-scillm-apply-final/coding-capability-sanity-receipt.json`
+  /tmp/tau-coding-capability-sanity-worker-apply-examples-final` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-worker-apply-examples-final/coding-capability-sanity-receipt.json`
   with `status:"PASS"`, `check_count:8`, and `failed_check_count:0`.
-  The embedded focused pytest command reports `94 passed in 2.38s`. This
+  The embedded focused pytest command reports `94 passed in 2.37s`. This
   proves the current local coding receipt tests and copyable examples compose
   into one deterministic audit artifact, including dry-run and bounded apply
   worker-launch receipt tests; it does not prove live OMP/SciLLM semantic
   worker execution, provider/model semantic quality, semantic code correctness,
   GitHub mutation, human acceptance, or legal compliance.
+
+- 2026-07-06 worker apply example receipt rung:
+  `examples/omp-worker/run.sh` now writes both
+  `omp-worker-launch-receipt.json` and `omp-worker-launch-apply-receipt.json`;
+  the apply receipt invokes a deterministic local `fake-omp` executable and
+  captures stdout/stderr. `examples/scillm-worker/run.sh` now writes both
+  `scillm-worker-launch-receipt.json` and
+  `scillm-worker-launch-apply-receipt.json`; the apply receipt posts to a
+  deterministic local SciLLM-compatible fixture server and captures response
+  JSON while checking auth redaction. Proof:
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-apply-example-proof-final` exited 0
+  and wrote a demo receipt with `apply_launch_process_executed:true` and
+  `apply_launch_exit_code:0`; `examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-apply-example-proof-final` exited 0 and wrote a demo receipt
+  with `apply_launch_http_executed:true`, `apply_launch_http_status:200`, and
+  `apply_launch_run_id:"example-run"`. This proves copyable deterministic
+  apply-launch mechanics and result validation wiring; it does not prove a real
+  `oh-my-pi` binary, live SciLLM/OpenCode serve execution, semantic code
+  correctness, provider/model quality, or legal compliance.
 
 - 2026-07-06 OMP worker apply launch receipt rung:
   `uv run tau omp-worker-launch --work-order <work-order.json> --out

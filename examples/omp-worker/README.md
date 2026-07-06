@@ -17,6 +17,13 @@ uv run tau omp-worker-launch \
   --work-order work-order.json \
   --out omp-worker-launch-receipt.json
 
+uv run tau omp-worker-launch \
+  --work-order work-order.json \
+  --out omp-worker-launch-apply-receipt.json \
+  --apply \
+  --omp-bin fake-omp \
+  --timeout-s 5
+
 uv run tau omp-worker-validate \
   --work-order work-order.json \
   --result omp-result.json \
@@ -32,6 +39,8 @@ OMP_WORKER_RESULT=/path/to/omp-result.json examples/omp-worker/run.sh /tmp/tau-o
 
 This example proves only the Tau-side receipt validation path. Unless
 `OMP_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
-launched OMP. The dry-run launch receipt proves only RPC request construction
-and route gating; it does not prove OMP accepted or ran the request, semantic
-code correctness, or provider/model quality.
+launched a real OMP worker. The default apply launch uses a deterministic local
+`fake-omp` executable to prove Tau can invoke an OMP-compatible process and
+capture stdout/stderr. It does not prove a real `oh-my-pi` binary was used, OMP
+accepted or ran the request semantically, semantic code correctness, or
+provider/model quality.

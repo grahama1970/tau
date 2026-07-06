@@ -7,12 +7,27 @@ WORK_ORDER="${OUT_DIR}/work-order.json"
 RESULT="${OUT_DIR}/omp-result.json"
 RECEIPT="${OUT_DIR}/omp-worker-receipt.json"
 LAUNCH_RECEIPT="${OUT_DIR}/omp-worker-launch-receipt.json"
+APPLY_LAUNCH_RECEIPT="${OUT_DIR}/omp-worker-launch-apply-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
 SANDBOX_RECEIPT="${OUT_DIR}/sandbox-run-receipt.json"
+FAKE_OMP="${OUT_DIR}/fake-omp"
 
 mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${OUT_DIR}/logs"
 printf 'def answer():\n    return 42\n' > "${REPO_DIR}/src/example.py"
 printf 'fixture pytest log\n' > "${OUT_DIR}/logs/pytest.log"
+cat > "${FAKE_OMP}" <<'PY'
+#!/usr/bin/env python3
+import json
+import sys
+
+payload = json.loads(sys.stdin.readline())
+print(json.dumps({
+    "schema": "fake.omp.rpc.response",
+    "received_type": payload.get("type"),
+    "metadata": payload.get("metadata"),
+}, sort_keys=True))
+PY
+chmod +x "${FAKE_OMP}"
 
 cat > "${SANDBOX_RECEIPT}" <<JSON
 {
@@ -94,12 +109,19 @@ uv run tau omp-worker-launch \
   --work-order "${WORK_ORDER}" \
   --out "${LAUNCH_RECEIPT}" >/tmp/tau-omp-worker-launch.stdout.json
 
+uv run tau omp-worker-launch \
+  --work-order "${WORK_ORDER}" \
+  --out "${APPLY_LAUNCH_RECEIPT}" \
+  --apply \
+  --omp-bin "${FAKE_OMP}" \
+  --timeout-s 5 >/tmp/tau-omp-worker-launch-apply.stdout.json
+
 uv run tau omp-worker-validate \
   --work-order "${WORK_ORDER}" \
   --result "${RESULT}" \
   --out "${RECEIPT}" >/tmp/tau-omp-worker-validate.stdout.json
 
-python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
+python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${APPLY_LAUNCH_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -107,17 +129,22 @@ from pathlib import Path
 demo_path = Path(sys.argv[1])
 receipt_path = Path(sys.argv[2])
 launch_receipt_path = Path(sys.argv[3])
-worker_result_source = sys.argv[4]
+apply_launch_receipt_path = Path(sys.argv[4])
+worker_result_source = sys.argv[5]
 receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 launch_receipt = json.loads(launch_receipt_path.read_text(encoding="utf-8"))
+apply_launch_receipt = json.loads(apply_launch_receipt_path.read_text(encoding="utf-8"))
+ok = (
+    receipt.get("ok") is True
+    and launch_receipt.get("ok") is True
+    and apply_launch_receipt.get("ok") is True
+)
 payload = {
     "schema": "tau.omp_worker_example_receipt.v1",
-    "ok": receipt.get("ok") is True and launch_receipt.get("ok") is True,
-    "status": (
-        "PASS" if receipt.get("ok") is True and launch_receipt.get("ok") is True else "BLOCKED"
-    ),
+    "ok": ok,
+    "status": "PASS" if ok else "BLOCKED",
     "mocked": worker_result_source == "fixture",
-    "live": worker_result_source != "fixture",
+    "live": "mixed",
     "provider_live": False,
     "worker_result_source": worker_result_source,
     "worker_receipt_path": str(receipt_path),
@@ -129,14 +156,22 @@ payload = {
     "launch_receipt_status": launch_receipt.get("status"),
     "launch_receipt_alert_codes": launch_receipt.get("alert_codes", []),
     "launch_command": launch_receipt.get("command"),
+    "apply_launch_receipt_path": str(apply_launch_receipt_path),
+    "apply_launch_receipt_schema": apply_launch_receipt.get("schema"),
+    "apply_launch_receipt_status": apply_launch_receipt.get("status"),
+    "apply_launch_receipt_alert_codes": apply_launch_receipt.get("alert_codes", []),
+    "apply_launch_process_executed": apply_launch_receipt.get("process_executed"),
+    "apply_launch_exit_code": apply_launch_receipt.get("exit_code"),
+    "apply_launch_stdout_path": apply_launch_receipt.get("stdout_path"),
     "proof_scope": {
         "proves": [
             "Tau built a dry-run OMP RPC launch request from a bounded work order.",
+            "Tau invoked a deterministic local OMP-compatible process and captured stdout/stderr.",
             "Tau validated an OMP-shaped worker result against a bounded work order.",
             "Tau checked goal hash, changed paths, required artifacts, test logs, and substrate metadata."
         ],
         "does_not_prove": [
-            "Tau launched OMP.",
+            "Tau launched a real oh-my-pi binary.",
             "OMP accepted or ran the request.",
             "OMP performed live coding work.",
             "The code is semantically correct.",

@@ -7,6 +7,7 @@ WORK_ORDER="${OUT_DIR}/work-order.json"
 RESULT="${OUT_DIR}/scillm-result.json"
 RECEIPT="${OUT_DIR}/scillm-worker-receipt.json"
 LAUNCH_RECEIPT="${OUT_DIR}/scillm-worker-launch-receipt.json"
+APPLY_LAUNCH_RECEIPT="${OUT_DIR}/scillm-worker-launch-apply-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
 SANDBOX_RECEIPT="${OUT_DIR}/sandbox-run-receipt.json"
 
@@ -102,12 +103,105 @@ uv run tau scillm-worker-launch \
   --work-order "${WORK_ORDER}" \
   --out "${LAUNCH_RECEIPT}" >/tmp/tau-scillm-worker-launch.stdout.json
 
+python3 - "${WORK_ORDER}" "${APPLY_LAUNCH_RECEIPT}" <<'PY'
+import json
+import subprocess
+import sys
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from threading import Thread
+
+work_order = Path(sys.argv[1])
+out = Path(sys.argv[2])
+requests = []
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length).decode("utf-8")
+        requests.append(
+            {
+                "path": self.path,
+                "authorization": self.headers.get("Authorization"),
+                "caller_skill": self.headers.get("X-Caller-Skill"),
+                "payload": json.loads(body),
+            }
+        )
+        response = {
+            "schema": "scillm.opencode_serve.run.v1",
+            "run_id": "example-run",
+            "session_id": "example-session",
+            "status": "completed",
+            "assistant_text": "fixture OpenCode serve response",
+            "artifacts": ["events.jsonl"],
+        }
+        encoded = json.dumps(response, sort_keys=True).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        self.wfile.write(encoded)
+
+    def log_message(self, format, *args):
+        return
+
+
+server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+thread = Thread(target=server.serve_forever, daemon=True)
+thread.start()
+host, port = server.server_address
+try:
+    result = subprocess.run(
+        [
+            "uv",
+            "run",
+            "tau",
+            "scillm-worker-launch",
+            "--work-order",
+            str(work_order),
+            "--out",
+            str(out),
+            "--scillm-base-url",
+            f"http://{host}:{port}",
+            "--caller-skill",
+            "tau-example",
+            "--apply",
+            "--auth-token",
+            "example-token",
+            "--request-timeout-s",
+            "5",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+finally:
+    server.shutdown()
+
+(out.parent / "scillm-worker-launch-apply.stdout.json").write_text(
+    result.stdout,
+    encoding="utf-8",
+)
+(out.parent / "scillm-worker-launch-apply.stderr.txt").write_text(
+    result.stderr,
+    encoding="utf-8",
+)
+if result.returncode != 0:
+    raise SystemExit(result.returncode)
+receipt = json.loads(out.read_text(encoding="utf-8"))
+if "example-token" in json.dumps(receipt):
+    raise SystemExit("auth token leaked into receipt")
+if not requests:
+    raise SystemExit("fake SciLLM server received no request")
+PY
+
 uv run tau scillm-worker-validate \
   --work-order "${WORK_ORDER}" \
   --result "${RESULT}" \
   --out "${RECEIPT}" >/tmp/tau-scillm-worker-validate.stdout.json
 
-python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
+python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${APPLY_LAUNCH_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -115,18 +209,23 @@ from pathlib import Path
 demo_path = Path(sys.argv[1])
 receipt_path = Path(sys.argv[2])
 launch_receipt_path = Path(sys.argv[3])
-worker_result_source = sys.argv[4]
+apply_launch_receipt_path = Path(sys.argv[4])
+worker_result_source = sys.argv[5]
 receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 launch_receipt = json.loads(launch_receipt_path.read_text(encoding="utf-8"))
+apply_launch_receipt = json.loads(apply_launch_receipt_path.read_text(encoding="utf-8"))
 route = receipt.get("model_provider_route", {})
+ok = (
+    receipt.get("ok") is True
+    and launch_receipt.get("ok") is True
+    and apply_launch_receipt.get("ok") is True
+)
 payload = {
     "schema": "tau.scillm_worker_example_receipt.v1",
-    "ok": receipt.get("ok") is True and launch_receipt.get("ok") is True,
-    "status": (
-        "PASS" if receipt.get("ok") is True and launch_receipt.get("ok") is True else "BLOCKED"
-    ),
+    "ok": ok,
+    "status": "PASS" if ok else "BLOCKED",
     "mocked": worker_result_source == "fixture",
-    "live": worker_result_source != "fixture",
+    "live": "mixed",
     "provider_live": False,
     "worker_result_source": worker_result_source,
     "worker_receipt_path": str(receipt_path),
@@ -138,15 +237,24 @@ payload = {
     "launch_receipt_status": launch_receipt.get("status"),
     "launch_receipt_alert_codes": launch_receipt.get("alert_codes", []),
     "launch_url": launch_receipt.get("url"),
+    "apply_launch_receipt_path": str(apply_launch_receipt_path),
+    "apply_launch_receipt_schema": apply_launch_receipt.get("schema"),
+    "apply_launch_receipt_status": apply_launch_receipt.get("status"),
+    "apply_launch_receipt_alert_codes": apply_launch_receipt.get("alert_codes", []),
+    "apply_launch_http_executed": apply_launch_receipt.get("http_executed"),
+    "apply_launch_http_status": apply_launch_receipt.get("http_status"),
+    "apply_launch_response_path": apply_launch_receipt.get("response_path"),
+    "apply_launch_run_id": apply_launch_receipt.get("run_id"),
     "model_provider_route": route,
     "proof_scope": {
         "proves": [
             "Tau built a dry-run SciLLM OpenCode-serve launch request from a bounded work order.",
+            "Tau posted a bounded request to a deterministic local SciLLM-compatible server and captured the response.",
             "Tau validated a SciLLM-shaped worker result against a bounded work order.",
             "Tau checked goal hash, changed paths, required artifacts, test logs, substrate evidence, and route metadata."
         ],
         "does_not_prove": [
-            "Tau called SciLLM.",
+            "Tau called a live SciLLM service.",
             "OpenCode serve accepted or ran the request.",
             "OpenCode serve performed live coding work.",
             "The code is semantically correct.",

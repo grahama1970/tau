@@ -17,6 +17,14 @@ uv run tau scillm-worker-launch \
   --work-order work-order.json \
   --out scillm-worker-launch-receipt.json
 
+uv run tau scillm-worker-launch \
+  --work-order work-order.json \
+  --out scillm-worker-launch-apply-receipt.json \
+  --scillm-base-url http://127.0.0.1:<fixture-port> \
+  --apply \
+  --auth-token example-token \
+  --request-timeout-s 5
+
 uv run tau scillm-worker-validate \
   --work-order work-order.json \
   --result scillm-result.json \
@@ -42,6 +50,8 @@ SCILLM_WORKER_RESULT=/path/to/scillm-result.json examples/scillm-worker/run.sh /
 
 This example proves only the Tau-side receipt validation path. Unless
 `SCILLM_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
-called SciLLM. The dry-run launch receipt proves only request construction and
-route gating; it does not prove OpenCode serve accepted or ran the request,
-semantic code correctness, or provider/model quality.
+called a live SciLLM/OpenCode serve worker. The default apply launch posts to a
+deterministic local SciLLM-compatible fixture server and proves Tau can send the
+bounded request, redact auth from the receipt, and capture response JSON. It
+does not prove a live SciLLM service was used, OpenCode serve accepted or ran
+the request semantically, semantic code correctness, or provider/model quality.
