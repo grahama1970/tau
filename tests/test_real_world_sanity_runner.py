@@ -383,6 +383,46 @@ def test_summarize_receipt_includes_route_memory_sync_fields() -> None:
     }
 
 
+def test_summarize_receipt_includes_research_source_fields() -> None:
+    module = _load_runner_module()
+
+    summary = module.summarize_receipt(
+        {
+            "schema": "tau.research_source_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "source_packet_sha256": "sha256:packet",
+            "source_type": "paper",
+            "method": "arxiv",
+            "classification": "design_input",
+            "source_count": 2,
+            "arxiv_source_count": 2,
+            "review_required": True,
+            "errors": [],
+        }
+    )
+
+    assert summary == {
+        "schema": "tau.research_source_receipt.v1",
+        "ok": True,
+        "status": "PASS",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "source_packet_sha256": "sha256:packet",
+        "source_type": "paper",
+        "method": "arxiv",
+        "classification": "design_input",
+        "source_count": 2,
+        "arxiv_source_count": 2,
+        "review_required": True,
+        "errors": [],
+    }
+
+
 def test_summarize_receipt_includes_evidence_validation_fields() -> None:
     module = _load_runner_module()
 
