@@ -5,6 +5,23 @@
 
 ## Current Understanding
 
+- 2026-07-06 LSP inspected artifact hash binding rung:
+  `src/tau_coding/lsp_receipts.py` now records `inspected_artifacts` with
+  SHA-256 hashes and byte counts for source files inspected by
+  `tau.lsp_diagnostics_receipt.v1`, `tau.lsp_symbol_receipt.v1`, and
+  `tau.lsp_rename_receipt.v1`. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/lsp_receipts.py tests/test_lsp_receipts.py` -> pass;
+  `uv run pytest tests/test_lsp_receipts.py -q` -> `14 passed in 0.56s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-inspected-artifact-hashes` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-lsp-inspected-artifact-hashes/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, and embedded
+  focused tests `104 passed in 2.62s`. This proves deterministic local
+  inspected-file hash/size binding for LSP-style receipts; it does not prove
+  semantic code correctness, complete language server parity, safe rename
+  application, provider/model quality, or legal compliance.
+
 - 2026-07-06 GitHub read execution artifact hash binding rung:
   `src/tau_coding/github_read_schemes.py` now hash-binds execute-mode
   `tau.github_read_receipt.v1` stdout/stderr sidecars. The receipt execution

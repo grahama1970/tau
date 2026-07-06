@@ -114,7 +114,9 @@ quarantine, goal-guardian review, or human review.
 `tau.lsp_diagnostics_receipt.v1` records local diagnostics evidence for a
 workspace. Tau uses Ruff when available and falls back to Python AST parsing for
 syntax evidence. The receipt records the adapter used, inspected files,
-diagnostics, severity counts, and whether the adapter was available.
+diagnostics, severity counts, whether the adapter was available, and
+`inspected_artifacts` with SHA-256 hashes and byte counts for the inspected
+source files.
 
 CLI:
 
@@ -142,7 +144,8 @@ profile or data boundary.
 
 `tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
 symbol lookup and rename planning. Rename planning does not apply edits by
-default; it records references and planned edits as evidence for review.
+default; it records references, planned edits, and the hash-bound inspected
+source artifacts as evidence for review.
 
 CLI:
 

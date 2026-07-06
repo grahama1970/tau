@@ -8,6 +8,7 @@ parity.
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import shutil
 import subprocess
@@ -80,6 +81,7 @@ def write_lsp_diagnostics_receipt(
         "language_server_used": server_used,
         "server_available": server_available,
         "files_inspected": [str(path) for path in files],
+        "inspected_artifacts": _file_artifacts(files),
         "file_count": len(files),
         "diagnostics": diagnostics,
         "diagnostic_count": len(diagnostics),
@@ -139,6 +141,7 @@ def write_lsp_symbol_receipt(
         "language_server_used": "python_ast_symbol_adapter",
         "query": query,
         "files_inspected": [str(path) for path in files],
+        "inspected_artifacts": _file_artifacts(files),
         "reference_count": len(references),
         "references": references,
         "alerts": alerts,
@@ -188,6 +191,7 @@ def write_lsp_rename_plan_receipt(
         "new_name": new_name,
         "applied": False,
         "reference_count": len(references),
+        "inspected_artifacts": list(symbol_receipt.get("inspected_artifacts", [])),
         "references": references,
         "planned_edits": [
             {"file": item["file"], "line": item["line"], "old": symbol, "new": new_name}
@@ -278,6 +282,22 @@ def _workspace_files(workspace: Path, globs: Iterable[str]) -> list[Path]:
             if path.is_file():
                 files.append(path.resolve())
     return sorted(set(files))
+
+
+def _file_artifacts(paths: Iterable[Path]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for path in paths:
+        resolved = path.expanduser().resolve()
+        if not resolved.exists():
+            continue
+        artifacts.append(
+            {
+                "path": str(resolved),
+                "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
+                "bytes": resolved.stat().st_size,
+            }
+        )
+    return artifacts
 
 
 def _severity_counts(diagnostics: list[dict[str, Any]]) -> dict[str, int]:

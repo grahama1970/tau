@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -15,7 +16,8 @@ from tau_coding.lsp_receipts import (
 
 
 def test_lsp_diagnostics_receipt_records_counts(tmp_path: Path) -> None:
-    (tmp_path / "example.py").write_text("def ok():\n    return 1\n", encoding="utf-8")
+    source = tmp_path / "example.py"
+    source.write_text("def ok():\n    return 1\n", encoding="utf-8")
 
     payload = write_lsp_diagnostics_receipt(
         workspace=tmp_path,
@@ -27,6 +29,13 @@ def test_lsp_diagnostics_receipt_records_counts(tmp_path: Path) -> None:
     assert payload["file_count"] == 1
     assert payload["severity_counts"]["error"] == 0
     assert payload["diagnostics_increased"] == "NOT_EVALUATED"
+    assert payload["inspected_artifacts"] == [
+        {
+            "path": str(source.resolve()),
+            "sha256": f"sha256:{_sha256(source)}",
+            "bytes": source.stat().st_size,
+        }
+    ]
 
 
 def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
@@ -105,6 +114,13 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert payload["schema"] == LSP_RENAME_RECEIPT_SCHEMA
     assert payload["applied"] is False
     assert payload["reference_count"] == 2
+    assert payload["inspected_artifacts"] == [
+        {
+            "path": str(source.resolve()),
+            "sha256": f"sha256:{_sha256(source)}",
+            "bytes": source.stat().st_size,
+        }
+    ]
     assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
 
 
@@ -173,6 +189,13 @@ def test_cli_lsp_symbols_writes_receipt(tmp_path: Path) -> None:
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == LSP_SYMBOL_RECEIPT_SCHEMA
     assert payload["reference_count"] == 2
+    assert payload["inspected_artifacts"] == [
+        {
+            "path": str(source.resolve()),
+            "sha256": f"sha256:{_sha256(source)}",
+            "bytes": source.stat().st_size,
+        }
+    ]
 
 
 def test_cli_lsp_symbols_zero_trust_missing_boundary_exits_blocked(
@@ -289,3 +312,7 @@ def test_cli_lsp_diagnostics_accepts_baseline_receipt(tmp_path: Path) -> None:
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["diagnostics_increased"] is True
     assert payload["baseline_receipt_path"] == str(Path(baseline["receipt_path"]))
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
