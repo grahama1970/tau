@@ -39,6 +39,7 @@ from tau_coding.browser_cdp_proof import (
     write_browser_cdp_proof,
 )
 from tau_coding.compliance_package import build_compliance_evidence_package
+from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.credentials import FileCredentialStore
 from tau_coding.dag_branch_locks import write_dag_branch_lock_validation_receipt
 from tau_coding.dag_expansion import (
@@ -702,9 +703,7 @@ def main(
                     else None
                 ),
                 receipt_path=(
-                    Path(str(options["receipt"]))
-                    if options.get("receipt") is not None
-                    else None
+                    Path(str(options["receipt"])) if options.get("receipt") is not None else None
                 ),
             )
         except RuntimeError as exc:
@@ -1544,6 +1543,35 @@ def main(
         if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
+
+    if prompt_option is None and command == "course-correction":
+        try:
+            options = _parse_course_correction_cli_args(positional_args[1:])
+            payload = write_course_correction_receipt(
+                Path(str(options["out"])),
+                trigger=str(options["trigger"]),
+                run_id=_optional_str(options.get("run_id")),
+                dag_id=_optional_str(options.get("dag_id")),
+                goal_hash=_optional_str(options.get("goal_hash")),
+                target=_json_object_option(options.get("target"), label="--target-json"),
+                node_id=_optional_str(options.get("node_id")),
+                agent=_optional_str(options.get("agent")),
+                attempt=_optional_int(options.get("attempt")),
+                observed_state=_json_object_option(
+                    options.get("observed_state"),
+                    label="--observed-state-json",
+                ),
+                errors=[str(item) for item in options["error"]],
+                reason=_optional_str(options.get("reason")),
+                stop_reason=_optional_str(options.get("stop_reason")),
+                mocked=bool(options["mocked"]),
+                live=bool(options["live"]),
+                provider_live=bool(options["provider_live"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("next_allowed") is False else 0)
 
     if prompt_option is None and command == "loop2-serve":
         try:
@@ -3563,9 +3591,7 @@ def _parse_verify_signed_receipt_cli_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"unknown verify-signed-receipt option: {arg}")
         index += 1
     if options["signed_receipt"] is None or options["key"] is None:
-        raise RuntimeError(
-            "Usage: tau verify-signed-receipt --signed-receipt <json> --key <key>"
-        )
+        raise RuntimeError("Usage: tau verify-signed-receipt --signed-receipt <json> --key <key>")
     return options
 
 
@@ -3726,6 +3752,140 @@ def _parse_dag_fail_closed_registry_args(args: list[str]) -> Path | None:
             raise RuntimeError(f"unknown dag-fail-closed-registry option: {arg}")
         index += 1
     return output_path
+
+
+def _parse_course_correction_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "trigger": None,
+        "out": None,
+        "run_id": None,
+        "dag_id": None,
+        "goal_hash": None,
+        "target": None,
+        "node_id": None,
+        "agent": None,
+        "attempt": None,
+        "observed_state": None,
+        "reason": None,
+        "stop_reason": None,
+        "error": [],
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--trigger",
+            "--out",
+            "--run-id",
+            "--dag-id",
+            "--goal-hash",
+            "--target-json",
+            "--node-id",
+            "--agent",
+            "--attempt",
+            "--observed-state-json",
+            "--reason",
+            "--stop-reason",
+            "--error",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            _set_course_correction_option(options, arg, args[index])
+        elif arg.startswith("--trigger="):
+            options["trigger"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg.startswith("--dag-id="):
+            options["dag_id"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--target-json="):
+            options["target"] = arg.partition("=")[2]
+        elif arg.startswith("--node-id="):
+            options["node_id"] = arg.partition("=")[2]
+        elif arg.startswith("--agent="):
+            options["agent"] = arg.partition("=")[2]
+        elif arg.startswith("--attempt="):
+            options["attempt"] = int(arg.partition("=")[2])
+        elif arg.startswith("--observed-state-json="):
+            options["observed_state"] = arg.partition("=")[2]
+        elif arg.startswith("--reason="):
+            options["reason"] = arg.partition("=")[2]
+        elif arg.startswith("--stop-reason="):
+            options["stop_reason"] = arg.partition("=")[2]
+        elif arg.startswith("--error="):
+            _append_option(options, "error", arg.partition("=")[2])
+        elif arg == "--mocked":
+            options["mocked"] = True
+        elif arg == "--live":
+            options["live"] = True
+        elif arg == "--provider-live":
+            options["provider_live"] = True
+        else:
+            raise RuntimeError(f"unknown course-correction option: {arg}")
+        index += 1
+    if not _optional_str(options.get("trigger")):
+        raise RuntimeError("Usage: tau course-correction --trigger <code> --out <receipt.json>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau course-correction --trigger <code> --out <receipt.json>")
+    return options
+
+
+def _set_course_correction_option(
+    options: dict[str, object],
+    arg: str,
+    value: str,
+) -> None:
+    key = arg.removeprefix("--").replace("-", "_")
+    if arg == "--target-json":
+        key = "target"
+    elif arg == "--observed-state-json":
+        key = "observed_state"
+    elif arg == "--error":
+        _append_option(options, "error", value)
+        return
+    if arg == "--attempt":
+        options[key] = int(value)
+    else:
+        options[key] = value
+
+
+def _optional_str(value: object) -> str | None:
+    if isinstance(value, str) and value:
+        return value
+    return None
+
+
+def _optional_int(value: object) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value:
+        return int(value)
+    return None
+
+
+def _json_object_option(value: object, *, label: str) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return value
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"{label} must be a JSON object: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise RuntimeError(f"{label} must be a JSON object")
+    return parsed
 
 
 def _parse_tui_proof_cli_args(args: list[str]) -> dict[str, str | Path]:
@@ -4307,7 +4467,10 @@ def _parse_itar_access_preflight_args(args: list[str]) -> dict[str, object]:
     }.items():
         if not isinstance(options.get(key), Path):
             raise RuntimeError(f"{flag} requires a value")
-    if not isinstance(options["required_boundary"], str) or not options["required_boundary"].strip():
+    if (
+        not isinstance(options["required_boundary"], str)
+        or not options["required_boundary"].strip()
+    ):
         raise RuntimeError("--required-boundary requires a non-empty value")
     return options
 
@@ -4631,9 +4794,7 @@ def _parse_goal_guardian_ticket_source_github_fetch_args(
         elif arg.startswith("--limit="):
             limit = _parse_positive_int(arg.partition("=")[2], "--limit")
         else:
-            raise RuntimeError(
-                f"Unknown goal-guardian-ticket-source-github-fetch option: {arg}"
-            )
+            raise RuntimeError(f"Unknown goal-guardian-ticket-source-github-fetch option: {arg}")
         index += 1
     if output_path is None:
         raise RuntimeError("--out is required")
@@ -5336,9 +5497,7 @@ def _parse_self_fix_poll_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError("self-fix poll requires --repo <owner/repo>")
     if receipt_dir is None:
         stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-        receipt_dir = Path("experiments/goal-locked-subagents/proofs") / (
-            f"self-fix-poll-{stamp}"
-        )
+        receipt_dir = Path("experiments/goal-locked-subagents/proofs") / (f"self-fix-poll-{stamp}")
     return {
         "repo": repo,
         "receipt_dir": receipt_dir,
@@ -6341,9 +6500,7 @@ async def _scillm_proxy_auth_preflight(contract: dict[str, object]) -> dict[str,
         return payload
     payload["status_code"] = response.status_code
     if response.status_code != 200:
-        payload["errors"] = [
-            f"Scillm proxy auth preflight failed with HTTP {response.status_code}"
-        ]
+        payload["errors"] = [f"Scillm proxy auth preflight failed with HTTP {response.status_code}"]
         return payload
     try:
         body = response.json()
@@ -6462,11 +6619,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
 
 def _is_generated_changed_file(path: str) -> bool:
     parts = Path(path).parts
-    return (
-        "__pycache__" in parts
-        or ".pytest_cache" in parts
-        or path.endswith((".pyc", ".pyo"))
-    )
+    return "__pycache__" in parts or ".pytest_cache" in parts or path.endswith((".pyc", ".pyo"))
 
 
 async def _run_loop2_runner_contract(
@@ -6556,14 +6709,9 @@ async def _run_loop2_runner_contract(
             "errors": list(validation.errors),
         }
     native_validation_errors = [
-        f"native Loop2 validation failed: {error}"
-        for error in native_validation["errors"]
+        f"native Loop2 validation failed: {error}" for error in native_validation["errors"]
     ]
-    ok = (
-        result.get("status") == "PASS"
-        and not artifact_errors
-        and native_validation["ok"] is True
-    )
+    ok = result.get("status") == "PASS" and not artifact_errors and native_validation["ok"] is True
     payload = {
         "schema": "tau.loop2_contract_run.v1",
         "contract": str(reported_contract_path),
@@ -7048,9 +7196,7 @@ def _github_apply_policy_receipt_errors(
     required_actions = set(_github_projection_action_names(projection))
     receipt_actions = receipt.get("actions")
     receipt_action_set = (
-        {str(action) for action in receipt_actions}
-        if isinstance(receipt_actions, list)
-        else set()
+        {str(action) for action in receipt_actions} if isinstance(receipt_actions, list) else set()
     )
     if required_actions and not required_actions.issubset(receipt_action_set):
         missing = sorted(required_actions - receipt_action_set)
@@ -7188,9 +7334,7 @@ def transport_handoff_command_loop_reconciliation_to_github_command(
         reconciliation_path,
         label="goal guardian reconciliation receipt",
     )
-    ticket_source_path = _goal_guardian_ticket_source_from_reconciliation(
-        reconciliation_receipt
-    )
+    ticket_source_path = _goal_guardian_ticket_source_from_reconciliation(reconciliation_receipt)
     transport = transport_goal_guardian_reconciliation_to_github(
         reconciliation_receipt,
         apply=apply_github,
@@ -7275,9 +7419,8 @@ def _find_goal_guardian_reconciliation_artifact(artifacts: object) -> str | None
     if not isinstance(artifacts, list):
         return None
     for artifact in artifacts:
-        if (
-            isinstance(artifact, str)
-            and artifact.endswith("goal-guardian-reconciliation-receipt.json")
+        if isinstance(artifact, str) and artifact.endswith(
+            "goal-guardian-reconciliation-receipt.json"
         ):
             return artifact
     return None
@@ -7925,8 +8068,7 @@ def _self_fix_start_handoff(
         "result": {
             "status": "REQUESTED",
             "summary": (
-                "Human requested Tau to start the coder/reviewer self-fix loop "
-                "for this issue."
+                "Human requested Tau to start the coder/reviewer self-fix loop for this issue."
             ),
             "evidence": [
                 str(goal_helper_path.expanduser().resolve()),
@@ -7940,8 +8082,7 @@ def _self_fix_start_handoff(
             "name": "coder",
             "executor": "local",
             "reason": (
-                "Coder should perform the first bounded implementation analysis "
-                "for the issue."
+                "Coder should perform the first bounded implementation analysis for the issue."
             ),
         },
         "required_evidence": [
@@ -8193,9 +8334,7 @@ def project_agent_self_fix_poll_command(
     elif dispatch:
         proves.append("Tau dispatches exactly one selected eligible issue.")
         if repair:
-            proves.append(
-                "Tau can route the selected issue into the contract-backed repair path."
-            )
+            proves.append("Tau can route the selected issue into the contract-backed repair path.")
     else:
         proves.append("Tau reports the first selected eligible issue without dispatch.")
 
@@ -8303,9 +8442,7 @@ def project_agent_handoff_adapter_command(
         "result": {
             "status": resolved_result_status,
             "summary": summary,
-            "evidence": [
-                "tau handoff-agent-adapter emitted this schema-valid response from stdin"
-            ],
+            "evidence": ["tau handoff-agent-adapter emitted this schema-valid response from stdin"],
         },
         "rationale": (
             f"{previous_subagent} completed one bounded adapter turn; "
@@ -8497,9 +8634,7 @@ def project_agent_handoff_research_auditor_adapter_command() -> dict[str, object
             "executor": "either",
             "reason": "Reviewer should inspect the external research receipt before Tau answers.",
         },
-        "required_evidence": [
-            f"Reviewer receipt over {receipt_path} and its cited sources."
-        ],
+        "required_evidence": [f"Reviewer receipt over {receipt_path} and its cited sources."],
         "stop_condition": "Reviewer posts a schema-valid receipt.",
     }
 
@@ -8725,9 +8860,7 @@ def project_agent_handoff_goal_guardian_adapter_command(
         "result": {
             "status": "PASS",
             "summary": "Active goal hash was preserved.",
-            "evidence": [
-                "TAU_HANDOFF_ACTIVE_GOAL_HASH matched handoff.goal.goal_hash"
-            ],
+            "evidence": ["TAU_HANDOFF_ACTIVE_GOAL_HASH matched handoff.goal.goal_hash"],
         },
         "rationale": (
             "Goal preservation passed, so the next bounded agent can continue "
@@ -9131,9 +9264,7 @@ def _classify_goal_guardian_ticket(
         return "regenerate"
     labels = ticket.get("labels")
     label_set = (
-        {item for item in labels if isinstance(item, str)}
-        if isinstance(labels, list)
-        else set()
+        {item for item in labels if isinstance(item, str)} if isinstance(labels, list) else set()
     )
     if "goal-change" in label_set or "ticket:goal" in label_set:
         return "migrate"

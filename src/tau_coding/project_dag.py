@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.course_correction import build_course_correction_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
@@ -394,9 +395,7 @@ def run_project_dag_contract(
             else None
         ),
         "zero_trust_preflight_receipt": (
-            zero_trust_receipt.get("receipt_path")
-            if isinstance(zero_trust_receipt, dict)
-            else None
+            zero_trust_receipt.get("receipt_path") if isinstance(zero_trust_receipt, dict) else None
         ),
         "memory_intent_gate_receipt": (
             memory_intent_receipt.get("receipt_path")
@@ -523,8 +522,7 @@ def dag_contract_error_payload(
             "type": "repair_then_retry_or_reroute",
             "next_agent": "goal-guardian",
             "reason": (
-                "Repair the DAG contract so it satisfies tau.dag_contract.v1 "
-                "before dispatch."
+                "Repair the DAG contract so it satisfies tau.dag_contract.v1 before dispatch."
             ),
         },
         "evidence": {
@@ -685,10 +683,7 @@ def _run_bounded_ready_queue_project_dag(
                     ],
                 )
                 artifact_dir = (
-                    receipt_dir
-                    / "ready-queue"
-                    / node_id
-                    / f"attempt-{node_attempts[node_id]:03d}"
+                    receipt_dir / "ready-queue" / node_id / f"attempt-{node_attempts[node_id]:03d}"
                 )
                 future = executor.submit(
                     _dispatch_ready_node,
@@ -1022,15 +1017,11 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if sandbox_run_receipt is not None and not isinstance(sandbox_run_receipt, str):
         errors.append("sandbox_run_receipt must be a string path when provided")
         sandbox_run_receipt = None
-    compliance_package_validation_receipt = payload.get(
-        "compliance_package_validation_receipt"
-    )
+    compliance_package_validation_receipt = payload.get("compliance_package_validation_receipt")
     if compliance_package_validation_receipt is not None and not isinstance(
         compliance_package_validation_receipt, str
     ):
-        errors.append(
-            "compliance_package_validation_receipt must be a string path when provided"
-        )
+        errors.append("compliance_package_validation_receipt must be a string path when provided")
         compliance_package_validation_receipt = None
     nodes = _parse_nodes(payload.get("nodes"), errors)
     edges = _parse_edges(payload.get("edges"), errors)
@@ -1606,9 +1597,7 @@ def _memory_evidence_preflight(
         )
         if policy_alerts:
             return policy_alerts, None, None
-        memory_policy = (
-            policy_profile.get("memory") if isinstance(policy_profile, dict) else None
-        )
+        memory_policy = policy_profile.get("memory") if isinstance(policy_profile, dict) else None
         if not isinstance(memory_policy, dict) or memory_policy.get("intent_required") is not True:
             return [], None, None
     memory_intent, memory_path, memory_read_alerts = read_gate_payload(
@@ -2392,9 +2381,7 @@ def _node_start_handoff(
         context = response.get("context")
         if isinstance(context, dict):
             artifacts.extend(
-                str(item)
-                for item in context.get("artifacts", [])
-                if isinstance(item, str)
+                str(item) for item in context.get("artifacts", []) if isinstance(item, str)
             )
     context = _handoff_context(
         summary=f"Dispatch ready DAG node {node.node_id}.",
@@ -2639,9 +2626,7 @@ def _dag_error(
             "primary_alert": primary,
             "alert_count": len(alerts),
             "alert_codes": [
-                item.get("code")
-                for item in alerts
-                if isinstance(item, dict) and item.get("code")
+                item.get("code") for item in alerts if isinstance(item, dict) and item.get("code")
             ],
             "errors": errors,
         },
@@ -2712,8 +2697,7 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "repair_evidence_manifest",
             "next_agent": "reviewer",
             "reason": (
-                "Repair or regenerate the typed evidence manifest before normal "
-                "continuation."
+                "Repair or regenerate the typed evidence manifest before normal continuation."
             ),
         }
     if normalized == "memory_route_not_dispatchable":
@@ -2880,9 +2864,7 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         return {
             "type": "repair_research_query_gate",
             "next_agent": "research-auditor",
-            "reason": (
-                "Run or repair the research-query safety receipt before external research."
-            ),
+            "reason": ("Run or repair the research-query safety receipt before external research."),
         }
     if normalized in {
         "missing_sandbox_run",
@@ -2920,8 +2902,7 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "request_policy_gate",
             "next_agent": "goal-guardian",
             "reason": (
-                "This branch requires an explicit policy or branch-lock gate before "
-                "execution."
+                "This branch requires an explicit policy or branch-lock gate before execution."
             ),
         }
     return {
@@ -3012,65 +2993,55 @@ def _write_course_correction_receipt(
 ) -> Path:
     path = receipt_dir / "course-corrections" / f"{node_id}-attempt-{attempt:03d}-{code}.json"
     query = _brave_search_query(contract, node_id, node, stop_reason, errors)
-    payload = {
-        "schema": "tau.course_correction.v1",
-        "ok": False,
-        "status": "REQUIRED",
-        "code": code,
-        "mocked": False,
-        "live": False,
-        "provider_live": False,
-        "dag_id": contract.dag_id,
-        "goal_hash": contract.goal["goal_hash"],
-        "target": contract.target,
-        "node_id": node_id,
-        "agent": node.agent,
-        "attempt": attempt,
-        "stop_reason": stop_reason,
-        "reason": reason,
-        "required_action": {
-            "skill": "brave-search",
-            "skill_reference": "$brave-search",
-            "query": query,
-            "command": [
-                "python",
-                ".pi/skills/brave-search/brave_search.py",
-                "web",
-                query,
-                "--count",
-                "5",
-            ],
-            "receipt_required": True,
-        },
-        "blocked_report_required": {
-            "required": True,
-            "fields": [
-                "blocker_summary",
-                "attempted_fix",
-                "why_test_churn_is_not_progress",
-                "next_non_test_action",
-                "brave_search_receipt_path",
-            ],
-            "reason": (
-                "Blocked subagents must report the blocker and course correction "
-                "instead of continuing non-essential deterministic unit tests."
-            ),
-        },
-        "errors": errors,
-        "proof_scope": {
-            "proves": [
-                "Tau detected a subagent course-correction condition.",
-                "Tau stopped normal retry before expanding attempt count.",
-                "Tau wrote the Brave Search requirement as a durable artifact.",
-            ],
-            "does_not_prove": [
-                "Brave Search has been executed.",
-                "The next retry will pass.",
-                "Provider/model semantic quality.",
-            ],
-        },
-        "timestamp": _utc_stamp(),
+    required_action = {
+        "skill": "brave-search",
+        "skill_reference": "$brave-search",
+        "query": query,
+        "command": [
+            "python",
+            ".pi/skills/brave-search/brave_search.py",
+            "web",
+            query,
+            "--count",
+            "5",
+        ],
+        "receipt_required": True,
     }
+    blocked_report_required = {
+        "required": True,
+        "fields": [
+            "blocker_summary",
+            "attempted_fix",
+            "why_test_churn_is_not_progress",
+            "next_non_test_action",
+            "brave_search_receipt_path",
+        ],
+        "reason": (
+            "Blocked subagents must report the blocker and course correction "
+            "instead of continuing non-essential deterministic unit tests."
+        ),
+    }
+    payload = build_course_correction_receipt(
+        trigger=code,
+        dag_id=contract.dag_id,
+        goal_hash=contract.goal["goal_hash"],
+        target=contract.target,
+        node_id=node_id,
+        agent=node.agent,
+        attempt=attempt,
+        observed_state={
+            "stop_reason": stop_reason,
+            "errors": errors,
+        },
+        errors=errors,
+        reason=reason,
+        stop_reason=stop_reason,
+        required_action=required_action,
+        blocked_report_required=blocked_report_required,
+        mocked=False,
+        live=False,
+        provider_live=False,
+    )
     _write_json(path, payload)
     return path
 

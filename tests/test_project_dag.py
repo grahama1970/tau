@@ -356,14 +356,9 @@ def test_project_dag_ready_queue_propagates_node_context_to_command_stdin(
     )
 
     request = json.loads(
-        (
-            tmp_path
-            / "run"
-            / "ready-queue"
-            / "coder"
-            / "attempt-001"
-            / "request.json"
-        ).read_text(encoding="utf-8")
+        (tmp_path / "run" / "ready-queue" / "coder" / "attempt-001" / "request.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert receipt["ok"] is True
     assert request["context"]["persona_dream_panel"] == {
@@ -543,6 +538,11 @@ def test_project_dag_ready_queue_blocks_pointless_unit_test_drift(
         Path(receipt["course_correction_artifacts"][0]).read_text(encoding="utf-8")
     )
     assert course_correction["code"] == "pointless_unit_test_drift"
+    assert course_correction["trigger"] == "pointless_unit_test_drift"
+    assert course_correction["required_next_action"] == (
+        "stop_test_churn_report_blocker_and_replan"
+    )
+    assert "run_more_unrelated_tests" in course_correction["forbidden_next_routes"]
     assert course_correction["required_action"]["skill_reference"] == "$brave-search"
     assert course_correction["blocked_report_required"] == {
         "required": True,
@@ -599,6 +599,9 @@ def test_project_dag_ready_queue_requires_brave_search_after_two_failed_attempts
     )
     assert course_correction["schema"] == "tau.course_correction.v1"
     assert course_correction["code"] == "brave_search_required_after_two_attempts"
+    assert course_correction["trigger"] == "brave_search_required_after_two_attempts"
+    assert course_correction["required_next_action"] == "run_brave_search_then_retry"
+    assert "retry_without_research_receipt" in course_correction["forbidden_next_routes"]
     assert course_correction["required_action"]["skill"] == "brave-search"
     assert "brave_search.py" in course_correction["required_action"]["command"][1]
     assert course_correction["blocked_report_required"]["required"] is True
@@ -846,7 +849,10 @@ def test_project_dag_blocks_underspecified_provider_sensitive_contract_before_di
         "missing_prompt_contract",
         "missing_required_evidence",
     }.issubset(alert_codes)
-    assert all(alert["evidence"]["node_id"] in {"panel-creator", "panel-reviewer"} for alert in receipt["alerts"])
+    assert all(
+        alert["evidence"]["node_id"] in {"panel-creator", "panel-reviewer"}
+        for alert in receipt["alerts"]
+    )
 
 
 def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_evidence(
@@ -1007,8 +1013,7 @@ def test_project_dag_memory_evidence_gate_blocks_clarify_route(tmp_path: Path) -
         "type": "request_memory_clarification",
         "next_agent": "human",
         "reason": (
-            "Memory routed to clarification or deflection; resolve that "
-            "route before DAG dispatch."
+            "Memory routed to clarification or deflection; resolve that route before DAG dispatch."
         ),
     }
 
