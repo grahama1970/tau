@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:37 EDT by agent
+**Last updated:** 2026-07-07 00:41 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 debug evidence path boundary rung:
+  `src/tau_coding/debug_session_receipt.py` now accepts
+  `allowed_paths` and `forbidden_paths` on `tau.debug_session_packet.v1` and
+  checks breakpoint plus stopped-frame `file` entries against those boundaries.
+  Debug receipts block with `debug_evidence_path_disallowed` or
+  `debug_evidence_path_forbidden` when debugger evidence points outside the
+  declared coding scope. Focused proof: `git diff --check
+  docs/coding-workers.md src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py` -> `All checks passed!`; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `20 passed in 0.44s`. Aggregate
+  coding sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-evidence-path-boundary-proof` wrote
+  `/tmp/tau-coding-capability-sanity-debug-evidence-path-boundary-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `214 passed in
+  6.69s`. This proves deterministic local debug receipts enforce declared
+  evidence path boundaries for frame/breakpoint paths; it does not prove debug
+  conclusion correctness, semantic code correctness, legal compliance, live
+  worker execution, full sandbox isolation, or full goal completion.
 
 - 2026-07-07 GitHub read public-repo boundary rung:
   `src/tau_coding/github_read_schemes.py` now honors

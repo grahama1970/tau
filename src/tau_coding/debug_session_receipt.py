@@ -53,10 +53,23 @@ def write_debug_session_receipt(
     if expected_goal_hash and goal_hash != expected_goal_hash:
         alerts.append(_alert("goal_hash_mismatch", "debug session goal_hash mismatches expected"))
 
+    allowed_paths = _optional_string_list(packet.get("allowed_paths"), "allowed_paths", alerts)
+    forbidden_paths = _optional_string_list(
+        packet.get("forbidden_paths"),
+        "forbidden_paths",
+        alerts,
+    )
     breakpoints = _optional_list(packet.get("breakpoints"), "breakpoints", alerts)
     stopped_frame = _optional_mapping(packet.get("stopped_frame"), "stopped_frame", alerts)
     variables = _optional_list(packet.get("variables"), "variables", alerts)
     commands = _optional_list(packet.get("commands"), "commands", alerts)
+    _validate_debug_evidence_paths(
+        breakpoints=breakpoints,
+        stopped_frame=stopped_frame,
+        allowed_paths=allowed_paths,
+        forbidden_paths=forbidden_paths,
+        alerts=alerts,
+    )
 
     stdout_path = _optional_debug_log_path(
         packet.get("stdout_path"),
@@ -90,6 +103,8 @@ def write_debug_session_receipt(
         "session_artifact": _artifact_descriptor("debug_session_packet", resolved_session),
         "goal_hash": goal_hash,
         "expected_goal_hash": expected_goal_hash,
+        "allowed_paths": allowed_paths,
+        "forbidden_paths": forbidden_paths,
         "target": target,
         "adapter": adapter,
         "adapter_available": adapter_available,
@@ -253,6 +268,79 @@ def _optional_mapping(
         return dict(value)
     alerts.append(_alert(f"invalid_{field}", f"{field} must be an object"))
     return {}
+
+
+def _optional_string_list(
+    value: object,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list) and all(isinstance(item, str) and item for item in value):
+        return value
+    alerts.append(_alert(f"invalid_{field}", f"{field} must be a list of non-empty strings"))
+    return []
+
+
+def _validate_debug_evidence_paths(
+    *,
+    breakpoints: list[Any],
+    stopped_frame: dict[str, Any],
+    allowed_paths: list[str],
+    forbidden_paths: list[str],
+    alerts: list[dict[str, Any]],
+) -> None:
+    if not allowed_paths and not forbidden_paths:
+        return
+    for label, path in _debug_evidence_paths(
+        breakpoints=breakpoints,
+        stopped_frame=stopped_frame,
+    ):
+        normalized = _normalize_packet_path(path)
+        if normalized is None:
+            continue
+        if allowed_paths and not _path_matches_any(normalized, allowed_paths):
+            alerts.append(
+                _alert(
+                    "debug_evidence_path_disallowed",
+                    f"{label} path {normalized} is outside allowed_paths",
+                )
+            )
+        if _path_matches_any(normalized, forbidden_paths):
+            alerts.append(
+                _alert(
+                    "debug_evidence_path_forbidden",
+                    f"{label} path {normalized} matches forbidden_paths",
+                )
+            )
+
+
+def _debug_evidence_paths(
+    *,
+    breakpoints: list[Any],
+    stopped_frame: dict[str, Any],
+) -> list[tuple[str, object]]:
+    paths: list[tuple[str, object]] = []
+    for index, breakpoint in enumerate(breakpoints):
+        if isinstance(breakpoint, Mapping) and "file" in breakpoint:
+            paths.append((f"breakpoints[{index}].file", breakpoint.get("file")))
+    if "file" in stopped_frame:
+        paths.append(("stopped_frame.file", stopped_frame.get("file")))
+    return paths
+
+
+def _normalize_packet_path(value: object) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+    path = value.replace("\\", "/").removeprefix("./")
+    if path.startswith("/") or path.startswith("../") or "/../" in path:
+        return None
+    return path
+
+
+def _path_matches_any(path: str, patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(path, pattern.removeprefix("./")) for pattern in patterns)
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

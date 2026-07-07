@@ -308,6 +308,39 @@ def test_debug_receipt_zero_trust_honors_log_read_denylist(tmp_path: Path) -> No
     ]
 
 
+def test_debug_receipt_blocks_evidence_outside_allowed_paths(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["allowed_paths"] = ["tests/**"]
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["allowed_paths"] == ["tests/**"]
+    assert "debug_evidence_path_disallowed" in receipt["alert_codes"]
+
+
+def test_debug_receipt_blocks_evidence_matching_forbidden_paths(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["allowed_paths"] = ["src/**", "tests/**"]
+    payload["forbidden_paths"] = ["src/example.py"]
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["forbidden_paths"] == ["src/example.py"]
+    assert "debug_evidence_path_forbidden" in receipt["alert_codes"]
+
+
 def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     out = tmp_path / "debug-session-receipt.json"
