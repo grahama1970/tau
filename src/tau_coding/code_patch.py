@@ -84,8 +84,16 @@ def apply_code_patch_receipt(
         )
 
     target_text = _string(payload.get("target_file"))
-    allowed_paths = _string_list(payload.get("allowed_paths"))
-    forbidden_paths = _string_list(payload.get("forbidden_paths"))
+    allowed_paths, allowed_paths_alerts = _optional_string_list(
+        payload.get("allowed_paths"),
+        field="allowed_paths",
+    )
+    forbidden_paths, forbidden_paths_alerts = _optional_string_list(
+        payload.get("forbidden_paths"),
+        field="forbidden_paths",
+    )
+    alerts.extend(allowed_paths_alerts)
+    alerts.extend(forbidden_paths_alerts)
     if not target_text:
         alerts.append(_alert("missing_target_file", "target_file is required"))
     else:
@@ -425,10 +433,23 @@ def _string(value: object) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
-def _string_list(value: object) -> list[str]:
-    if isinstance(value, list) and all(isinstance(item, str) for item in value):
-        return [item for item in value]
-    return []
+def _optional_string_list(
+    value: object,
+    *,
+    field: str,
+) -> tuple[list[str], list[dict[str, Any]]]:
+    if value is None:
+        return [], []
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) and item for item in value
+    ):
+        return [], [
+            _alert(
+                f"invalid_{field}",
+                f"code patch {field} must be a list of non-empty strings",
+            )
+        ]
+    return [item for item in value], []
 
 
 def _sha256(path: Path) -> str:

@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 code-patch path-scope schema gate:
+  `src/tau_coding/code_patch.py` now blocks malformed `allowed_paths` or
+  `forbidden_paths` fields on `tau.code_patch.v1` artifacts instead of
+  silently normalizing malformed path scopes to empty lists. This preserves the
+  path-boundary invariant for hash-bound code edits: patch-local path-scope
+  controls must be explicit lists of non-empty strings before a patch can
+  support a coding route. `tests/test_code_patch.py` pins malformed allowed
+  and forbidden path scopes with `invalid_allowed_paths` and
+  `invalid_forbidden_paths`. Focused proof: `git diff --check --
+  src/tau_coding/code_patch.py tests/test_code_patch.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/code_patch.py tests/test_code_patch.py`
+  -> `All checks passed!`; `uv run pytest tests/test_code_patch.py -q` ->
+  `26 passed in 0.48s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-code-patch-scope-schema-20260707T091800Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `307 passed in 8.07s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local
+  hash-bound patch receipts fail closed on malformed path-scope fields and
+  still compose with the current coding capability sanity suite; it does not
+  prove semantic patch correctness, full test-suite sufficiency, live
+  OMP/SciLLM semantic worker execution, provider/model quality, GitHub
+  mutation, full sandbox isolation, legal compliance, ITAR compliance, or full
+  goal completion.
+
 - 2026-07-07 review findings path-scope schema gate:
   `src/tau_coding/review_findings.py` now blocks malformed
   `allowed_paths` or `forbidden_paths` fields on `tau.review_findings.v1`

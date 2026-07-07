@@ -65,8 +65,11 @@ zero-trust mode, the patch gate also validates the full `tau.policy_profile.v1`
 and `tau.data_boundary.v1` shapes and blocks `classified-not-allowed` data with
 `classified_not_allowed` before applying any patch. The receipt records the
 active `policy_profile`, `data_boundary`, `allowed_paths`,
-`forbidden_paths`, built-in generated-path patterns, and the inspected patch artifact's
-`patch_sha256` plus `patch_bytes`. The same patch input is exposed as
+`forbidden_paths`, built-in generated-path patterns, and the inspected patch
+artifact's `patch_sha256` plus `patch_bytes`. Patch-local `allowed_paths` and
+`forbidden_paths` must be lists of non-empty strings; malformed path-scope
+fields block with `invalid_allowed_paths` or `invalid_forbidden_paths` instead
+of becoming implicit empty scopes. The same patch input is exposed as
 `patch_artifact` with label, resolved path, existence, SHA-256, and byte count.
 When the target file exists, the receipt also records `target_artifact_before`
 and `target_artifact_after` descriptors with label, resolved path, existence,

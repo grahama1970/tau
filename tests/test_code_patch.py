@@ -243,6 +243,58 @@ def test_code_patch_blocks_explicit_forbidden_path(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_blocks_malformed_allowed_paths(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+    payload = json.loads(patch_path.read_text(encoding="utf-8"))
+    payload["allowed_paths"] = "src/**"
+    patch_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["applied"] is False
+    assert "invalid_allowed_paths" in receipt["alert_codes"]
+    assert receipt["allowed_paths"] == []
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_blocks_malformed_forbidden_paths(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+    payload = json.loads(patch_path.read_text(encoding="utf-8"))
+    payload["forbidden_paths"] = ["secrets/**", ""]
+    patch_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["applied"] is False
+    assert "invalid_forbidden_paths" in receipt["alert_codes"]
+    assert receipt["forbidden_paths"] == []
+    assert target.read_text(encoding="utf-8") == before
+
+
 def test_code_patch_blocks_generated_path_pattern(tmp_path: Path) -> None:
     target = tmp_path / "src" / "generated" / "example.py"
     target.parent.mkdir(parents=True)
