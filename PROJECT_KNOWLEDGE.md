@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:06 EDT by agent
+**Last updated:** 2026-07-07 00:09 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 debugger log artifact descriptor rung:
+  `src/tau_coding/debug_session_receipt.py` now records `exists:true` on
+  `tau.debug_session_receipt.v1` stdout/stderr log artifact descriptors,
+  aligning debugger/DAP evidence with the normalized coding artifact shape used
+  by code-patch, LSP, review, GitHub read, worker, and commit-plan receipts.
+  Focused proof: `git diff --check docs/coding-workers.md
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> `All checks passed!`; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `17 passed in 0.49s`.
+  Aggregate coding sanity proof: `scripts/run-coding-capability-sanity.py
+  --run-dir /tmp/tau-coding-capability-sanity-debug-log-artifact-exists-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-debug-log-artifact-exists-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.69s`. This proves deterministic local debugger receipts expose
+  stdout/stderr log evidence as normalized artifact descriptors and compose
+  with the current coding capability sanity suite; it does not prove the bug is
+  fixed, the debug conclusion is semantically complete, runtime behavior is
+  correct, live worker execution, or full goal completion.
 
 - 2026-07-07 worker adapter artifact descriptor rung:
   `src/tau_coding/coding_worker_adapters.py` now records `exists:true` on

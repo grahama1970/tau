@@ -153,12 +153,14 @@ def test_debug_receipt_records_log_artifact_hashes(tmp_path: Path) -> None:
         {
             "label": "stdout",
             "path": str(stdout.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(stdout)}",
             "bytes": stdout.stat().st_size,
         },
         {
             "label": "stderr",
             "path": str(stderr.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(stderr)}",
             "bytes": stderr.stat().st_size,
         },

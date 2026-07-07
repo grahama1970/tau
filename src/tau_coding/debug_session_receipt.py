@@ -176,6 +176,7 @@ def _log_artifacts(*, stdout_path: Path | None, stderr_path: Path | None) -> lis
             {
                 "label": label,
                 "path": str(path),
+                "exists": True,
                 "sha256": _sha256_uri(path),
                 "bytes": path.stat().st_size,
             }
