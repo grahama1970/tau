@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.provenance import validate_actor_manifest, validate_environment_manifest
+
 SIGNED_RECEIPT_SCHEMA = "tau.signed_receipt.v1"
 SIGNED_RECEIPT_VERIFICATION_SCHEMA = "tau.signed_receipt_verification.v1"
 SIGNING_ALGORITHM = "HMAC-SHA256"
@@ -37,11 +39,35 @@ def sign_receipt(
 
     key = _read_key(key_path)
     receipt_payload = _read_json_object(receipt_path)
+    actor_reference, actor_errors = _validated_optional_manifest(
+        actor_manifest_path,
+        validator=validate_actor_manifest,
+        field="actor_manifest",
+    )
+    environment_reference, environment_errors = _validated_optional_manifest(
+        environment_manifest_path,
+        validator=validate_environment_manifest,
+        field="environment_manifest",
+    )
+    manifest_errors = [*actor_errors, *environment_errors]
+    if manifest_errors:
+        envelope = _blocked_signing_receipt(
+            key=key,
+            receipt_path=receipt_path,
+            receipt_payload=receipt_payload,
+            actor_reference=actor_reference,
+            environment_reference=environment_reference,
+            errors=manifest_errors,
+        )
+        if output_path is not None:
+            _write_json(output_path, envelope)
+        return envelope
+
     signed_payload = {
         "algorithm": SIGNING_ALGORITHM,
         "receipt": _file_reference(receipt_path, receipt_payload),
-        "actor_manifest": _optional_file_reference(actor_manifest_path),
-        "environment_manifest": _optional_file_reference(environment_manifest_path),
+        "actor_manifest": actor_reference,
+        "environment_manifest": environment_reference,
     }
     signature = _signature(key, signed_payload)
     envelope = {
@@ -141,6 +167,56 @@ def _optional_file_reference(path: Path | None) -> dict[str, Any] | None:
         return None
     payload = _read_json_object(path)
     return _file_reference(path, payload)
+
+
+def _validated_optional_manifest(
+    path: Path | None,
+    *,
+    validator: Any,
+    field: str,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    if path is None:
+        return None, []
+    payload = _read_json_object(path)
+    reference = _file_reference(path, payload)
+    errors = validator(payload)
+    return reference, [f"{field}: {error}" for error in errors]
+
+
+def _blocked_signing_receipt(
+    *,
+    key: bytes,
+    receipt_path: Path,
+    receipt_payload: Mapping[str, Any],
+    actor_reference: dict[str, Any] | None,
+    environment_reference: dict[str, Any] | None,
+    errors: list[str],
+) -> dict[str, Any]:
+    return {
+        "schema": SIGNED_RECEIPT_SCHEMA,
+        "ok": False,
+        "status": "BLOCKED",
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "signed_at": _utc_stamp(),
+        "algorithm": SIGNING_ALGORITHM,
+        "key_id": _key_id(key),
+        "signed_payload": {
+            "algorithm": SIGNING_ALGORITHM,
+            "receipt": _file_reference(receipt_path, receipt_payload),
+            "actor_manifest": actor_reference,
+            "environment_manifest": environment_reference,
+        },
+        "signature": None,
+        "errors": errors,
+        "proof_scope": {
+            "proves": [
+                "Tau refused to sign because provenance manifest inputs were invalid."
+            ],
+            "does_not_prove": NON_CLAIMS,
+        },
+    }
 
 
 def _current_file_mismatches(signed_payload: Mapping[str, Any]) -> list[str]:

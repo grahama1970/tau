@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 signed receipt provenance validity fail-closed rung:
+  `src/tau_coding/receipt_signing.py` now validates supplied
+  `tau.actor_manifest.v1` and `tau.environment_manifest.v1` files before
+  producing a PASS `tau.signed_receipt.v1` envelope. Invalid provenance
+  metadata returns `status:"BLOCKED"`, `ok:false`, `signature:null`, and
+  field-prefixed errors instead of signing malformed manifests. Existing
+  verification still recomputes HMAC signatures and file hashes for signed
+  inputs. `docs/provenance-and-signing.md` documents that supplied provenance
+  manifests are checked before signing. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/receipt_signing.py
+  tests/test_receipt_signing.py` -> `All checks passed!`; `uv run pytest
+  tests/test_receipt_signing.py -q` -> `5 passed in 0.42s`. Aggregate proof:
+  `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-signing-boundary-proof-20260707T075745Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-signing-boundary-proof-20260707T075745Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `280 passed in 8.02s`. This proves deterministic local signing refuses
+  malformed provenance manifests before emitting an admissible signed envelope
+  and still composes with the current coding capability sanity suite; it does
+  not prove public-key non-repudiation, legal identity, US-person or
+  export-control eligibility, ITAR compliance, runtime sandbox enforcement,
+  provider/model quality, signed claim truth, live worker semantic execution, or
+  full goal completion.
+
 - 2026-07-07 compliance package policy/data-boundary validity fail-closed rung:
   `src/tau_coding/compliance_package.py` now validates packaged
   `policy-profile.json` and `data-boundary.json` with the same

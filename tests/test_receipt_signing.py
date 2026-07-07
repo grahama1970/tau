@@ -83,6 +83,30 @@ def test_sign_receipt_blocks_empty_key(tmp_path: Path) -> None:
         sign_receipt(receipt_path=receipt, key_path=key)
 
 
+def test_sign_receipt_blocks_invalid_actor_manifest(tmp_path: Path) -> None:
+    receipt, key, actor_manifest, environment_manifest = _write_signing_inputs(tmp_path)
+    actor_manifest.write_text(
+        json.dumps({"schema": "tau.actor_manifest.v1", "run_id": "run-1", "actors": []}),
+        encoding="utf-8",
+    )
+    out = tmp_path / "signed-receipt.json"
+
+    envelope = sign_receipt(
+        receipt_path=receipt,
+        key_path=key,
+        actor_manifest_path=actor_manifest,
+        environment_manifest_path=environment_manifest,
+        output_path=out,
+    )
+
+    assert envelope["schema"] == SIGNED_RECEIPT_SCHEMA
+    assert envelope["ok"] is False
+    assert envelope["status"] == "BLOCKED"
+    assert envelope["signature"] is None
+    assert any(error.startswith("actor_manifest:") for error in envelope["errors"])
+    assert json.loads(out.read_text(encoding="utf-8"))["status"] == "BLOCKED"
+
+
 def _write_signing_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     receipt = tmp_path / "receipt.json"
     key = tmp_path / "key.txt"
@@ -94,7 +118,21 @@ def _write_signing_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     )
     key.write_text("local-test-key", encoding="utf-8")
     actor_manifest.write_text(
-        json.dumps({"schema": "tau.actor_manifest.v1", "run_id": "run-1", "actors": []}),
+        json.dumps(
+            {
+                "schema": "tau.actor_manifest.v1",
+                "run_id": "run-1",
+                "actors": [
+                    {
+                        "actor_id": "agent:coder",
+                        "actor_type": "agent",
+                        "roles": ["worker"],
+                        "trusted": False,
+                        "verified": False,
+                    }
+                ],
+            }
+        ),
         encoding="utf-8",
     )
     environment_manifest.write_text(
@@ -103,6 +141,10 @@ def _write_signing_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
                 "schema": "tau.environment_manifest.v1",
                 "run_id": "run-1",
                 "network_policy": "deny",
+                "provider_access": "denied",
+                "mounted_paths": [],
+                "secrets_visible": [],
+                "tool_versions": {},
             }
         ),
         encoding="utf-8",

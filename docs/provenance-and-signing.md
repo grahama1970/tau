@@ -52,6 +52,10 @@ tau.signed_receipt_verification.v1
 
 `tau.signed_receipt.v1` is a local HMAC-SHA256 envelope over receipt input
 hashes. Verification with the same local key can detect changed input files.
+When `--actor-manifest` or `--environment-manifest` is supplied, signing first
+validates those manifests against `tau.actor_manifest.v1` and
+`tau.environment_manifest.v1`. Invalid provenance metadata produces a BLOCKED
+signed-receipt envelope and no signature.
 
 ## Commands
 
