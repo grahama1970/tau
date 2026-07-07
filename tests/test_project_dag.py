@@ -1,10 +1,12 @@
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
 from typer.testing import CliRunner
 
+import tau_coding.project_dag as project_dag
 from tau_coding.cli import app
 from tau_coding.handoff_dispatch import TAU_COMMAND_SPEC_POLICY_SCHEMA
 from tau_coding.project_dag import (
@@ -1682,9 +1684,27 @@ def test_project_dag_blocks_missing_required_evidence_with_reviewer_action(
     }
 
 
-def test_project_dag_blocks_provider_auth_failure_before_evidence_retry(
+def test_project_dag_blocks_provider_auth_failure_when_auto_repair_fails(
     tmp_path: Path,
+    monkeypatch,
 ) -> None:
+    monkeypatch.setattr(
+        project_dag,
+        "preflight_battle_scillm_auth",
+        lambda **_: {
+            "schema": "tau.battle_scillm_auth_preflight.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "model": "gpt-5.5",
+            "base_url": "http://127.0.0.1:4001",
+            "repair_allowed": True,
+            "repair_attempted": True,
+            "repair_status": "BLOCKED",
+            "errors": ["Scillm auth remained blocked after proxy repair"],
+        },
+    )
     contract_path = _write_parallel_contract(tmp_path)
     _write_response_spec(
         tmp_path,
@@ -1736,6 +1756,12 @@ def test_project_dag_blocks_provider_auth_failure_before_evidence_retry(
         "reason": "Refresh provider OAuth/readiness before retrying the DAG node.",
     }
     assert len(receipt["course_correction_artifacts"]) == 1
+    repair_receipts = list((tmp_path / "run" / "provider-auth-repair").glob("*.json"))
+    assert len(repair_receipts) == 1
+    repair_receipt = json.loads(repair_receipts[0].read_text(encoding="utf-8"))
+    assert repair_receipt["schema"] == "tau.battle_scillm_auth_preflight.v1"
+    assert repair_receipt["status"] == "BLOCKED"
+    assert repair_receipt["tau_auto_repair"]["trigger"] == "provider_auth_required"
     course_correction = json.loads(
         Path(receipt["course_correction_artifacts"][0]).read_text(encoding="utf-8")
     )
@@ -1745,12 +1771,8 @@ def test_project_dag_blocks_provider_auth_failure_before_evidence_retry(
         course_correction["required_next_action"]
         == "repair_provider_auth_then_retry_or_route_human"
     )
-    assert "regenerate_artifacts_before_auth_repair" in course_correction[
-        "forbidden_next_routes"
-    ]
-    assert "provider_auth_repair_receipt" in course_correction[
-        "required_evidence_before_retry"
-    ]
+    assert "regenerate_artifacts_before_auth_repair" in course_correction["forbidden_next_routes"]
+    assert "provider_auth_repair_receipt" in course_correction["required_evidence_before_retry"]
     assert course_correction["required_action"]["type"] == "repair_provider_auth"
     assert (
         course_correction["required_action"]["repair_function"]
@@ -1768,6 +1790,122 @@ def test_project_dag_blocks_provider_auth_failure_before_evidence_retry(
         "image generation failed: 403 PERMISSION_DENIED: leaked API key"
         in course_correction["observed_state"]["errors"]
     )
+
+
+def test_project_dag_auto_repairs_provider_auth_and_retries_same_node(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def fake_preflight(**kwargs):
+        calls.append(dict(kwargs))
+        return {
+            "schema": "tau.battle_scillm_auth_preflight.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "model": kwargs["model"],
+            "base_url": kwargs["scillm_base_url"],
+            "repair_allowed": True,
+            "repair_attempted": True,
+            "repair_status": "PASS",
+            "errors": [],
+        }
+
+    monkeypatch.setattr(project_dag, "preflight_battle_scillm_auth", fake_preflight)
+    monkeypatch.setattr(
+        project_dag,
+        "resolve_active_scillm_proxy_key",
+        lambda: ("active-proxy-key", "docker:docker-scillm-proxy-1", []),
+    )
+    monkeypatch.delenv("SCILLM_PROXY_KEY", raising=False)
+    monkeypatch.delenv("LITELLM_MASTER_KEY", raising=False)
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    for node in payload["nodes"]:
+        if node["id"] == "coder":
+            node["max_attempts"] = 2
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_flaky_auth_then_response_spec(
+        tmp_path,
+        "coder",
+        auth_failure=_handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "kind": "storyboard_identity_review",
+                    "schema": "persona_dream.identity_continuity_review.v1",
+                    "status": "FAIL",
+                    "blocking_findings": [
+                        "identity review call failed: HTTP Error 401: Unauthorized"
+                    ],
+                    "model_policy": {
+                        "provider": "codex",
+                        "auth": "codex-oauth",
+                        "model": "gpt-5.5",
+                    },
+                }
+            ],
+        ),
+        success=_handoff("coder", "reviewer", _creator_evidence()),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["node_attempts"]["coder"] == 2
+    assert len(calls) == 1
+    assert calls[0]["model"] == "gpt-5.5"
+    assert calls[0]["allow_repair"] is True
+    repair_receipts = list((tmp_path / "run" / "provider-auth-repair").glob("*.json"))
+    assert len(repair_receipts) == 1
+    repair_receipt = json.loads(repair_receipts[0].read_text(encoding="utf-8"))
+    assert repair_receipt["status"] == "PASS"
+    assert repair_receipt["tau_auto_repair"]["node_id"] == "coder"
+    assert repair_receipt["tau_auto_repair"]["env_refresh"] == {
+        "status": "PASS",
+        "ok": True,
+        "source": "docker:docker-scillm-proxy-1",
+        "updated_env": ["SCILLM_PROXY_KEY", "LITELLM_MASTER_KEY"],
+        "errors": [],
+    }
+    assert os.environ["SCILLM_PROXY_KEY"] == "active-proxy-key"
+    assert os.environ["LITELLM_MASTER_KEY"] == "active-proxy-key"
+    assert "active-proxy-key" not in repair_receipts[0].read_text(encoding="utf-8")
+    assert receipt["course_correction_artifacts"] == []
+    repair_events = [
+        event
+        for event in receipt["scheduler_events"]
+        if event["event"] == "provider_auth_repair_attempted"
+    ]
+    assert repair_events == [
+        {
+            "event": "provider_auth_repair_attempted",
+            "node_id": "coder",
+            "agent": "coder",
+            "attempt": 1,
+            "repair_status": "PASS",
+            "repair_ok": True,
+            "retrying": True,
+            "provider_auth_repair_receipt": str(repair_receipts[0]),
+            "ts": repair_events[0]["ts"],
+        }
+    ]
 
 
 def test_project_dag_blocks_reviewer_target_mismatch(tmp_path: Path) -> None:
@@ -2467,6 +2605,41 @@ def _write_response_spec(
         payload["cwd"] = str(tmp_path)
     spec_path.write_text(
         json.dumps(payload),
+        encoding="utf-8",
+    )
+
+
+def _write_flaky_auth_then_response_spec(
+    tmp_path: Path,
+    agent: str,
+    *,
+    auth_failure: dict[str, object],
+    success: dict[str, object],
+    timeout_s: float = 5,
+) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    counter_path = tmp_path / f"{agent}-attempt-count.txt"
+    code = "\n".join(
+        [
+            "import json",
+            "from pathlib import Path",
+            f"counter_path = Path({str(counter_path)!r})",
+            "count = int(counter_path.read_text() or '0') if counter_path.exists() else 0",
+            "counter_path.write_text(str(count + 1))",
+            f"auth_failure = json.loads({json.dumps(auth_failure)!r})",
+            f"success = json.loads({json.dumps(success)!r})",
+            "print(json.dumps(auth_failure if count == 0 else success))",
+        ]
+    )
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", code],
+                "timeout_s": timeout_s,
+                "cwd": str(tmp_path),
+            }
+        ),
         encoding="utf-8",
     )
 

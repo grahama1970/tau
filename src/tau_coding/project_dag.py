@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
@@ -11,6 +12,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.battle_scillm import (
+    preflight_battle_scillm_auth,
+    resolve_active_scillm_proxy_key,
+)
 from tau_coding.course_correction import build_course_correction_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
@@ -942,6 +947,9 @@ def _run_bounded_ready_queue_project_dag(
                             None,
                         )
                         if auth_alert is not None:
+                            can_retry = (
+                                node_attempts[node_id] < contract.nodes[node_id].max_attempts
+                            )
                             auth_evidence = (
                                 auth_alert.get("evidence")
                                 if isinstance(auth_alert.get("evidence"), dict)
@@ -952,6 +960,61 @@ def _run_bounded_ready_queue_project_dag(
                                 for item in auth_evidence.get("auth_errors", [])
                                 if isinstance(item, str)
                             ]
+                            repair_path = _write_provider_auth_repair_receipt(
+                                receipt_dir=receipt_dir,
+                                node_id=node_id,
+                                node=contract.nodes[node_id],
+                                attempt=node_attempts[node_id],
+                                response=response,
+                            )
+                            repair_payload = json.loads(repair_path.read_text(encoding="utf-8"))
+                            repair_ok = _provider_auth_repair_ready_for_retry(repair_payload)
+                            auth_evidence["provider_auth_repair_receipt"] = str(repair_path)
+                            auth_evidence["provider_auth_repair_status"] = repair_payload.get(
+                                "status"
+                            )
+                            auth_evidence["provider_auth_repair_ok"] = repair_ok
+                            events.append(
+                                {
+                                    "event": "provider_auth_repair_attempted",
+                                    "node_id": node_id,
+                                    "agent": contract.nodes[node_id].agent,
+                                    "attempt": node_attempts[node_id],
+                                    "repair_status": repair_payload.get("status"),
+                                    "repair_ok": repair_ok,
+                                    "retrying": (repair_ok and can_retry),
+                                    "provider_auth_repair_receipt": str(repair_path),
+                                    "ts": _utc_stamp(),
+                                }
+                            )
+                            _write_project_dag_progress(
+                                contract=contract,
+                                receipt_dir=receipt_dir,
+                                scheduler="bounded-ready-queue",
+                                events=events,
+                                node_attempts=node_attempts,
+                                status="RUNNING",
+                            )
+                            if repair_ok and can_retry:
+                                responses.pop(node_id, None)
+                                continue
+                            if repair_ok and not can_retry:
+                                auth_errors.append(
+                                    "provider auth repair passed but node retry budget is exhausted"
+                                )
+                            else:
+                                auth_errors.extend(
+                                    str(item)
+                                    for item in repair_payload.get("errors", [])
+                                    if isinstance(item, str)
+                                )
+                                env_refresh = _provider_auth_repair_env_refresh(repair_payload)
+                                if isinstance(env_refresh, dict):
+                                    auth_errors.extend(
+                                        str(item)
+                                        for item in env_refresh.get("errors", [])
+                                        if isinstance(item, str)
+                                    )
                             artifact = _write_course_correction_receipt(
                                 contract=contract,
                                 receipt_dir=receipt_dir,
@@ -1646,7 +1709,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -2735,9 +2798,7 @@ def _apply_provider_command_timeout_policy(
 
     context = start_payload.get("context")
     tau_dag_node = context.get("tau_dag_node") if isinstance(context, dict) else None
-    timeout_policy = (
-        tau_dag_node.get("timeout_policy") if isinstance(tau_dag_node, dict) else None
-    )
+    timeout_policy = tau_dag_node.get("timeout_policy") if isinstance(tau_dag_node, dict) else None
     if not isinstance(timeout_policy, dict):
         return spec
     if spec.get("timeout_s_source") == "command_spec":
@@ -3455,6 +3516,140 @@ def _write_course_correction_receipt(
     return path
 
 
+def _write_provider_auth_repair_receipt(
+    *,
+    receipt_dir: Path,
+    node_id: str,
+    node: ProjectDagNode,
+    attempt: int,
+    response: dict[str, Any],
+) -> Path:
+    path = (
+        receipt_dir
+        / "provider-auth-repair"
+        / f"{node_id}-attempt-{attempt:03d}-scillm-auth-preflight.json"
+    )
+    model = _provider_auth_repair_model(response) or _provider_auth_repair_model(
+        _node_payload_from_response_context(response)
+    )
+    if not model:
+        model = "gpt-5.5"
+    base_url = os.environ.get("SCILLM_BASE_URL", "http://127.0.0.1:4001")
+    try:
+        payload = preflight_battle_scillm_auth(
+            scillm_base_url=base_url,
+            model=model,
+            allow_repair=True,
+        )
+    except Exception as exc:  # pragma: no cover - defensive repair boundary.
+        payload = {
+            "schema": "tau.battle_scillm_auth_preflight.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": False,
+            "live": True,
+            "surface": "scillm.chat_completions",
+            "model": model,
+            "base_url": base_url.rstrip("/"),
+            "endpoint": "/v1/scillm/auth",
+            "caller_skill": "tau-project-dag-provider-auth-repair",
+            "repair_allowed": True,
+            "repair_attempted": False,
+            "repair_status": "exception",
+            "errors": [str(exc)],
+        }
+    payload = dict(payload)
+    env_refresh = _refresh_scillm_proxy_env_for_retry() if payload.get("ok") is True else None
+    payload["tau_auto_repair"] = {
+        "schema": "tau.provider_auth_auto_repair.v1",
+        "trigger": "provider_auth_required",
+        "node_id": node_id,
+        "agent": node.agent,
+        "attempt": attempt,
+        "retry_after_pass": True,
+        "env_refresh": env_refresh,
+        "proof_scope": {
+            "proves": [
+                "Tau attempted the configured SciLLM auth preflight/repair before "
+                "another DAG node retry.",
+            ],
+            "does_not_prove": [
+                "The retried node will pass.",
+                "Provider/model semantic quality.",
+                "Host OAuth identity or legal authorization.",
+            ],
+        },
+    }
+    _write_json(path, payload)
+    return path
+
+
+def _refresh_scillm_proxy_env_for_retry() -> dict[str, Any]:
+    key, source, errors = resolve_active_scillm_proxy_key()
+    if not key:
+        return {
+            "status": "BLOCKED",
+            "ok": False,
+            "source": source,
+            "updated_env": [],
+            "errors": errors or ["active SciLLM proxy key could not be resolved"],
+        }
+    os.environ["SCILLM_PROXY_KEY"] = key
+    os.environ["LITELLM_MASTER_KEY"] = key
+    return {
+        "status": "PASS",
+        "ok": True,
+        "source": source,
+        "updated_env": ["SCILLM_PROXY_KEY", "LITELLM_MASTER_KEY"],
+        "errors": [],
+    }
+
+
+def _provider_auth_repair_ready_for_retry(payload: dict[str, Any]) -> bool:
+    if payload.get("ok") is not True:
+        return False
+    env_refresh = _provider_auth_repair_env_refresh(payload)
+    return isinstance(env_refresh, dict) and env_refresh.get("ok") is True
+
+
+def _provider_auth_repair_env_refresh(payload: dict[str, Any]) -> dict[str, Any] | None:
+    auto_repair = payload.get("tau_auto_repair")
+    if not isinstance(auto_repair, dict):
+        return None
+    env_refresh = auto_repair.get("env_refresh")
+    return env_refresh if isinstance(env_refresh, dict) else None
+
+
+def _provider_auth_repair_model(value: Any) -> str | None:
+    if isinstance(value, dict):
+        model_policy = value.get("model_policy")
+        if isinstance(model_policy, dict):
+            model = model_policy.get("model")
+            if isinstance(model, str) and model.strip():
+                return model.strip()
+        model = value.get("model")
+        if isinstance(model, str) and model.strip():
+            return model.strip()
+        for child in value.values():
+            found = _provider_auth_repair_model(child)
+            if found:
+                return found
+    elif isinstance(value, list):
+        for child in value:
+            found = _provider_auth_repair_model(child)
+            if found:
+                return found
+    return None
+
+
+def _node_payload_from_response_context(response: dict[str, Any]) -> dict[str, Any]:
+    context = response.get("context")
+    if not isinstance(context, dict):
+        return {}
+    tau_dag_node = context.get("tau_dag_node")
+    return tau_dag_node if isinstance(tau_dag_node, dict) else {}
+
+
 def _course_correction_required_action(
     *,
     contract: ProjectDagContract,
@@ -3475,8 +3670,7 @@ def _course_correction_required_action(
             ),
             "repair_function": "tau_coding.battle_scillm.preflight_battle_scillm_auth",
             "repair_default": (
-                "attempt stale OAuth proxy recreation unless "
-                "TAU_DISABLE_STALE_AUTH_REPAIR is set"
+                "attempt stale OAuth proxy recreation unless TAU_DISABLE_STALE_AUTH_REPAIR is set"
             ),
             "receipt_required": True,
             "required_receipt_schemas": [

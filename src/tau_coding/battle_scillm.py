@@ -68,7 +68,11 @@ def call_battle_subagent(
         repair = _chat(
             base_url=scillm_base_url,
             model=model,
-            messages=_repair_messages(team, str(first.get("response_content") or first.get("raw_body_excerpt") or ""), _parse_error(first)),
+            messages=_repair_messages(
+                team,
+                str(first.get("response_content") or first.get("raw_body_excerpt") or ""),
+                _parse_error(first),
+            ),
             timeout_s=float(timeout_s),
             api_key=api_key,
             response_format=True,
@@ -185,7 +189,8 @@ def preflight_battle_scillm_auth(
     payload["repair_status"] = repair["status"]
     if repair["status"] != "PASS":
         payload["errors"] = [
-            f"Scillm stale OAuth repair failed: {repair.get('error') or repair.get('stderr_excerpt')}"
+            "Scillm stale OAuth repair failed: "
+            f"{repair.get('error') or repair.get('stderr_excerpt')}"
         ]
         payload["duration_seconds"] = round(time.time() - started, 6)
         return payload
@@ -205,6 +210,22 @@ def preflight_battle_scillm_auth(
         ]
     payload["duration_seconds"] = round(time.time() - started, 6)
     return payload
+
+
+def resolve_active_scillm_proxy_key() -> tuple[str | None, str, list[str]]:
+    """Resolve the active proxy key that child ScillM callers should inherit.
+
+    Prefer the running Docker proxy environment because stale host variables are
+    the common failure mode after OAuth/proxy restarts.
+    """
+
+    value, source, error = _docker_api_key()
+    if value:
+        return value, source, []
+    errors = [error] if error else []
+    fallback, fallback_source, fallback_errors = _resolve_api_key()
+    errors.extend(fallback_errors)
+    return fallback, fallback_source, errors
 
 
 def parse_json_object(content: str) -> Any:
@@ -362,7 +383,12 @@ def _docker_file_stat(container: str, path: str) -> dict[str, Any]:
     except FileNotFoundError:
         return {"container": container, "path": path, "exists": False, "error": "docker_not_found"}
     except subprocess.TimeoutExpired:
-        return {"container": container, "path": path, "exists": False, "error": "docker_exec_timeout"}
+        return {
+            "container": container,
+            "path": path,
+            "exists": False,
+            "error": "docker_exec_timeout",
+        }
     if result.returncode != 0:
         return {
             "container": container,
@@ -417,7 +443,9 @@ def _auth_blocker_message(reason: str, diagnostics: dict[str, Any]) -> str:
             f"from {diagnostics.get('repair_cwd')} with: {diagnostics.get('repair_command')}"
         )
     if reason.startswith("scillm_codex_auth_expired"):
-        return "Scillm Codex OAuth is expired; run codex login on the host, then rerun auth preflight"
+        return (
+            "Scillm Codex OAuth is expired; run codex login on the host, then rerun auth preflight"
+        )
     return f"Scillm Codex auth preflight blocked Battle worker materialization: {reason}"
 
 
@@ -452,7 +480,13 @@ def _docker_api_key() -> tuple[str | None, str, str | None]:
 
 
 def _docker_env_key(container: str) -> tuple[str | None, str, str | None]:
-    command = ["docker", "inspect", container, "--format", "{{range .Config.Env}}{{println .}}{{end}}"]
+    command = [
+        "docker",
+        "inspect",
+        container,
+        "--format",
+        "{{range .Config.Env}}{{println .}}{{end}}",
+    ]
     try:
         result = subprocess.run(command, check=False, capture_output=True, text=True, timeout=5)
     except FileNotFoundError:
@@ -479,8 +513,10 @@ def _artifact_messages(team: str, persona: str, handoff: dict[str, Any]) -> list
             "content": (
                 "Return exactly one JSON object and nothing else. No markdown. "
                 "Use only team-public handoff content. Do not include chain-of-thought. "
-                "Red schema: {artifact_type:red_exploit, exploit_py:<complete python script containing RED_EXPLOIT_CONFIRMED>, rationale:<brief>}. "
-                "Blue schema: {artifact_type:blue_patch, app_py:<complete replacement app.py>, rationale:<brief>}."
+                "Red schema: {artifact_type:red_exploit, exploit_py:<complete python "
+                "script containing RED_EXPLOIT_CONFIRMED>, rationale:<brief>}. "
+                "Blue schema: {artifact_type:blue_patch, app_py:<complete replacement "
+                "app.py>, rationale:<brief>}."
             ),
         },
         {
@@ -496,10 +532,19 @@ def _artifact_messages(team: str, persona: str, handoff: dict[str, Any]) -> list
 
 def _repair_messages(team: str, raw_response: str, parse_error: str) -> list[dict[str, str]]:
     return [
-        {"role": "system", "content": "Repair invalid Battle subagent output into exactly one valid JSON object. No markdown or prose."},
+        {
+            "role": "system",
+            "content": (
+                "Repair invalid Battle subagent output into exactly one valid JSON "
+                "object. No markdown or prose."
+            ),
+        },
         {
             "role": "user",
-            "content": f"TEAM: {team}\nPARSE_ERROR: {parse_error}\nRAW_RESPONSE:\n{raw_response}\nReturn one valid JSON object.",
+            "content": (
+                f"TEAM: {team}\nPARSE_ERROR: {parse_error}\nRAW_RESPONSE:\n"
+                f"{raw_response}\nReturn one valid JSON object."
+            ),
         },
     ]
 
@@ -513,11 +558,20 @@ def _chat(
     api_key: str,
     response_format: bool,
 ) -> dict[str, Any]:
-    body: dict[str, Any] = {"model": model, "messages": messages, "temperature": 0.1, "max_tokens": 4096}
+    body: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.1,
+        "max_tokens": 4096,
+    }
     if response_format:
         body["response_format"] = {"type": "json_object"}
     response = _post_json(f"{base_url.rstrip('/')}/v1/chat/completions", body, timeout_s, api_key)
-    if response_format and response.get("status") == "HTTP_ERROR" and int(response.get("http_status") or 0) in {400, 404, 422}:
+    if (
+        response_format
+        and response.get("status") == "HTTP_ERROR"
+        and int(response.get("http_status") or 0) in {400, 404, 422}
+    ):
         body.pop("response_format", None)
         retry = _post_json(f"{base_url.rstrip('/')}/v1/chat/completions", body, timeout_s, api_key)
         retry["response_format_retry_reason"] = _safe_format_error(response)
@@ -539,9 +593,18 @@ def _post_json(url: str, body: dict[str, Any], timeout_s: float, api_key: str) -
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout_s) as response:
-            return {"status": "PASS", "http_status": response.status, "body_text": response.read().decode("utf-8", "replace")}
+            return {
+                "status": "PASS",
+                "http_status": response.status,
+                "body_text": response.read().decode("utf-8", "replace"),
+            }
     except urllib.error.HTTPError as exc:
-        return {"status": "HTTP_ERROR", "http_status": exc.code, "body_text": exc.read().decode("utf-8", "replace"), "error": str(exc)}
+        return {
+            "status": "HTTP_ERROR",
+            "http_status": exc.code,
+            "body_text": exc.read().decode("utf-8", "replace"),
+            "error": str(exc),
+        }
     except urllib.error.URLError as exc:
         return {"status": "NETWORK_ERROR", "http_status": None, "body_text": "", "error": str(exc)}
     except TimeoutError as exc:
@@ -573,7 +636,9 @@ def _message_content(decoded: dict[str, Any]) -> str:
         if isinstance(content, str):
             return content
         if isinstance(content, list):
-            return "\n".join(_content_part_text(part) for part in content if _content_part_text(part))
+            return "\n".join(
+                _content_part_text(part) for part in content if _content_part_text(part)
+            )
     text = choices[0].get("text")
     return text if isinstance(text, str) else ""
 
@@ -610,7 +675,11 @@ def _parse_error(completion: dict[str, Any]) -> str:
     if http_status and int(http_status) >= 400:
         return f"http_status_{http_status}"
     if not str(completion.get("response_content") or ""):
-        return "empty_message_content" if completion.get("raw_body_excerpt") else "empty_response_content"
+        return (
+            "empty_message_content"
+            if completion.get("raw_body_excerpt")
+            else "empty_response_content"
+        )
     return "response_content_not_parseable_json_object"
 
 
