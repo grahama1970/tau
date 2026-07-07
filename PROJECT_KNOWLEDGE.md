@@ -1,9 +1,39 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:16 EDT by agent
+**Last updated:** 2026-07-07 12:20 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 aggregate expected-receipt enforcement:
+  The coding-capability sanity runner now enforces existing expected receipts
+  for the copyable zero-trust, memory/evidence-case, and skill-composition
+  examples, not just OMP/SciLLM worker examples. `scripts/run-coding-capability-sanity.py`
+  attaches `examples/zero-trust-basic/expected-receipt.json`,
+  `examples/memory-evidence-case/expected-receipt.json`, and
+  `examples/skill-composition-basic/expected-receipt.json` to their example-run
+  checks. The expected-artifact checker now compares generic receipt fields
+  including `ok`, `mocked`, `live`, `provider_live`, `alert_codes`,
+  `required_receipt_schemas`, `registry_schema`, and `validation_schema`, with
+  `alert_codes` derived from `alerts` when the receipt does not expose a
+  top-level list. `tests/test_coding_capability_sanity_runner.py` covers generic
+  expected-field matching and alert-code derivation. Focused proof: `git diff
+  --check -- scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run python -m
+  py_compile scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run ruff check
+  --select I,F,E501 scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> `All checks passed!`; `uv
+  run pytest tests/test_coding_capability_sanity_runner.py -q` -> `6 passed in
+  0.04s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-expected-receipts-20260707T162500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `check_count:17`, `failed_check_count:0`, embedded coding
+  receipt tests `498 passed in 11.92s`. This proves the maintained aggregate
+  sanity surface now fails if those copyable examples drift from their expected
+  schema/status/boundary fields; it does not prove ITAR compliance, live OMP or
+  SciLLM semantic worker execution, provider/model quality, semantic code
+  correctness, GitHub mutation, human acceptance, legal compliance, or full
+  sandbox isolation.
 
 - 2026-07-07 OMP worker log-artifact checker hardening:
   The coding-capability sanity runner now tests and enforces the full OMP

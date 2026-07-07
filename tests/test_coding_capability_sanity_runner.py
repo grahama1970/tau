@@ -192,6 +192,92 @@ def test_expected_artifact_accepts_omp_apply_launch_log_artifacts(
     assert payload["errors"] == []
 
 
+def test_expected_artifact_checks_generic_receipt_fields(tmp_path: Path) -> None:
+    runner = _load_runner()
+    expected = tmp_path / "expected.json"
+    actual = tmp_path / "receipt.json"
+    expected.write_text(
+        json.dumps(
+            {
+                "schema": "tau.memory_evidence_case_example_receipt.v1",
+                "status": "PASS",
+                "ok": True,
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "required_receipt_schemas": [
+                    "tau.memory_intent_gate_receipt.v1",
+                    "tau.evidence_case_gate_receipt.v1",
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    actual.write_text(
+        json.dumps(
+            {
+                "schema": "tau.memory_evidence_case_example_receipt.v1",
+                "status": "PASS",
+                "ok": True,
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "required_receipt_schemas": [
+                    "tau.memory_intent_gate_receipt.v1",
+                    "tau.evidence_case_gate_receipt.v1",
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = runner._check_expected_artifact(  # noqa: SLF001
+        actual_path=actual,
+        expected_path=expected,
+    )
+
+    assert payload["ok"] is True
+    assert payload["errors"] == []
+
+
+def test_expected_artifact_derives_alert_codes_from_alerts(tmp_path: Path) -> None:
+    runner = _load_runner()
+    expected = tmp_path / "expected.json"
+    actual = tmp_path / "receipt.json"
+    expected.write_text(
+        json.dumps(
+            {
+                "schema": "tau.zero_trust_preflight_receipt.v1",
+                "status": "PASS",
+                "alert_codes": [],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    actual.write_text(
+        json.dumps(
+            {
+                "schema": "tau.zero_trust_preflight_receipt.v1",
+                "status": "PASS",
+                "alerts": [],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = runner._check_expected_artifact(  # noqa: SLF001
+        actual_path=actual,
+        expected_path=expected,
+    )
+
+    assert payload["ok"] is True
+    assert payload["errors"] == []
+
+
 def _load_runner() -> ModuleType:
     path = Path(__file__).resolve().parents[1] / "scripts" / "run-coding-capability-sanity.py"
     spec = importlib.util.spec_from_file_location("run_coding_capability_sanity", path)

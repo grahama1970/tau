@@ -63,6 +63,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ],
             purpose="Run policy/data-boundary preflight example.",
             output_artifact=run_dir / "zero-trust-basic" / "zero-trust-preflight-receipt.json",
+            expected_artifact=examples / "zero-trust-basic" / "expected-receipt.json",
         ),
         Check(
             check_id="coding_reliability_example_syntax",
@@ -84,6 +85,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ],
             purpose="Run memory intent and evidence-case gate example.",
             output_artifact=run_dir / "memory-evidence-case" / "demo-receipt.json",
+            expected_artifact=examples / "memory-evidence-case" / "expected-receipt.json",
         ),
         Check(
             check_id="coding_reliability_example_run",
@@ -123,6 +125,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ],
             purpose="Run skill capability registry generation and validation example.",
             output_artifact=run_dir / "skill-composition-basic" / "demo-receipt.json",
+            expected_artifact=examples / "skill-composition-basic" / "expected-receipt.json",
         ),
         Check(
             check_id="omp_worker_example_syntax",
@@ -479,6 +482,14 @@ def _check_expected_artifact(
     expected_checks = {
         "schema": "schema",
         "status": "status",
+        "ok": "ok",
+        "mocked": "mocked",
+        "live": "live",
+        "provider_live": "provider_live",
+        "alert_codes": "alert_codes",
+        "required_receipt_schemas": "required_receipt_schemas",
+        "registry_schema": "registry_schema",
+        "validation_schema": "validation_schema",
         "expected_launch_receipt_schema": "launch_receipt_schema",
         "expected_launch_status": "launch_receipt_status",
         "expected_launch_command": "launch_command",
@@ -494,9 +505,10 @@ def _check_expected_artifact(
     for expected_key, actual_key in expected_checks.items():
         if expected_key not in expected:
             continue
-        if actual.get(actual_key) != expected[expected_key]:
+        actual_value = _expected_artifact_actual_value(actual, actual_key)
+        if actual_value != expected[expected_key]:
             errors.append(
-                f"{actual_key} expected {expected[expected_key]!r}, got {actual.get(actual_key)!r}"
+                f"{actual_key} expected {expected[expected_key]!r}, got {actual_value!r}"
             )
 
     expected_route = expected.get("expected_model_provider_route")
@@ -535,6 +547,22 @@ def _check_expected_artifact(
         "expected_status": expected.get("status"),
         "actual_status": actual.get("status"),
     }
+
+
+def _expected_artifact_actual_value(actual: dict[str, Any], key: str) -> Any:
+    if key != "alert_codes":
+        return actual.get(key)
+    alert_codes = actual.get("alert_codes")
+    if isinstance(alert_codes, list):
+        return alert_codes
+    alerts = actual.get("alerts")
+    if isinstance(alerts, list):
+        return [
+            alert.get("code")
+            for alert in alerts
+            if isinstance(alert, dict) and isinstance(alert.get("code"), str)
+        ]
+    return alert_codes
 
 
 def _check_apply_launch_result_artifact(actual: dict[str, Any]) -> list[str]:
