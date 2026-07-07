@@ -5,6 +5,25 @@
 
 ## Current Understanding
 
+- 2026-07-07 Herdr waiting-on-input timeout correction:
+  `src/tau_coding/herdr_observation_gate.py` now treats Herdr
+  `waiting_on_input` state with a missing overdue expected node receipt as
+  `receipt_timeout_after_visible_dispatch`, routing to the existing
+  `send_reminder_or_route_human` course-correction policy. Non-overdue
+  `waiting_on_input` still passes, so Tau can wait for a visible agent when the
+  receipt deadline has not expired. `docs/herdr-observation-gate.md` documents
+  the boundary. Focused proof: `python3 -m py_compile
+  src/tau_coding/herdr_observation_gate.py tests/test_herdr_observation_gate.py`
+  -> pass; `uv run ruff check src/tau_coding/herdr_observation_gate.py
+  tests/test_herdr_observation_gate.py docs/herdr-observation-gate.md` ->
+  `All checks passed!`; `uv run pytest tests/test_herdr_observation_gate.py
+  tests/test_course_correction.py tests/test_orchestration_reliability.py -q`
+  -> `48 passed in 0.49s`. This proves deterministic local Herdr snapshot
+  fixtures now produce a project-agent-friendly course correction for overdue
+  visible waiting states; it does not prove live Herdr monitor snapshot
+  availability, that a reminder was sent, provider/model semantic quality,
+  future route correctness, or full provider DAG execution.
+
 - 2026-07-07 durable handoff context propagation:
   `src/tau_coding/handoff_dispatch.py` now carries durable provider/storyboard
   context keys across command-loop subagent handoffs even when an intermediate

@@ -37,13 +37,15 @@ The gate blocks when:
 
 - expected Herdr workspace, pane, or terminal identity does not match;
 - expected node receipt is missing and overdue;
+- Herdr state is `waiting_on_input` and the expected node receipt is missing
+  and overdue;
 - Herdr state is `auth_required`;
 - Herdr state is `interstitial`;
 - Herdr state is `crashed`, `exited`, or `stale`.
 
 The blocked receipt embeds `tau.course_correction.v1`, so project agents get a
 bounded next action such as `retry_node_or_route_goal_guardian`, `route_human`,
-or `block_run`.
+`send_reminder_or_route_human`, or `block_run`.
 
 ## Non-Claims
 

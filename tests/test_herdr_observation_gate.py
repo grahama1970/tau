@@ -69,6 +69,66 @@ def test_herdr_observation_gate_blocks_overdue_missing_receipt(
     assert payload["course_correction"]["observed_state"]["receipt_overdue"] is True
 
 
+def test_herdr_observation_gate_course_corrects_overdue_waiting_on_input(
+    tmp_path: Path,
+) -> None:
+    snapshot = _write_snapshot(tmp_path, state="waiting_on_input")
+
+    payload = write_herdr_observation_gate_receipt(
+        tmp_path / "gate.json",
+        snapshot_path=snapshot,
+        expected_receipt_path=tmp_path / "missing-receipt.json",
+        expected_workspace_id="w1",
+        expected_pane_id="w1:p1",
+        expected_terminal_id="term-1",
+        run_id="run-1",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        receipt_overdue=True,
+        receipt_timeout_seconds=120,
+    )
+
+    assert payload["ok"] is False
+    assert payload["status"] == "BLOCKED"
+    assert payload["recommended_action"] == "send_reminder_or_route_human"
+    assert payload["course_correction"]["trigger"] == "receipt_timeout_after_visible_dispatch"
+    assert payload["course_correction"]["observed_state"]["state"] == "waiting_on_input"
+    assert (
+        "start_parallel_duplicate_without_policy"
+        in payload["course_correction"]["forbidden_next_routes"]
+    )
+
+
+def test_herdr_observation_gate_allows_waiting_on_input_before_timeout(
+    tmp_path: Path,
+) -> None:
+    snapshot = _write_snapshot(tmp_path, state="waiting_on_input")
+
+    payload = write_herdr_observation_gate_receipt(
+        tmp_path / "gate.json",
+        snapshot_path=snapshot,
+        expected_receipt_path=tmp_path / "missing-receipt.json",
+        expected_workspace_id="w1",
+        expected_pane_id="w1:p1",
+        expected_terminal_id="term-1",
+        dag_id="dag-1",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        receipt_overdue=False,
+        receipt_timeout_seconds=120,
+    )
+
+    assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["receipt_missing"] is True
+    assert payload["receipt_overdue"] is False
+    assert payload["course_correction"] is None
+
+
 def test_cli_herdr_observation_gate_blocks_binding_mismatch(tmp_path: Path) -> None:
     snapshot = _write_snapshot(tmp_path, state="ready", workspace_id="w2")
     out = tmp_path / "gate.json"

@@ -148,6 +148,8 @@ def _trigger_for_observation(
         return "provider_crashed"
     if state == "stale":
         return "herdr_stale"
+    if state == "waiting_on_input" and receipt_missing and receipt_overdue:
+        return "receipt_timeout_after_visible_dispatch"
     if receipt_missing and receipt_overdue:
         return "receipt_timeout"
     return None
