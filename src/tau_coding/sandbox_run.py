@@ -34,9 +34,19 @@ def run_sandboxed_command(
 
     resolved_policy = policy_profile_path.expanduser().resolve()
     resolved_boundary = data_boundary_path.expanduser().resolve()
-    policy_profile = _read_json_object(resolved_policy)
-    data_boundary = _read_json_object(resolved_boundary)
-    alerts = sandbox_policy_alerts(policy_profile=policy_profile, data_boundary=data_boundary)
+    policy_profile, policy_read_alerts = _read_json_object_for_receipt(
+        resolved_policy,
+        label="policy_profile",
+    )
+    data_boundary, boundary_read_alerts = _read_json_object_for_receipt(
+        resolved_boundary,
+        label="data_boundary",
+    )
+    alerts = [*policy_read_alerts, *boundary_read_alerts]
+    if not alerts:
+        alerts.extend(
+            sandbox_policy_alerts(policy_profile=policy_profile, data_boundary=data_boundary)
+        )
     backend_info = _backend_info(backend)
     resolved_work_dir = work_dir.expanduser().resolve() if work_dir is not None else None
     command_result: dict[str, Any] | None = None
@@ -96,12 +106,14 @@ def run_sandboxed_command(
         )
         receipt["policy_profile"] = {
             "path": str(resolved_policy),
-            "sha256": f"sha256:{_sha256(resolved_policy)}",
+            "exists": resolved_policy.exists(),
+            "sha256": _sha256_uri_or_none(resolved_policy),
             "schema": policy_profile.get("schema"),
         }
         receipt["data_boundary"] = {
             "path": str(resolved_boundary),
-            "sha256": f"sha256:{_sha256(resolved_boundary)}",
+            "exists": resolved_boundary.exists(),
+            "sha256": _sha256_uri_or_none(resolved_boundary),
             "schema": data_boundary.get("schema"),
         }
         receipt["network_egress"] = "denied"
@@ -125,12 +137,14 @@ def run_sandboxed_command(
         "image": image,
         "policy_profile": {
             "path": str(resolved_policy),
-            "sha256": f"sha256:{_sha256(resolved_policy)}",
+            "exists": resolved_policy.exists(),
+            "sha256": _sha256_uri_or_none(resolved_policy),
             "schema": policy_profile.get("schema"),
         },
         "data_boundary": {
             "path": str(resolved_boundary),
-            "sha256": f"sha256:{_sha256(resolved_boundary)}",
+            "exists": resolved_boundary.exists(),
+            "sha256": _sha256_uri_or_none(resolved_boundary),
             "schema": data_boundary.get("schema"),
         },
         "network_egress": "denied",
@@ -271,16 +285,26 @@ def _bwrap_command(command: list[str], *, backend_path: Path, work_dir: Path | N
     ]
 
 
-def _read_json_object(path: Path) -> dict[str, Any]:
+def _read_json_object_for_receipt(
+    path: Path,
+    *,
+    label: str,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError as exc:
-        raise RuntimeError(f"file does not exist: {path}") from exc
+    except FileNotFoundError:
+        return {}, [_alert(f"{label}_missing", f"{label} file does not exist: {path}")]
     except json.JSONDecodeError as exc:
-        raise RuntimeError(f"file is not valid JSON: {path}: {exc}") from exc
+        return {}, [
+            _alert(
+                f"{label}_unreadable",
+                f"{label} file is not valid JSON: {path}",
+                errors=[str(exc)],
+            )
+        ]
     if not isinstance(payload, dict):
-        raise RuntimeError(f"file must contain a JSON object: {path}")
-    return payload
+        return {}, [_alert(f"{label}_not_object", f"{label} file must contain a JSON object")]
+    return payload, []
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -291,6 +315,13 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _sha256_uri_or_none(path: Path) -> str | None:
+    try:
+        return f"sha256:{_sha256(path)}"
+    except OSError:
+        return None
 
 
 def _sha256_text(value: str) -> str:

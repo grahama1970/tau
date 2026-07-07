@@ -332,6 +332,32 @@
   mutation, full sandbox isolation, legal compliance, ITAR compliance, or full
   goal completion.
 
+- 2026-07-07 sandbox-run bad-input receipt rung:
+  `src/tau_coding/sandbox_run.py` now emits an inspectable BLOCKED
+  `tau.sandbox_run_receipt.v1` when the policy profile or data-boundary input
+  file is missing, invalid JSON, or not a JSON object. The receipt records
+  `policy_profile_missing`, `policy_profile_unreadable`,
+  `policy_profile_not_object`, `data_boundary_missing`,
+  `data_boundary_unreadable`, or `data_boundary_not_object`, keeps
+  `command_executed:false`, and records path/existence/SHA metadata when
+  available. `tests/test_sandbox_policy.py` pins direct missing-policy,
+  invalid-boundary, and CLI `--out` missing-policy receipt behavior. Focused
+  proof: `uv run ruff check --select I,F,E501 src/tau_coding/sandbox_run.py
+  tests/test_sandbox_policy.py` -> `All checks passed!`; `uv run pytest
+  tests/test_sandbox_policy.py -q` -> `14 passed in 0.44s`. Consumer proof:
+  `uv run pytest tests/test_sandbox_policy.py tests/test_coding_worker_adapters.py
+  tests/test_package_validate.py tests/test_project_dag.py -q` -> `152 passed
+  in 6.42s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-sandbox-bad-input-20260707T122000Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `330 passed in 8.20s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local sandbox-run
+  preflight input failures produce reviewable
+  fail-closed receipts instead of Typer-only errors or missing artifacts; it
+  does not prove live sandbox isolation strength, live OMP/SciLLM semantic
+  worker execution, provider/model quality, semantic code correctness, legal
+  compliance, ITAR compliance, or full goal completion.
+
 - 2026-07-07 coding course-correction attribution rung:
   `src/tau_coding/course_correction.py` now marks coding-trigger
   `tau.course_correction.v1` receipts invalid unless they carry `node_id`,

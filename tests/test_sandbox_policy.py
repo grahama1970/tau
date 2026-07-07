@@ -61,6 +61,53 @@ def test_sandbox_run_blocks_missing_bwrap_backend_before_execution(tmp_path: Pat
     assert "unsupported_backend" in receipt["alert_codes"]
 
 
+def test_sandbox_run_writes_blocked_receipt_for_missing_policy_file(
+    tmp_path: Path,
+) -> None:
+    boundary_path = tmp_path / "data-boundary.json"
+    boundary_path.write_text(json.dumps(_data_boundary()), encoding="utf-8")
+    receipt_path = tmp_path / "sandbox-receipt.json"
+
+    receipt = run_sandboxed_command(
+        command=[sys.executable, "-c", "print('should-not-run')"],
+        policy_profile_path=tmp_path / "missing-policy.json",
+        data_boundary_path=boundary_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["schema"] == "tau.sandbox_run_receipt.v1"
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["command_executed"] is False
+    assert "policy_profile_missing" in receipt["alert_codes"]
+    assert receipt["policy_profile"]["exists"] is False
+    assert receipt["policy_profile"]["sha256"] is None
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
+
+
+def test_sandbox_run_writes_blocked_receipt_for_invalid_boundary_json(
+    tmp_path: Path,
+) -> None:
+    policy_path = tmp_path / "policy-profile.json"
+    policy_path.write_text(json.dumps(_policy_profile()), encoding="utf-8")
+    boundary_path = tmp_path / "data-boundary.json"
+    boundary_path.write_text("{not-json", encoding="utf-8")
+    receipt_path = tmp_path / "sandbox-receipt.json"
+
+    receipt = run_sandboxed_command(
+        command=[sys.executable, "-c", "print('should-not-run')"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["command_executed"] is False
+    assert "data_boundary_unreadable" in receipt["alert_codes"]
+    assert receipt["data_boundary"]["exists"] is True
+    assert receipt["data_boundary"]["sha256"].startswith("sha256:")
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
+
+
 def test_sandbox_run_docker_backend_requires_image(tmp_path: Path) -> None:
     policy_path, boundary_path = _write_policy_inputs(tmp_path)
 
@@ -198,6 +245,39 @@ def test_cli_sandbox_run_writes_blocked_receipt_for_policy_rejection(tmp_path: P
     assert payload["command_executed"] is False
     assert "network_not_default_deny" in payload["alert_codes"]
     assert receipt_path.exists()
+
+
+def test_cli_sandbox_run_writes_blocked_receipt_for_missing_policy_file(
+    tmp_path: Path,
+) -> None:
+    boundary_path = tmp_path / "data-boundary.json"
+    boundary_path.write_text(json.dumps(_data_boundary()), encoding="utf-8")
+    receipt_path = tmp_path / "sandbox-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "sandbox-run",
+            "--policy-profile",
+            str(tmp_path / "missing-policy.json"),
+            "--data-boundary",
+            str(boundary_path),
+            "--out",
+            str(receipt_path),
+            "--",
+            sys.executable,
+            "-c",
+            "print('should-not-run')",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["schema"] == "tau.sandbox_run_receipt.v1"
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_executed"] is False
+    assert "policy_profile_missing" in payload["alert_codes"]
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == payload
 
 
 def test_cli_sandbox_run_docker_backend_writes_blocked_receipt(tmp_path: Path) -> None:
