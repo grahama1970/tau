@@ -90,13 +90,16 @@ Routing rules:
 
 P0/P1 findings require evidence. Tau blocks understated verdicts such as a
 declared `PASS` with P1/P2 findings or a declared `REVISE` with P0 findings.
-The receipt does not prove the reviewer is correct or exhaustive.
+The receipt records the inspected findings artifact's `findings_sha256` and
+`findings_bytes`. It does not prove the reviewer is correct or exhaustive.
 
 Unreadable, missing, or non-object review finding artifacts also produce
 BLOCKED `tau.review_findings.v1` receipts. Tau records alert codes such as
 `review_findings_missing`, `review_findings_unreadable`, or
 `review_findings_not_object` instead of failing before a reviewer receipt can
-be inspected.
+be inspected. When the findings artifact exists, even unreadable/non-object
+receipts include `findings_sha256` and `findings_bytes`; missing artifacts
+record those fields as `null`.
 
 CLI:
 

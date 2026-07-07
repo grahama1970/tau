@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -74,6 +75,8 @@ def test_review_findings_passes_with_no_blocking_findings(tmp_path: Path) -> Non
     assert receipt["status"] == "PASS"
     assert receipt["derived_verdict"] == "PASS"
     assert receipt["finding_count"] == 0
+    assert receipt["findings_sha256"] == f"sha256:{_sha256_file(findings_path)}"
+    assert receipt["findings_bytes"] == findings_path.stat().st_size
     assert "The reviewer is correct." in receipt["proof_scope"]["does_not_prove"]
 
 
@@ -91,6 +94,27 @@ def test_review_findings_writes_blocked_receipt_for_unreadable_findings(
 
     assert receipt["status"] == "BLOCKED"
     assert "review_findings_unreadable" in receipt["alert_codes"]
+    assert receipt["findings_sha256"] == f"sha256:{_sha256_file(findings_path)}"
+    assert receipt["findings_bytes"] == findings_path.stat().st_size
+    assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
+def test_review_findings_writes_blocked_receipt_for_missing_findings_artifact(
+    tmp_path: Path,
+) -> None:
+    findings_path = tmp_path / "missing-findings.json"
+    receipt_path = tmp_path / "receipt.json"
+
+    receipt = write_review_findings_receipt(
+        findings_path=findings_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_findings_missing" in receipt["alert_codes"]
+    assert receipt["findings_path"] == str(findings_path.resolve())
+    assert receipt["findings_sha256"] is None
+    assert receipt["findings_bytes"] is None
     assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
 
 
@@ -254,3 +278,7 @@ def _payload(*, verdict: str, findings: list[dict]) -> dict:
         "verdict": verdict,
         "findings": findings,
     }
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
@@ -150,6 +151,8 @@ def write_review_findings_receipt(
     )
     resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
     receipt["findings_path"] = str(findings_path.expanduser().resolve())
+    receipt["findings_sha256"] = _artifact_sha256_uri(findings_path.expanduser().resolve())
+    receipt["findings_bytes"] = _artifact_size(findings_path.expanduser().resolve())
     receipt["receipt_path"] = str(resolved_receipt)
     resolved_receipt.write_text(
         json.dumps(receipt, indent=2, sort_keys=True) + "\n",
@@ -305,3 +308,21 @@ def _coding_policy_alerts(
 
 def _utc_stamp() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _artifact_sha256_uri(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+    except OSError:
+        return None
+
+
+def _artifact_size(path: Path | None) -> int | None:
+    if path is None:
+        return None
+    try:
+        return path.stat().st_size
+    except OSError:
+        return None

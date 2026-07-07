@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:17 EDT by agent
+**Last updated:** 2026-07-06 22:20 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 review-findings artifact hash binding rung:
+  `src/tau_coding/review_findings.py` now records `findings_sha256` and
+  `findings_bytes` on `tau.review_findings.v1` receipts so reviewer
+  admissibility is bound to the exact structured findings artifact Tau
+  inspected. Missing findings artifacts record both fields as `null`;
+  unreadable or non-object findings artifacts still record the artifact hash
+  and byte count when the file exists. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py` -> pass; `uv run pytest
+  tests/test_review_findings.py -q` -> `13 passed in 0.47s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-findings-artifact-hash-proof`
+  exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-review-findings-artifact-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `193 passed in
+  6.54s`. This proves deterministic local review-findings receipts now bind
+  the inspected findings artifact itself and the coding capability aggregate
+  still composes; it does not prove reviewer correctness, issue exhaustiveness,
+  code semantic correctness, legal compliance, or full sandbox isolation.
 
 - 2026-07-06 code-patch artifact hash binding rung:
   `src/tau_coding/code_patch.py` now records `patch_sha256` and `patch_bytes`
