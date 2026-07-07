@@ -24,7 +24,9 @@ CODING_EVIDENCE_SCHEMAS = {
     "tau.debug_session_receipt.v1",
     "tau.github_read_receipt.v1",
     "tau.omp_worker_receipt.v1",
+    "tau.omp_worker_launch_receipt.v1",
     "tau.scillm_worker_receipt.v1",
+    "tau.scillm_worker_launch_receipt.v1",
     "tau.skill_composition_redteam_receipt.v1",
     "tau.course_correction.v1",
     "tau.orchestration_reliability_receipt.v1",
@@ -1814,6 +1816,30 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "p0_finding_count": _review_finding_severity_count(payload, "P0"),
                 "p1_finding_count": _review_finding_severity_count(payload, "P1"),
                 "required_action_count": _review_required_action_count(payload),
+                "worker_kind": payload.get("worker_kind"),
+                "work_order_schema": payload.get("work_order_schema"),
+                "result_schema": payload.get("result_schema"),
+                "execution_substrate": payload.get("execution_substrate"),
+                "high_stakes": payload.get("high_stakes"),
+                "next_recommended_route": payload.get("next_recommended_route"),
+                "worker_changed_file_count": _count_list(payload.get("changed_files")),
+                "worker_normalized_changed_file_count": _count_list(
+                    payload.get("normalized_changed_files")
+                ),
+                "worker_required_artifact_count": _count_list(payload.get("required_artifacts")),
+                "worker_result_artifact_count": _count_list(payload.get("result_artifacts")),
+                "worker_test_log_count": _count_list(payload.get("test_log_artifacts")),
+                "worker_side_effect_receipt_count": _count_list(
+                    payload.get("side_effect_receipts")
+                ),
+                "worker_research_receipt_count": _count_list(payload.get("research_receipts")),
+                "worker_substrate_receipt_count": _count_list(payload.get("substrate_receipts")),
+                "model_route_surface": _model_provider_route_value(payload, "surface"),
+                "model_route_agent": _model_provider_route_value(payload, "agent"),
+                "model_route_endpoint": _model_provider_route_value(payload, "endpoint"),
+                "http_executed": payload.get("http_executed"),
+                "process_executed": payload.get("process_executed"),
+                "launch_skipped": payload.get("launch_skipped"),
             }
         )
     return {
@@ -1862,6 +1888,13 @@ def _review_required_action_count(payload: dict[str, Any]) -> int | None:
         for finding in findings
         if isinstance(finding, dict) and isinstance(finding.get("required_action"), str)
     )
+
+
+def _model_provider_route_value(payload: dict[str, Any], key: str) -> Any:
+    route = payload.get("model_provider_route")
+    if isinstance(route, dict):
+        return route.get(key)
+    return None
 
 
 def _load_lifecycle_states(

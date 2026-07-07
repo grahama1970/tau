@@ -76,6 +76,13 @@ For review findings receipts it surfaces `review_declared_verdict`,
 `blocking_finding_count`, `revision_finding_count`, `p0_finding_count`,
 `p1_finding_count`, and `required_action_count` so reviewer output is
 inspectable without trusting the reviewer as correct.
+For OMP and SciLLM worker receipts it surfaces `worker_kind`,
+`work_order_schema`, `result_schema`, `execution_substrate`, `high_stakes`,
+`next_recommended_route`, worker changed-file/artifact/test/substrate receipt
+counts, `model_route_surface`, `model_route_agent`, `model_route_endpoint`,
+`http_executed`, `process_executed`, and `launch_skipped` so bounded worker
+evidence is visible without trusting the worker as correct or assuming a launch
+ran.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.

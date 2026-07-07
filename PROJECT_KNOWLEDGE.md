@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report worker adapter fields:
+  `src/tau_coding/run_status.py` now treats
+  `tau.omp_worker_launch_receipt.v1` and
+  `tau.scillm_worker_launch_receipt.v1` as coding evidence, and preserves
+  bounded worker fields in coding evidence summaries: `worker_kind`,
+  `work_order_schema`, `result_schema`, `execution_substrate`, `high_stakes`,
+  `next_recommended_route`, worker changed-file/artifact/test/substrate receipt
+  counts, `model_route_surface`, `model_route_agent`, `model_route_endpoint`,
+  `http_executed`, `process_executed`, and `launch_skipped`.
+  `tests/test_run_status.py` pins these fields for an OMP validation receipt
+  and a SciLLM launch receipt; `tests/test_run_report.py` asserts the static
+  report renders OMP/SciLLM worker schemas, substrate, route, and count fields.
+  This makes R7/R8 bounded worker evidence inspectable in `tau run-status` /
+  `tau report` without trusting the worker or assuming a launch ran. Focused
+  proof: `uv run ruff check --select I,F,E501 src/tau_coding/run_status.py
+  tests/test_run_status.py tests/test_run_report.py docs/run-report.md` ->
+  `All checks passed!`; `uv run pytest tests/test_run_status.py
+  tests/test_run_report.py -q` -> `39 passed in 0.44s`; `git diff --check --
+  src/tau_coding/run_status.py tests/test_run_status.py tests/test_run_report.py
+  docs/run-report.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-report-20260707T144104Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `471 passed in 10.74s`. This does not prove
+  live OMP or SciLLM semantic worker execution, worker truthfulness,
+  provider/model quality, semantic code correctness, GitHub mutation, legal
+  compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 run-status/report review findings fields:
   `src/tau_coding/run_status.py` now preserves structured review finding
   routing fields in coding evidence summaries: `review_declared_verdict`,

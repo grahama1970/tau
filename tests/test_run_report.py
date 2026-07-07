@@ -63,6 +63,12 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "review_derived_verdict" in html
     assert "blocking_finding_count" in html
     assert "reviewer" in html
+    assert "tau.omp_worker_receipt.v1" in html
+    assert "worker_changed_file_count" in html
+    assert "model_route_surface" in html
+    assert "docker-sandbox" in html
+    assert "tau.scillm_worker_launch_receipt.v1" in html
+    assert "opencode_serve" in html
     assert "tau.github_read_receipt.v1" in html
     assert "issue://grahama1970/tau/67" in html
     assert "mutation_allowed" in html
@@ -227,6 +233,64 @@ def _write_report_run(tmp_path: Path) -> Path:
                     "required_action": "revise",
                 },
             ],
+        },
+    )
+    _write_json(
+        receipts_dir / "omp-worker-receipt.json",
+        {
+            "schema": "tau.omp_worker_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "worker_kind": "omp",
+            "work_order_schema": "tau.executor.omp.v1",
+            "result_schema": "tau.omp_worker_result.v1",
+            "node_id": "coder",
+            "agent": "coder",
+            "attempt": 1,
+            "execution_substrate": "docker-sandbox",
+            "high_stakes": True,
+            "model_provider_route": {"surface": "omp_rpc", "agent": "build"},
+            "changed_files": ["src/example.py"],
+            "normalized_changed_files": ["src/example.py"],
+            "required_artifacts": ["src/example.py", "tests/test_example.py"],
+            "result_artifacts": ["src/example.py", "tests/test_example.py"],
+            "test_log_artifacts": [{"label": "pytest", "path": "pytest.log"}],
+            "side_effect_receipts": [],
+            "research_receipts": [],
+            "substrate_receipts": [{"schema": "tau.sandbox_run_receipt.v1"}],
+            "next_recommended_route": "reviewer",
+        },
+    )
+    _write_json(
+        receipts_dir / "scillm-worker-launch-receipt.json",
+        {
+            "schema": "tau.scillm_worker_launch_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "worker_kind": "scillm",
+            "work_order_schema": "tau.executor.scillm_worker.v1",
+            "execution_substrate": "herdr-visible",
+            "high_stakes": True,
+            "model_provider_route": {
+                "surface": "opencode_serve",
+                "agent": "build",
+                "endpoint": "/v1/scillm/opencode/runs",
+            },
+            "substrate_receipts": [
+                {"schema": "tau.herdr_observation_gate_receipt.v1"},
+            ],
+            "dry_run": True,
+            "apply_requested": False,
+            "http_executed": False,
+            "launch_skipped": True,
         },
     )
     _write_json(

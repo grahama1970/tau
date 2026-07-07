@@ -1773,6 +1773,26 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
             "p0_finding_count": None,
             "p1_finding_count": None,
             "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
         }
     ]
     assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -1853,6 +1873,26 @@ def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path)
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
     assert (
         "tau.skill_composition_redteam_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -1915,6 +1955,114 @@ def test_run_status_summarizes_review_finding_routing_fields(tmp_path: Path) -> 
     assert summary["p1_finding_count"] == 1
     assert summary["required_action_count"] == 2
     assert summary["sha256"] == f"sha256:{_sha256(receipt_path)}"
+
+
+def test_run_status_summarizes_worker_adapter_validation_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "omp-worker-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.omp_worker_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "worker_kind": "omp",
+            "work_order_schema": "tau.executor.omp.v1",
+            "result_schema": "tau.omp_worker_result.v1",
+            "node_id": "coder",
+            "agent": "coder",
+            "attempt": 1,
+            "execution_substrate": "docker-sandbox",
+            "high_stakes": True,
+            "model_provider_route": {"surface": "omp_rpc", "agent": "build"},
+            "changed_files": ["src/example.py"],
+            "normalized_changed_files": ["src/example.py"],
+            "required_artifacts": ["src/example.py", "tests/test_example.py"],
+            "result_artifacts": ["src/example.py", "tests/test_example.py"],
+            "test_log_artifacts": [{"label": "pytest", "path": "pytest.log"}],
+            "side_effect_receipts": [],
+            "research_receipts": [{"schema": "tau.research_source_receipt.v1"}],
+            "substrate_receipts": [{"schema": "tau.sandbox_run_receipt.v1"}],
+            "next_recommended_route": "reviewer",
+        },
+    )
+
+    status = build_run_status(tmp_path)
+    summary = status["coding_evidence"]["receipts"][0]
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert summary["schema"] == "tau.omp_worker_receipt.v1"
+    assert summary["worker_kind"] == "omp"
+    assert summary["work_order_schema"] == "tau.executor.omp.v1"
+    assert summary["result_schema"] == "tau.omp_worker_result.v1"
+    assert summary["execution_substrate"] == "docker-sandbox"
+    assert summary["high_stakes"] is True
+    assert summary["next_recommended_route"] == "reviewer"
+    assert summary["worker_changed_file_count"] == 1
+    assert summary["worker_normalized_changed_file_count"] == 1
+    assert summary["worker_required_artifact_count"] == 2
+    assert summary["worker_result_artifact_count"] == 2
+    assert summary["worker_test_log_count"] == 1
+    assert summary["worker_side_effect_receipt_count"] == 0
+    assert summary["worker_research_receipt_count"] == 1
+    assert summary["worker_substrate_receipt_count"] == 1
+    assert summary["model_route_surface"] == "omp_rpc"
+    assert summary["model_route_agent"] == "build"
+
+
+def test_run_status_summarizes_scillm_worker_launch_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "scillm-worker-launch-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.scillm_worker_launch_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "worker_kind": "scillm",
+            "work_order_schema": "tau.executor.scillm_worker.v1",
+            "node_id": "coder",
+            "agent": "coder",
+            "attempt": 1,
+            "execution_substrate": "herdr-visible",
+            "high_stakes": True,
+            "model_provider_route": {
+                "surface": "opencode_serve",
+                "agent": "build",
+                "endpoint": "/v1/scillm/opencode/runs",
+            },
+            "substrate_receipts": [
+                {"schema": "tau.herdr_observation_gate_receipt.v1"},
+            ],
+            "dry_run": True,
+            "apply_requested": False,
+            "http_executed": False,
+            "launch_skipped": True,
+        },
+    )
+
+    status = build_run_status(tmp_path)
+    summary = status["coding_evidence"]["receipts"][0]
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert summary["schema"] == "tau.scillm_worker_launch_receipt.v1"
+    assert summary["worker_kind"] == "scillm"
+    assert summary["work_order_schema"] == "tau.executor.scillm_worker.v1"
+    assert summary["execution_substrate"] == "herdr-visible"
+    assert summary["worker_substrate_receipt_count"] == 1
+    assert summary["model_route_surface"] == "opencode_serve"
+    assert summary["model_route_agent"] == "build"
+    assert summary["model_route_endpoint"] == "/v1/scillm/opencode/runs"
+    assert summary["dry_run"] is True
+    assert summary["apply_requested"] is False
+    assert summary["http_executed"] is False
+    assert summary["launch_skipped"] is True
 
 
 def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) -> None:
@@ -1995,6 +2143,26 @@ def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) 
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
 
 
@@ -2080,6 +2248,26 @@ def test_run_status_summarizes_github_read_boundaries(tmp_path: Path) -> None:
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
 
 
@@ -2169,6 +2357,26 @@ def test_run_status_summarizes_debug_session_evidence_fields(tmp_path: Path) -> 
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
 
 
@@ -2253,6 +2461,26 @@ def test_run_status_summarizes_commit_plan_review_fields(tmp_path: Path) -> None
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
 
 
@@ -2334,6 +2562,26 @@ def test_run_status_summarizes_lsp_diagnostics_fields(tmp_path: Path) -> None:
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
 
 
@@ -2417,6 +2665,26 @@ def test_run_status_summarizes_lsp_rename_plan_fields(tmp_path: Path) -> None:
         "p0_finding_count": None,
         "p1_finding_count": None,
         "required_action_count": None,
+            "worker_kind": None,
+            "work_order_schema": None,
+            "result_schema": None,
+            "execution_substrate": None,
+            "high_stakes": None,
+            "next_recommended_route": None,
+            "worker_changed_file_count": None,
+            "worker_normalized_changed_file_count": None,
+            "worker_required_artifact_count": None,
+            "worker_result_artifact_count": None,
+            "worker_test_log_count": None,
+            "worker_side_effect_receipt_count": None,
+            "worker_research_receipt_count": None,
+            "worker_substrate_receipt_count": None,
+            "model_route_surface": None,
+            "model_route_agent": None,
+            "model_route_endpoint": None,
+            "http_executed": None,
+            "process_executed": None,
+            "launch_skipped": None,
     }
 
 
