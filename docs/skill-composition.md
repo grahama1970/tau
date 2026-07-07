@@ -210,11 +210,44 @@ against the repo root before the adapter passes.
 This still does not prove evidence semantic completeness, task closure, Memory
 truth, or provider/model quality.
 
+## Research Adapter
+
+The research adapter ingests a Dogpile/Brave/ArXiv-style research artifact only
+after Tau has a passing `tau.research_query_safety_receipt.v1`. It converts the
+research artifact into `tau.research_source_packet.v1`, then validates it with
+`tau.research_source_receipt.v1`.
+
+```bash
+uv run tau research-skill-adapter \
+  --report /tmp/dogpile-report.json \
+  --query-safety /tmp/research-query-safety-receipt.json \
+  --out /tmp/research-adapter-receipt.json \
+  --repo-root /path/to/repo \
+  --method dogpile \
+  --source-type web \
+  --classification design_input
+```
+
+```text
+tau.research_query_safety_receipt.v1
+  -> dogpile/brave/arxiv/fetcher report artifact
+  -> tau.research_skill_adapter_receipt.v1
+  -> tau.research_source_packet.v1
+  -> tau.research_source_receipt.v1
+```
+
+The adapter compares the research report query to the safety receipt hash, hashes
+the source report, and marks the resulting research as review-required design
+input. It does not call external research services itself.
+
+This still does not prove cited sources are true, the research is closure proof,
+or that the research is sufficient for implementation.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
-1. Research and model-worker adapters.
+1. Model-worker adapter.
 2. Project-profile capability provider requirements.
 3. Course-correction routing through validated capability providers.
 4. A skill-composition red-team suite that proves Tau does not blindly trust
