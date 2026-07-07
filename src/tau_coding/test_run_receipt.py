@@ -72,6 +72,15 @@ def write_test_run_receipt(
                 "test-run only allows python -m pytest, pytest, or uv run pytest command forms",
             )
         )
+    command_path_errors = _pytest_command_path_errors(selected_command, resolved_repo)
+    if command_path_errors:
+        alerts.append(
+            _alert(
+                "test_command_path_escape",
+                "pytest path arguments must stay inside the repo",
+                errors=command_path_errors,
+            )
+        )
 
     command_result: dict[str, Any] | None = None
     if not alerts:
@@ -176,6 +185,61 @@ def _allowed_pytest_command(command: Sequence[str]) -> bool:
     if executable == "uv":
         return len(command) >= 3 and command[1:3] == ["run", "pytest"]
     return False
+
+
+def _pytest_command_path_errors(command: Sequence[str], repo: Path) -> list[str]:
+    args = _pytest_passthrough_args(command)
+    errors: list[str] = []
+    skip_next_path_value = False
+    for arg in args:
+        if skip_next_path_value:
+            skip_next_path_value = False
+            errors.extend(_path_arg_errors(arg, repo))
+            continue
+        if arg == "--rootdir":
+            skip_next_path_value = True
+            continue
+        if arg.startswith("--rootdir="):
+            _, _, value = arg.partition("=")
+            errors.extend(_path_arg_errors(value, repo))
+            continue
+        if arg.startswith("-"):
+            continue
+        errors.extend(_path_arg_errors(arg, repo))
+    return errors
+
+
+def _pytest_passthrough_args(command: Sequence[str]) -> list[str]:
+    if not _allowed_pytest_command(command):
+        return []
+    executable = Path(command[0]).name
+    if executable in {"python", "python3"} or executable.startswith("python3."):
+        return list(command[3:])
+    if executable == Path(sys.executable).name and command[1:3] == ["-m", "pytest"]:
+        return list(command[3:])
+    if executable == "pytest":
+        return list(command[1:])
+    if executable == "uv":
+        return list(command[3:])
+    return []
+
+
+def _path_arg_errors(raw_path: str, repo: Path) -> list[str]:
+    if not raw_path or raw_path.startswith("::"):
+        return []
+    path_part = raw_path.split("::", 1)[0]
+    if not path_part:
+        return []
+    candidate = Path(path_part).expanduser()
+    if candidate.is_absolute():
+        try:
+            candidate.resolve().relative_to(repo)
+        except ValueError:
+            return [f"pytest path escapes repo: {raw_path}"]
+    normalized = path_part.replace("\\", "/")
+    if normalized == ".." or normalized.startswith("../") or "/../" in normalized:
+        return [f"pytest path escapes repo: {raw_path}"]
+    return []
 
 
 def _normalize_tested_paths(values: Sequence[str]) -> tuple[list[str], list[str]]:
