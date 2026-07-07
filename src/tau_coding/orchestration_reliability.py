@@ -105,6 +105,7 @@ def write_orchestration_reliability_receipt(
     course_correction_artifact_report = _course_correction_artifact_report(
         dag_receipt,
         course_correction_paths,
+        scope_root=search_root,
     )
     course_corrections_followed = _course_corrections_followed(
         dag_receipt,
@@ -352,8 +353,11 @@ def _course_corrections_followed(
 def _course_correction_artifact_report(
     dag_receipt: Mapping[str, Any],
     course_correction_paths: list[str],
+    *,
+    scope_root: Path | None,
 ) -> dict[str, Any]:
     active_goal_hash = dag_receipt.get("active_goal_hash") or dag_receipt.get("goal_hash")
+    resolved_scope = scope_root.expanduser().resolve() if scope_root is not None else None
     report: dict[str, Any] = {
         "declared": list(course_correction_paths),
         "valid": [],
@@ -366,6 +370,12 @@ def _course_correction_artifact_report(
         if not path.exists():
             report["missing"].append(resolved)
             continue
+        if resolved_scope is not None:
+            try:
+                path.resolve().relative_to(resolved_scope)
+            except ValueError:
+                report["invalid"].append({"path": resolved, "reason": "outside_run_scope"})
+                continue
         payload = _read_json(path)
         reason = _course_correction_invalid_reason(payload, active_goal_hash)
         if reason:

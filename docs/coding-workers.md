@@ -618,6 +618,9 @@ the harness rules separately from whether the code is correct. It reports:
 - required receipt scope: required receipts must resolve under the active
   `--run-dir` or DAG receipt directory; external receipts are marked
   `outside_run_scope` and cannot support orchestration reliability
+- course-correction artifact scope: declared course-correction artifacts follow
+  the same run-scope rule and cannot satisfy controlled-stop handling from
+  outside the run directory
 - course-correction emission and handling
 - retry budget discipline
 - terminal condition validity

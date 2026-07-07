@@ -290,6 +290,43 @@ def test_orchestration_reliability_blocks_unbound_course_correction_artifact(
     assert "course_correction_ignored" in payload["alert_codes"]
 
 
+def test_orchestration_reliability_blocks_course_correction_outside_run_scope(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    correction = outside / "course-correction.json"
+    write_course_correction_receipt(
+        correction,
+        trigger="receipt_timeout",
+        dag_id="coding-dag",
+        goal_hash="sha256:active-goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+    )
+    dag_receipt = _write_dag_receipt(
+        run_dir,
+        status="BLOCKED",
+        course_correction_artifacts=[str(correction)],
+    )
+
+    payload = write_orchestration_reliability_receipt(
+        run_dir=run_dir,
+        dag_receipt_path=dag_receipt,
+        output_path=run_dir / "orchestration-reliability.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["course_corrections_followed"] is False
+    assert payload["course_correction_artifact_report"]["invalid"] == [
+        {"path": str(correction.resolve()), "reason": "outside_run_scope"}
+    ]
+    assert "course_correction_ignored" in payload["alert_codes"]
+
+
 def test_orchestration_reliability_never_claims_code_correctness(tmp_path: Path) -> None:
     dag_receipt = _write_dag_receipt(tmp_path)
 
