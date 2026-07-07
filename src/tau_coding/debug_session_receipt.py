@@ -299,6 +299,13 @@ def _validate_debug_evidence_paths(
     ):
         normalized = _normalize_packet_path(path)
         if normalized is None:
+            if isinstance(path, str) and path:
+                alerts.append(
+                    _alert(
+                        "debug_evidence_path_escape",
+                        f"{label} path must be repo-relative and must not escape its boundary",
+                    )
+                )
             continue
         if allowed_paths and not _path_matches_any(normalized, allowed_paths):
             alerts.append(

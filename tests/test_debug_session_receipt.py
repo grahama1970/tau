@@ -341,6 +341,23 @@ def test_debug_receipt_blocks_evidence_matching_forbidden_paths(tmp_path: Path) 
     assert "debug_evidence_path_forbidden" in receipt["alert_codes"]
 
 
+def test_debug_receipt_blocks_absolute_or_escaping_evidence_path(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["allowed_paths"] = ["src/**", "tests/**"]
+    payload["breakpoints"] = [{"file": "../outside.py", "line": 2}]
+    payload["stopped_frame"] = {"file": "/tmp/outside.py", "line": 2, "function": "answer"}
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["alert_codes"].count("debug_evidence_path_escape") == 2
+
+
 def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     out = tmp_path / "debug-session-receipt.json"

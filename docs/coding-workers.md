@@ -362,7 +362,8 @@ does not include a SHA-256 or byte count for that denied log. Debug session
 packets may also declare `allowed_paths` and `forbidden_paths`; Tau checks
 breakpoint and stopped-frame `file` entries against those boundaries and blocks
 with `debug_evidence_path_disallowed` or `debug_evidence_path_forbidden` when
-debug evidence points outside the declared coding scope.
+debug evidence points outside the declared coding scope. Absolute paths and
+`..` escapes block with `debug_evidence_path_escape` instead of being ignored.
 
 Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code
