@@ -77,6 +77,8 @@ def write_debug_session_receipt(
     variables = _optional_list(packet.get("variables"), "variables", alerts)
     variables, variable_redaction_count = _sanitize_debug_variables(variables)
     commands = _optional_list(packet.get("commands"), "commands", alerts)
+    if zero_trust:
+        _validate_zero_trust_debug_commands(commands, alerts)
     _validate_debug_evidence_paths(
         breakpoints=breakpoints,
         stopped_frame=stopped_frame,
@@ -409,6 +411,33 @@ def _path_matches_any(path: str, patterns: list[str]) -> bool:
 def _debug_target_has_shell_control(target: str) -> bool:
     shell_control = (";", "&&", "||", "|", "`", "$(", ">", "<", "\n", "\r")
     return any(token in target for token in shell_control)
+
+
+def _validate_zero_trust_debug_commands(
+    commands: list[Any],
+    alerts: list[dict[str, Any]],
+) -> None:
+    for index, command in enumerate(commands):
+        command_text = _debug_command_text(command)
+        if command_text is None:
+            continue
+        if _debug_target_has_shell_control(command_text):
+            alerts.append(
+                _alert(
+                    "unsafe_debug_command",
+                    f"commands[{index}] must not contain shell-control syntax in zero-trust mode",
+                )
+            )
+
+
+def _debug_command_text(command: object) -> str | None:
+    if isinstance(command, str) and command:
+        return command
+    if isinstance(command, Mapping):
+        value = command.get("command")
+        if isinstance(value, str) and value:
+            return value
+    return None
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

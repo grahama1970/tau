@@ -406,6 +406,45 @@ def test_debug_receipt_legacy_allows_shell_control_target(tmp_path: Path) -> Non
     assert "unsafe_debug_target" not in receipt["alert_codes"]
 
 
+def test_debug_receipt_zero_trust_blocks_shell_control_command(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["commands"] = [
+        "continue",
+        {"command": "locals | tee /tmp/debug-leak.txt"},
+    ]
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["commands"] == payload["commands"]
+    assert "unsafe_debug_command" in receipt["alert_codes"]
+
+
+def test_debug_receipt_legacy_allows_shell_control_command(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["commands"] = ["locals > /tmp/debug.log"]
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["commands"] == payload["commands"]
+    assert "unsafe_debug_command" not in receipt["alert_codes"]
+
+
 def test_debug_receipt_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     boundary = _data_boundary()

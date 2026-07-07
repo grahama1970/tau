@@ -532,6 +532,9 @@ Zero-trust debug targets are also screened for shell-control syntax such as
 `;`, `&&`, pipes, command substitution, redirects, and newlines. A target with
 that syntax blocks with `unsafe_debug_target` so debugger evidence cannot carry
 an unreviewed shell chain while still looking like a passive evidence packet.
+Zero-trust debug `commands` entries use the same screen: string commands or
+object commands with a `command` string block with `unsafe_debug_command` when
+they contain shell-control syntax.
 
 Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code
