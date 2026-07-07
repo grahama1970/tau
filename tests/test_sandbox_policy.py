@@ -241,6 +241,68 @@ def test_sandbox_run_records_goal_hash_for_worker_substrate(
     assert receipt["command_executed"] is True
 
 
+def test_sandbox_run_records_work_order_sha256_for_worker_substrate(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+    work_order_sha256 = "sha256:" + ("a" * 64)
+
+    monkeypatch.setattr(
+        sandbox_run,
+        "_probe_bwrap",
+        lambda backend_path, *, work_dir=None: {
+            "ok": True,
+            "command": ["bwrap", "probe"],
+            "stdout": "ok\n",
+            "stderr": "",
+        },
+    )
+    monkeypatch.setattr(
+        sandbox_run,
+        "_run_bwrap_command",
+        lambda command, *, backend_path, timeout_seconds, stdin_text, work_dir: {
+            "command": ["bwrap", *command],
+            "returncode": 0,
+            "stdout": "worker-ok\n",
+            "stderr": "",
+            "timed_out": False,
+        },
+    )
+
+    receipt = run_sandboxed_command(
+        command=["/usr/bin/python3", "-c", "print('worker-ok')"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        backend="bwrap",
+        goal_hash="sha256:goal",
+        work_order_sha256=work_order_sha256,
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["goal_hash"] == "sha256:goal"
+    assert receipt["work_order_sha256"] == work_order_sha256
+    assert receipt["command_executed"] is True
+
+
+def test_sandbox_run_blocks_invalid_work_order_sha256_before_execution(
+    tmp_path: Path,
+) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+
+    receipt = run_sandboxed_command(
+        command=[sys.executable, "-c", "print('should-not-run')"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        work_order_sha256="sha256:NOT-A-DIGEST",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["work_order_sha256"] == "sha256:NOT-A-DIGEST"
+    assert receipt["command_executed"] is False
+    assert "invalid_work_order_sha256" in receipt["alert_codes"]
+
+
 def test_sandbox_run_blocks_missing_work_dir(tmp_path: Path) -> None:
     policy_path, boundary_path = _write_policy_inputs(tmp_path)
 
@@ -422,6 +484,46 @@ def test_cli_sandbox_run_records_goal_hash_on_blocked_receipt(tmp_path: Path) ->
     assert result.exit_code == 1
     assert payload["status"] == "BLOCKED"
     assert payload["goal_hash"] == "sha256:goal"
+    assert payload["command_executed"] is False
+    assert "network_not_default_deny" in payload["alert_codes"]
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == payload
+
+
+def test_cli_sandbox_run_records_work_order_sha256_on_blocked_receipt(
+    tmp_path: Path,
+) -> None:
+    policy = _policy_profile()
+    policy["network"]["default"] = "allow"
+    policy_path, boundary_path = _write_policy_inputs(tmp_path, policy=policy)
+    receipt_path = tmp_path / "sandbox-receipt.json"
+    work_order_sha256 = "sha256:" + ("b" * 64)
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "sandbox-run",
+            "--policy-profile",
+            str(policy_path),
+            "--data-boundary",
+            str(boundary_path),
+            "--goal-hash",
+            "sha256:goal",
+            "--work-order-sha256",
+            work_order_sha256,
+            "--out",
+            str(receipt_path),
+            "--",
+            sys.executable,
+            "-c",
+            "print('should-not-run')",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["status"] == "BLOCKED"
+    assert payload["goal_hash"] == "sha256:goal"
+    assert payload["work_order_sha256"] == work_order_sha256
     assert payload["command_executed"] is False
     assert "network_not_default_deny" in payload["alert_codes"]
     assert json.loads(receipt_path.read_text(encoding="utf-8")) == payload

@@ -772,10 +772,11 @@ Referenced sandbox and Herdr receipt paths must resolve inside the worker repo;
 absolute paths outside the repo block with `sandbox_receipt_outside_repo` or
 `herdr_receipt_outside_repo` and are not recorded as admissible substrate
 descriptors.
-Use `uv run tau sandbox-run --goal-hash sha256:...` and include the final
-worker work-order SHA-256 when creating a sandbox receipt that will be
-referenced by a high-stakes worker work order; otherwise the worker substrate
-gate will reject it as unbound. `uv run tau sandbox-run`
+Use `uv run tau sandbox-run --goal-hash sha256:...
+--work-order-sha256 sha256:...` when creating a sandbox receipt that will be
+referenced by a high-stakes worker work order. The receipt records
+`work_order_sha256`; otherwise the worker substrate gate will reject it as
+unbound. `uv run tau sandbox-run`
 writes a BLOCKED `tau.sandbox_run_receipt.v1` even when the policy profile or
 data-boundary file is missing, invalid JSON, or not a JSON object. Those
 preflight failures record `policy_profile_missing`,

@@ -1551,6 +1551,7 @@ def main(
                 data_boundary_path=Path(str(options["data_boundary"])),
                 receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
                 goal_hash=_optional_str(options.get("goal_hash")),
+                work_order_sha256=_optional_str(options.get("work_order_sha256")),
                 timeout_seconds=float(options["timeout_seconds"]),
                 backend=str(options["backend"]),
                 image=_optional_str(options.get("image")),
@@ -4288,6 +4289,7 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
         "stdin_file": None,
         "work_dir": None,
         "goal_hash": None,
+        "work_order_sha256": None,
         "command": [],
     }
     index = 0
@@ -4359,6 +4361,13 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
             options["goal_hash"] = args[index]
         elif arg.startswith("--goal-hash="):
             options["goal_hash"] = arg.partition("=")[2]
+        elif arg == "--work-order-sha256":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--work-order-sha256 requires a value")
+            options["work_order_sha256"] = args[index]
+        elif arg.startswith("--work-order-sha256="):
+            options["work_order_sha256"] = arg.partition("=")[2]
         else:
             raise RuntimeError(f"unknown sandbox-run option: {arg}")
         index += 1

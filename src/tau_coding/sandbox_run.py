@@ -25,6 +25,7 @@ def run_sandboxed_command(
     data_boundary_path: Path,
     receipt_path: Path | None = None,
     goal_hash: str | None = None,
+    work_order_sha256: str | None = None,
     timeout_seconds: float = 30.0,
     backend: str = "bwrap",
     image: str | None = None,
@@ -54,6 +55,13 @@ def run_sandboxed_command(
 
     if not command:
         alerts.append(_alert("missing_command", "sandbox-run requires a command after --."))
+    if work_order_sha256 is not None and not _valid_sha256_uri(work_order_sha256):
+        alerts.append(
+            _alert(
+                "invalid_work_order_sha256",
+                "work_order_sha256 must be formatted as sha256:<64 lowercase hex chars>.",
+            )
+        )
     if backend not in SUPPORTED_BACKENDS:
         alerts.append(_alert("unsupported_backend", f"Unsupported sandbox backend: {backend}"))
 
@@ -112,6 +120,7 @@ def run_sandboxed_command(
             "schema": policy_profile.get("schema"),
         }
         receipt["goal_hash"] = goal_hash
+        receipt["work_order_sha256"] = work_order_sha256
         receipt["data_boundary"] = {
             "path": str(resolved_boundary),
             "exists": resolved_boundary.exists(),
@@ -135,6 +144,7 @@ def run_sandboxed_command(
         "live": True,
         "provider_live": False,
         "goal_hash": goal_hash,
+        "work_order_sha256": work_order_sha256,
         "checked_at": _utc_stamp(),
         "backend": backend_info,
         "image": image,
@@ -329,6 +339,16 @@ def _sha256_uri_or_none(path: Path) -> str | None:
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _valid_sha256_uri(value: str) -> bool:
+    prefix = "sha256:"
+    if not value.startswith(prefix):
+        return False
+    digest = value.removeprefix(prefix)
+    return len(digest) == 64 and digest == digest.lower() and all(
+        character in "0123456789abcdef" for character in digest
+    )
 
 
 def _alert(code: str, message: str, errors: list[str] | None = None) -> dict[str, Any]:
