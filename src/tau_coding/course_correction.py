@@ -25,6 +25,27 @@ CODING_COURSE_CORRECTION_TRIGGERS = frozenset(
         "herdr_stale",
     }
 )
+KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
+    {
+        *CODING_COURSE_CORRECTION_TRIGGERS,
+        "brave_search_required_after_two_attempts",
+        "goal_hash_mismatch",
+        "herdr_binding_mismatch",
+        "human_required",
+        "invalid_receipt",
+        "missing_evidence",
+        "pointless_unit_test_drift",
+        "provider_auth_required",
+        "provider_interstitial",
+        "receipt_timeout_after_visible_dispatch",
+        "research_required_before_retry",
+        "reviewer_revise",
+        "test_churn_without_progress",
+        "two_failed_attempts",
+        "unexpected_edge",
+        "unexpected_route",
+    }
+)
 
 
 def build_course_correction_receipt(
@@ -330,6 +351,14 @@ def _input_alerts_for_trigger(
     observed_state: dict[str, Any],
 ) -> list[dict[str, str]]:
     alerts: list[dict[str, str]] = []
+    if trigger not in KNOWN_COURSE_CORRECTION_TRIGGERS:
+        alerts.append(
+            {
+                "severity": "BLOCK",
+                "code": "unsupported_course_correction_trigger",
+                "message": f"unsupported course-correction trigger: {trigger}",
+            }
+        )
     if not goal_hash:
         alerts.append(
             {

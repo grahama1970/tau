@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 course-correction unsupported-trigger fail-closed rung:
+  `src/tau_coding/course_correction.py` now distinguishes known
+  course-correction triggers from unsupported trigger strings. Unknown triggers
+  still route to the conservative `block_run` policy, but the receipt now also
+  sets `input_valid:false` and emits
+  `unsupported_course_correction_trigger` so invented retry reasons cannot look
+  admissible. `tests/test_course_correction.py` pins this with
+  `test_course_correction_blocks_unsupported_trigger_as_invalid_input`.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/course_correction.py tests/test_course_correction.py` ->
+  `All checks passed!`; `uv run pytest tests/test_course_correction.py -q` ->
+  `15 passed in 0.43s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-course-correction-unsupported-trigger-proof-20260707T065113Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-course-correction-unsupported-trigger-proof-20260707T065113Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `261 passed in
+  7.83s`. This proves deterministic local course-correction receipts now
+  fail closed on unsupported trigger names; it does not prove correction action
+  execution, provider/model quality, semantic code correctness, live OMP/SciLLM
+  semantic worker execution, human acceptance, full sandbox isolation, or full
+  goal completion.
+
 - 2026-07-07 review-findings P3 note-only routing rung:
   `src/tau_coding/review_findings.py` now enforces the R3 routing rule that
   `P3` findings are note-only. A structured reviewer finding with
