@@ -259,6 +259,74 @@ def test_compliance_package_validate_blocks_data_boundary_hash_mismatch(
     assert "data_boundary_hash_does_not_match_artifact" in receipt["alert_codes"]
 
 
+def test_compliance_package_validate_accepts_packaged_coding_evidence(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    evidence_dir = package_dir / "coding-evidence-receipts"
+    evidence_dir.mkdir()
+    _write_json(
+        evidence_dir / "test-run-receipt.json",
+        {
+            "schema": "tau.test_run_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "goal_hash": "sha256:g",
+        },
+    )
+    _write_json(
+        evidence_dir / "commit-plan-receipt.json",
+        {
+            "schema": "tau.commit_plan_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "goal_hash": "sha256:g",
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is True
+    assert receipt["artifacts"]["coding_evidence_receipts"]["receipt_count"] == 2
+    assert receipt["artifacts"][
+        "coding_evidence:coding-evidence-receipts/test-run-receipt.json"
+    ]["schema"] == "tau.test_run_receipt.v1"
+
+
+def test_compliance_package_validate_blocks_bad_coding_evidence(
+    tmp_path: Path,
+) -> None:
+    package_dir = _write_package(tmp_path)
+    evidence_dir = package_dir / "coding-evidence-receipts"
+    evidence_dir.mkdir()
+    _write_json(
+        evidence_dir / "bad-receipt.json",
+        {
+            "schema": "tau.unknown_receipt.v1",
+            "status": "BLOCKED",
+            "ok": False,
+            "mocked": True,
+            "goal_hash": "sha256:other",
+        },
+    )
+
+    receipt = write_compliance_package_validation_receipt(
+        package_dir=package_dir,
+        receipt_path=tmp_path / "validation-receipt.json",
+    )
+
+    assert receipt["ok"] is False
+    assert "unsupported_coding_evidence_schema" in receipt["alert_codes"]
+    assert "coding_evidence_receipt_not_pass" in receipt["alert_codes"]
+    assert "coding_evidence_receipt_mocked" in receipt["alert_codes"]
+    assert "goal_hash_mismatch" in receipt["alert_codes"]
+
+
 def test_cli_compliance_package_validate_writes_blocked_receipt(tmp_path: Path) -> None:
     package_dir = _write_package(tmp_path)
     (package_dir / "non-claims.md").write_text("This package is compliant.\n", encoding="utf-8")

@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 compliance package coding-evidence validation rung:
+  `src/tau_coding/package_validate.py` now inspects
+  `coding-evidence-receipts/` when that directory is present in a compliance
+  evidence package. Each packaged coding receipt must use a supported Tau coding
+  evidence schema, report `status:"PASS"` or `status:"VALID"`, not set
+  `ok:false`, not be marked `mocked:true`, and participate in the same
+  goal-hash/data-boundary-hash consistency checks as critical package receipts.
+  `tests/test_package_validate.py` covers a passing package with
+  `tau.test_run_receipt.v1` and `tau.commit_plan_receipt.v1`, plus a blocked
+  package with unsupported, blocked, mocked, and goal-mismatched coding
+  evidence. Focused proof: `git diff --check --
+  src/tau_coding/package_validate.py tests/test_package_validate.py
+  docs/compliance-package-validation.md PROJECT_KNOWLEDGE.md` -> pass;
+  `uv run ruff check --select I,F,E501 src/tau_coding/package_validate.py
+  tests/test_package_validate.py` -> `All checks passed!`; `uv run pytest
+  tests/test_package_validate.py tests/test_compliance_package.py -q` ->
+  `18 passed in 0.48s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-package-validate-coding-evidence-20260707T140500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `339 passed in 9.49s`. This proves package
+  validation now rejects malformed packaged coding evidence when present and
+  still composes with the maintained coding-capability sanity suite; it does
+  not prove semantic code correctness, live OMP/SciLLM semantic execution,
+  provider/model quality, ITAR compliance, legal compliance, or full goal
+  completion.
+
 - 2026-07-07 compliance package coding-evidence receipt rung:
   `src/tau_coding/compliance_package.py` now copies Tau-native coding receipts
   into `coding-evidence-receipts/` when a run directory contains receipts such

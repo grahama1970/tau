@@ -48,6 +48,11 @@ file names:
   `valid_signature_count`, or `signature_count`.
 - Any receipt that cites `data_boundary_sha256` must cite the actual hash of
   the packaged `data-boundary.json`.
+- If `coding-evidence-receipts/` is present, every JSON receipt in it must use
+  a supported Tau coding evidence schema, have `status:"PASS"` or
+  `status:"VALID"`, not set `ok:false`, not be marked `mocked:true`, and must
+  participate in the same goal-hash and data-boundary-hash consistency checks
+  as the critical package receipts.
 
 The validation receipt uses:
 

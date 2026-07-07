@@ -11,6 +11,22 @@ from typing import Any
 
 COMPLIANCE_PACKAGE_VALIDATION_RECEIPT_SCHEMA = "tau.compliance_package_validation_receipt.v1"
 
+SUPPORTED_CODING_EVIDENCE_SCHEMAS = {
+    "tau.code_patch_receipt.v1",
+    "tau.lsp_diagnostics_receipt.v1",
+    "tau.lsp_symbol_receipt.v1",
+    "tau.lsp_rename_receipt.v1",
+    "tau.test_run_receipt.v1",
+    "tau.review_findings.v1",
+    "tau.commit_plan_receipt.v1",
+    "tau.debug_session_receipt.v1",
+    "tau.github_read_receipt.v1",
+    "tau.omp_worker_receipt.v1",
+    "tau.scillm_worker_receipt.v1",
+    "tau.course_correction.v1",
+    "tau.orchestration_reliability_receipt.v1",
+}
+
 REQUIRED_ITAR_LOCAL_ONLY_FILES = {
     "data_boundary": ("data-boundary.json", "tau.data_boundary.v1", False),
     "policy_profile": ("policy-profile.json", "tau.policy_profile.v1", False),
@@ -121,6 +137,14 @@ def write_compliance_package_validation_receipt(
             _collect_hash(payload, "active_goal_hash", goal_hashes)
             _collect_hash(payload, "data_boundary_sha256", data_boundary_hashes)
 
+    _validate_coding_evidence_receipts(
+        package_dir=resolved_package,
+        artifacts=artifacts,
+        alerts=alerts,
+        goal_hashes=goal_hashes,
+        data_boundary_hashes=data_boundary_hashes,
+    )
+
     non_claims = resolved_package / "non-claims.md"
     artifacts["non_claims"] = _artifact_summary(non_claims)
     if not non_claims.exists():
@@ -196,7 +220,10 @@ def write_compliance_package_validation_receipt(
         "proof_scope": {
             "proves": [
                 "Tau inspected a compliance evidence package for review readiness.",
-                "Required artifacts, schemas, critical receipt statuses, non-claim language, and hash consistency were checked deterministically.",
+                (
+                    "Required artifacts, schemas, critical receipt statuses, "
+                    "non-claim language, and hash consistency were checked deterministically."
+                ),
                 "Tau did not claim legal compliance.",
             ],
             "does_not_prove": [
@@ -258,6 +285,73 @@ def _collect_hash(payload: Mapping[str, Any], key: str, target: set[str]) -> Non
     value = payload.get(key)
     if isinstance(value, str) and value.strip():
         target.add(value)
+
+
+def _validate_coding_evidence_receipts(
+    *,
+    package_dir: Path,
+    artifacts: dict[str, dict[str, Any]],
+    alerts: list[dict[str, Any]],
+    goal_hashes: set[str],
+    data_boundary_hashes: set[str],
+) -> None:
+    evidence_dir = package_dir / "coding-evidence-receipts"
+    artifacts["coding_evidence_receipts"] = {
+        "path": str(evidence_dir),
+        "exists": evidence_dir.is_dir(),
+        "receipt_count": 0,
+    }
+    if not evidence_dir.exists():
+        return
+    if not evidence_dir.is_dir():
+        alerts.append(
+            _alert(
+                "coding_evidence_receipts_not_directory",
+                "coding-evidence-receipts must be a directory when present.",
+                artifact="coding-evidence-receipts",
+            )
+        )
+        return
+    receipt_paths = sorted(evidence_dir.glob("*.json"))
+    artifacts["coding_evidence_receipts"]["receipt_count"] = len(receipt_paths)
+    for receipt_path in receipt_paths:
+        relative = receipt_path.relative_to(package_dir).as_posix()
+        artifact_key = f"coding_evidence:{relative}"
+        summary = _artifact_summary(receipt_path)
+        artifacts[artifact_key] = summary
+        payload = _read_json_object(receipt_path, alerts=alerts, artifact=relative)
+        schema = payload.get("schema") if isinstance(payload, Mapping) else None
+        summary["schema"] = schema
+        if schema not in SUPPORTED_CODING_EVIDENCE_SCHEMAS:
+            alerts.append(
+                _alert(
+                    "unsupported_coding_evidence_schema",
+                    "Coding evidence receipt uses an unsupported schema.",
+                    artifact=relative,
+                    schema=schema,
+                )
+            )
+        if payload.get("status") not in {"PASS", "VALID"} or payload.get("ok") is False:
+            alerts.append(
+                _alert(
+                    "coding_evidence_receipt_not_pass",
+                    "Coding evidence receipts in a review package must be passing receipts.",
+                    artifact=relative,
+                    status=payload.get("status"),
+                    ok=payload.get("ok"),
+                )
+            )
+        if payload.get("mocked") is True:
+            alerts.append(
+                _alert(
+                    "coding_evidence_receipt_mocked",
+                    "Mocked coding evidence is not review-ready package evidence.",
+                    artifact=relative,
+                )
+            )
+        _collect_hash(payload, "goal_hash", goal_hashes)
+        _collect_hash(payload, "active_goal_hash", goal_hashes)
+        _collect_hash(payload, "data_boundary_sha256", data_boundary_hashes)
 
 
 def _semantic_alerts(
@@ -440,7 +534,10 @@ def _sandbox_run_alerts(payload: Mapping[str, Any], *, artifact: str) -> list[di
         alerts.append(
             _alert(
                 "sandbox_execution_not_review_ready",
-                "Review packages cannot claim sandbox command execution without a runtime execution receipt accepted by Tau.",
+                (
+                    "Review packages cannot claim sandbox command execution without "
+                    "a runtime execution receipt accepted by Tau."
+                ),
                 artifact=artifact,
             )
         )
