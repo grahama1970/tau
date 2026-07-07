@@ -796,6 +796,45 @@ def test_project_dag_memory_gate_blocks_inline_intent_evidence(tmp_path: Path) -
     assert receipt["alerts"][0]["code"] == "intent_contains_inline_evidence"
 
 
+def test_project_dag_memory_gate_honors_policy_min_intent_confidence(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    policy = _zero_trust_policy()
+    policy["memory"].update(
+        {
+            "intent_required": True,
+            "evidence_case_required_for": ["COMPLIANCE"],
+            "min_intent_confidence": 0.75,
+        }
+    )
+    intent = _memory_intent()
+    intent["confidence"] = 0.6
+    payload["policy_profile"] = policy
+    payload["data_boundary"] = _public_data_boundary()
+    payload["memory_intent"] = intent
+    payload["evidence_case"] = _memory_evidence_case()
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["alerts"][0]["code"] == "memory_intent_low_confidence"
+    memory_receipt = json.loads(
+        Path(str(receipt["memory_intent_gate_receipt"])).read_text(encoding="utf-8")
+    )
+    assert memory_receipt["alerts"][0]["evidence"] == {
+        "confidence": 0.6,
+        "minimum": 0.75,
+    }
+
+
 def test_project_dag_memory_gate_allows_valid_intent_and_evidence_case(
     tmp_path: Path,
 ) -> None:

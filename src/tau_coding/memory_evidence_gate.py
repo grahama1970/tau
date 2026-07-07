@@ -17,6 +17,7 @@ def write_memory_intent_gate_receipt(
     memory_intent: Mapping[str, Any] | None,
     memory_intent_path: Path | None = None,
     dag_contract: Mapping[str, Any] | None = None,
+    min_confidence: float = 0.5,
     receipt_path: Path,
 ) -> dict[str, Any]:
     """Validate that Memory intent can be used as a Tau dispatch input."""
@@ -61,12 +62,12 @@ def write_memory_intent_gate_receipt(
                 )
             )
         confidence = memory_intent.get("confidence")
-        if confidence is not None and not _confidence_ok(confidence):
+        if confidence is not None and not _confidence_ok(confidence, minimum=min_confidence):
             alerts.append(
                 _alert(
                     "memory_intent_low_confidence",
                     "memory_intent.confidence is below the dispatch threshold.",
-                    {"confidence": confidence, "minimum": 0.5},
+                    {"confidence": confidence, "minimum": min_confidence},
                 )
             )
         observed_goal_hash = memory_intent.get("goal_hash")
@@ -621,11 +622,11 @@ def _route(payload: Mapping[str, Any]) -> str | None:
     return None
 
 
-def _confidence_ok(value: object) -> bool:
+def _confidence_ok(value: object, *, minimum: float = 0.5) -> bool:
     if isinstance(value, bool):
         return False
     if isinstance(value, (int, float)):
-        return float(value) >= 0.5
+        return float(value) >= minimum
     return False
 
 

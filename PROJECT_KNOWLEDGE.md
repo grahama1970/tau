@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 Memory intent policy threshold fail-closed rung:
+  `src/tau_coding/project_dag.py` now resolves
+  `policy_profile.memory.min_intent_confidence` and passes it into the
+  file-backed `tau.memory_intent_gate_receipt.v1` pre-dispatch path in
+  `src/tau_coding/memory_evidence_gate.py`. A zero-trust DAG Memory intent with
+  confidence below the active policy threshold now blocks before dispatch with
+  `memory_intent_low_confidence`, recording both the observed confidence and
+  policy minimum. `tests/test_project_dag.py` pins this with
+  `test_project_dag_memory_gate_honors_policy_min_intent_confidence`. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/memory_evidence_gate.py src/tau_coding/project_dag.py
+  tests/test_project_dag.py` -> `All checks passed!`; `uv run pytest
+  tests/test_memory_evidence_gate.py tests/test_project_dag.py -q` -> `55
+  passed in 2.13s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-memory-threshold-proof-20260707T071925Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-memory-threshold-proof-20260707T071925Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `271 passed in 7.86s`. This proves deterministic local DAG pre-dispatch gates
+  honor the active Memory confidence policy before coding-agent dispatch; it
+  does not prove Memory truth, evidence-case semantic sufficiency, live
+  OMP/SciLLM semantic worker execution, provider/model quality, legal
+  compliance, full sandbox isolation, or full goal completion.
+
 - 2026-07-07 orchestration reliability DAG schema fail-closed rung:
   `src/tau_coding/orchestration_reliability.py` now treats the DAG receipt
   schema as a reliability condition. A present JSON artifact with the wrong

@@ -55,6 +55,11 @@ or an evidence case is otherwise required by policy/intent.
 These fields are dispatch policy. They do not authorize Memory writes, side
 effects, provider use, or external research.
 
+The file-backed DAG dispatch path honors `memory.min_intent_confidence` when
+writing `tau.memory_intent_gate_receipt.v1`; a Memory intent below the active
+policy threshold blocks before agent dispatch and records
+`memory_intent_low_confidence` with the observed confidence and policy minimum.
+
 ## DAG Fields
 
 A zero-trust DAG can pass inline objects or contract-relative JSON paths:

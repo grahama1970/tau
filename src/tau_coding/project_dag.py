@@ -1704,6 +1704,7 @@ def _memory_evidence_preflight(
     contract_path: Path,
     receipt_dir: Path,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None, dict[str, Any] | None]:
+    memory_policy: dict[str, Any] = {}
     if contract.memory_intent is None and contract.evidence_case is None:
         if contract.policy_profile is None:
             return [], None, None
@@ -1717,6 +1718,20 @@ def _memory_evidence_preflight(
         memory_policy = policy_profile.get("memory") if isinstance(policy_profile, dict) else None
         if not isinstance(memory_policy, dict) or memory_policy.get("intent_required") is not True:
             return [], None, None
+    elif contract.policy_profile is not None:
+        policy_profile, _, policy_alerts = _resolve_policy_object(
+            contract.policy_profile,
+            contract_path=contract_path,
+            field_name="policy_profile",
+        )
+        if policy_alerts:
+            return policy_alerts, None, None
+        candidate_memory_policy = (
+            policy_profile.get("memory") if isinstance(policy_profile, dict) else None
+        )
+        if isinstance(candidate_memory_policy, dict):
+            memory_policy = candidate_memory_policy
+    min_confidence = _policy_min_intent_confidence(memory_policy)
     memory_intent, memory_path, memory_read_alerts = read_gate_payload(
         contract.memory_intent,
         contract_path=contract_path,
@@ -1726,6 +1741,7 @@ def _memory_evidence_preflight(
         memory_intent=memory_intent,
         memory_intent_path=memory_path,
         dag_contract=contract.payload,
+        min_confidence=min_confidence,
         receipt_path=receipt_dir / "memory-intent-gate-receipt.json",
     )
     if contract.policy_profile is not None:
@@ -1753,6 +1769,15 @@ def _memory_evidence_preflight(
         *evidence_case_receipt.get("alerts", []),
     ]
     return alerts, memory_receipt, evidence_case_receipt
+
+
+def _policy_min_intent_confidence(memory_policy: dict[str, Any]) -> float:
+    value = memory_policy.get("min_intent_confidence")
+    if isinstance(value, bool):
+        return 0.5
+    if isinstance(value, (int, float)) and 0 <= float(value) <= 1:
+        return float(value)
+    return 0.5
 
 
 def _contract_relative_path(value: str | None, contract_path: Path) -> Path | None:
