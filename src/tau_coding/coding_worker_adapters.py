@@ -1256,6 +1256,7 @@ def _run_omp_identity_probe(
     stdout_path.write_text(completed.stdout, encoding="utf-8")
     stderr_path.write_text(completed.stderr, encoding="utf-8")
     if completed.returncode != 0:
+        _append_omp_version_diagnostic_alerts(completed.stderr, alerts)
         alerts.append(
             _alert(
                 "omp_version_nonzero_exit",
@@ -1269,6 +1270,19 @@ def _run_omp_identity_probe(
         "stdout_path": str(stdout_path),
         "stderr_path": str(stderr_path),
     }
+
+
+def _append_omp_version_diagnostic_alerts(
+    stderr: str,
+    alerts: list[dict[str, Any]],
+) -> None:
+    if "Cannot find module" in stderr:
+        alerts.append(
+            _alert(
+                "omp_dependency_missing",
+                "OMP version probe failed because a required runtime module is missing",
+            )
+        )
 
 
 def _maybe_post_scillm_opencode_run(

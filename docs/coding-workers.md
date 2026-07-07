@@ -936,6 +936,12 @@ nonzero version probe blocks the doctor receipt. This proves only OMP command
 availability and identity-probe capture; it does not prove OMP can perform
 coding work or accept an RPC request.
 
+When the configured command starts but stderr contains a Bun/Node-style
+`Cannot find module` error, the doctor also records `omp_dependency_missing`.
+For a local `oh-my-pi` checkout this normally means the wrapper exists but the
+checkout has not been prepared with its setup/install path, so Tau must stop at
+readiness instead of treating the worker as launchable.
+
 For SciLLM coding delegates, Tau uses the SciLLM proxy service, normally
 `http://localhost:4001`, and the OpenCode serve surface
 (`/v1/scillm/opencode/runs`) with an agent profile such as `build` or
@@ -1036,6 +1042,13 @@ TAU_CODING_SANITY_LIVE_OMP=1 \
     --repo . \
     --run-dir /tmp/tau-coding-capability-sanity-live-omp
 ```
+
+For a local `oh-my-pi` source checkout, `OMP_BIN` may point at the development
+wrapper, for example
+`/home/graham/workspace/experiments/oh-my-pi/packages/coding-agent/scripts/omp`.
+The doctor receipt remains authoritative: if that wrapper reports
+`omp_dependency_missing`, run the `oh-my-pi` setup path before using it as a
+Tau worker.
 
 The live OMP check runs `examples/omp-worker/live-run.sh`, writes its worker repo
 under ignored `.tmp/`, runs `omp-worker-doctor`, invokes the configured

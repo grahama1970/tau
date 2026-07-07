@@ -2264,6 +2264,33 @@ def test_omp_worker_doctor_records_version_probe(tmp_path: Path) -> None:
     assert payload["identity_artifacts"][0]["label"] == "version_stdout"
 
 
+def test_omp_worker_doctor_classifies_missing_runtime_dependency(
+    tmp_path: Path,
+) -> None:
+    fake_omp = tmp_path / "omp"
+    fake_omp.write_text(
+        "#!/usr/bin/env python3\n"
+        "import sys\n"
+        "sys.stderr.write(\"error: Cannot find module '@oh-my-pi/pi-utils/dirs'\\n\")\n"
+        "raise SystemExit(1)\n",
+        encoding="utf-8",
+    )
+    fake_omp.chmod(0o755)
+
+    payload = write_omp_worker_doctor_receipt(
+        output_path=tmp_path / "omp-doctor-receipt.json",
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_found"] is True
+    assert payload["version_executed"] is True
+    assert payload["version_exit_code"] == 1
+    assert "omp_dependency_missing" in payload["alert_codes"]
+    assert "omp_version_nonzero_exit" in payload["alert_codes"]
+
+
 def test_cli_omp_worker_doctor_writes_receipt(tmp_path: Path) -> None:
     fake_omp = _write_fake_omp(tmp_path)
     out = tmp_path / "omp-doctor-receipt.json"
