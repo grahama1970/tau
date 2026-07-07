@@ -243,8 +243,27 @@ def test_debug_receipt_zero_trust_blocks_missing_policy_boundary(tmp_path: Path)
     )
 
     assert receipt["status"] == "BLOCKED"
+    assert "missing_expected_goal_hash" in receipt["alert_codes"]
     assert "missing_policy_profile" in receipt["alert_codes"]
     assert "missing_data_boundary" in receipt["alert_codes"]
+
+
+def test_debug_receipt_zero_trust_requires_expected_goal_hash(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["goal_hash"] == "sha256:debug-goal"
+    assert receipt["expected_goal_hash"] is None
+    assert "missing_expected_goal_hash" in receipt["alert_codes"]
+    assert "goal_hash_mismatch" not in receipt["alert_codes"]
 
 
 def test_debug_receipt_zero_trust_blocks_missing_goal_hash(tmp_path: Path) -> None:
@@ -253,6 +272,7 @@ def test_debug_receipt_zero_trust_blocks_missing_goal_hash(tmp_path: Path) -> No
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile=_policy_profile(),
         data_boundary=_data_boundary(),
@@ -270,6 +290,7 @@ def test_debug_receipt_zero_trust_blocks_invalid_policy_boundary_schema(
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile={"schema": "not.tau.policy", "profile_id": "test"},
         data_boundary={"schema": "not.tau.boundary", "classification": "public"},
@@ -301,6 +322,7 @@ def test_debug_receipt_zero_trust_accepts_policy_boundary(tmp_path: Path) -> Non
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile=_policy_profile(),
         data_boundary=_data_boundary(),
@@ -322,6 +344,7 @@ def test_debug_receipt_zero_trust_blocks_shell_control_target(tmp_path: Path) ->
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile=_policy_profile(),
         data_boundary=_data_boundary(),
@@ -357,6 +380,7 @@ def test_debug_receipt_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile=_policy_profile(),
         data_boundary=boundary,
@@ -374,6 +398,7 @@ def test_debug_receipt_zero_trust_honors_log_read_denylist(tmp_path: Path) -> No
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile=_policy_profile(read_denylist=["debug-stdout.txt"]),
         data_boundary=_data_boundary(),
@@ -402,6 +427,7 @@ def test_debug_receipt_blocks_malformed_policy_read_denylist(tmp_path: Path) -> 
     receipt = write_debug_session_receipt(
         session_path=session,
         output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:debug-goal",
         zero_trust=True,
         policy_profile=_policy_profile(read_denylist="debug-stdout.txt"),
         data_boundary=_data_boundary(),
@@ -507,8 +533,50 @@ def test_cli_debug_session_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_expected_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_cli_debug_session_zero_trust_missing_goal_hash_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    session = _write_debug_session(tmp_path)
+    out = tmp_path / "debug-session-receipt.json"
+    policy_path = tmp_path / "policy-profile.json"
+    boundary_path = tmp_path / "data-boundary.json"
+    policy_path.write_text(
+        json.dumps(_policy_profile(), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    boundary_path.write_text(
+        json.dumps(_data_boundary(), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "debug-session-receipt",
+            "--session",
+            str(session),
+            "--out",
+            str(out),
+            "--zero-trust",
+            "--policy-profile",
+            str(policy_path),
+            "--data-boundary",
+            str(boundary_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert payload["goal_hash"] == "sha256:debug-goal"
+    assert payload["expected_goal_hash"] is None
+    assert "missing_expected_goal_hash" in payload["alert_codes"]
 
 
 def _write_debug_session(

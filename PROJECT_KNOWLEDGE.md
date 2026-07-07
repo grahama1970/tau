@@ -5,6 +5,34 @@
 
 ## Current Understanding
 
+- 2026-07-07 zero-trust debug expected-goal binding rung:
+  `src/tau_coding/debug_session_receipt.py` now requires the caller to supply
+  an expected goal hash when writing a zero-trust debug session receipt. A
+  session packet that carries its own `goal_hash` is no longer sufficient for
+  high-stakes debug evidence; missing caller binding blocks with
+  `missing_expected_goal_hash`, and packet/caller mismatch continues to block
+  with `goal_hash_mismatch`. The CLI path therefore requires
+  `uv run tau debug-session-receipt --zero-trust --goal-hash sha256:...`
+  alongside `--policy-profile` and `--data-boundary` for admissible zero-trust
+  debugger evidence. Focused proof: `git diff --check --
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py` -> `All checks passed!`; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `29 passed in 0.45s`. Aggregate
+  proof: `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-expected-goal-20260707T105500Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-debug-expected-goal-20260707T105500Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded
+  `coding_receipt_tests` `317 passed in 8.08s`. This proves deterministic local
+  zero-trust debug receipts cannot self-bind to packet-authored goals without a
+  caller-supplied expected goal hash; it does not prove live debugger adapter
+  semantics, runtime sandbox enforcement, provider/model quality, legal
+  compliance, or full goal completion.
+
 - 2026-07-07 worker substrate missing-goal fail-closed rung:
   `src/tau_coding/coding_worker_adapters.py` now rejects high-stakes sandbox
   or Herdr substrate receipts that omit `goal_hash` when the worker work order
