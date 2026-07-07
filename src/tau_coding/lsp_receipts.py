@@ -317,6 +317,7 @@ def _file_artifacts(paths: Iterable[Path]) -> list[dict[str, Any]]:
         artifacts.append(
             {
                 "path": str(resolved),
+                "exists": True,
                 "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
                 "bytes": resolved.stat().st_size,
             }

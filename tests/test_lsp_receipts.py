@@ -32,6 +32,7 @@ def test_lsp_diagnostics_receipt_records_counts(tmp_path: Path) -> None:
     assert payload["inspected_artifacts"] == [
         {
             "path": str(source.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(source)}",
             "bytes": source.stat().st_size,
         }
@@ -201,6 +202,7 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert payload["inspected_artifacts"] == [
         {
             "path": str(source.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(source)}",
             "bytes": source.stat().st_size,
         }
@@ -330,6 +332,7 @@ def test_cli_lsp_symbols_writes_receipt(tmp_path: Path) -> None:
     assert payload["inspected_artifacts"] == [
         {
             "path": str(source.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(source)}",
             "bytes": source.stat().st_size,
         }

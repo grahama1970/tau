@@ -179,8 +179,8 @@ launder an unsupported retry-budget claim.
 workspace. Tau uses Ruff when available and falls back to Python AST parsing for
 syntax evidence. The receipt records the adapter used, inspected files,
 diagnostics, severity counts, whether the adapter was available, and
-`inspected_artifacts` with SHA-256 hashes and byte counts for the inspected
-source files.
+`inspected_artifacts` with resolved path, existence, SHA-256 hashes, and byte
+counts for the inspected source files.
 
 CLI:
 
