@@ -80,6 +80,25 @@ def test_orchestration_reliability_blocks_missing_receipt(tmp_path: Path) -> Non
     assert "missing_dag_or_run_receipt" in payload["alert_codes"]
 
 
+def test_orchestration_reliability_blocks_invalid_dag_receipt_schema(
+    tmp_path: Path,
+) -> None:
+    dag_receipt = _write_dag_receipt(tmp_path)
+    payload = json.loads(dag_receipt.read_text(encoding="utf-8"))
+    payload["schema"] = "not.tau.dag_receipt.v1"
+    dag_receipt.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["dag_receipt_schema"] == "not.tau.dag_receipt.v1"
+    assert receipt["dag_receipt_schema_valid"] is False
+    assert "invalid_dag_receipt_schema" in receipt["alert_codes"]
+
+
 def test_orchestration_reliability_blocks_required_receipt_not_pass(tmp_path: Path) -> None:
     artifact = _write_required_receipt(tmp_path / "worker-receipt.json", status="BLOCKED")
     dag_receipt = _write_dag_receipt(tmp_path, artifacts=[str(artifact)])

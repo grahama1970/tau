@@ -78,6 +78,9 @@ def write_orchestration_reliability_receipt(
     dag_error = (
         dag_receipt.get("dag_error") if isinstance(dag_receipt.get("dag_error"), dict) else {}
     )
+    dag_receipt_schema_valid = (
+        not dag_receipt or dag_receipt.get("schema") == DAG_RECEIPT_SCHEMA
+    )
     failure_code = str(dag_error.get("failure_code") or "")
     dag_alert_codes = _dag_alert_codes(dag_receipt)
     goal_hash_preserved = _goal_hash_preserved(dag_receipt, failure_code, dag_alert_codes)
@@ -111,6 +114,7 @@ def write_orchestration_reliability_receipt(
     required_receipt_report = _required_receipt_report(required_receipts)
     reliable = (
         bool(dag_receipt)
+        and dag_receipt_schema_valid
         and goal_hash_preserved
         and dag_routes_respected
         and retry_budget_respected
@@ -124,6 +128,7 @@ def write_orchestration_reliability_receipt(
     )
     alerts = _alerts(
         dag_receipt=dag_receipt,
+        dag_receipt_schema_valid=dag_receipt_schema_valid,
         dag_error=dag_error,
         unhandled_herdr_blocks=unhandled_herdr_blocks,
         blocked_without_correction=blocked_without_correction,
@@ -144,6 +149,8 @@ def write_orchestration_reliability_receipt(
         "provider_live": _provider_live(dag_receipt, herdr_gates),
         "run_dir": str(resolved_run_dir) if resolved_run_dir is not None else None,
         "dag_receipt_path": _path_for_payload(dag_receipt),
+        "dag_receipt_schema": dag_receipt.get("schema"),
+        "dag_receipt_schema_valid": dag_receipt_schema_valid,
         "dag_receipt_sha256": _payload_path_sha256_uri(dag_receipt),
         "dag_receipt_bytes": _payload_path_size(dag_receipt),
         "inspected_artifacts": _inspected_artifacts(
@@ -209,6 +216,7 @@ def write_orchestration_reliability_receipt(
 def _alerts(
     *,
     dag_receipt: dict[str, Any],
+    dag_receipt_schema_valid: bool,
     dag_error: dict[str, Any],
     unhandled_herdr_blocks: list[dict[str, Any]],
     blocked_without_correction: bool,
@@ -223,6 +231,8 @@ def _alerts(
     alerts: list[dict[str, Any]] = []
     if not dag_receipt:
         alerts.append({"severity": "BLOCK", "code": "missing_dag_or_run_receipt"})
+    elif not dag_receipt_schema_valid:
+        alerts.append({"severity": "BLOCK", "code": "invalid_dag_receipt_schema"})
     failure_code = str(dag_error.get("failure_code") or "")
     if failure_code in {"goal_hash_mismatch", "goal_changed", "unexpected_edge", "unexpected_node"}:
         alerts.append({"severity": "BLOCK", "code": failure_code})

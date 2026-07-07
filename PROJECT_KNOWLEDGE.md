@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 03:10 EDT by agent
+**Last updated:** 2026-07-07 03:14 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 orchestration reliability DAG schema fail-closed rung:
+  `src/tau_coding/orchestration_reliability.py` now treats the DAG receipt
+  schema as a reliability condition. A present JSON artifact with the wrong
+  schema no longer passes as an orchestration receipt; Tau records
+  `dag_receipt_schema`, `dag_receipt_schema_valid:false`, and emits
+  `invalid_dag_receipt_schema`. `tests/test_orchestration_reliability.py` pins
+  this with `test_orchestration_reliability_blocks_invalid_dag_receipt_schema`.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> `All checks passed!`; `uv run
+  pytest tests/test_orchestration_reliability.py -q` -> `12 passed in 0.44s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-orchestration-schema-proof-20260707T071320Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-orchestration-schema-proof-20260707T071320Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `271 passed in
+  7.99s`. This proves deterministic local orchestration reliability receipts
+  fail closed on wrong DAG receipt schema; it does not prove code correctness,
+  agent truthfulness, provider/model quality, live OMP/SciLLM semantic worker
+  execution, human acceptance, GitHub mutation, future route correctness, legal
+  compliance, full sandbox isolation, or full goal completion.
 
 - 2026-07-07 worker path-policy shape fail-closed rung:
   `src/tau_coding/coding_worker_adapters.py` now blocks malformed
