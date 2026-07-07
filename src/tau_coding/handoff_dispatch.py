@@ -18,6 +18,12 @@ TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.
 TAU_AGENT_HANDOFF_COMMAND_LOOP_RECEIPT_SCHEMA = "tau.agent_handoff_command_loop_receipt.v1"
 TAU_AGENT_DISPATCH_COMMAND_FILENAME = "tau-dispatch-command.json"
 TAU_COMMAND_SPEC_POLICY_SCHEMA = "tau.command_spec_policy.v1"
+DURABLE_HANDOFF_CONTEXT_KEYS = (
+    "identity_review_model_policy",
+    "image_model_policy",
+    "persona_dream_phase07_storyboard",
+    "persona_dream_panel",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -457,6 +463,40 @@ def _payload_with_command_spec_dispatch_metadata(
     return payload
 
 
+def _payload_with_durable_handoff_context(
+    previous_payload: Mapping[str, Any],
+    response_payload: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    previous_context = previous_payload.get("context")
+    if not isinstance(previous_context, Mapping):
+        return response_payload
+
+    durable_context = {
+        key: previous_context[key]
+        for key in DURABLE_HANDOFF_CONTEXT_KEYS
+        if key in previous_context
+    }
+    if not durable_context:
+        return response_payload
+
+    response_context = response_payload.get("context")
+    if isinstance(response_context, Mapping) and all(
+        key in response_context for key in durable_context
+    ):
+        return response_payload
+
+    payload = json.loads(json.dumps(response_payload))
+    context = payload.get("context")
+    if not isinstance(context, dict):
+        context = {}
+        payload["context"] = context
+
+    for key, value in durable_context.items():
+        context.setdefault(key, value)
+
+    return payload
+
+
 def write_agent_handoff_command_dispatch_receipt(
     start_payload: Mapping[str, Any],
     command: list[str],
@@ -740,7 +780,7 @@ def run_agent_handoff_command_loop(
                 dispatches=tuple(dispatches),
                 errors=(f"step[{step}]: command stdout JSON root must be an object",),
             )
-        current_payload = next_payload
+        current_payload = _payload_with_durable_handoff_context(current_payload, next_payload)
         next_projection = project_agent_handoff(
             current_payload,
             active_goal_hash=active_goal_hash,

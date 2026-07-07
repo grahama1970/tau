@@ -799,6 +799,123 @@ def test_run_agent_handoff_command_loop_reaches_human(tmp_path: Path) -> None:
     assert all(dispatch["live"] is True for dispatch in result.dispatches)
 
 
+def test_run_agent_handoff_command_loop_preserves_durable_policy_context(
+    tmp_path: Path,
+) -> None:
+    start = _valid_handoff()
+    start["previous_subagent"] = "human"
+    start["next_agent"] = {
+        "name": "goal-guardian",
+        "executor": "local",
+        "reason": "Start a provider-sensitive workflow.",
+    }
+    start["context"]["identity_review_model_policy"] = {
+        "provider": "codex",
+        "auth": "codex-oauth",
+        "model": "gpt-5.5",
+    }
+    start["context"]["persona_dream_phase07_storyboard"] = {
+        "run_root": str(tmp_path / "run"),
+        "storyboard_packet": str(tmp_path / "storyboard_packet.json"),
+    }
+
+    guardian_response = _valid_handoff()
+    guardian_response["previous_subagent"] = "goal-guardian"
+    guardian_response["context"] = {
+        "summary": "Worker response intentionally omitted durable policy context.",
+        "artifacts": ["/tmp/tau/guardian-response.json"],
+    }
+    guardian_response["next_agent"] = {
+        "name": "project-or-harness-verifier",
+        "executor": "local",
+        "reason": "Verifier must receive preserved durable policy context.",
+    }
+    verifier_response = _valid_handoff()
+    verifier_response["previous_subagent"] = "project-or-harness-verifier"
+    verifier_response["next_agent"] = {
+        "name": "human",
+        "executor": "human",
+        "reason": "Human decides the next route.",
+    }
+
+    agents_root = tmp_path / "agents"
+    spec_root = tmp_path / "specs"
+    verifier_dir = agents_root / "project-or-harness-verifier"
+    guardian_spec_dir = spec_root / "goal-guardian"
+    verifier_spec_dir = spec_root / "project-or-harness-verifier"
+    verifier_request_path = tmp_path / "verifier-request.json"
+    verifier_dir.mkdir(parents=True)
+    guardian_spec_dir.mkdir(parents=True)
+    verifier_spec_dir.mkdir(parents=True)
+    (verifier_dir / "AGENTS.md").write_text(
+        "---\nid: project-or-harness-verifier\n---\n",
+        encoding="utf-8",
+    )
+    (guardian_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    f"print({json.dumps(json.dumps(guardian_response))})",
+                ],
+                "timeout_s": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (verifier_spec_dir / "tau-dispatch-command.json").write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import sys; "
+                        f"open({str(verifier_request_path)!r}, 'w', encoding='utf-8')"
+                        ".write(sys.stdin.read()); "
+                        f"print({json.dumps(json.dumps(verifier_response))})"
+                    ),
+                ],
+                "timeout_s": 5,
+                "tau_dag_node": {
+                    "node_id": "panel-reviewer",
+                    "agent": "project-or-harness-verifier",
+                    "model_policy": {
+                        "provider": "scillm",
+                        "model": "gpt-2",
+                    },
+                    "requires_provider_route": True,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_agent_handoff_command_loop(
+        start,
+        agent_registry_root=agents_root,
+        command_spec_root=spec_root,
+        active_goal_hash="sha256:active-goal",
+        max_steps=3,
+    )
+
+    verifier_request = json.loads(verifier_request_path.read_text(encoding="utf-8"))
+    context = verifier_request["context"]
+    assert result.ok is True
+    assert result.status == "WAITING"
+    assert [dispatch["selected_agent"] for dispatch in result.dispatches] == [
+        "goal-guardian",
+        "project-or-harness-verifier",
+    ]
+    assert context["identity_review_model_policy"]["model"] == "gpt-5.5"
+    assert context["identity_review_model_policy"]["auth"] == "codex-oauth"
+    assert context["persona_dream_phase07_storyboard"]["run_root"] == str(tmp_path / "run")
+    assert context["model_policy"]["model"] == "gpt-2"
+    assert context["dag_node_id"] == "panel-reviewer"
+    assert context["requires_provider_route"] is True
+
+
 def test_run_agent_handoff_command_loop_records_command_policy_hash(
     tmp_path: Path,
 ) -> None:

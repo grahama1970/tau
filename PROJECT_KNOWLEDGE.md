@@ -5,6 +5,25 @@
 
 ## Current Understanding
 
+- 2026-07-07 durable handoff context propagation:
+  `src/tau_coding/handoff_dispatch.py` now carries durable provider/storyboard
+  context keys across command-loop subagent handoffs even when an intermediate
+  worker response omits them. Preserved keys include
+  `identity_review_model_policy`, `image_model_policy`,
+  `persona_dream_phase07_storyboard`, and `persona_dream_panel`; command-spec
+  DAG metadata such as `model_policy`, `prompt_contract`, `dag_node_id`, and
+  `requires_provider_route` still injects into the selected node request. This
+  prevents later verifier/reviewer nodes from losing provider-sensitive policy
+  context after a creator/guardian response. Focused proof: `python3 -m
+  py_compile src/tau_coding/handoff_dispatch.py tests/test_handoff_dispatch.py`
+  -> pass; `uv run ruff check src/tau_coding/handoff_dispatch.py
+  tests/test_handoff_dispatch.py` -> `All checks passed!`; `uv run pytest
+  tests/test_handoff_dispatch.py -q` -> `32 passed in 3.01s`. This proves the
+  local command-backed handoff loop preserves durable context into the next node
+  request in deterministic fixtures; it does not prove live provider execution,
+  provider/model semantic quality, full Phase 07 storyboard acceptance, or
+  arbitrary context propagation outside the named durable keys.
+
 - 2026-07-07 coding reliability example debug/GitHub evidence coverage:
   `examples/coding-reliability-basic/run.sh` now writes
   `debug-session-receipt.json` and `github-read-receipt.json` in addition to
