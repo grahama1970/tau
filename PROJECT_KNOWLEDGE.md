@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 skill adapter CLI/sanity rung:
+  `src/tau_coding/cli.py` now exposes `debugger-skill-adapter` and
+  `code-runner-skill-adapter` so skill-specific adapters are reachable through
+  operator commands, not only Python calls. `tests/test_debugger_skill_adapter.py`
+  and `tests/test_code_runner_skill_adapter.py` include CLI smoke coverage that
+  verifies stdout matches the written receipt artifact. `docs/skill-composition.md`
+  records both commands. `scripts/run-coding-capability-sanity.py` includes
+  `src/tau_coding/debugger_skill_adapter.py`,
+  `src/tau_coding/code_runner_skill_adapter.py`,
+  `tests/test_debugger_skill_adapter.py`, and
+  `tests/test_code_runner_skill_adapter.py` in the aggregate lint/test set.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/cli.py src/tau_coding/debugger_skill_adapter.py
+  src/tau_coding/code_runner_skill_adapter.py
+  tests/test_debugger_skill_adapter.py tests/test_code_runner_skill_adapter.py
+  scripts/run-coding-capability-sanity.py` -> `All checks passed!`; `uv run
+  pytest tests/test_debugger_skill_adapter.py tests/test_code_runner_skill_adapter.py
+  -q` -> `11 passed in 0.44s`; `uv run python -m py_compile
+  src/tau_coding/cli.py src/tau_coding/debugger_skill_adapter.py
+  src/tau_coding/code_runner_skill_adapter.py scripts/run-coding-capability-sanity.py`
+  -> pass; `git diff --check -- ...` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-skill-adapters-20260707T123038Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `417 passed in 10.46s`. This proves the
+  debugger and code-runner adapters have deterministic operator command coverage
+  and aggregate sanity coverage; it does not prove debugger conclusions are
+  semantically complete, code-runner patches are semantically correct, native
+  skill outputs are truthful, or live external skill execution.
+
 - 2026-07-07 skill invocation receipt rung:
   `src/tau_coding/skill_invocation.py` adds
   `tau.skill_invocation_request.v1`, `tau.skill_invocation_receipt.v1`, and

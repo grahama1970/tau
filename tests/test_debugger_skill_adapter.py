@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+from typer.testing import CliRunner
+
+from tau_coding.cli import app
 from tau_coding.debug_session_receipt import DEBUG_SESSION_RECEIPT_SCHEMA
 from tau_coding.debugger_skill_adapter import (
     DEBUGGER_SKILL_ADAPTER_RECEIPT_SCHEMA,
@@ -96,6 +99,39 @@ def test_debugger_adapter_course_corrects_missing_proof(tmp_path: Path) -> None:
 
     assert receipt["status"] == "BLOCKED"
     assert receipt["course_correction"]["required_next_action"] == "debug_or_route_reviewer"
+
+
+def test_cli_debugger_skill_adapter_writes_adapter_and_debug_receipts(
+    tmp_path: Path,
+) -> None:
+    proof = _write_debugger_proof(tmp_path)
+    out = tmp_path / "adapter-receipt.json"
+    debug_out = tmp_path / "debug-session-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "debugger-skill-adapter",
+            "--proof",
+            str(proof),
+            "--out",
+            str(out),
+            "--debug-session-out",
+            str(debug_out),
+            "--repo-root",
+            str(tmp_path),
+            "--goal-hash",
+            "sha256:goal",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["schema"] == DEBUGGER_SKILL_ADAPTER_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    debug_payload = json.loads(debug_out.read_text(encoding="utf-8"))
+    assert debug_payload["schema"] == DEBUG_SESSION_RECEIPT_SCHEMA
 
 
 def _write_debugger_proof(

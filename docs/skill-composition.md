@@ -116,6 +116,15 @@ outputs as evidence.
 The first skill-specific adapter ingests `debugger.proof.v1` and projects it
 into Tau's existing `tau.debug_session_receipt.v1` validator.
 
+```bash
+uv run tau debugger-skill-adapter \
+  --proof /tmp/debugger-proof.json \
+  --out /tmp/debugger-adapter-receipt.json \
+  --debug-session-out /tmp/debug-session-receipt.json \
+  --repo-root /path/to/repo \
+  --goal-hash sha256:...
+```
+
 ```text
 debugger.proof.v1
   -> tau.debugger_skill_adapter_receipt.v1
@@ -143,6 +152,14 @@ artifact classes before Tau accepts the worker result:
 The adapter then dry-run validates the patch through `tau.code_patch_receipt.v1`.
 It rejects patches outside the worker allowlist and emits a course-correction
 payload when evidence is missing or the worker reports a blocked result.
+
+```bash
+uv run tau code-runner-skill-adapter \
+  --result /tmp/code-runner-result.json \
+  --out /tmp/code-runner-worker-receipt.json \
+  --repo-root /path/to/repo \
+  --goal-hash sha256:...
+```
 
 This still does not apply the patch, prove semantic correctness, or make the
 worker model truthful.

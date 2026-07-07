@@ -2,6 +2,9 @@ import hashlib
 import json
 from pathlib import Path
 
+from typer.testing import CliRunner
+
+from tau_coding.cli import app
 from tau_coding.code_runner_skill_adapter import (
     CODE_RUNNER_WORKER_RECEIPT_SCHEMA,
     write_code_runner_skill_adapter_receipt,
@@ -70,6 +73,33 @@ def test_code_runner_adapter_emits_course_correction_on_failure(tmp_path: Path) 
     assert receipt["status"] == "BLOCKED"
     assert receipt["course_correction"]["required_next_action"] == "retry_node"
     assert "dod_artifact" in receipt["course_correction"]["required_evidence_before_retry"]
+
+
+def test_cli_code_runner_skill_adapter_writes_receipt(tmp_path: Path) -> None:
+    result_path = _write_code_runner_result(tmp_path)
+    out = tmp_path / "code-runner-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "code-runner-skill-adapter",
+            "--result",
+            str(result_path),
+            "--out",
+            str(out),
+            "--repo-root",
+            str(tmp_path),
+            "--goal-hash",
+            "sha256:goal",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["schema"] == CODE_RUNNER_WORKER_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    assert payload["code_patch_receipt_status"] == "PASS"
 
 
 _BEFORE = "def answer():\n    return 41\n"

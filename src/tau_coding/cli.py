@@ -39,6 +39,7 @@ from tau_coding.browser_cdp_proof import (
     write_browser_cdp_proof,
 )
 from tau_coding.code_patch import apply_code_patch_receipt
+from tau_coding.code_runner_skill_adapter import write_code_runner_skill_adapter_receipt
 from tau_coding.coding_worker_adapters import (
     write_omp_worker_launch_receipt,
     write_omp_worker_receipt,
@@ -68,6 +69,7 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_poc,
 )
 from tau_coding.debug_session_receipt import write_debug_session_receipt
+from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
@@ -2002,6 +2004,40 @@ def main(
                     if options.get("repo_root") is not None
                     else None
                 ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "debugger-skill-adapter":
+        try:
+            options = _parse_debugger_skill_adapter_cli_args(positional_args[1:])
+            payload = write_debugger_skill_adapter_receipt(
+                proof_path=Path(str(options["proof"])),
+                output_path=Path(str(options["out"])),
+                debug_session_output_path=Path(str(options["debug_session_out"])),
+                repo_root=(
+                    Path(str(options["repo_root"]))
+                    if options.get("repo_root") is not None
+                    else None
+                ),
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
+                zero_trust=bool(options["zero_trust"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "code-runner-skill-adapter":
+        try:
+            options = _parse_code_runner_skill_adapter_cli_args(positional_args[1:])
+            payload = write_code_runner_skill_adapter_receipt(
+                result_path=Path(str(options["result"])),
+                output_path=Path(str(options["out"])),
+                repo_root=Path(str(options["repo_root"])),
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -5301,6 +5337,106 @@ def _parse_skill_invocation_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError(
             "Usage: tau skill-invocation --request <json> --out <receipt> "
             "[--repo-root <dir>]"
+        )
+    return options
+
+
+def _parse_debugger_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "proof": None,
+        "out": None,
+        "debug_session_out": None,
+        "repo_root": None,
+        "goal_hash": None,
+        "zero_trust": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--proof",
+            "--out",
+            "--debug-session-out",
+            "--repo-root",
+            "--goal-hash",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--proof="):
+            options["proof"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--debug-session-out="):
+            options["debug_session_out"] = arg.partition("=")[2]
+        elif arg.startswith("--repo-root="):
+            options["repo_root"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
+        else:
+            raise RuntimeError(f"unknown debugger-skill-adapter option: {arg}")
+        index += 1
+    if not _optional_str(options.get("proof")):
+        raise RuntimeError(
+            "Usage: tau debugger-skill-adapter --proof <json> --out <receipt> "
+            "--debug-session-out <receipt> [--repo-root <dir>]"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau debugger-skill-adapter --proof <json> --out <receipt> "
+            "--debug-session-out <receipt> [--repo-root <dir>]"
+        )
+    if not _optional_str(options.get("debug_session_out")):
+        raise RuntimeError(
+            "Usage: tau debugger-skill-adapter --proof <json> --out <receipt> "
+            "--debug-session-out <receipt> [--repo-root <dir>]"
+        )
+    return options
+
+
+def _parse_code_runner_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "result": None,
+        "out": None,
+        "repo_root": None,
+        "goal_hash": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--result", "--out", "--repo-root", "--goal-hash"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--result="):
+            options["result"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--repo-root="):
+            options["repo_root"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown code-runner-skill-adapter option: {arg}")
+        index += 1
+    if not _optional_str(options.get("result")):
+        raise RuntimeError(
+            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    if not _optional_str(options.get("repo_root")):
+        raise RuntimeError(
+            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
+            "--repo-root <dir>"
         )
     return options
 
