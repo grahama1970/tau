@@ -24,6 +24,7 @@ def run_sandboxed_command(
     policy_profile_path: Path,
     data_boundary_path: Path,
     receipt_path: Path | None = None,
+    goal_hash: str | None = None,
     timeout_seconds: float = 30.0,
     backend: str = "bwrap",
     image: str | None = None,
@@ -110,6 +111,7 @@ def run_sandboxed_command(
             "sha256": _sha256_uri_or_none(resolved_policy),
             "schema": policy_profile.get("schema"),
         }
+        receipt["goal_hash"] = goal_hash
         receipt["data_boundary"] = {
             "path": str(resolved_boundary),
             "exists": resolved_boundary.exists(),
@@ -132,6 +134,7 @@ def run_sandboxed_command(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "goal_hash": goal_hash,
         "checked_at": _utc_stamp(),
         "backend": backend_info,
         "image": image,

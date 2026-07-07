@@ -1,9 +1,36 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 07:26 EDT by agent
+**Last updated:** 2026-07-07 07:30 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 sandbox-run goal-hash substrate binding rung:
+  `src/tau_coding/sandbox_run.py` now accepts and records an optional
+  `goal_hash` on `tau.sandbox_run_receipt.v1`, including Docker-backed receipt
+  handoff, so the official sandbox receipt producer can emit receipts that the
+  high-stakes worker substrate gate can bind to a DAG/work-order goal.
+  `src/tau_coding/cli.py` exposes this through `uv run tau sandbox-run
+  --goal-hash sha256:...`. `tests/test_sandbox_policy.py` covers direct PASS
+  bwrap receipts with `goal_hash` and CLI BLOCKED receipts that still preserve
+  the goal hash for review. `docs/coding-workers.md` documents that sandbox
+  receipts referenced by high-stakes worker work orders should be produced with
+  `--goal-hash`. Focused proof: `git diff --check --
+  src/tau_coding/sandbox_run.py src/tau_coding/cli.py
+  tests/test_sandbox_policy.py docs/coding-workers.md` -> pass; `uv run python
+  -m py_compile src/tau_coding/sandbox_run.py src/tau_coding/cli.py` -> pass;
+  `uv run ruff check --select I,F,E501 src/tau_coding/sandbox_run.py
+  src/tau_coding/cli.py tests/test_sandbox_policy.py` -> `All checks passed!`;
+  `uv run pytest tests/test_sandbox_policy.py -q` -> `16 passed in 0.44s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-sandbox-goal-hash-20260707T173000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `379 passed in 9.55s`. This proves sandbox-run
+  receipts can now carry the goal binding required by high-stakes worker
+  substrate validation and still compose with the focused coding capability
+  sanity suite; it does not prove semantic code correctness, live OMP/SciLLM
+  semantic execution, provider/model quality, legal compliance, ITAR
+  compliance, or full sandbox isolation on every host.
 
 - 2026-07-07 GitHub read JSON stdout fail-closed rung:
   `src/tau_coding/github_read_schemes.py` now requires execute-mode

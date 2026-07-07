@@ -709,9 +709,12 @@ sandbox and Herdr receipts must also carry `goal_hash` matching the worker work
 order; missing or stale bindings block with
 `sandbox_receipt_missing_goal_hash`, `herdr_receipt_missing_goal_hash`,
 `sandbox_receipt_goal_hash_mismatch`, or `herdr_receipt_goal_hash_mismatch`.
-`uv run tau sandbox-run` writes a BLOCKED `tau.sandbox_run_receipt.v1` even
-when the policy profile or data-boundary file is missing, invalid JSON, or not
-a JSON object. Those preflight failures record `policy_profile_missing`,
+Use `uv run tau sandbox-run --goal-hash sha256:...` when creating a sandbox
+receipt that will be referenced by a high-stakes worker work order; otherwise
+the worker substrate gate will reject it as unbound. `uv run tau sandbox-run`
+writes a BLOCKED `tau.sandbox_run_receipt.v1` even when the policy profile or
+data-boundary file is missing, invalid JSON, or not a JSON object. Those
+preflight failures record `policy_profile_missing`,
 `policy_profile_unreadable`, `policy_profile_not_object`,
 `data_boundary_missing`, `data_boundary_unreadable`, or
 `data_boundary_not_object`; command execution remains false.

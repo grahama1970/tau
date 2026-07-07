@@ -1539,6 +1539,7 @@ def main(
                 policy_profile_path=Path(str(options["policy_profile"])),
                 data_boundary_path=Path(str(options["data_boundary"])),
                 receipt_path=Path(str(options["out"])) if options.get("out") is not None else None,
+                goal_hash=_optional_str(options.get("goal_hash")),
                 timeout_seconds=float(options["timeout_seconds"]),
                 backend=str(options["backend"]),
                 image=_optional_str(options.get("image")),
@@ -4128,6 +4129,7 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
         "image": None,
         "stdin_file": None,
         "work_dir": None,
+        "goal_hash": None,
         "command": [],
     }
     index = 0
@@ -4192,6 +4194,13 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
             options["work_dir"] = Path(args[index])
         elif arg.startswith("--work-dir="):
             options["work_dir"] = Path(arg.partition("=")[2])
+        elif arg == "--goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--goal-hash requires a value")
+            options["goal_hash"] = args[index]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         else:
             raise RuntimeError(f"unknown sandbox-run option: {arg}")
         index += 1
