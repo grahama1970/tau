@@ -59,6 +59,7 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.code_runner_worker_receipt.v1" in html
     assert "tau.debugger_skill_adapter_receipt.v1" in html
     assert "tau.evidence_case_skill_adapter_receipt.v1" in html
+    assert "tau.omp_worker_doctor_receipt.v1" in html
     assert "tau.review_code_skill_adapter_receipt.v1" in html
     assert "tau.research_skill_adapter_receipt.v1" in html
     assert "tau.course_correction.v1" in html
@@ -198,6 +199,7 @@ def _write_report_run(tmp_path: Path) -> Path:
             "evidence-case-skill-adapter-receipt.json",
             "tau.evidence_case_skill_adapter_receipt.v1",
         ),
+        ("omp-worker-doctor-receipt.json", "tau.omp_worker_doctor_receipt.v1"),
         ("review-code-skill-adapter-receipt.json", "tau.review_code_skill_adapter_receipt.v1"),
         ("research-skill-adapter-receipt.json", "tau.research_skill_adapter_receipt.v1"),
     ]:

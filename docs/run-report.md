@@ -55,6 +55,9 @@ review findings, commit-plan, debug, GitHub read, OMP/SciLLM worker,
 course-correction, and orchestration reliability receipts. It records relative path, schema, status, `ok`,
 `mocked`, `live`, `provider_live`, receipt SHA-256, goal hash, and any
 policy/data-boundary hashes present on the receipt.
+OMP readiness receipts such as `tau.omp_worker_doctor_receipt.v1` are surfaced
+as identity/readiness preflight evidence; they do not prove that a worker was
+launched or that OMP performed coding work.
 Skill-adapter receipts such as `tau.code_runner_worker_receipt.v1`,
 `tau.debugger_skill_adapter_receipt.v1`,
 `tau.evidence_case_skill_adapter_receipt.v1`,

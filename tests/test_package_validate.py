@@ -295,6 +295,16 @@ def test_compliance_package_validate_accepts_packaged_coding_evidence(
             "goal_hash": "sha256:g",
         },
     )
+    _write_json(
+        evidence_dir / "omp-worker-doctor-receipt.json",
+        {
+            "schema": "tau.omp_worker_doctor_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "goal_hash": "sha256:g",
+        },
+    )
 
     receipt = write_compliance_package_validation_receipt(
         package_dir=package_dir,
@@ -302,13 +312,16 @@ def test_compliance_package_validate_accepts_packaged_coding_evidence(
     )
 
     assert receipt["ok"] is True
-    assert receipt["artifacts"]["coding_evidence_receipts"]["receipt_count"] == 3
+    assert receipt["artifacts"]["coding_evidence_receipts"]["receipt_count"] == 4
     assert receipt["artifacts"][
         "coding_evidence:coding-evidence-receipts/test-run-receipt.json"
     ]["schema"] == "tau.test_run_receipt.v1"
     assert receipt["artifacts"][
         "coding_evidence:coding-evidence-receipts/debugger-skill-adapter-receipt.json"
     ]["schema"] == "tau.debugger_skill_adapter_receipt.v1"
+    assert receipt["artifacts"][
+        "coding_evidence:coding-evidence-receipts/omp-worker-doctor-receipt.json"
+    ]["schema"] == "tau.omp_worker_doctor_receipt.v1"
 
 
 def test_compliance_package_validate_blocks_bad_coding_evidence(

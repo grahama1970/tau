@@ -28,6 +28,7 @@ CODING_EVIDENCE_SCHEMAS = {
     "tau.debug_session_receipt.v1",
     "tau.github_read_receipt.v1",
     "tau.research_skill_adapter_receipt.v1",
+    "tau.omp_worker_doctor_receipt.v1",
     "tau.omp_worker_receipt.v1",
     "tau.omp_worker_launch_receipt.v1",
     "tau.scillm_worker_receipt.v1",
