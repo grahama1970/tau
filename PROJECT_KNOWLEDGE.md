@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker launch substrate fail-closed proof rung:
+  `tests/test_coding_worker_adapters.py` now explicitly verifies that worker
+  launch apply paths fail closed on bad high-stakes substrate evidence before
+  external execution. OMP launch apply skips the configured process when the
+  referenced sandbox receipt is mocked, records `sandbox_receipt_mocked`, and
+  leaves the fake OMP marker absent. SciLLM launch apply skips HTTP dispatch
+  when the Herdr observation receipt is missing, records `herdr_receipt_missing`,
+  and the fixture server receives no requests. Focused proof: `uv run ruff
+  check --select I,F,E501 tests/test_coding_worker_adapters.py` -> `All checks
+  passed!`; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `53
+  passed in 4.25s`. Aggregate sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-launch-substrate-proof-20260707T060309Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-launch-substrate-proof-20260707T060309Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `247 passed in
+  7.34s`. This proves deterministic local launch gates prevent OMP process
+  execution and SciLLM HTTP dispatch when high-stakes substrate receipts are not
+  admissible; it does not prove live OMP/SciLLM semantic worker execution,
+  provider/model quality, code correctness, legal compliance, GitHub mutation
+  safety, full sandbox isolation, or full goal completion.
+
 - 2026-07-07 commit-plan untracked-sensitive gate rung:
   `src/tau_coding/commit_plan.py` now records
   `sensitive_untracked_files` and blocks commit planning with

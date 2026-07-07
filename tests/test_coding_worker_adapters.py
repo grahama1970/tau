@@ -953,6 +953,50 @@ def test_omp_worker_launch_apply_skips_process_when_preflight_blocks(tmp_path: P
     assert not marker.exists()
 
 
+def test_omp_worker_launch_apply_skips_process_when_substrate_blocks(
+    tmp_path: Path,
+) -> None:
+    marker = tmp_path / "fake-omp-ran"
+    fake_omp = _write_fake_omp(tmp_path, marker=marker)
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
+    sandbox_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.sandbox_run_receipt.v1",
+                "status": "PASS",
+                "ok": True,
+                "mocked": True,
+                "live": True,
+                "provider_live": False,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "sandbox_receipt_mocked" in payload["alert_codes"]
+    assert payload["substrate_receipts"][0]["mocked"] is True
+    assert not marker.exists()
+
+
 def test_cli_omp_worker_launch_apply_records_process_receipt(tmp_path: Path) -> None:
     fake_omp = _write_fake_omp(tmp_path)
     work_order = _write_work_order(
@@ -1304,6 +1348,43 @@ def test_scillm_worker_launch_apply_skips_http_when_route_blocks(tmp_path: Path)
     assert payload["http_executed"] is False
     assert payload["launch_skipped"] is True
     assert "invalid_scillm_surface" in payload["alert_codes"]
+    assert requests == []
+
+
+def test_scillm_worker_launch_apply_skips_http_when_substrate_blocks(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        herdr_receipt_path="missing-herdr-receipt.json",
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    (Path(work_order_payload["repo"]) / "missing-herdr-receipt.json").unlink()
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "herdr_receipt_missing" in payload["alert_codes"]
     assert requests == []
 
 
