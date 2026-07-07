@@ -26,6 +26,13 @@ def test_debug_receipt_records_adapter_and_target(tmp_path: Path) -> None:
     assert receipt["goal_hash"] == "sha256:debug-goal"
     assert receipt["session_sha256"] == f"sha256:{_sha256(session)}"
     assert receipt["session_bytes"] == session.stat().st_size
+    assert receipt["session_artifact"] == {
+        "label": "debug_session_packet",
+        "path": str(session.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(session)}",
+        "bytes": session.stat().st_size,
+    }
 
 
 def test_debug_receipt_blocks_missing_adapter_when_required(tmp_path: Path) -> None:
@@ -86,6 +93,13 @@ def test_debug_receipt_records_null_hash_for_missing_session_packet(
     assert receipt["session_path"] == str(session.resolve())
     assert receipt["session_sha256"] is None
     assert receipt["session_bytes"] is None
+    assert receipt["session_artifact"] == {
+        "label": "debug_session_packet",
+        "path": str(session.resolve()),
+        "exists": False,
+        "sha256": None,
+        "bytes": None,
+    }
 
 
 def test_debug_receipt_blocks_malformed_evidence_shapes(tmp_path: Path) -> None:

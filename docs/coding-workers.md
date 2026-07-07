@@ -294,7 +294,10 @@ and `node`. The receipt records the goal hash, target, adapter availability,
 breakpoints, stopped frame, variables, commands, stdout/stderr artifacts,
 SHA-256 hashes, byte counts, conclusion, and non-claims. It also records the
 inspected debug session packet's `session_sha256` and `session_bytes`, with
-`null` values when the packet is missing.
+`null` values when the packet is missing. The same packet is exposed as a
+`session_artifact` descriptor with label, path, existence, SHA-256, and byte
+count so debug evidence can be reviewed through the same artifact pattern as
+other coding receipts.
 
 Tau blocks debug receipts when the session packet omits the target command, uses
 an unsupported adapter, refers to missing stdout/stderr artifacts, points

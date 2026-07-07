@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:16 EDT by agent
+**Last updated:** 2026-07-06 23:20 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debug-session packet artifact descriptor rung:
+  `src/tau_coding/debug_session_receipt.py` now records `session_artifact` on
+  `tau.debug_session_receipt.v1`, with label, resolved packet path, existence,
+  SHA-256, and byte count for the debug session packet. Existing scalar fields
+  `session_path`, `session_sha256`, and `session_bytes` remain for compatibility,
+  while the descriptor gives reviewers the same artifact shape used by other
+  coding evidence receipts. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py` -> pass; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `17 passed in 0.44s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-session-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-debug-session-artifact-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.64s`. This proves deterministic local debug-session
+  receipts expose their session packet as a reviewable artifact descriptor and
+  compose with the current coding capability sanity suite; it does not prove
+  debugger semantic conclusions, bug fixes, semantic code correctness, live OMP
+  or SciLLM semantic worker execution, provider/model quality, GitHub mutation,
+  human acceptance, legal compliance, or full sandbox isolation on every host.
 
 - 2026-07-06 commit-plan evidence mode metadata rung:
   `src/tau_coding/commit_plan.py` now records `mocked`, `live`, and

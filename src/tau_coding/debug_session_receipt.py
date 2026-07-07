@@ -84,6 +84,7 @@ def write_debug_session_receipt(
         "session_path": str(resolved_session),
         "session_sha256": _sha256_uri(resolved_session),
         "session_bytes": _artifact_size(resolved_session),
+        "session_artifact": _artifact_descriptor("debug_session_packet", resolved_session),
         "goal_hash": goal_hash,
         "expected_goal_hash": expected_goal_hash,
         "target": target,
@@ -180,6 +181,16 @@ def _log_artifacts(*, stdout_path: Path | None, stderr_path: Path | None) -> lis
             }
         )
     return artifacts
+
+
+def _artifact_descriptor(label: str, path: Path | None) -> dict[str, Any]:
+    return {
+        "label": label,
+        "path": str(path) if path is not None else None,
+        "exists": bool(path is not None and path.exists()),
+        "sha256": _sha256_uri(path),
+        "bytes": _artifact_size(path),
+    }
 
 
 def _sha256_uri(path: Path | None) -> str | None:
