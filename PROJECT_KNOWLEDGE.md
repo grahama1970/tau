@@ -20,20 +20,25 @@
   in data-boundary compatibility checks. `scripts/run-coding-capability-sanity.py`
   includes the red-team module and test in aggregate lint/test coverage.
   `docs/skill-composition.md` documents the red-team boundary. Focused proof:
-  `uv run ruff check --select I,F,E501
-  src/tau_coding/skill_invocation.py tests/test_skill_invocation.py
+  `python3 -m py_compile src/tau_coding/skill_composition_redteam.py
+  src/tau_coding/skill_invocation.py
   src/tau_coding/evidence_case_skill_adapter.py
-  tests/test_evidence_case_skill_adapter.py
-  src/tau_coding/skill_composition_redteam.py
-  tests/test_skill_composition_redteam.py scripts/run-coding-capability-sanity.py
-  docs/skill-composition.md` -> `All checks passed!`; `uv run pytest
-  tests/test_skill_invocation.py tests/test_evidence_case_skill_adapter.py
-  tests/test_skill_composition_redteam.py -q` -> `14 passed in 0.45s`; `uv
-  run python -m py_compile ...` -> pass; `git diff --check -- ...` -> pass.
-  Aggregate proof:
-  `/tmp/tau-coding-capability-sanity-skill-redteam-20260707T130534Z/coding-capability-sanity-receipt.json`
+  scripts/run-coding-capability-sanity.py` -> pass; `uv run ruff check ...` ->
+  `All checks passed!`; `uv run pytest tests/test_skill_composition_redteam.py
+  tests/test_skill_invocation.py tests/test_evidence_case_skill_adapter.py -q`
+  -> `14 passed in 0.58s`; broad composition proof `uv run pytest
+  tests/test_course_correction.py tests/test_skill_capability_registry.py
+  tests/test_skill_invocation.py tests/test_debugger_skill_adapter.py
+  tests/test_code_runner_skill_adapter.py tests/test_review_code_skill_adapter.py
+  tests/test_evidence_case_skill_adapter.py tests/test_research_skill_adapter.py
+  tests/test_project_profile.py tests/test_skill_composition_redteam.py -q` ->
+  `79 passed in 0.61s`; generated red-team receipt
+  `/tmp/tau-skill-composition-redteam-20260707T1308Z/skill-composition-redteam-receipt.json`
+  -> `status:PASS`, `ok:true`, `attempt_count:7`,
+  `passed_attempt_count:7`; aggregate proof
+  `/tmp/tau-coding-capability-sanity-skill-redteam-20260707T1308Z/coding-capability-sanity-receipt.json`
   -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
-  embedded coding receipt tests `453 passed in 11.22s`. This proves
+  embedded coding receipt tests `453 passed in 10.75s`. This proves
   deterministic local fail-closed coverage for the listed malicious
   skill-artifact cases; it does not prove exhaustive attack coverage, live
   skill execution, skill output semantic correctness, provider/model quality,
