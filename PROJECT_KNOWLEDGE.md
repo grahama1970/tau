@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker example expected-receipt contract rung:
+  `scripts/run-coding-capability-sanity.py` now treats OMP and SciLLM worker
+  example `expected-receipt.json` files as executable contracts instead of
+  loose descriptors. The sanity checks compare demo receipt schema/status,
+  launch receipt schema/status, worker receipt schema/status, empty worker
+  alert codes, route metadata, and the referenced substrate receipts'
+  `goal_hash` plus `work_order_sha256` bindings. `examples/omp-worker` and
+  `examples/scillm-worker` expected receipts now require those substrate
+  bindings. Focused proof: `uv run python -m py_compile
+  scripts/run-coding-capability-sanity.py` -> pass; `uv run ruff check
+  --select I,F,E501 scripts/run-coding-capability-sanity.py` -> `All checks
+  passed!`; `python3 -m json.tool examples/omp-worker/expected-receipt.json`
+  and `python3 -m json.tool examples/scillm-worker/expected-receipt.json` ->
+  pass; `git diff --check -- scripts/run-coding-capability-sanity.py
+  examples/omp-worker/expected-receipt.json
+  examples/scillm-worker/expected-receipt.json docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-expected-receipts-20260707T134748Z`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `462 passed in 10.83s`. This proves the
+  copyable OMP/SciLLM worker examples cannot silently drift from their expected
+  receipt contracts in the aggregate sanity suite; it does not prove live OMP
+  or live SciLLM semantic worker execution, provider/model quality, semantic
+  code correctness, ITAR compliance, legal compliance, or full sandbox
+  isolation on every host.
+
 - 2026-07-07 worker substrate work-order binding rung:
   `src/tau_coding/coding_worker_adapters.py` now requires high-stakes sandbox
   and Herdr substrate receipts to bind both `goal_hash` and

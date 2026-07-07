@@ -900,6 +900,13 @@ examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
 examples/itar-grade-containment/run.sh /tmp/tau-itar-grade-containment-demo
 ```
 
+The aggregate coding sanity runner treats worker example
+`expected-receipt.json` files as executable contracts. For OMP and SciLLM
+worker examples it checks the demo receipt schema/status, launch receipt
+schema/status, worker receipt schema/status, empty worker alert codes, route
+metadata, and the referenced substrate receipts' `goal_hash` plus
+`work_order_sha256` bindings.
+
 `examples/memory-evidence-case` writes Graph Memory `/intent` and
 `/create-evidence-case` shaped local artifacts, then emits
 `tau.memory_intent_gate_receipt.v1` and `tau.evidence_case_gate_receipt.v1`.

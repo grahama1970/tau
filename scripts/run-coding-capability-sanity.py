@@ -23,6 +23,7 @@ class Check:
     expected_exit_code: int = 0
     timeout_seconds: int = 120
     output_artifact: Path | None = None
+    expected_artifact: Path | None = None
 
 
 def main() -> int:
@@ -134,6 +135,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             command=[str(examples / "omp-worker" / "run.sh"), str(run_dir / "omp-worker")],
             purpose="Run OMP worker launch-request and result-validation demo.",
             output_artifact=run_dir / "omp-worker" / "demo-receipt.json",
+            expected_artifact=examples / "omp-worker" / "expected-receipt.json",
         ),
         Check(
             check_id="scillm_worker_example_syntax",
@@ -146,6 +148,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             command=[str(examples / "scillm-worker" / "run.sh"), str(run_dir / "scillm-worker")],
             purpose="Run SciLLM worker launch-request and result-validation demo.",
             output_artifact=run_dir / "scillm-worker" / "demo-receipt.json",
+            expected_artifact=examples / "scillm-worker" / "expected-receipt.json",
         ),
         Check(
             check_id="itar_grade_containment_example_syntax",
@@ -309,9 +312,15 @@ def run_check(check: Check, *, repo: Path) -> dict[str, Any]:
         completed = datetime.now(UTC)
 
     artifact_payload = _read_json_artifact(check.output_artifact)
+    expected_payload = _check_expected_artifact(
+        actual_path=check.output_artifact,
+        expected_path=check.expected_artifact,
+    )
     ok = exit_code == check.expected_exit_code and not timed_out
     if check.output_artifact is not None:
         ok = ok and artifact_payload.get("read_ok") is True
+    if check.expected_artifact is not None:
+        ok = ok and expected_payload.get("ok") is True
 
     return {
         "schema": CHECK_SCHEMA,
@@ -330,6 +339,8 @@ def run_check(check: Check, *, repo: Path) -> dict[str, Any]:
         "stderr_tail": stderr,
         "output_artifact": str(check.output_artifact) if check.output_artifact else None,
         "output_artifact_payload": artifact_payload,
+        "expected_artifact": str(check.expected_artifact) if check.expected_artifact else None,
+        "expected_artifact_payload": expected_payload,
     }
 
 
@@ -442,6 +453,113 @@ def _read_json_artifact(path: Path | None) -> dict[str, Any]:
         "live": payload.get("live"),
         "provider_live": payload.get("provider_live"),
     }
+
+
+def _check_expected_artifact(
+    *,
+    actual_path: Path | None,
+    expected_path: Path | None,
+) -> dict[str, Any]:
+    if expected_path is None:
+        return {}
+    errors: list[str] = []
+    try:
+        expected = json.loads(expected_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"read_ok": False, "ok": False, "errors": [str(exc)]}
+    if actual_path is None:
+        return {"read_ok": True, "ok": False, "errors": ["missing output artifact path"]}
+    try:
+        actual = json.loads(actual_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"read_ok": True, "ok": False, "errors": [str(exc)]}
+
+    expected_checks = {
+        "schema": "schema",
+        "status": "status",
+        "expected_launch_receipt_schema": "launch_receipt_schema",
+        "expected_launch_status": "launch_receipt_status",
+        "expected_launch_command": "launch_command",
+        "expected_launch_url": "launch_url",
+        "expected_inner_receipt_schema": "worker_receipt_schema",
+        "expected_inner_status": "worker_receipt_status",
+        "expected_worker_receipt_alert_codes": "worker_receipt_alert_codes",
+    }
+    for expected_key, actual_key in expected_checks.items():
+        if expected_key not in expected:
+            continue
+        if actual.get(actual_key) != expected[expected_key]:
+            errors.append(
+                f"{actual_key} expected {expected[expected_key]!r}, got {actual.get(actual_key)!r}"
+            )
+
+    expected_route = expected.get("expected_model_provider_route")
+    if isinstance(expected_route, dict):
+        actual_route = actual.get("model_provider_route")
+        if not isinstance(actual_route, dict):
+            errors.append("model_provider_route missing or not an object")
+        else:
+            for key, value in expected_route.items():
+                if actual_route.get(key) != value:
+                    errors.append(
+                        f"model_provider_route.{key} expected {value!r}, "
+                        f"got {actual_route.get(key)!r}"
+                    )
+
+    expected_bindings = expected.get("expected_substrate_receipt_bindings")
+    if isinstance(expected_bindings, list):
+        errors.extend(
+            _check_substrate_receipt_bindings(
+                actual=actual,
+                required=[item for item in expected_bindings if isinstance(item, str)],
+            )
+        )
+
+    return {
+        "read_ok": True,
+        "ok": not errors,
+        "errors": errors,
+        "expected_schema": expected.get("schema"),
+        "actual_schema": actual.get("schema"),
+        "expected_status": expected.get("status"),
+        "actual_status": actual.get("status"),
+    }
+
+
+def _check_substrate_receipt_bindings(
+    *,
+    actual: dict[str, Any],
+    required: list[str],
+) -> list[str]:
+    worker_receipt_path = actual.get("worker_receipt_path")
+    if not isinstance(worker_receipt_path, str) or not worker_receipt_path:
+        return ["worker_receipt_path missing for substrate binding check"]
+    try:
+        worker_receipt = json.loads(Path(worker_receipt_path).read_text(encoding="utf-8"))
+    except Exception as exc:
+        return [f"worker receipt unreadable for substrate binding check: {exc}"]
+    substrate_receipts = worker_receipt.get("substrate_receipts")
+    if not isinstance(substrate_receipts, list) or not substrate_receipts:
+        return ["worker receipt has no substrate_receipts for binding check"]
+    errors: list[str] = []
+    for index, descriptor in enumerate(substrate_receipts):
+        if not isinstance(descriptor, dict):
+            errors.append(f"substrate_receipts[{index}] is not an object")
+            continue
+        path = descriptor.get("path")
+        if not isinstance(path, str) or not path:
+            errors.append(f"substrate_receipts[{index}].path missing")
+            continue
+        try:
+            substrate_receipt = json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception as exc:
+            errors.append(f"substrate receipt unreadable: {path}: {exc}")
+            continue
+        for field in required:
+            value = substrate_receipt.get(field)
+            if not isinstance(value, str) or not value:
+                errors.append(f"substrate receipt {path} missing {field}")
+    return errors
 
 
 def _tail(value: str | bytes | None) -> str:
