@@ -551,6 +551,14 @@ Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code
 is correct.
 
+The debugger skill adapter preserves the same boundary contract. When
+`tau debugger-skill-adapter --zero-trust` is used, pass
+`--policy-profile policy.json` and `--data-boundary boundary.json`; Tau forwards
+those objects into the generated `tau.debug_session_receipt.v1`. Missing or
+invalid metadata blocks the adapter through the underlying debug-session
+receipt rather than letting a debugger skill proof become high-stakes evidence
+without a policy/data-boundary binding.
+
 ### GitHub Read Schemes
 
 `tau.github_read_receipt.v1` turns URI-style GitHub references into read-only

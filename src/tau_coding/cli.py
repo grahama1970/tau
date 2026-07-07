@@ -2053,6 +2053,8 @@ def main(
                 ),
                 expected_goal_hash=_optional_str(options.get("goal_hash")),
                 zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -5495,6 +5497,8 @@ def _parse_debugger_skill_adapter_cli_args(args: list[str]) -> dict[str, object]
         "repo_root": None,
         "goal_hash": None,
         "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
     }
     index = 0
     while index < len(args):
@@ -5505,6 +5509,8 @@ def _parse_debugger_skill_adapter_cli_args(args: list[str]) -> dict[str, object]
             "--debug-session-out",
             "--repo-root",
             "--goal-hash",
+            "--policy-profile",
+            "--data-boundary",
         }:
             index += 1
             if index >= len(args):
@@ -5520,6 +5526,10 @@ def _parse_debugger_skill_adapter_cli_args(args: list[str]) -> dict[str, object]
             options["repo_root"] = arg.partition("=")[2]
         elif arg.startswith("--goal-hash="):
             options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
         elif arg == "--zero-trust":
             options["zero_trust"] = True
         else:

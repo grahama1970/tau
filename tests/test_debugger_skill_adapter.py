@@ -9,6 +9,7 @@ from tau_coding.debugger_skill_adapter import (
     DEBUGGER_SKILL_ADAPTER_RECEIPT_SCHEMA,
     write_debugger_skill_adapter_receipt,
 )
+from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
 
 
 def test_debugger_adapter_accepts_debugger_proof(tmp_path: Path) -> None:
@@ -45,6 +46,55 @@ def test_debugger_adapter_blocks_missing_goal_hash(tmp_path: Path) -> None:
     assert receipt["status"] == "BLOCKED"
     assert "goal_hash is required in zero-trust mode" in receipt["errors"]
     assert receipt["course_correction"]["trigger"] == "debugger_evidence_required"
+
+
+def test_debugger_adapter_zero_trust_blocks_missing_policy_boundary(
+    tmp_path: Path,
+) -> None:
+    proof = _write_debugger_proof(tmp_path)
+
+    receipt = write_debugger_skill_adapter_receipt(
+        proof_path=proof,
+        output_path=tmp_path / "adapter-receipt.json",
+        debug_session_output_path=tmp_path / "debug-session-receipt.json",
+        repo_root=tmp_path,
+        expected_goal_hash="sha256:goal",
+        zero_trust=True,
+    )
+
+    debug_receipt = json.loads((tmp_path / "debug-session-receipt.json").read_text())
+    assert receipt["status"] == "BLOCKED"
+    assert "debug session receipt blocked" in receipt["errors"]
+    assert "missing_policy_profile" in debug_receipt["alert_codes"]
+    assert "missing_data_boundary" in debug_receipt["alert_codes"]
+
+
+def test_debugger_adapter_passes_policy_boundary_to_debug_receipt(
+    tmp_path: Path,
+) -> None:
+    proof = _write_debugger_proof(tmp_path)
+    policy = _policy_profile()
+    boundary = _data_boundary()
+
+    receipt = write_debugger_skill_adapter_receipt(
+        proof_path=proof,
+        output_path=tmp_path / "adapter-receipt.json",
+        debug_session_output_path=tmp_path / "debug-session-receipt.json",
+        repo_root=tmp_path,
+        expected_goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile=policy,
+        data_boundary=boundary,
+    )
+
+    debug_receipt = json.loads((tmp_path / "debug-session-receipt.json").read_text())
+    assert receipt["status"] == "PASS"
+    assert receipt["zero_trust"] is True
+    assert receipt["policy_profile"] == policy
+    assert receipt["data_boundary"] == boundary
+    assert debug_receipt["status"] == "PASS"
+    assert debug_receipt["policy_profile"] == policy
+    assert debug_receipt["data_boundary"] == boundary
 
 
 def test_debugger_adapter_blocks_stdout_outside_repo(tmp_path: Path) -> None:
@@ -134,6 +184,48 @@ def test_cli_debugger_skill_adapter_writes_adapter_and_debug_receipts(
     assert debug_payload["schema"] == DEBUG_SESSION_RECEIPT_SCHEMA
 
 
+def test_cli_debugger_skill_adapter_passes_zero_trust_policy_boundary(
+    tmp_path: Path,
+) -> None:
+    proof = _write_debugger_proof(tmp_path)
+    out = tmp_path / "adapter-receipt.json"
+    debug_out = tmp_path / "debug-session-receipt.json"
+    policy = tmp_path / "policy-profile.json"
+    boundary = tmp_path / "data-boundary.json"
+    policy.write_text(json.dumps(_policy_profile(), indent=2, sort_keys=True), encoding="utf-8")
+    boundary.write_text(json.dumps(_data_boundary(), indent=2, sort_keys=True), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "debugger-skill-adapter",
+            "--proof",
+            str(proof),
+            "--out",
+            str(out),
+            "--debug-session-out",
+            str(debug_out),
+            "--repo-root",
+            str(tmp_path),
+            "--goal-hash",
+            "sha256:goal",
+            "--zero-trust",
+            "--policy-profile",
+            str(policy),
+            "--data-boundary",
+            str(boundary),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    debug_payload = json.loads(debug_out.read_text(encoding="utf-8"))
+    assert result.exit_code == 0
+    assert payload["status"] == "PASS"
+    assert debug_payload["status"] == "PASS"
+    assert debug_payload["policy_profile"]["schema"] == POLICY_PROFILE_SCHEMA
+    assert debug_payload["data_boundary"]["schema"] == DATA_BOUNDARY_SCHEMA
+
+
 def _write_debugger_proof(
     tmp_path: Path,
     *,
@@ -166,3 +258,33 @@ def _write_debugger_proof(
     proof = tmp_path / "debugger-proof.json"
     proof.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return proof
+
+
+def _policy_profile() -> dict:
+    return {
+        "schema": POLICY_PROFILE_SCHEMA,
+        "profile_id": "itar-zero-trust-local-only",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {"external_search": "deny", "manual_sanitized_receipt": "allow_with_review"},
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": ["tests/**"], "read_denylist": []},
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": DATA_BOUNDARY_SCHEMA,
+        "classification": "ITAR",
+        "export_controlled": True,
+        "itar": True,
+        "technical_data": True,
+        "foreign_person_access": "prohibited",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }

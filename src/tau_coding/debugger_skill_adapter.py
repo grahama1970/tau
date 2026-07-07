@@ -23,6 +23,8 @@ def write_debugger_skill_adapter_receipt(
     repo_root: Path | None = None,
     expected_goal_hash: str | None = None,
     zero_trust: bool = False,
+    policy_profile: dict[str, Any] | None = None,
+    data_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     resolved_proof = proof_path.expanduser().resolve()
     resolved_output = output_path.expanduser().resolve()
@@ -47,6 +49,8 @@ def write_debugger_skill_adapter_receipt(
         required=True,
         expected_goal_hash=expected_goal_hash,
         zero_trust=zero_trust,
+        policy_profile=policy_profile,
+        data_boundary=data_boundary,
     )
     if debug_receipt.get("ok") is not True:
         errors.append("debug session receipt blocked")
@@ -61,6 +65,9 @@ def write_debugger_skill_adapter_receipt(
         "debug_session_status": debug_receipt.get("status"),
         "goal_hash": proof.get("goal_hash"),
         "expected_goal_hash": expected_goal_hash,
+        "zero_trust": zero_trust,
+        "policy_profile": policy_profile,
+        "data_boundary": data_boundary,
         "target": _target_from_proof(proof),
         "adapter": _adapter_from_proof(proof),
         "errors": errors,
