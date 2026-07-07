@@ -50,6 +50,7 @@ validated, and reviewed.
 | --- | --- |
 | Memory | Memory is not context stuffing. Memory intent is a dispatch and routing input. |
 | Evidence | Evidence is separate from model prose. Typed manifests, receipts, and artifacts are validated independently. |
+| Coding work | Code changes count only when patch, diagnostics, tests, review, debug, worker, and commit-plan receipts make the evidence inspectable. |
 | Agent DAGs | DAGs are containment maps, not proof. |
 | Subagents | Subagent communication is untrusted until receipt-backed and validated. |
 | Herdr | Provider/subagent work can be monitored through visible panes, lifecycle records, and cleanup receipts. |
@@ -74,6 +75,8 @@ Implemented local gates and receipt surfaces in this checkout include:
 - `tau.memory_intent_gate_receipt.v1`
 - `tau.evidence_case_gate_receipt.v1`
 - `tau.evidence_manifest.v1`
+- coding evidence receipts for patches, diagnostics, focused test runs, review
+  findings, debug sessions, GitHub reads, OMP/SciLLM workers, and commit plans
 - `tau.command_spec_policy.v1`
 - `tau.github_apply_policy.v1`
 - `tau.github_apply_policy_receipt.v1`
@@ -97,6 +100,36 @@ The adversarial model is documented in
 The local API hardening path is documented in
 [Tau Local API Hardening Roadmap](docs/api-hardening-roadmap.md).
 
+## Coding evidence and code-work admissibility
+
+Tau's zero-trust coding lane treats code work the same way it treats agent
+handoffs: a model's claim is not evidence. Coding work becomes admissible only
+when it is backed by typed receipts that another agent or human can inspect.
+
+Current coding evidence surfaces include:
+
+- `tau.code_patch_receipt.v1` for hash-bound source edits;
+- LSP diagnostic and exact-symbol receipts for local code evidence;
+- `tau.test_run_receipt.v1` for focused local pytest-shaped checks;
+- `tau.review_findings.v1` for structured reviewer findings;
+- `tau.debug_session_receipt.v1` for bounded debugger/DAP evidence;
+- GitHub read receipts for read-only issue, pull request, commit, diff, and file
+  evidence;
+- OMP and SciLLM worker receipts with policy/data-boundary hash binding;
+- `tau.commit_plan_receipt.v1` for source/evidence coverage before commit;
+- course-correction and orchestration reliability receipts for blocked or
+  drifting coding runs.
+
+Compliance packages can collect these coding receipts under
+`coding-evidence-receipts/`, package validation rejects malformed or mocked
+coding evidence when present, and static run reports render a first-class
+`coding-evidence` section with receipt status, hashes, policy/data-boundary
+hashes, and explicit proof boundaries.
+
+This proves inspectability and gate behavior for the recorded receipts. It does
+not prove semantic code correctness, reviewer truthfulness, provider/model
+quality, ITAR compliance, legal sufficiency, or full project completion.
+
 ## Herdr-visible subagent monitoring
 
 Tau does not treat provider agents as invisible API calls only. In
@@ -115,6 +148,10 @@ work-order hash, and evidence artifacts.
 | --- | --- | --- |
 | Policy/data-boundary preflight | Implemented | Gate only; not compliance certification. |
 | Typed evidence manifest | Implemented | Validates artifact metadata; does not prove semantic truth. |
+| Coding evidence receipts | Implemented for current local coding lane | Makes code-work evidence inspectable; does not prove semantic correctness. |
+| Focused test-run receipts | Implemented | Records focused pytest-shaped checks; not full-suite health unless the full suite was run. |
+| Compliance package coding evidence | Implemented | Packages and validates receipt metadata; not legal/compliance sufficiency. |
+| Static run-report coding evidence | Implemented | Renders receipt metadata; not operational truth beyond artifacts. |
 | Command-spec trust policy | Implemented | Local command policy gate; not a sandbox. |
 | Herdr-visible provider lanes | Implemented in proof lanes | Visible pane state is evidence, not truth. |
 | Herdr cleanup/GC | Implemented with leases/approval gates | Does not prove arbitrary non-Tau cleanup. |
