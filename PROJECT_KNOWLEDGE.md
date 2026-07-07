@@ -5,6 +5,27 @@
 
 ## Current Understanding
 
+- 2026-07-07 compliance package GitHub read evidence:
+  `src/tau_coding/compliance_package.py` now treats `github-read` /
+  `github_read` receipts as coding evidence, so read-only
+  `tau.github_read_receipt.v1` artifacts from `issue://`, `pr://`, `diff://`,
+  and `commit://` inspection lanes are copied into
+  `coding-evidence-receipts/` with other coding receipts. This aligns the R6
+  GitHub read-scheme lane with compliance evidence packaging while preserving
+  mutation gating through separate GitHub apply-policy receipts. Targeted proof
+  for the implementation commit: `uv run ruff check --select I,F,E501
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py
+  docs/compliance-package.md` -> `All checks passed!`; `uv run pytest
+  tests/test_compliance_package.py tests/test_package_validate.py -q` -> `18
+  passed in 0.47s`; `git diff --check -- src/tau_coding/compliance_package.py
+  tests/test_compliance_package.py docs/compliance-package.md
+  PROJECT_KNOWLEDGE.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-github-read-package-20260707T140858Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `463 passed in 10.76s`. This does not prove
+  live GitHub auth, GitHub object existence, public mutation authorization, or
+  legal compliance.
+
 - 2026-07-07 run-status/report course-correction routing fields:
   `src/tau_coding/run_status.py` now includes optional `trigger`, `node_id`,
   `agent`, and `required_next_action` fields for coding evidence receipts,

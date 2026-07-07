@@ -72,6 +72,11 @@ def test_compliance_package_collects_coding_evidence_receipts(tmp_path: Path) ->
             "status": "PASS",
             "ok": True,
         },
+        "github-read-receipt.json": {
+            "schema": "tau.github_read_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
         "course-correction-receipt.json": {
             "schema": "tau.course_correction.v1",
             "status": "REQUIRED",

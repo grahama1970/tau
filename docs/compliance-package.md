@@ -47,9 +47,9 @@ Some entries may be absent when the source run did not produce that receipt.
 Absence is recorded in `package-manifest.json` under `missing_expected_items`.
 `coding-evidence-receipts/` collects Tau-native coding receipts such as
 hash-bound patch receipts, LSP diagnostic receipts, focused test-run receipts,
-structured review findings, dry-run commit plans, debugger receipts, bounded
-worker receipts, and orchestration reliability receipts when the source run
-produced them.
+structured review findings, dry-run commit plans, read-only GitHub scheme
+receipts, debugger receipts, bounded worker receipts, and orchestration
+reliability receipts when the source run produced them.
 
 The package refuses malformed zero-trust boundary metadata. If
 `policy-profile.json` or `data-boundary.json` can be read from the DAG contract,

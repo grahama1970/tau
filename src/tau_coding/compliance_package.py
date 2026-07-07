@@ -60,6 +60,8 @@ RECEIPT_DIRECTORIES = {
         "review_findings",
         "commit-plan",
         "commit_plan",
+        "github-read",
+        "github_read",
         "course-correction",
         "course_correction",
         "debug-session",
