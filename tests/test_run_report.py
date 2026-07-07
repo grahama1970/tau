@@ -61,6 +61,9 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.course_correction.v1" in html
     assert "patch_stale" in html
     assert "retry_node" in html
+    assert "tau.github_read_receipt.v1" in html
+    assert "issue://grahama1970/tau/67" in html
+    assert "mutation_allowed" in html
     assert "policy_profile_sha256" in html
     assert "data_boundary_sha256" in html
     assert 'id="receipts"' in html
@@ -171,6 +174,27 @@ def _write_report_run(tmp_path: Path) -> Path:
             "agent": "coder",
             "attempt": 2,
             "required_next_action": "retry_node",
+        },
+    )
+    _write_json(
+        receipts_dir / "github-read-receipt.json",
+        {
+            "schema": "tau.github_read_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "uri": "issue://grahama1970/tau/67",
+            "parsed": {
+                "kind": "issue",
+                "owner": "grahama1970",
+                "repo": "tau",
+                "number": 67,
+            },
+            "read_only": True,
+            "mutation_allowed": False,
         },
     )
     return run_dir

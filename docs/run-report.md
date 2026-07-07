@@ -55,6 +55,10 @@ debug, GitHub read, OMP/SciLLM worker, course-correction, and orchestration
 reliability receipts. It records relative path, schema, status, `ok`,
 `mocked`, `live`, `provider_live`, receipt SHA-256, goal hash, and any
 policy/data-boundary hashes present on the receipt.
+For course-correction receipts it also surfaces route fields such as `trigger`
+and `required_next_action`; for GitHub read receipts it surfaces `uri`,
+`github_read_kind`, `read_only`, and `mutation_allowed` so read evidence is
+not confused with mutation authority.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.

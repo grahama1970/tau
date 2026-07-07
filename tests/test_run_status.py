@@ -1750,6 +1750,10 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
             "node_id": None,
             "agent": None,
             "required_next_action": None,
+            "uri": None,
+            "github_read_kind": None,
+            "read_only": None,
+            "mutation_allowed": None,
         }
     ]
     assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -1793,6 +1797,10 @@ def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path)
         "node_id": None,
         "agent": None,
         "required_next_action": None,
+        "uri": None,
+        "github_read_kind": None,
+        "read_only": None,
+        "mutation_allowed": None,
     }
     assert (
         "tau.skill_composition_redteam_receipt.v1"
@@ -1841,6 +1849,62 @@ def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) 
         "node_id": "coder",
         "agent": "coder",
         "required_next_action": "retry_node",
+        "uri": None,
+        "github_read_kind": None,
+        "read_only": None,
+        "mutation_allowed": None,
+    }
+
+
+def test_run_status_summarizes_github_read_boundaries(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "github-read-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.github_read_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "uri": "issue://grahama1970/tau/67",
+            "parsed": {
+                "kind": "issue",
+                "owner": "grahama1970",
+                "repo": "tau",
+                "number": 67,
+            },
+            "read_only": True,
+            "mutation_allowed": False,
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert status["coding_evidence"]["receipts"][0] == {
+        "relative_path": "receipts/github-read-receipt.json",
+        "schema": "tau.github_read_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "sha256": f"sha256:{_sha256(receipt_path)}",
+        "goal_hash": "sha256:goal",
+        "policy_profile_sha256": None,
+        "data_boundary_sha256": None,
+        "attempt_count": None,
+        "passed_attempt_count": None,
+        "trigger": None,
+        "node_id": None,
+        "agent": None,
+        "required_next_action": None,
+        "uri": "issue://grahama1970/tau/67",
+        "github_read_kind": "issue",
+        "read_only": True,
+        "mutation_allowed": False,
     }
 
 

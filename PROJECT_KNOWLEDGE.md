@@ -5,6 +5,29 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report GitHub read boundaries:
+  `src/tau_coding/run_status.py` now preserves GitHub read receipt fields in
+  coding evidence summaries: `uri`, `github_read_kind`, `read_only`, and
+  `mutation_allowed`. `tests/test_run_status.py` pins the summary for
+  `tau.github_read_receipt.v1` with `issue://grahama1970/tau/67`,
+  `read_only:true`, and `mutation_allowed:false`; `tests/test_run_report.py`
+  asserts the static report includes the GitHub read schema, URI, and mutation
+  boundary. This makes R6 read-only GitHub inspection visible in `tau
+  run-status` / `tau report` without implying GitHub mutation authority. Proof
+  for the implementation commit: `uv run ruff check --select I,F,E501
+  src/tau_coding/run_status.py src/tau_coding/run_report.py
+  tests/test_run_status.py tests/test_run_report.py docs/run-report.md` ->
+  `All checks passed!`; `uv run pytest tests/test_run_status.py
+  tests/test_run_report.py tests/test_github_read_schemes.py -q` -> `58
+  passed in 0.75s`; `git diff --check -- src/tau_coding/run_status.py
+  tests/test_run_status.py tests/test_run_report.py docs/run-report.md
+  PROJECT_KNOWLEDGE.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-github-read-report-20260707T141346Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `464 passed in 10.67s`. This does not prove
+  live GitHub auth, GitHub object existence, public mutation authorization, or
+  legal compliance.
+
 - 2026-07-07 compliance package GitHub read evidence:
   `src/tau_coding/compliance_package.py` now treats `github-read` /
   `github_read` receipts as coding evidence, so read-only

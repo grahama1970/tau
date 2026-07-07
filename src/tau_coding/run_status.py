@@ -1791,6 +1791,10 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "node_id": payload.get("node_id"),
                 "agent": payload.get("agent"),
                 "required_next_action": payload.get("required_next_action"),
+                "uri": payload.get("uri"),
+                "github_read_kind": _github_read_kind(payload),
+                "read_only": payload.get("read_only"),
+                "mutation_allowed": payload.get("mutation_allowed"),
             }
         )
     return {
@@ -1804,6 +1808,13 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
             "Closure.",
         ],
     }
+
+
+def _github_read_kind(payload: dict[str, Any]) -> Any:
+    parsed = payload.get("parsed")
+    if isinstance(parsed, dict):
+        return parsed.get("kind")
+    return None
 
 
 def _load_lifecycle_states(
