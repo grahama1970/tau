@@ -441,10 +441,11 @@ and `ok:true`; Herdr substrates must include `herdr_binding` or an existing
 `tau.herdr_observation_gate_receipt.v1` receipt with `status:"PASS"` and
 `ok:true`. Validation receipts record
 `work_order_sha256`, `result_sha256`, byte counts, and `validated_artifacts`
-for the exact JSON artifacts Tau inspected. Launch receipts also carry
-`execution_substrate`, `sandbox_receipt_path`, `herdr_binding`,
-`herdr_receipt_path`, `high_stakes`, `policy_profile`, and `data_boundary` so
-the launch request remains tied to the same containment metadata.
+for the exact JSON artifacts Tau inspected. Validation and launch receipts also
+carry `execution_substrate`, `sandbox_receipt_path`, `herdr_binding`,
+`herdr_receipt_path`, `high_stakes`, `policy_profile`, `data_boundary`, and
+`substrate_receipts` so the worker result or launch request remains tied to the
+same containment metadata and the referenced sandbox/Herdr receipt content.
 
 Required artifacts are not satisfied by strings alone. When a work order names a
 required artifact, the worker result must list that artifact and the referenced

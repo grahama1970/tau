@@ -71,6 +71,8 @@ def test_omp_worker_blocks_disallowed_changed_file(tmp_path: Path) -> None:
 
 def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
 
     payload = write_omp_worker_receipt(
@@ -99,6 +101,14 @@ def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Pa
             "sha256": f"sha256:{_sha256(result)}",
             "bytes": result.stat().st_size,
         },
+    ]
+    assert payload["substrate_receipts"] == [
+        {
+            "label": "sandbox_receipt",
+            "path": str(sandbox_receipt.resolve()),
+            "sha256": f"sha256:{_sha256(sandbox_receipt)}",
+            "bytes": sandbox_receipt.stat().st_size,
+        }
     ]
 
 
@@ -414,6 +424,8 @@ def test_omp_worker_launch_builds_dry_run_rpc_request(tmp_path: Path) -> None:
         high_stakes=True,
         model_provider_route={"surface": "omp_rpc"},
     )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
 
     payload = write_omp_worker_launch_receipt(
         work_order_path=work_order,
@@ -427,6 +439,14 @@ def test_omp_worker_launch_builds_dry_run_rpc_request(tmp_path: Path) -> None:
     assert payload["command"] == ["omp", "--mode", "rpc", "--no-session"]
     assert payload["stdin_jsonl"][0]["type"] == "prompt"
     assert payload["stdin_jsonl"][0]["metadata"]["goal_hash"] == "sha256:goal"
+    assert payload["substrate_receipts"] == [
+        {
+            "label": "sandbox_receipt",
+            "path": str(sandbox_receipt.resolve()),
+            "sha256": f"sha256:{_sha256(sandbox_receipt)}",
+            "bytes": sandbox_receipt.stat().st_size,
+        }
+    ]
 
 
 def test_omp_worker_launch_blocks_wrong_surface(tmp_path: Path) -> None:

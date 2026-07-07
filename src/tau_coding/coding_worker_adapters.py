@@ -340,8 +340,6 @@ def _write_worker_receipt(
 
     repo = _repo_root(work_order)
     _append_work_order_gate_alerts(work_order, alerts)
-    substrate = _string(work_order.get("execution_substrate") or work_order.get("substrate"))
-    high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
 
     allowed_paths = _string_list(work_order.get("allowed_paths"))
     forbidden_paths = _string_list(work_order.get("forbidden_paths"))
@@ -429,13 +427,7 @@ def _write_worker_receipt(
         "agent": work_order.get("agent"),
         "attempt": work_order.get("attempt"),
         "goal_hash": goal_hash,
-        "execution_substrate": substrate,
-        "sandbox_receipt_path": work_order.get("sandbox_receipt_path"),
-        "herdr_binding": work_order.get("herdr_binding"),
-        "herdr_receipt_path": work_order.get("herdr_receipt_path"),
-        "high_stakes": high_stakes,
-        "policy_profile": work_order.get("policy_profile"),
-        "data_boundary": work_order.get("data_boundary"),
+        **_substrate_metadata(work_order),
         "model_provider_route": _model_provider_route(work_order, result),
         "changed_files": changed_files,
         "required_artifacts": required_artifacts,
@@ -855,9 +847,52 @@ def _substrate_metadata(work_order: Mapping[str, Any]) -> dict[str, Any]:
         "sandbox_receipt_path": work_order.get("sandbox_receipt_path"),
         "herdr_binding": work_order.get("herdr_binding"),
         "herdr_receipt_path": work_order.get("herdr_receipt_path"),
+        "substrate_receipts": _referenced_substrate_receipts(work_order),
         "high_stakes": bool(work_order.get("high_stakes") or work_order.get("zero_trust")),
         "policy_profile": work_order.get("policy_profile"),
         "data_boundary": work_order.get("data_boundary"),
+    }
+
+
+def _referenced_substrate_receipts(work_order: Mapping[str, Any]) -> list[dict[str, Any]]:
+    repo = _repo_root(work_order)
+    return [
+        artifact
+        for artifact in (
+            _referenced_receipt_artifact(
+                "sandbox_receipt",
+                work_order.get("sandbox_receipt_path"),
+                repo,
+            ),
+            _referenced_receipt_artifact(
+                "herdr_receipt",
+                work_order.get("herdr_receipt_path"),
+                repo,
+            ),
+        )
+        if artifact is not None
+    ]
+
+
+def _referenced_receipt_artifact(
+    label: str,
+    raw_path: object,
+    repo: Path | None,
+) -> dict[str, Any] | None:
+    path_value = _string(raw_path)
+    if not path_value:
+        return None
+    path = Path(path_value).expanduser()
+    if not path.is_absolute() and repo is not None:
+        path = repo / path
+    path = path.resolve()
+    if not path.exists() or not path.is_file():
+        return None
+    return {
+        "label": label,
+        "path": str(path),
+        "sha256": _artifact_sha256_uri(path),
+        "bytes": _artifact_size(path),
     }
 
 

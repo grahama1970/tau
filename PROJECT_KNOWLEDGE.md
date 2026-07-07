@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:28 EDT by agent
+**Last updated:** 2026-07-06 22:33 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 worker substrate receipt hash binding rung:
+  `src/tau_coding/coding_worker_adapters.py` now records
+  `substrate_receipts` on OMP/SciLLM worker validation and launch receipts.
+  When a work order references an existing sandbox or Herdr receipt, Tau records
+  that substrate receipt path, SHA-256, and byte count next to the worker's
+  containment metadata. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `38
+  passed in 3.56s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-substrate-receipt-proof` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-worker-substrate-receipt-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `195 passed in
+  6.65s`. This proves deterministic local worker receipts now bind referenced
+  substrate receipts when present and the coding capability aggregate still
+  composes; it does not prove live OMP/SciLLM semantic worker execution, worker
+  truthfulness, code correctness, provider/model quality, legal compliance, or
+  full sandbox isolation.
 
 - 2026-07-06 LSP rename-plan symbol receipt binding rung:
   `src/tau_coding/lsp_receipts.py` now records `symbol_receipt_artifact` on
