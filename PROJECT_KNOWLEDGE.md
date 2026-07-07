@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker substrate course-correction rung:
+  Worker validation now maps high-stakes substrate failures to actionable
+  `tau.course_correction.v1` triggers instead of generic `invalid_receipt`.
+  Herdr binding/receipt failures map to `herdr_stale`, while missing,
+  invalid, mocked, non-live, or non-PASS sandbox/substrate receipts map to
+  `receipt_timeout`. `tests/test_coding_worker_adapters.py` pins the
+  mapping for `substrate_required`, `sandbox_receipt_required`,
+  `sandbox_receipt_mocked`, `herdr_binding_required`, `herdr_receipt_required`,
+  and `herdr_receipt_mocked`. `docs/coding-workers.md` now documents the
+  substrate-specific correction routes. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py tests/test_course_correction.py
+  -q` -> `89 passed in 4.83s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-substrate-course-correction-20260707T085426Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `301 passed in 8.19s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local worker
+  validation routes blocked Herdr/sandbox substrate states through standard
+  course-correction triggers and still composes with the current coding
+  capability sanity suite; it does not prove live OMP/SciLLM semantic worker
+  execution, worker truthfulness, semantic code correctness, legal compliance,
+  ITAR compliance, provider/model quality, full sandbox isolation, or full goal
+  completion.
+
 - 2026-07-07 worker course-correction artifact rung:
   `src/tau_coding/coding_worker_adapters.py` now emits a concrete
   `tau.course_correction.v1` artifact whenever OMP/SciLLM worker result

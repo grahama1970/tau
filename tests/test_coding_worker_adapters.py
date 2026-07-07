@@ -980,6 +980,10 @@ def test_high_stakes_worker_requires_substrate(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "substrate_required" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+    assert payload["course_correction"]["required_next_action"] == (
+        "retry_node_or_route_goal_guardian"
+    )
 
 
 def test_high_stakes_sandbox_worker_requires_sandbox_receipt(tmp_path: Path) -> None:
@@ -999,6 +1003,11 @@ def test_high_stakes_sandbox_worker_requires_sandbox_receipt(tmp_path: Path) -> 
 
     assert payload["status"] == "BLOCKED"
     assert "sandbox_receipt_required" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+    assert payload["course_correction"]["required_evidence_before_retry"] == [
+        "fresh_work_order",
+        "node_receipt_or_timeout_diagnostics",
+    ]
 
 
 def test_high_stakes_sandbox_worker_blocks_non_pass_sandbox_receipt(tmp_path: Path) -> None:
@@ -1067,6 +1076,7 @@ def test_high_stakes_sandbox_worker_blocks_mocked_sandbox_receipt(tmp_path: Path
     assert payload["status"] == "BLOCKED"
     assert "sandbox_receipt_mocked" in payload["alert_codes"]
     assert payload["substrate_receipts"][0]["mocked"] is True
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
 
 
 def test_high_stakes_sandbox_worker_blocks_non_live_sandbox_receipt(tmp_path: Path) -> None:
@@ -1124,6 +1134,10 @@ def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "herdr_binding_required" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "herdr_stale"
+    assert payload["course_correction"]["required_next_action"] == (
+        "send_reminder_or_route_human"
+    )
 
 
 def test_high_stakes_herdr_worker_requires_receipt_path(tmp_path: Path) -> None:
@@ -1145,6 +1159,10 @@ def test_high_stakes_herdr_worker_requires_receipt_path(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "herdr_receipt_required" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "herdr_stale"
+    assert "herdr_monitor_snapshot" in payload["course_correction"][
+        "required_evidence_before_retry"
+    ]
 
 
 def test_high_stakes_herdr_worker_blocks_non_pass_receipt(tmp_path: Path) -> None:
@@ -1217,6 +1235,7 @@ def test_high_stakes_herdr_worker_blocks_mocked_receipt(tmp_path: Path) -> None:
     assert payload["status"] == "BLOCKED"
     assert "herdr_receipt_mocked" in payload["alert_codes"]
     assert payload["substrate_receipts"][0]["mocked"] is True
+    assert payload["course_correction"]["trigger"] == "herdr_stale"
 
 
 def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) -> None:

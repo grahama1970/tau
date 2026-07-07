@@ -586,6 +586,29 @@ def _worker_course_correction_artifact(
 def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
     if not alert_codes:
         return None
+    herdr_codes = {
+        "herdr_binding_required",
+        "herdr_receipt_required",
+        "herdr_receipt_missing",
+        "herdr_receipt_unreadable",
+        "herdr_receipt_not_object",
+        "herdr_receipt_invalid_schema",
+        "herdr_receipt_not_pass",
+        "herdr_receipt_mocked",
+        "herdr_receipt_not_live",
+    }
+    sandbox_codes = {
+        "substrate_required",
+        "invalid_high_stakes_substrate",
+        "sandbox_receipt_required",
+        "sandbox_receipt_missing",
+        "sandbox_receipt_unreadable",
+        "sandbox_receipt_not_object",
+        "sandbox_receipt_invalid_schema",
+        "sandbox_receipt_not_pass",
+        "sandbox_receipt_mocked",
+        "sandbox_receipt_not_live",
+    }
     forbidden_codes = {
         "changed_file_outside_repo",
         "disallowed_changed_file",
@@ -610,6 +633,10 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         return "worker_result_missing"
     if "goal_hash_mismatch" in alert_codes:
         return "goal_hash_mismatch"
+    if any(code in herdr_codes for code in alert_codes):
+        return "herdr_stale"
+    if any(code in sandbox_codes for code in alert_codes):
+        return "receipt_timeout"
     return "invalid_receipt"
 
 
