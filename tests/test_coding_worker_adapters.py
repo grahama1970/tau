@@ -2895,6 +2895,7 @@ def test_scillm_worker_launch_accepts_round_tripped_metadata_result_path(
     assert payload["http_executed"] is True
     assert payload["http_status"] == 200
     assert payload["response_artifacts"] == ["worker-result.json"]
+    assert payload["response_scillm_metadata"] == {"result_path": "worker-result.json"}
     result_artifact = Path(payload["response_result_path"])
     assert payload["response_result_artifact"] == {
         "label": "scillm_worker_result",
@@ -2905,6 +2906,62 @@ def test_scillm_worker_launch_accepts_round_tripped_metadata_result_path(
         "artifact": "worker-result.json",
     }
     assert requests[0]["payload"]["scillm_metadata"]["result_path"] == "worker-result.json"
+
+
+def test_scillm_worker_launch_blocks_response_metadata_mismatch(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server(
+        response={
+            "schema": "scillm.opencode_run.result.v1",
+            "run_id": "run-123",
+            "session_id": "sess-123",
+            "status": "completed",
+            "assistant_text": "worker wrote result artifact",
+            "artifacts": ["worker-result.json"],
+            "scillm_metadata": {
+                "schema": "tau.executor.scillm_worker.v1",
+                "dag_id": "wrong-dag",
+                "node_id": "coder",
+                "attempt": 1,
+                "goal_hash": "sha256:wrong-goal",
+                "result_path": "worker-result.json",
+                "receipt_path": "worker-receipt.json",
+            },
+        }
+    )
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is True
+    assert payload["response_result_artifact"] is not None
+    assert "scillm_metadata_mismatch" in payload["alert_codes"]
+    mismatch_alert = next(
+        alert for alert in payload["alerts"] if alert["code"] == "scillm_metadata_mismatch"
+    )
+    assert "scillm_metadata.dag_id expected" in mismatch_alert["errors"][0]
+    assert "scillm_metadata.goal_hash expected" in mismatch_alert["errors"][1]
+    assert requests[0]["payload"]["scillm_metadata"]["dag_id"] == "coding-dag"
 
 
 def test_scillm_worker_launch_apply_blocks_incomplete_success_response(

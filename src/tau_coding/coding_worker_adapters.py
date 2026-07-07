@@ -345,6 +345,7 @@ def write_scillm_worker_launch_receipt(
         auth_token=effective_auth_token,
         alerts=alerts,
         request_timeout_s=request_timeout_s,
+        expected_metadata=request_payload.get("scillm_metadata", {}),
     )
     response_result_artifact = _scillm_response_result_artifact(
         work_order=work_order,
@@ -406,6 +407,7 @@ def write_scillm_worker_launch_receipt(
         "run_id": launch_result["run_id"],
         "session_id": launch_result["session_id"],
         "scillm_run_status": launch_result["scillm_run_status"],
+        "response_scillm_metadata": launch_result["response_scillm_metadata"],
         "response_artifacts": launch_result["response_artifacts"],
         "expected_worker_result_path": work_order.get("result_path"),
         "response_result_artifact": response_result_artifact,
@@ -1064,6 +1066,7 @@ def _maybe_post_scillm_opencode_run(
     auth_token: str | None,
     alerts: list[dict[str, Any]],
     request_timeout_s: int,
+    expected_metadata: Mapping[str, Any],
 ) -> dict[str, Any]:
     response_path = output_path.with_suffix(output_path.suffix + ".response.json")
     error_path = output_path.with_suffix(output_path.suffix + ".error.txt")
@@ -1078,6 +1081,7 @@ def _maybe_post_scillm_opencode_run(
         "run_id": None,
         "session_id": None,
         "scillm_run_status": None,
+        "response_scillm_metadata": None,
         "response_artifacts": [],
     }
     if not apply:
@@ -1184,6 +1188,16 @@ def _maybe_post_scillm_opencode_run(
     if response_result_path and response_result_path not in artifacts:
         artifacts.append(response_result_path)
     metadata = response_payload.get("scillm_metadata")
+    if isinstance(metadata, Mapping):
+        metadata_mismatches = _scillm_metadata_mismatches(metadata, expected_metadata)
+        if metadata_mismatches:
+            alerts.append(
+                _alert(
+                    "scillm_metadata_mismatch",
+                    "SciLLM response scillm_metadata must match the worker request metadata",
+                    errors=metadata_mismatches,
+                )
+            )
     metadata_result_path = (
         _string(metadata.get("result_path")) if isinstance(metadata, Mapping) else None
     )
@@ -1200,10 +1214,32 @@ def _maybe_post_scillm_opencode_run(
             "run_id": run_id,
             "session_id": session_id,
             "scillm_run_status": run_status or None,
+            "response_scillm_metadata": dict(metadata) if isinstance(metadata, Mapping) else None,
             "response_artifacts": artifacts,
         }
     )
     return result
+
+
+def _scillm_metadata_mismatches(
+    actual: Mapping[str, Any],
+    expected: Mapping[str, Any],
+) -> list[str]:
+    mismatches: list[str] = []
+    for key in (
+        "schema",
+        "dag_id",
+        "node_id",
+        "attempt",
+        "goal_hash",
+        "result_path",
+        "receipt_path",
+    ):
+        if key in actual and actual.get(key) != expected.get(key):
+            mismatches.append(
+                f"scillm_metadata.{key} expected {expected.get(key)!r} got {actual.get(key)!r}"
+            )
+    return mismatches
 
 
 def _scillm_response_result_artifact(

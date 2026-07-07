@@ -46,6 +46,10 @@ The `timeout_s` field is the worker timeout sent inside the
 absent from the work order; `--request-timeout-s` is only the HTTP transport
 timeout for the Tau-to-SciLLM request.
 
+If SciLLM returns `scillm_metadata`, Tau requires it to match the work order's
+DAG id, node id, attempt, goal hash, result path, and receipt path before the
+launch receipt can pass.
+
 To validate a result produced by a real SciLLM/OpenCode serve worker, set
 `SCILLM_WORKER_RESULT` to a JSON file with schema
 `tau.scillm_worker_result.v1`:

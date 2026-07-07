@@ -954,6 +954,9 @@ Tau requires `scillm_run_status:"completed"`, at least one of `run_id` or
 `result_path`. Missing run status, identifiers, or result artifacts block with
 `missing_scillm_run_status`,
 `missing_scillm_run_identifier`, or `missing_scillm_worker_result_artifact`.
+If the response includes `scillm_metadata`, Tau compares its schema, DAG id,
+node id, attempt, goal hash, result path, and receipt path against the worker
+request metadata; mismatches block with `scillm_metadata_mismatch`.
 When the response names the result but the artifact is absent or unreadable,
 Tau blocks with `scillm_worker_result_artifact_missing`. Socket-level request
 timeouts, including `urllib` errors whose reason is a timeout, are recorded as
