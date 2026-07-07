@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 commit-plan approval-gated apply eligibility rung:
+  `src/tau_coding/commit_plan.py` now accepts an optional
+  `approval_receipt_path` and validates `tau.approval_gate_receipt.v1` receipts
+  for `requested_action:"working_tree_mutation"`. `tau commit-plan --apply`
+  now remains blocked without a valid approval receipt, blocks wrong approval
+  actions, and marks approved plans `apply_eligible:true` without creating git
+  commits. High-risk paths are approval-gated through the same receipt, while
+  source evidence, policy/data-boundary, and sensitive untracked-file blockers
+  still fail closed. Commit-plan support artifacts (`--out`,
+  `--evidence-receipt`, and `--approval-receipt`) are excluded from proposed
+  commit groups so approval/evidence files do not pollute the planned change
+  set. `src/tau_coding/cli.py` exposes `--approval-receipt`, and
+  `docs/coding-workers.md` documents the command and non-mutation boundary.
+  Focused proof: `git diff --check -- docs/coding-workers.md
+  src/tau_coding/commit_plan.py src/tau_coding/cli.py tests/test_commit_plan.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py src/tau_coding/cli.py tests/test_commit_plan.py`
+  -> `All checks passed!`; `uv run pytest tests/test_commit_plan.py -q` ->
+  `31 passed in 1.01s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-commit-plan-approval-20260707T081917Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `288 passed in 8.10s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local commit-plan
+  receipts can distinguish unapproved apply requests from approved
+  apply-eligible plans while preserving no-commit non-claims; it does not prove
+  commits were created, grouping optimality, semantic code correctness, human
+  identity beyond the approval receipt fields, legal compliance, ITAR
+  compliance, GitHub mutation, live worker execution, or full goal completion.
+
 - 2026-07-07 worker launch work-order artifact binding rerung: after reading
   the current `agent-skills/skills/scillm/SKILL.md` contract, Tau's OMP and
   SciLLM coding worker launch receipts now record the exact preflighted work

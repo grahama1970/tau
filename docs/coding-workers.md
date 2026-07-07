@@ -303,6 +303,16 @@ uv run tau commit-plan \
   --evidence-receipt review-findings-receipt.json
 ```
 
+To request apply eligibility, attach an approval-gate receipt:
+
+```bash
+uv run tau commit-plan \
+  --repo . \
+  --out commit-plan-receipt.json \
+  --apply \
+  --approval-receipt approval-gate-receipt.json
+```
+
 Tau blocks source changes that have neither changed tests nor explicit evidence
 receipts. The receipt records each evidence artifact path, schema, status,
 `ok`, `mocked`, `live`, `provider_live`, existence, and SHA-256 plus byte count
@@ -333,13 +343,16 @@ hash, policy metadata, or boundary metadata. It also validates the full
 metadata or `classified-not-allowed` boundaries before a commit plan can support
 coding continuation.
 
-The command is dry-run by default. `--apply` is intentionally blocked unless a
-future approval lane authorizes commit application. High-risk paths such as
-`.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and
-`package-lock.json` are flagged for approval. Untracked sensitive paths such as
-`.env`, `.env.*`, private-key files, and `secrets/**` also block with
-`untracked_sensitive_files` so a commit plan cannot quietly normalize
-accidental secret material into a proposed commit group.
+The command is dry-run by default. `--apply` requires a valid
+`tau.approval_gate_receipt.v1` with `requested_action:"working_tree_mutation"`
+passed through `--approval-receipt`; the receipt can then mark the plan
+`apply_eligible:true`, but this commit-plan lane still does not run `git
+commit`. High-risk paths such as `.github/`, `secrets/`, `.env`,
+`pyproject.toml`, `uv.lock`, and `package-lock.json` are flagged for approval
+unless a valid working-tree mutation approval receipt is supplied. Untracked
+sensitive paths such as `.env`, `.env.*`, private-key files, and `secrets/**`
+still block with `untracked_sensitive_files` so a commit plan cannot quietly
+normalize accidental secret material into a proposed commit group.
 
 ### Debugger Evidence
 

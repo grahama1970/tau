@@ -1758,6 +1758,11 @@ def main(
                 evidence_receipt_paths=[
                     Path(str(path)) for path in options["evidence_receipts"]
                 ],
+                approval_receipt_path=(
+                    Path(str(options["approval_receipt"]))
+                    if options.get("approval_receipt")
+                    else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4628,6 +4633,7 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
         "data_boundary": None,
         "goal_hash": None,
         "evidence_receipts": [],
+        "approval_receipt": None,
     }
     index = 0
     while index < len(args):
@@ -4639,6 +4645,7 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
             "--data-boundary",
             "--goal-hash",
             "--evidence-receipt",
+            "--approval-receipt",
         }:
             index += 1
             if index >= len(args):
@@ -4659,6 +4666,8 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
             options["goal_hash"] = arg.partition("=")[2]
         elif arg.startswith("--evidence-receipt="):
             options["evidence_receipts"].append(arg.partition("=")[2])
+        elif arg.startswith("--approval-receipt="):
+            options["approval_receipt"] = arg.partition("=")[2]
         elif arg == "--apply":
             options["apply"] = True
         elif arg == "--zero-trust":

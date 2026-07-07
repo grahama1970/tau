@@ -18,8 +18,10 @@ from tau_coding.policy_profile import (
     validate_policy_profile,
 )
 
+APPROVAL_GATE_RECEIPT_SCHEMA = "tau.approval_gate_receipt.v1"
 COMMIT_PLAN_SCHEMA = "tau.commit_plan.v1"
 COMMIT_PLAN_RECEIPT_SCHEMA = "tau.commit_plan_receipt.v1"
+COMMIT_PLAN_APPLY_APPROVAL_ACTION = "working_tree_mutation"
 SUPPORTED_EVIDENCE_RECEIPT_SCHEMAS = {
     "tau.code_patch_receipt.v1",
     "tau.lsp_diagnostics_receipt.v1",
@@ -63,6 +65,7 @@ def write_commit_plan_receipt(
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
     evidence_receipt_paths: list[Path] | None = None,
+    approval_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     resolved_repo = repo.expanduser().resolve()
     alerts = _coding_policy_alerts(
@@ -71,9 +74,19 @@ def write_commit_plan_receipt(
         data_boundary=data_boundary,
         goal_hash=goal_hash,
     )
+    excluded_paths = _excluded_commit_plan_paths(
+        repo=resolved_repo,
+        output_path=output_path,
+        evidence_receipt_paths=evidence_receipt_paths or [],
+        approval_receipt_path=approval_receipt_path,
+    )
     changed = _changed_file_artifacts(
         resolved_repo,
-        _git_changed_files(resolved_repo),
+        [
+            item
+            for item in _git_changed_files(resolved_repo)
+            if item["path"] not in excluded_paths
+        ],
         policy_profile=policy_profile,
         alerts=alerts,
     )
@@ -83,6 +96,11 @@ def write_commit_plan_receipt(
         alerts,
         repo=resolved_repo,
         expected_goal_hash=goal_hash,
+    )
+    approval_receipt = _approval_receipt(
+        approval_receipt_path,
+        alerts,
+        required=apply,
     )
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
     sensitive_untracked = [
@@ -94,7 +112,7 @@ def write_commit_plan_receipt(
     for group in groups:
         if not group["rationale"]:
             alerts.append(_alert("commit_group_missing_rationale", "commit group has no rationale"))
-    if high_risk:
+    if high_risk and approval_receipt is None:
         alerts.append(_alert("high_risk_paths_touched", "high-risk paths require approval"))
     if sensitive_untracked:
         alerts.append(
@@ -119,9 +137,10 @@ def write_commit_plan_receipt(
                 )
             )
     if apply:
-        alerts.append(
-            _alert("approval_required_to_apply", "commit-plan apply requires approval receipt")
-        )
+        if approval_receipt is None:
+            alerts.append(
+                _alert("approval_required_to_apply", "commit-plan apply requires approval receipt")
+            )
 
     payload = {
         "schema": COMMIT_PLAN_RECEIPT_SCHEMA,
@@ -137,6 +156,8 @@ def write_commit_plan_receipt(
         "data_boundary": data_boundary,
         "dry_run": not apply,
         "apply_requested": apply,
+        "apply_eligible": apply and approval_receipt is not None and not alerts,
+        "approval_receipt": approval_receipt,
         "changed_file_count": len(changed),
         "changed_files": changed,
         "changed_file_artifacts": _reviewable_file_artifacts(changed),
@@ -157,6 +178,8 @@ def write_commit_plan_receipt(
             "proves": [
                 "Tau inspected the Git working tree and proposed dry-run commit groups.",
                 "Tau flagged high-risk paths and apply requests for approval.",
+                "When apply is requested, Tau requires a valid working-tree mutation "
+                "approval receipt before marking the plan apply-eligible.",
             ],
             "does_not_prove": [
                 "The proposed grouping is semantically optimal.",
@@ -170,6 +193,26 @@ def write_commit_plan_receipt(
     payload["receipt_path"] = str(output_path.expanduser().resolve())
     _write_json(output_path, payload)
     return payload
+
+
+def _excluded_commit_plan_paths(
+    *,
+    repo: Path,
+    output_path: Path,
+    evidence_receipt_paths: list[Path],
+    approval_receipt_path: Path | None,
+) -> set[str]:
+    candidates = [output_path, *evidence_receipt_paths]
+    if approval_receipt_path is not None:
+        candidates.append(approval_receipt_path)
+    excluded: set[str] = set()
+    for candidate in candidates:
+        try:
+            relative = candidate.expanduser().resolve().relative_to(repo)
+        except ValueError:
+            continue
+        excluded.add(relative.as_posix())
+    return excluded
 
 
 def _git_changed_files(repo: Path) -> list[dict[str, str]]:
@@ -395,6 +438,73 @@ def _evidence_receipts(
             }
         )
     return receipts
+
+
+def _approval_receipt(
+    path: Path | None,
+    alerts: list[dict[str, Any]],
+    *,
+    required: bool,
+) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    resolved = path.expanduser().resolve()
+    try:
+        payload = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        alerts.append(
+            _alert("approval_receipt_unreadable", f"approval receipt unreadable: {exc}")
+        )
+        return None
+    if not isinstance(payload, dict):
+        alerts.append(_alert("approval_receipt_not_object", "approval receipt must be an object"))
+        return None
+
+    packet_summary = payload.get("packet_summary")
+    item = {
+        "path": str(resolved),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(resolved)}",
+        "bytes": resolved.stat().st_size,
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "approved": payload.get("approved"),
+        "requested_action": payload.get("requested_action"),
+        "target_id": (
+            packet_summary.get("target_id") if isinstance(packet_summary, dict) else None
+        ),
+    }
+    valid = True
+    if payload.get("schema") != APPROVAL_GATE_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert(
+                "invalid_approval_receipt_schema",
+                f"approval receipt schema must be {APPROVAL_GATE_RECEIPT_SCHEMA}",
+            )
+        )
+        valid = False
+    if payload.get("ok") is not True or payload.get("status") != "PASS":
+        alerts.append(
+            _alert("approval_receipt_not_pass", "approval receipt must be PASS with ok:true")
+        )
+        valid = False
+    if payload.get("approved") is not True:
+        alerts.append(
+            _alert("approval_receipt_not_approved", "approval receipt approved must be true")
+        )
+        valid = False
+    if payload.get("requested_action") != COMMIT_PLAN_APPLY_APPROVAL_ACTION:
+        alerts.append(
+            _alert(
+                "approval_receipt_wrong_action",
+                "commit-plan apply requires working_tree_mutation approval",
+            )
+        )
+        valid = False
+    if required and not valid:
+        return None
+    return item if valid else None
 
 
 def _source_changes_have_relevant_evidence(

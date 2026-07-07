@@ -354,7 +354,7 @@ def test_commit_plan_warns_when_lockfiles_mix_with_other_changes(tmp_path: Path)
 
 def test_commit_plan_requires_approval_to_apply(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
-    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
 
     payload = write_commit_plan_receipt(
         repo=repo,
@@ -364,6 +364,81 @@ def test_commit_plan_requires_approval_to_apply(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "approval_required_to_apply" in payload["alert_codes"]
+    assert payload["approval_receipt"] is None
+    assert payload["apply_eligible"] is False
+
+
+def test_commit_plan_apply_accepts_working_tree_approval_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    readme = repo / "README.md"
+    readme.write_text("# Demo\n", encoding="utf-8")
+    approval = _write_approval_receipt(repo, requested_action="working_tree_mutation")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        apply=True,
+        approval_receipt_path=approval,
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["apply_requested"] is True
+    assert payload["dry_run"] is False
+    assert payload["apply_eligible"] is True
+    assert payload["approval_receipt"]["schema"] == "tau.approval_gate_receipt.v1"
+    assert payload["approval_receipt"]["requested_action"] == "working_tree_mutation"
+    assert payload["approval_receipt"]["sha256"] == f"sha256:{_sha256(approval)}"
+    assert payload["approval_receipt"]["bytes"] == approval.stat().st_size
+    assert Path(payload["approval_receipt"]["path"]).name not in {
+        item["path"] for item in payload["changed_files"]
+    }
+    assert subprocess.run(
+        ["git", "rev-list", "--count", "HEAD"],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    ).returncode != 0
+
+
+def test_commit_plan_apply_blocks_wrong_approval_action(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    approval = _write_approval_receipt(repo, requested_action="github_apply")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        apply=True,
+        approval_receipt_path=approval,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["apply_eligible"] is False
+    assert "approval_receipt_wrong_action" in payload["alert_codes"]
+    assert "approval_required_to_apply" in payload["alert_codes"]
+
+
+def test_commit_plan_high_risk_path_accepts_working_tree_approval(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "uv.lock").write_text("locked\n", encoding="utf-8")
+    approval = _write_approval_receipt(repo, requested_action="working_tree_mutation")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        approval_receipt_path=approval,
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["approval_required"] is True
+    assert "high_risk_paths_touched" not in payload["alert_codes"]
+    assert payload["approval_receipt"]["requested_action"] == "working_tree_mutation"
+    assert Path(payload["approval_receipt"]["path"]).name not in {
+        item["path"] for item in payload["changed_files"]
+    }
 
 
 def test_commit_plan_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
@@ -649,6 +724,34 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     assert payload["evidence_receipts"][0]["schema_supported"] is True
 
 
+def test_cli_commit_plan_apply_accepts_approval_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    approval = _write_approval_receipt(repo, requested_action="working_tree_mutation")
+    out = repo / "commit-plan.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "commit-plan",
+            "--repo",
+            str(repo),
+            "--out",
+            str(out),
+            "--apply",
+            "--approval-receipt",
+            str(approval),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["apply_requested"] is True
+    assert payload["apply_eligible"] is True
+    assert payload["approval_receipt"]["requested_action"] == "working_tree_mutation"
+
+
 def test_cli_commit_plan_zero_trust_missing_boundary_exits_blocked(
     tmp_path: Path,
 ) -> None:
@@ -685,6 +788,33 @@ def _git_repo(tmp_path: Path) -> Path:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _write_approval_receipt(repo: Path, *, requested_action: str) -> Path:
+    path = repo / f"approval-{requested_action}.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.approval_gate_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": False,
+                "approved": True,
+                "requested_action": requested_action,
+                "packet_summary": {
+                    "target_id": f"repo:{repo}",
+                    "actor_id": "human:test",
+                    "actor_auth_method": "manual",
+                },
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def _policy_profile(
