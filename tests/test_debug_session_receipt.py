@@ -24,6 +24,8 @@ def test_debug_receipt_records_adapter_and_target(tmp_path: Path) -> None:
     assert receipt["adapter"] == "debugpy"
     assert receipt["target"] == "python -m pytest tests/test_example.py"
     assert receipt["goal_hash"] == "sha256:debug-goal"
+    assert receipt["session_sha256"] == f"sha256:{_sha256(session)}"
+    assert receipt["session_bytes"] == session.stat().st_size
 
 
 def test_debug_receipt_blocks_missing_adapter_when_required(tmp_path: Path) -> None:
@@ -52,6 +54,38 @@ def test_debug_receipt_blocks_missing_target(tmp_path: Path) -> None:
 
     assert receipt["status"] == "BLOCKED"
     assert "missing_debug_target" in receipt["alert_codes"]
+
+
+def test_debug_receipt_records_hash_for_unreadable_session_packet(tmp_path: Path) -> None:
+    session = tmp_path / "debug-session.json"
+    session.write_text("{not-json", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "debug_session_unreadable" in receipt["alert_codes"]
+    assert receipt["session_sha256"] == f"sha256:{_sha256(session)}"
+    assert receipt["session_bytes"] == session.stat().st_size
+
+
+def test_debug_receipt_records_null_hash_for_missing_session_packet(
+    tmp_path: Path,
+) -> None:
+    session = tmp_path / "missing-debug-session.json"
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "debug_session_missing" in receipt["alert_codes"]
+    assert receipt["session_path"] == str(session.resolve())
+    assert receipt["session_sha256"] is None
+    assert receipt["session_bytes"] is None
 
 
 def test_debug_receipt_blocks_malformed_evidence_shapes(tmp_path: Path) -> None:

@@ -269,7 +269,9 @@ future approval lane authorizes commit application. High-risk paths such as
 local session packet. Supported adapter labels are `debugpy`, `lldb-dap`, `dlv`,
 and `node`. The receipt records the goal hash, target, adapter availability,
 breakpoints, stopped frame, variables, commands, stdout/stderr artifacts,
-SHA-256 hashes, byte counts, conclusion, and non-claims.
+SHA-256 hashes, byte counts, conclusion, and non-claims. It also records the
+inspected debug session packet's `session_sha256` and `session_bytes`, with
+`null` values when the packet is missing.
 
 Tau blocks debug receipts when the session packet omits the target command, uses
 an unsupported adapter, refers to missing stdout/stderr artifacts, or provides

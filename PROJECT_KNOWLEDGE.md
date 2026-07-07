@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:20 EDT by agent
+**Last updated:** 2026-07-06 22:23 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debug-session packet hash binding rung:
+  `src/tau_coding/debug_session_receipt.py` now records `session_sha256` and
+  `session_bytes` on `tau.debug_session_receipt.v1` receipts so debugger
+  evidence is bound to the exact session packet Tau inspected. Missing debug
+  session packets record both fields as `null`; unreadable debug session
+  packets still record the artifact hash and byte count when the file exists.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> pass; `uv run pytest tests/test_debug_session_receipt.py -q` ->
+  `15 passed in 0.42s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-session-artifact-hash-proof` exited
+  0 and wrote
+  `/tmp/tau-coding-capability-sanity-debug-session-artifact-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `195 passed in
+  6.62s`. This proves deterministic local debug-session receipts now bind the
+  inspected session packet itself and the coding capability aggregate still
+  composes; it does not prove the debug conclusion is complete, the bug is
+  fixed, code semantic correctness, provider/model quality, legal compliance,
+  or full sandbox isolation.
 
 - 2026-07-06 review-findings artifact hash binding rung:
   `src/tau_coding/review_findings.py` now records `findings_sha256` and

@@ -76,6 +76,8 @@ def write_debug_session_receipt(
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
         "session_path": str(resolved_session),
+        "session_sha256": _sha256_uri(resolved_session),
+        "session_bytes": _artifact_size(resolved_session),
         "goal_hash": goal_hash,
         "expected_goal_hash": expected_goal_hash,
         "target": target,
@@ -158,7 +160,19 @@ def _log_artifacts(*, stdout_path: Path | None, stderr_path: Path | None) -> lis
 def _sha256_uri(path: Path | None) -> str | None:
     if path is None:
         return None
-    return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+    try:
+        return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+    except OSError:
+        return None
+
+
+def _artifact_size(path: Path | None) -> int | None:
+    if path is None:
+        return None
+    try:
+        return path.stat().st_size
+    except OSError:
+        return None
 
 
 def _string(value: object) -> str | None:
