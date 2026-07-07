@@ -1,9 +1,43 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 10:54 EDT by agent
+**Last updated:** 2026-07-07 11:49 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 worker work-order output path containment:
+  `src/tau_coding/coding_worker_adapters.py` now requires bounded worker work
+  orders to keep their primary `result_path` and `receipt_path` inside the
+  declared worker repo before Tau accepts a worker result or launches OMP/SciLLM.
+  Missing paths block with `missing_worker_result_path` or
+  `missing_worker_receipt_path`; out-of-repo destinations block with
+  `worker_result_path_outside_repo` or `worker_receipt_path_outside_repo`.
+  `tests/test_coding_worker_adapters.py` covers OMP validation blocking external
+  result and receipt paths, plus SciLLM launch skipping HTTP when `result_path`
+  points outside the repo. `examples/omp-worker/run.sh` and
+  `examples/scillm-worker/run.sh` now write their worker result/receipt artifacts
+  under `repo/.tau/receipts` so the copyable examples obey the same containment
+  boundary. `docs/coding-workers.md` documents the work-order output path gate.
+  Focused proof: `git diff --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md` -> pass;
+  `uv run python -m py_compile src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md` -> `All checks
+  passed!`; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `91
+  passed in 6.34s`; direct examples `examples/omp-worker/run.sh
+  /tmp/tau-omp-worker-output-path-example-20260707T154846Z` and
+  `examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-output-path-example-20260707T154846Z` -> PASS example
+  receipts with repo-contained worker result/receipt paths. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-output-path-scope-20260707T154858Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `492 passed in 11.86s`. This proves the local
+  adapter path rejects bounded-worker primary result/receipt paths outside the
+  declared repo and the copyable examples satisfy the new gate; it does not
+  prove live OMP/SciLLM semantic worker execution, provider/model quality,
+  semantic code correctness, legal compliance, human acceptance, or full sandbox
+  isolation on every host.
 
 - 2026-07-07 SciLLM worker launch result-artifact gate:
   `src/tau_coding/coding_worker_adapters.py` now requires apply-mode

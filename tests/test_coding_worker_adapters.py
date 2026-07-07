@@ -126,6 +126,48 @@ def test_worker_blocks_malformed_forbidden_paths(tmp_path: Path) -> None:
     assert "invalid_forbidden_paths" in payload["alert_codes"]
 
 
+def test_worker_blocks_result_path_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["result_path"] = str(tmp_path / "outside" / "worker-result.json")
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "worker_result_path_outside_repo" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "invalid_receipt"
+
+
+def test_worker_blocks_receipt_path_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["receipt_path"] = str(tmp_path / "outside" / "worker-receipt.json")
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "worker_receipt_path_outside_repo" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "invalid_receipt"
+
+
 def test_worker_accepts_absolute_changed_file_inside_repo(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
@@ -2533,6 +2575,45 @@ def test_scillm_worker_launch_apply_skips_http_when_substrate_receipt_outside_re
     assert payload["launch_skipped"] is True
     assert "sandbox_receipt_outside_repo" in payload["alert_codes"]
     assert payload["substrate_receipts"] == []
+    assert requests == []
+
+
+def test_scillm_worker_launch_apply_skips_http_when_result_path_outside_repo(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["result_path"] = str(tmp_path / "outside" / "worker-result.json")
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "worker_result_path_outside_repo" in payload["alert_codes"]
     assert requests == []
 
 

@@ -775,6 +775,11 @@ Referenced sandbox and Herdr receipt paths must resolve inside the worker repo;
 absolute paths outside the repo block with `sandbox_receipt_outside_repo` or
 `herdr_receipt_outside_repo` and are not recorded as admissible substrate
 descriptors.
+The work order's primary `result_path` and `receipt_path` must also resolve
+inside the worker repo. Missing paths block with `missing_worker_result_path`
+or `missing_worker_receipt_path`; out-of-repo paths block with
+`worker_result_path_outside_repo` or `worker_receipt_path_outside_repo` before
+Tau can launch or accept a bounded worker.
 Use `uv run tau sandbox-run --goal-hash sha256:...
 --work-order-sha256 sha256:...` when creating a sandbox receipt that will be
 referenced by a high-stakes worker work order. The receipt records

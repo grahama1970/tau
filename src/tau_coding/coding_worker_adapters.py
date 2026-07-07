@@ -1063,6 +1063,7 @@ def _append_work_order_gate_alerts(
     alerts: list[dict[str, Any]],
 ) -> None:
     repo = _repo_root(work_order)
+    _append_work_order_output_path_alerts(work_order, repo, alerts)
     substrate = _string(work_order.get("execution_substrate") or work_order.get("substrate"))
     high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
     if not _is_non_empty_string_list(work_order.get("allowed_paths")):
@@ -1218,6 +1219,34 @@ def _append_work_order_gate_alerts(
                     "classified-not-allowed data may not be routed to coding workers",
                 )
             )
+
+
+def _append_work_order_output_path_alerts(
+    work_order: Mapping[str, Any],
+    repo: Path | None,
+    alerts: list[dict[str, Any]],
+) -> None:
+    output_path_fields = (
+        (
+            "result_path",
+            "missing_worker_result_path",
+            "worker_result_path_outside_repo",
+            "worker result_path is required",
+        ),
+        (
+            "receipt_path",
+            "missing_worker_receipt_path",
+            "worker_receipt_path_outside_repo",
+            "worker receipt_path is required",
+        ),
+    )
+    for field, missing_code, outside_code, missing_message in output_path_fields:
+        path_value = _string(work_order.get(field))
+        if not path_value:
+            alerts.append(_alert(missing_code, missing_message))
+            continue
+        if _resolve_repo_artifact_path(path_value, repo) is None:
+            alerts.append(_alert(outside_code, f"{field} must resolve inside the worker repo"))
 
 
 def _substrate_metadata(work_order: Mapping[str, Any]) -> dict[str, Any]:
