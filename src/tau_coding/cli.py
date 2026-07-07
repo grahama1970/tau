@@ -71,6 +71,7 @@ from tau_coding.dag_stress_poc import (
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
+from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
     load_generated_ticket,
@@ -2059,14 +2060,16 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
-    if prompt_option is None and command == "review-code-skill-adapter":
+    if prompt_option is None and command == "evidence-case-skill-adapter":
         try:
-            options = _parse_review_code_skill_adapter_cli_args(positional_args[1:])
-            payload = write_review_code_skill_adapter_receipt(
-                review_path=Path(str(options["review"])),
+            options = _parse_evidence_case_skill_adapter_cli_args(positional_args[1:])
+            payload = write_evidence_case_skill_adapter_receipt(
+                case_path=Path(str(options["case"])),
                 output_path=Path(str(options["out"])),
                 repo_root=Path(str(options["repo_root"])),
                 expected_goal_hash=_optional_str(options.get("goal_hash")),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -5514,48 +5517,76 @@ def _parse_review_code_skill_adapter_cli_args(args: list[str]) -> dict[str, obje
     return options
 
 
-def _parse_review_code_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
+def _parse_evidence_case_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
     options: dict[str, object] = {
-        "review": None,
+        "case": None,
         "out": None,
         "repo_root": None,
         "goal_hash": None,
+        "policy_profile": None,
+        "data_boundary": None,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--review", "--out", "--repo-root", "--goal-hash"}:
+        if arg in {
+            "--case",
+            "--out",
+            "--repo-root",
+            "--goal-hash",
+            "--policy-profile",
+            "--data-boundary",
+            "--result",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--").replace("-", "_")] = args[index]
-        elif arg.startswith("--review="):
-            options["review"] = arg.partition("=")[2]
+            key = "case" if arg == "--result" else arg.removeprefix("--").replace("-", "_")
+            options[key] = args[index]
+        elif arg.startswith("--case=") or arg.startswith("--result="):
+            options["case"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
         elif arg.startswith("--repo-root="):
             options["repo_root"] = arg.partition("=")[2]
         elif arg.startswith("--goal-hash="):
             options["goal_hash"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
         else:
-            raise RuntimeError(f"unknown review-code-skill-adapter option: {arg}")
+            raise RuntimeError(f"unknown evidence-case-skill-adapter option: {arg}")
         index += 1
-    if not _optional_str(options.get("review")):
+    if not _optional_str(options.get("case")):
         raise RuntimeError(
-            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
             "--repo-root <dir>"
         )
     if not _optional_str(options.get("out")):
         raise RuntimeError(
-            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
             "--repo-root <dir>"
         )
     if not _optional_str(options.get("repo_root")):
         raise RuntimeError(
-            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
             "--repo-root <dir>"
         )
     return options
+
+
+def _read_optional_json_object(value: object) -> dict[str, object] | None:
+    if not _optional_str(value):
+        return None
+    path = Path(str(value)).expanduser().resolve()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{path} is not readable JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{path} must contain a JSON object")
+    return payload
 
 
 def _set_herdr_observation_gate_option(

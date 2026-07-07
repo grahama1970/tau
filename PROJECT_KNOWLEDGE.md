@@ -1,9 +1,41 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 07:34 EDT by agent
+**Last updated:** 2026-07-07 08:44 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 create-evidence-case skill adapter rung:
+  `src/tau_coding/evidence_case_skill_adapter.py` adds
+  `tau.evidence_case_skill_adapter_receipt.v1` for ingesting a
+  `create_evidence_case.result.v1` artifact, normalizing it into
+  `memory.evidence_case.v1`, checking support artifact paths against the repo
+  root, and validating the normalized artifact through the existing
+  `tau.evidence_case_gate_receipt.v1` gate. `src/tau_coding/cli.py` exposes
+  `evidence-case-skill-adapter`. `tests/test_evidence_case_skill_adapter.py`
+  covers valid case ingestion, missing question/claim blocking, goal-hash
+  mismatch blocking, support artifact repo-root escape blocking,
+  policy/data-boundary mismatch blocking, and the CLI path.
+  `docs/skill-composition.md` documents the command and non-claims.
+  `scripts/run-coding-capability-sanity.py` includes the evidence-case adapter
+  module and tests in aggregate lint/test coverage. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/evidence_case_skill_adapter.py
+  tests/test_evidence_case_skill_adapter.py src/tau_coding/cli.py
+  scripts/run-coding-capability-sanity.py` -> `All checks passed!`; `uv run
+  pytest tests/test_evidence_case_skill_adapter.py
+  tests/test_review_code_skill_adapter.py -q` -> `12 passed in 0.40s`;
+  `uv run python -m py_compile src/tau_coding/evidence_case_skill_adapter.py
+  src/tau_coding/cli.py scripts/run-coding-capability-sanity.py` -> pass;
+  `git diff --check -- ...` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-evidence-case-adapter-20260707T124328Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `429 passed in 10.59s`. This proves
+  create-evidence-case adapter wiring, schema/path/policy/boundary gating,
+  evidence-case gate validation, CLI receipt writing, and aggregate sanity
+  coverage under deterministic tests; it does not prove evidence semantic
+  completeness, Memory fact truth, task closure, provider/model semantic
+  quality, live external skill execution, or legal/compliance sufficiency.
 
 - 2026-07-07 review-code skill adapter rung:
   `src/tau_coding/review_code_skill_adapter.py` adds

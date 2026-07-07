@@ -186,11 +186,35 @@ course-correction payloads.
 This still does not prove the reviewer is correct, the code is semantically
 correct, or reviewer consensus is proof.
 
+## Evidence-Case Adapter
+
+The evidence-case adapter ingests `create_evidence_case.result.v1`, writes a
+separate normalized `memory.evidence_case.v1` artifact, and validates it through
+Tau's existing `tau.evidence_case_gate_receipt.v1`.
+
+```bash
+uv run tau evidence-case-skill-adapter \
+  --case /tmp/create-evidence-case-result.json \
+  --out /tmp/evidence-case-adapter-receipt.json \
+  --repo-root /path/to/repo \
+  --goal-hash sha256:... \
+  --policy-profile /tmp/policy-profile.json \
+  --data-boundary /tmp/data-boundary.json
+```
+
+The adapter preserves the separation between intent and evidence: a
+create-evidence-case result can become admissible only after Tau writes and
+validates the evidence-case gate receipt. Support artifact paths are checked
+against the repo root before the adapter passes.
+
+This still does not prove evidence semantic completeness, task closure, Memory
+truth, or provider/model quality.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
-1. Evidence-case, research, and model-worker adapters.
+1. Research and model-worker adapters.
 2. Project-profile capability provider requirements.
 3. Course-correction routing through validated capability providers.
 4. A skill-composition red-team suite that proves Tau does not blindly trust
