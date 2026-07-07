@@ -38,11 +38,17 @@ def build_course_correction_receipt(
 
     normalized_trigger = _normalize_trigger(trigger)
     policy = _policy_for_trigger(normalized_trigger)
+    alerts = _input_alerts_for_trigger(
+        trigger=normalized_trigger,
+        attempt=attempt,
+        observed_state=observed_state or {},
+    )
     payload: dict[str, Any] = {
         "schema": COURSE_CORRECTION_SCHEMA,
         "ok": False,
         "status": "REQUIRED",
         "next_allowed": False,
+        "input_valid": not alerts,
         "code": normalized_trigger,
         "trigger": normalized_trigger,
         "mocked": mocked,
@@ -64,6 +70,8 @@ def build_course_correction_receipt(
         "forbidden_next_routes": list(policy["forbidden_next_routes"]),
         "required_evidence_before_retry": list(policy["required_evidence_before_retry"]),
         "errors": errors or [],
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
             "proves": [
                 "Tau classified a blocked or drifting orchestration state.",
@@ -284,6 +292,39 @@ def _policy(
 def _normalize_trigger(trigger: str) -> str:
     normalized = trigger.strip().lower().replace("-", "_")
     return normalized or "unknown"
+
+
+def _input_alerts_for_trigger(
+    *,
+    trigger: str,
+    attempt: int | None,
+    observed_state: dict[str, Any],
+) -> list[dict[str, str]]:
+    alerts: list[dict[str, str]] = []
+    if trigger not in {
+        "brave_search_required_after_two_attempts",
+        "test_failed_twice",
+        "two_failed_attempts",
+    }:
+        return alerts
+    observed_attempt = observed_state.get("attempt_count")
+    effective_attempt = attempt
+    if isinstance(observed_attempt, int) and (
+        effective_attempt is None or observed_attempt > effective_attempt
+    ):
+        effective_attempt = observed_attempt
+    if effective_attempt is None or effective_attempt < 2:
+        alerts.append(
+            {
+                "severity": "WARN",
+                "code": "attempt_evidence_below_required_threshold",
+                "message": (
+                    f"{trigger} course correction requires attempt>=2 or "
+                    "observed_state.attempt_count>=2"
+                ),
+            }
+        )
+    return alerts
 
 
 def _utc_stamp() -> str:

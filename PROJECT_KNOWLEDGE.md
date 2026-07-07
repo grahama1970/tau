@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:26 EDT by agent
+**Last updated:** 2026-07-06 21:30 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 course-correction attempt-evidence rung:
+  `src/tau_coding/course_correction.py` now records `input_valid`, `alerts`,
+  and `alert_codes` on `tau.course_correction.v1` receipts. Triggers that
+  claim repeated failure, including `brave_search_required_after_two_attempts`,
+  `test_failed_twice`, and `two_failed_attempts`, now require either
+  `attempt >= 2` or `observed_state.attempt_count >= 2`; otherwise the receipt
+  records `attempt_evidence_below_required_threshold` so a project-agent route
+  cannot silently launder an unsupported retry-budget claim. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/course_correction.py
+  tests/test_course_correction.py` -> pass; `uv run pytest
+  tests/test_course_correction.py -q` -> `9 passed in 0.38s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-course-correction-attempt-proof` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-course-correction-attempt-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `coding course-correction receipts`, and embedded focused coding tests
+  `178 passed in 5.93s`. This proves deterministic local course-correction
+  receipts flag unsupported after-two-attempt claims; it does not prove the
+  proposed correction is semantically sufficient, a Brave Search call happened,
+  provider/model quality, legal compliance, or live worker execution.
 
 - 2026-07-06 review-findings malformed artifact receipt rung:
   `src/tau_coding/review_findings.py` now writes BLOCKED

@@ -126,6 +126,14 @@ These triggers route coding failures away from blind retry and toward bounded
 next actions such as fresh patch receipts, structured review, debugger evidence,
 quarantine, goal-guardian review, or human review.
 
+Course-correction receipts include `input_valid`, `alerts`, and `alert_codes`.
+Triggers that claim repeated failure, such as
+`brave_search_required_after_two_attempts`, `test_failed_twice`, and
+`two_failed_attempts`, require either `attempt >= 2` or
+`observed_state.attempt_count >= 2`; otherwise Tau records
+`attempt_evidence_below_required_threshold` so the receipt does not silently
+launder an unsupported retry-budget claim.
+
 ### LSP-Style Diagnostics And Rename Planning
 
 `tau.lsp_diagnostics_receipt.v1` records local diagnostics evidence for a
