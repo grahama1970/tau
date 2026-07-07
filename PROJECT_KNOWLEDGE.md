@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 review-findings P3 note-only routing rung:
+  `src/tau_coding/review_findings.py` now enforces the R3 routing rule that
+  `P3` findings are note-only. A structured reviewer finding with
+  `severity:"P3"` and `required_action:"revise"` or `"block"` now blocks
+  `tau.review_findings.v1` admission with
+  `finding_action_overstates_severity` instead of letting a low-severity note
+  drive a revise/block route. `tests/test_review_findings.py` pins this with
+  `test_review_findings_blocks_p3_escalating_beyond_note`. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py` -> `All checks passed!`; `uv run pytest
+  tests/test_review_findings.py -q` -> `18 passed in 0.42s`. Aggregate proof:
+  `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-findings-p3-note-proof-20260707T064744Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-review-findings-p3-note-proof-20260707T064744Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `260 passed in
+  7.81s`. The surrounding shell summary wrapper exited nonzero only because it
+  assigned zsh's read-only `status` variable after the receipt was written; the
+  receipt was re-read directly with Python. This proves deterministic local
+  review-finding routing blocks P3 over-escalation; it does not prove reviewer
+  semantic correctness, complete issue detection, provider/model quality, live
+  OMP/SciLLM semantic worker execution, human acceptance, full sandbox
+  isolation, or full goal completion.
+
 - 2026-07-07 code-patch fail-closed invariant coverage rung:
   `tests/test_code_patch.py` now directly pins three R1 fail-closed invariants
   that were already implemented in `tau.code_patch_receipt.v1` but not

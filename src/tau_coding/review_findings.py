@@ -261,6 +261,13 @@ def _validate_finding(
                 f"findings[{index}] P1/P2 must revise or block",
             )
         )
+    if expected_action == "note" and action != "note":
+        alerts.append(
+            _alert(
+                "finding_action_overstates_severity",
+                f"findings[{index}] P3 findings are note-only",
+            )
+        )
     return normalized, alerts
 
 

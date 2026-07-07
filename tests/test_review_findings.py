@@ -182,6 +182,30 @@ def test_review_findings_requires_evidence_for_p0_p1() -> None:
     assert "missing_finding_evidence" in receipt["alert_codes"]
 
 
+def test_review_findings_blocks_p3_escalating_beyond_note() -> None:
+    receipt = validate_review_findings(
+        _payload(
+            verdict="REVISE",
+            findings=[
+                {
+                    "id": "finding-001",
+                    "severity": "P3",
+                    "confidence": 0.6,
+                    "file": "src/example.py",
+                    "line": 3,
+                    "claim": "Low-risk note should not drive rerouting.",
+                    "evidence": ["src/example.py:3"],
+                    "required_action": "revise",
+                }
+            ],
+        )
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "finding_action_overstates_severity" in receipt["alert_codes"]
+    assert receipt["derived_verdict"] == "BLOCKED"
+
+
 def test_review_findings_accepts_files_inside_allowed_paths() -> None:
     payload = _payload(
         verdict="REVISE",
