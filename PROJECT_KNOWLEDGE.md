@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker result admissibility gate coverage rung:
+  `tests/test_coding_worker_adapters.py` now explicitly covers three R7/R8
+  worker-result rejection paths that were implemented but not pinned by focused
+  tests: prose-only worker output blocks with `prose_only_result`, public
+  GitHub mutation requests without an apply-policy receipt block with
+  `github_mutation_requires_policy`, and external research claims without a
+  research-query/source receipt block with `external_research_requires_receipt`.
+  These tests strengthen Tau's boundary that OMP/SciLLM workers are untrusted
+  producers of structured claims, not authorities for side effects or research.
+  Focused proof: `uv run python -m py_compile
+  src/tau_coding/coding_worker_adapters.py` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `56 passed in 4.23s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-worker-admissibility-proof-20260707T061338Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-admissibility-proof-20260707T061338Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `251 passed in
+  7.30s`.
+  This does not prove live OMP/SciLLM semantic execution, provider/model
+  quality, code correctness, legal compliance, GitHub mutation safety, full
+  sandbox isolation, or full goal completion.
+
 - 2026-07-07 LSP required diagnostics CLI gate rung:
   `tests/test_lsp_receipts.py` now pins the `tau lsp-diagnostics --required`
   CLI path for an unavailable workspace. The receipt exits blocked with

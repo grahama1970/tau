@@ -182,6 +182,65 @@ def test_worker_blocks_tests_passed_without_logs(tmp_path: Path) -> None:
     assert "tests_passed_without_logs" in payload["alert_codes"]
 
 
+def test_worker_blocks_prose_only_result(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        changed_files=[],
+        artifacts=[],
+        tests_run=[],
+    )
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["assistant_text"] = "I changed the code and everything looks good."
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "prose_only_result" in receipt["alert_codes"]
+
+
+def test_worker_blocks_public_github_mutation_without_policy_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {"target": "github:grahama1970/tau#67", "action": "comment"}
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "github_mutation_requires_policy" in receipt["alert_codes"]
+
+
+def test_worker_blocks_external_research_without_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "external_research_requires_receipt" in receipt["alert_codes"]
+
+
 def test_worker_records_test_log_artifact_descriptors(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
