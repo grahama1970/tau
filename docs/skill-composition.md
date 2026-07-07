@@ -337,9 +337,13 @@ Current fixtures cover:
 The suite proves only deterministic local fail-closed behavior. It does not run
 the skills, call providers, or prove semantic correctness.
 
+`tau run-status <run-dir>` includes
+`tau.skill_composition_redteam_receipt.v1` under `coding_evidence` when the
+receipt is present in the run directory. The summary reports the receipt path,
+hash, status, and attempt counts without re-running the red-team suite.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
 1. Model-worker adapter.
-2. Run-status integration for the skill-composition red-team receipt.

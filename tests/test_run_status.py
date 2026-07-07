@@ -1744,10 +1744,52 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
             "goal_hash": "sha256:goal",
             "policy_profile_sha256": "sha256:policy",
             "data_boundary_sha256": "sha256:boundary",
+            "attempt_count": None,
+            "passed_attempt_count": None,
         }
     ]
     assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
     assert "Code correctness." in status["coding_evidence"]["does_not_prove"]
+
+
+def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "skill-composition-redteam-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.skill_composition_redteam_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "attempt_count": 7,
+            "passed_attempt_count": 7,
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert status["coding_evidence"]["receipts"][0] == {
+        "relative_path": "skill-composition-redteam-receipt.json",
+        "schema": "tau.skill_composition_redteam_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": False,
+        "provider_live": False,
+        "sha256": f"sha256:{_sha256(receipt_path)}",
+        "goal_hash": None,
+        "policy_profile_sha256": None,
+        "data_boundary_sha256": None,
+        "attempt_count": 7,
+        "passed_attempt_count": 7,
+    }
+    assert (
+        "tau.skill_composition_redteam_receipt.v1"
+        in status["coding_evidence"]["supported_schemas"]
+    )
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:

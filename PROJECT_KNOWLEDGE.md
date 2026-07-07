@@ -1,9 +1,36 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:33 EDT by agent
+**Last updated:** 2026-07-07 09:39 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 skill-composition red-team run-status rung:
+  `src/tau_coding/run_status.py` now treats
+  `tau.skill_composition_redteam_receipt.v1` as Tau coding evidence and includes
+  `attempt_count` / `passed_attempt_count` in coding-evidence summaries.
+  `tests/test_run_status.py` verifies a standalone
+  `skill-composition-redteam-receipt.json` is summarized with receipt path,
+  SHA-256, status, and attempt counts. `docs/skill-composition.md` documents
+  that `tau run-status <run-dir>` exposes the red-team receipt without
+  re-running the suite. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/run_status.py tests/test_run_status.py
+  docs/skill-composition.md` -> `All checks passed!`; `uv run pytest
+  tests/test_run_status.py -q` -> `27 passed in 0.58s`; `uv run python -m
+  py_compile src/tau_coding/run_status.py` -> pass; `git diff --check -- ...`
+  -> pass. Operator smoke: `uv run tau skill-composition-redteam --run-dir
+  /tmp/tau-run-status-skill-redteam-proof` followed by `uv run tau run-status
+  /tmp/tau-run-status-skill-redteam-proof` -> `tau.run_status.v1 PASS`,
+  `coding_evidence.receipt_count:4`, and exactly one
+  `tau.skill_composition_redteam_receipt.v1` summary with `attempt_count:7` and
+  `passed_attempt_count:7`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-skill-redteam-status-20260707T131439Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `455 passed in 10.75s`. This proves
+  run-status can discover the red-team
+  receipt in a generated run directory; it does not prove live skill execution,
+  exhaustive attack coverage, skill output semantic correctness, or provider
+  quality.
 
 - 2026-07-07 skill-composition red-team CLI rung:
   `src/tau_coding/cli.py` exposes `uv run tau skill-composition-redteam

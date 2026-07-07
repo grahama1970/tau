@@ -25,6 +25,7 @@ CODING_EVIDENCE_SCHEMAS = {
     "tau.github_read_receipt.v1",
     "tau.omp_worker_receipt.v1",
     "tau.scillm_worker_receipt.v1",
+    "tau.skill_composition_redteam_receipt.v1",
     "tau.course_correction.v1",
     "tau.orchestration_reliability_receipt.v1",
 }
@@ -1784,6 +1785,8 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "goal_hash": payload.get("goal_hash") or payload.get("active_goal_hash"),
                 "policy_profile_sha256": payload.get("policy_profile_sha256"),
                 "data_boundary_sha256": payload.get("data_boundary_sha256"),
+                "attempt_count": payload.get("attempt_count"),
+                "passed_attempt_count": payload.get("passed_attempt_count"),
             }
         )
     return {
