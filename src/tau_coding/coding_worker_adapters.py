@@ -15,6 +15,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.course_correction import build_course_correction_receipt
 from tau_coding.policy_profile import (
     DATA_BOUNDARY_SCHEMA,
     POLICY_PROFILE_SCHEMA,
@@ -456,6 +457,13 @@ def _write_worker_receipt(
     research_receipts = _validate_external_research_receipts(result, repo, alerts)
 
     ok = not alerts
+    course_correction_path, course_correction = _worker_course_correction_artifact(
+        output_path=output_path,
+        worker_kind=worker_kind,
+        work_order=work_order,
+        result_path=resolved_result,
+        alert_codes=[alert["code"] for alert in alerts],
+    )
     payload = {
         "schema": receipt_schema,
         "ok": ok,
@@ -498,6 +506,11 @@ def _write_worker_receipt(
         "side_effect_receipts": side_effect_receipts,
         "research_receipts": research_receipts,
         "next_recommended_route": result.get("next_recommended_route"),
+        "course_correction_path": str(course_correction_path) if course_correction_path else None,
+        "course_correction_artifacts": (
+            [str(course_correction_path)] if course_correction_path else []
+        ),
+        "course_correction": course_correction,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -506,6 +519,8 @@ def _write_worker_receipt(
                 "Tau recorded hashes for the validated work order and worker result.",
                 "Tau checked goal hash, changed paths, required artifacts, test logs, "
                 "mutation claims, and research claims.",
+                "Tau emitted a bounded course-correction receipt when worker output "
+                "was blocked.",
             ],
             "does_not_prove": [
                 "The worker is trustworthy.",
@@ -520,6 +535,87 @@ def _write_worker_receipt(
     payload["receipt_path"] = str(output_path.expanduser().resolve())
     _write_json(output_path, payload)
     return payload
+
+
+def _worker_course_correction_artifact(
+    *,
+    output_path: Path,
+    worker_kind: str,
+    work_order: Mapping[str, Any],
+    result_path: Path,
+    alert_codes: list[str],
+) -> tuple[Path | None, dict[str, Any] | None]:
+    trigger = _worker_course_correction_trigger(alert_codes)
+    if trigger is None:
+        return None, None
+    node_id = _string(work_order.get("node_id")) or f"{worker_kind}-worker"
+    agent = _string(work_order.get("agent")) or worker_kind
+    attempt = work_order.get("attempt")
+    attempt_number = attempt if isinstance(attempt, int) and attempt >= 0 else 0
+    path = (
+        output_path.expanduser().resolve().parent
+        / "course-corrections"
+        / f"{_safe_file_stem(node_id)}-attempt-{attempt_number:03d}-{trigger}.json"
+    )
+    payload = build_course_correction_receipt(
+        trigger=trigger,
+        dag_id=_string(work_order.get("dag_id")),
+        goal_hash=_string(work_order.get("goal_hash")),
+        target=work_order.get("target") if isinstance(work_order.get("target"), dict) else {},
+        node_id=node_id,
+        agent=agent,
+        attempt=attempt_number,
+        observed_state={
+            "worker_kind": worker_kind,
+            "alert_codes": alert_codes,
+            "work_order_path": str(Path(_string(work_order.get("work_order_path"))).resolve())
+            if _string(work_order.get("work_order_path"))
+            else None,
+        },
+        observed_artifact_path=result_path,
+        errors=alert_codes,
+        stop_reason=trigger,
+        mocked=False,
+        live=True,
+        provider_live=False,
+    )
+    _write_json(path, payload)
+    return path, payload
+
+
+def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
+    if not alert_codes:
+        return None
+    forbidden_codes = {
+        "changed_file_outside_repo",
+        "disallowed_changed_file",
+        "artifact_outside_repo",
+        "disallowed_result_artifact",
+        "test_log_outside_repo",
+    }
+    missing_result_codes = {
+        "worker_result_missing",
+        "worker_result_unreadable",
+        "worker_result_not_object",
+        "invalid_result_schema",
+        "missing_result_artifact",
+        "missing_required_artifact",
+        "tests_passed_without_logs",
+        "prose_only_result",
+        "invalid_worker_status",
+    }
+    if any(code in forbidden_codes for code in alert_codes):
+        return "worker_changed_forbidden_path"
+    if any(code in missing_result_codes for code in alert_codes):
+        return "worker_result_missing"
+    if "goal_hash_mismatch" in alert_codes:
+        return "goal_hash_mismatch"
+    return "invalid_receipt"
+
+
+def _safe_file_stem(value: str) -> str:
+    safe = "".join(char if char.isalnum() or char in {"-", "_"} else "-" for char in value)
+    return safe.strip("-") or "worker"
 
 
 def _read_json_object(path: Path, alerts: list[dict[str, Any]], label: str) -> dict[str, Any]:

@@ -31,6 +31,13 @@ def test_omp_worker_blocks_missing_result(tmp_path: Path) -> None:
     assert payload["status"] == "BLOCKED"
     assert "worker_result_missing" in payload["alert_codes"]
     assert "invalid_result_schema" in payload["alert_codes"]
+    assert payload["course_correction"]["schema"] == "tau.course_correction.v1"
+    assert payload["course_correction"]["trigger"] == "worker_result_missing"
+    assert payload["course_correction"]["required_next_action"] == (
+        "retry_node_or_route_goal_guardian"
+    )
+    assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
+    assert Path(payload["course_correction_path"]).exists()
 
 
 def test_omp_worker_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
@@ -49,6 +56,9 @@ def test_omp_worker_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "goal_hash_mismatch" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "goal_hash_mismatch"
+    assert payload["course_correction"]["required_next_action"] == "route_goal_guardian"
+    assert Path(payload["course_correction_path"]).exists()
 
 
 def test_omp_worker_blocks_disallowed_changed_file(tmp_path: Path) -> None:
@@ -67,6 +77,11 @@ def test_omp_worker_blocks_disallowed_changed_file(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "disallowed_changed_file" in payload["alert_codes"]
+    assert payload["course_correction"]["schema"] == "tau.course_correction.v1"
+    assert payload["course_correction"]["trigger"] == "worker_changed_forbidden_path"
+    assert payload["course_correction"]["required_next_action"] == "route_goal_guardian"
+    assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
+    assert Path(payload["course_correction_path"]).exists()
 
 
 def test_worker_blocks_malformed_allowed_paths(tmp_path: Path) -> None:
@@ -127,6 +142,9 @@ def test_worker_accepts_absolute_changed_file_inside_repo(tmp_path: Path) -> Non
     )
 
     assert payload["status"] == "PASS"
+    assert payload["course_correction"] is None
+    assert payload["course_correction_path"] is None
+    assert payload["course_correction_artifacts"] == []
     assert payload["changed_files"] == [str(changed)]
     assert payload["normalized_changed_files"] == ["src/example.py"]
 

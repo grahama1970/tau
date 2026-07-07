@@ -180,6 +180,15 @@ They also require `goal_hash`; missing goal binding records
 `missing_goal_hash` and makes the receipt invalid input. When a DAG receipt has
 an active goal hash, orchestration reliability rejects declared
 course-correction artifacts that omit or mismatch that goal hash.
+Worker validation receipts now emit a concrete course-correction artifact when
+they block external worker output. Missing, malformed, prose-only, or
+artifact-incomplete worker results map to `worker_result_missing`; changed files, result
+artifacts, or test logs outside the repo/path boundary map to
+`worker_changed_forbidden_path`; worker result goal drift maps to
+`goal_hash_mismatch`. The worker receipt records `course_correction_path`,
+`course_correction_artifacts`, and the embedded `course_correction` payload so
+downstream orchestration can route the blocked worker instead of inferring a
+repair path from raw alert codes.
 When a correction is based on a concrete failed receipt, log, or evidence file,
 pass it with `--observed-artifact`; Tau records `observed_artifact` with path,
 existence, SHA-256, and byte count so the correction remains tied to the

@@ -5,6 +5,36 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker course-correction artifact rung:
+  `src/tau_coding/coding_worker_adapters.py` now emits a concrete
+  `tau.course_correction.v1` artifact whenever OMP/SciLLM worker result
+  validation blocks. Missing, unreadable, malformed, prose-only, or
+  artifact-incomplete worker results map to `worker_result_missing`; changed
+  files, result artifacts, or test logs outside the repo/path boundary map to
+  `worker_changed_forbidden_path`; valid worker results with goal drift map to
+  `goal_hash_mismatch`. Worker receipts now record `course_correction_path`,
+  `course_correction_artifacts`, and the embedded `course_correction` payload
+  so downstream orchestration can route a blocked worker through the standard
+  course-correction policy instead of inferring recovery from raw alert codes.
+  `docs/coding-workers.md` documents the worker correction mapping. Focused
+  proof: `git diff --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  tests/test_course_correction.py -q` -> `89 passed in 4.71s`. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-worker-course-correction-20260707T085018Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `301 passed in 8.14s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local worker
+  validation emits standard course-correction artifacts for blocked worker
+  result classes and still composes with the current coding capability sanity
+  suite; it does not prove live OMP/SciLLM semantic worker execution, worker
+  truthfulness, semantic code correctness, legal compliance, ITAR compliance,
+  live GitHub mutation, provider/model quality, full sandbox isolation, or full
+  goal completion.
+
 - 2026-07-07 worker result artifact containment rung:
   `src/tau_coding/coding_worker_adapters.py` now validates all worker-declared
   `artifacts`, not only required artifacts. Worker result artifacts must exist,
