@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 compliance package coding-evidence receipt rung:
+  `src/tau_coding/compliance_package.py` now copies Tau-native coding receipts
+  into `coding-evidence-receipts/` when a run directory contains receipts such
+  as `tau.code_patch_receipt.v1`, `tau.lsp_diagnostics_receipt.v1`,
+  `tau.test_run_receipt.v1`, `tau.review_findings.v1`,
+  `tau.commit_plan_receipt.v1`, `tau.debug_session_receipt.v1`,
+  `tau.omp_worker_receipt.v1`, `tau.scillm_worker_receipt.v1`, and
+  `tau.orchestration_reliability_receipt.v1`. `tests/test_compliance_package.py`
+  now writes representative coding receipt JSON files under a run's `receipts/`
+  directory and asserts the package copies them into `coding-evidence-receipts/`
+  and indexes their schemas. Focused proof: `git diff --check --
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py
+  docs/compliance-package.md docs/coding-workers.md PROJECT_KNOWLEDGE.md` ->
+  pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py` ->
+  `All checks passed!`; `uv run pytest tests/test_compliance_package.py
+  tests/test_package_validate.py tests/test_run_report.py -q` ->
+  `19 passed in 0.46s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-coding-evidence-package-20260707T134500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `339 passed in 9.41s`. This proves the package
+  collector now includes coding evidence receipt files and still composes with
+  the maintained coding-capability sanity suite; it does not prove semantic code
+  correctness, live OMP/SciLLM semantic execution, provider/model quality, ITAR
+  compliance, legal compliance, or full goal completion.
+
 - 2026-07-07 coding starter test-run contract rung:
   `src/tau_coding/init_project.py` now includes `tau.test_run_receipt.v1 for
   focused local test evidence` in the `coding-zero-trust` DAG template's

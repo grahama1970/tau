@@ -875,6 +875,18 @@ Dry-run launch does not prove live SciLLM execution. Apply launch proves only
 that Tau posted to the configured SciLLM endpoint and captured the response; it
 does not replace result validation.
 
+## Packaging Coding Evidence
+
+`uv run tau compliance-package <run-dir> --out <package-dir>` copies Tau-native
+coding evidence receipts into `coding-evidence-receipts/` when a run produced
+them. This includes patch, LSP, focused test-run, review findings, commit-plan,
+debug-session, OMP worker, SciLLM worker, and orchestration reliability
+receipts.
+
+Packaging these receipts makes coding evidence easier to review. It does not
+prove code correctness, worker truthfulness, live provider behavior, sandbox
+isolation, legal compliance, or closure.
+
 ## Non-Claims
 
 Tau does not claim:

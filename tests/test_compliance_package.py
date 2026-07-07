@@ -47,6 +47,60 @@ def test_compliance_package_collects_zero_trust_dag_artifacts(tmp_path: Path) ->
     assert all(str(item["sha256"]).startswith("sha256:") for item in manifest["items"])
 
 
+def test_compliance_package_collects_coding_evidence_receipts(tmp_path: Path) -> None:
+    run_dir = _write_zero_trust_run(tmp_path)
+    receipt_dir = run_dir / "receipts"
+    receipt_dir.mkdir()
+    coding_receipts = {
+        "code-patch-receipt.json": {
+            "schema": "tau.code_patch_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "test-run-receipt.json": {
+            "schema": "tau.test_run_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "review-findings-receipt.json": {
+            "schema": "tau.review_findings.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "commit-plan-receipt.json": {
+            "schema": "tau.commit_plan_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "orchestration-reliability-receipt.json": {
+            "schema": "tau.orchestration_reliability_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+    }
+    for name, payload in coding_receipts.items():
+        _write_json(receipt_dir / name, payload)
+    out_dir = tmp_path / "package"
+
+    manifest = build_compliance_evidence_package(run_dir=run_dir, out_dir=out_dir)
+
+    assert manifest["ok"] is True
+    copied_dir = out_dir / "coding-evidence-receipts"
+    for name in coding_receipts:
+        assert (copied_dir / name).exists()
+    coding_items = [
+        item for item in manifest["items"] if item["kind"] == "coding-evidence-receipts"
+    ]
+    assert len(coding_items) == len(coding_receipts)
+    assert {item["schema"] for item in coding_items} == {
+        payload["schema"] for payload in coding_receipts.values()
+    }
+    assert not any(
+        missing["kind"] == "coding-evidence-receipts"
+        for missing in manifest["missing_expected_items"]
+    )
+
+
 def test_compliance_package_manifest_hash_scope_is_explicit(tmp_path: Path) -> None:
     run_dir = _write_zero_trust_run(tmp_path)
     out_dir = tmp_path / "package"
