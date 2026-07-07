@@ -332,6 +332,30 @@
   mutation, full sandbox isolation, legal compliance, ITAR compliance, or full
   goal completion.
 
+- 2026-07-07 coding course-correction attribution rung:
+  `src/tau_coding/course_correction.py` now marks coding-trigger
+  `tau.course_correction.v1` receipts invalid unless they carry `node_id`,
+  `agent`, and `attempt >= 1` in addition to `goal_hash`. Missing attribution
+  records `missing_node_id`, `missing_agent`, or `missing_attempt`, preventing
+  anonymous worker/reviewer failures from looking like admissible bounded retry
+  evidence. `tests/test_course_correction.py` pins the three missing
+  attribution cases and zero-attempt rejection. Focused proof: `uv run ruff
+  check --select I,F,E501 src/tau_coding/course_correction.py
+  tests/test_course_correction.py` -> `All checks passed!`; `uv run pytest
+  tests/test_course_correction.py -q` -> `19 passed in 0.42s`. Consumer proof:
+  `uv run pytest tests/test_course_correction.py
+  tests/test_coding_worker_adapters.py tests/test_orchestration_reliability.py
+  tests/test_project_dag.py -q` -> `159 passed in 6.53s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-course-correction-attribution-20260707T120500Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `327 passed in 8.16s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves the deterministic local receipt
+  builder rejects unattributed coding
+  course-correction inputs; it does not prove the correction action was
+  executed, agent truthfulness, semantic code correctness, live worker
+  execution, provider/model quality, full sandbox isolation, legal compliance,
+  ITAR compliance, or full goal completion.
+
 - 2026-07-07 zero-trust debug target shell-control gate:
   `src/tau_coding/debug_session_receipt.py` now blocks zero-trust
   `tau.debug_session_packet.v1` targets that contain shell-control syntax such

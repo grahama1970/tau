@@ -194,6 +194,10 @@ They also require `goal_hash`; missing goal binding records
 `missing_goal_hash` and makes the receipt invalid input. When a DAG receipt has
 an active goal hash, orchestration reliability rejects declared
 course-correction artifacts that omit or mismatch that goal hash.
+Coding-trigger corrections also require `node_id`, `agent`, and `attempt >= 1`;
+missing attribution records `missing_node_id`, `missing_agent`, or
+`missing_attempt`. This prevents anonymous worker or reviewer failures from
+looking like admissible bounded retry evidence.
 Worker validation receipts now emit a concrete course-correction artifact when
 they block external worker output. Missing, malformed, prose-only, or
 artifact-incomplete worker results map to `worker_result_missing`; changed files, result

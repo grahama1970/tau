@@ -133,6 +133,59 @@ def test_course_correction_missing_goal_hash_is_invalid_input() -> None:
     assert "missing_goal_hash" in payload["alert_codes"]
 
 
+def test_coding_course_correction_missing_node_id_is_invalid_input() -> None:
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        agent="coder",
+        attempt=1,
+    )
+
+    assert payload["input_valid"] is False
+    assert "missing_node_id" in payload["alert_codes"]
+
+
+def test_coding_course_correction_missing_agent_is_invalid_input() -> None:
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        attempt=1,
+    )
+
+    assert payload["input_valid"] is False
+    assert "missing_agent" in payload["alert_codes"]
+
+
+def test_coding_course_correction_missing_attempt_is_invalid_input() -> None:
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+    )
+
+    assert payload["input_valid"] is False
+    assert "missing_attempt" in payload["alert_codes"]
+
+
+def test_coding_course_correction_zero_attempt_is_invalid_input() -> None:
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=0,
+    )
+
+    assert payload["input_valid"] is False
+    assert "missing_attempt" in payload["alert_codes"]
+
+
 def test_course_correction_blocks_unsupported_trigger_as_invalid_input() -> None:
     payload = build_course_correction_receipt(
         trigger="invented_retry_reason",

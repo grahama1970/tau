@@ -80,6 +80,8 @@ def build_course_correction_receipt(
     alerts = _input_alerts_for_trigger(
         trigger=normalized_trigger,
         goal_hash=goal_hash,
+        node_id=node_id,
+        agent=agent,
         attempt=attempt,
         observed_state=observed_state or {},
     )
@@ -347,6 +349,8 @@ def _input_alerts_for_trigger(
     *,
     trigger: str,
     goal_hash: str | None,
+    node_id: str | None,
+    agent: str | None,
     attempt: int | None,
     observed_state: dict[str, Any],
 ) -> list[dict[str, str]]:
@@ -367,6 +371,31 @@ def _input_alerts_for_trigger(
                 "message": "course correction requires goal_hash",
             }
         )
+    if trigger in CODING_COURSE_CORRECTION_TRIGGERS:
+        if _missing_text(node_id):
+            alerts.append(
+                {
+                    "severity": "BLOCK",
+                    "code": "missing_node_id",
+                    "message": "coding course correction requires node_id attribution",
+                }
+            )
+        if _missing_text(agent):
+            alerts.append(
+                {
+                    "severity": "BLOCK",
+                    "code": "missing_agent",
+                    "message": "coding course correction requires agent attribution",
+                }
+            )
+        if not isinstance(attempt, int) or attempt < 1:
+            alerts.append(
+                {
+                    "severity": "BLOCK",
+                    "code": "missing_attempt",
+                    "message": "coding course correction requires attempt>=1",
+                }
+            )
     if trigger not in {
         "brave_search_required_after_two_attempts",
         "test_failed_twice",
@@ -391,6 +420,10 @@ def _input_alerts_for_trigger(
             }
         )
     return alerts
+
+
+def _missing_text(value: Any) -> bool:
+    return not isinstance(value, str) or not value.strip()
 
 
 def _artifact_descriptor(label: str, path: Path | None) -> dict[str, Any] | None:
