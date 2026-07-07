@@ -37,6 +37,7 @@ cat > "${SANDBOX_RECEIPT}" <<JSON
   "mocked": false,
   "live": true,
   "provider_live": false,
+  "goal_hash": "sha256:omp-worker-example-goal",
   "command_executed": true,
   "network_egress": "denied"
 }

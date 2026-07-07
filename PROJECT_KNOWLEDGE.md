@@ -1,9 +1,41 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 03:14 EDT by agent
+**Last updated:** 2026-07-07 05:40 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 worker substrate missing-goal fail-closed rung:
+  `src/tau_coding/coding_worker_adapters.py` now rejects high-stakes sandbox
+  or Herdr substrate receipts that omit `goal_hash` when the worker work order
+  has one. Sandbox receipts block with `sandbox_receipt_missing_goal_hash` and
+  route to the existing `receipt_timeout` course-correction path; Herdr
+  receipts block with `herdr_receipt_missing_goal_hash` and route to
+  `herdr_stale`. Copyable OMP and SciLLM worker examples now bind their
+  sandbox receipts to their work-order goal hashes so the examples stay aligned
+  with the stricter high-stakes substrate rule. Focused proof: `git diff
+  --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `78 passed in 4.80s`. Example smoke proof:
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-missing-goal-fix-smoke` ->
+  `status:"PASS"`, `ok:true`; `examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-missing-goal-fix-smoke` -> `status:"PASS"`,
+  `ok:true`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-substrate-missing-goal-20260707T104500Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-substrate-missing-goal-20260707T104500Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded
+  `coding_receipt_tests` `315 passed in 8.13s`. This proves deterministic local
+  worker validation and launch preflight do not accept unbound high-stakes
+  substrate receipts; it does not prove live OMP or live SciLLM semantic coding
+  work, full sandbox isolation, provider/model quality, legal compliance, or
+  full goal completion.
 
 - 2026-07-07 commit-plan mocked approval fail-closed rung:
   `src/tau_coding/commit_plan.py` now rejects mocked

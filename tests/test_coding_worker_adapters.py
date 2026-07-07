@@ -1154,6 +1154,36 @@ def test_high_stakes_sandbox_worker_blocks_goal_hash_mismatch(
     assert payload["course_correction"]["trigger"] == "receipt_timeout"
 
 
+def test_high_stakes_sandbox_worker_blocks_missing_goal_hash(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
+    sandbox_payload = json.loads(sandbox_receipt.read_text(encoding="utf-8"))
+    sandbox_payload.pop("goal_hash", None)
+    sandbox_receipt.write_text(
+        json.dumps(sandbox_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "sandbox_receipt_missing_goal_hash" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+
+
 def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -1316,6 +1346,36 @@ def test_high_stakes_herdr_worker_blocks_goal_hash_mismatch(tmp_path: Path) -> N
     assert payload["course_correction"]["trigger"] == "herdr_stale"
 
 
+def test_high_stakes_herdr_worker_blocks_missing_goal_hash(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path="herdr-observation-gate.json",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    herdr_receipt = Path(work_order_payload["repo"]) / "herdr-observation-gate.json"
+    herdr_payload = json.loads(herdr_receipt.read_text(encoding="utf-8"))
+    herdr_payload.pop("goal_hash", None)
+    herdr_receipt.write_text(
+        json.dumps(herdr_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_receipt_missing_goal_hash" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "herdr_stale"
+
+
 def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -1358,6 +1418,7 @@ def test_high_stakes_herdr_worker_records_receipt_descriptor(tmp_path: Path) -> 
                 "mocked": False,
                 "live": True,
                 "provider_live": False,
+                "goal_hash": "sha256:goal",
             },
             indent=2,
             sort_keys=True,
@@ -2455,6 +2516,7 @@ def _write_work_order(
                     "mocked": False,
                     "live": True,
                     "provider_live": False,
+                    "goal_hash": "sha256:goal",
                 },
                 indent=2,
                 sort_keys=True,
@@ -2476,6 +2538,7 @@ def _write_work_order(
                     "mocked": False,
                     "live": True,
                     "provider_live": False,
+                    "goal_hash": "sha256:goal",
                 },
                 indent=2,
                 sort_keys=True,

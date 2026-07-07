@@ -596,6 +596,7 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "herdr_receipt_not_pass",
         "herdr_receipt_mocked",
         "herdr_receipt_not_live",
+        "herdr_receipt_missing_goal_hash",
         "herdr_receipt_goal_hash_mismatch",
     }
     sandbox_codes = {
@@ -609,6 +610,7 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "sandbox_receipt_not_pass",
         "sandbox_receipt_mocked",
         "sandbox_receipt_not_live",
+        "sandbox_receipt_missing_goal_hash",
         "sandbox_receipt_goal_hash_mismatch",
     }
     forbidden_codes = {
@@ -1010,6 +1012,7 @@ def _append_work_order_gate_alerts(
                 sandbox_receipt,
                 work_order,
                 alerts,
+                missing_goal_code="sandbox_receipt_missing_goal_hash",
                 goal_mismatch_code="sandbox_receipt_goal_hash_mismatch",
                 label="sandbox receipt",
             )
@@ -1054,6 +1057,7 @@ def _append_work_order_gate_alerts(
                 herdr_receipt,
                 work_order,
                 alerts,
+                missing_goal_code="herdr_receipt_missing_goal_hash",
                 goal_mismatch_code="herdr_receipt_goal_hash_mismatch",
                 label="Herdr observation receipt",
             )
@@ -1249,6 +1253,7 @@ def _append_referenced_receipt_binding_alerts(
     work_order: Mapping[str, Any],
     alerts: list[dict[str, Any]],
     *,
+    missing_goal_code: str,
     goal_mismatch_code: str,
     label: str,
 ) -> None:
@@ -1256,6 +1261,14 @@ def _append_referenced_receipt_binding_alerts(
         return
     receipt_goal_hash = _string(receipt.get("goal_hash"))
     work_order_goal_hash = _string(work_order.get("goal_hash"))
+    if work_order_goal_hash and not receipt_goal_hash:
+        alerts.append(
+            _alert(
+                missing_goal_code,
+                f"{label} goal_hash is required for high-stakes worker binding",
+            )
+        )
+        return
     if receipt_goal_hash and work_order_goal_hash and receipt_goal_hash != work_order_goal_hash:
         alerts.append(
             _alert(
