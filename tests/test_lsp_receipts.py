@@ -54,6 +54,7 @@ def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
         baseline_receipt_path=Path(baseline["receipt_path"]),
     )
 
+    assert payload["status"] == "BLOCKED"
     assert payload["baseline_severity_counts"] == baseline["severity_counts"]
     baseline_path = Path(baseline["receipt_path"])
     assert payload["baseline_receipt_artifact"] == {
@@ -64,6 +65,7 @@ def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
     }
     assert payload["diagnostic_delta"]["error"] > 0
     assert payload["diagnostics_increased"] is True
+    assert "lsp_diagnostics_regressed" in payload["alert_codes"]
 
 
 def test_lsp_diagnostics_receipt_records_goal_hash(tmp_path: Path) -> None:
@@ -716,9 +718,11 @@ def test_cli_lsp_diagnostics_accepts_baseline_receipt(tmp_path: Path) -> None:
     )
 
     payload = json.loads(result.output)
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
     assert payload["diagnostics_increased"] is True
+    assert "lsp_diagnostics_regressed" in payload["alert_codes"]
     assert payload["baseline_receipt_path"] == str(Path(baseline["receipt_path"]))
 
 

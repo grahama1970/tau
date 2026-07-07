@@ -92,6 +92,18 @@ def write_lsp_diagnostics_receipt(
         else None
     )
     diagnostic_delta = _diagnostic_delta(severity_counts, baseline_counts)
+    diagnostics_increased = (
+        _diagnostics_increased(diagnostic_delta)
+        if diagnostic_delta is not None
+        else "NOT_EVALUATED"
+    )
+    if diagnostics_increased is True:
+        alerts.append(
+            _alert(
+                "lsp_diagnostics_regressed",
+                "diagnostic severity counts increased relative to the baseline receipt",
+            )
+        )
     ok = not alerts
     payload = {
         "schema": LSP_DIAGNOSTICS_RECEIPT_SCHEMA,
@@ -122,11 +134,7 @@ def write_lsp_diagnostics_receipt(
         "baseline_receipt_artifact": _optional_artifact_summary(baseline_receipt_path),
         "baseline_severity_counts": baseline_counts,
         "diagnostic_delta": diagnostic_delta,
-        "diagnostics_increased": (
-            _diagnostics_increased(diagnostic_delta)
-            if diagnostic_delta is not None
-            else "NOT_EVALUATED"
-        ),
+        "diagnostics_increased": diagnostics_increased,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": _lsp_proof_scope("diagnostics"),
