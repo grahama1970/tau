@@ -226,6 +226,10 @@ Triggers that claim repeated failure, such as
 `observed_state.attempt_count >= 2`; otherwise Tau records
 `attempt_evidence_below_required_threshold` so the receipt does not silently
 launder an unsupported retry-budget claim.
+`two_failed_attempts` routes to reviewer/debug/goal-guardian/human rather than
+blind human-only escalation, forbids `retry_same_context` and unrelated test
+churn, and requires `two_attempt_failure_receipt` plus
+`replan_or_debug_receipt` before another attempt.
 
 ### LSP-Style Diagnostics And Rename Planning
 

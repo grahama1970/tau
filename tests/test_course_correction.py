@@ -361,6 +361,42 @@ def test_course_correction_after_two_attempts_accepts_observed_attempt_count() -
     assert "brave_search_receipt" in payload["required_evidence_before_retry"]
 
 
+def test_course_correction_two_failed_attempts_routes_reviewer_or_debug() -> None:
+    payload = build_course_correction_receipt(
+        trigger="two_failed_attempts",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=2,
+    )
+
+    assert payload["required_next_action"] == "route_reviewer_or_debug"
+    assert payload["allowed_next_routes"] == ["reviewer", "debug", "goal-guardian", "human"]
+    assert "retry_same_context" in payload["forbidden_next_routes"]
+    assert "run_more_unrelated_tests" in payload["forbidden_next_routes"]
+    assert payload["required_evidence_before_retry"] == [
+        "two_attempt_failure_receipt",
+        "replan_or_debug_receipt",
+    ]
+    assert payload["alert_codes"] == []
+
+
+def test_course_correction_two_failed_attempts_warns_without_attempt_evidence() -> None:
+    payload = build_course_correction_receipt(
+        trigger="two_failed_attempts",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+    )
+
+    assert payload["required_next_action"] == "route_reviewer_or_debug"
+    assert payload["input_valid"] is False
+    assert "attempt_evidence_below_required_threshold" in payload["alert_codes"]
+
+
 def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> None:
     receipt_path = tmp_path / "course-correction.json"
 

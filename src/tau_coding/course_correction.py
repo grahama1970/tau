@@ -306,7 +306,15 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["retry_without_research_receipt"],
             ["brave_search_receipt", "blocked_report"],
         )
-    if trigger in {"human_required", "two_failed_attempts"}:
+    if trigger == "two_failed_attempts":
+        return _policy(
+            "route_reviewer_or_debug",
+            "The same coding node failed twice; another same-context retry risks churn.",
+            ["reviewer", "debug", "goal-guardian", "human"],
+            ["retry_same_context", "run_more_unrelated_tests"],
+            ["two_attempt_failure_receipt", "replan_or_debug_receipt"],
+        )
+    if trigger == "human_required":
         return _policy(
             "route_human",
             "Retry budget or policy requires human review before more work.",

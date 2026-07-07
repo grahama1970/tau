@@ -51,6 +51,12 @@ Every receipt includes:
 - `forbidden_next_routes`: routes Tau should not take.
 - `required_evidence_before_retry`: artifacts needed before another attempt.
 
+Repeated-failure triggers are evidence-gated. `two_failed_attempts` requires
+`attempt >= 2` or `observed_state.attempt_count >= 2`, forbids
+`retry_same_context`, and routes to reviewer/debug/goal-guardian/human with
+`two_attempt_failure_receipt` and `replan_or_debug_receipt` required before a
+new attempt.
+
 Legacy DAG course-correction receipts also preserve `code`, `required_action`,
 and `blocked_report_required` fields so existing run-status and proof summaries
 remain compatible.
