@@ -518,18 +518,20 @@ before Tau accepts the worker result. The metadata must use the current schemas:
 `policy_profile.schema` must be `tau.policy_profile.v1`, and
 `data_boundary.schema` must be `tau.data_boundary.v1`. Sandbox substrates must
 include an existing `tau.sandbox_run_receipt.v1` receipt with `status:"PASS"`,
-`ok:true`, `mocked:false`, and `live:true`; Herdr substrates must include
-`herdr_binding` or an existing `tau.herdr_observation_gate_receipt.v1` receipt
-with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. Validation receipts record
-`work_order_sha256`, `result_sha256`, byte counts, and `validated_artifacts`
-for the exact JSON artifacts Tau inspected. Each validated artifact descriptor
-records label, resolved path, existence, SHA-256, and byte count. Validation and
-launch receipts also carry `execution_substrate`, `sandbox_receipt_path`,
-`herdr_binding`, `herdr_receipt_path`, `high_stakes`, `policy_profile`,
-`data_boundary`, and `substrate_receipts` so the worker result or launch request
-remains tied to the same containment metadata and the referenced sandbox/Herdr
-receipt content. Each substrate receipt descriptor records the referenced path,
-existence, SHA-256, byte count, schema, status, `ok`, `mocked`, `live`, and
+`ok:true`, `mocked:false`, and `live:true`; Herdr substrates must include both
+`herdr_binding` and an existing `tau.herdr_observation_gate_receipt.v1` receipt
+with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. Binding
+metadata alone is not an admissible high-stakes Herdr substrate. Validation
+receipts record `work_order_sha256`, `result_sha256`, byte counts, and
+`validated_artifacts` for the exact JSON artifacts Tau inspected. Each
+validated artifact descriptor records label, resolved path, existence, SHA-256,
+and byte count. Validation and launch receipts also carry
+`execution_substrate`, `sandbox_receipt_path`, `herdr_binding`,
+`herdr_receipt_path`, `high_stakes`, `policy_profile`, `data_boundary`, and
+`substrate_receipts` so the worker result or launch request remains tied to the
+same containment metadata and the referenced sandbox/Herdr receipt content.
+Each substrate receipt descriptor records the referenced path, existence,
+SHA-256, byte count, schema, status, `ok`, `mocked`, `live`, and
 `provider_live` fields when the receipt can be read.
 
 Worker `changed_files` are checked against the declared work-order repo before

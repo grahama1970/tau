@@ -1,9 +1,42 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 01:42 EDT by agent
+**Last updated:** 2026-07-07 01:47 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 Herdr worker receipt-required rung:
+  `src/tau_coding/coding_worker_adapters.py` now requires high-stakes Herdr
+  worker work orders to carry both `herdr_binding` and an existing
+  `tau.herdr_observation_gate_receipt.v1` artifact. Binding metadata alone now
+  blocks with `herdr_receipt_required`; missing receipt files still block with
+  `herdr_receipt_missing`, and referenced Herdr receipts must be `status:"PASS"`,
+  `ok:true`, `mocked:false`, and `live:true`. `tests/test_coding_worker_adapters.py`
+  covers binding-only block, missing receipt block, and OMP/SciLLM launch
+  metadata that includes the accepted Herdr observation receipt descriptor.
+  `docs/coding-workers.md` now states that Herdr substrates require both the
+  binding and the live observation receipt. Focused proof: `uv run python -m
+  py_compile src/tau_coding/coding_worker_adapters.py` -> pass; `uv run ruff
+  check --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `51 passed in 3.67s`;
+  `bash -n examples/omp-worker/run.sh examples/scillm-worker/run.sh` -> pass;
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-herdr-receipt-gate-proof &&
+  examples/scillm-worker/run.sh /tmp/tau-scillm-worker-herdr-receipt-gate-proof`
+  exited 0 with PASS worker demo receipts. Aggregate sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-herdr-receipt-required-proof-20260707T054710Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-herdr-receipt-required-proof-20260707T054710Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `238 passed in
+  6.81s`. This proves deterministic local high-stakes Herdr worker gates reject
+  binding-only substrate claims and require a live non-mocked Herdr observation
+  receipt before worker acceptance or launch; it does not prove live Herdr pane
+  quality, live OMP/SciLLM semantic worker execution, provider/model quality,
+  code correctness, legal compliance, GitHub mutation safety, full sandbox
+  isolation, or full goal completion.
 
 - 2026-07-07 SciLLM worker proxy-contract rung:
   `src/tau_coding/coding_worker_adapters.py` and `src/tau_coding/cli.py` now

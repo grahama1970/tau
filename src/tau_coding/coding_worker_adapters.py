@@ -847,14 +847,21 @@ def _append_work_order_gate_alerts(
     if high_stakes and substrate in {"herdr", "herdr-visible"}:
         herdr_binding = isinstance(work_order.get("herdr_binding"), Mapping)
         herdr_receipt_path = _string(work_order.get("herdr_receipt_path"))
-        if not (herdr_binding or herdr_receipt_path):
+        if not herdr_binding:
             alerts.append(
                 _alert(
                     "herdr_binding_required",
-                    "high-stakes Herdr worker requires herdr_binding or herdr_receipt_path",
+                    "high-stakes Herdr worker requires herdr_binding",
                 )
             )
-        elif herdr_receipt_path:
+        if not herdr_receipt_path:
+            alerts.append(
+                _alert(
+                    "herdr_receipt_required",
+                    "high-stakes Herdr worker requires herdr_receipt_path",
+                )
+            )
+        else:
             herdr_receipt = _load_referenced_receipt(
                 herdr_receipt_path,
                 repo,

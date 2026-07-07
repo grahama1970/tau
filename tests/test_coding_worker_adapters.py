@@ -486,6 +486,7 @@ def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
         high_stakes=True,
         execution_substrate="herdr-visible",
         herdr_binding=None,
+        herdr_receipt_path="herdr-observation-gate.json",
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
 
@@ -497,6 +498,27 @@ def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "herdr_binding_required" in payload["alert_codes"]
+
+
+def test_high_stakes_herdr_worker_requires_receipt_path(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path=None,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_receipt_required" in payload["alert_codes"]
 
 
 def test_high_stakes_herdr_worker_blocks_non_pass_receipt(tmp_path: Path) -> None:
@@ -577,9 +599,10 @@ def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) ->
         schema="tau.executor.omp.v1",
         high_stakes=True,
         execution_substrate="herdr-visible",
-        herdr_binding=None,
         herdr_receipt_path="missing-herdr-receipt.json",
     )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    (Path(work_order_payload["repo"]) / "missing-herdr-receipt.json").unlink()
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
 
     payload = write_omp_worker_receipt(
@@ -1000,6 +1023,8 @@ def test_omp_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
         schema="tau.executor.omp.v1",
         high_stakes=True,
         execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path="herdr-observation-gate.json",
         model_provider_route={"surface": "omp_rpc"},
     )
 
@@ -1011,6 +1036,10 @@ def test_omp_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
     assert payload["status"] == "PASS"
     assert payload["execution_substrate"] == "herdr-visible"
     assert payload["herdr_binding"] == {"pane_id": "w1:p1", "workspace_id": "w1"}
+    assert payload["herdr_receipt_path"] == "herdr-observation-gate.json"
+    assert payload["substrate_receipts"][0]["schema"] == "tau.herdr_observation_gate_receipt.v1"
+    assert payload["substrate_receipts"][0]["mocked"] is False
+    assert payload["substrate_receipts"][0]["live"] is True
     assert payload["high_stakes"] is True
     assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
     assert payload["policy_profile"]["profile_id"] == "test-zero-trust"
@@ -1024,6 +1053,8 @@ def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None
         schema="tau.executor.scillm_worker.v1",
         high_stakes=True,
         execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path="herdr-observation-gate.json",
         model_provider_route={
             "surface": "opencode_serve",
             "endpoint": "/v1/scillm/opencode/runs",
@@ -1039,6 +1070,10 @@ def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None
     assert payload["status"] == "PASS"
     assert payload["execution_substrate"] == "herdr-visible"
     assert payload["herdr_binding"] == {"pane_id": "w1:p1", "workspace_id": "w1"}
+    assert payload["herdr_receipt_path"] == "herdr-observation-gate.json"
+    assert payload["substrate_receipts"][0]["schema"] == "tau.herdr_observation_gate_receipt.v1"
+    assert payload["substrate_receipts"][0]["mocked"] is False
+    assert payload["substrate_receipts"][0]["live"] is True
     assert payload["high_stakes"] is True
     assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
     assert payload["policy_profile"]["profile_id"] == "test-zero-trust"
@@ -1504,6 +1539,27 @@ def _write_work_order(
             json.dumps(
                 {
                     "schema": "tau.sandbox_run_receipt.v1",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": False,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+    if herdr_receipt_path is not None:
+        herdr_receipt = Path(herdr_receipt_path)
+        if not herdr_receipt.is_absolute():
+            herdr_receipt = repo / herdr_receipt
+        herdr_receipt.parent.mkdir(parents=True, exist_ok=True)
+        herdr_receipt.write_text(
+            json.dumps(
+                {
+                    "schema": "tau.herdr_observation_gate_receipt.v1",
                     "status": "PASS",
                     "ok": True,
                     "mocked": False,
