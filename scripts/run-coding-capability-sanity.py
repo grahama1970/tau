@@ -195,6 +195,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "src/tau_coding/orchestration_reliability.py",
                 "src/tau_coding/sandbox_run.py",
                 "src/tau_coding/skill_capability_registry.py",
+                "src/tau_coding/skill_invocation.py",
                 "src/tau_coding/cli.py",
                 "tests/test_code_patch.py",
                 "tests/test_review_findings.py",
@@ -218,6 +219,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_orchestration_reliability.py",
                 "tests/test_sandbox_policy.py",
                 "tests/test_skill_capability_registry.py",
+                "tests/test_skill_invocation.py",
             ],
             purpose="Run focused import/style checks for coding capability modules.",
         ),
@@ -249,6 +251,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_orchestration_reliability.py",
                 "tests/test_sandbox_policy.py",
                 "tests/test_skill_capability_registry.py",
+                "tests/test_skill_invocation.py",
                 "-q",
             ],
             purpose=(
@@ -339,6 +342,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "memory intent and evidence-case gate receipts",
             "Graph Memory intent and create-evidence-case acquisition receipts",
             "skill capability registry receipts",
+            "bounded skill invocation receipts",
             "compliance evidence package receipts",
             "run report generation",
             "local API preflight surfaces",
@@ -360,6 +364,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
                 "Tau records worker launch requests without trusting worker execution.",
                 "Tau validates a read-only skill capability registry before treating "
                 "skill outputs as admissible Tau evidence.",
+                "Tau records bounded skill invocation receipts for dry-run, execute, "
+                "and existing-artifact ingestion paths.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
                 "provenance/signing, and adversarial containment tests.",
                 "Tau's ITAR-grade containment example emits local fail-closed and "

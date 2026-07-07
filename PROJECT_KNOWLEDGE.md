@@ -5,6 +5,66 @@
 
 ## Current Understanding
 
+- 2026-07-07 skill invocation receipt rung:
+  `src/tau_coding/skill_invocation.py` adds
+  `tau.skill_invocation_request.v1`, `tau.skill_invocation_receipt.v1`, and
+  `tau.skill_artifact_binding.v1` so Tau can wrap a declared `agent-skills`
+  invocation or ingest an existing skill artifact without treating prose as
+  evidence. `uv run tau skill-invocation --request <json> --out <receipt>
+  [--repo-root <dir>]` records request, command, goal hash, work-order hash,
+  policy/data-boundary hashes, execution output for explicit `execute` mode,
+  and SHA-256 bindings for local artifacts. Zero-trust requests without a
+  `goal_hash` block, and artifact paths outside the repo root block. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/skill_invocation.py tests/test_skill_invocation.py
+  src/tau_coding/cli.py` -> `All checks passed!`; `uv run pytest
+  tests/test_skill_invocation.py -q` -> `5 passed in 0.50s`; `uv run python
+  -m py_compile src/tau_coding/skill_invocation.py src/tau_coding/cli.py`
+  -> pass. CLI smoke proof:
+  `/tmp/tau-skill-invocation-cli-proof-20260707T122202Z/receipt.json` ->
+  `schema:tau.skill_invocation_receipt.v1`, `status:PASS`, `ok:true`,
+  captured stdout `skill-cli-proof`, `mocked:false`, `live:false`. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-skill-invocation-final-20260707T122406Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `406 passed in 10.54s`. This proves bounded
+  receipt writing, dry-run non-execution, execute-mode output capture, local
+  artifact hashing, and fail-closed zero-trust/path checks under deterministic
+  tests; it does not prove native skill output semantic correctness, task
+  completion, provider/model quality, or adapter-specific admissibility of
+  every skill artifact.
+
+- 2026-07-07 skill capability registry composition rung:
+  `src/tau_coding/skill_capability_registry.py` adds
+  `tau.skill_capability_registry.v1` and
+  `tau.skill_capability_registry_validation_receipt.v1` for read-only
+  Tau/agent-skills capability composition. The default registry maps
+  `debug_runtime_state`, `bounded_code_fix`, `code_review`, `deep_research`,
+  `evidence_case`, and `model_worker` to local skills and Tau receipt schemas
+  without executing skills. `src/tau_coding/cli.py` exposes
+  `skill-capability-registry-default` and
+  `skill-capability-registry-validate`. `docs/skill-composition.md` and
+  `examples/skill-composition-basic/` document and exercise the composition
+  boundary. Focused proof: `bash -n examples/skill-composition-basic/run.sh`
+  -> pass; `examples/skill-composition-basic/run.sh
+  /tmp/tau-skill-composition-basic-proof` -> `status:PASS`,
+  `schema:tau.skill_composition_basic_example_receipt.v1`, `mocked:false`,
+  `live:false`, `provider_live:false`, and six real skill names found under
+  `/home/graham/workspace/experiments/agent-skills/skills`; `uv run ruff
+  check --select I,F,E501 src/tau_coding/skill_capability_registry.py
+  tests/test_skill_capability_registry.py src/tau_coding/cli.py
+  scripts/run-coding-capability-sanity.py` -> `All checks passed!`; `uv run
+  pytest tests/test_skill_capability_registry.py -q` -> `6 passed in 0.38s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-skill-composition-20260707T213000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `401 passed in 10.40s`. This proves Tau can
+  generate and validate a read-only skill capability registry before treating
+  external skill outputs as admissible Tau evidence; it does not prove any
+  skill was executed, skill output semantic correctness, adapter acceptance of
+  native skill artifacts, provider/model quality, future route correctness,
+  legal compliance, ITAR compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 memory/evidence-case copyable example rung:
   `examples/memory-evidence-case/run.sh` now creates local
   `policy-profile.json`, `data-boundary.json`, Graph Memory `/intent` shaped
