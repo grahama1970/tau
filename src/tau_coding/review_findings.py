@@ -207,6 +207,7 @@ def _validate_finding(
         "claim": None,
         "evidence": [],
         "required_action": None,
+        "waiver": None,
     }
     if not isinstance(item, Mapping):
         return normalized, [_alert("invalid_finding", f"findings[{index}] must be an object")]
@@ -260,6 +261,9 @@ def _validate_finding(
         alerts.append(
             _alert("missing_finding_evidence", f"findings[{index}] P0/P1 requires evidence")
         )
+    waiver, waiver_alerts = _validate_waiver(index, item.get("waiver"))
+    normalized["waiver"] = waiver
+    alerts.extend(waiver_alerts)
     expected_action = _expected_action(severity)
     if expected_action == "block" and action != "block":
         alerts.append(
@@ -268,7 +272,11 @@ def _validate_finding(
                 f"findings[{index}] P0 must block",
             )
         )
-    if expected_action == "revise" and action not in {"revise", "block"}:
+    if (
+        expected_action == "revise"
+        and action not in {"revise", "block"}
+        and not _finding_has_valid_p2_waiver(severity, action, waiver, waiver_alerts)
+    ):
         alerts.append(
             _alert(
                 "finding_action_understates_severity",
@@ -283,6 +291,75 @@ def _validate_finding(
             )
         )
     return normalized, alerts
+
+
+def _validate_waiver(
+    index: int,
+    value: object,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    if value is None:
+        return None, []
+    if not isinstance(value, Mapping):
+        return None, [
+            _alert("invalid_finding_waiver", f"findings[{index}].waiver must be an object")
+        ]
+    approved = value.get("approved")
+    approved_by = value.get("approved_by")
+    reason = value.get("reason")
+    evidence = value.get("evidence")
+    normalized: dict[str, Any] = {
+        "approved": approved,
+        "approved_by": approved_by if isinstance(approved_by, str) else None,
+        "reason": reason if isinstance(reason, str) else None,
+        "evidence": evidence if isinstance(evidence, list) else [],
+    }
+    alerts: list[dict[str, Any]] = []
+    if approved is not True:
+        alerts.append(
+            _alert("invalid_finding_waiver", f"findings[{index}].waiver.approved must be true")
+        )
+    if not isinstance(approved_by, str) or not approved_by:
+        alerts.append(
+            _alert(
+                "invalid_finding_waiver",
+                f"findings[{index}].waiver.approved_by is required",
+            )
+        )
+    if not isinstance(reason, str) or not reason:
+        alerts.append(
+            _alert("invalid_finding_waiver", f"findings[{index}].waiver.reason is required")
+        )
+    if not isinstance(evidence, list) or not all(
+        isinstance(entry, str) and entry for entry in evidence
+    ):
+        alerts.append(
+            _alert(
+                "invalid_finding_waiver",
+                f"findings[{index}].waiver.evidence must be a list of strings",
+            )
+        )
+    elif not evidence:
+        alerts.append(
+            _alert(
+                "invalid_finding_waiver",
+                f"findings[{index}].waiver.evidence is required",
+            )
+        )
+    return normalized, alerts
+
+
+def _finding_has_valid_p2_waiver(
+    severity: object,
+    action: object,
+    waiver: dict[str, Any] | None,
+    waiver_alerts: list[dict[str, Any]],
+) -> bool:
+    return (
+        severity == "P2"
+        and action == "note"
+        and waiver is not None
+        and not waiver_alerts
+    )
 
 
 def _expected_action(severity: object) -> str:
@@ -300,7 +377,14 @@ def _route_for_findings(findings: list[dict[str, Any]]) -> str:
     ):
         return "BLOCKED"
     if any(
-        finding.get("severity") in {"P1", "P2"} or finding.get("required_action") == "revise"
+        finding.get("severity") in {"P1", "P2"}
+        and not _finding_has_valid_p2_waiver(
+            finding.get("severity"),
+            finding.get("required_action"),
+            finding.get("waiver") if isinstance(finding.get("waiver"), dict) else None,
+            [],
+        )
+        or finding.get("required_action") == "revise"
         for finding in findings
     ):
         return "REVISE"

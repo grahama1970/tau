@@ -206,6 +206,85 @@ def test_review_findings_blocks_p3_escalating_beyond_note() -> None:
     assert receipt["derived_verdict"] == "BLOCKED"
 
 
+def test_review_findings_blocks_p2_note_without_waiver() -> None:
+    receipt = validate_review_findings(
+        _payload(
+            verdict="PASS",
+            findings=[
+                {
+                    "id": "finding-001",
+                    "severity": "P2",
+                    "confidence": 0.7,
+                    "file": "src/example.py",
+                    "line": 3,
+                    "claim": "P2 was downgraded without an explicit waiver.",
+                    "evidence": ["src/example.py:3"],
+                    "required_action": "note",
+                }
+            ],
+        )
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "finding_action_understates_severity" in receipt["alert_codes"]
+    assert receipt["derived_verdict"] == "BLOCKED"
+
+
+def test_review_findings_accepts_explicit_p2_waiver() -> None:
+    receipt = validate_review_findings(
+        _payload(
+            verdict="PASS",
+            findings=[
+                {
+                    "id": "finding-001",
+                    "severity": "P2",
+                    "confidence": 0.7,
+                    "file": "src/example.py",
+                    "line": 3,
+                    "claim": "P2 finding was accepted as a non-blocking note.",
+                    "evidence": ["src/example.py:3"],
+                    "required_action": "note",
+                    "waiver": {
+                        "approved": True,
+                        "approved_by": "human:review-lead",
+                        "reason": "Known low-risk follow-up tracked outside this route.",
+                        "evidence": ["review-log:waiver-001"],
+                    },
+                }
+            ],
+        )
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["derived_verdict"] == "PASS"
+    assert receipt["findings"][0]["waiver"]["approved_by"] == "human:review-lead"
+
+
+def test_review_findings_blocks_malformed_p2_waiver() -> None:
+    receipt = validate_review_findings(
+        _payload(
+            verdict="PASS",
+            findings=[
+                {
+                    "id": "finding-001",
+                    "severity": "P2",
+                    "confidence": 0.7,
+                    "file": "src/example.py",
+                    "line": 3,
+                    "claim": "Malformed waiver should not downgrade a P2.",
+                    "evidence": ["src/example.py:3"],
+                    "required_action": "note",
+                    "waiver": {"approved": True, "reason": "missing approver and evidence"},
+                }
+            ],
+        )
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_finding_waiver" in receipt["alert_codes"]
+    assert "finding_action_understates_severity" in receipt["alert_codes"]
+
+
 def test_review_findings_accepts_files_inside_allowed_paths() -> None:
     payload = _payload(
         verdict="REVISE",

@@ -129,6 +129,9 @@ Routing rules:
 
 - `P0` or `required_action:block` derives `BLOCKED`.
 - `P1`/`P2` or `required_action:revise` derives `REVISE`.
+- `P2` with `required_action:note` is accepted only with an explicit waiver
+  object containing `approved:true`, `approved_by`, `reason`, and waiver
+  `evidence`.
 - no blocking or revision findings derives `PASS`.
 
 P0/P1 findings require evidence. Tau blocks understated verdicts such as a
