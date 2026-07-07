@@ -5,6 +5,28 @@
 
 ## Current Understanding
 
+- 2026-07-07 LSP required diagnostics CLI gate rung:
+  `tests/test_lsp_receipts.py` now pins the `tau lsp-diagnostics --required`
+  CLI path for an unavailable workspace. The receipt exits blocked with
+  `lsp_server_unavailable` and `server_available:false`, matching the existing
+  function-level adapter-required behavior. This closes the remaining R2 CLI
+  coverage gap for required diagnostics adapters. Focused proof: `uv run
+  python -m py_compile src/tau_coding/lsp_receipts.py` -> pass; `uv run ruff
+  check --select I,F,E501 src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py` -> `All checks passed!`; `uv run pytest
+  tests/test_lsp_receipts.py -q` -> `26 passed in 0.72s`. Aggregate sanity
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-required-cli-proof-20260707T060750Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-lsp-required-cli-proof-20260707T060750Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `provider_live:false`,
+  and embedded coding receipt tests `248 passed in 7.27s`. This proves the
+  deterministic local CLI path blocks when a required diagnostics adapter is
+  unavailable; it does not prove semantic correctness, full IDE/LSP parity,
+  runtime behavior, provider/model quality, legal compliance, GitHub mutation
+  safety, full sandbox isolation, or full goal completion.
+
 - 2026-07-07 worker launch substrate fail-closed proof rung:
   `tests/test_coding_worker_adapters.py` now explicitly verifies that worker
   launch apply paths fail closed on bad high-stakes substrate evidence before

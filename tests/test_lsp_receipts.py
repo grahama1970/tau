@@ -562,6 +562,31 @@ def test_cli_lsp_diagnostics_zero_trust_missing_boundary_exits_blocked(
     assert "missing_data_boundary" in payload["alert_codes"]
 
 
+def test_cli_lsp_diagnostics_required_missing_workspace_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    out = tmp_path / "diagnostics.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "lsp-diagnostics",
+            "--workspace",
+            str(tmp_path / "missing-workspace"),
+            "--out",
+            str(out),
+            "--required",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "lsp_server_unavailable" in payload["alert_codes"]
+    assert payload["server_available"] is False
+
+
 def test_cli_lsp_diagnostics_accepts_baseline_receipt(tmp_path: Path) -> None:
     source = tmp_path / "example.py"
     source.write_text("value = 1\n", encoding="utf-8")
