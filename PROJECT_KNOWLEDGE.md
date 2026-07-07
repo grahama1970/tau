@@ -5,6 +5,29 @@
 
 ## Current Understanding
 
+- 2026-07-07 code-patch course-correction binding rung:
+  `src/tau_coding/code_patch.py` now embeds a `tau.course_correction.v1`
+  object inside BLOCKED `tau.code_patch_receipt.v1` receipts. Stale base hashes
+  map to `patch_stale`; other blocked patch failures map to `patch_failed`.
+  `tau code-patch` now accepts `--run-id`, `--dag-id`, `--node-id`, `--agent`,
+  and `--attempt` so DAG/CLI callers can preserve routing context in that
+  correction payload. `tests/test_code_patch.py` pins stale-base correction
+  metadata and CLI metadata passthrough for unreadable patch artifacts. Focused
+  proof: `uv run python -m py_compile src/tau_coding/code_patch.py
+  src/tau_coding/cli.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py src/tau_coding/cli.py tests/test_code_patch.py
+  docs/coding-workers.md` -> `All checks passed!`; `uv run pytest
+  tests/test_code_patch.py -q` -> `33 passed in 0.53s`; `git diff --check --
+  src/tau_coding/code_patch.py src/tau_coding/cli.py tests/test_code_patch.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass. This proves blocked
+  code-patch receipts now carry deterministic course-correction routing
+  guidance; it does not prove the correction was executed, semantic patch
+  correctness, reviewer correctness, ITAR compliance, or full workflow success.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-code-patch-course-correction-20260707T135523Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `462 passed in 10.90s`.
+
 - 2026-07-07 worker example expected-receipt contract rung:
   `scripts/run-coding-capability-sanity.py` now treats OMP and SciLLM worker
   example `expected-receipt.json` files as executable contracts instead of

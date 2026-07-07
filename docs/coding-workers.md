@@ -91,6 +91,14 @@ that exact patch artifact and the before/after hashes matched. It does not
 prove semantic correctness, test success, production safety, or agent
 truthfulness.
 
+Blocked patch receipts include a `course_correction` object using
+`tau.course_correction.v1`. Stale base hashes map to `patch_stale`; other
+blocked patch failures map to `patch_failed`. When the caller supplies
+`--run-id`, `--dag-id`, `--node-id`, `--agent`, and `--attempt`, those fields
+are preserved for the next Tau route. The correction receipt is guidance for
+bounded retry/review routing; it does not prove the retry happened or that the
+proposed correction is semantically sufficient.
+
 Unreadable, missing, or non-object patch artifacts also produce BLOCKED
 `tau.code_patch_receipt.v1` receipts. Tau records alert codes such as
 `code_patch_missing`, `code_patch_unreadable`, or `code_patch_not_object`
@@ -105,7 +113,12 @@ uv run tau code-patch \
   --patch patch.json \
   --repo . \
   --out code-patch-receipt.json \
-  --goal-hash sha256:...
+  --goal-hash sha256:... \
+  --run-id run-... \
+  --dag-id dag-... \
+  --node-id coder \
+  --agent coder \
+  --attempt 1
 ```
 
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`

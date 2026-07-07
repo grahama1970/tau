@@ -1678,6 +1678,11 @@ def main(
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
                 zero_trust=bool(options["zero_trust"]),
                 apply=not bool(options["dry_run"]),
+                run_id=_optional_str(options.get("run_id")),
+                dag_id=_optional_str(options.get("dag_id")),
+                node_id=_optional_str(options.get("node_id")),
+                agent=_optional_str(options.get("agent")),
+                attempt=_optional_int(options.get("attempt")),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4560,6 +4565,11 @@ def _parse_code_patch_cli_args(args: list[str]) -> dict[str, object]:
         "data_boundary": None,
         "zero_trust": False,
         "dry_run": False,
+        "run_id": None,
+        "dag_id": None,
+        "node_id": None,
+        "agent": None,
+        "attempt": None,
     }
     index = 0
     while index < len(args):
@@ -4571,12 +4581,17 @@ def _parse_code_patch_cli_args(args: list[str]) -> dict[str, object]:
             "--goal-hash",
             "--policy-profile",
             "--data-boundary",
+            "--run-id",
+            "--dag-id",
+            "--node-id",
+            "--agent",
+            "--attempt",
         }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
             key = arg.removeprefix("--").replace("-", "_")
-            options[key] = args[index]
+            options[key] = int(args[index]) if key == "attempt" else args[index]
         elif arg.startswith("--patch="):
             options["patch"] = arg.partition("=")[2]
         elif arg.startswith("--repo="):
@@ -4589,6 +4604,16 @@ def _parse_code_patch_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--run-id="):
+            options["run_id"] = arg.partition("=")[2]
+        elif arg.startswith("--dag-id="):
+            options["dag_id"] = arg.partition("=")[2]
+        elif arg.startswith("--node-id="):
+            options["node_id"] = arg.partition("=")[2]
+        elif arg.startswith("--agent="):
+            options["agent"] = arg.partition("=")[2]
+        elif arg.startswith("--attempt="):
+            options["attempt"] = int(arg.partition("=")[2])
         elif arg == "--zero-trust":
             options["zero_trust"] = True
         elif arg == "--dry-run":

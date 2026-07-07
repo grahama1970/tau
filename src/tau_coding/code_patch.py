@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.course_correction import build_course_correction_receipt
 from tau_coding.policy_profile import (
     DATA_BOUNDARY_SCHEMA,
     POLICY_PROFILE_SCHEMA,
@@ -48,6 +49,11 @@ def apply_code_patch_receipt(
     data_boundary: Mapping[str, Any] | None = None,
     zero_trust: bool = False,
     apply: bool = True,
+    run_id: str | None = None,
+    dag_id: str | None = None,
+    node_id: str | None = None,
+    agent: str | None = None,
+    attempt: int | None = None,
 ) -> dict[str, Any]:
     """Validate a tau.code_patch.v1 artifact and write a receipt.
 
@@ -245,6 +251,24 @@ def apply_code_patch_receipt(
         },
         "timestamp": _utc_stamp(),
     }
+    if not ok:
+        receipt["course_correction"] = build_course_correction_receipt(
+            trigger=_course_correction_trigger(receipt["alert_codes"]),
+            run_id=run_id,
+            dag_id=dag_id,
+            goal_hash=goal_hash or expected_goal_hash,
+            target={"target_file": relative_target} if relative_target else {},
+            node_id=node_id,
+            agent=agent,
+            attempt=attempt,
+            observed_state={
+                "alert_codes": list(receipt["alert_codes"]),
+                "target_file": relative_target,
+                "apply_requested": apply,
+            },
+            observed_artifact_path=resolved_patch,
+            live=True,
+        )
     resolved_receipt = (
         receipt_path.expanduser().resolve()
         if receipt_path is not None
@@ -257,6 +281,12 @@ def apply_code_patch_receipt(
         encoding="utf-8",
     )
     return receipt
+
+
+def _course_correction_trigger(alert_codes: list[str]) -> str:
+    if "stale_base_hash" in alert_codes:
+        return "patch_stale"
+    return "patch_failed"
 
 
 def _policy_boundary_alerts(

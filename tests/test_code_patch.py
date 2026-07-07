@@ -110,11 +110,26 @@ def test_code_patch_blocks_stale_base_hash(tmp_path: Path) -> None:
         patch=json.dumps([{"op": "replace", "old": "value = 2", "new": "value = 3"}]),
     )
 
-    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        run_id="run-1",
+        dag_id="dag-1",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+    )
 
     assert receipt["status"] == "BLOCKED"
     assert "stale_base_hash" in receipt["alert_codes"]
     assert receipt["applied"] is False
+    assert receipt["course_correction"]["schema"] == "tau.course_correction.v1"
+    assert receipt["course_correction"]["trigger"] == "patch_stale"
+    assert receipt["course_correction"]["input_valid"] is True
+    assert receipt["course_correction"]["node_id"] == "coder"
+    assert receipt["course_correction"]["observed_artifact"]["path"] == str(
+        patch_path.resolve()
+    )
     assert receipt["target_artifact_before"] == {
         "label": "target_before",
         "path": str(target.resolve()),
@@ -890,6 +905,18 @@ def test_cli_code_patch_unreadable_patch_writes_blocked_receipt(tmp_path: Path) 
             str(tmp_path),
             "--out",
             str(receipt_path),
+            "--goal-hash",
+            "sha256:goal",
+            "--run-id",
+            "run-1",
+            "--dag-id",
+            "dag-1",
+            "--node-id",
+            "coder",
+            "--agent",
+            "coder",
+            "--attempt",
+            "2",
         ],
     )
 
@@ -898,6 +925,11 @@ def test_cli_code_patch_unreadable_patch_writes_blocked_receipt(tmp_path: Path) 
     assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
     assert "code_patch_unreadable" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "patch_failed"
+    assert payload["goal_hash"] is None
+    assert payload["course_correction"]["goal_hash"] == "sha256:goal"
+    assert payload["course_correction"]["node_id"] == "coder"
+    assert payload["course_correction"]["attempt"] == 2
 
 
 def _write_patch(
