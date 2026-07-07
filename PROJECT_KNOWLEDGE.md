@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:41 EDT by agent
+**Last updated:** 2026-07-07 00:45 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 commit-plan policy write allowlist rung:
+  `src/tau_coding/commit_plan.py` now honors
+  `policy_profile.filesystem.write_allowlist` when recording changed files for
+  `tau.commit_plan_receipt.v1`. When a write allowlist is present, every changed
+  path must match it; otherwise Tau blocks the plan with
+  `policy_write_disallowed` and records `policy_write_allowed:false` for the
+  affected changed file. Focused proof: `git diff --check
+  docs/coding-workers.md src/tau_coding/commit_plan.py tests/test_commit_plan.py`
+  -> pass; `uv run ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> `All checks passed!`; `uv run pytest
+  tests/test_commit_plan.py -q` -> `20 passed in 0.75s`. Aggregate coding
+  sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-policy-write-allowlist-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-policy-write-allowlist-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `215 passed in
+  6.67s`. This proves deterministic local commit-plan receipts reject changed
+  files outside the active write allowlist; it does not prove semantic commit
+  grouping optimality, semantic code correctness, legal compliance, live worker
+  execution, GitHub mutation, or full goal completion.
 
 - 2026-07-07 debug evidence path boundary rung:
   `src/tau_coding/debug_session_receipt.py` now accepts

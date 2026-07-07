@@ -187,8 +187,20 @@ def _changed_file_artifacts(
 ) -> list[dict[str, Any]]:
     artifacts: list[dict[str, Any]] = []
     read_denylist = _policy_read_denylist(policy_profile)
+    write_allowlist = _policy_write_allowlist(policy_profile)
     for item in changed:
         artifact: dict[str, Any] = dict(item)
+        artifact["policy_write_allowed"] = _path_allowed_by_policy(
+            item["path"],
+            write_allowlist,
+        )
+        if artifact["policy_write_allowed"] is False:
+            alerts.append(
+                _alert(
+                    "policy_write_disallowed",
+                    f"policy_profile.filesystem.write_allowlist denied {item['path']}",
+                )
+            )
         if _path_denied_by_policy(item["path"], read_denylist):
             artifact["exists"] = None
             artifact["bytes"] = None
@@ -225,6 +237,7 @@ def _reviewable_file_artifacts(changed: list[dict[str, Any]]) -> list[dict[str, 
         "bytes",
         "sha256",
         "policy_read_denied",
+        "policy_write_allowed",
     )
     return [{field: item.get(field) for field in fields} for item in changed]
 
@@ -475,11 +488,33 @@ def _policy_read_denylist(policy_profile: dict[str, Any] | None) -> list[str] | 
     return [item for item in read_denylist]
 
 
+def _policy_write_allowlist(policy_profile: dict[str, Any] | None) -> list[str] | None:
+    if policy_profile is None:
+        return None
+    filesystem = policy_profile.get("filesystem")
+    if not isinstance(filesystem, dict):
+        return None
+    write_allowlist = filesystem.get("write_allowlist")
+    if not isinstance(write_allowlist, list) or not all(
+        isinstance(item, str) for item in write_allowlist
+    ):
+        return None
+    return [item for item in write_allowlist]
+
+
 def _path_denied_by_policy(path: str, read_denylist: list[str] | None) -> bool:
     if read_denylist is None:
         return False
     return any(
         fnmatch.fnmatch(path, pattern.removeprefix("./")) for pattern in read_denylist
+    )
+
+
+def _path_allowed_by_policy(path: str, write_allowlist: list[str] | None) -> bool | None:
+    if write_allowlist is None:
+        return None
+    return any(
+        fnmatch.fnmatch(path, pattern.removeprefix("./")) for pattern in write_allowlist
     )
 
 

@@ -258,7 +258,10 @@ requirements. Deleted files are recorded with `exists:false`, `bytes:null`, and
 evidence. When `policy_profile.filesystem.read_denylist` matches a changed
 file, Tau records the path and status but withholds content inspection by
 setting `policy_read_denied:true`, `exists:null`, `bytes:null`, and
-`sha256:null`, then blocks the plan with `policy_read_denied`.
+`sha256:null`, then blocks the plan with `policy_read_denied`. When
+`policy_profile.filesystem.write_allowlist` is present, every changed path must
+match that allowlist; otherwise the plan blocks with `policy_write_disallowed`
+and records `policy_write_allowed:false` for the affected file.
 
 CLI:
 

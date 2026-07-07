@@ -37,6 +37,7 @@ def test_commit_plan_groups_related_changes(tmp_path: Path) -> None:
         "bytes": len("value = 1\n"),
         "sha256": f"sha256:{_sha256(repo / 'src' / 'example.py')}",
         "policy_read_denied": False,
+        "policy_write_allowed": None,
     } in payload["changed_file_artifacts"]
 
 
@@ -354,6 +355,52 @@ def test_commit_plan_zero_trust_honors_policy_read_denylist(tmp_path: Path) -> N
     assert changed["sha256"] is None
     assert changed["bytes"] is None
     assert payload["changed_file_artifacts"][0]["policy_read_denied"] is True
+
+
+def test_commit_plan_zero_trust_honors_policy_write_allowlist(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src").mkdir()
+    (repo / "docs").mkdir()
+    (repo / "src" / "example.py").write_text("value = 1\n", encoding="utf-8")
+    (repo / "docs" / "example.md").write_text("# Example\n", encoding="utf-8")
+    evidence = repo / "diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "goal_hash": "sha256:goal",
+                "inspected_artifacts": [{"path": str(repo / "src" / "example.py")}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": ["src/**"], "read_denylist": []},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        evidence_receipt_paths=[evidence],
+    )
+
+    source = next(item for item in payload["changed_files"] if item["path"] == "src/example.py")
+    docs = next(item for item in payload["changed_files"] if item["path"] == "docs/example.md")
+    assert payload["status"] == "BLOCKED"
+    assert "policy_write_disallowed" in payload["alert_codes"]
+    assert source["policy_write_allowed"] is True
+    assert docs["policy_write_allowed"] is False
+    assert next(
+        item for item in payload["changed_file_artifacts"] if item["path"] == "docs/example.md"
+    )["policy_write_allowed"] is False
 
 
 def test_commit_plan_blocks_evidence_receipt_goal_hash_mismatch(tmp_path: Path) -> None:
