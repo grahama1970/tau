@@ -924,8 +924,9 @@ The aggregate coding sanity runner treats worker example
 `expected-receipt.json` files as executable contracts. For OMP and SciLLM
 worker examples it checks the demo receipt schema/status, launch receipt
 schema/status, worker receipt schema/status, empty worker alert codes, route
-metadata, and the referenced substrate receipts' `goal_hash` plus
-`work_order_sha256` bindings.
+metadata, the referenced substrate receipts' `goal_hash` plus
+`work_order_sha256` bindings, and the SciLLM apply-launch worker result
+artifact descriptor when the expected receipt requires it.
 
 `examples/memory-evidence-case` writes Graph Memory `/intent` and
 `/create-evidence-case` shaped local artifacts, then emits

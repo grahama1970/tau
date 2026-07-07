@@ -208,6 +208,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "src/tau_coding/skill_composition_redteam.py",
                 "src/tau_coding/cli.py",
                 "tests/test_code_patch.py",
+                "tests/test_coding_capability_sanity_runner.py",
                 "tests/test_review_findings.py",
                 "tests/test_course_correction.py",
                 "tests/test_lsp_receipts.py",
@@ -247,6 +248,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "run",
                 "pytest",
                 "tests/test_code_patch.py",
+                "tests/test_coding_capability_sanity_runner.py",
                 "tests/test_review_findings.py",
                 "tests/test_course_correction.py",
                 "tests/test_lsp_receipts.py",
@@ -515,6 +517,9 @@ def _check_expected_artifact(
             )
         )
 
+    if expected.get("expected_apply_launch_result_artifact") is True:
+        errors.extend(_check_apply_launch_result_artifact(actual))
+
     return {
         "read_ok": True,
         "ok": not errors,
@@ -524,6 +529,33 @@ def _check_expected_artifact(
         "expected_status": expected.get("status"),
         "actual_status": actual.get("status"),
     }
+
+
+def _check_apply_launch_result_artifact(actual: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    result_path = actual.get("apply_launch_response_result_path")
+    result_sha = actual.get("apply_launch_response_result_sha256")
+    descriptor = actual.get("apply_launch_response_result_artifact")
+    if not isinstance(result_path, str) or not result_path:
+        errors.append("apply_launch_response_result_path missing")
+    if not isinstance(result_sha, str) or not result_sha.startswith("sha256:"):
+        errors.append("apply_launch_response_result_sha256 missing or invalid")
+    if not isinstance(descriptor, dict):
+        errors.append("apply_launch_response_result_artifact missing or not an object")
+        return errors
+    if descriptor.get("exists") is not True:
+        errors.append("apply_launch_response_result_artifact.exists is not true")
+    if descriptor.get("sha256") != result_sha:
+        errors.append(
+            "apply_launch_response_result_artifact.sha256 does not match "
+            "apply_launch_response_result_sha256"
+        )
+    if descriptor.get("path") != result_path:
+        errors.append(
+            "apply_launch_response_result_artifact.path does not match "
+            "apply_launch_response_result_path"
+        )
+    return errors
 
 
 def _check_substrate_receipt_bindings(
