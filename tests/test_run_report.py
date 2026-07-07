@@ -17,9 +17,7 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert receipt["mocked"] is False
     assert receipt["live"] is False
     dag_receipt = run_dir / "dag-receipt.json"
-    contract = Path(
-        json.loads(dag_receipt.read_text(encoding="utf-8"))["contract_path"]
-    )
+    contract = Path(json.loads(dag_receipt.read_text(encoding="utf-8"))["contract_path"])
     assert receipt["source_artifacts"] == [
         {
             "label": "dag_receipt",
@@ -61,6 +59,10 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.course_correction.v1" in html
     assert "patch_stale" in html
     assert "retry_node" in html
+    assert "tau.review_findings.v1" in html
+    assert "review_derived_verdict" in html
+    assert "blocking_finding_count" in html
+    assert "reviewer" in html
     assert "tau.github_read_receipt.v1" in html
     assert "issue://grahama1970/tau/67" in html
     assert "mutation_allowed" in html
@@ -187,6 +189,44 @@ def _write_report_run(tmp_path: Path) -> Path:
             "agent": "coder",
             "attempt": 2,
             "required_next_action": "retry_node",
+        },
+    )
+    _write_json(
+        receipts_dir / "review-findings-receipt.json",
+        {
+            "schema": "tau.review_findings.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "reviewer": "reviewer",
+            "declared_verdict": "REVISE",
+            "derived_verdict": "BLOCKED",
+            "finding_count": 2,
+            "blocking_finding_count": 1,
+            "revision_finding_count": 1,
+            "findings": [
+                {
+                    "id": "finding-001",
+                    "severity": "P0",
+                    "file": "src/tau_coding/project_dag.py",
+                    "line": 42,
+                    "claim": "Dispatch can continue after a blocked reviewer finding.",
+                    "evidence": ["review fixture"],
+                    "required_action": "block",
+                },
+                {
+                    "id": "finding-002",
+                    "severity": "P1",
+                    "file": "tests/test_project_dag.py",
+                    "line": 88,
+                    "claim": "Missing regression coverage for the route.",
+                    "evidence": ["review fixture"],
+                    "required_action": "revise",
+                },
+            ],
         },
     )
     _write_json(

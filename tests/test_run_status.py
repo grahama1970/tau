@@ -319,9 +319,7 @@ def test_run_status_summarizes_provider_dag_receipt(tmp_path: Path) -> None:
                 "applied_action_count": 1,
                 "post_verified_absent_count": 1,
             },
-            "orchestration_evidence_receipt": str(
-                tmp_path / "orchestration-evidence-receipt.json"
-            ),
+            "orchestration_evidence_receipt": str(tmp_path / "orchestration-evidence-receipt.json"),
             "orchestration_evidence": {
                 "status": "PASS",
                 "mocked": False,
@@ -502,13 +500,15 @@ def test_run_status_summarizes_provider_lifecycle_states(tmp_path: Path) -> None
     assert status["provider_session_states"][0]["interstitial_present"] is False
     assert status["provider_session_states"][0]["provider_api_available"] is True
     assert status["provider_session_states"][0]["provider_readiness_path"] == str(readiness_path)
-    assert status["provider_session_states"][0]["provider_readiness_sha256"] == hashlib.sha256(
-        readiness_path.read_bytes()
-    ).hexdigest()
+    assert (
+        status["provider_session_states"][0]["provider_readiness_sha256"]
+        == hashlib.sha256(readiness_path.read_bytes()).hexdigest()
+    )
     assert status["provider_session_states"][0]["provider_session_state_path"] == str(state_path)
-    assert status["provider_session_states"][0]["provider_session_state_sha256"] == hashlib.sha256(
-        state_path.read_bytes()
-    ).hexdigest()
+    assert (
+        status["provider_session_states"][0]["provider_session_state_sha256"]
+        == hashlib.sha256(state_path.read_bytes()).hexdigest()
+    )
     assert status["provider_session_states"][0]["provider_event_log_path"] == (
         "/tmp/codex.events.jsonl"
     )
@@ -674,9 +674,7 @@ def test_run_status_summarizes_standalone_cleanup_receipt(tmp_path: Path) -> Non
     assert status["cleanup"]["candidate_count"] == 1
     assert status["cleanup"]["workspace_lease"] == str(tmp_path / "herdr-workspace-lease.json")
     assert status["cleanup"]["workspace_lease_sha256"] == "workspace-lease-sha-test"
-    assert status["cleanup"]["session_ownership"] == str(
-        tmp_path / "herdr-session-ownership.json"
-    )
+    assert status["cleanup"]["session_ownership"] == str(tmp_path / "herdr-session-ownership.json")
     assert status["cleanup"]["session_ownership_sha256"] == "session-ownership-sha-test"
     assert status["cleanup"]["applied_action_count"] == 1
     assert status["cleanup"]["applied_session_stop_count"] == 0
@@ -1349,9 +1347,7 @@ def test_run_status_summarizes_github_handoff_transport_receipt(tmp_path: Path) 
         "command_count": 0,
         "command_result_count": 0,
         "preflight_result_count": 0,
-        "errors": [
-            "GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."
-        ],
+        "errors": ["GitHub --apply requires --github-apply-policy-receipt with a PASS receipt."],
     }
 
 
@@ -1420,9 +1416,7 @@ def test_run_status_summarizes_project_dag_evidence_validation_failure(
             "goal_hash": "sha256:goal",
             "observed_edges": [],
             "node_attempts": {},
-            "errors": [
-                "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
-            ],
+            "errors": ["items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"],
         },
     )
     _write_json(
@@ -1439,9 +1433,7 @@ def test_run_status_summarizes_project_dag_evidence_validation_failure(
             "item_count": 2,
             "valid_item_count": 1,
             "invalid_item_count": 1,
-            "errors": [
-                "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
-            ],
+            "errors": ["items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"],
         },
     )
 
@@ -1468,9 +1460,7 @@ def test_run_status_summarizes_project_dag_evidence_validation_failure(
         "valid_item_count": 1,
         "invalid_item_count": 1,
         "error_count": 1,
-        "errors": [
-            "items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"
-        ],
+        "errors": ["items[1].goal_hash mismatch: expected sha256:goal, observed sha256:stale"],
     }
 
 
@@ -1662,9 +1652,7 @@ def test_run_status_summarizes_project_dag_blocking_alerts(
             },
             "observed_edges": [],
             "node_attempts": {"coder": 2, "research": 1},
-            "errors": [
-                "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
-            ],
+            "errors": ["command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"],
             "alerts": [
                 {
                     "code": "invalid_command_json",
@@ -1699,9 +1687,7 @@ def test_run_status_summarizes_project_dag_blocking_alerts(
             "node_id": "coder",
             "attempts": 2,
             "max_attempts": 2,
-            "errors": [
-                "command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"
-            ],
+            "errors": ["command stdout was not JSON: Expecting value: line 1 column 1 (char 0)"],
             "recommended_action": {
                 "next_agent": "goal-guardian",
                 "reason": "Ready-queue node dispatch did not pass after max_attempts.",
@@ -1778,6 +1764,15 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
             "planned_edit_count": None,
             "policy_read_denied_count": None,
             "policy_write_denied_count": None,
+            "review_declared_verdict": None,
+            "review_derived_verdict": None,
+            "reviewer": None,
+            "finding_count": None,
+            "blocking_finding_count": None,
+            "revision_finding_count": None,
+            "p0_finding_count": None,
+            "p1_finding_count": None,
+            "required_action_count": None,
         }
     ]
     assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -1849,11 +1844,77 @@ def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path)
         "planned_edit_count": None,
         "policy_read_denied_count": None,
         "policy_write_denied_count": None,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
     assert (
-        "tau.skill_composition_redteam_receipt.v1"
-        in status["coding_evidence"]["supported_schemas"]
+        "tau.skill_composition_redteam_receipt.v1" in status["coding_evidence"]["supported_schemas"]
     )
+
+
+def test_run_status_summarizes_review_finding_routing_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "review-findings-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.review_findings.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "reviewer": "reviewer",
+            "declared_verdict": "REVISE",
+            "derived_verdict": "BLOCKED",
+            "finding_count": 2,
+            "blocking_finding_count": 1,
+            "revision_finding_count": 1,
+            "findings": [
+                {
+                    "id": "finding-001",
+                    "severity": "P0",
+                    "file": "src/tau_coding/project_dag.py",
+                    "line": 42,
+                    "claim": "Dispatch can continue after a blocked reviewer finding.",
+                    "evidence": ["review fixture"],
+                    "required_action": "block",
+                },
+                {
+                    "id": "finding-002",
+                    "severity": "P1",
+                    "file": "tests/test_project_dag.py",
+                    "line": 88,
+                    "claim": "Missing regression coverage for the route.",
+                    "evidence": ["review fixture"],
+                    "required_action": "revise",
+                },
+            ],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+    summary = status["coding_evidence"]["receipts"][0]
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert summary["schema"] == "tau.review_findings.v1"
+    assert summary["review_declared_verdict"] == "REVISE"
+    assert summary["review_derived_verdict"] == "BLOCKED"
+    assert summary["reviewer"] == "reviewer"
+    assert summary["finding_count"] == 2
+    assert summary["blocking_finding_count"] == 1
+    assert summary["revision_finding_count"] == 1
+    assert summary["p0_finding_count"] == 1
+    assert summary["p1_finding_count"] == 1
+    assert summary["required_action_count"] == 2
+    assert summary["sha256"] == f"sha256:{_sha256(receipt_path)}"
 
 
 def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) -> None:
@@ -1925,6 +1986,15 @@ def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) 
         "planned_edit_count": None,
         "policy_read_denied_count": None,
         "policy_write_denied_count": None,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
 
 
@@ -2001,6 +2071,15 @@ def test_run_status_summarizes_github_read_boundaries(tmp_path: Path) -> None:
         "planned_edit_count": None,
         "policy_read_denied_count": None,
         "policy_write_denied_count": None,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
 
 
@@ -2081,6 +2160,15 @@ def test_run_status_summarizes_debug_session_evidence_fields(tmp_path: Path) -> 
         "planned_edit_count": None,
         "policy_read_denied_count": None,
         "policy_write_denied_count": None,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
 
 
@@ -2156,6 +2244,15 @@ def test_run_status_summarizes_commit_plan_review_fields(tmp_path: Path) -> None
         "planned_edit_count": None,
         "policy_read_denied_count": None,
         "policy_write_denied_count": None,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
 
 
@@ -2228,6 +2325,15 @@ def test_run_status_summarizes_lsp_diagnostics_fields(tmp_path: Path) -> None:
         "planned_edit_count": None,
         "policy_read_denied_count": 1,
         "policy_write_denied_count": None,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
 
 
@@ -2302,6 +2408,15 @@ def test_run_status_summarizes_lsp_rename_plan_fields(tmp_path: Path) -> None:
         "planned_edit_count": 2,
         "policy_read_denied_count": None,
         "policy_write_denied_count": 0,
+        "review_declared_verdict": None,
+        "review_derived_verdict": None,
+        "reviewer": None,
+        "finding_count": None,
+        "blocking_finding_count": None,
+        "revision_finding_count": None,
+        "p0_finding_count": None,
+        "p1_finding_count": None,
+        "required_action_count": None,
     }
 
 

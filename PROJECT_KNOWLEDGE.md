@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report review findings fields:
+  `src/tau_coding/run_status.py` now preserves structured review finding
+  routing fields in coding evidence summaries: `review_declared_verdict`,
+  `review_derived_verdict`, `reviewer`, `finding_count`,
+  `blocking_finding_count`, `revision_finding_count`, `p0_finding_count`,
+  `p1_finding_count`, and `required_action_count`.
+  `tests/test_run_status.py` pins these fields for a `tau.review_findings.v1`
+  receipt with P0/P1 findings, and `tests/test_run_report.py` asserts the
+  static report renders the review schema and blocking review fields. This
+  makes R3 review findings inspectable in `tau run-status` / `tau report`
+  without treating the reviewer as correct. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/run_status.py tests/test_run_status.py
+  tests/test_run_report.py docs/run-report.md` -> `All checks passed!`;
+  `uv run pytest tests/test_run_status.py tests/test_run_report.py -q` ->
+  `37 passed in 0.65s`; `git diff --check -- src/tau_coding/run_status.py
+  tests/test_run_status.py tests/test_run_report.py docs/run-report.md` ->
+  pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-review-findings-report-final-20260707T143533Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `469 passed in 10.70s`. This does not prove
+  reviewer semantic correctness, issue exhaustiveness, live OMP or SciLLM
+  semantic worker execution, provider/model quality, legal compliance, human
+  acceptance, or full sandbox isolation on every host.
+
 - 2026-07-07 run-status/report LSP evidence fields:
   `src/tau_coding/run_status.py` now preserves LSP receipt fields in coding
   evidence summaries: `lsp_language_server`, `file_count`,

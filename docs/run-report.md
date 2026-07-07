@@ -71,6 +71,11 @@ For LSP receipts it surfaces `lsp_language_server`, `file_count`,
 `rename_symbol`, `rename_new_name`, `rename_applied`, `planned_edit_count`,
 `policy_read_denied_count`, and `policy_write_denied_count` so diagnostics and
 rename plans are visible without claiming semantic correctness.
+For review findings receipts it surfaces `review_declared_verdict`,
+`review_derived_verdict`, `reviewer`, `finding_count`,
+`blocking_finding_count`, `revision_finding_count`, `p0_finding_count`,
+`p1_finding_count`, and `required_action_count` so reviewer output is
+inspectable without trusting the reviewer as correct.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.

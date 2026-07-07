@@ -130,7 +130,8 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
     missing = [
         name
         for name, path in artifacts.items()
-        if name in {"run_receipt", "runtime_manifest"} and _missing_required_artifact(
+        if name in {"run_receipt", "runtime_manifest"}
+        and _missing_required_artifact(
             name,
             path,
             artifacts=artifacts,
@@ -648,11 +649,7 @@ def _generic_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
                 if isinstance(node, dict) and str(node.get("status") or "").upper() == "BLOCKED"
             ]
         ),
-        "nodes": [
-            _generic_dag_node_summary(node)
-            for node in nodes
-            if isinstance(node, dict)
-        ],
+        "nodes": [_generic_dag_node_summary(node) for node in nodes if isinstance(node, dict)],
     }
 
 
@@ -686,8 +683,7 @@ def _project_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
             [
                 alert
                 for alert in alerts or []
-                if isinstance(alert, dict)
-                and str(alert.get("severity") or "").upper() == "BLOCK"
+                if isinstance(alert, dict) and str(alert.get("severity") or "").upper() == "BLOCK"
             ]
         )
         if isinstance(alerts, list)
@@ -725,9 +721,7 @@ def _project_dag_progress_summary(payload: dict[str, Any]) -> dict[str, Any] | N
         "active_subagent_count": _count(active_subagents),
         "active_subagents": active_subagents if isinstance(active_subagents, list) else [],
         "completed_subagent_count": _count(completed_subagents),
-        "completed_subagents": completed_subagents
-        if isinstance(completed_subagents, list)
-        else [],
+        "completed_subagents": completed_subagents if isinstance(completed_subagents, list) else [],
         "node_progress": node_progress if isinstance(node_progress, list) else [],
         "updated_at": payload.get("updated_at"),
     }
@@ -847,9 +841,7 @@ def _provider_dag_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
             if isinstance(alert, dict) and alert.get("severity") == "BLOCK"
         ),
         "alerts": [
-            _provider_dag_alert_summary(alert)
-            for alert in alert_records
-            if isinstance(alert, dict)
+            _provider_dag_alert_summary(alert) for alert in alert_records if isinstance(alert, dict)
         ],
         "visible_subagents": _role_summary_map(visible_subagents),
         "provider_sessions": _role_summary_map(provider_sessions),
@@ -1013,9 +1005,7 @@ def _provider_dag_attempt_summary(attempt: dict[str, Any]) -> dict[str, Any]:
         "coder_receipt": _provider_node_receipt_summary(attempt.get("coder_receipt_path")),
         "reviewer_status": attempt.get("reviewer_status"),
         "reviewer_verdict": attempt.get("reviewer_verdict"),
-        "reviewer_receipt": _provider_node_receipt_summary(
-            attempt.get("reviewer_receipt_path")
-        ),
+        "reviewer_receipt": _provider_node_receipt_summary(attempt.get("reviewer_receipt_path")),
         "errors": attempt.get("errors"),
     }
 
@@ -1244,9 +1234,7 @@ def _post_verified_absent_count(value: Any) -> int:
     if not isinstance(value, list):
         return 0
     return sum(
-        1
-        for item in value
-        if isinstance(item, dict) and item.get("post_verified_absent") is True
+        1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True
     )
 
 
@@ -1510,9 +1498,7 @@ def _dag_stress_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
             ]
         ),
         "rungs": [
-            _dag_stress_rung_summary(rung)
-            for rung in rung_records
-            if isinstance(rung, dict)
+            _dag_stress_rung_summary(rung) for rung in rung_records if isinstance(rung, dict)
         ],
     }
 
@@ -1819,6 +1805,15 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "planned_edit_count": _count_list(payload.get("planned_edits")),
                 "policy_read_denied_count": _count_list(payload.get("policy_read_denied_paths")),
                 "policy_write_denied_count": _count_list(payload.get("policy_write_denied_paths")),
+                "review_declared_verdict": payload.get("declared_verdict"),
+                "review_derived_verdict": payload.get("derived_verdict"),
+                "reviewer": payload.get("reviewer"),
+                "finding_count": payload.get("finding_count"),
+                "blocking_finding_count": payload.get("blocking_finding_count"),
+                "revision_finding_count": payload.get("revision_finding_count"),
+                "p0_finding_count": _review_finding_severity_count(payload, "P0"),
+                "p1_finding_count": _review_finding_severity_count(payload, "P1"),
+                "required_action_count": _review_required_action_count(payload),
             }
         )
     return {
@@ -1845,6 +1840,28 @@ def _count_list(value: Any) -> int | None:
     if isinstance(value, list):
         return len(value)
     return None
+
+
+def _review_finding_severity_count(payload: dict[str, Any], severity: str) -> int | None:
+    findings = payload.get("findings")
+    if not isinstance(findings, list):
+        return None
+    return sum(
+        1
+        for finding in findings
+        if isinstance(finding, dict) and finding.get("severity") == severity
+    )
+
+
+def _review_required_action_count(payload: dict[str, Any]) -> int | None:
+    findings = payload.get("findings")
+    if not isinstance(findings, list):
+        return None
+    return sum(
+        1
+        for finding in findings
+        if isinstance(finding, dict) and isinstance(finding.get("required_action"), str)
+    )
 
 
 def _load_lifecycle_states(
