@@ -498,6 +498,48 @@ def test_commit_plan_zero_trust_honors_policy_write_allowlist(tmp_path: Path) ->
     )["policy_write_allowed"] is False
 
 
+def test_commit_plan_blocks_malformed_policy_read_denylist(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"read_denylist": "secrets/**", "write_allowlist": []},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_policy_read_denylist" in payload["alert_codes"]
+
+
+def test_commit_plan_blocks_malformed_policy_write_allowlist(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"read_denylist": [], "write_allowlist": "src/**"},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_policy_write_allowlist" in payload["alert_codes"]
+
+
 def test_commit_plan_blocks_evidence_receipt_goal_hash_mismatch(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")

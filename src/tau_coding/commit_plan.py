@@ -527,9 +527,7 @@ def _policy_read_denylist(policy_profile: dict[str, Any] | None) -> list[str] | 
     if not isinstance(filesystem, dict):
         return None
     read_denylist = filesystem.get("read_denylist")
-    if not isinstance(read_denylist, list) or not all(
-        isinstance(item, str) for item in read_denylist
-    ):
+    if not _is_string_list(read_denylist):
         return None
     return [item for item in read_denylist]
 
@@ -541,11 +539,13 @@ def _policy_write_allowlist(policy_profile: dict[str, Any] | None) -> list[str] 
     if not isinstance(filesystem, dict):
         return None
     write_allowlist = filesystem.get("write_allowlist")
-    if not isinstance(write_allowlist, list) or not all(
-        isinstance(item, str) for item in write_allowlist
-    ):
+    if not _is_string_list(write_allowlist):
         return None
     return [item for item in write_allowlist]
+
+
+def _is_string_list(value: object) -> bool:
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
 
 
 def _path_denied_by_policy(path: str, read_denylist: list[str] | None) -> bool:
@@ -588,6 +588,25 @@ def _coding_policy_alerts(
         )
     if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
         alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
+    if policy_profile is not None:
+        filesystem = policy_profile.get("filesystem")
+        if isinstance(filesystem, dict):
+            read_denylist = filesystem.get("read_denylist")
+            write_allowlist = filesystem.get("write_allowlist")
+            if read_denylist is not None and not _is_string_list(read_denylist):
+                alerts.append(
+                    _alert(
+                        "invalid_policy_read_denylist",
+                        "policy_profile filesystem.read_denylist must be a list of strings",
+                    )
+                )
+            if write_allowlist is not None and not _is_string_list(write_allowlist):
+                alerts.append(
+                    _alert(
+                        "invalid_policy_write_allowlist",
+                        "policy_profile filesystem.write_allowlist must be a list of strings",
+                    )
+                )
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
     return alerts

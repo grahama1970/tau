@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 01:51 EDT by agent
+**Last updated:** 2026-07-07 02:59 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 commit-plan malformed policy-list fail-closed rung:
+  `src/tau_coding/commit_plan.py` now blocks malformed
+  `policy_profile.filesystem.read_denylist` and `write_allowlist` values
+  instead of silently treating them as absent policy. Zero-trust commit-plan
+  receipts emit `invalid_policy_read_denylist` when `read_denylist` is not a
+  list of strings and `invalid_policy_write_allowlist` when `write_allowlist`
+  is not a list of strings. `tests/test_commit_plan.py` pins both malformed
+  policy-list cases. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` ->
+  `All checks passed!`; `uv run pytest tests/test_commit_plan.py -q` ->
+  `26 passed in 0.85s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-policy-list-proof-20260707T065912Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-policy-list-proof-20260707T065912Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `265 passed in
+  7.93s`. This proves deterministic local commit-plan receipts fail closed on
+  malformed filesystem policy list fields; it does not prove semantic code
+  correctness, live OMP/SciLLM semantic worker execution, provider/model
+  quality, GitHub mutation, human acceptance, legal compliance, full sandbox
+  isolation, or full goal completion.
 
 - 2026-07-07 LSP malformed policy-list fail-closed rung:
   `src/tau_coding/lsp_receipts.py` now blocks malformed
