@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:57 EDT by agent
+**Last updated:** 2026-07-06 23:01 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 worker required artifact descriptor rung:
+  `src/tau_coding/coding_worker_adapters.py` now records
+  `required_artifact_descriptors` on OMP/SciLLM worker validation receipts for
+  required artifacts that are both declared by the work order and listed by the
+  worker result. Each descriptor records the declared artifact name, resolved
+  path, SHA-256, and byte count, so required artifacts are not accepted as bare
+  strings. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `39
+  passed in 3.54s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-required-artifact-descriptors-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-required-artifact-descriptors-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `199 passed in 6.59s`. This proves deterministic local worker receipts now
+  bind required artifact references to existing files with path/hash/byte
+  descriptors and compose with the current coding capability sanity suite; it
+  does not prove worker truthfulness, semantic code correctness, live OMP or
+  SciLLM semantic worker execution, provider/model quality, GitHub mutation,
+  human acceptance, legal compliance, ITAR compliance, or full sandbox
+  isolation on every host.
 
 - 2026-07-06 debug-session log containment rung:
   `src/tau_coding/debug_session_receipt.py` now requires `stdout_path` and

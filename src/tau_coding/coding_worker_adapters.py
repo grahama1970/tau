@@ -432,6 +432,11 @@ def _write_worker_receipt(
         "changed_files": changed_files,
         "required_artifacts": required_artifacts,
         "result_artifacts": result_artifacts,
+        "required_artifact_descriptors": _required_artifact_descriptors(
+            required_artifacts,
+            result_artifacts,
+            repo,
+        ),
         "next_recommended_route": result.get("next_recommended_route"),
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
@@ -1030,6 +1035,24 @@ def _missing_required_artifacts(
         if artifact not in result_names or not _path_exists(artifact, repo):
             missing.append(artifact)
     return missing
+
+
+def _required_artifact_descriptors(
+    required_artifacts: list[str],
+    result_artifacts: list[str],
+    repo: Path | None,
+) -> list[dict[str, Any]]:
+    result_names = set(result_artifacts)
+    descriptors: list[dict[str, Any]] = []
+    for artifact in required_artifacts:
+        if artifact not in result_names:
+            continue
+        descriptor = _referenced_receipt_artifact("required_artifact", artifact, repo)
+        if descriptor is None:
+            continue
+        descriptor["artifact"] = artifact
+        descriptors.append(descriptor)
+    return descriptors
 
 
 def _worker_result_is_prose_only(result: Mapping[str, Any]) -> bool:

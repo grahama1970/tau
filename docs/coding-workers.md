@@ -470,7 +470,9 @@ same containment metadata and the referenced sandbox/Herdr receipt content.
 Required artifacts are not satisfied by strings alone. When a work order names a
 required artifact, the worker result must list that artifact and the referenced
 file must exist under the repo or at its absolute path before Tau accepts the
-worker receipt.
+worker receipt. Accepted required artifacts are recorded in
+`required_artifact_descriptors` with the declared artifact name, resolved path,
+SHA-256, and byte count.
 
 CLI:
 

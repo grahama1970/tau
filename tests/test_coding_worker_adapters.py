@@ -152,6 +152,41 @@ def test_worker_blocks_claimed_required_artifact_that_does_not_exist(tmp_path: P
     assert "missing_required_artifact" in payload["alert_codes"]
 
 
+def test_worker_records_required_artifact_descriptors(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        required_artifacts=["logs/pytest.log"],
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    log = repo / "logs" / "pytest.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text("1 passed\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=["logs/pytest.log"],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["required_artifact_descriptors"] == [
+        {
+            "label": "required_artifact",
+            "path": str(log.resolve()),
+            "sha256": f"sha256:{_sha256(log)}",
+            "bytes": log.stat().st_size,
+            "artifact": "logs/pytest.log",
+        }
+    ]
+
+
 def test_high_stakes_worker_requires_substrate(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
