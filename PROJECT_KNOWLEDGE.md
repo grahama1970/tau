@@ -5,6 +5,34 @@
 
 ## Current Understanding
 
+- 2026-07-07 review-code skill adapter rung:
+  `src/tau_coding/review_code_skill_adapter.py` adds
+  `tau.review_code_skill_adapter_receipt.v1` for ingesting
+  `review_code.result.v1`, normalizing advisory review-code findings into
+  `tau.review_findings.v1`, and validating the normalized artifact through the
+  existing review findings gate. `src/tau_coding/cli.py` exposes
+  `review-code-skill-adapter`. `tests/test_review_code_skill_adapter.py`
+  covers BLOCKED/P0 mapping, NEEDS_CHANGES->REVISE mapping, PASS-with-blockers
+  fail-closed behavior, P0/P1 evidence requirements, invalid source schema
+  blocking, and the CLI path. `docs/skill-composition.md` documents the
+  adapter command and non-claims. `scripts/run-coding-capability-sanity.py`
+  includes the review-code adapter module and tests in aggregate lint/test
+  coverage. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/review_code_skill_adapter.py
+  tests/test_review_code_skill_adapter.py src/tau_coding/cli.py
+  scripts/run-coding-capability-sanity.py` -> `All checks passed!`; `uv run
+  pytest tests/test_review_code_skill_adapter.py -q` -> `6 passed in 0.38s`;
+  `uv run python -m py_compile src/tau_coding/review_code_skill_adapter.py
+  src/tau_coding/cli.py scripts/run-coding-capability-sanity.py` -> pass;
+  `git diff --check -- ...` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-review-code-adapter-20260707T123515Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `423 passed in 10.55s`. This proves review-code
+  adapter wiring, schema gating, review findings validation, CLI receipt
+  writing, and aggregate sanity coverage under deterministic tests; it does not
+  prove the reviewer is correct, the code is semantically correct, task closure,
+  or live review-code execution.
+
 - 2026-07-07 skill adapter CLI/sanity rung:
   `src/tau_coding/cli.py` now exposes `debugger-skill-adapter` and
   `code-runner-skill-adapter` so skill-specific adapters are reachable through

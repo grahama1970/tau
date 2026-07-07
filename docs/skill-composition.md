@@ -164,11 +164,33 @@ uv run tau code-runner-skill-adapter \
 This still does not apply the patch, prove semantic correctness, or make the
 worker model truthful.
 
+## Review-Code Adapter
+
+The review-code adapter ingests `review_code.result.v1`, normalizes advisory
+findings into `tau.review_findings.v1`, and validates them through Tau's review
+findings gate.
+
+```bash
+uv run tau review-code-skill-adapter \
+  --review /tmp/review_result.json \
+  --out /tmp/review-code-adapter-receipt.json \
+  --repo-root /path/to/repo \
+  --goal-hash sha256:...
+```
+
+The adapter maps review-code verdicts into Tau's `PASS`, `REVISE`, and
+`BLOCKED` routing vocabulary. P0/P1 findings still require evidence, a PASS
+verdict cannot hide blocking findings, and BLOCKED/REVISE outputs emit
+course-correction payloads.
+
+This still does not prove the reviewer is correct, the code is semantically
+correct, or reviewer consensus is proof.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
-1. Review-code, evidence-case, research, and model-worker adapters.
+1. Evidence-case, research, and model-worker adapters.
 2. Project-profile capability provider requirements.
 3. Course-correction routing through validated capability providers.
 4. A skill-composition red-team suite that proves Tau does not blindly trust

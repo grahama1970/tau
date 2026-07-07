@@ -198,6 +198,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "src/tau_coding/skill_invocation.py",
                 "src/tau_coding/debugger_skill_adapter.py",
                 "src/tau_coding/code_runner_skill_adapter.py",
+                "src/tau_coding/review_code_skill_adapter.py",
                 "src/tau_coding/cli.py",
                 "tests/test_code_patch.py",
                 "tests/test_review_findings.py",
@@ -224,6 +225,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_skill_invocation.py",
                 "tests/test_debugger_skill_adapter.py",
                 "tests/test_code_runner_skill_adapter.py",
+                "tests/test_review_code_skill_adapter.py",
             ],
             purpose="Run focused import/style checks for coding capability modules.",
         ),
@@ -258,6 +260,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_skill_invocation.py",
                 "tests/test_debugger_skill_adapter.py",
                 "tests/test_code_runner_skill_adapter.py",
+                "tests/test_review_code_skill_adapter.py",
                 "-q",
             ],
             purpose=(
@@ -350,6 +353,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "skill capability registry receipts",
             "bounded skill invocation receipts",
             "debugger and code-runner skill adapter receipts",
+            "review-code skill adapter receipts",
             "compliance evidence package receipts",
             "run report generation",
             "local API preflight surfaces",
@@ -375,6 +379,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
                 "and existing-artifact ingestion paths.",
                 "Tau adapts debugger and code-runner skill artifacts into Tau receipt "
                 "validators before treating them as evidence.",
+                "Tau adapts review-code artifacts into Tau review findings before "
+                "treating reviewer output as evidence.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
                 "provenance/signing, and adversarial containment tests.",
                 "Tau's ITAR-grade containment example emits local fail-closed and "

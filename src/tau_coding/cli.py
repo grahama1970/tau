@@ -201,6 +201,7 @@ from tau_coding.rendering import PrintOutputMode, create_event_renderer
 from tau_coding.research_query_gate import write_research_query_safety_receipt
 from tau_coding.research_source_receipt import write_research_source_receipt
 from tau_coding.resources import TauResourcePaths
+from tau_coding.review_code_skill_adapter import write_review_code_skill_adapter_receipt
 from tau_coding.review_findings import write_review_findings_receipt
 from tau_coding.run_report import write_run_report
 from tau_coding.run_status import build_dag_viewer_link, build_run_status
@@ -2035,6 +2036,34 @@ def main(
             options = _parse_code_runner_skill_adapter_cli_args(positional_args[1:])
             payload = write_code_runner_skill_adapter_receipt(
                 result_path=Path(str(options["result"])),
+                output_path=Path(str(options["out"])),
+                repo_root=Path(str(options["repo_root"])),
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "review-code-skill-adapter":
+        try:
+            options = _parse_review_code_skill_adapter_cli_args(positional_args[1:])
+            payload = write_review_code_skill_adapter_receipt(
+                review_path=Path(str(options["review"])),
+                output_path=Path(str(options["out"])),
+                repo_root=Path(str(options["repo_root"])),
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "review-code-skill-adapter":
+        try:
+            options = _parse_review_code_skill_adapter_cli_args(positional_args[1:])
+            payload = write_review_code_skill_adapter_receipt(
+                review_path=Path(str(options["review"])),
                 output_path=Path(str(options["out"])),
                 repo_root=Path(str(options["repo_root"])),
                 expected_goal_hash=_optional_str(options.get("goal_hash")),
@@ -5436,6 +5465,94 @@ def _parse_code_runner_skill_adapter_cli_args(args: list[str]) -> dict[str, obje
     if not _optional_str(options.get("repo_root")):
         raise RuntimeError(
             "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    return options
+
+
+def _parse_review_code_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "review": None,
+        "out": None,
+        "repo_root": None,
+        "goal_hash": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--review", "--out", "--repo-root", "--goal-hash"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--review="):
+            options["review"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--repo-root="):
+            options["repo_root"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown review-code-skill-adapter option: {arg}")
+        index += 1
+    if not _optional_str(options.get("review")):
+        raise RuntimeError(
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    if not _optional_str(options.get("repo_root")):
+        raise RuntimeError(
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    return options
+
+
+def _parse_review_code_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "review": None,
+        "out": None,
+        "repo_root": None,
+        "goal_hash": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--review", "--out", "--repo-root", "--goal-hash"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--review="):
+            options["review"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--repo-root="):
+            options["repo_root"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown review-code-skill-adapter option: {arg}")
+        index += 1
+    if not _optional_str(options.get("review")):
+        raise RuntimeError(
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
+            "--repo-root <dir>"
+        )
+    if not _optional_str(options.get("repo_root")):
+        raise RuntimeError(
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
             "--repo-root <dir>"
         )
     return options
