@@ -964,6 +964,8 @@ connection errors. Apply mode requires bearer auth from one of these sources:
 - local `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`, or `SCILLM_AUTH_TOKEN`
 - a local env file selected by `SCILLM_ENV_PATH`
 - the local Scillm project `.env` when the base URL is localhost
+- the active local Docker proxy container env (`docker-scillm-proxy-1` by
+  default), reading `SCILLM_MASTER_KEY` or `LITELLM_MASTER_KEY`
 
 Tau records only `headers.authorization: REDACTED` plus
 `headers.authorization_source`; it never writes the bearer token to the receipt.

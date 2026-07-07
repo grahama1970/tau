@@ -57,8 +57,9 @@ SCILLM_WORKER_RESULT=/path/to/scillm-result.json examples/scillm-worker/run.sh /
 To launch a real local SciLLM/OpenCode serve request through Tau, use
 `http://localhost:4001` and provide bearer auth explicitly or through the local
 Scillm environment. Tau reads `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`,
-`SCILLM_AUTH_TOKEN`, or an env file named by `SCILLM_ENV_PATH`; it records only
-the redacted auth source in the receipt:
+`SCILLM_AUTH_TOKEN`, an env file named by `SCILLM_ENV_PATH`, or the active
+local Docker proxy container env (`docker-scillm-proxy-1` by default). It
+records only the redacted auth source in the receipt:
 
 ```bash
 SCILLM_ENV_PATH=/home/graham/workspace/experiments/scillm/.env \

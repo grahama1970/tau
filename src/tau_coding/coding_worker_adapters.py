@@ -1324,6 +1324,38 @@ def _local_scillm_auth_token() -> tuple[str | None, str]:
         value = _read_env_token(path)
         if value:
             return value, f"env_file:{path}"
+    value, source = _docker_scillm_auth_token()
+    if value:
+        return value, source
+    return None, "missing"
+
+
+def _docker_scillm_auth_token() -> tuple[str | None, str]:
+    if os.environ.get("SCILLM_DOCKER_AUTH_DISCOVERY", "1").lower() in {"0", "false", "no"}:
+        return None, "missing"
+    container = os.environ.get("SCILLM_DOCKER_CONTAINER", "docker-scillm-proxy-1")
+    try:
+        result = subprocess.run(
+            [
+                "docker",
+                "inspect",
+                container,
+                "--format",
+                "{{range .Config.Env}}{{println .}}{{end}}",
+            ],
+            text=True,
+            capture_output=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None, "missing"
+    if result.returncode != 0:
+        return None, "missing"
+    for line in result.stdout.splitlines():
+        key, separator, value = line.partition("=")
+        if separator and key in {"SCILLM_MASTER_KEY", "LITELLM_MASTER_KEY"} and value:
+            return value, f"docker:{container}:{key}"
     return None, "missing"
 
 

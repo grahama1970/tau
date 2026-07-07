@@ -5,6 +5,7 @@ import urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
+from types import SimpleNamespace
 
 from typer.testing import CliRunner
 
@@ -3019,6 +3020,56 @@ def test_scillm_worker_launch_apply_uses_local_env_auth_token(
     assert "local-test-token" not in json.dumps(payload)
 
 
+def test_scillm_worker_launch_apply_uses_local_docker_auth_token(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("SCILLM_MASTER_KEY", raising=False)
+    monkeypatch.delenv("SCILLM_API_KEY", raising=False)
+    monkeypatch.delenv("SCILLM_AUTH_TOKEN", raising=False)
+    monkeypatch.setenv("SCILLM_ENV_PATH", str(tmp_path / "missing.env"))
+
+    def fake_run(*args, **kwargs):
+        return SimpleNamespace(
+            returncode=0,
+            stdout="PATH=/usr/local/bin\nLITELLM_MASTER_KEY=docker-test-token\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr("tau_coding.coding_worker_adapters.subprocess.run", fake_run)
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "PASS"
+    assert payload["http_executed"] is True
+    assert payload["headers"]["authorization"] == "REDACTED"
+    assert (
+        payload["headers"]["authorization_source"]
+        == "docker:docker-scillm-proxy-1:LITELLM_MASTER_KEY"
+    )
+    assert requests[0]["authorization"] == "Bearer docker-test-token"
+    assert "docker-test-token" not in json.dumps(payload)
+
+
 def test_scillm_worker_launch_local_apply_blocks_without_auth_token(
     tmp_path: Path,
     monkeypatch,
@@ -3027,6 +3078,7 @@ def test_scillm_worker_launch_local_apply_blocks_without_auth_token(
     monkeypatch.delenv("SCILLM_API_KEY", raising=False)
     monkeypatch.delenv("SCILLM_AUTH_TOKEN", raising=False)
     monkeypatch.setenv("SCILLM_ENV_PATH", str(tmp_path / "missing.env"))
+    monkeypatch.setenv("SCILLM_DOCKER_AUTH_DISCOVERY", "0")
     server, base_url, requests = _start_fake_scillm_server()
     work_order = _write_work_order(
         tmp_path,
