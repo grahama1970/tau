@@ -1,0 +1,58 @@
+{
+  "capabilities": {
+    "bounded_code_fix": {
+      "native_artifact_schema": "code_runner.result.v1",
+      "required_for_triggers": [
+        "retry_node"
+      ],
+      "skill": "code-runner",
+      "tau_receipt_schema": "tau.code_patch_receipt.v1"
+    },
+    "code_review": {
+      "native_artifact_schema": "review_result.json",
+      "required_for_triggers": [
+        "route_reviewer",
+        "review_required"
+      ],
+      "skill": "review-code",
+      "tau_receipt_schema": "tau.review_findings.v1"
+    },
+    "debug_runtime_state": {
+      "native_artifact_schema": "debugger.proof.v1",
+      "required_for_triggers": [
+        "debugger_evidence_required",
+        "two_failed_attempts"
+      ],
+      "skill": "debugger",
+      "tau_receipt_schema": "tau.debug_session_receipt.v1"
+    },
+    "deep_research": {
+      "native_artifact_schema": "dogpile.report.v1",
+      "pre_gate": "tau.research_query_safety_receipt.v1",
+      "required_for_triggers": [
+        "run_brave_search_then_retry",
+        "research_required"
+      ],
+      "skill": "dogpile",
+      "tau_receipt_schema": "tau.research_source_receipt.v1"
+    },
+    "evidence_case": {
+      "native_artifact_schema": "create_evidence_case.result.v1",
+      "required_for_triggers": [
+        "evidence_case_required",
+        "missing_evidence"
+      ],
+      "skill": "create-evidence-case",
+      "tau_receipt_schema": "tau.evidence_case_gate_receipt.v1"
+    },
+    "model_worker": {
+      "native_artifact_schema": "scillm.worker_result.v1",
+      "required_for_triggers": [
+        "model_worker_required"
+      ],
+      "skill": "scillm",
+      "tau_receipt_schema": "tau.scillm_worker_receipt.v1"
+    }
+  },
+  "schema": "tau.skill_capability_registry.v1"
+}

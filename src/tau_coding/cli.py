@@ -220,6 +220,10 @@ from tau_coding.session_export import (
     normalize_export_format,
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
+from tau_coding.skill_capability_registry import (
+    write_default_skill_capability_registry,
+    write_skill_capability_registry_validation_receipt,
+)
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
@@ -1957,6 +1961,34 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "skill-capability-registry-validate":
+        try:
+            options = _parse_skill_capability_registry_validate_cli_args(positional_args[1:])
+            payload = write_skill_capability_registry_validation_receipt(
+                registry_path=Path(str(options["registry"])),
+                output_path=Path(str(options["out"])),
+                skills_root=(
+                    Path(str(options["skills_root"]))
+                    if options.get("skills_root") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
+
+    if prompt_option is None and command == "skill-capability-registry-default":
+        try:
+            options = _parse_skill_capability_registry_default_cli_args(positional_args[1:])
+            payload = write_default_skill_capability_registry(
+                output_path=Path(str(options["out"])),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
 
     if prompt_option is None and command == "loop2-serve":
         try:
@@ -5160,6 +5192,62 @@ def _parse_project_profile_validate_cli_args(args: list[str]) -> dict[str, objec
         raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau project-profile-validate --profile <json> --out <receipt>")
+    return options
+
+
+def _parse_skill_capability_registry_validate_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "registry": None,
+        "out": None,
+        "skills_root": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--registry", "--out", "--skills-root"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--registry="):
+            options["registry"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--skills-root="):
+            options["skills_root"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown skill-capability-registry-validate option: {arg}")
+        index += 1
+    if not _optional_str(options.get("registry")):
+        raise RuntimeError(
+            "Usage: tau skill-capability-registry-validate "
+            "--registry <json> --out <receipt> [--skills-root <dir>]"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau skill-capability-registry-validate "
+            "--registry <json> --out <receipt> [--skills-root <dir>]"
+        )
+    return options
+
+
+def _parse_skill_capability_registry_default_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {"out": None}
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            options["out"] = args[index]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown skill-capability-registry-default option: {arg}")
+        index += 1
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau skill-capability-registry-default --out <registry.json>")
     return options
 
 

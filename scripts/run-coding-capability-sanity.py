@@ -109,6 +109,21 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             output_artifact=run_dir / "coding-zero-trust-init" / ".tau" / "dag-template.json",
         ),
         Check(
+            check_id="skill_composition_basic_example_syntax",
+            command=["bash", "-n", str(examples / "skill-composition-basic" / "run.sh")],
+            purpose="Check skill composition example shell syntax.",
+            timeout_seconds=30,
+        ),
+        Check(
+            check_id="skill_composition_basic_example_run",
+            command=[
+                str(examples / "skill-composition-basic" / "run.sh"),
+                str(run_dir / "skill-composition-basic"),
+            ],
+            purpose="Run skill capability registry generation and validation example.",
+            output_artifact=run_dir / "skill-composition-basic" / "demo-receipt.json",
+        ),
+        Check(
             check_id="omp_worker_example_syntax",
             command=["bash", "-n", str(examples / "omp-worker" / "run.sh")],
             purpose="Check OMP worker example shell syntax.",
@@ -179,6 +194,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "src/tau_coding/herdr_observation_gate.py",
                 "src/tau_coding/orchestration_reliability.py",
                 "src/tau_coding/sandbox_run.py",
+                "src/tau_coding/skill_capability_registry.py",
                 "src/tau_coding/cli.py",
                 "tests/test_code_patch.py",
                 "tests/test_review_findings.py",
@@ -201,6 +217,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_herdr_observation_gate.py",
                 "tests/test_orchestration_reliability.py",
                 "tests/test_sandbox_policy.py",
+                "tests/test_skill_capability_registry.py",
             ],
             purpose="Run focused import/style checks for coding capability modules.",
         ),
@@ -231,6 +248,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_herdr_observation_gate.py",
                 "tests/test_orchestration_reliability.py",
                 "tests/test_sandbox_policy.py",
+                "tests/test_skill_capability_registry.py",
                 "-q",
             ],
             purpose=(
@@ -320,6 +338,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "OMP/SciLLM dry-run and bounded apply launch receipts",
             "memory intent and evidence-case gate receipts",
             "Graph Memory intent and create-evidence-case acquisition receipts",
+            "skill capability registry receipts",
             "compliance evidence package receipts",
             "run report generation",
             "local API preflight surfaces",
@@ -339,6 +358,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
                 "Tau can initialize a coding zero-trust starter with explicit "
                 "coding evidence requirements.",
                 "Tau records worker launch requests without trusting worker execution.",
+                "Tau validates a read-only skill capability registry before treating "
+                "skill outputs as admissible Tau evidence.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
                 "provenance/signing, and adversarial containment tests.",
                 "Tau's ITAR-grade containment example emits local fail-closed and "

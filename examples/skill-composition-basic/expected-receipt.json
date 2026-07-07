@@ -1,0 +1,10 @@
+{
+  "schema": "tau.skill_composition_basic_example_receipt.v1",
+  "status": "PASS",
+  "ok": true,
+  "mocked": false,
+  "live": false,
+  "provider_live": false,
+  "registry_schema": "tau.skill_capability_registry.v1",
+  "validation_schema": "tau.skill_capability_registry_validation_receipt.v1"
+}
