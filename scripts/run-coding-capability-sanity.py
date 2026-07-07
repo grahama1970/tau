@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -48,7 +49,7 @@ def main() -> int:
 
 def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
     examples = repo / "examples"
-    return [
+    checks = [
         Check(
             check_id="zero_trust_basic_example_syntax",
             command=["bash", "-n", str(examples / "zero-trust-basic" / "run.sh")],
@@ -290,6 +291,37 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ),
         ),
     ]
+    if os.environ.get("TAU_CODING_SANITY_LIVE_HERDR") == "1":
+        live_herdr_checks = [
+            Check(
+                check_id="herdr_visible_provider_example_syntax",
+                command=[
+                    "bash",
+                    "-n",
+                    str(examples / "herdr-visible-provider" / "run.sh"),
+                ],
+                purpose="Check Herdr-visible provider example shell syntax.",
+                timeout_seconds=30,
+            ),
+            Check(
+                check_id="herdr_visible_provider_example_run",
+                command=[
+                    str(examples / "herdr-visible-provider" / "run.sh"),
+                    str(run_dir / "herdr-visible-provider"),
+                ],
+                purpose=(
+                    "Run live Herdr-visible provider-readiness example when "
+                    "explicitly enabled."
+                ),
+                timeout_seconds=600,
+                output_artifact=run_dir / "herdr-visible-provider" / "demo-receipt.json",
+                expected_artifact=(
+                    examples / "herdr-visible-provider" / "expected-receipt.json"
+                ),
+            ),
+        ]
+        checks[-2:-2] = live_herdr_checks
+    return checks
 
 
 def run_check(check: Check, *, repo: Path) -> dict[str, Any]:
@@ -346,6 +378,9 @@ def run_check(check: Check, *, repo: Path) -> dict[str, Any]:
         "stderr_tail": stderr,
         "output_artifact": str(check.output_artifact) if check.output_artifact else None,
         "output_artifact_payload": artifact_payload,
+        "mocked": artifact_payload.get("mocked"),
+        "live": artifact_payload.get("live"),
+        "provider_live": artifact_payload.get("provider_live"),
         "expected_artifact": str(check.expected_artifact) if check.expected_artifact else None,
         "expected_artifact_payload": expected_payload,
     }
@@ -359,7 +394,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
         "status": "PASS" if not failed else "BLOCKED",
         "mocked": "mixed",
         "live": "mixed",
-        "provider_live": False,
+        "provider_live": any(record.get("provider_live") is True for record in records),
         "repo": str(repo),
         "run_dir": str(run_dir),
         "check_count": len(records),
@@ -488,6 +523,8 @@ def _check_expected_artifact(
         "mocked": "mocked",
         "live": "live",
         "provider_live": "provider_live",
+        "check_count": "check_count",
+        "failed_check_count": "failed_check_count",
         "alert_codes": "alert_codes",
         "required_receipt_schemas": "required_receipt_schemas",
         "registry_schema": "registry_schema",
@@ -549,6 +586,20 @@ def _check_expected_artifact(
                 ],
             )
         )
+    expected_required_artifact_suffixes = expected.get(
+        "expected_required_artifact_suffixes"
+    )
+    if isinstance(expected_required_artifact_suffixes, list):
+        errors.extend(
+            _check_required_artifact_suffixes(
+                actual=actual,
+                required=[
+                    item
+                    for item in expected_required_artifact_suffixes
+                    if isinstance(item, str)
+                ],
+            )
+        )
 
     return {
         "read_ok": True,
@@ -570,6 +621,20 @@ def _check_required_artifacts(*, actual: dict[str, Any], required: list[str]) ->
         f"required artifact missing: {artifact}"
         for artifact in required
         if artifact not in actual_artifacts
+    ]
+
+
+def _check_required_artifact_suffixes(
+    *, actual: dict[str, Any], required: list[str]
+) -> list[str]:
+    artifacts = actual.get("artifacts")
+    if not isinstance(artifacts, list):
+        return ["artifacts missing or not a list"]
+    actual_artifacts = [item for item in artifacts if isinstance(item, str)]
+    return [
+        f"required artifact suffix missing: {suffix}"
+        for suffix in required
+        if not any(artifact.endswith(suffix) for artifact in actual_artifacts)
     ]
 
 

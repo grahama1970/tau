@@ -1,0 +1,16 @@
+{
+  "schema": "tau.herdr_visible_provider_example_receipt.v1",
+  "status": "PASS",
+  "ok": true,
+  "mocked": false,
+  "live": "mixed",
+  "provider_live": true,
+  "check_count": 1,
+  "failed_check_count": 0,
+  "expected_required_artifacts": [
+    "real-world-sanity.stdout.json"
+  ],
+  "expected_required_artifact_suffixes": [
+    "real-world-sanity-receipt.json"
+  ]
+}

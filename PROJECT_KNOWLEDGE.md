@@ -1,9 +1,54 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:27 EDT by agent
+**Last updated:** 2026-07-07 12:35 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 Herdr-visible provider expected-receipt opt-in gate:
+  `examples/herdr-visible-provider/run.sh` now accepts an optional output
+  directory and writes a stable `tau.herdr_visible_provider_example_receipt.v1`
+  at `demo-receipt.json`, while preserving the underlying
+  `tau.real_world_sanity_suite_receipt.v1` under the output proof tree.
+  `examples/herdr-visible-provider/expected-receipt.json` requires the compact
+  receipt to report `status:"PASS"`, `mocked:false`, `live:"mixed"`,
+  `provider_live:true`, `check_count:1`, `failed_check_count:0`, and artifacts
+  including `real-world-sanity.stdout.json` plus a timestamped
+  `real-world-sanity-receipt.json` suffix. `scripts/run-coding-capability-sanity.py`
+  now includes this live Herdr/provider example only when
+  `TAU_CODING_SANITY_LIVE_HERDR=1`, and aggregates `provider_live:true` from
+  check receipts instead of hardcoding the aggregate to false. Focused proof:
+  `bash -n examples/herdr-visible-provider/run.sh` -> pass; `git diff --check
+  -- examples/herdr-visible-provider/run.sh
+  examples/herdr-visible-provider/expected-receipt.json
+  scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run python -m
+  py_compile scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run ruff check
+  --select I,F,E501 scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> `All checks passed!`; `uv
+  run pytest tests/test_coding_capability_sanity_runner.py -q` -> `14 passed in
+  0.06s`. Opt-in live aggregate proof:
+  `TAU_CODING_SANITY_LIVE_HERDR=1 uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-herdr-example-expected-20260707T164100Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-herdr-example-expected-20260707T164100Z/coding-capability-sanity-receipt.json`
+  with `status:PASS`, `check_count:19`, `failed_check_count:0`,
+  `provider_live:true`,
+  `herdr_visible_provider_example_run.expected_artifact_payload.ok:true`,
+  errors `[]`, and embedded coding receipt tests `506 passed in 11.82s`. The
+  Herdr example receipt points to
+  `/tmp/tau-coding-capability-sanity-herdr-example-expected-20260707T164100Z/herdr-visible-provider/proofs/20260707T163420Z-tau-herdr-visible-provider-example-20260707t163420z/real-world-sanity-receipt.json`.
+  Default aggregate proof without the opt-in:
+  `/tmp/tau-coding-capability-sanity-herdr-default-20260707T164300Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `check_count:17`, `failed_check_count:0`,
+  `provider_live:false`, embedded coding receipt tests `506 passed in 11.93s`.
+  This proves the opt-in aggregate sanity surface can exercise and enforce the
+  copyable Herdr-visible provider readiness example on this machine; it does
+  not prove provider/model semantic quality, arbitrary user environments have
+  Herdr/provider tooling, live GitHub mutation, production UI behavior, future
+  route correctness, or full sandbox isolation.
 
 - 2026-07-07 ITAR-grade containment expected-receipt artifact gate:
   The coding-capability sanity runner now enforces
