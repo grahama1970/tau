@@ -64,6 +64,42 @@ def test_github_read_pr_diff_scheme_is_read_only(tmp_path: Path) -> None:
     ]
 
 
+def test_github_read_pr_scheme_is_read_only(tmp_path: Path) -> None:
+    receipt = write_github_read_receipt(
+        uri="pr://grahama1970/tau/456",
+        output_path=tmp_path / "github-read-receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["read_only"] is True
+    assert receipt["mutation_allowed"] is False
+    assert receipt["blocked_mutations"] == [
+        "comment",
+        "label",
+        "close",
+        "merge",
+        "push",
+        "release",
+    ]
+    assert receipt["parsed"] == {
+        "identifier": "456",
+        "kind": "pr",
+        "name": "tau",
+        "owner": "grahama1970",
+        "repo": "grahama1970/tau",
+    }
+    assert receipt["suggested_gh_command"] == [
+        "gh",
+        "pr",
+        "view",
+        "456",
+        "--repo",
+        "grahama1970/tau",
+        "--json",
+        "number,title,state,body",
+    ]
+
+
 def test_github_read_commit_scheme_is_read_only(tmp_path: Path) -> None:
     receipt = write_github_read_receipt(
         uri="commit://grahama1970/tau/abc1234",

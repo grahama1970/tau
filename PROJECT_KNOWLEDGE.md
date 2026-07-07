@@ -5,6 +5,29 @@
 
 ## Current Understanding
 
+- 2026-07-07 GitHub PR read-scheme coverage rung:
+  `tests/test_github_read_schemes.py` now directly pins
+  `pr://grahama1970/tau/456` as a read-only GitHub inspection scheme. The
+  receipt must record `read_only:true`, `mutation_allowed:false`, the blocked
+  mutation set (`comment`, `label`, `close`, `merge`, `push`, `release`), the
+  parsed owner/repo/PR identifier, and the suggested dry read command
+  `gh pr view 456 --repo grahama1970/tau --json number,title,state,body`.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py`
+  -> `All checks passed!`; `uv run pytest tests/test_github_read_schemes.py
+  -q` -> `19 passed in 0.51s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-pr-read-proof-20260707T063153Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-github-pr-read-proof-20260707T063153Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `254 passed in
+  7.27s`. This proves deterministic local R6 PR URI parsing and read-only
+  receipt policy coverage; it does not prove live GitHub auth, that PR 456
+  exists or has current content, GitHub mutation, provider/model quality,
+  legal compliance, or full goal completion.
+
 - 2026-07-07 debug/DAP adapter support coverage rung:
   `src/tau_coding/debug_session_receipt.py` now records
   `supported_adapters:["debugpy","dlv","lldb-dap","node"]` on
