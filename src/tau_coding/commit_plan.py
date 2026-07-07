@@ -45,6 +45,7 @@ def write_commit_plan_receipt(
     groups = _commit_groups(changed)
     evidence_receipts = _evidence_receipts(evidence_receipt_paths or [], alerts)
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
+    warnings = _mixed_group_warnings(groups)
     if changed and not groups:
         alerts.append(_alert("empty_plan_with_dirty_tree", "dirty tree produced no commit groups"))
     for group in groups:
@@ -88,6 +89,8 @@ def write_commit_plan_receipt(
         "high_risk_paths": high_risk,
         "approval_required": bool(high_risk or apply),
         "lockfile_handling": "group_with_owner_changes_or_review_separately",
+        "warnings": warnings,
+        "warning_codes": [warning["code"] for warning in warnings],
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -232,6 +235,27 @@ def _has_group(groups: list[dict[str, Any]], group_id: str) -> bool:
     return any(group.get("group_id") == group_id for group in groups)
 
 
+def _mixed_group_warnings(groups: list[dict[str, Any]]) -> list[dict[str, str]]:
+    group_ids = {str(group.get("group_id")) for group in groups}
+    warnings: list[dict[str, str]] = []
+    if "docs" in group_ids and group_ids & {"source", "tests", "lockfiles"}:
+        warnings.append(
+            _warning(
+                "mixed_docs_with_runtime_changes",
+                "documentation changes are mixed with runtime/test changes; review whether "
+                "they should be separate commits",
+            )
+        )
+    if "lockfiles" in group_ids and group_ids - {"lockfiles"}:
+        warnings.append(
+            _warning(
+                "mixed_lockfiles_with_other_changes",
+                "lockfile changes are mixed with other changes; review dependency rationale",
+            )
+        )
+    return warnings
+
+
 def _rationale(group_id: str) -> str:
     return {
         "source": "Source and runtime behavior changes should be reviewed together.",
@@ -289,6 +313,10 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _alert(code: str, message: str) -> dict[str, str]:
     return {"severity": "BLOCK", "code": code, "message": message}
+
+
+def _warning(code: str, message: str) -> dict[str, str]:
+    return {"severity": "WARN", "code": code, "message": message}
 
 
 def _utc_stamp() -> str:

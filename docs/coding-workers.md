@@ -193,6 +193,12 @@ receipts. The receipt records each evidence artifact path, schema, status, and
 SHA-256 so a later reviewer can inspect what supported the proposed atomic
 commit.
 
+Commit plans also emit non-blocking `warnings` and `warning_codes` when the
+working tree mixes independent commit-group classes, such as docs with runtime
+or test changes, or lockfiles with unrelated files. These warnings are review
+signals only. They do not authorize a commit, prove the grouping is
+semantically correct, or replace the approval gate for high-risk paths.
+
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when planning commits for a high-stakes coding route. In zero-trust mode, Tau
 blocks commit plans that omit policy or boundary metadata.
