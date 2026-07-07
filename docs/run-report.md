@@ -59,6 +59,9 @@ For course-correction receipts it also surfaces route fields such as `trigger`
 and `required_next_action`; for GitHub read receipts it surfaces `uri`,
 `github_read_kind`, `read_only`, and `mutation_allowed` so read evidence is
 not confused with mutation authority.
+For debugger receipts it surfaces `debug_adapter`, `debug_target`,
+`adapter_available`, `log_artifact_count`, and `variable_redaction_count` so
+debug evidence is inspectable without implying the debug conclusion is complete.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.

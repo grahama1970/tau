@@ -64,6 +64,10 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.github_read_receipt.v1" in html
     assert "issue://grahama1970/tau/67" in html
     assert "mutation_allowed" in html
+    assert "tau.debug_session_receipt.v1" in html
+    assert "debugpy" in html
+    assert "python -m pytest tests/test_example.py" in html
+    assert "log_artifact_count" in html
     assert "policy_profile_sha256" in html
     assert "data_boundary_sha256" in html
     assert 'id="receipts"' in html
@@ -195,6 +199,26 @@ def _write_report_run(tmp_path: Path) -> Path:
             },
             "read_only": True,
             "mutation_allowed": False,
+        },
+    )
+    _write_json(
+        receipts_dir / "debug-session-receipt.json",
+        {
+            "schema": "tau.debug_session_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "adapter": "debugpy",
+            "target": "python -m pytest tests/test_example.py",
+            "adapter_available": True,
+            "log_artifacts": [
+                {"label": "stdout", "path": "debug.stdout.txt"},
+                {"label": "stderr", "path": "debug.stderr.txt"},
+            ],
+            "variable_redaction_count": 1,
         },
     )
     return run_dir

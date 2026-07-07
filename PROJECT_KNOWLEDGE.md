@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report debugger evidence fields:
+  `src/tau_coding/run_status.py` now preserves debugger receipt fields in
+  coding evidence summaries: `debug_adapter`, `debug_target`,
+  `adapter_available`, `log_artifact_count`, and
+  `variable_redaction_count`. `tests/test_run_status.py` pins the summary for
+  `tau.debug_session_receipt.v1` with `debugpy`,
+  `python -m pytest tests/test_example.py`, two log artifacts, and one variable
+  redaction; `tests/test_run_report.py` asserts the static report includes the
+  debug schema, adapter, target, and log count field. This makes R5
+  debugger/DAP evidence inspectable in `tau run-status` / `tau report`; it does
+  not prove the bug is fixed, the debug conclusion is complete, semantic code
+  correctness, or provider/model quality. Proof for the implementation commit:
+  `uv run ruff check --select I,F,E501 src/tau_coding/run_status.py
+  src/tau_coding/run_report.py tests/test_run_status.py
+  tests/test_run_report.py tests/test_debug_session_receipt.py
+  docs/run-report.md` -> `All checks passed!`; `uv run pytest
+  tests/test_run_status.py tests/test_run_report.py
+  tests/test_debug_session_receipt.py -q` -> `63 passed in 0.66s`; `git diff
+  --check -- src/tau_coding/run_status.py tests/test_run_status.py
+  tests/test_run_report.py docs/run-report.md PROJECT_KNOWLEDGE.md` -> pass.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-debug-report-20260707T141755Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `465 passed in 10.77s`.
+
 - 2026-07-07 run-status/report GitHub read boundaries:
   `src/tau_coding/run_status.py` now preserves GitHub read receipt fields in
   coding evidence summaries: `uri`, `github_read_kind`, `read_only`, and

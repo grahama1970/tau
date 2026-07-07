@@ -1795,6 +1795,11 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "github_read_kind": _github_read_kind(payload),
                 "read_only": payload.get("read_only"),
                 "mutation_allowed": payload.get("mutation_allowed"),
+                "debug_adapter": payload.get("adapter"),
+                "debug_target": payload.get("target"),
+                "adapter_available": payload.get("adapter_available"),
+                "log_artifact_count": _count_list(payload.get("log_artifacts")),
+                "variable_redaction_count": payload.get("variable_redaction_count"),
             }
         )
     return {
@@ -1814,6 +1819,12 @@ def _github_read_kind(payload: dict[str, Any]) -> Any:
     parsed = payload.get("parsed")
     if isinstance(parsed, dict):
         return parsed.get("kind")
+    return None
+
+
+def _count_list(value: Any) -> int | None:
+    if isinstance(value, list):
+        return len(value)
     return None
 
 
