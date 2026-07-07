@@ -65,6 +65,21 @@ contract. It still does not prove OMP performed coding work, worker
 trustworthiness, semantic code correctness, provider/model quality, or full
 sandbox isolation.
 
+A real `oh-my-pi` RPC launch emits startup/control frames before the prompt
+response, typically:
+
+```text
+ready
+extension_ui_request
+available_commands_update
+response
+```
+
+Tau treats those startup/control frames as process evidence, not worker-result
+claims. The launch receipt passes only when stdout is parseable JSONL, the
+process exits successfully, and the substantive `response` frame either echoes
+the request metadata or matches the prompt request id.
+
 This example proves only the Tau-side receipt validation path. Unless
 `OMP_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
 launched a real OMP worker. The default doctor receipt uses the deterministic
@@ -81,3 +96,8 @@ maintained sanity check requires the example receipt to show
 matching `response_metadata`, and hash-bound stdout/stderr descriptors. It does
 not prove a real `oh-my-pi` binary was used, OMP accepted or ran the request
 semantically, semantic code correctness, or provider/model quality.
+
+The explicit live sanity check uses `examples/omp-worker/expected-live-receipt.json`
+instead. That expected receipt requires the real OMP four-frame
+startup/control/response sequence and does not require the startup/control
+frames to carry Tau metadata.

@@ -246,6 +246,73 @@ def test_expected_artifact_checks_omp_apply_launch_response_frames(
     assert payload["errors"] == []
 
 
+def test_expected_artifact_accepts_live_omp_response_id_binding(
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner()
+    expected = tmp_path / "expected.json"
+    actual = tmp_path / "demo-receipt.json"
+    expected.write_text(
+        json.dumps(
+            {
+                "schema": "tau.omp_worker_live_example_receipt.v1",
+                "status": "PASS",
+                "expected_apply_launch_stdout_jsonl_valid": True,
+                "expected_apply_launch_response_frame_count": 4,
+                "expected_apply_launch_log_artifacts": True,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    actual.write_text(
+        json.dumps(
+            {
+                "schema": "tau.omp_worker_live_example_receipt.v1",
+                "status": "PASS",
+                "apply_launch_stdout_jsonl_valid": True,
+                "apply_launch_response_frame_count": 4,
+                "apply_launch_stdout_path": str(tmp_path / "stdout.jsonl"),
+                "apply_launch_stderr_path": str(tmp_path / "stderr.txt"),
+                "apply_launch_stdout_sha256": "sha256:stdout",
+                "apply_launch_stderr_sha256": "sha256:stderr",
+                "apply_launch_log_artifacts": [
+                    {
+                        "label": "stdout",
+                        "path": str(tmp_path / "stdout.jsonl"),
+                        "exists": True,
+                        "sha256": "sha256:stdout",
+                    },
+                    {
+                        "label": "stderr",
+                        "path": str(tmp_path / "stderr.txt"),
+                        "exists": True,
+                        "sha256": "sha256:stderr",
+                    },
+                ],
+                "apply_launch_response_metadata": [
+                    {
+                        "binding": "response_id",
+                        "id": "tau-live-omp-worker-schema-probe-coder",
+                        "command": "prompt",
+                        "success": True,
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = runner._check_expected_artifact(  # noqa: SLF001
+        actual_path=actual,
+        expected_path=expected,
+    )
+
+    assert payload["ok"] is True
+    assert payload["errors"] == []
+
+
 def test_expected_artifact_checks_omp_doctor_fields(tmp_path: Path) -> None:
     runner = _load_runner()
     expected = tmp_path / "expected.json"
