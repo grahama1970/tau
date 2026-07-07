@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 debug/DAP adapter support coverage rung:
+  `src/tau_coding/debug_session_receipt.py` now records
+  `supported_adapters:["debugpy","dlv","lldb-dap","node"]` on
+  `tau.debug_session_receipt.v1`. `tests/test_debug_session_receipt.py` now
+  verifies that all four R5 adapter labels (`debugpy`, `lldb-dap`, `dlv`, and
+  `node`) produce admissible required debug receipts when the structured local
+  session packet says the adapter is available. Focused proof: `uv run python
+  -m py_compile src/tau_coding/debug_session_receipt.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py` -> `All checks passed!`; `uv run
+  pytest tests/test_debug_session_receipt.py -q` -> `22 passed in 0.50s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-debug-adapters-proof-20260707T062857Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-debug-adapters-proof-20260707T062857Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `253 passed in
+  7.32s`. This proves deterministic local debug receipt adapter-label
+  acceptance and recording; it does not prove a live debugger adapter was
+  launched, the debug conclusion is semantically complete, the bug is fixed,
+  semantic code correctness, provider/model quality, or full goal completion.
+
 - 2026-07-07 coding course-correction trigger set rung:
   `src/tau_coding/course_correction.py` now exposes
   `CODING_COURSE_CORRECTION_TRIGGERS`, the explicit R9 coding trigger set:

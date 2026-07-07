@@ -108,6 +108,7 @@ def write_debug_session_receipt(
         "target": target,
         "adapter": adapter,
         "adapter_available": adapter_available,
+        "supported_adapters": sorted(SUPPORTED_ADAPTERS),
         "breakpoints": breakpoints,
         "stopped_frame": stopped_frame,
         "variables": variables,

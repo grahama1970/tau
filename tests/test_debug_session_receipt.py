@@ -7,6 +7,7 @@ from typer.testing import CliRunner
 from tau_coding.cli import app
 from tau_coding.debug_session_receipt import (
     DEBUG_SESSION_RECEIPT_SCHEMA,
+    SUPPORTED_ADAPTERS,
     write_debug_session_receipt,
 )
 
@@ -22,6 +23,7 @@ def test_debug_receipt_records_adapter_and_target(tmp_path: Path) -> None:
     assert receipt["schema"] == DEBUG_SESSION_RECEIPT_SCHEMA
     assert receipt["status"] == "PASS"
     assert receipt["adapter"] == "debugpy"
+    assert receipt["supported_adapters"] == ["debugpy", "dlv", "lldb-dap", "node"]
     assert receipt["target"] == "python -m pytest tests/test_example.py"
     assert receipt["goal_hash"] == "sha256:debug-goal"
     assert receipt["session_sha256"] == f"sha256:{_sha256(session)}"
@@ -33,6 +35,23 @@ def test_debug_receipt_records_adapter_and_target(tmp_path: Path) -> None:
         "sha256": f"sha256:{_sha256(session)}",
         "bytes": session.stat().st_size,
     }
+
+
+def test_debug_receipt_accepts_required_common_adapters(tmp_path: Path) -> None:
+    assert SUPPORTED_ADAPTERS == {"debugpy", "lldb-dap", "dlv", "node"}
+    for adapter in sorted(SUPPORTED_ADAPTERS):
+        session = _write_debug_session(tmp_path / adapter, adapter=adapter)
+
+        receipt = write_debug_session_receipt(
+            session_path=session,
+            output_path=tmp_path / adapter / "debug-session-receipt.json",
+            required=True,
+        )
+
+        assert receipt["status"] == "PASS"
+        assert receipt["adapter"] == adapter
+        assert receipt["supported_adapters"] == ["debugpy", "dlv", "lldb-dap", "node"]
+        assert receipt["adapter_available"] is True
 
 
 def test_debug_receipt_blocks_missing_adapter_when_required(tmp_path: Path) -> None:
@@ -411,6 +430,7 @@ def test_cli_debug_session_zero_trust_missing_boundary_exits_blocked(
 def _write_debug_session(
     tmp_path: Path,
     *,
+    adapter: str = "debugpy",
     adapter_available: bool = True,
     goal_hash: str | None = "sha256:debug-goal",
 ) -> Path:
@@ -423,7 +443,7 @@ def _write_debug_session(
         "schema": "tau.debug_session_packet.v1",
         "goal_hash": goal_hash,
         "target": "python -m pytest tests/test_example.py",
-        "adapter": "debugpy",
+        "adapter": adapter,
         "adapter_available": adapter_available,
         "breakpoints": [{"file": "src/example.py", "line": 2}],
         "stopped_frame": {"file": "src/example.py", "line": 2, "function": "answer"},
