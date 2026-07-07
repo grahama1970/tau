@@ -9719,7 +9719,7 @@ def _self_fix_memory_preflight(
 
 
 def _self_fix_goal_hash(*, repo: str, issue: int, issue_text: str) -> str:
-    digest = hashlib.sha256(f"{repo}#{issue}\n{issue_text}".encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(f"{repo}#{issue}\n{issue_text}".encode()).hexdigest()
     return f"sha256:{digest}"
 
 
