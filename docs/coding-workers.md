@@ -308,6 +308,10 @@ setting `policy_read_denied:true`, `exists:null`, `bytes:null`, and
 `policy_profile.filesystem.write_allowlist` is present, every changed path must
 match that allowlist; otherwise the plan blocks with `policy_write_disallowed`
 and records `policy_write_allowed:false` for the affected file.
+For source-only changes without changed tests, supported evidence receipts must
+cover every changed source path. Partial evidence coverage blocks with
+`source_changes_lack_relevant_evidence` and records the uncovered source paths
+in the alert `errors` field.
 
 CLI:
 

@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 commit-plan full source evidence coverage rung:
+  `src/tau_coding/commit_plan.py` now requires supported evidence receipts to
+  cover every changed source path when a commit plan has source-only changes
+  without changed tests. Previously, any overlap between changed source paths
+  and evidence `covered_paths` could satisfy the relevant-evidence gate; now
+  uncovered source paths block with `source_changes_lack_relevant_evidence` and
+  are recorded in the alert `errors` list. Focused proof: `git diff --check --
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> `All checks
+  passed!`; `uv run pytest tests/test_commit_plan.py -q` -> `33 passed in
+  1.05s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-full-source-coverage-20260707T111500Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-full-source-coverage-20260707T111500Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded
+  `coding_receipt_tests` `321 passed in 8.10s`. This proves deterministic local
+  commit-plan receipts cannot let one evidence artifact cover only part of a
+  source-only change set; it does not prove semantic code correctness, human
+  acceptance, live worker semantics, legal compliance, or full goal completion.
+
 - 2026-07-07 LSP exact-symbol evidence rung: `src/tau_coding/lsp_receipts.py`
   now records Python symbol references from exact `tokenize.NAME` identifier
   tokens instead of substring matches. `tau.lsp_symbol_receipt.v1` blocks

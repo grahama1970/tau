@@ -190,6 +190,45 @@ def test_commit_plan_blocks_source_change_with_unrelated_evidence_receipt(
     assert payload["evidence_receipts"][0]["covered_paths"] == ["other.py"]
 
 
+def test_commit_plan_blocks_source_change_with_partial_evidence_coverage(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src").mkdir()
+    (repo / "src" / "one.py").write_text("one = 1\n", encoding="utf-8")
+    (repo / "src" / "two.py").write_text("two = 2\n", encoding="utf-8")
+    evidence = repo / "one-diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "inspected_artifacts": [{"path": str(repo / "src" / "one.py")}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "source_changes_lack_relevant_evidence" in payload["alert_codes"]
+    alert = next(
+        item
+        for item in payload["alerts"]
+        if item["code"] == "source_changes_lack_relevant_evidence"
+    )
+    assert alert["errors"] == ["src/two.py"]
+
+
 def test_commit_plan_blocks_source_change_with_unsupported_evidence_schema(
     tmp_path: Path,
 ) -> None:

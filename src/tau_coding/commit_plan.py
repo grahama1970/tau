@@ -129,13 +129,17 @@ def write_commit_plan_receipt(
                     "source changes require changed tests or explicit evidence receipts",
                 )
             )
-        elif not _source_changes_have_relevant_evidence(groups, evidence_receipts):
-            alerts.append(
-                _alert(
-                    "source_changes_lack_relevant_evidence",
-                    "source changes require evidence receipts that cover the changed source paths",
+        else:
+            uncovered_source_paths = _uncovered_source_paths(groups, evidence_receipts)
+            if uncovered_source_paths:
+                alerts.append(
+                    _alert(
+                        "source_changes_lack_relevant_evidence",
+                        "source changes require evidence receipts that cover every changed "
+                        "source path",
+                        errors=uncovered_source_paths,
+                    )
                 )
-            )
     if apply:
         if approval_receipt is None:
             alerts.append(
@@ -515,10 +519,10 @@ def _approval_receipt(
     return item if valid else None
 
 
-def _source_changes_have_relevant_evidence(
+def _uncovered_source_paths(
     groups: list[dict[str, Any]],
     evidence_receipts: list[dict[str, Any]],
-) -> bool:
+) -> list[str]:
     source_paths = {
         str(item.get("path"))
         for group in groups
@@ -532,7 +536,7 @@ def _source_changes_have_relevant_evidence(
         for path in receipt.get("covered_paths", [])
         if isinstance(path, str)
     }
-    return bool(source_paths & covered_paths)
+    return sorted(source_paths - covered_paths)
 
 
 def _covered_paths_from_receipt(payload: dict[str, Any], repo: Path) -> list[str]:
