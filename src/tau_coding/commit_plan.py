@@ -300,6 +300,8 @@ def _evidence_receipts(
         schema = payload.get("schema")
         status = payload.get("status")
         ok = payload.get("ok")
+        mocked = payload.get("mocked")
+        live = payload.get("live")
         receipt_goal_hash = payload.get("goal_hash")
         schema_supported = schema in SUPPORTED_EVIDENCE_RECEIPT_SCHEMAS
         if not schema_supported:
@@ -314,6 +316,20 @@ def _evidence_receipts(
                 _alert(
                     "evidence_receipt_not_pass",
                     f"evidence receipt must be PASS with ok:true: {resolved}",
+                )
+            )
+        if mocked is not False:
+            alerts.append(
+                _alert(
+                    "evidence_receipt_mocked",
+                    f"evidence receipt cannot justify a commit plan when mocked: {resolved}",
+                )
+            )
+        if live is not True:
+            alerts.append(
+                _alert(
+                    "evidence_receipt_not_live",
+                    f"evidence receipt must record live:true for commit planning: {resolved}",
                 )
             )
         if expected_goal_hash is not None:
@@ -341,8 +357,8 @@ def _evidence_receipts(
                 "schema_supported": schema_supported,
                 "status": status,
                 "ok": ok,
-                "mocked": payload.get("mocked"),
-                "live": payload.get("live"),
+                "mocked": mocked,
+                "live": live,
                 "provider_live": payload.get("provider_live"),
                 "goal_hash": receipt_goal_hash if isinstance(receipt_goal_hash, str) else None,
                 "goal_hash_matches": (

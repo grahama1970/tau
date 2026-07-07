@@ -143,6 +143,8 @@ def test_commit_plan_blocks_source_change_with_unrelated_evidence_receipt(
                 "schema": "tau.lsp_diagnostics_receipt.v1",
                 "ok": True,
                 "status": "PASS",
+                "mocked": False,
+                "live": True,
                 "inspected_artifacts": [{"path": str(repo / "other.py")}],
             }
         )
@@ -218,6 +220,66 @@ def test_commit_plan_blocks_source_change_with_blocked_evidence_receipt(tmp_path
     assert "evidence_receipt_not_pass" in payload["alert_codes"]
 
 
+def test_commit_plan_blocks_mocked_evidence_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "mocked-diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "mocked": True,
+                "live": True,
+                "inspected_artifacts": [{"path": str(repo / "src.py")}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "evidence_receipt_mocked" in payload["alert_codes"]
+    assert payload["evidence_receipts"][0]["mocked"] is True
+
+
+def test_commit_plan_blocks_non_live_evidence_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "non-live-diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": False,
+                "inspected_artifacts": [{"path": str(repo / "src.py")}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "evidence_receipt_not_live" in payload["alert_codes"]
+    assert payload["evidence_receipts"][0]["live"] is False
+
+
 def test_commit_plan_warns_when_docs_mix_with_runtime_changes(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src").mkdir()
@@ -231,6 +293,8 @@ def test_commit_plan_warns_when_docs_mix_with_runtime_changes(tmp_path: Path) ->
                 "schema": "tau.lsp_diagnostics_receipt.v1",
                 "ok": True,
                 "status": "PASS",
+                "mocked": False,
+                "live": True,
                 "inspected_artifacts": [{"path": str(repo / "src" / "example.py")}],
             }
         )
@@ -301,6 +365,8 @@ def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
                 "schema": "tau.lsp_diagnostics_receipt.v1",
                 "ok": True,
                 "status": "PASS",
+                "mocked": False,
+                "live": True,
                 "goal_hash": "sha256:goal",
                 "inspected_artifacts": [{"path": str(repo / "src.py")}],
             }
@@ -370,6 +436,8 @@ def test_commit_plan_zero_trust_honors_policy_write_allowlist(tmp_path: Path) ->
                 "schema": "tau.lsp_diagnostics_receipt.v1",
                 "ok": True,
                 "status": "PASS",
+                "mocked": False,
+                "live": True,
                 "goal_hash": "sha256:goal",
                 "inspected_artifacts": [{"path": str(repo / "src" / "example.py")}],
             }
@@ -468,6 +536,8 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
                 "schema": "tau.review_findings.v1",
                 "ok": True,
                 "status": "PASS",
+                "mocked": False,
+                "live": True,
                 "goal_hash": "sha256:goal",
                 "findings": [{"file": "src.py"}],
             }
