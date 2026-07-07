@@ -18,6 +18,12 @@ count by checking policy, hashes, receipts, review findings, and evidence.
 - deterministic patch operations
 - `expected_post_sha256`
 
+`line_span` anchors must identify an exact line, the exact whole-file text
+without surrounding whitespace, or a hash-bound range in the form
+`line_span:<start>:<end>:sha256:<hash>`. Partial substrings do not count as
+line-span anchors because they are too easy to satisfy accidentally after
+nearby code drifts.
+
 The first Tau-native patch language is deliberately narrow. The `patch` field
 is a JSON array string of exact replacement operations:
 

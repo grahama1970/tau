@@ -264,7 +264,7 @@ def _anchor_errors(anchors: list[object], text: str) -> list[str]:
             if _sha256_text(text) != _sha256_string(value):
                 errors.append(f"anchors[{index}] content_hash is stale or missing")
         elif kind == "line_span":
-            if value not in lines and value not in text:
+            if not _line_span_anchor_matches(value, text, lines):
                 errors.append(f"anchors[{index}] line_span text was not found")
         elif kind == "symbol":
             if value not in text:
@@ -272,6 +272,38 @@ def _anchor_errors(anchors: list[object], text: str) -> list[str]:
         else:
             errors.append(f"anchors[{index}] kind is unsupported: {kind}")
     return errors
+
+
+def _line_span_anchor_matches(value: str, text: str, lines: list[str]) -> bool:
+    if value in lines or value == text.strip():
+        return True
+    parsed = _parse_line_span_hash(value)
+    if parsed is None:
+        return False
+    start, end, expected_hash = parsed
+    if start < 1 or end < start or end > len(lines):
+        return False
+    span_text = "\n".join(lines[start - 1 : end])
+    return _sha256_text(span_text) == expected_hash
+
+
+def _parse_line_span_hash(value: str) -> tuple[int, int, str] | None:
+    prefix = "line_span:"
+    if not value.startswith(prefix):
+        return None
+    parts = value[len(prefix) :].split(":", 2)
+    if len(parts) != 3:
+        return None
+    start_raw, end_raw, hash_raw = parts
+    try:
+        start = int(start_raw)
+        end = int(end_raw)
+    except ValueError:
+        return None
+    expected_hash = _sha256_string(hash_raw)
+    if expected_hash is None:
+        return None
+    return start, end, expected_hash
 
 
 def _parse_patch_operations(patch_text: str) -> list[dict[str, str]]:

@@ -83,6 +83,51 @@ def test_code_patch_blocks_missing_anchor(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_blocks_partial_line_span_anchor(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "def answer():\n    return 41\n"
+    after = "def answer():\n    return 42\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "return 41", "new": "return 42"}]),
+        anchors=[{"kind": "line_span", "value": "return 4"}],
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_anchor" in receipt["alert_codes"]
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_accepts_hash_bound_line_span_anchor(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "def answer():\n    return 41\n"
+    after = "def answer():\n    return 42\n"
+    target.write_text(before, encoding="utf-8")
+    span_text = "def answer():\n    return 41"
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "return 41", "new": "return 42"}]),
+        anchors=[{"kind": "line_span", "value": f"line_span:1:2:sha256:{_sha256_text(span_text)}"}],
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["applied"] is True
+    assert target.read_text(encoding="utf-8") == after
+
+
 def test_code_patch_blocks_disallowed_path(tmp_path: Path) -> None:
     target = tmp_path / "secrets" / "token.txt"
     target.parent.mkdir()

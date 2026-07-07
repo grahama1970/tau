@@ -1,9 +1,28 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:20 EDT by agent
+**Last updated:** 2026-07-06 21:23 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 code-patch line-span anchor hardening rung:
+  `src/tau_coding/code_patch.py` now rejects partial-substring `line_span`
+  anchors. A `line_span` anchor must match an exact line, the whole target text
+  without surrounding whitespace, or a structured
+  `line_span:<start>:<end>:sha256:<hash>` range whose line slice hash matches
+  the current target file. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> pass; `uv run
+  pytest tests/test_code_patch.py -q` -> `15 passed in 0.47s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-line-span-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-line-span-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `hash-bound code patch receipts`, and embedded focused coding tests
+  `173 passed in 5.95s`. This proves deterministic local code-patch line-span
+  anchors are no longer satisfied by loose partial substrings; it does not
+  prove semantic patch correctness, full suite health, provider/model quality,
+  legal compliance, or live worker execution.
 
 - 2026-07-06 commit-plan evidence schema gate rung:
   `src/tau_coding/commit_plan.py` now treats PASS/ok evidence receipts as
