@@ -5,6 +5,37 @@
 
 ## Current Understanding
 
+- 2026-07-07 LSP and commit-plan policy/data-boundary validity fail-closed
+  rung: `src/tau_coding/lsp_receipts.py` and
+  `src/tau_coding/commit_plan.py` now validate full `tau.policy_profile.v1`
+  and `tau.data_boundary.v1` objects in zero-trust mode before accepting local
+  LSP evidence or dry-run commit planning receipts. They block malformed
+  policy/boundary metadata with `invalid_policy_profile` or
+  `invalid_data_boundary` and refuse
+  `data_boundary.classification:"classified-not-allowed"` with
+  `classified_not_allowed`. `tests/test_lsp_receipts.py` pins this with
+  `test_lsp_diagnostics_zero_trust_blocks_invalid_data_boundary`;
+  `tests/test_commit_plan.py` pins it with
+  `test_commit_plan_zero_trust_blocks_invalid_data_boundary`. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> `All checks passed!`; `uv run pytest
+  tests/test_lsp_receipts.py tests/test_commit_plan.py -q` -> `56 passed in
+  1.16s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-commit-boundary-proof-20260707T073814Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-lsp-commit-boundary-proof-20260707T073814Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `276 passed in 7.95s`. This proves deterministic local LSP and commit-plan
+  receipts fail closed on invalid zero-trust policy/boundary metadata before
+  evidence or commit planning can support coding continuation; it does not prove
+  semantic code correctness, full IDE/LSP parity, commit grouping optimality,
+  legal compliance, full sandbox isolation, live OMP/SciLLM semantic worker
+  execution, or full goal completion.
+
 - 2026-07-07 debug evidence policy/data-boundary validity fail-closed rung:
   `src/tau_coding/debug_session_receipt.py` now validates full
   `tau.policy_profile.v1` and `tau.data_boundary.v1` objects in zero-trust

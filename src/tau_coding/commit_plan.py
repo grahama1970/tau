@@ -11,7 +11,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+from tau_coding.policy_profile import (
+    DATA_BOUNDARY_SCHEMA,
+    POLICY_PROFILE_SCHEMA,
+    validate_data_boundary,
+    validate_policy_profile,
+)
 
 COMMIT_PLAN_SCHEMA = "tau.commit_plan.v1"
 COMMIT_PLAN_RECEIPT_SCHEMA = "tau.commit_plan_receipt.v1"
@@ -203,7 +208,7 @@ def _changed_file_artifacts(
     changed: list[dict[str, str]],
     *,
     policy_profile: dict[str, Any] | None,
-    alerts: list[dict[str, str]],
+    alerts: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     artifacts: list[dict[str, Any]] = []
     read_denylist = _policy_read_denylist(policy_profile)
@@ -297,7 +302,7 @@ def _commit_groups(changed: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _evidence_receipts(
     paths: list[Path],
-    alerts: list[dict[str, str]],
+    alerts: list[dict[str, Any]],
     *,
     repo: Path,
     expected_goal_hash: str | None,
@@ -574,8 +579,8 @@ def _coding_policy_alerts(
     policy_profile: dict[str, Any] | None,
     data_boundary: dict[str, Any] | None,
     goal_hash: str | None,
-) -> list[dict[str, str]]:
-    alerts: list[dict[str, str]] = []
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
     if zero_trust and not goal_hash:
         alerts.append(_alert("missing_goal_hash", "zero-trust commit plan requires goal_hash"))
     if zero_trust and policy_profile is None:
@@ -588,7 +593,12 @@ def _coding_policy_alerts(
         )
     if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
         alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
-    if policy_profile is not None:
+    elif policy_profile is not None:
+        errors = validate_policy_profile(policy_profile)
+        if errors:
+            alerts.append(
+                _alert("invalid_policy_profile", "policy_profile is invalid", errors=errors)
+            )
         filesystem = policy_profile.get("filesystem")
         if isinstance(filesystem, dict):
             read_denylist = filesystem.get("read_denylist")
@@ -609,6 +619,19 @@ def _coding_policy_alerts(
                 )
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    elif data_boundary is not None:
+        errors = validate_data_boundary(data_boundary)
+        if errors:
+            alerts.append(
+                _alert("invalid_data_boundary", "data_boundary is invalid", errors=errors)
+            )
+        if data_boundary.get("classification") == "classified-not-allowed":
+            alerts.append(
+                _alert(
+                    "classified_not_allowed",
+                    "classified-not-allowed data may not be routed to commit planning",
+                )
+            )
     return alerts
 
 
@@ -618,8 +641,11 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _alert(code: str, message: str) -> dict[str, str]:
-    return {"severity": "BLOCK", "code": code, "message": message}
+def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": "BLOCK", "code": code, "message": message}
+    if errors:
+        alert["errors"] = errors
+    return alert
 
 
 def _warning(code: str, message: str) -> dict[str, str]:

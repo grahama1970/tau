@@ -231,6 +231,9 @@ Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
 --data-boundary boundary.json` when LSP evidence is part of a high-stakes coding
 route. In zero-trust mode, Tau blocks diagnostics, symbol, and rename-plan
 receipts that omit the active goal hash, policy profile, or data boundary. When
+the supplied `tau.policy_profile.v1` or `tau.data_boundary.v1` object is
+malformed, or the boundary classification is `classified-not-allowed`, Tau
+blocks before the LSP-style evidence can support a route. When
 `policy_profile.filesystem.read_denylist` is present, Tau filters matching files
 before local diagnostics or symbol scanning, records `policy_read_denied_paths`,
 and blocks the receipt with `policy_read_denied` instead of reading denied
@@ -325,7 +328,10 @@ semantically correct, or replace the approval gate for high-risk paths.
 Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
 --data-boundary boundary.json` when planning commits for a high-stakes coding
 route. In zero-trust mode, Tau blocks commit plans that omit the active goal
-hash, policy metadata, or boundary metadata.
+hash, policy metadata, or boundary metadata. It also validates the full
+`tau.policy_profile.v1` and `tau.data_boundary.v1` objects and blocks malformed
+metadata or `classified-not-allowed` boundaries before a commit plan can support
+coding continuation.
 
 The command is dry-run by default. `--apply` is intentionally blocked unless a
 future approval lane authorizes commit application. High-risk paths such as

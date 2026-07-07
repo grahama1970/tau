@@ -165,8 +165,8 @@ def test_lsp_diagnostics_zero_trust_accepts_policy_boundary(tmp_path: Path) -> N
         output_path=tmp_path / "diagnostics.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "PASS"
@@ -174,6 +174,27 @@ def test_lsp_diagnostics_zero_trust_accepts_policy_boundary(tmp_path: Path) -> N
     assert payload["zero_trust"] is True
     assert payload["policy_profile"]["profile_id"] == "test"
     assert payload["data_boundary"]["classification"] == "public"
+
+
+def test_lsp_diagnostics_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("value = 1\n", encoding="utf-8")
+    boundary = _data_boundary()
+    boundary["classification"] = "classified-not-allowed"
+    boundary.pop("foreign_person_access")
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "diagnostics.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=boundary,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_data_boundary" in payload["alert_codes"]
+    assert "classified_not_allowed" in payload["alert_codes"]
+    assert "foreign_person_access must be one of" in payload["alerts"][0]["errors"][0]
 
 
 def test_lsp_diagnostics_honors_policy_read_denylist(tmp_path: Path) -> None:
@@ -187,12 +208,8 @@ def test_lsp_diagnostics_honors_policy_read_denylist(tmp_path: Path) -> None:
         output_path=tmp_path / "diagnostics.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"write_allowlist": [], "read_denylist": ["secrets/**"]},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=[], read_denylist=["secrets/**"]),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "BLOCKED"
@@ -211,12 +228,8 @@ def test_lsp_diagnostics_blocks_malformed_policy_read_denylist(tmp_path: Path) -
         output_path=tmp_path / "diagnostics.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"read_denylist": "secrets/**"},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(read_denylist="secrets/**"),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "BLOCKED"
@@ -235,12 +248,8 @@ def test_lsp_symbols_honors_policy_read_denylist(tmp_path: Path) -> None:
         output_path=tmp_path / "symbols.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"write_allowlist": [], "read_denylist": ["./secrets/**"]},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=[], read_denylist=["./secrets/**"]),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "BLOCKED"
@@ -262,12 +271,8 @@ def test_lsp_rename_plan_honors_policy_read_denylist(tmp_path: Path) -> None:
         output_path=tmp_path / "rename.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"write_allowlist": [], "read_denylist": ["secrets/**"]},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=[], read_denylist=["secrets/**"]),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "BLOCKED"
@@ -323,12 +328,8 @@ def test_lsp_rename_plan_blocks_policy_write_disallowed(tmp_path: Path) -> None:
         output_path=tmp_path / "rename.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"write_allowlist": ["tests/**"], "read_denylist": []},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=["tests/**"], read_denylist=[]),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "BLOCKED"
@@ -350,12 +351,8 @@ def test_lsp_rename_plan_blocks_malformed_policy_write_allowlist(tmp_path: Path)
         output_path=tmp_path / "rename.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"write_allowlist": "src/**", "read_denylist": []},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist="src/**", read_denylist=[]),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "BLOCKED"
@@ -375,12 +372,8 @@ def test_lsp_rename_plan_accepts_policy_write_allowlist(tmp_path: Path) -> None:
         output_path=tmp_path / "rename.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "filesystem": {"write_allowlist": ["src/**"], "read_denylist": []},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=["src/**"], read_denylist=[]),
+        data_boundary=_data_boundary(),
     )
 
     assert payload["status"] == "PASS"
@@ -664,3 +657,43 @@ def test_cli_lsp_diagnostics_accepts_baseline_receipt(tmp_path: Path) -> None:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _policy_profile(
+    *,
+    write_allowlist: object | None = None,
+    read_denylist: object | None = None,
+) -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {
+            "write_allowlist": [] if write_allowlist is None else write_allowlist,
+            "read_denylist": [] if read_denylist is None else read_denylist,
+        },
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }
