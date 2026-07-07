@@ -174,6 +174,38 @@ def test_code_patch_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_writes_blocked_receipt_for_unreadable_patch(tmp_path: Path) -> None:
+    patch_path = tmp_path / "patch.json"
+    receipt_path = tmp_path / "receipt.json"
+    patch_path.write_text("{not-json", encoding="utf-8")
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "code_patch_unreadable" in receipt["alert_codes"]
+    assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
+def test_code_patch_writes_blocked_receipt_for_non_object_patch(tmp_path: Path) -> None:
+    patch_path = tmp_path / "patch.json"
+    receipt_path = tmp_path / "receipt.json"
+    patch_path.write_text("[]", encoding="utf-8")
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "code_patch_not_object" in receipt["alert_codes"]
+    assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
 def test_code_patch_zero_trust_requires_policy_and_data_boundary(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()
@@ -265,6 +297,31 @@ def test_cli_code_patch_writes_receipt(tmp_path: Path) -> None:
     assert payload["schema"] == CODE_PATCH_RECEIPT_SCHEMA
     assert payload["applied"] is True
     assert target.read_text(encoding="utf-8") == after
+
+
+def test_cli_code_patch_unreadable_patch_writes_blocked_receipt(tmp_path: Path) -> None:
+    patch_path = tmp_path / "patch.json"
+    receipt_path = tmp_path / "receipt.json"
+    patch_path.write_text("{not-json", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "code-patch",
+            "--patch",
+            str(patch_path),
+            "--repo",
+            str(tmp_path),
+            "--out",
+            str(receipt_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "code_patch_unreadable" in payload["alert_codes"]
 
 
 def _write_patch(

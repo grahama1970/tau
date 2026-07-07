@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:02 EDT by agent
+**Last updated:** 2026-07-06 21:06 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 code-patch malformed artifact receipt rung:
+  `src/tau_coding/code_patch.py` now writes BLOCKED
+  `tau.code_patch_receipt.v1` receipts for missing, unreadable/non-JSON, and
+  non-object `tau.code_patch.v1` inputs instead of raising before a receipt can
+  be inspected. New alert codes include `code_patch_missing`,
+  `code_patch_unreadable`, and `code_patch_not_object`; the CLI path now emits
+  the same receipt JSON and exits nonzero for malformed patch artifacts. Focused
+  proof: `uv run ruff check --select I,F,E501 src/tau_coding/code_patch.py
+  tests/test_code_patch.py` -> pass; `uv run pytest tests/test_code_patch.py
+  -q` -> `13 passed in 0.47s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-malformed-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-malformed-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `hash-bound code patch receipts`, and embedded focused coding tests
+  `166 passed in 5.90s`. This proves deterministic local fail-closed receipt
+  generation for malformed code patch artifacts; it does not prove semantic
+  patch correctness, full suite health, provider/model quality, legal
+  compliance, or live worker execution.
 
 - 2026-07-06 debug-session malformed evidence fail-closed rung:
   `src/tau_coding/debug_session_receipt.py` now blocks

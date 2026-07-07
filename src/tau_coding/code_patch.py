@@ -47,8 +47,8 @@ def apply_code_patch_receipt(
 
     resolved_patch = patch_path.expanduser().resolve()
     resolved_repo = repo_root.expanduser().resolve()
-    payload = _read_json_object(resolved_patch)
     alerts: list[dict[str, Any]] = []
+    payload = _read_json_object(resolved_patch, alerts)
     before_sha: str | None = None
     after_sha: str | None = None
     staged_sha: str | None = None
@@ -307,13 +307,18 @@ def _apply_operations(text: str, operations: list[dict[str, str]]) -> str:
     return current
 
 
-def _read_json_object(path: Path) -> dict[str, Any]:
+def _read_json_object(path: Path, alerts: list[dict[str, Any]]) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        alerts.append(_alert("code_patch_missing", "code patch artifact is missing"))
+        return {}
     except (OSError, json.JSONDecodeError) as exc:
-        raise RuntimeError(f"code patch is not readable JSON: {exc}") from exc
+        alerts.append(_alert("code_patch_unreadable", f"code patch is not readable JSON: {exc}"))
+        return {}
     if not isinstance(payload, dict):
-        raise RuntimeError("code patch root must be an object")
+        alerts.append(_alert("code_patch_not_object", "code patch root must be an object"))
+        return {}
     return payload
 
 

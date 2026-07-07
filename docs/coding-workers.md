@@ -40,6 +40,11 @@ deterministic patch gate ran and the before/after hashes matched. It does not
 prove semantic correctness, test success, production safety, or agent
 truthfulness.
 
+Unreadable, missing, or non-object patch artifacts also produce BLOCKED
+`tau.code_patch_receipt.v1` receipts. Tau records alert codes such as
+`code_patch_missing`, `code_patch_unreadable`, or `code_patch_not_object`
+instead of failing before a receipt can be inspected.
+
 CLI:
 
 ```bash
