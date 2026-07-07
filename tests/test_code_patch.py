@@ -154,6 +154,74 @@ def test_code_patch_blocks_missing_anchor(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_accepts_token_symbol_anchor(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "def answer():\n    return 41\n"
+    after = "def answer():\n    return 42\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "return 41", "new": "return 42"}]),
+        anchors=[{"kind": "symbol", "value": "answer"}],
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["applied"] is True
+    assert target.read_text(encoding="utf-8") == after
+
+
+def test_code_patch_blocks_comment_only_symbol_anchor(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "# answer\nvalue = 1\n"
+    after = "# answer\nvalue = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+        anchors=[{"kind": "symbol", "value": "answer"}],
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_anchor" in receipt["alert_codes"]
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_blocks_partial_identifier_symbol_anchor(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "answer_extra = 1\n"
+    after = "answer_extra = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps(
+            [{"op": "replace", "old": "answer_extra = 1", "new": "answer_extra = 2"}]
+        ),
+        anchors=[{"kind": "symbol", "value": "answer"}],
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_anchor" in receipt["alert_codes"]
+    assert target.read_text(encoding="utf-8") == before
+
+
 def test_code_patch_blocks_partial_line_span_anchor(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()

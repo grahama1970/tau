@@ -43,6 +43,10 @@ without surrounding whitespace, or a hash-bound range in the form
 line-span anchors because they are too easy to satisfy accidentally after
 nearby code drifts.
 
+`symbol` anchors are Python token anchors. Tau accepts only valid identifier
+names that appear as `NAME` tokens in the target file; comments, strings, and
+partial identifier substrings do not satisfy a symbol anchor.
+
 The first Tau-native patch language is deliberately narrow. The `patch` field
 is a JSON array string of exact replacement operations:
 

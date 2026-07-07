@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import fnmatch
 import hashlib
+import io
 import json
+import tokenize
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
@@ -348,11 +350,21 @@ def _anchor_errors(anchors: list[object], text: str) -> list[str]:
             if not _line_span_anchor_matches(value, text, lines):
                 errors.append(f"anchors[{index}] line_span text was not found")
         elif kind == "symbol":
-            if value not in text:
+            if not _symbol_anchor_matches(value, text):
                 errors.append(f"anchors[{index}] symbol was not found")
         else:
             errors.append(f"anchors[{index}] kind is unsupported: {kind}")
     return errors
+
+
+def _symbol_anchor_matches(value: str, text: str) -> bool:
+    if not value.isidentifier():
+        return False
+    try:
+        tokens = tokenize.generate_tokens(io.StringIO(text).readline)
+        return any(token.type == tokenize.NAME and token.string == value for token in tokens)
+    except tokenize.TokenError:
+        return False
 
 
 def _line_span_anchor_matches(value: str, text: str, lines: list[str]) -> bool:
