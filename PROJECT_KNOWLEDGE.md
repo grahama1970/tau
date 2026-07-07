@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker GitHub policy receipt target/action match rung:
+  `src/tau_coding/coding_worker_adapters.py` now verifies that a worker-cited
+  `tau.github_apply_policy_receipt.v1` matches the worker's requested public
+  GitHub mutation target and action. Worker targets such as
+  `github:owner/repo#67` are normalized to GitHub apply-policy targets such as
+  `{"repo":"owner/repo","target":"issue#67"}` before comparison; explicit
+  `github:owner/repo:issue#67` and `github:owner/repo:pr#67` forms are also
+  supported. Mismatched targets block with
+  `github_apply_policy_receipt_target_mismatch`, mismatched actions block with
+  `github_apply_policy_receipt_action_mismatch`, invalid receipt action lists
+  block with `github_apply_policy_receipt_actions_invalid`, and unparseable
+  worker mutation targets block with `github_mutation_target_unparseable`.
+  `docs/coding-workers.md` documents the target/action match requirement.
+  Focused proof: `git diff --check -- docs/coding-workers.md
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `67 passed in 4.63s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-github-policy-match-20260707T083036Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `294 passed in 8.04s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local worker
+  validation rejects reuse of a PASS GitHub apply-policy receipt for the wrong
+  target or action and still composes with the current coding capability sanity
+  suite; it does not prove live GitHub mutation, worker truthfulness, semantic
+  code correctness, human acceptance, legal compliance, ITAR compliance, full
+  sandbox isolation, or full goal completion.
+
 - 2026-07-07 worker side-effect/research receipt gate rung:
   `src/tau_coding/coding_worker_adapters.py` now validates worker-declared
   public GitHub mutation and external research receipts as durable repo-local

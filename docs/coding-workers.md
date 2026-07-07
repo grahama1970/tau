@@ -553,7 +553,10 @@ does declare a GitHub apply policy receipt, research-query safety receipt, or
 research-source receipt, Tau resolves the receipt under the work-order repo,
 requires the expected schema and `status:"PASS"`/`ok:true`, rejects mocked
 receipts, and records SHA-256/byte descriptors in `side_effect_receipts` or
-`research_receipts`. A referenced policy or research receipt makes the worker
+`research_receipts`. For GitHub mutations, Tau also checks that the apply
+policy receipt target and actions match the worker's requested
+`github:owner/repo#number` or `github:owner/repo:issue#number` target and
+requested action. A referenced policy or research receipt makes the worker
 claim admissible for review; it does not prove live GitHub mutation, research
 truth, source sufficiency, or worker trustworthiness. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution

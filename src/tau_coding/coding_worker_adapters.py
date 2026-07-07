@@ -1354,6 +1354,12 @@ def _validate_github_mutation_receipts(
             descriptor["mutation_index"] = index
             descriptor["target"] = target
             descriptor["action"] = _string(mutation.get("action"))
+            _append_github_policy_receipt_match_alerts(
+                descriptor=descriptor,
+                worker_target=target,
+                worker_action=_string(mutation.get("action")),
+                alerts=alerts,
+            )
             descriptors.append(descriptor)
     return descriptors
 
@@ -1457,6 +1463,10 @@ def _validated_worker_reference_receipt(
         "live": payload.get("live"),
         "provider_live": payload.get("provider_live"),
     }
+    if "target" in payload:
+        descriptor["receipt_target"] = payload.get("target")
+    if "actions" in payload:
+        descriptor["receipt_actions"] = payload.get("actions")
     if payload.get("schema") != expected_schema:
         alerts.append(_alert(invalid_schema_code, f"{label} schema must be {expected_schema}"))
     if payload.get("ok") is not True or payload.get("status") != "PASS":
@@ -1464,6 +1474,65 @@ def _validated_worker_reference_receipt(
     if payload.get("mocked") is not False:
         alerts.append(_alert(mocked_code, f"{label} cannot be mocked"))
     return descriptor
+
+
+def _append_github_policy_receipt_match_alerts(
+    *,
+    descriptor: Mapping[str, Any],
+    worker_target: str,
+    worker_action: str | None,
+    alerts: list[dict[str, Any]],
+) -> None:
+    expected_target = _github_worker_target_to_policy_target(worker_target)
+    receipt_target = descriptor.get("receipt_target")
+    if expected_target is None:
+        alerts.append(
+            _alert(
+                "github_mutation_target_unparseable",
+                "worker GitHub mutation target must be github:owner/repo#number "
+                "or github:owner/repo:issue#number",
+            )
+        )
+    elif receipt_target != expected_target:
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_target_mismatch",
+                "GitHub apply policy receipt target must match requested worker mutation",
+            )
+        )
+    receipt_actions = descriptor.get("receipt_actions")
+    if not isinstance(receipt_actions, list) or not all(
+        isinstance(item, str) for item in receipt_actions
+    ):
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_actions_invalid",
+                "GitHub apply policy receipt actions must be a string list",
+            )
+        )
+    elif worker_action and worker_action not in receipt_actions:
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_action_mismatch",
+                "GitHub apply policy receipt actions must include requested worker action",
+            )
+        )
+
+
+def _github_worker_target_to_policy_target(target: str) -> dict[str, str] | None:
+    if not target.startswith("github:"):
+        return None
+    value = target.removeprefix("github:")
+    if ":issue#" in value:
+        repo, _, number = value.partition(":issue#")
+        return {"repo": repo, "target": f"issue#{number}"} if repo and number else None
+    if ":pr#" in value:
+        repo, _, number = value.partition(":pr#")
+        return {"repo": repo, "target": f"pr#{number}"} if repo and number else None
+    repo, separator, number = value.partition("#")
+    if separator and repo and number:
+        return {"repo": repo, "target": f"issue#{number}"}
+    return None
 
 
 def _model_provider_route(

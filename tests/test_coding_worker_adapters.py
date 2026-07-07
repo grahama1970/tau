@@ -276,6 +276,10 @@ def test_worker_accepts_public_github_mutation_with_policy_receipt(tmp_path: Pat
         ok=True,
         mocked=False,
         live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "actions": ["comment"],
+        },
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
     payload = json.loads(result.read_text(encoding="utf-8"))
@@ -308,6 +312,8 @@ def test_worker_accepts_public_github_mutation_with_policy_receipt(tmp_path: Pat
             "mocked": False,
             "live": False,
             "provider_live": False,
+            "receipt_target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "receipt_actions": ["comment"],
             "mutation_index": 0,
             "target": "github:grahama1970/tau#67",
             "action": "comment",
@@ -329,6 +335,10 @@ def test_worker_blocks_public_github_mutation_with_non_pass_policy_receipt(
         ok=False,
         mocked=False,
         live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "actions": ["comment"],
+        },
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
     payload = json.loads(result.read_text(encoding="utf-8"))
@@ -350,6 +360,91 @@ def test_worker_blocks_public_github_mutation_with_non_pass_policy_receipt(
     assert receipt["status"] == "BLOCKED"
     assert "github_apply_policy_receipt_not_pass" in receipt["alert_codes"]
     assert receipt["side_effect_receipts"][0]["status"] == "BLOCKED"
+
+
+def test_worker_blocks_public_github_mutation_policy_target_mismatch(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#999"},
+            "actions": ["comment"],
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "github_apply_policy_receipt_target_mismatch" in receipt["alert_codes"]
+    assert receipt["side_effect_receipts"][0]["receipt_target"] == {
+        "repo": "grahama1970/tau",
+        "target": "issue#999",
+    }
+
+
+def test_worker_blocks_public_github_mutation_policy_action_mismatch(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "actions": ["label"],
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "github_apply_policy_receipt_action_mismatch" in receipt["alert_codes"]
+    assert receipt["side_effect_receipts"][0]["receipt_actions"] == ["label"]
 
 
 def test_worker_blocks_external_research_without_receipt(tmp_path: Path) -> None:
@@ -2166,21 +2261,21 @@ def _write_reference_receipt(
     ok: bool,
     mocked: bool,
     live: bool,
+    extra: dict | None = None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema": schema,
+        "status": status,
+        "ok": ok,
+        "mocked": mocked,
+        "live": live,
+        "provider_live": False,
+    }
+    if extra:
+        payload.update(extra)
     path.write_text(
-        json.dumps(
-            {
-                "schema": schema,
-                "status": status,
-                "ok": ok,
-                "mocked": mocked,
-                "live": live,
-                "provider_live": False,
-            },
-            indent=2,
-            sort_keys=True,
-        )
+        json.dumps(payload, indent=2, sort_keys=True)
         + "\n",
         encoding="utf-8",
     )
