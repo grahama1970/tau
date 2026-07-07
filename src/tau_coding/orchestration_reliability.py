@@ -492,6 +492,7 @@ def _artifact_descriptor(path: Path) -> dict[str, Any]:
     resolved = path.expanduser().resolve()
     return {
         "path": str(resolved),
+        "exists": True,
         "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
         "bytes": resolved.stat().st_size,
     }

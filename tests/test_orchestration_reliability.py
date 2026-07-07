@@ -50,6 +50,7 @@ def test_orchestration_reliability_passes_clean_run(tmp_path: Path) -> None:
     assert payload["required_receipts"]["present_artifacts"] == [
         {
             "path": str(artifact.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(artifact)}",
             "bytes": artifact.stat().st_size,
             "schema": "tau.command_loop_receipt.v1",
@@ -63,6 +64,7 @@ def test_orchestration_reliability_passes_clean_run(tmp_path: Path) -> None:
     assert payload["inspected_artifacts"][0] == {
         "label": "dag_receipt",
         "path": str(dag_receipt.resolve()),
+        "exists": True,
         "sha256": f"sha256:{_sha256(dag_receipt)}",
         "bytes": dag_receipt.stat().st_size,
     }
@@ -151,6 +153,7 @@ def test_orchestration_reliability_accepts_valid_course_correction_artifact(
     assert payload["course_correction_artifact_report"]["valid"][0]["path"] == str(
         correction.resolve()
     )
+    assert payload["course_correction_artifact_report"]["valid"][0]["exists"] is True
 
 
 def test_orchestration_reliability_blocks_unbound_course_correction_artifact(

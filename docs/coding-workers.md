@@ -403,7 +403,7 @@ the harness rules separately from whether the code is correct. It reports:
 - DAG route discipline
 - unexpected nodes and edges
 - required receipt and evidence presence
-- SHA-256/byte-count binding for the DAG receipt and required receipts
+- existence plus SHA-256/byte-count binding for the DAG receipt and required receipts
 - course-correction emission and handling
 - retry budget discipline
 - terminal condition validity
