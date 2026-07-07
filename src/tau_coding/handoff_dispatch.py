@@ -301,6 +301,14 @@ def dispatch_agent_handoff_command_once(
             timeout=timeout_s,
         )
     except subprocess.TimeoutExpired as exc:
+        timeout_metadata: dict[str, object] = {}
+        if command_spec_metadata is not None:
+            timeout_source = command_spec_metadata.get("timeout_s_source")
+            if isinstance(timeout_source, str):
+                timeout_metadata["timeout_s_source"] = timeout_source
+            timeout_policy = command_spec_metadata.get("timeout_policy")
+            if isinstance(timeout_policy, Mapping):
+                timeout_metadata["timeout_policy"] = dict(timeout_policy)
         return AgentHandoffDispatchResult(
             ok=False,
             status="BLOCKED",
@@ -316,6 +324,7 @@ def dispatch_agent_handoff_command_once(
                     "timed_out": True,
                     "stdout": exc.stdout or "",
                     "stderr": exc.stderr or "",
+                    **timeout_metadata,
                 },
             ),
             errors=(f"command timed out after {timeout_s:g}s",),
@@ -344,6 +353,12 @@ def dispatch_agent_handoff_command_once(
                 and isinstance(value, str)
             }
         )
+        timeout_source = command_spec_metadata.get("timeout_s_source")
+        if isinstance(timeout_source, str):
+            command_result["timeout_s_source"] = timeout_source
+        timeout_policy = command_spec_metadata.get("timeout_policy")
+        if isinstance(timeout_policy, Mapping):
+            command_result["timeout_policy"] = dict(timeout_policy)
     if completed.returncode != 0:
         return AgentHandoffDispatchResult(
             ok=False,
@@ -907,7 +922,21 @@ def validate_command_dispatch_spec(
         or not all(isinstance(item, str) and item for item in command)
     ):
         raise ValueError(f"{label} requires non-empty string list field: command")
-    timeout_value = payload.get("timeout_s", 30.0)
+    tau_dag_node = payload.get("tau_dag_node")
+    timeout_policy = tau_dag_node.get("timeout_policy") if isinstance(tau_dag_node, dict) else None
+    if "timeout_s" in payload:
+        timeout_s_source = "command_spec"
+        timeout_value = payload["timeout_s"]
+    elif isinstance(timeout_policy, dict) and isinstance(
+        timeout_policy.get("timeout_s"), (int, float)
+    ):
+        timeout_s_source = str(
+            timeout_policy.get("source") or "tau_provider_command_timeout_policy"
+        )
+        timeout_value = timeout_policy["timeout_s"]
+    else:
+        timeout_s_source = "default_command_timeout"
+        timeout_value = 30.0
     if isinstance(timeout_value, bool) or not isinstance(timeout_value, (int, float)):
         raise ValueError(f"{label} timeout_s must be a positive number")
     timeout_s = float(timeout_value)
@@ -918,14 +947,16 @@ def validate_command_dispatch_spec(
     spec: dict[str, object] = {
         "command": command,
         "timeout_s": timeout_s,
+        "timeout_s_source": timeout_s_source,
         "cwd": cwd,
         "requires_network": _bool(payload.get("requires_network")),
         "mutates": _bool(payload.get("mutates")),
         "requires_clean_worktree": _bool(payload.get("requires_clean_worktree")),
     }
-    tau_dag_node = payload.get("tau_dag_node")
     if isinstance(tau_dag_node, dict):
         spec["tau_dag_node"] = tau_dag_node
+    if isinstance(timeout_policy, dict) and timeout_s_source != "command_spec":
+        spec["timeout_policy"] = timeout_policy
     return spec
 
 

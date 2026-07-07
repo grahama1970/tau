@@ -5,6 +5,26 @@
 
 ## Current Understanding
 
+- 2026-07-06 issue #67 provider-sensitive command timeout repair: command specs
+  now carry `timeout_s_source`, and Project DAG compiled command specs attach a
+  Tau-owned `tau.provider_command_timeout_policy.v1` for provider-sensitive
+  command-backed nodes. If a provider-sensitive node's command spec omits
+  `timeout_s`, Tau applies `900.0s` by default or
+  `limits.provider_command_timeout_seconds` / `provider_command_timeout_s`
+  when declared, instead of silently inheriting the generic 30s command
+  dispatch fallback. Command results now record `timeout_s_source` and
+  `timeout_policy` for both successful and timed-out commands. Focused proof:
+  `uv run ruff check --select I,F src/tau_coding/handoff_dispatch.py
+  src/tau_coding/project_dag.py tests/test_handoff_dispatch.py
+  tests/test_project_dag.py` passed; targeted issue regression plus related
+  overlay/provider tests reported `4 passed`; full affected files
+  `uv run pytest tests/test_handoff_dispatch.py tests/test_project_dag.py -q`
+  reported `79 passed`. This proves deterministic local Tau dispatch no longer
+  applies an invisible 30s timeout to provider-sensitive command-backed Project
+  DAG nodes that omit command-spec `timeout_s`; it does not prove live provider
+  semantic quality, full Persona Dream Phase 07 acceptance, or that long-running
+  provider subprocesses will complete within 900s.
+
 - 2026-07-06 SciLLM worker local auth-source rung: commit `831b7c1a`
   updates `src/tau_coding/coding_worker_adapters.py` so
   `tau.scillm_worker_launch_receipt.v1` apply mode fails closed unless SciLLM
@@ -724,7 +744,6 @@
   cases; it does not prove semantic code correctness, full suite health, live
   provider execution, OMP/SciLLM worker integration, LSP/DAP integration,
   GitHub mutation, or legal compliance.
-
 - 2026-07-06 UX Lab live Tau DAG viewer loading: `pi-mono` commit
   `0cac7d6c7` adds read-only loading for
   `http://localhost:3002/#tau/dag?run=<run-dir>` through the Vite

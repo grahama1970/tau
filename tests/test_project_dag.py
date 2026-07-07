@@ -967,6 +967,76 @@ def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_e
     assert request["context"]["tau_dag_node"]["prompt_contract"] == prompt_contract
 
 
+def test_project_dag_provider_sensitive_command_without_spec_timeout_uses_tau_policy(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_provider_sensitive_contract(tmp_path, complete=True)
+    _write_stdin_capture_response_spec(
+        tmp_path,
+        "panel-creator",
+        _persona_dream_provider_handoff(
+            "panel-creator",
+            "panel-reviewer",
+            [
+                {"kind": "storyboard_creator_receipt.json"},
+                {"kind": "provider_route_receipt"},
+            ],
+        ),
+    )
+    creator_spec_path = tmp_path / "specs" / "panel-creator" / "tau-dispatch-command.json"
+    creator_spec = json.loads(creator_spec_path.read_text(encoding="utf-8"))
+    creator_spec.pop("timeout_s")
+    creator_spec_path.write_text(json.dumps(creator_spec), encoding="utf-8")
+    _write_response_spec(
+        tmp_path,
+        "panel-reviewer",
+        _persona_dream_provider_handoff(
+            "panel-reviewer",
+            "human",
+            [
+                {"kind": "storyboard_review_verdict.json"},
+                {"kind": "provider_route_receipt"},
+            ],
+        ),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+    loop_receipt = json.loads(
+        Path(str(receipt["command_loop_receipt"])).read_text(encoding="utf-8")
+    )
+    command_result = loop_receipt["dispatches"][0]["command_results"][0]
+    compiled_creator_spec = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "compiled-command-specs"
+            / "panel-creator"
+            / "tau-dispatch-command.json"
+        ).read_text(encoding="utf-8")
+    )
+    request = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-001"
+            / "request.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert receipt["ok"] is True
+    assert command_result["timeout_s"] == 900.0
+    assert command_result["timeout_s_source"] == "tau_provider_command_timeout_policy"
+    assert command_result["timeout_policy"]["schema"] == "tau.provider_command_timeout_policy.v1"
+    assert compiled_creator_spec["tau_dag_node"]["timeout_policy"]["timeout_s"] == 900.0
+    assert request["context"]["tau_dag_node"]["timeout_policy"]["timeout_s"] == 900.0
+
+
 def test_project_dag_memory_evidence_gate_allows_valid_artifacts(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     memory_path = _write_memory_intent(tmp_path)

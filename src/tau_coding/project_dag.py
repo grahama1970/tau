@@ -36,6 +36,7 @@ DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
 DAG_ERROR_SCHEMA = "tau.dag_error.v1"
 DAG_PROGRESS_SCHEMA = "tau.dag_progress.v1"
 FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
+PROVIDER_COMMAND_TIMEOUT_SECONDS = 900.0
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "branch_goal_hash_divergence": {
@@ -1579,6 +1580,52 @@ def _provider_sensitive_contract(contract: ProjectDagContract) -> bool:
     return False
 
 
+def _provider_sensitive_node(contract: ProjectDagContract, node: ProjectDagNode) -> bool:
+    if node.executor == "human":
+        return False
+    node_payload = _node_payload(contract, node.node_id)
+    if isinstance(node_payload.get("model_policy"), dict):
+        return True
+    if isinstance(node_payload.get("provider"), dict):
+        return True
+    if node_payload.get("requires_provider_route") is True:
+        return True
+    if "provider_route" in node_payload:
+        return True
+    return _provider_sensitive_contract(contract) and _has_provider_route_evidence(
+        node.required_evidence
+    )
+
+
+def _provider_command_timeout_policy(
+    contract: ProjectDagContract,
+    node: ProjectDagNode,
+) -> dict[str, Any] | None:
+    if not _provider_sensitive_node(contract, node):
+        return None
+    raw_timeout = (
+        contract.limits.get("provider_command_timeout_seconds")
+        if "provider_command_timeout_seconds" in contract.limits
+        else contract.limits.get("provider_command_timeout_s", PROVIDER_COMMAND_TIMEOUT_SECONDS)
+    )
+    try:
+        timeout_s = float(raw_timeout)
+    except (TypeError, ValueError):
+        timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
+    if timeout_s <= 0:
+        timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
+    return {
+        "schema": "tau.provider_command_timeout_policy.v1",
+        "source": "tau_provider_command_timeout_policy",
+        "timeout_s": timeout_s,
+        "default_timeout_s": PROVIDER_COMMAND_TIMEOUT_SECONDS,
+        "reason": (
+            "Provider-sensitive command-backed DAG nodes require a Tau-owned timeout "
+            "when the command spec omits timeout_s."
+        ),
+    }
+
+
 def _valid_prompt_contract(value: object) -> bool:
     if not isinstance(value, dict):
         return False
@@ -1625,6 +1672,9 @@ def _node_dispatch_metadata(
         value = node_payload.get(key)
         if value is not None:
             metadata[key] = value
+    timeout_policy = _provider_command_timeout_policy(contract, node)
+    if timeout_policy is not None:
+        metadata["timeout_policy"] = timeout_policy
     if node_payload.get("requires_provider_route") is True:
         metadata["requires_provider_route"] = True
     if include_context:
@@ -2499,6 +2549,7 @@ def _dispatch_ready_node(
             command_spec_root=command_spec_root,
             command_policy_path=command_policy_path,
         )
+        spec = _apply_provider_command_timeout_policy(spec, start_payload)
         dispatch = dispatch_agent_handoff_command_once(
             start_payload,
             list(spec["command"]),
@@ -2528,6 +2579,33 @@ def _dispatch_ready_node(
             "completed_monotonic": time.monotonic(),
             "errors": [str(exc)],
         }
+
+
+def _apply_provider_command_timeout_policy(
+    spec: dict[str, object],
+    start_payload: dict[str, Any],
+) -> dict[str, object]:
+    """Apply Tau-owned provider timeout only when command spec omitted timeout_s."""
+
+    context = start_payload.get("context")
+    tau_dag_node = context.get("tau_dag_node") if isinstance(context, dict) else None
+    timeout_policy = (
+        tau_dag_node.get("timeout_policy") if isinstance(tau_dag_node, dict) else None
+    )
+    if not isinstance(timeout_policy, dict):
+        return spec
+    if spec.get("timeout_s_source") == "command_spec":
+        return spec
+    timeout_s = timeout_policy.get("timeout_s")
+    if isinstance(timeout_s, bool) or not isinstance(timeout_s, (int, float)) or timeout_s <= 0:
+        return spec
+    updated = dict(spec)
+    updated["timeout_s"] = float(timeout_s)
+    updated["timeout_s_source"] = str(
+        timeout_policy.get("source") or "tau_provider_command_timeout_policy"
+    )
+    updated["timeout_policy"] = dict(timeout_policy)
+    return updated
 
 
 def _max_concurrency(contract: ProjectDagContract) -> int:
