@@ -111,6 +111,19 @@ cat > "${WORK_ORDER}" <<JSON
 }
 JSON
 
+python3 - "${WORK_ORDER}" "${SANDBOX_RECEIPT}" <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+work_order = Path(sys.argv[1])
+sandbox_receipt = Path(sys.argv[2])
+payload = json.loads(sandbox_receipt.read_text(encoding="utf-8"))
+payload["work_order_sha256"] = "sha256:" + hashlib.sha256(work_order.read_bytes()).hexdigest()
+sandbox_receipt.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+
 WORKER_RESULT_SOURCE="fixture"
 if [[ -n "${OMP_WORKER_RESULT:-}" ]]; then
   cp "${OMP_WORKER_RESULT}" "${RESULT}"

@@ -1184,6 +1184,66 @@ def test_high_stakes_sandbox_worker_blocks_missing_goal_hash(
     assert payload["course_correction"]["trigger"] == "receipt_timeout"
 
 
+def test_high_stakes_sandbox_worker_blocks_missing_work_order_sha256(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
+    sandbox_payload = json.loads(sandbox_receipt.read_text(encoding="utf-8"))
+    sandbox_payload.pop("work_order_sha256", None)
+    sandbox_receipt.write_text(
+        json.dumps(sandbox_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "sandbox_receipt_missing_work_order_sha256" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+
+
+def test_high_stakes_sandbox_worker_blocks_work_order_sha256_mismatch(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
+    sandbox_payload = json.loads(sandbox_receipt.read_text(encoding="utf-8"))
+    sandbox_payload["work_order_sha256"] = "sha256:stale"
+    sandbox_receipt.write_text(
+        json.dumps(sandbox_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "sandbox_receipt_work_order_sha256_mismatch" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+
+
 def test_high_stakes_sandbox_worker_blocks_external_sandbox_receipt(
     tmp_path: Path,
 ) -> None:
@@ -1401,6 +1461,36 @@ def test_high_stakes_herdr_worker_blocks_missing_goal_hash(tmp_path: Path) -> No
     assert payload["course_correction"]["trigger"] == "herdr_stale"
 
 
+def test_high_stakes_herdr_worker_blocks_work_order_sha256_mismatch(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path="herdr-observation-gate.json",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    herdr_receipt = Path(work_order_payload["repo"]) / "herdr-observation-gate.json"
+    herdr_payload = json.loads(herdr_receipt.read_text(encoding="utf-8"))
+    herdr_payload["work_order_sha256"] = "sha256:stale"
+    herdr_receipt.write_text(
+        json.dumps(herdr_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_receipt_work_order_sha256_mismatch" in payload["alert_codes"]
+    assert payload["course_correction"]["trigger"] == "herdr_stale"
+
+
 def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -1460,15 +1550,16 @@ def test_high_stakes_herdr_worker_records_receipt_descriptor(tmp_path: Path) -> 
     herdr_receipt = Path(work_order_payload["repo"]) / "herdr-observation-gate.json"
     herdr_receipt.write_text(
         json.dumps(
-            {
-                "schema": "tau.herdr_observation_gate_receipt.v1",
-                "status": "PASS",
-                "ok": True,
-                "mocked": False,
-                "live": True,
-                "provider_live": False,
-                "goal_hash": "sha256:goal",
-            },
+                {
+                    "schema": "tau.herdr_observation_gate_receipt.v1",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": False,
+                    "goal_hash": "sha256:goal",
+                    "work_order_sha256": f"sha256:{_sha256(work_order)}",
+                },
             indent=2,
             sort_keys=True,
         )
@@ -2641,50 +2732,6 @@ def _write_work_order(
 ) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir(exist_ok=True)
-    if sandbox_receipt_path is not None:
-        sandbox_receipt = Path(sandbox_receipt_path)
-        if not sandbox_receipt.is_absolute():
-            sandbox_receipt = repo / sandbox_receipt
-        sandbox_receipt.parent.mkdir(parents=True, exist_ok=True)
-        sandbox_receipt.write_text(
-            json.dumps(
-                {
-                    "schema": "tau.sandbox_run_receipt.v1",
-                    "status": "PASS",
-                    "ok": True,
-                    "mocked": False,
-                    "live": True,
-                    "provider_live": False,
-                    "goal_hash": "sha256:goal",
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-    if herdr_receipt_path is not None:
-        herdr_receipt = Path(herdr_receipt_path)
-        if not herdr_receipt.is_absolute():
-            herdr_receipt = repo / herdr_receipt
-        herdr_receipt.parent.mkdir(parents=True, exist_ok=True)
-        herdr_receipt.write_text(
-            json.dumps(
-                {
-                    "schema": "tau.herdr_observation_gate_receipt.v1",
-                    "status": "PASS",
-                    "ok": True,
-                    "mocked": False,
-                    "live": True,
-                    "provider_live": False,
-                    "goal_hash": "sha256:goal",
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
     payload = {
         "schema": schema,
         "dag_id": "coding-dag",
@@ -2722,6 +2769,53 @@ def _write_work_order(
         payload["herdr_receipt_path"] = herdr_receipt_path
     path = tmp_path / "work-order.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    work_order_sha256 = f"sha256:{_sha256(path)}"
+    if sandbox_receipt_path is not None:
+        sandbox_receipt = Path(sandbox_receipt_path)
+        if not sandbox_receipt.is_absolute():
+            sandbox_receipt = repo / sandbox_receipt
+        sandbox_receipt.parent.mkdir(parents=True, exist_ok=True)
+        sandbox_receipt.write_text(
+            json.dumps(
+                {
+                    "schema": "tau.sandbox_run_receipt.v1",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": False,
+                    "goal_hash": "sha256:goal",
+                    "work_order_sha256": work_order_sha256,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+    if herdr_receipt_path is not None:
+        herdr_receipt = Path(herdr_receipt_path)
+        if not herdr_receipt.is_absolute():
+            herdr_receipt = repo / herdr_receipt
+        herdr_receipt.parent.mkdir(parents=True, exist_ok=True)
+        herdr_receipt.write_text(
+            json.dumps(
+                {
+                    "schema": "tau.herdr_observation_gate_receipt.v1",
+                    "status": "PASS",
+                    "ok": True,
+                    "mocked": False,
+                    "live": True,
+                    "provider_live": False,
+                    "goal_hash": "sha256:goal",
+                    "work_order_sha256": work_order_sha256,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
     return path
 
 

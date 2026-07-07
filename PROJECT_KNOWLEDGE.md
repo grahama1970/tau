@@ -5,6 +5,41 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker substrate work-order binding rung:
+  `src/tau_coding/coding_worker_adapters.py` now requires high-stakes sandbox
+  and Herdr substrate receipts to bind both `goal_hash` and
+  `work_order_sha256` to the exact worker work-order artifact before OMP or
+  SciLLM worker validation or launch can proceed. Missing or stale substrate
+  work-order bindings block with `sandbox_receipt_missing_work_order_sha256`,
+  `sandbox_receipt_work_order_sha256_mismatch`,
+  `herdr_receipt_missing_work_order_sha256`, or
+  `herdr_receipt_work_order_sha256_mismatch` and map to the existing
+  sandbox/Herdr course-correction triggers. `tests/test_coding_worker_adapters.py`
+  covers sandbox missing/mismatched bindings and Herdr mismatched binding.
+  `examples/omp-worker/run.sh` and `examples/scillm-worker/run.sh` now inject
+  the final work-order SHA-256 into their sandbox receipts before validation.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py
+  docs/coding-workers.md` -> `All checks passed!`; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `85 passed in 5.19s`; `bash -n
+  examples/omp-worker/run.sh examples/scillm-worker/run.sh` -> pass; `uv run
+  python -m py_compile src/tau_coding/coding_worker_adapters.py` -> pass; `git
+  diff --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md
+  examples/omp-worker/run.sh examples/scillm-worker/run.sh` -> pass. Direct
+  examples: `examples/omp-worker/run.sh /tmp/tau-omp-worker-work-order-binding-smoke`
+  -> `status:"PASS"`, `ok:true`; `examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-work-order-binding-smoke` -> `status:"PASS"`,
+  `ok:true`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-substrate-work-order-binding-20260707T134154Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `462 passed in 10.59s`. This proves
+  high-stakes worker substrate evidence cannot be reused across different work
+  orders in the deterministic local gate; it does not prove live OMP or live
+  SciLLM semantic worker execution, provider/model quality, semantic code
+  correctness, ITAR compliance, legal compliance, or full sandbox isolation on
+  every host.
+
 - 2026-07-07 commit-plan approval target binding:
   `src/tau_coding/commit_plan.py` now requires
   `tau.approval_gate_receipt.v1` packets used for commit-plan apply or

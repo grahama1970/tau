@@ -99,6 +99,7 @@ def write_omp_worker_launch_receipt(
     resolved_output = output_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    work_order["work_order_path"] = str(resolved_work_order)
     if work_order.get("schema") != OMP_WORK_ORDER_SCHEMA:
         alerts.append(
             _alert("invalid_work_order_schema", f"schema must be {OMP_WORK_ORDER_SCHEMA}")
@@ -203,6 +204,7 @@ def write_scillm_worker_launch_receipt(
     resolved_output = output_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    work_order["work_order_path"] = str(resolved_work_order)
     if work_order.get("schema") != SCILLM_WORK_ORDER_SCHEMA:
         alerts.append(
             _alert("invalid_work_order_schema", f"schema must be {SCILLM_WORK_ORDER_SCHEMA}")
@@ -341,6 +343,7 @@ def _write_worker_receipt(
     resolved_result = result_path.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
+    work_order["work_order_path"] = str(resolved_work_order)
     result = _read_json_object(resolved_result, alerts, "worker_result")
     if work_order.get("schema") != expected_work_order_schema:
         alerts.append(
@@ -599,6 +602,8 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "herdr_receipt_not_live",
         "herdr_receipt_missing_goal_hash",
         "herdr_receipt_goal_hash_mismatch",
+        "herdr_receipt_missing_work_order_sha256",
+        "herdr_receipt_work_order_sha256_mismatch",
     }
     sandbox_codes = {
         "substrate_required",
@@ -614,6 +619,8 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "sandbox_receipt_not_live",
         "sandbox_receipt_missing_goal_hash",
         "sandbox_receipt_goal_hash_mismatch",
+        "sandbox_receipt_missing_work_order_sha256",
+        "sandbox_receipt_work_order_sha256_mismatch",
     }
     forbidden_codes = {
         "changed_file_outside_repo",
@@ -1017,6 +1024,8 @@ def _append_work_order_gate_alerts(
                 alerts,
                 missing_goal_code="sandbox_receipt_missing_goal_hash",
                 goal_mismatch_code="sandbox_receipt_goal_hash_mismatch",
+                missing_work_order_sha_code="sandbox_receipt_missing_work_order_sha256",
+                work_order_sha_mismatch_code="sandbox_receipt_work_order_sha256_mismatch",
                 label="sandbox receipt",
             )
     if high_stakes and substrate in {"herdr", "herdr-visible"}:
@@ -1063,6 +1072,8 @@ def _append_work_order_gate_alerts(
                 alerts,
                 missing_goal_code="herdr_receipt_missing_goal_hash",
                 goal_mismatch_code="herdr_receipt_goal_hash_mismatch",
+                missing_work_order_sha_code="herdr_receipt_missing_work_order_sha256",
+                work_order_sha_mismatch_code="herdr_receipt_work_order_sha256_mismatch",
                 label="Herdr observation receipt",
             )
     policy_profile = work_order.get("policy_profile")
@@ -1284,6 +1295,8 @@ def _append_referenced_receipt_binding_alerts(
     *,
     missing_goal_code: str,
     goal_mismatch_code: str,
+    missing_work_order_sha_code: str,
+    work_order_sha_mismatch_code: str,
     label: str,
 ) -> None:
     if receipt is None:
@@ -1303,6 +1316,23 @@ def _append_referenced_receipt_binding_alerts(
             _alert(
                 goal_mismatch_code,
                 f"{label} goal_hash must match the worker work order goal_hash",
+            )
+        )
+    work_order_sha = _artifact_sha256_uri(work_order.get("work_order_path"))
+    receipt_work_order_sha = _string(receipt.get("work_order_sha256"))
+    if work_order_sha and not receipt_work_order_sha:
+        alerts.append(
+            _alert(
+                missing_work_order_sha_code,
+                f"{label} work_order_sha256 is required for high-stakes worker binding",
+            )
+        )
+        return
+    if work_order_sha and receipt_work_order_sha and receipt_work_order_sha != work_order_sha:
+        alerts.append(
+            _alert(
+                work_order_sha_mismatch_code,
+                f"{label} work_order_sha256 must match the worker work order artifact",
             )
         )
 
