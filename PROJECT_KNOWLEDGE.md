@@ -1,9 +1,44 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 11:53 EDT by agent
+**Last updated:** 2026-07-07 12:04 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 SciLLM worker explicit timeout policy:
+  `src/tau_coding/coding_worker_adapters.py` no longer injects an OpenCode serve
+  worker `timeout_s` into the SciLLM launch payload when the work order omits
+  it. The adapter still records its own `request_timeout_s` transport bound,
+  but the worker payload now includes `timeout_s` only when the DAG/work order
+  explicitly provides a positive integer; malformed worker timeout values block
+  with `invalid_scillm_worker_timeout` before any HTTP call. This keeps Tau from
+  silently enforcing a hidden 600-second worker timeout through
+  `/v1/scillm/opencode/runs`. `tests/test_coding_worker_adapters.py` covers
+  omitted timeout, explicit timeout propagation, invalid timeout blocking, and
+  CLI dry-run behavior. `examples/scillm-worker/run.sh` now demonstrates an
+  explicit `timeout_s:120` work-order field, and `docs/coding-workers.md`
+  documents the distinction between Tau's adapter request timeout and the
+  explicit worker timeout. Focused proof: `git diff --check --
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py
+  examples/scillm-worker/run.sh docs/coding-workers.md` -> pass; `uv run
+  python -m py_compile src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md` -> `All checks
+  passed!`; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `93
+  passed in 6.38s`; direct example
+  `examples/scillm-worker/run.sh /tmp/tau-scillm-worker-timeout-example` ->
+  PASS with both dry-run and apply launch receipts carrying
+  `request_payload.timeout_s:120` because the work order explicitly set it.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-scillm-explicit-timeout-20260707T160600Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `494 passed in 11.70s`. This proves the local
+  Tau SciLLM launch adapter no longer smuggles a default worker timeout into the
+  OpenCode serve payload and still composes with the coding-capability sanity
+  suite; it does not prove live SciLLM semantic worker execution,
+  provider/model quality, semantic code correctness, legal compliance, human
+  acceptance, or full sandbox isolation.
 
 - 2026-07-07 provider-auth course-correction gate:
   `src/tau_coding/project_dag.py` now classifies nested provider authentication

@@ -897,11 +897,12 @@ APIs, or `opencode-go/*` model strings as the `agent`. By default,
 `scillm-worker-launch` is a dry-run launcher receipt: it builds the exact
 `POST /v1/scillm/opencode/runs` payload, redacts the required auth header,
 records `x_caller_skill`, and blocks wrong surfaces/endpoints before any
-external call. The default request timeout is 600 seconds to match the SciLLM
-OpenCode serve contract. Malformed base URLs are blocked before apply, and
-known raw local OpenCode ports such as `127.0.0.1:4096` and `127.0.0.1:4098`
-are blocked as `raw_opencode_base_url`; Tau must route through the SciLLM proxy
-surface rather than around it.
+external call. The default adapter request timeout is 600 seconds, but Tau does
+not inject an OpenCode worker `timeout_s` into the SciLLM payload unless the
+work order explicitly specifies `timeout_s` as a positive integer. Malformed
+base URLs are blocked before apply, and known raw local OpenCode ports such as
+`127.0.0.1:4096` and `127.0.0.1:4098` are blocked as `raw_opencode_base_url`;
+Tau must route through the SciLLM proxy surface rather than around it.
 
 With `--apply`, `scillm-worker-launch` posts the bounded request to the
 configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the

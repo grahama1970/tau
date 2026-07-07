@@ -49,6 +49,7 @@ cat > "${WORK_ORDER}" <<JSON
   "zero_trust": true,
   "execution_substrate": "docker-sandbox",
   "sandbox_receipt_path": "${SANDBOX_RECEIPT}",
+  "timeout_s": 120,
   "policy_profile": {
     "schema": "tau.policy_profile.v1",
     "profile_id": "scillm-worker-example-zero-trust",

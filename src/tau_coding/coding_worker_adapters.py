@@ -228,6 +228,16 @@ def write_scillm_worker_launch_receipt(
         alerts.append(
             _alert("chat_model_used_as_agent", "OpenCode serve agent must be an agent profile")
         )
+    timeout_s = work_order.get("timeout_s")
+    if timeout_s is not None and (
+        not isinstance(timeout_s, int) or isinstance(timeout_s, bool) or timeout_s <= 0
+    ):
+        alerts.append(
+            _alert(
+                "invalid_scillm_worker_timeout",
+                "SciLLM worker timeout_s must be a positive integer when specified",
+            )
+        )
     _append_scillm_base_url_alerts(scillm_base_url, alerts)
     auth_source = "explicit" if auth_token else "missing"
     effective_auth_token = auth_token
@@ -1466,11 +1476,10 @@ def _scillm_opencode_request_payload(
     skills = route.get("skills")
     if not isinstance(skills, list) or not all(isinstance(item, str) for item in skills):
         skills = []
-    return {
+    payload = {
         "prompt": _scillm_worker_prompt(work_order),
         "agent": route.get("agent"),
         "skills": skills,
-        "timeout_s": work_order.get("timeout_s", 600),
         "cleanup_session": True,
         "cwd": work_order.get("repo"),
         "scillm_metadata": {
@@ -1483,6 +1492,10 @@ def _scillm_opencode_request_payload(
             "receipt_path": work_order.get("receipt_path"),
         },
     }
+    timeout_s = work_order.get("timeout_s")
+    if isinstance(timeout_s, int) and not isinstance(timeout_s, bool) and timeout_s > 0:
+        payload["timeout_s"] = timeout_s
+    return payload
 
 
 def _omp_rpc_request_payload(work_order: Mapping[str, Any]) -> dict[str, Any]:

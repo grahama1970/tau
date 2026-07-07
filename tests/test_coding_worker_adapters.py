@@ -2131,8 +2131,58 @@ def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) ->
     assert payload["request_payload"]["agent"] == "build"
     assert payload["request_payload"]["skills"] == ["memory", "debugger", "scillm"]
     assert payload["request_timeout_s"] == 600
-    assert payload["request_payload"]["timeout_s"] == 600
+    assert "timeout_s" not in payload["request_payload"]
     assert payload["request_payload"]["scillm_metadata"]["goal_hash"] == "sha256:goal"
+
+
+def test_scillm_worker_launch_honors_explicit_worker_timeout(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        timeout_s=120,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+            "skills": ["memory", "debugger", "scillm"],
+        },
+    )
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["request_payload"]["timeout_s"] == 120
+
+
+def test_scillm_worker_launch_blocks_invalid_worker_timeout(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        timeout_s=0,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+        apply=True,
+        auth_token="token",
+        request_timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert "invalid_scillm_worker_timeout" in payload["alert_codes"]
+    assert "timeout_s" not in payload["request_payload"]
 
 
 def test_omp_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
@@ -2903,6 +2953,7 @@ def test_cli_scillm_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None
     assert payload["schema"] == SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA
     assert payload["headers"]["x_caller_skill"] == "tau-test"
     assert payload["request_timeout_s"] == 600
+    assert "timeout_s" not in payload["request_payload"]
 
 
 def test_cli_scillm_worker_validate_writes_receipt(tmp_path: Path) -> None:
@@ -2945,6 +2996,7 @@ def _write_work_order(
     herdr_receipt_path: str | None = None,
     model_provider_route: dict | None = None,
     required_artifacts: list[str] | None = None,
+    timeout_s: object | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir(exist_ok=True)
@@ -2965,6 +3017,8 @@ def _write_work_order(
         "high_stakes": high_stakes,
         "model_provider_route": model_provider_route or {},
     }
+    if timeout_s is not None:
+        payload["timeout_s"] = timeout_s
     if execution_substrate is not None:
         payload["execution_substrate"] = execution_substrate
     if policy_profile is _DEFAULT_METADATA:
