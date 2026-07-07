@@ -111,11 +111,31 @@ itself. Skill-specific adapters must validate debugger, code-runner, review,
 evidence-case, research, or model-worker artifacts before a DAG can treat those
 outputs as evidence.
 
+## Debugger Adapter
+
+The first skill-specific adapter ingests `debugger.proof.v1` and projects it
+into Tau's existing `tau.debug_session_receipt.v1` validator.
+
+```text
+debugger.proof.v1
+  -> tau.debugger_skill_adapter_receipt.v1
+  -> tau.debug_session_packet.v1
+  -> tau.debug_session_receipt.v1
+```
+
+The adapter checks goal hash, target command, adapter label, structured
+breakpoints/frame/variables, and log artifact path boundaries. If the proof is
+missing or malformed, the adapter emits a course-correction payload requiring
+debugger evidence before retry.
+
+This still does not prove the bug is fixed or that the debugger conclusion is
+semantically complete.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
-1. Skill-specific adapters from native skill artifacts into Tau receipts.
+1. Code-runner, review-code, evidence-case, research, and model-worker adapters.
 2. Project-profile capability provider requirements.
 3. Course-correction routing through validated capability providers.
 4. A skill-composition red-team suite that proves Tau does not blindly trust
