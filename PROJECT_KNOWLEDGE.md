@@ -316,6 +316,36 @@
   provider/model quality, legal compliance, human acceptance, or that the repair
   action was executed.
 
+- 2026-07-07 ScillM stale-auth auto-recovery:
+  `src/tau_coding/battle_scillm.py` now resolves the active Docker ScillM proxy
+  key before stale host environment keys for default auth preflight calls, while
+  preserving explicit `api_key=` overrides. `src/tau_coding/project_dag.py`
+  already attempts ScillM auth repair when a provider-sensitive bounded
+  ready-queue node reports `provider_auth_required`; after this update it also
+  refreshes child-process `SCILLM_PROXY_KEY` and `LITELLM_MASTER_KEY` from the
+  active Docker proxy key without writing the secret to receipts, then retries
+  the same node when repair passes and retry budget remains. If repair fails or
+  the retry budget is exhausted, Tau emits the existing `tau.course_correction.v1`
+  block instead of regenerating images or accepting frames without reviewer
+  PASS. Deterministic proof: `python3 -m py_compile src/tau_coding/project_dag.py
+  src/tau_coding/battle_scillm.py tests/test_project_dag.py
+  tests/test_battle_scillm_auth_preflight.py` -> pass; `uv run ruff check
+  src/tau_coding/project_dag.py src/tau_coding/battle_scillm.py
+  tests/test_project_dag.py tests/test_battle_scillm_auth_preflight.py` ->
+  `All checks passed!`; `uv run pytest tests/test_project_dag.py
+  tests/test_course_correction.py tests/test_battle_scillm_auth_preflight.py -q`
+  -> `82 passed in 2.27s`. Live proof:
+  `/tmp/tau-scillm-auth-auto-repair-20260707-v3.json` -> `status:PASS`,
+  `ok:true`, `api_key_source:"docker:docker-scillm-proxy-1:SCILLM_MASTER_KEY"`;
+  `/tmp/tau-scillm-gpt55-chat-canary-20260707-v4.json` -> `status:PASS`,
+  `ok:true`, HTTP `200`, same Docker key source, and
+  `caller_skill:"tau-scillm-stale-auth-auto-repair"`. This proves Tau can use
+  the active ScillM proxy key and retry after auth repair in deterministic DAG
+  fixtures, and that the current local ScillM chat endpoint accepts the active
+  proxy key; it does not prove provider/model semantic quality, full Phase 07
+  storyboard acceptance, legal authorization, future OAuth health, or arbitrary
+  provider recovery.
+
 - 2026-07-07 worker work-order output path containment:
   `src/tau_coding/coding_worker_adapters.py` now requires bounded worker work
   orders to keep their primary `result_path` and `receipt_path` inside the

@@ -66,6 +66,16 @@ provider errors such as `401 Unauthorized`, stale/invalid OAuth, and
 `403 PERMISSION_DENIED` leaked-key failures into this trigger before treating
 missing evidence as a normal reviewer repair.
 
+For ScillM-backed provider nodes, Tau attempts the auth repair before spending
+another node attempt. The bounded ready-queue writes
+`provider-auth-repair/<node>-attempt-NNN-scillm-auth-preflight.json`, runs the
+ScillM auth preflight with repair enabled, refreshes child-process
+`SCILLM_PROXY_KEY` and `LITELLM_MASTER_KEY` from the active Docker proxy key
+without recording the secret, and retries the same node when both the preflight
+and environment refresh pass and retry budget remains. If repair fails or the
+retry budget is exhausted, Tau emits the normal `tau.course_correction.v1`
+block instead of regenerating artifacts blindly.
+
 Legacy DAG course-correction receipts also preserve `code`, `required_action`,
 and `blocked_report_required` fields so existing run-status and proof summaries
 remain compatible.

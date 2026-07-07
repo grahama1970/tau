@@ -125,7 +125,7 @@ def preflight_battle_scillm_auth(
     """
     started = time.time()
     resolved_key, api_key_source, api_key_errors = (
-        (api_key, "argument", []) if api_key else _resolve_api_key()
+        (api_key, "argument", []) if api_key else resolve_active_scillm_proxy_key()
     )
     repair_enabled = (
         allow_repair

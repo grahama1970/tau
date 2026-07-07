@@ -92,6 +92,39 @@ def test_scillm_auth_preflight_repairs_stale_codex_container_internally(
     assert len(calls) == 2
 
 
+def test_scillm_auth_preflight_prefers_active_docker_key_over_stale_host_env(
+    monkeypatch,
+) -> None:
+    used_keys: list[str] = []
+
+    monkeypatch.setenv("SCILLM_MASTER_KEY", "stale-host-key")
+    monkeypatch.setattr(
+        battle_scillm,
+        "_docker_api_key",
+        lambda: ("active-docker-key", "docker:docker-scillm-proxy-1:SCILLM_MASTER_KEY", None),
+    )
+
+    def fake_auth(base_url: str, api_key: str) -> dict[str, object]:
+        used_keys.append(api_key)
+        return {
+            "status": "PASS",
+            "status_code": 200,
+            "body": {"codex": {"status": "ok"}},
+        }
+
+    monkeypatch.setattr(battle_scillm, "_request_scillm_auth", fake_auth)
+
+    receipt = battle_scillm.preflight_battle_scillm_auth(
+        scillm_base_url="http://127.0.0.1:4001",
+        model="gpt-5.5",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["ok"] is True
+    assert receipt["api_key_source"] == "docker:docker-scillm-proxy-1:SCILLM_MASTER_KEY"
+    assert used_keys == ["active-docker-key"]
+
+
 def test_battle_live_handoff_blocks_before_workers_when_scillm_auth_fails(
     tmp_path: Path,
     monkeypatch,
