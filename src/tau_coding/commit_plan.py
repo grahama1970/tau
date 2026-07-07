@@ -14,6 +14,19 @@ from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEM
 
 COMMIT_PLAN_SCHEMA = "tau.commit_plan.v1"
 COMMIT_PLAN_RECEIPT_SCHEMA = "tau.commit_plan_receipt.v1"
+SUPPORTED_EVIDENCE_RECEIPT_SCHEMAS = {
+    "tau.code_patch_receipt.v1",
+    "tau.lsp_diagnostics_receipt.v1",
+    "tau.lsp_symbol_receipt.v1",
+    "tau.lsp_rename_receipt.v1",
+    "tau.review_findings.v1",
+    "tau.debug_session_receipt.v1",
+    "tau.github_read_receipt.v1",
+    "tau.omp_worker_receipt.v1",
+    "tau.scillm_worker_receipt.v1",
+    "tau.orchestration_reliability_receipt.v1",
+    "tau.sandbox_run_receipt.v1",
+}
 
 HIGH_RISK_PATTERNS = (
     ".github/",
@@ -220,6 +233,14 @@ def _evidence_receipts(
         schema = payload.get("schema")
         status = payload.get("status")
         ok = payload.get("ok")
+        schema_supported = schema in SUPPORTED_EVIDENCE_RECEIPT_SCHEMAS
+        if not schema_supported:
+            alerts.append(
+                _alert(
+                    "unsupported_evidence_receipt_schema",
+                    f"unsupported evidence receipt schema for commit-plan: {schema!r}",
+                )
+            )
         if ok is not True or status != "PASS":
             alerts.append(
                 _alert(
@@ -232,6 +253,7 @@ def _evidence_receipts(
                 "path": str(resolved),
                 "sha256": f"sha256:{_sha256(resolved)}",
                 "schema": schema,
+                "schema_supported": schema_supported,
                 "status": status,
                 "ok": ok,
             }

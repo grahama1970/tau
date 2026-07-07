@@ -115,7 +115,38 @@ def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path)
     assert payload["status"] == "PASS"
     assert payload["evidence_receipt_count"] == 1
     assert payload["evidence_receipts"][0]["schema"] == "tau.lsp_diagnostics_receipt.v1"
+    assert payload["evidence_receipts"][0]["schema_supported"] is True
     assert payload["evidence_receipts"][0]["sha256"].startswith("sha256:")
+
+
+def test_commit_plan_blocks_source_change_with_unsupported_evidence_schema(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "generic-pass.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_pass_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["evidence_receipt_count"] == 1
+    assert payload["evidence_receipts"][0]["schema_supported"] is False
+    assert "unsupported_evidence_receipt_schema" in payload["alert_codes"]
 
 
 def test_commit_plan_blocks_source_change_with_blocked_evidence_receipt(tmp_path: Path) -> None:
@@ -240,7 +271,7 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
     evidence = repo / "evidence.json"
     evidence.write_text(
-        json.dumps({"schema": "tau.review_findings_receipt.v1", "ok": True, "status": "PASS"})
+        json.dumps({"schema": "tau.review_findings.v1", "ok": True, "status": "PASS"})
         + "\n",
         encoding="utf-8",
     )
@@ -264,6 +295,7 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == COMMIT_PLAN_RECEIPT_SCHEMA
     assert payload["evidence_receipt_count"] == 1
+    assert payload["evidence_receipts"][0]["schema_supported"] is True
 
 
 def test_cli_commit_plan_zero_trust_missing_boundary_exits_blocked(

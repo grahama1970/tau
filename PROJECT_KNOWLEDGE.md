@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:17 EDT by agent
+**Last updated:** 2026-07-06 21:20 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan evidence schema gate rung:
+  `src/tau_coding/commit_plan.py` now treats PASS/ok evidence receipts as
+  source-change justification only when the receipt schema is a supported Tau
+  coding evidence schema. Unknown-schema PASS receipts are still recorded with
+  path, hash, status, and `schema_supported:false`, but they now BLOCK with
+  `unsupported_evidence_receipt_schema` and cannot satisfy the source-change
+  evidence gate. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> pass; `uv run
+  pytest tests/test_commit_plan.py -q` -> `15 passed in 0.66s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-evidence-schema-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-evidence-schema-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `commit-plan receipts`, and embedded focused coding tests `171 passed
+  in 6.00s`. This proves deterministic local commit-plan evidence gating
+  rejects arbitrary PASS JSON as source-change support; it does not prove
+  semantic grouping correctness, code correctness, live worker execution,
+  GitHub mutation, legal compliance, or human acceptance.
 
 - 2026-07-06 GitHub commit-read immutable identifier rung:
   `src/tau_coding/github_read_schemes.py` now requires
