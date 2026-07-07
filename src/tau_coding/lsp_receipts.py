@@ -174,6 +174,14 @@ def write_lsp_rename_plan_receipt(
     )
     references = symbol_receipt["references"]
     alerts = list(symbol_receipt.get("alerts", []))
+    if not symbol.isidentifier():
+        alerts.append(_alert("invalid_symbol", "rename symbol must be a valid identifier"))
+    if not new_name.isidentifier():
+        alerts.append(_alert("invalid_new_name", "rename new_name must be a valid identifier"))
+    if symbol == new_name:
+        alerts.append(_alert("rename_noop", "rename new_name must differ from symbol"))
+    if not references:
+        alerts.append(_alert("symbol_not_found", "rename symbol was not found in workspace"))
     ok = not alerts
     payload = {
         "schema": LSP_RENAME_RECEIPT_SCHEMA,

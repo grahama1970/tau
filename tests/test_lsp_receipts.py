@@ -124,6 +124,55 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
 
 
+def test_lsp_rename_plan_blocks_missing_symbol(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="missing_target",
+        new_name="renamed",
+        output_path=tmp_path / "rename.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["reference_count"] == 0
+    assert "symbol_not_found" in payload["alert_codes"]
+    assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
+
+
+def test_lsp_rename_plan_blocks_invalid_new_name(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="target",
+        new_name="not-valid-name",
+        output_path=tmp_path / "rename.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_new_name" in payload["alert_codes"]
+    assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
+
+
+def test_lsp_rename_plan_blocks_noop_same_name(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="target",
+        new_name="target",
+        output_path=tmp_path / "rename.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "rename_noop" in payload["alert_codes"]
+    assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
+
+
 def test_lsp_symbols_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
     (tmp_path / "example.py").write_text("def target():\n    return target()\n", encoding="utf-8")
 
