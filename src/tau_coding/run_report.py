@@ -90,8 +90,11 @@ def write_run_report(*, run_dir: Path, out_path: Path, force: bool = False) -> d
     }
     receipt_path = resolved_out.with_suffix(resolved_out.suffix + ".receipt.json")
     receipt["receipt_path"] = str(receipt_path)
-    receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    receipt["receipt_sha256"] = f"sha256:{_sha256(receipt_path)}"
+    receipt_preimage = json.dumps(receipt, indent=2, sort_keys=True) + "\n"
+    receipt["receipt_sha256_excludes_self"] = True
+    receipt["unsigned_receipt_preimage_sha256"] = (
+        f"sha256:{hashlib.sha256(receipt_preimage.encode('utf-8')).hexdigest()}"
+    )
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return receipt
 

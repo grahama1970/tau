@@ -332,6 +332,27 @@
   mutation, full sandbox isolation, legal compliance, ITAR compliance, or full
   goal completion.
 
+- 2026-07-07 run-report receipt self-hash rung:
+  `src/tau_coding/run_report.py` no longer records a stale
+  `receipt_sha256` for `tau.run_report_receipt.v1`. The old flow hashed the
+  first receipt write, inserted that hash, then rewrote the receipt, making the
+  recorded hash not match the final file. The receipt now records
+  `receipt_sha256_excludes_self:true` and
+  `unsigned_receipt_preimage_sha256`, a SHA-256 over the receipt body before
+  the self-reference metadata is added. `tests/test_run_report.py` asserts the
+  final on-disk receipt equals the returned payload, contains no
+  `receipt_sha256`, and has a reproducible preimage hash. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/run_report.py
+  tests/test_run_report.py` -> `All checks passed!`; `uv run pytest
+  tests/test_run_report.py -q` -> `3 passed in 0.36s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-run-report-self-hash-20260707T123500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `330 passed in 8.20s`. This proves
+  deterministic local run-report receipts no longer contain a false final
+  self-hash claim; it does not prove UI correctness beyond the generated static
+  HTML artifact, evidence sufficiency, semantic code correctness, provider/model
+  quality, ITAR compliance, legal compliance, or full goal completion.
+
 - 2026-07-07 sandbox-run bad-input receipt rung:
   `src/tau_coding/sandbox_run.py` now emits an inspectable BLOCKED
   `tau.sandbox_run_receipt.v1` when the policy profile or data-boundary input

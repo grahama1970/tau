@@ -35,7 +35,19 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
         },
     ]
     assert report_path.exists()
-    assert Path(str(receipt["receipt_path"])).exists()
+    receipt_path = Path(str(receipt["receipt_path"]))
+    assert receipt_path.exists()
+    on_disk_receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert on_disk_receipt == receipt
+    assert "receipt_sha256" not in receipt
+    assert receipt["receipt_sha256_excludes_self"] is True
+    preimage = dict(receipt)
+    preimage.pop("receipt_sha256_excludes_self")
+    preimage.pop("unsigned_receipt_preimage_sha256")
+    preimage_text = json.dumps(preimage, indent=2, sort_keys=True) + "\n"
+    assert receipt["unsigned_receipt_preimage_sha256"] == (
+        f"sha256:{hashlib.sha256(preimage_text.encode('utf-8')).hexdigest()}"
+    )
     html = report_path.read_text(encoding="utf-8")
     assert "Tau Run Report" in html
     assert 'id="goal"' in html

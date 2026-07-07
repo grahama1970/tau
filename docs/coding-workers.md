@@ -551,6 +551,26 @@ uv run tau orchestration-reliability --run-dir run --out orchestration-reliabili
 This receipt does not prove code correctness, agent truthfulness, provider/model
 quality, GitHub mutation, or human acceptance.
 
+### Static Run Reports
+
+`tau.run_report_receipt.v1` records the HTML report artifact and the source
+artifacts used to render it, including the DAG receipt and DAG contract when
+present. The report receipt does not claim a SHA-256 hash of itself, because a
+self-hash field would become stale as soon as it is written. Instead it records
+`receipt_sha256_excludes_self:true` and `unsigned_receipt_preimage_sha256`,
+which hashes the unsigned receipt body before those self-reference metadata
+fields are added.
+
+CLI:
+
+```bash
+uv run tau report run-dir --out report.html
+```
+
+The report is an inspection artifact. It does not prove memory truth, evidence
+case sufficiency, code correctness, ITAR compliance, legal sufficiency, or that
+an agent DAG/swarm is trustworthy.
+
 ### Aggregate Coding Sanity
 
 `scripts/run-coding-capability-sanity.py` runs the current copyable coding
