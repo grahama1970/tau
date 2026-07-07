@@ -282,6 +282,9 @@ def _evidence_receipts(
                 "schema_supported": schema_supported,
                 "status": status,
                 "ok": ok,
+                "mocked": payload.get("mocked"),
+                "live": payload.get("live"),
+                "provider_live": payload.get("provider_live"),
                 "goal_hash": receipt_goal_hash if isinstance(receipt_goal_hash, str) else None,
                 "goal_hash_matches": (
                     None

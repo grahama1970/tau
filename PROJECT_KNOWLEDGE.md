@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:13 EDT by agent
+**Last updated:** 2026-07-06 23:16 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan evidence mode metadata rung:
+  `src/tau_coding/commit_plan.py` now records `mocked`, `live`, and
+  `provider_live` on every readable supporting evidence receipt listed in
+  `tau.commit_plan_receipt.v1.evidence_receipts`, alongside the existing
+  evidence path, SHA-256, byte count, schema, status, `ok`, and goal-hash
+  binding fields. This lets a later reviewer distinguish deterministic local
+  evidence from live/provider-backed evidence when reviewing an atomic commit
+  plan. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> pass; `uv run
+  pytest tests/test_commit_plan.py -q` -> `17 passed in 0.68s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-evidence-mode-proof` wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-evidence-mode-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.70s`. This proves local commit-plan receipts expose the
+  proof-mode metadata of supporting evidence receipts and compose with the
+  current coding capability sanity suite; it does not prove semantic code
+  correctness, optimal commit grouping, live OMP or SciLLM semantic worker
+  execution, provider/model quality, GitHub mutation, human acceptance, legal
+  compliance, or full sandbox isolation on every host.
 
 - 2026-07-06 code-patch target artifact descriptor rung:
   `src/tau_coding/code_patch.py` now records `target_artifact_before` and
