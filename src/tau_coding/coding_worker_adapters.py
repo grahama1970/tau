@@ -212,6 +212,13 @@ def write_scillm_worker_launch_receipt(
         alerts.append(
             _alert("chat_model_used_as_agent", "OpenCode serve agent must be an agent profile")
         )
+    if _is_raw_opencode_local_url(scillm_base_url):
+        alerts.append(
+            _alert(
+                "raw_opencode_base_url",
+                "SciLLM worker launch must target the SciLLM proxy, not a raw OpenCode port",
+            )
+        )
     auth_source = "explicit" if auth_token else "missing"
     effective_auth_token = auth_token
     if not effective_auth_token and _is_local_scillm_url(scillm_base_url):
@@ -730,6 +737,14 @@ def _repo_root(work_order: Mapping[str, Any]) -> Path | None:
 def _is_local_scillm_url(base_url: str) -> bool:
     parsed = urllib.parse.urlparse(base_url)
     return parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+
+
+def _is_raw_opencode_local_url(base_url: str) -> bool:
+    parsed = urllib.parse.urlparse(base_url)
+    return parsed.hostname in {"localhost", "127.0.0.1", "::1"} and parsed.port in {
+        4096,
+        4098,
+    }
 
 
 def _local_scillm_auth_token() -> tuple[str | None, str]:

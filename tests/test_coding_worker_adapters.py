@@ -1248,6 +1248,33 @@ def test_scillm_worker_launch_blocks_wrong_endpoint(tmp_path: Path) -> None:
     assert "invalid_scillm_endpoint" in payload["alert_codes"]
 
 
+def test_scillm_worker_launch_blocks_raw_opencode_local_port(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+        scillm_base_url="http://127.0.0.1:4096",
+        apply=True,
+        auth_token="test-token",
+        request_timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "raw_opencode_base_url" in payload["alert_codes"]
+
+
 def test_cli_scillm_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,

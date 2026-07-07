@@ -609,7 +609,10 @@ For SciLLM coding delegates, Tau should use the OpenCode serve surface
 model strings as the `agent`. By default, `scillm-worker-launch` is a dry-run
 launcher receipt: it builds the exact `POST /v1/scillm/opencode/runs` payload,
 redacts the required auth header, records `x_caller_skill`, and blocks wrong
-surfaces/endpoints before any external call.
+surfaces/endpoints before any external call. Known raw local OpenCode ports
+such as `127.0.0.1:4096` and `127.0.0.1:4098` are blocked as
+`raw_opencode_base_url`; Tau must route through the SciLLM proxy surface rather
+than around it.
 
 With `--apply`, `scillm-worker-launch` posts the bounded request to the
 configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the
