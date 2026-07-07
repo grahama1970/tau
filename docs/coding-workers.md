@@ -321,14 +321,16 @@ worker validation, dry-run worker launch receipts, bounded apply-launch
 mechanics, memory intent/evidence-case gates, Graph Memory acquisition
 receipts, compliance evidence package receipts, run report generation, local API
 preflight surfaces, provenance/signing, zero-trust adversarial red-team
-receipts, Herdr observation gates, sandbox-run policy receipts, and
-orchestration reliability. It records `mocked:"mixed"` and `live:"mixed"`
-because the worker examples use fixture worker results and deterministic local
-apply fixtures while the coding reliability example exercises local
-receipt-producing commands. It does not prove live Graph Memory, live
-OMP/SciLLM semantic worker execution, provider/model quality, semantic code
-correctness, GitHub mutation, human acceptance, legal compliance, or full
-sandbox isolation on every host.
+receipts, the ITAR-grade containment example, Herdr observation gates,
+sandbox-run policy receipts, and orchestration reliability. It records
+`mocked:"mixed"` and `live:"mixed"` because the worker examples use fixture
+worker results and deterministic local apply fixtures, the containment demo
+uses local fail-closed fixtures and package validation, and the coding
+reliability example exercises local receipt-producing commands. It does not
+prove live Graph Memory, live OMP/SciLLM semantic worker execution,
+provider/model quality, semantic code correctness, GitHub mutation, human
+acceptance, legal compliance, ITAR compliance, or full sandbox isolation on
+every host.
 
 ## Intended Worker Adapters
 
@@ -450,6 +452,7 @@ Copyable examples:
 examples/coding-reliability-basic/run.sh /tmp/tau-coding-reliability-basic
 examples/omp-worker/run.sh /tmp/tau-omp-worker-example
 examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
+examples/itar-grade-containment/run.sh /tmp/tau-itar-grade-containment-demo
 ```
 
 `examples/omp-worker` validates a bounded OMP-shaped worker result. By default

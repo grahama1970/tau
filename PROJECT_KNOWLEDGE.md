@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 20:42 EDT by agent
+**Last updated:** 2026-07-06 20:50 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding capability ITAR-grade containment example coverage rung:
+  `examples/itar-grade-containment/` already exercises controlled-boundary
+  fail-closed checks, ITAR actor/access preflight, Docker sandbox policy checks,
+  compliance package validation, and the zero-trust red-team suite. It is now
+  listed in `examples/README.md`, referenced from `docs/coding-workers.md`, and
+  added to `scripts/run-coding-capability-sanity.py` as syntax and run checks.
+  Pre-wiring smoke proof: `bash -n examples/itar-grade-containment/run.sh &&
+  examples/itar-grade-containment/run.sh
+  /tmp/tau-itar-grade-containment-smoke` exited 0 and wrote
+  `/tmp/tau-itar-grade-containment-smoke/demo-receipt.json` with
+  `schema:"tau.itar_grade_containment_demo_receipt.v1"`, `status:"PASS"`,
+  `mocked:false`, `live:false`, and artifacts including research query safety,
+  ITAR access preflight, Docker sandbox policy receipts, package validation, and
+  zero-trust red-team receipts. After wiring it into aggregate sanity, `uv run
+  ruff check --select I,F,E501 scripts/run-coding-capability-sanity.py` passed;
+  `bash -n examples/itar-grade-containment/run.sh &&
+  examples/itar-grade-containment/run.sh /tmp/tau-itar-grade-containment-proof`
+  exited 0; and `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-itar-example-proof` exited 0 with
+  `status:"PASS"`, `check_count:10`, `failed_check_count:0`, coverage entry
+  `ITAR-grade containment example receipts`, and embedded focused coding tests
+  `154 passed in 5.93s`. This proves the copyable local containment demo runs
+  and emits parseable local receipts; it does not prove ITAR compliance, legal
+  identity, live Docker isolation, live provider execution, GitHub mutation,
+  Memory sync, or semantic code correctness.
 
 - 2026-07-06 coding capability memory-first aggregate sanity rung:
   `scripts/run-coding-capability-sanity.py` now includes the existing

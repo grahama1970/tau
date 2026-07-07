@@ -88,6 +88,23 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             output_artifact=run_dir / "scillm-worker" / "demo-receipt.json",
         ),
         Check(
+            check_id="itar_grade_containment_example_syntax",
+            command=["bash", "-n", str(examples / "itar-grade-containment" / "run.sh")],
+            purpose="Check ITAR-grade containment example shell syntax.",
+            timeout_seconds=30,
+        ),
+        Check(
+            check_id="itar_grade_containment_example_run",
+            command=[
+                str(examples / "itar-grade-containment" / "run.sh"),
+                str(run_dir / "itar-grade-containment"),
+            ],
+            purpose=(
+                "Run controlled-boundary containment, package validation, and red-team demo."
+            ),
+            output_artifact=run_dir / "itar-grade-containment" / "demo-receipt.json",
+        ),
+        Check(
             check_id="coding_receipt_lint",
             command=[
                 uv_bin,
@@ -254,6 +271,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "local API preflight surfaces",
             "actor/environment provenance and signed receipt envelopes",
             "zero-trust adversarial red-team receipts",
+            "ITAR-grade containment example receipts",
             "Herdr observation gate receipts",
             "sandbox-run policy receipts",
             "orchestration reliability receipts",
@@ -265,9 +283,12 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
                 "Tau records worker launch requests without trusting worker execution.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
                 "provenance/signing, and adversarial containment tests.",
+                "Tau's ITAR-grade containment example emits local fail-closed and "
+                "review-package receipts.",
                 "Tau exercises Herdr observation and sandbox-run policy receipt tests.",
             ],
             "does_not_prove": [
+                "ITAR compliance.",
                 "Live OMP or SciLLM semantic worker execution.",
                 "Provider/model semantic quality.",
                 "Semantic code correctness.",
