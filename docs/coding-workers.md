@@ -215,7 +215,11 @@ block before/after comparison.
 Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
 --data-boundary boundary.json` when LSP evidence is part of a high-stakes coding
 route. In zero-trust mode, Tau blocks diagnostics, symbol, and rename-plan
-receipts that omit the active goal hash, policy profile, or data boundary.
+receipts that omit the active goal hash, policy profile, or data boundary. When
+`policy_profile.filesystem.read_denylist` is present, Tau filters matching files
+before local diagnostics or symbol scanning, records `policy_read_denied_paths`,
+and blocks the receipt with `policy_read_denied` instead of reading denied
+source files.
 
 `tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
 symbol lookup and rename planning. Rename planning does not apply edits by

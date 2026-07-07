@@ -176,6 +176,87 @@ def test_lsp_diagnostics_zero_trust_accepts_policy_boundary(tmp_path: Path) -> N
     assert payload["data_boundary"]["classification"] == "public"
 
 
+def test_lsp_diagnostics_honors_policy_read_denylist(tmp_path: Path) -> None:
+    (tmp_path / "public.py").write_text("value = 1\n", encoding="utf-8")
+    secret = tmp_path / "secrets" / "broken.py"
+    secret.parent.mkdir()
+    secret.write_text("def broken(:\n    return 1\n", encoding="utf-8")
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "diagnostics.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": [], "read_denylist": ["secrets/**"]},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "policy_read_denied" in payload["alert_codes"]
+    assert payload["policy_read_denied_paths"] == ["secrets/broken.py"]
+    assert str(secret.resolve()) not in payload["files_inspected"]
+    assert all(item["path"] != str(secret.resolve()) for item in payload["inspected_artifacts"])
+    assert payload["severity_counts"]["error"] == 0
+
+
+def test_lsp_symbols_honors_policy_read_denylist(tmp_path: Path) -> None:
+    (tmp_path / "public.py").write_text("value = 1\n", encoding="utf-8")
+    secret = tmp_path / "secrets" / "symbols.py"
+    secret.parent.mkdir()
+    secret.write_text("def hidden_symbol():\n    return hidden_symbol()\n", encoding="utf-8")
+
+    payload = write_lsp_symbol_receipt(
+        workspace=tmp_path,
+        query="hidden_symbol",
+        output_path=tmp_path / "symbols.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": [], "read_denylist": ["./secrets/**"]},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "policy_read_denied" in payload["alert_codes"]
+    assert payload["policy_read_denied_paths"] == ["secrets/symbols.py"]
+    assert payload["reference_count"] == 0
+    assert payload["references"] == []
+
+
+def test_lsp_rename_plan_honors_policy_read_denylist(tmp_path: Path) -> None:
+    secret = tmp_path / "secrets" / "symbols.py"
+    secret.parent.mkdir()
+    secret.write_text("def hidden_symbol():\n    return hidden_symbol()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="hidden_symbol",
+        new_name="renamed_symbol",
+        output_path=tmp_path / "rename.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": [], "read_denylist": ["secrets/**"]},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "policy_read_denied" in payload["alert_codes"]
+    assert payload["policy_read_denied_paths"] == ["secrets/symbols.py"]
+    assert payload["reference_count"] == 0
+    assert payload["planned_edits"] == []
+
+
 def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path: Path) -> None:
     source = tmp_path / "example.py"
     source.write_text("def target():\n    return target()\n", encoding="utf-8")

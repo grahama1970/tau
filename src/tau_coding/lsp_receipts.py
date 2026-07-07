@@ -8,6 +8,7 @@ parity.
 from __future__ import annotations
 
 import ast
+import fnmatch
 import hashlib
 import json
 import shutil
@@ -44,12 +45,24 @@ def write_lsp_diagnostics_receipt(
         data_boundary=data_boundary,
         goal_hash=goal_hash,
     )
-    files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
+    all_files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
+    files, read_denied_paths = _apply_policy_read_denylist(
+        all_files,
+        workspace=resolved_workspace,
+        policy_profile=policy_profile,
+    )
+    alerts.extend(
+        _alert(
+            "policy_read_denied",
+            f"policy_profile.filesystem.read_denylist denied {path}",
+        )
+        for path in read_denied_paths
+    )
     diagnostics: list[dict[str, Any]] = []
     server_used = "python_ast_parse_adapter"
     server_available = resolved_workspace.is_dir()
     ruff = shutil.which("ruff")
-    if server_available and ruff:
+    if server_available and ruff and not read_denied_paths:
         server_used = "ruff_json_adapter"
         diagnostics = _ruff_diagnostics(ruff, resolved_workspace)
     elif server_available:
@@ -88,6 +101,7 @@ def write_lsp_diagnostics_receipt(
         "language_server_used": server_used,
         "server_available": server_available,
         "files_inspected": [str(path) for path in files],
+        "policy_read_denied_paths": read_denied_paths,
         "inspected_artifacts": _file_artifacts(files),
         "file_count": len(files),
         "diagnostics": diagnostics,
@@ -134,7 +148,18 @@ def write_lsp_symbol_receipt(
         data_boundary=data_boundary,
         goal_hash=goal_hash,
     )
-    files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
+    files, read_denied_paths = _apply_policy_read_denylist(
+        _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS),
+        workspace=resolved_workspace,
+        policy_profile=policy_profile,
+    )
+    alerts.extend(
+        _alert(
+            "policy_read_denied",
+            f"policy_profile.filesystem.read_denylist denied {path}",
+        )
+        for path in read_denied_paths
+    )
     references = _symbol_references(files, query)
     ok = not alerts
     payload = {
@@ -152,6 +177,7 @@ def write_lsp_symbol_receipt(
         "language_server_used": "python_ast_symbol_adapter",
         "query": query,
         "files_inspected": [str(path) for path in files],
+        "policy_read_denied_paths": read_denied_paths,
         "inspected_artifacts": _file_artifacts(files),
         "reference_count": len(references),
         "references": references,
@@ -215,6 +241,7 @@ def write_lsp_rename_plan_receipt(
         "applied": False,
         "symbol_receipt_artifact": _artifact_summary(symbol_receipt_path),
         "reference_count": len(references),
+        "policy_read_denied_paths": list(symbol_receipt.get("policy_read_denied_paths", [])),
         "inspected_artifacts": list(symbol_receipt.get("inspected_artifacts", [])),
         "references": references,
         "planned_edits": [
@@ -306,6 +333,47 @@ def _workspace_files(workspace: Path, globs: Iterable[str]) -> list[Path]:
             if path.is_file():
                 files.append(path.resolve())
     return sorted(set(files))
+
+
+def _apply_policy_read_denylist(
+    files: list[Path],
+    *,
+    workspace: Path,
+    policy_profile: Mapping[str, Any] | None,
+) -> tuple[list[Path], list[str]]:
+    denylist = _policy_read_denylist(policy_profile)
+    if denylist is None:
+        return files, []
+    allowed: list[Path] = []
+    denied: list[str] = []
+    for path in files:
+        try:
+            relative = path.resolve().relative_to(workspace).as_posix()
+        except ValueError:
+            relative = path.name
+        if any(fnmatch.fnmatch(relative, _normalize_policy_glob(pattern)) for pattern in denylist):
+            denied.append(relative)
+        else:
+            allowed.append(path)
+    return allowed, denied
+
+
+def _policy_read_denylist(policy_profile: Mapping[str, Any] | None) -> list[str] | None:
+    if policy_profile is None:
+        return None
+    filesystem = policy_profile.get("filesystem")
+    if not isinstance(filesystem, Mapping):
+        return None
+    read_denylist = filesystem.get("read_denylist")
+    if not isinstance(read_denylist, list) or not all(
+        isinstance(item, str) for item in read_denylist
+    ):
+        return None
+    return [item for item in read_denylist]
+
+
+def _normalize_policy_glob(pattern: str) -> str:
+    return pattern.removeprefix("./")
 
 
 def _file_artifacts(paths: Iterable[Path]) -> list[dict[str, Any]]:
