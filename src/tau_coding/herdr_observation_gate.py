@@ -34,7 +34,9 @@ def write_herdr_observation_gate_receipt(
 ) -> dict[str, Any]:
     snapshot = _read_json_object(snapshot_path, label="Herdr observation snapshot")
     observed = _normalize_herdr_snapshot(snapshot)
-    expected_receipt = expected_receipt_path.expanduser().resolve() if expected_receipt_path else None
+    expected_receipt = (
+        expected_receipt_path.expanduser().resolve() if expected_receipt_path else None
+    )
     binding_errors = _binding_errors(
         observed,
         expected_workspace_id=expected_workspace_id,

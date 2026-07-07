@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 20:22 EDT by agent
+**Last updated:** 2026-07-06 20:29 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding capability Herdr/sandbox sanity coverage rung:
+  `scripts/run-coding-capability-sanity.py` now includes
+  `src/tau_coding/herdr_observation_gate.py`, `src/tau_coding/sandbox_run.py`,
+  `tests/test_herdr_observation_gate.py`, and `tests/test_sandbox_policy.py`
+  in the aggregate coding sanity lint/test set. The sanity receipt coverage now
+  names Herdr observation gate receipts and sandbox-run policy receipts, and
+  its non-claims explicitly include full sandbox isolation on every host.
+  `src/tau_coding/herdr_observation_gate.py` also had a previously uncovered
+  E501 line-length issue fixed. Focused proof: `uv run ruff check --select
+  I,F,E501 scripts/run-coding-capability-sanity.py
+  src/tau_coding/herdr_observation_gate.py src/tau_coding/sandbox_run.py
+  tests/test_herdr_observation_gate.py tests/test_sandbox_policy.py` -> pass;
+  `uv run pytest tests/test_herdr_observation_gate.py tests/test_sandbox_policy.py
+  -q` -> `14 passed in 0.44s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-herdr-sandbox-proof` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-herdr-sandbox-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, coverage
+  entries for Herdr observation and sandbox-run policy receipts, and embedded
+  focused coding tests `124 passed in 3.66s`. This proves the aggregate coding
+  capability sanity now exercises the deterministic local Herdr observation and
+  sandbox-run policy receipt tests; it does not prove live OMP/SciLLM semantic
+  worker execution, provider/model quality, code correctness, legal compliance,
+  or full sandbox isolation on every host.
 
 - 2026-07-06 issue #67 provider-sensitive command timeout repair: command specs
   now carry `timeout_s_source`, and Project DAG compiled command specs attach a
