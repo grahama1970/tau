@@ -1,9 +1,44 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:24 EDT by agent
+**Last updated:** 2026-07-07 12:27 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 ITAR-grade containment expected-receipt artifact gate:
+  The coding-capability sanity runner now enforces
+  `examples/itar-grade-containment/expected-receipt.json` for the copyable
+  controlled-boundary containment example. `scripts/run-coding-capability-sanity.py`
+  attaches that expected receipt to `itar_grade_containment_example_run`, and
+  the expected receipt requires the demo to emit key fail-closed, review-package,
+  sandbox, actor/access, research-query, and red-team artifacts. Required
+  artifacts include `research-query-safety-receipt.json`,
+  `itar-access-preflight-blocked-receipt.json`,
+  `docker-sandbox-blocked-receipt.json`, `sandbox-run-receipt.json`,
+  `package-validation-receipt.json`, package policy/data-boundary/provenance
+  receipts, `redteam/zero-trust-redteam-receipt.json`, swapped/controlled
+  research-query receipts, actor denial receipts, and package validation
+  negative-control receipts. `tests/test_coding_capability_sanity_runner.py`
+  now also asserts that `build_checks()` wires the ITAR expected receipt to the
+  aggregate run. Focused proof: `git diff --check --
+  scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py
+  examples/itar-grade-containment/expected-receipt.json` -> pass; `uv run
+  python -m py_compile scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run ruff check
+  --select I,F,E501 scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> `All checks passed!`; `uv
+  run pytest tests/test_coding_capability_sanity_runner.py -q` -> `9 passed in
+  0.05s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-itar-expected-20260707T163200Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `check_count:17`, `failed_check_count:0`,
+  `itar_grade_containment_example_run.expected_artifact_payload.ok:true`,
+  errors `[]`, embedded coding receipt tests `501 passed in 11.95s`. This
+  proves the maintained aggregate sanity surface now fails if the copyable
+  ITAR-grade containment demo stops emitting the expected local containment
+  artifact set; it does not prove ITAR compliance, legal identity, live Docker
+  isolation, live provider execution, GitHub mutation, Memory sync, legal
+  compliance, or full sandbox isolation on every host.
 
 - 2026-07-07 coding-reliability expected-receipt artifact gate:
   The coding-capability sanity runner now enforces

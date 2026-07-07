@@ -352,6 +352,22 @@ def test_expected_artifact_accepts_named_artifacts(tmp_path: Path) -> None:
     assert payload["errors"] == []
 
 
+def test_build_checks_wires_itar_expected_receipt(tmp_path: Path) -> None:
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    itar_check = next(
+        check
+        for check in checks
+        if check.check_id == "itar_grade_containment_example_run"
+    )
+    assert itar_check.expected_artifact == (
+        repo / "examples" / "itar-grade-containment" / "expected-receipt.json"
+    )
+
+
 def _load_runner() -> ModuleType:
     path = Path(__file__).resolve().parents[1] / "scripts" / "run-coding-capability-sanity.py"
     spec = importlib.util.spec_from_file_location("run_coding_capability_sanity", path)

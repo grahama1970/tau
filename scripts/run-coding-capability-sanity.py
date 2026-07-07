@@ -170,6 +170,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "Run controlled-boundary containment, package validation, and red-team demo."
             ),
             output_artifact=run_dir / "itar-grade-containment" / "demo-receipt.json",
+            expected_artifact=examples / "itar-grade-containment" / "expected-receipt.json",
         ),
         Check(
             check_id="coding_receipt_lint",
