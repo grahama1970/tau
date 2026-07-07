@@ -86,6 +86,8 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.lsp_diagnostics_receipt.v1" in html
     assert "diagnostics_increased" in html
     assert "ruff_json_adapter" in html
+    assert "tau.lsp_symbol_receipt.v1" in html
+    assert "target_symbol" in html
     assert "tau.lsp_rename_receipt.v1" in html
     assert "planned_edit_count" in html
     assert "renamed" in html
@@ -398,6 +400,26 @@ def _write_report_run(tmp_path: Path) -> Path:
             "diagnostic_count": 2,
             "diagnostics_increased": True,
             "policy_read_denied_paths": ["secrets/app.py"],
+        },
+    )
+    _write_json(
+        receipts_dir / "lsp-symbols-receipt.json",
+        {
+            "schema": "tau.lsp_symbol_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "language_server_used": "python_ast_symbol_adapter",
+            "query": "target_symbol",
+            "reference_count": 2,
+            "references": [
+                {"file": "src/app.py", "line": 1},
+                {"file": "tests/test_app.py", "line": 4},
+            ],
+            "policy_read_denied_paths": [],
         },
     )
     _write_json(

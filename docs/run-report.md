@@ -70,7 +70,10 @@ For LSP receipts it surfaces `lsp_language_server`, `file_count`,
 `diagnostic_count`, `diagnostics_increased`, `reference_count`,
 `rename_symbol`, `rename_new_name`, `rename_applied`, `planned_edit_count`,
 `policy_read_denied_count`, and `policy_write_denied_count` so diagnostics and
-rename plans are visible without claiming semantic correctness.
+rename plans are visible without claiming semantic correctness. For standalone
+`tau.lsp_symbol_receipt.v1`, the original symbol `query` is surfaced as
+`rename_symbol` so symbol lookup evidence appears beside rename-plan evidence
+in run-status and static reports.
 For review findings receipts it surfaces `review_declared_verdict`,
 `review_derived_verdict`, `reviewer`, `finding_count`,
 `blocking_finding_count`, `revision_finding_count`, `p0_finding_count`,

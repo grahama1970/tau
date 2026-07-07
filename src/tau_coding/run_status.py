@@ -1801,7 +1801,7 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "diagnostic_count": payload.get("diagnostic_count"),
                 "diagnostics_increased": payload.get("diagnostics_increased"),
                 "reference_count": payload.get("reference_count"),
-                "rename_symbol": payload.get("symbol"),
+                "rename_symbol": payload.get("symbol") or payload.get("query"),
                 "rename_new_name": payload.get("new_name"),
                 "rename_applied": payload.get("applied"),
                 "planned_edit_count": _count_list(payload.get("planned_edits")),

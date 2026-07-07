@@ -2724,6 +2724,41 @@ def test_run_status_summarizes_lsp_diagnostics_fields(tmp_path: Path) -> None:
     }
 
 
+def test_run_status_summarizes_lsp_symbol_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "lsp-symbols-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.lsp_symbol_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "language_server_used": "python_ast_symbol_adapter",
+            "query": "target_symbol",
+            "reference_count": 2,
+            "policy_read_denied_paths": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    summary = status["coding_evidence"]["receipts"][0]
+    assert summary["relative_path"] == "receipts/lsp-symbols-receipt.json"
+    assert summary["schema"] == "tau.lsp_symbol_receipt.v1"
+    assert summary["status"] == "PASS"
+    assert summary["sha256"] == f"sha256:{_sha256(receipt_path)}"
+    assert summary["lsp_language_server"] == "python_ast_symbol_adapter"
+    assert summary["reference_count"] == 2
+    assert summary["rename_symbol"] == "target_symbol"
+    assert summary["rename_new_name"] is None
+    assert summary["planned_edit_count"] is None
+    assert summary["policy_read_denied_count"] == 0
+
+
 def test_run_status_summarizes_lsp_rename_plan_fields(tmp_path: Path) -> None:
     receipt_path = tmp_path / "receipts" / "lsp-rename-plan-receipt.json"
     _write_json(
