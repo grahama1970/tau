@@ -362,8 +362,10 @@ external research without research-query/source receipts. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution
 or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
 before Tau accepts the worker result. Sandbox substrates must include an
-existing `sandbox_receipt_path`; Herdr substrates must include `herdr_binding`
-or an existing `herdr_receipt_path`. Validation receipts record
+existing `tau.sandbox_run_receipt.v1` receipt with `status:"PASS"` and
+`ok:true`; Herdr substrates must include `herdr_binding` or an existing
+`tau.herdr_observation_gate_receipt.v1` receipt with `status:"PASS"` and
+`ok:true`. Validation receipts record
 `work_order_sha256`, `result_sha256`, byte counts, and `validated_artifacts`
 for the exact JSON artifacts Tau inspected. Launch receipts also carry
 `execution_substrate`, `sandbox_receipt_path`, `herdr_binding`,

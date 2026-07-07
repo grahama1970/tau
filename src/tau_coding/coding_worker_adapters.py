@@ -25,6 +25,8 @@ SCILLM_WORKER_RESULT_SCHEMA = "tau.scillm_worker_result.v1"
 SCILLM_WORKER_RECEIPT_SCHEMA = "tau.scillm_worker_receipt.v1"
 SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA = "tau.scillm_worker_launch_receipt.v1"
 SCILLM_OPENCODE_SERVE_ENDPOINT = "/v1/scillm/opencode/runs"
+SANDBOX_RUN_RECEIPT_SCHEMA = "tau.sandbox_run_receipt.v1"
+HERDR_OBSERVATION_GATE_RECEIPT_SCHEMA = "tau.herdr_observation_gate_receipt.v1"
 
 ALLOWED_STATUSES = {"PASS", "BLOCKED", "NEEDS_REVIEW"}
 ALLOWED_SUBSTRATES = {
@@ -752,12 +754,25 @@ def _append_work_order_gate_alerts(
                     "high-stakes sandbox worker requires sandbox_receipt_path",
                 )
             )
-        elif not _path_exists(sandbox_receipt_path, repo):
-            alerts.append(
-                _alert(
-                    "sandbox_receipt_missing",
-                    "high-stakes sandbox worker sandbox_receipt_path does not exist",
-                )
+        else:
+            sandbox_receipt = _load_referenced_receipt(
+                sandbox_receipt_path,
+                repo,
+                alerts,
+                missing_code="sandbox_receipt_missing",
+                unreadable_code="sandbox_receipt_unreadable",
+                not_object_code="sandbox_receipt_not_object",
+                missing_message=(
+                    "high-stakes sandbox worker sandbox_receipt_path does not exist"
+                ),
+            )
+            _append_referenced_receipt_status_alerts(
+                sandbox_receipt,
+                alerts,
+                expected_schema=SANDBOX_RUN_RECEIPT_SCHEMA,
+                invalid_schema_code="sandbox_receipt_invalid_schema",
+                not_pass_code="sandbox_receipt_not_pass",
+                label="sandbox receipt",
             )
     if high_stakes and substrate in {"herdr", "herdr-visible"}:
         herdr_binding = isinstance(work_order.get("herdr_binding"), Mapping)
@@ -769,12 +784,23 @@ def _append_work_order_gate_alerts(
                     "high-stakes Herdr worker requires herdr_binding or herdr_receipt_path",
                 )
             )
-        elif herdr_receipt_path and not _path_exists(herdr_receipt_path, repo):
-            alerts.append(
-                _alert(
-                    "herdr_receipt_missing",
-                    "high-stakes Herdr worker herdr_receipt_path does not exist",
-                )
+        elif herdr_receipt_path:
+            herdr_receipt = _load_referenced_receipt(
+                herdr_receipt_path,
+                repo,
+                alerts,
+                missing_code="herdr_receipt_missing",
+                unreadable_code="herdr_receipt_unreadable",
+                not_object_code="herdr_receipt_not_object",
+                missing_message="high-stakes Herdr worker herdr_receipt_path does not exist",
+            )
+            _append_referenced_receipt_status_alerts(
+                herdr_receipt,
+                alerts,
+                expected_schema=HERDR_OBSERVATION_GATE_RECEIPT_SCHEMA,
+                invalid_schema_code="herdr_receipt_invalid_schema",
+                not_pass_code="herdr_receipt_not_pass",
+                label="Herdr observation receipt",
             )
     if high_stakes and not work_order.get("policy_profile"):
         alerts.append(
@@ -798,6 +824,50 @@ def _substrate_metadata(work_order: Mapping[str, Any]) -> dict[str, Any]:
         "policy_profile": work_order.get("policy_profile"),
         "data_boundary": work_order.get("data_boundary"),
     }
+
+
+def _load_referenced_receipt(
+    path_value: str,
+    repo: Path | None,
+    alerts: list[dict[str, Any]],
+    *,
+    missing_code: str,
+    unreadable_code: str,
+    not_object_code: str,
+    missing_message: str,
+) -> Mapping[str, Any] | None:
+    path = Path(path_value)
+    if not path.is_absolute() and repo is not None:
+        path = repo / path
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        alerts.append(_alert(missing_code, missing_message))
+        return None
+    except (OSError, json.JSONDecodeError) as exc:
+        alerts.append(_alert(unreadable_code, f"referenced receipt is unreadable: {exc}"))
+        return None
+    if not isinstance(payload, Mapping):
+        alerts.append(_alert(not_object_code, "referenced receipt root must be a JSON object"))
+        return None
+    return payload
+
+
+def _append_referenced_receipt_status_alerts(
+    receipt: Mapping[str, Any] | None,
+    alerts: list[dict[str, Any]],
+    *,
+    expected_schema: str,
+    invalid_schema_code: str,
+    not_pass_code: str,
+    label: str,
+) -> None:
+    if receipt is None:
+        return
+    if receipt.get("schema") != expected_schema:
+        alerts.append(_alert(invalid_schema_code, f"{label} schema must be {expected_schema}"))
+    if receipt.get("ok") is not True or receipt.get("status") != "PASS":
+        alerts.append(_alert(not_pass_code, f"{label} must be PASS before worker acceptance"))
 
 
 def _scillm_opencode_request_payload(

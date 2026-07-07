@@ -158,6 +158,38 @@ def test_high_stakes_sandbox_worker_requires_sandbox_receipt(tmp_path: Path) -> 
     assert "sandbox_receipt_required" in payload["alert_codes"]
 
 
+def test_high_stakes_sandbox_worker_blocks_non_pass_sandbox_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    sandbox_receipt = Path(work_order_payload["repo"]) / "sandbox-receipt.json"
+    sandbox_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.sandbox_run_receipt.v1",
+                "status": "BLOCKED",
+                "ok": False,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "sandbox_receipt_not_pass" in payload["alert_codes"]
+
+
 def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -176,6 +208,40 @@ def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "herdr_binding_required" in payload["alert_codes"]
+
+
+def test_high_stakes_herdr_worker_blocks_non_pass_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        herdr_binding=None,
+        herdr_receipt_path="herdr-observation-gate.json",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    herdr_receipt = Path(work_order_payload["repo"]) / "herdr-observation-gate.json"
+    herdr_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.herdr_observation_gate_receipt.v1",
+                "status": "BLOCKED",
+                "ok": False,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_receipt_not_pass" in payload["alert_codes"]
 
 
 def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) -> None:
