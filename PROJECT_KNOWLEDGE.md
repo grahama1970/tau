@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:48 EDT by agent
+**Last updated:** 2026-07-06 21:54 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan goal-hash evidence binding rung:
+  `src/tau_coding/commit_plan.py` now records `goal_hash` on
+  `tau.commit_plan_receipt.v1`, requires it in zero-trust commit planning, and
+  rejects supporting evidence receipts whose `goal_hash` is missing or does
+  not match the commit plan goal. The CLI `commit-plan` command now accepts
+  `--goal-hash`, and `docs/coding-workers.md` documents that evidence receipts
+  must carry the same goal hash when one is supplied. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  src/tau_coding/cli.py tests/test_commit_plan.py` -> pass; `uv run pytest
+  tests/test_commit_plan.py -q` -> `17 passed in 0.82s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-goal-hash-proof` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-goal-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, coverage entry `commit-plan receipts`, and embedded
+  focused coding tests `186 passed in 5.96s`. This proves deterministic local
+  commit-plan evidence receipts can no longer justify a goal-bound source
+  commit plan with missing or mismatched goal hashes; it does not prove
+  semantic grouping correctness, semantic code correctness, live OMP/SciLLM
+  semantic worker execution, provider/model quality, GitHub mutation, human
+  acceptance, legal compliance, or full sandbox isolation.
 
 - 2026-07-06 worker required-artifact existence rung:
   `src/tau_coding/coding_worker_adapters.py` now treats a worker required

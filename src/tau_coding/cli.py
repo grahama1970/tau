@@ -1742,6 +1742,7 @@ def main(
             payload = write_commit_plan_receipt(
                 repo=Path(str(options["repo"])),
                 output_path=Path(str(options["out"])),
+                goal_hash=_optional_str(options.get("goal_hash")),
                 apply=bool(options["apply"]),
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
@@ -4591,6 +4592,7 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "goal_hash": None,
         "evidence_receipts": [],
     }
     index = 0
@@ -4601,6 +4603,7 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
             "--out",
             "--policy-profile",
             "--data-boundary",
+            "--goal-hash",
             "--evidence-receipt",
         }:
             index += 1
@@ -4618,6 +4621,8 @@ def _parse_commit_plan_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         elif arg.startswith("--evidence-receipt="):
             options["evidence_receipts"].append(arg.partition("=")[2])
         elif arg == "--apply":

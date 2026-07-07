@@ -42,6 +42,7 @@ def write_commit_plan_receipt(
     *,
     repo: Path,
     output_path: Path,
+    goal_hash: str | None = None,
     apply: bool = False,
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
@@ -53,10 +54,15 @@ def write_commit_plan_receipt(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        goal_hash=goal_hash,
     )
     changed = _changed_file_artifacts(resolved_repo, _git_changed_files(resolved_repo))
     groups = _commit_groups(changed)
-    evidence_receipts = _evidence_receipts(evidence_receipt_paths or [], alerts)
+    evidence_receipts = _evidence_receipts(
+        evidence_receipt_paths or [],
+        alerts,
+        expected_goal_hash=goal_hash,
+    )
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
     warnings = _mixed_group_warnings(groups)
     if changed and not groups:
@@ -86,6 +92,7 @@ def write_commit_plan_receipt(
         "live": True,
         "provider_live": False,
         "repo": str(resolved_repo),
+        "goal_hash": goal_hash,
         "zero_trust": zero_trust,
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
@@ -214,6 +221,8 @@ def _commit_groups(changed: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _evidence_receipts(
     paths: list[Path],
     alerts: list[dict[str, str]],
+    *,
+    expected_goal_hash: str | None,
 ) -> list[dict[str, Any]]:
     receipts: list[dict[str, Any]] = []
     for path in paths:
@@ -233,6 +242,7 @@ def _evidence_receipts(
         schema = payload.get("schema")
         status = payload.get("status")
         ok = payload.get("ok")
+        receipt_goal_hash = payload.get("goal_hash")
         schema_supported = schema in SUPPORTED_EVIDENCE_RECEIPT_SCHEMAS
         if not schema_supported:
             alerts.append(
@@ -248,6 +258,21 @@ def _evidence_receipts(
                     f"evidence receipt must be PASS with ok:true: {resolved}",
                 )
             )
+        if expected_goal_hash is not None:
+            if not isinstance(receipt_goal_hash, str) or not receipt_goal_hash:
+                alerts.append(
+                    _alert(
+                        "evidence_receipt_missing_goal_hash",
+                        f"evidence receipt must include goal_hash: {resolved}",
+                    )
+                )
+            elif receipt_goal_hash != expected_goal_hash:
+                alerts.append(
+                    _alert(
+                        "evidence_receipt_goal_hash_mismatch",
+                        f"evidence receipt goal_hash does not match commit plan: {resolved}",
+                    )
+                )
         receipts.append(
             {
                 "path": str(resolved),
@@ -256,6 +281,12 @@ def _evidence_receipts(
                 "schema_supported": schema_supported,
                 "status": status,
                 "ok": ok,
+                "goal_hash": receipt_goal_hash if isinstance(receipt_goal_hash, str) else None,
+                "goal_hash_matches": (
+                    None
+                    if expected_goal_hash is None
+                    else receipt_goal_hash == expected_goal_hash
+                ),
             }
         )
     return receipts
@@ -318,8 +349,11 @@ def _coding_policy_alerts(
     zero_trust: bool,
     policy_profile: dict[str, Any] | None,
     data_boundary: dict[str, Any] | None,
+    goal_hash: str | None,
 ) -> list[dict[str, str]]:
     alerts: list[dict[str, str]] = []
+    if zero_trust and not goal_hash:
+        alerts.append(_alert("missing_goal_hash", "zero-trust commit plan requires goal_hash"))
     if zero_trust and policy_profile is None:
         alerts.append(
             _alert("missing_policy_profile", "zero-trust commit plan requires policy_profile")

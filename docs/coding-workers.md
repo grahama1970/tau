@@ -213,6 +213,7 @@ For source-only changes, attach the receipts that justify the commit group:
 uv run tau commit-plan \
   --repo . \
   --out commit-plan-receipt.json \
+  --goal-hash sha256:... \
   --evidence-receipt code-patch-receipt.json \
   --evidence-receipt lsp-diagnostics-receipt.json \
   --evidence-receipt review-findings-receipt.json
@@ -224,6 +225,8 @@ SHA-256 so a later reviewer can inspect what supported the proposed atomic
 commit. Evidence receipts only count when they report `status:"PASS"` and
 `ok:true` from a supported Tau coding evidence schema; BLOCKED, failed, or
 unknown-schema receipts are recorded but cannot justify a source commit group.
+When `--goal-hash` is supplied, every evidence receipt must carry the same
+`goal_hash`; missing or mismatched evidence goal hashes block the commit plan.
 
 Commit plans also emit non-blocking `warnings` and `warning_codes` when the
 working tree mixes independent commit-group classes, such as docs with runtime
@@ -231,9 +234,10 @@ or test changes, or lockfiles with unrelated files. These warnings are review
 signals only. They do not authorize a commit, prove the grouping is
 semantically correct, or replace the approval gate for high-risk paths.
 
-Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
-when planning commits for a high-stakes coding route. In zero-trust mode, Tau
-blocks commit plans that omit policy or boundary metadata.
+Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
+--data-boundary boundary.json` when planning commits for a high-stakes coding
+route. In zero-trust mode, Tau blocks commit plans that omit the active goal
+hash, policy metadata, or boundary metadata.
 
 The command is dry-run by default. `--apply` is intentionally blocked unless a
 future approval lane authorizes commit application. High-risk paths such as

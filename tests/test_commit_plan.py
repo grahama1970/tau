@@ -237,11 +237,79 @@ def test_commit_plan_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -
     )
 
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
 
 def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "goal_hash": "sha256:goal",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["goal_hash"] == "sha256:goal"
+    assert payload["zero_trust"] is True
+    assert payload["policy_profile"]["profile_id"] == "test"
+    assert payload["data_boundary"]["classification"] == "public"
+    assert payload["evidence_receipts"][0]["goal_hash_matches"] is True
+
+
+def test_commit_plan_blocks_evidence_receipt_goal_hash_mismatch(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "goal_hash": "sha256:other",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        goal_hash="sha256:goal",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "evidence_receipt_goal_hash_mismatch" in payload["alert_codes"]
+    assert payload["evidence_receipts"][0]["goal_hash"] == "sha256:other"
+    assert payload["evidence_receipts"][0]["goal_hash_matches"] is False
+
+
+def test_commit_plan_blocks_evidence_receipt_missing_goal_hash_when_expected(
+    tmp_path: Path,
+) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
     evidence = repo / "diagnostics.json"
@@ -254,16 +322,14 @@ def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     payload = write_commit_plan_receipt(
         repo=repo,
         output_path=repo / "commit-plan.json",
-        zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        goal_hash="sha256:goal",
         evidence_receipt_paths=[evidence],
     )
 
-    assert payload["status"] == "PASS"
-    assert payload["zero_trust"] is True
-    assert payload["policy_profile"]["profile_id"] == "test"
-    assert payload["data_boundary"]["classification"] == "public"
+    assert payload["status"] == "BLOCKED"
+    assert "evidence_receipt_missing_goal_hash" in payload["alert_codes"]
+    assert payload["evidence_receipts"][0]["goal_hash"] is None
+    assert payload["evidence_receipts"][0]["goal_hash_matches"] is False
 
 
 def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
@@ -271,7 +337,14 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
     evidence = repo / "evidence.json"
     evidence.write_text(
-        json.dumps({"schema": "tau.review_findings.v1", "ok": True, "status": "PASS"})
+        json.dumps(
+            {
+                "schema": "tau.review_findings.v1",
+                "ok": True,
+                "status": "PASS",
+                "goal_hash": "sha256:goal",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
@@ -287,6 +360,8 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
             str(out),
             "--evidence-receipt",
             str(evidence),
+            "--goal-hash",
+            "sha256:goal",
         ],
     )
 
@@ -294,6 +369,7 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == COMMIT_PLAN_RECEIPT_SCHEMA
+    assert payload["goal_hash"] == "sha256:goal"
     assert payload["evidence_receipt_count"] == 1
     assert payload["evidence_receipts"][0]["schema_supported"] is True
 
@@ -314,6 +390,7 @@ def test_cli_commit_plan_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
