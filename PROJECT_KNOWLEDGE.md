@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:06 EDT by agent
+**Last updated:** 2026-07-06 23:09 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 orchestration required receipt metadata rung:
+  `src/tau_coding/orchestration_reliability.py` now records schema/status
+  metadata on `required_receipts.present_artifacts` for explicitly required
+  receipt files, including `schema`, `status`, `ok`, `mocked`, `live`, and
+  `provider_live` alongside the existing path, SHA-256, and byte count. This
+  makes `tau.orchestration_reliability_receipt.v1` self-describing about the
+  required evidence receipts it inspected. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> pass; `uv run pytest
+  tests/test_orchestration_reliability.py -q` -> `8 passed in 0.38s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-orchestration-required-receipt-metadata-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-orchestration-required-receipt-metadata-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.67s`. This proves deterministic local orchestration
+  reliability receipts now expose the core admissibility metadata for required
+  receipt artifacts and compose with the current coding capability sanity
+  suite; it does not prove agent truthfulness, semantic code correctness,
+  provider/model quality, GitHub mutation, human acceptance, legal compliance,
+  ITAR compliance, or full sandbox isolation on every host.
 
 - 2026-07-06 worker substrate receipt metadata rung:
   `src/tau_coding/coding_worker_adapters.py` now records schema/status fields

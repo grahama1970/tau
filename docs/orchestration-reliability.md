@@ -8,9 +8,11 @@ enough receipts, gates, route evidence, and course-correction artifacts to treat
 the orchestration as controlled.
 
 The receipt binds the inspected DAG receipt and explicitly required receipts by
-path, SHA-256, and byte count. These hashes prove which local JSON artifacts Tau
-read for this reliability summary; they do not prove the claims inside those
-artifacts are true.
+path, SHA-256, and byte count. For explicitly required receipts, Tau also records
+the referenced receipt's `schema`, `status`, `ok`, `mocked`, `live`, and
+`provider_live` fields when the JSON can be read. These hashes and metadata show
+which local JSON artifacts Tau inspected for this reliability summary; they do
+not prove the claims inside those artifacts are true.
 
 ## Command
 

@@ -14,7 +14,22 @@ from tau_coding.orchestration_reliability import (
 
 def test_orchestration_reliability_passes_clean_run(tmp_path: Path) -> None:
     artifact = tmp_path / "command-loop-receipt.json"
-    artifact.write_text("{}", encoding="utf-8")
+    artifact.write_text(
+        json.dumps(
+            {
+                "schema": "tau.command_loop_receipt.v1",
+                "status": "PASS",
+                "ok": True,
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     dag_receipt = _write_dag_receipt(tmp_path, artifacts=[str(artifact)])
 
     payload = write_orchestration_reliability_receipt(
@@ -37,6 +52,12 @@ def test_orchestration_reliability_passes_clean_run(tmp_path: Path) -> None:
             "path": str(artifact.resolve()),
             "sha256": f"sha256:{_sha256(artifact)}",
             "bytes": artifact.stat().st_size,
+            "schema": "tau.command_loop_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
         }
     ]
     assert payload["inspected_artifacts"][0] == {

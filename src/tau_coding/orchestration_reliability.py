@@ -403,7 +403,7 @@ def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, lis
         resolved = receipt.expanduser().resolve()
         if resolved.exists():
             present.append(str(resolved))
-            present_artifacts.append(_artifact_descriptor(resolved))
+            present_artifacts.append(_receipt_artifact_descriptor(resolved))
         else:
             missing.append(str(resolved))
     return {"present": present, "missing": missing, "present_artifacts": present_artifacts}
@@ -495,6 +495,23 @@ def _artifact_descriptor(path: Path) -> dict[str, Any]:
         "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
         "bytes": resolved.stat().st_size,
     }
+
+
+def _receipt_artifact_descriptor(path: Path) -> dict[str, Any]:
+    descriptor = _artifact_descriptor(path)
+    payload = _read_json(path)
+    if payload:
+        descriptor.update(
+            {
+                "schema": payload.get("schema"),
+                "status": payload.get("status"),
+                "ok": payload.get("ok"),
+                "mocked": payload.get("mocked"),
+                "live": payload.get("live"),
+                "provider_live": payload.get("provider_live"),
+            }
+        )
+    return descriptor
 
 
 def _utc_stamp() -> str:
