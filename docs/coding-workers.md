@@ -346,7 +346,10 @@ semantic coverage from a passing command. Tested paths must be non-empty
 relative paths inside the repo; absolute paths or `..` escapes block with
 `invalid_tested_path` before the test command can run. In zero-trust mode, Tau
 requires the active goal hash, `tau.policy_profile.v1`, and
-`tau.data_boundary.v1` before running the command.
+`tau.data_boundary.v1` before running the command. The zero-trust receipt path
+must also resolve under `--repo`; external receipt paths block with
+`test_run_receipt_outside_repo` before command execution, so stdout/stderr
+artifacts are not written outside the repository boundary.
 
 This receipt proves only that Tau ran the named focused test command and
 captured its artifacts. It does not prove semantic correctness, full-suite

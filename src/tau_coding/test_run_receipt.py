@@ -54,6 +54,13 @@ def write_test_run_receipt(
                 errors=tested_path_errors,
             )
         )
+    if zero_trust and not _path_inside_root(resolved_out, resolved_repo):
+        alerts.append(
+            _alert(
+                "test_run_receipt_outside_repo",
+                "zero-trust test-run receipt must stay inside the repo",
+            )
+        )
     if timeout_s <= 0:
         alerts.append(_alert("invalid_timeout", "timeout_s must be greater than zero"))
     if not resolved_repo.is_dir():
@@ -184,6 +191,14 @@ def _normalize_tested_paths(values: Sequence[str]) -> tuple[list[str], list[str]
             continue
         normalized.append(path)
     return sorted(set(normalized)), errors
+
+
+def _path_inside_root(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
 
 
 def _coding_policy_alerts(

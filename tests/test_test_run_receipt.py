@@ -103,6 +103,50 @@ def test_test_run_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> N
     assert "missing_data_boundary" in payload["alert_codes"]
 
 
+def test_test_run_zero_trust_blocks_receipt_outside_repo_without_execution(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write_passing_test(repo)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+
+    payload = write_test_run_receipt(
+        repo=repo,
+        output_path=outside / "test-run.json",
+        command=[sys.executable, "-m", "pytest", "-q"],
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_result"] is None
+    assert payload["live"] is False
+    assert "test_run_receipt_outside_repo" in payload["alert_codes"]
+
+
+def test_test_run_legacy_allows_receipt_outside_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write_passing_test(repo)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+
+    payload = write_test_run_receipt(
+        repo=repo,
+        output_path=outside / "test-run.json",
+        command=[sys.executable, "-m", "pytest", "-q"],
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["command_result"] is not None
+    assert payload["live"] is True
+    assert "test_run_receipt_outside_repo" not in payload["alert_codes"]
+
+
 def test_test_run_receipt_does_not_claim_semantic_correctness(tmp_path: Path) -> None:
     _write_passing_test(tmp_path)
 
@@ -220,6 +264,52 @@ def test_cli_test_run_blocks_escaped_tested_path(tmp_path: Path) -> None:
     assert "invalid_tested_path" in payload["alert_codes"]
 
 
+def test_cli_test_run_zero_trust_blocks_receipt_outside_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _write_passing_test(repo)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    out = outside / "test-run.json"
+    policy_path = repo / "policy-profile.json"
+    boundary_path = repo / "data-boundary.json"
+    policy_path.write_text(json.dumps(_policy_profile()), encoding="utf-8")
+    boundary_path.write_text(json.dumps(_data_boundary()), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "test-run",
+            "--repo",
+            str(repo),
+            "--out",
+            str(out),
+            "--goal-hash",
+            "sha256:goal",
+            "--zero-trust",
+            "--policy-profile",
+            str(policy_path),
+            "--data-boundary",
+            str(boundary_path),
+            "--command",
+            sys.executable,
+            "--command",
+            "-m",
+            "--command",
+            "pytest",
+            "--command",
+            "-q",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_result"] is None
+    assert "test_run_receipt_outside_repo" in payload["alert_codes"]
+
+
 def _write_passing_test(path: Path) -> None:
     tests = path / "tests"
     tests.mkdir()
@@ -227,3 +317,36 @@ def _write_passing_test(path: Path) -> None:
         "def test_example():\n    assert 1 + 1 == 2\n",
         encoding="utf-8",
     )
+
+
+def _policy_profile() -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": ["."], "read_denylist": []},
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }

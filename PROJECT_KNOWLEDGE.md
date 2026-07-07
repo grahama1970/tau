@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 zero-trust test-run receipt repo-scope rung:
+  `src/tau_coding/test_run_receipt.py` now blocks zero-trust focused test
+  execution when `--out` resolves outside the active `--repo`. The receipt
+  records `test_run_receipt_outside_repo`, leaves `command_result:null`, and
+  keeps `live:false`, so stdout/stderr artifacts are not written outside the
+  repository boundary. Legacy non-zero-trust test-run receipts keep their
+  previous behavior for external output paths. `tests/test_test_run_receipt.py`
+  covers direct API and CLI rejection plus the legacy allow behavior.
+  `docs/coding-workers.md` documents the zero-trust repo-scoped test-run
+  receipt rule. Focused proof: `git diff --check --
+  src/tau_coding/test_run_receipt.py tests/test_test_run_receipt.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run python -m
+  py_compile src/tau_coding/test_run_receipt.py` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/test_run_receipt.py
+  tests/test_test_run_receipt.py` -> `All checks passed!`; `uv run pytest
+  tests/test_test_run_receipt.py -q` -> `12 passed in 1.74s`. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-test-run-receipt-scope-20260707T203000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `395 passed in 10.44s`. This rung is intended
+  to prove high-stakes focused test evidence cannot silently emit logs and
+  receipts outside the repo; it does not prove semantic code correctness,
+  full-suite success, agent truthfulness, provider/model quality, legal
+  compliance, ITAR compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 zero-trust code-patch artifact repo-scope rung:
   `src/tau_coding/code_patch.py` now blocks zero-trust
   `tau.code_patch.v1` artifacts whose `--patch` path resolves outside
