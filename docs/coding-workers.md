@@ -124,8 +124,11 @@ uv run tau code-patch \
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when the patch is part of a zero-trust or high-stakes DAG. In zero-trust mode,
 the patch artifact itself must resolve under `--repo`; external patch artifacts
-block with `code_patch_outside_repo` and cannot apply. Use `--dry-run` to write
-the receipt without applying the staged content. Dry-run receipts record
+block with `code_patch_outside_repo` and cannot apply. If `--out` is supplied,
+the receipt path must also resolve under `--repo`; external receipt paths block
+with `code_patch_receipt_outside_repo` before any patch can apply. Use
+`--dry-run` to write the receipt without applying the staged content. Dry-run
+receipts record
 `apply_requested:false`, `dry_run:true`, `applied:false`, and the staged post-
 patch hash while leaving `after_sha256` bound to the unchanged target file.
 

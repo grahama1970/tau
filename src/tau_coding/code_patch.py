@@ -66,6 +66,11 @@ def apply_code_patch_receipt(
 
     resolved_patch = patch_path.expanduser().resolve()
     resolved_repo = repo_root.expanduser().resolve()
+    resolved_receipt = (
+        receipt_path.expanduser().resolve()
+        if receipt_path is not None
+        else resolved_patch.with_name("code-patch-receipt.json")
+    )
     alerts: list[dict[str, Any]] = []
     patch_inside_repo = _path_inside_root(resolved_patch, resolved_repo)
     if zero_trust and not patch_inside_repo:
@@ -73,6 +78,13 @@ def apply_code_patch_receipt(
             _alert(
                 "code_patch_outside_repo",
                 "zero-trust code patch artifact must stay inside repo_root",
+            )
+        )
+    if zero_trust and not _path_inside_root(resolved_receipt, resolved_repo):
+        alerts.append(
+            _alert(
+                "code_patch_receipt_outside_repo",
+                "zero-trust code patch receipt must stay inside repo_root",
             )
         )
     payload = _read_json_object(resolved_patch, alerts)
@@ -269,11 +281,6 @@ def apply_code_patch_receipt(
             observed_artifact_path=resolved_patch,
             live=True,
         )
-    resolved_receipt = (
-        receipt_path.expanduser().resolve()
-        if receipt_path is not None
-        else resolved_patch.with_name("code-patch-receipt.json")
-    )
     resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
     receipt["receipt_path"] = str(resolved_receipt)
     resolved_receipt.write_text(
