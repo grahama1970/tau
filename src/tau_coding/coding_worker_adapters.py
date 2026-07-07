@@ -158,6 +158,10 @@ def write_omp_worker_launch_receipt(
         "stderr_path": launch_result["stderr_path"],
         "stderr_sha256": _artifact_sha256_uri(launch_result["stderr_path"]),
         "stderr_bytes": _artifact_size(launch_result["stderr_path"]),
+        "stdout_jsonl_valid": launch_result["stdout_jsonl_valid"],
+        "response_frame_count": launch_result["response_frame_count"],
+        "response_schemas": launch_result["response_schemas"],
+        "response_frames": launch_result["response_frames"],
         "log_artifacts": _artifact_descriptors(
             ("stdout", launch_result["stdout_path"]),
             ("stderr", launch_result["stderr_path"]),
@@ -721,6 +725,10 @@ def _maybe_run_omp_rpc_launch(
         "timed_out": False,
         "stdout_path": None,
         "stderr_path": None,
+        "stdout_jsonl_valid": None,
+        "response_frame_count": 0,
+        "response_schemas": [],
+        "response_frames": [],
     }
     if not apply:
         return result
@@ -772,6 +780,16 @@ def _maybe_run_omp_rpc_launch(
         alerts.append(
             _alert("omp_launch_nonzero_exit", f"OMP launch exited {completed.returncode}")
         )
+    response_frames, jsonl_errors = _parse_jsonl_response_frames(completed.stdout)
+    for error in jsonl_errors:
+        alerts.append(error)
+    response_schemas = sorted(
+        {
+            schema
+            for frame in response_frames
+            if isinstance((schema := frame.get("schema")), str) and schema
+        }
+    )
     result.update(
         {
             "process_executed": True,
@@ -780,9 +798,45 @@ def _maybe_run_omp_rpc_launch(
             "timed_out": False,
             "stdout_path": str(stdout_path),
             "stderr_path": str(stderr_path),
+            "stdout_jsonl_valid": not jsonl_errors,
+            "response_frame_count": len(response_frames),
+            "response_schemas": response_schemas,
+            "response_frames": response_frames,
         }
     )
     return result
+
+
+def _parse_jsonl_response_frames(stdout: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    frames: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    lines = stdout.splitlines()
+    nonempty_lines = [line for line in lines if line.strip()]
+    if not nonempty_lines:
+        return frames, [_alert("omp_stdout_jsonl_empty", "OMP RPC stdout emitted no JSONL frames")]
+    for index, line in enumerate(lines, start=1):
+        if not line.strip():
+            continue
+        try:
+            frame = json.loads(line)
+        except json.JSONDecodeError as exc:
+            errors.append(
+                _alert(
+                    "omp_stdout_jsonl_invalid",
+                    f"OMP RPC stdout line {index} is not JSON: {exc}",
+                )
+            )
+            continue
+        if not isinstance(frame, dict):
+            errors.append(
+                _alert(
+                    "omp_stdout_jsonl_non_object",
+                    f"OMP RPC stdout line {index} must be a JSON object",
+                )
+            )
+            continue
+        frames.append(frame)
+    return frames, errors
 
 
 def _maybe_post_scillm_opencode_run(

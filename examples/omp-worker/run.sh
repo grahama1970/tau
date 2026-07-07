@@ -213,6 +213,9 @@ payload = {
     "apply_launch_stdout_sha256": apply_launch_receipt.get("stdout_sha256"),
     "apply_launch_stderr_path": apply_launch_receipt.get("stderr_path"),
     "apply_launch_stderr_sha256": apply_launch_receipt.get("stderr_sha256"),
+    "apply_launch_stdout_jsonl_valid": apply_launch_receipt.get("stdout_jsonl_valid"),
+    "apply_launch_response_frame_count": apply_launch_receipt.get("response_frame_count"),
+    "apply_launch_response_schemas": apply_launch_receipt.get("response_schemas", []),
     "apply_launch_log_artifacts": apply_launch_receipt.get("log_artifacts", []),
     "proof_scope": {
         "proves": [

@@ -41,8 +41,10 @@ This example proves only the Tau-side receipt validation path. Unless
 `OMP_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
 launched a real OMP worker. The default apply launch uses a deterministic local
 `fake-omp` executable to prove Tau can invoke an OMP-compatible process and
-capture stdout/stderr. The maintained sanity check requires the example receipt
-to show `apply_launch_process_executed:true`, `apply_launch_exit_code:0`, and
-hash-bound stdout/stderr descriptors. It does not prove a real `oh-my-pi`
+capture stdout/stderr, and require parseable RPC JSONL response frames. The
+maintained sanity check requires the example receipt to show
+`apply_launch_process_executed:true`, `apply_launch_exit_code:0`,
+`apply_launch_stdout_jsonl_valid:true`, `apply_launch_response_frame_count:1`,
+and hash-bound stdout/stderr descriptors. It does not prove a real `oh-my-pi`
 binary was used, OMP accepted or ran the request semantically, semantic code
 correctness, or provider/model quality.

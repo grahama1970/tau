@@ -192,6 +192,48 @@ def test_expected_artifact_accepts_omp_apply_launch_log_artifacts(
     assert payload["errors"] == []
 
 
+def test_expected_artifact_checks_omp_apply_launch_response_frames(
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner()
+    expected = tmp_path / "expected.json"
+    actual = tmp_path / "demo-receipt.json"
+    expected.write_text(
+        json.dumps(
+            {
+                "schema": "tau.omp_worker_example_receipt.v1",
+                "status": "PASS",
+                "expected_apply_launch_stdout_jsonl_valid": True,
+                "expected_apply_launch_response_frame_count": 1,
+                "expected_apply_launch_response_schemas": ["fake.omp.rpc.response"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    actual.write_text(
+        json.dumps(
+            {
+                "schema": "tau.omp_worker_example_receipt.v1",
+                "status": "PASS",
+                "apply_launch_stdout_jsonl_valid": True,
+                "apply_launch_response_frame_count": 1,
+                "apply_launch_response_schemas": ["fake.omp.rpc.response"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = runner._check_expected_artifact(  # noqa: SLF001
+        actual_path=actual,
+        expected_path=expected,
+    )
+
+    assert payload["ok"] is True
+    assert payload["errors"] == []
+
+
 def test_expected_artifact_checks_generic_receipt_fields(tmp_path: Path) -> None:
     runner = _load_runner()
     expected = tmp_path / "expected.json"

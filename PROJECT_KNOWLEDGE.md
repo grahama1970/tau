@@ -1,9 +1,47 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:55 EDT by agent
+**Last updated:** 2026-07-07 12:59 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 OMP RPC response-frame gate:
+  `src/tau_coding/coding_worker_adapters.py` now requires apply-mode
+  `tau.omp_worker_launch_receipt.v1` launches to emit parseable stdout JSONL
+  response frames when the OMP RPC subprocess runs. A zero-exit process with
+  empty stdout blocks with `omp_stdout_jsonl_empty`; malformed stdout blocks
+  with `omp_stdout_jsonl_invalid`; non-object frames block with
+  `omp_stdout_jsonl_non_object`. Passing launch receipts now record
+  `stdout_jsonl_valid`, `response_frame_count`, `response_schemas`, and
+  `response_frames` alongside stdout/stderr hashes. The copyable
+  `examples/omp-worker` receipt projects those fields, and
+  `examples/omp-worker/expected-receipt.json` plus
+  `scripts/run-coding-capability-sanity.py` now make aggregate sanity fail if
+  the OMP apply launch exits 0 without the expected parseable RPC frame.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py
+  scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py docs/coding-workers.md` ->
+  `All checks passed!`; targeted tests for OMP apply launch success, empty
+  stdout block, malformed stdout block, and sanity expected-frame checking ->
+  `4 passed in 0.70s`; broader focused tests
+  `uv run pytest tests/test_coding_worker_adapters.py
+  tests/test_coding_capability_sanity_runner.py -q` -> `112 passed in
+  6.98s`; direct example
+  `/tmp/tau-omp-worker-jsonl-proof-20260707T165804Z/demo-receipt.json` ->
+  `status:"PASS"`, `apply_launch_process_executed:true`,
+  `apply_launch_exit_code:0`, `apply_launch_stdout_jsonl_valid:true`,
+  `apply_launch_response_frame_count:1`, and
+  `apply_launch_response_schemas:["fake.omp.rpc.response"]`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-omp-jsonl-20260707T165817Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`,
+  `failed_check_count:0`, `live:"mixed"`, `mocked:"mixed"`,
+  `provider_live:false`. This proves Tau no longer treats OMP process exit code
+  alone as enough for an apply-launch receipt and the maintained sanity suite
+  enforces parseable OMP-shaped RPC output; it does not prove a real
+  `oh-my-pi` binary was used, OMP accepted the request semantically, OMP
+  performed live coding work, semantic code correctness, provider/model
+  quality, legal compliance, or full sandbox isolation.
 
 - 2026-07-07 live SciLLM worker result artifact compatibility:
   `src/tau_coding/coding_worker_adapters.py` now accepts the real

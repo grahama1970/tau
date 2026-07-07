@@ -1969,6 +1969,11 @@ def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -
     assert payload["launch_skipped"] is False
     assert payload["exit_code"] == 0
     assert payload["command"][0] == str(fake_omp)
+    assert payload["stdout_jsonl_valid"] is True
+    assert payload["response_frame_count"] == 1
+    assert payload["response_schemas"] == ["fake.omp.rpc.response"]
+    assert payload["response_frames"][0]["schema"] == "fake.omp.rpc.response"
+    assert payload["response_frames"][0]["received_type"] == "prompt"
     assert payload["stdout_path"]
     assert payload["stderr_path"]
     stdout_path = Path(payload["stdout_path"])
@@ -1997,6 +2002,61 @@ def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -
     assert stdout_payload["schema"] == "fake.omp.rpc.response"
     assert stdout_payload["received_type"] == "prompt"
     assert Path(payload["stderr_path"]).read_text(encoding="utf-8") == ""
+
+
+def test_omp_worker_launch_apply_blocks_empty_stdout_rpc_response(
+    tmp_path: Path,
+) -> None:
+    fake_omp = _write_fake_omp(tmp_path, stdout_mode="empty")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is True
+    assert payload["exit_code"] == 0
+    assert payload["stdout_jsonl_valid"] is False
+    assert payload["response_frame_count"] == 0
+    assert payload["response_frames"] == []
+    assert "omp_stdout_jsonl_empty" in payload["alert_codes"]
+
+
+def test_omp_worker_launch_apply_blocks_malformed_stdout_rpc_response(
+    tmp_path: Path,
+) -> None:
+    fake_omp = _write_fake_omp(tmp_path, stdout_mode="malformed")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is True
+    assert payload["exit_code"] == 0
+    assert payload["stdout_jsonl_valid"] is False
+    assert payload["response_frame_count"] == 0
+    assert "omp_stdout_jsonl_invalid" in payload["alert_codes"]
 
 
 def test_omp_worker_launch_apply_skips_process_when_preflight_blocks(tmp_path: Path) -> None:
@@ -3211,13 +3271,34 @@ def _write_work_order(
     return path
 
 
-def _write_fake_omp(tmp_path: Path, *, marker: Path | None = None) -> Path:
+def _write_fake_omp(
+    tmp_path: Path,
+    *,
+    marker: Path | None = None,
+    stdout_mode: str = "json",
+) -> Path:
     script = tmp_path / "fake-omp"
     marker_line = (
         f"Path({str(marker)!r}).write_text('ran\\n', encoding='utf-8')"
         if marker is not None
         else "None"
     )
+    if stdout_mode == "empty":
+        output_lines = ["payload = json.loads(sys.stdin.readline())"]
+    elif stdout_mode == "malformed":
+        output_lines = [
+            "payload = json.loads(sys.stdin.readline())",
+            "print('not-json')",
+        ]
+    else:
+        output_lines = [
+            "payload = json.loads(sys.stdin.readline())",
+            "print(json.dumps({",
+            "    'schema': 'fake.omp.rpc.response',",
+            "    'received_type': payload.get('type'),",
+            "    'metadata': payload.get('metadata'),",
+            "}, sort_keys=True))",
+        ]
     script.write_text(
         "\n".join(
             [
@@ -3226,12 +3307,7 @@ def _write_fake_omp(tmp_path: Path, *, marker: Path | None = None) -> Path:
                 "import sys",
                 "from pathlib import Path",
                 marker_line,
-                "payload = json.loads(sys.stdin.readline())",
-                "print(json.dumps({",
-                "    'schema': 'fake.omp.rpc.response',",
-                "    'received_type': payload.get('type'),",
-                "    'metadata': payload.get('metadata'),",
-                "}, sort_keys=True))",
+                *output_lines,
             ]
         )
         + "\n",
