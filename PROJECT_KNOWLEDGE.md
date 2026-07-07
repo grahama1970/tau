@@ -5,6 +5,37 @@
 
 ## Current Understanding
 
+- 2026-07-07 coding reliability review-route example rung:
+  `examples/coding-reliability-basic/run.sh` now demonstrates all three
+  structured reviewer routes required by R14. It writes
+  `review-findings-pass-receipt.json`,
+  `review-findings-revise-receipt.json`, and
+  `review-findings-blocked-receipt.json`, then verifies their
+  `derived_verdict` values into `review-route-summary.json` before continuing
+  to commit planning. `examples/coding-reliability-basic/README.md` now states
+  the example covers PASS/REVISE/BLOCKED review routing. Focused proof:
+  `bash -n examples/coding-reliability-basic/run.sh` -> pass;
+  `examples/coding-reliability-basic/run.sh
+  /tmp/tau-coding-reliability-basic-review-routes-proof-v2` -> pass and wrote
+  `/tmp/tau-coding-reliability-basic-review-routes-proof-v2/receipts/review-route-summary.json`
+  with `routes.review-findings-pass-receipt.json:"PASS"`,
+  `routes.review-findings-revise-receipt.json:"REVISE"`, and
+  `routes.review-findings-blocked-receipt.json:"BLOCKED"`; `uv run ruff check
+  --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py` -> `All checks passed!`; `uv run pytest
+  tests/test_review_findings.py -q` -> `17 passed in 0.44s`. Aggregate proof:
+  `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-routes-proof-v2-20260707T062100Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-review-routes-proof-v2-20260707T062100Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `251 passed in
+  7.29s`. This proves the copyable local example exercises review route
+  derivation; it does not prove reviewer truthfulness, semantic code
+  correctness, live provider/model quality, GitHub mutation safety, legal
+  compliance, full DAG execution, or full goal completion.
+
 - 2026-07-07 worker result admissibility gate coverage rung:
   `tests/test_coding_worker_adapters.py` now explicitly covers three R7/R8
   worker-result rejection paths that were implemented but not pinned by focused

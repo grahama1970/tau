@@ -3,8 +3,9 @@
 This example shows Tau-native coding evidence without trusting a coding agent.
 It creates a temporary repository, blocks a stale hash-bound patch, applies a
 valid hash-bound patch, collects local diagnostics, validates structured review
-findings, proposes a dry-run commit plan, and summarizes orchestration
-reliability from a synthetic DAG receipt.
+findings for `PASS`, `REVISE`, and `BLOCKED` routes, proposes a dry-run commit
+plan from the PASS review receipt, and summarizes orchestration reliability from
+a synthetic DAG receipt.
 
 Run:
 
@@ -28,8 +29,8 @@ The final artifact is:
 
 - Tau can block a stale code patch by base-file hash.
 - Tau can apply a valid exact-replacement patch with before/after hashes.
-- Tau can write LSP-style diagnostics, structured review, commit-plan, and
-  orchestration reliability receipts.
+- Tau can write LSP-style diagnostics, structured PASS/REVISE/BLOCKED review,
+  commit-plan, and orchestration reliability receipts.
 
 ## Non-Claims
 

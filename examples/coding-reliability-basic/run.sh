@@ -92,7 +92,7 @@ uv run tau lsp-diagnostics \
   --out "${OUT}/receipts/lsp-diagnostics-receipt.json" \
   > "${OUT}/receipts/lsp-diagnostics.stdout.json"
 
-cat > "${OUT}/review-findings.json" <<JSON
+cat > "${OUT}/review-findings-pass.json" <<JSON
 {
   "schema": "tau.review_findings.v1",
   "goal_hash": "${GOAL_HASH}",
@@ -103,17 +103,106 @@ cat > "${OUT}/review-findings.json" <<JSON
 JSON
 
 uv run tau review-findings \
-  --findings "${OUT}/review-findings.json" \
-  --out "${OUT}/receipts/review-findings-receipt.json" \
+  --findings "${OUT}/review-findings-pass.json" \
+  --out "${OUT}/receipts/review-findings-pass-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
-  > "${OUT}/receipts/review-findings.stdout.json"
+  > "${OUT}/receipts/review-findings-pass.stdout.json"
+
+cat > "${OUT}/review-findings-revise.json" <<JSON
+{
+  "schema": "tau.review_findings.v1",
+  "goal_hash": "${GOAL_HASH}",
+  "reviewer": "reviewer",
+  "verdict": "REVISE",
+  "findings": [
+    {
+      "id": "finding-001",
+      "severity": "P1",
+      "confidence": 0.87,
+      "file": "src/example.py",
+      "line": 2,
+      "claim": "The patch needs a focused regression test before acceptance.",
+      "evidence": ["tests/test_example.py"],
+      "required_action": "revise"
+    }
+  ]
+}
+JSON
+
+uv run tau review-findings \
+  --findings "${OUT}/review-findings-revise.json" \
+  --out "${OUT}/receipts/review-findings-revise-receipt.json" \
+  --goal-hash "${GOAL_HASH}" \
+  > "${OUT}/receipts/review-findings-revise.stdout.json"
+
+cat > "${OUT}/review-findings-blocked.json" <<JSON
+{
+  "schema": "tau.review_findings.v1",
+  "goal_hash": "${GOAL_HASH}",
+  "reviewer": "reviewer",
+  "verdict": "BLOCKED",
+  "findings": [
+    {
+      "id": "finding-002",
+      "severity": "P0",
+      "confidence": 0.94,
+      "file": "src/example.py",
+      "line": 2,
+      "claim": "The patch would skip the required policy gate.",
+      "evidence": ["receipts/valid-code-patch-receipt.json"],
+      "required_action": "block"
+    }
+  ]
+}
+JSON
+
+uv run tau review-findings \
+  --findings "${OUT}/review-findings-blocked.json" \
+  --out "${OUT}/receipts/review-findings-blocked-receipt.json" \
+  --goal-hash "${GOAL_HASH}" \
+  > "${OUT}/receipts/review-findings-blocked.stdout.json"
+
+python3 - "${OUT}/receipts" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+receipts = Path(sys.argv[1])
+expected = {
+    "review-findings-pass-receipt.json": "PASS",
+    "review-findings-revise-receipt.json": "REVISE",
+    "review-findings-blocked-receipt.json": "BLOCKED",
+}
+observed = {}
+for name, verdict in expected.items():
+    payload = json.loads((receipts / name).read_text(encoding="utf-8"))
+    observed[name] = payload.get("derived_verdict")
+    if payload.get("ok") is not True or payload.get("derived_verdict") != verdict:
+        raise SystemExit(
+            f"{name} expected ok=true and derived_verdict={verdict}; got {observed[name]!r}"
+        )
+(receipts / "review-route-summary.json").write_text(
+    json.dumps(
+        {
+            "schema": "tau.review_route_summary.v1",
+            "ok": True,
+            "status": "PASS",
+            "routes": observed,
+        },
+        indent=2,
+        sort_keys=True,
+    )
+    + "\n",
+    encoding="utf-8",
+)
+PY
 
 uv run tau commit-plan \
   --repo "${WORK_REPO}" \
   --out "${OUT}/receipts/commit-plan-receipt.json" \
   --evidence-receipt "${OUT}/receipts/valid-code-patch-receipt.json" \
   --evidence-receipt "${OUT}/receipts/lsp-diagnostics-receipt.json" \
-  --evidence-receipt "${OUT}/receipts/review-findings-receipt.json" \
+  --evidence-receipt "${OUT}/receipts/review-findings-pass-receipt.json" \
   > "${OUT}/receipts/commit-plan.stdout.json"
 
 python3 - "${OUT}" "${GOAL_HASH}" <<'PY'
@@ -147,7 +236,10 @@ dag = {
     "artifacts": [
         str(receipts / "valid-code-patch-receipt.json"),
         str(receipts / "lsp-diagnostics-receipt.json"),
-        str(receipts / "review-findings-receipt.json"),
+        str(receipts / "review-findings-pass-receipt.json"),
+        str(receipts / "review-findings-revise-receipt.json"),
+        str(receipts / "review-findings-blocked-receipt.json"),
+        str(receipts / "review-route-summary.json"),
         str(receipts / "commit-plan-receipt.json"),
     ],
 }
@@ -180,7 +272,7 @@ summary = {
     "proves": [
         "Tau blocked a stale hash-bound code patch.",
         "Tau applied a valid hash-bound exact replacement patch.",
-        "Tau wrote local diagnostics, review-findings, commit-plan, and orchestration reliability receipts.",
+        "Tau wrote local diagnostics, PASS/REVISE/BLOCKED review-findings, commit-plan, and orchestration reliability receipts.",
     ],
     "does_not_prove": [
         "Semantic code correctness.",
