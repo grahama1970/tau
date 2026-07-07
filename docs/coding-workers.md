@@ -180,6 +180,9 @@ Tau normalizes each `findings[].file` to a repo-relative path and blocks
 absolute paths, `..` escapes, files outside `allowed_paths`, or files matching
 `forbidden_paths`. This keeps reviewer claims inside the same coding boundary
 as patch receipts and worker results.
+In zero-trust mode, any review-findings payload with one or more findings must
+declare a non-empty `allowed_paths` list; otherwise Tau blocks with
+`missing_allowed_paths` before using the reviewer output for routing.
 
 ### Coding Course Correction
 

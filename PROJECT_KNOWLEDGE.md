@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:21 EDT by agent
+**Last updated:** 2026-07-07 09:27 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 review-findings zero-trust path boundary:
+  `src/tau_coding/review_findings.py` now blocks zero-trust
+  `tau.review_findings.v1` payloads that contain findings but omit a non-empty
+  `allowed_paths` list. This keeps high-stakes reviewer file claims bounded to
+  an explicit coding path scope before Tau uses them for PASS/REVISE/BLOCKED
+  routing. `tests/test_review_findings.py` pins this with
+  `test_review_findings_zero_trust_blocks_findings_without_allowed_paths`,
+  asserting the receipt is `BLOCKED`, records `missing_allowed_paths`, and
+  preserves the normalized finding path for inspection. `docs/coding-workers.md`
+  documents the same zero-trust requirement. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py docs/coding-workers.md` -> `All checks
+  passed!`; `uv run pytest tests/test_review_findings.py -q` -> `27 passed in
+  0.45s`; `uv run python -m py_compile src/tau_coding/review_findings.py` ->
+  pass; `git diff --check -- src/tau_coding/review_findings.py
+  tests/test_review_findings.py docs/coding-workers.md` -> pass. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-review-findings-allowed-paths-20260707T132807Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `458 passed in 10.80s`. This proves the
+  deterministic review gate rejects unbounded zero-trust reviewer findings; it
+  does not prove reviewer correctness, review exhaustiveness, or code semantic
+  correctness.
 
 - 2026-07-07 code-patch allowed-path requirement:
   `src/tau_coding/code_patch.py` now blocks `tau.code_patch.v1` artifacts that

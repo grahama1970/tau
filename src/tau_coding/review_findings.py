@@ -73,6 +73,13 @@ def validate_review_findings(
     )
     alerts.extend(allowed_paths_alerts)
     alerts.extend(forbidden_paths_alerts)
+    if zero_trust and findings_raw and not allowed_paths:
+        alerts.append(
+            _alert(
+                "missing_allowed_paths",
+                "zero-trust review findings with findings require allowed_paths",
+            )
+        )
     normalized_findings: list[dict[str, Any]] = []
     for index, item in enumerate(findings_raw):
         normalized, item_alerts = _validate_finding(

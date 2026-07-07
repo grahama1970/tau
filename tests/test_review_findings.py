@@ -475,6 +475,34 @@ def test_review_findings_zero_trust_accepts_policy_boundary() -> None:
     assert receipt["data_boundary"]["classification"] == "public"
 
 
+def test_review_findings_zero_trust_blocks_findings_without_allowed_paths() -> None:
+    receipt = validate_review_findings(
+        _payload(
+            verdict="REVISE",
+            findings=[
+                {
+                    "id": "finding-001",
+                    "severity": "P2",
+                    "confidence": 0.7,
+                    "file": "src/example.py",
+                    "line": 3,
+                    "claim": "Zero-trust reviewer finding lacks a path boundary.",
+                    "evidence": ["src/example.py:3"],
+                    "required_action": "revise",
+                }
+            ],
+        ),
+        expected_goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_allowed_paths" in receipt["alert_codes"]
+    assert receipt["findings"][0]["file"] == "src/example.py"
+
+
 def test_review_findings_zero_trust_blocks_invalid_data_boundary() -> None:
     boundary = _data_boundary()
     boundary["classification"] = "classified-not-allowed"
