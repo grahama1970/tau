@@ -457,7 +457,30 @@ def _write_worker_receipt(
     alerts: list[dict[str, Any]] = []
     work_order = _read_json_object(resolved_work_order, alerts, "work_order")
     work_order["work_order_path"] = str(resolved_work_order)
-    result = _read_json_object(resolved_result, alerts, "worker_result")
+    repo = _repo_root(work_order)
+    result_path_admissible = _append_worker_result_argument_alerts(
+        resolved_result,
+        work_order,
+        repo,
+        alerts,
+    )
+    result = (
+        _read_json_object(resolved_result, alerts, "worker_result")
+        if result_path_admissible
+        else {}
+    )
+    result_artifact_descriptors = _artifact_descriptors(
+        ("worker_result", resolved_result)
+    ) if result_path_admissible else [
+        {
+            "label": "worker_result",
+            "path": str(resolved_result),
+            "exists": resolved_result.exists(),
+            "sha256": None,
+            "bytes": None,
+            "admissible": False,
+        }
+    ]
     if work_order.get("schema") != expected_work_order_schema:
         alerts.append(
             _alert("invalid_work_order_schema", f"schema must be {expected_work_order_schema}")
@@ -479,7 +502,6 @@ def _write_worker_receipt(
     elif result_goal_hash != goal_hash:
         alerts.append(_alert("goal_hash_mismatch", "worker result goal_hash mismatches work order"))
 
-    repo = _repo_root(work_order)
     _append_work_order_gate_alerts(work_order, alerts)
 
     allowed_paths = _string_list(work_order.get("allowed_paths"))
@@ -609,12 +631,11 @@ def _write_worker_receipt(
         "work_order_sha256": _artifact_sha256_uri(resolved_work_order),
         "work_order_bytes": _artifact_size(resolved_work_order),
         "result_path": str(resolved_result),
-        "result_sha256": _artifact_sha256_uri(resolved_result),
-        "result_bytes": _artifact_size(resolved_result),
+        "result_sha256": _artifact_sha256_uri(resolved_result) if result_path_admissible else None,
+        "result_bytes": _artifact_size(resolved_result) if result_path_admissible else None,
         "validated_artifacts": _artifact_descriptors(
             ("work_order", resolved_work_order),
-            ("worker_result", resolved_result),
-        ),
+        ) + result_artifact_descriptors,
         "work_order_schema": work_order.get("schema"),
         "result_schema": result.get("schema"),
         "dag_id": work_order.get("dag_id"),
@@ -763,6 +784,8 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "worker_result_missing",
         "worker_result_unreadable",
         "worker_result_not_object",
+        "worker_result_argument_outside_repo",
+        "worker_result_path_mismatch",
         "invalid_result_schema",
         "missing_result_artifact",
         "missing_required_artifact",
@@ -781,6 +804,41 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
     if any(code in sandbox_codes for code in alert_codes):
         return "receipt_timeout"
     return "invalid_receipt"
+
+
+def _append_worker_result_argument_alerts(
+    resolved_result: Path,
+    work_order: Mapping[str, Any],
+    repo: Path | None,
+    alerts: list[dict[str, Any]],
+) -> bool:
+    if repo is None:
+        return True
+    try:
+        resolved_result.relative_to(repo.resolve())
+    except ValueError:
+        alerts.append(
+            _alert(
+                "worker_result_argument_outside_repo",
+                "worker result_path argument must resolve inside the worker repo",
+            )
+        )
+        return False
+    expected_result_path = _string(work_order.get("result_path"))
+    if not expected_result_path:
+        return False
+    expected = _resolve_repo_artifact_path(expected_result_path, repo)
+    if expected is None:
+        return False
+    if resolved_result != expected:
+        alerts.append(
+            _alert(
+                "worker_result_path_mismatch",
+                "worker result_path argument must match work_order.result_path",
+            )
+        )
+        return False
+    return True
 
 
 def _safe_file_stem(value: str) -> str:

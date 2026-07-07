@@ -28,7 +28,7 @@ def test_omp_worker_blocks_missing_result(tmp_path: Path) -> None:
 
     payload = write_omp_worker_receipt(
         work_order_path=work_order,
-        result_path=tmp_path / "missing-result.json",
+        result_path=tmp_path / "repo" / "worker-result.json",
         output_path=tmp_path / "receipt.json",
     )
 
@@ -164,7 +164,88 @@ def test_worker_blocks_result_path_outside_repo(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert "worker_result_path_outside_repo" in payload["alert_codes"]
-    assert payload["course_correction"]["trigger"] == "invalid_receipt"
+    assert payload["course_correction"]["trigger"] == "worker_result_missing"
+
+
+def test_worker_blocks_result_argument_outside_repo_before_reading(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    outside = tmp_path / "outside" / "worker-result.json"
+    outside.parent.mkdir()
+    outside.write_text(
+        json.dumps(
+            {
+                "schema": "tau.omp_worker_result.v1",
+                "status": "NEEDS_REVIEW",
+                "goal_hash": "sha256:goal",
+                "changed_files": ["src/example.py"],
+                "artifacts": [],
+                "tests_run": [],
+                "findings": [],
+                "next_recommended_route": "reviewer",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=outside,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "worker_result_argument_outside_repo" in payload["alert_codes"]
+    assert "invalid_result_schema" in payload["alert_codes"]
+    assert payload["result_sha256"] is None
+    assert payload["result_bytes"] is None
+    assert payload["validated_artifacts"][1]["admissible"] is False
+    assert payload["course_correction"]["trigger"] == "worker_result_missing"
+
+
+def test_worker_blocks_result_argument_mismatch_before_reading(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    mismatched = repo / "other-result.json"
+    mismatched.write_text(
+        json.dumps(
+            {
+                "schema": "tau.omp_worker_result.v1",
+                "status": "NEEDS_REVIEW",
+                "goal_hash": "sha256:goal",
+                "changed_files": ["src/example.py"],
+                "artifacts": [],
+                "tests_run": [],
+                "findings": [],
+                "next_recommended_route": "reviewer",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=mismatched,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "worker_result_path_mismatch" in payload["alert_codes"]
+    assert "invalid_result_schema" in payload["alert_codes"]
+    assert payload["result_sha256"] is None
+    assert payload["result_bytes"] is None
+    assert payload["validated_artifacts"][1]["admissible"] is False
+    assert payload["course_correction"]["trigger"] == "worker_result_missing"
 
 
 def test_worker_blocks_receipt_path_outside_repo(tmp_path: Path) -> None:
@@ -3719,7 +3800,8 @@ def _write_result(
         "findings": [],
         "next_recommended_route": "reviewer",
     }
-    path = tmp_path / "worker-result.json"
+    path = tmp_path / "repo" / "worker-result.json"
+    path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 

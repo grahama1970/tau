@@ -240,6 +240,14 @@ invalid sandbox/substrate receipts map to `receipt_timeout`. The worker receipt
 records `course_correction_path`, `course_correction_artifacts`, and the
 embedded `course_correction` payload so downstream orchestration can route the
 blocked worker instead of inferring a repair path from raw alert codes.
+Tau also binds the validator's worker-result path to the work order before
+reading worker output. The `result_path` argument passed to
+`omp-worker-validate` or `scillm-worker-validate` must resolve inside the
+worker repo and match `work_order.result_path`; outside or mismatched result
+artifacts block with `worker_result_argument_outside_repo` or
+`worker_result_path_mismatch`. This prevents a high-stakes worker from
+substituting an arbitrary outside JSON file as the result for a bounded work
+order.
 When a correction is based on a concrete failed receipt, log, or evidence file,
 pass it with `--observed-artifact`; Tau records `observed_artifact` with path,
 existence, SHA-256, and byte count so the correction remains tied to the
