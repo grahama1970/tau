@@ -807,6 +807,14 @@ def _append_work_order_gate_alerts(
     repo = _repo_root(work_order)
     substrate = _string(work_order.get("execution_substrate") or work_order.get("substrate"))
     high_stakes = bool(work_order.get("high_stakes") or work_order.get("zero_trust"))
+    if not _is_non_empty_string_list(work_order.get("allowed_paths")):
+        alerts.append(
+            _alert("invalid_allowed_paths", "worker allowed_paths must be a non-empty string list")
+        )
+    if "forbidden_paths" in work_order and not _is_string_list(work_order.get("forbidden_paths")):
+        alerts.append(
+            _alert("invalid_forbidden_paths", "worker forbidden_paths must be a string list")
+        )
     if high_stakes and substrate not in ALLOWED_SUBSTRATES:
         alerts.append(_alert("substrate_required", "high-stakes worker requires Herdr or sandbox"))
     if high_stakes and substrate == "local-low-risk":
@@ -1327,6 +1335,14 @@ def _string_list(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, str) and item]
+
+
+def _is_string_list(value: object) -> bool:
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
+def _is_non_empty_string_list(value: object) -> bool:
+    return _is_string_list(value) and any(isinstance(item, str) and item for item in value)
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

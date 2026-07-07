@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 03:06 EDT by agent
+**Last updated:** 2026-07-07 03:10 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 worker path-policy shape fail-closed rung:
+  `src/tau_coding/coding_worker_adapters.py` now blocks malformed
+  `allowed_paths` and `forbidden_paths` in OMP/SciLLM work orders instead of
+  silently collapsing them to empty lists. Worker validation and launch
+  preflight now emit `invalid_allowed_paths` when `allowed_paths` is not a
+  non-empty string list and `invalid_forbidden_paths` when `forbidden_paths` is
+  not a string list. `tests/test_coding_worker_adapters.py` pins validation
+  and launch behavior, including an apply-mode OMP launch that skips process
+  execution when path policy is malformed. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `60 passed in 4.70s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-worker-path-policy-proof-20260707T070932Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-worker-path-policy-proof-20260707T070932Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `270 passed in
+  7.94s`. This proves deterministic local worker validation and OMP launch
+  preflight fail closed on malformed path policy fields; it does not prove live
+  OMP/SciLLM semantic worker execution, worker trustworthiness, semantic code
+  correctness, provider/model quality, human acceptance, legal compliance,
+  full sandbox isolation, or full goal completion.
 
 - 2026-07-07 GitHub read missing absolute `gh` fail-closed rung:
   `src/tau_coding/github_read_schemes.py` now blocks execute-mode GitHub read

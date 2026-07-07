@@ -69,6 +69,46 @@ def test_omp_worker_blocks_disallowed_changed_file(tmp_path: Path) -> None:
     assert "disallowed_changed_file" in payload["alert_codes"]
 
 
+def test_worker_blocks_malformed_allowed_paths(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["allowed_paths"] = "src/**"
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_allowed_paths" in payload["alert_codes"]
+
+
+def test_worker_blocks_malformed_forbidden_paths(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["forbidden_paths"] = "secrets/**"
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_forbidden_paths" in payload["alert_codes"]
+
+
 def test_worker_accepts_absolute_changed_file_inside_repo(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
@@ -1009,6 +1049,39 @@ def test_omp_worker_launch_apply_skips_process_when_preflight_blocks(tmp_path: P
     assert payload["process_executed"] is False
     assert payload["launch_skipped"] is True
     assert "invalid_omp_surface" in payload["alert_codes"]
+    assert not marker.exists()
+
+
+def test_omp_worker_launch_apply_skips_process_when_path_policy_malformed(
+    tmp_path: Path,
+) -> None:
+    marker = tmp_path / "fake-omp-ran"
+    fake_omp = _write_fake_omp(tmp_path, marker=marker)
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["allowed_paths"] = "src/**"
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "invalid_allowed_paths" in payload["alert_codes"]
     assert not marker.exists()
 
 
