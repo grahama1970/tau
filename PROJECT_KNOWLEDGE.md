@@ -1,9 +1,50 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 06:31 EDT by agent
+**Last updated:** 2026-07-07 07:26 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 GitHub read JSON stdout fail-closed rung:
+  `src/tau_coding/github_read_schemes.py` now requires execute-mode
+  `issue://`, `pr://`, and `commit://` reads to emit stdout that parses as a
+  JSON object. Malformed JSON blocks with `github_read_stdout_not_json`; JSON
+  arrays or other non-object payloads block with `github_read_stdout_not_object`.
+  `diff://` remains a plain-text read and records
+  `stdout_json_expected:false`. `tests/test_github_read_schemes.py` covers
+  accepted JSON object output, blocked non-JSON issue output, blocked JSON-array
+  issue output, and accepted plain-text diff output. `docs/coding-workers.md`
+  documents the execute-mode distinction. Focused proof: `git diff --check --
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py
+  docs/coding-workers.md` -> pass; `uv run python -m py_compile
+  src/tau_coding/github_read_schemes.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/github_read_schemes.py
+  tests/test_github_read_schemes.py` -> `All checks passed!`; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `26 passed in 0.69s`. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-github-read-json-stdout-20260707T164000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `377 passed in 9.62s`. This proves executed
+  JSON-backed GitHub read evidence fails closed on malformed stdout and still
+  composes with the focused coding capability sanity suite; it does not prove
+  GitHub content truth, live GitHub mutation, human acceptance, legal
+  compliance, provider/model quality, or full sandbox isolation on every host.
+
+- 2026-07-07 README coding-evidence alignment:
+  `README.md` now reflects the July 7 coding-capability state recorded in this
+  project knowledge file. The zero-trust stack lists coding evidence receipts,
+  the differentiator table calls out code-work admissibility, the status
+  snapshot includes coding evidence receipts, focused test-run receipts,
+  compliance package coding evidence, and static run-report coding evidence,
+  and a dedicated "Coding evidence and code-work admissibility" section names
+  the current receipt families: patch, LSP diagnostics/symbols, focused test
+  runs, review findings, debug sessions, GitHub reads, OMP/SciLLM workers,
+  commit plans, course correction, and orchestration reliability. Documentation
+  proof for this alignment is `git diff --check -- README.md
+  PROJECT_KNOWLEDGE.md`. This documents current project state only; it does not
+  add new runtime enforcement, semantic code correctness proof, provider/model
+  quality proof, ITAR compliance proof, legal sufficiency, or full project
+  completion.
 
 - 2026-07-07 run-report coding evidence section rung:
   `src/tau_coding/run_report.py` now renders a first-class

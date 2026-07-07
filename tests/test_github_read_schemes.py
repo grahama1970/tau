@@ -327,6 +327,10 @@ def test_github_read_execute_runs_read_only_command_and_records_logs(tmp_path: P
     assert receipt["execution"]["command_executed"] is True
     assert receipt["execution"]["command"][1:4] == ["issue", "view", "67"]
     assert receipt["execution"]["exit_code"] == 0
+    assert receipt["execution"]["stdout_json_expected"] is True
+    assert receipt["execution"]["stdout_json_valid"] is True
+    assert receipt["execution"]["stdout_json_type"] == "dict"
+    assert receipt["execution"]["stdout_json_keys"] == ["args", "fake_gh"]
     stdout_path = Path(receipt["execution"]["stdout_path"])
     stderr_path = Path(receipt["execution"]["stderr_path"])
     assert json.loads(stdout_path.read_text(encoding="utf-8"))["fake_gh"] is True
@@ -349,6 +353,57 @@ def test_github_read_execute_runs_read_only_command_and_records_logs(tmp_path: P
             "bytes": stderr_path.stat().st_size,
         },
     ]
+
+
+def test_github_read_execute_blocks_non_json_issue_stdout(tmp_path: Path) -> None:
+    gh_bin = _write_fake_gh(tmp_path, stdout="not-json")
+
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        execute=True,
+        gh_bin=str(gh_bin),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["execution"]["command_executed"] is True
+    assert receipt["execution"]["stdout_json_expected"] is True
+    assert receipt["execution"]["stdout_json_valid"] is False
+    assert "github_read_stdout_not_json" in receipt["alert_codes"]
+
+
+def test_github_read_execute_blocks_json_array_issue_stdout(tmp_path: Path) -> None:
+    gh_bin = _write_fake_gh(tmp_path, stdout="[]")
+
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        execute=True,
+        gh_bin=str(gh_bin),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["execution"]["command_executed"] is True
+    assert receipt["execution"]["stdout_json_expected"] is True
+    assert receipt["execution"]["stdout_json_valid"] is False
+    assert receipt["execution"]["stdout_json_type"] == "list"
+    assert "github_read_stdout_not_object" in receipt["alert_codes"]
+
+
+def test_github_read_execute_allows_plain_text_diff_stdout(tmp_path: Path) -> None:
+    gh_bin = _write_fake_gh(tmp_path, stdout="diff --git a/file b/file")
+
+    receipt = write_github_read_receipt(
+        uri="diff://grahama1970/tau/pull/123",
+        output_path=tmp_path / "github-read-receipt.json",
+        execute=True,
+        gh_bin=str(gh_bin),
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["execution"]["command_executed"] is True
+    assert receipt["execution"]["stdout_json_expected"] is False
+    assert receipt["execution"]["stdout_json_valid"] is None
 
 
 def test_github_read_execute_skips_invalid_uri(tmp_path: Path) -> None:
@@ -596,7 +651,7 @@ def _data_boundary() -> dict:
     }
 
 
-def _write_fake_gh(tmp_path: Path) -> Path:
+def _write_fake_gh(tmp_path: Path, *, stdout: str | None = None) -> Path:
     gh_bin = tmp_path / "fake-gh"
     marker = tmp_path / "fake-gh-called.json"
     gh_bin.write_text(
@@ -607,9 +662,13 @@ def _write_fake_gh(tmp_path: Path) -> Path:
                 "import pathlib",
                 "import sys",
                 f"marker = pathlib.Path({str(marker)!r})",
+                f"custom_stdout = {stdout!r}",
                 "payload = {'fake_gh': True, 'args': sys.argv[1:]}",
                 "marker.write_text(json.dumps(payload, sort_keys=True) + '\\n')",
-                "print(json.dumps(payload, sort_keys=True))",
+                "if custom_stdout is not None:",
+                "    print(custom_stdout)",
+                "else:",
+                "    print(json.dumps(payload, sort_keys=True))",
             ]
         )
         + "\n",

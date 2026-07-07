@@ -84,6 +84,7 @@ def write_github_read_receipt(
         command=suggested_command,
         gh_bin=gh_bin,
         timeout_s=timeout_s,
+        expect_json=parsed.get("kind") in {"issue", "pr", "commit"},
     ) if execute and ok else _empty_execution(execute_requested=execute)
     alerts.extend(execution.pop("alerts"))
     ok = not alerts
@@ -158,6 +159,7 @@ def _execute_read_command(
     command: list[str],
     gh_bin: str,
     timeout_s: int,
+    expect_json: bool,
 ) -> dict[str, Any]:
     if not command:
         return _empty_execution(
@@ -197,12 +199,15 @@ def _execute_read_command(
                     f"GitHub read command exited {proc.returncode}",
                 )
             )
+        stdout_json = _stdout_json_summary(proc.stdout, expect_json=expect_json)
+        alerts.extend(stdout_json.pop("alerts"))
         return {
             "execute_requested": True,
             "command_executed": True,
             "command": executed,
             "exit_code": proc.returncode,
             "timed_out": False,
+            **stdout_json,
             "stdout_path": str(stdout_path),
             "stderr_path": str(stderr_path),
             "stdout_sha256": _sha256_uri(stdout_path),
@@ -230,6 +235,7 @@ def _execute_read_command(
             "command": executed,
             "exit_code": None,
             "timed_out": True,
+            **_stdout_json_not_evaluated(expect_json=expect_json),
             "stdout_path": str(stdout_path),
             "stderr_path": str(stderr_path),
             "stdout_sha256": _sha256_uri(stdout_path),
@@ -255,6 +261,7 @@ def _empty_execution(
         "command": [],
         "exit_code": None,
         "timed_out": False,
+        **_stdout_json_not_evaluated(expect_json=False),
         "stdout_path": None,
         "stderr_path": None,
         "stdout_sha256": None,
@@ -263,6 +270,57 @@ def _empty_execution(
         "stderr_bytes": 0,
         "artifacts": [],
         "alerts": alerts or [],
+    }
+
+
+def _stdout_json_summary(stdout: str, *, expect_json: bool) -> dict[str, Any]:
+    if not expect_json:
+        return _stdout_json_not_evaluated(expect_json=False)
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        return {
+            "stdout_json_expected": True,
+            "stdout_json_valid": False,
+            "stdout_json_type": None,
+            "stdout_json_keys": [],
+            "alerts": [
+                _alert(
+                    "github_read_stdout_not_json",
+                    "GitHub read command stdout was not valid JSON",
+                    errors=[str(exc)],
+                )
+            ],
+        }
+    if not isinstance(payload, dict):
+        return {
+            "stdout_json_expected": True,
+            "stdout_json_valid": False,
+            "stdout_json_type": type(payload).__name__,
+            "stdout_json_keys": [],
+            "alerts": [
+                _alert(
+                    "github_read_stdout_not_object",
+                    "GitHub read command stdout JSON was not an object",
+                )
+            ],
+        }
+    return {
+        "stdout_json_expected": True,
+        "stdout_json_valid": True,
+        "stdout_json_type": "dict",
+        "stdout_json_keys": sorted(str(key) for key in payload.keys())[:50],
+        "alerts": [],
+    }
+
+
+def _stdout_json_not_evaluated(*, expect_json: bool) -> dict[str, Any]:
+    return {
+        "stdout_json_expected": expect_json,
+        "stdout_json_valid": None,
+        "stdout_json_type": None,
+        "stdout_json_keys": [],
+        "alerts": [],
     }
 
 

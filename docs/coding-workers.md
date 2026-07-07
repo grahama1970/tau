@@ -535,6 +535,11 @@ uv run tau github-read \
   --execute
 ```
 
+In execute mode, `issue://`, `pr://`, and `commit://` reads are fail-closed
+against malformed `gh` output: stdout must parse as a JSON object because those
+commands are JSON-backed evidence reads. `diff://` remains a plain-text read and
+does not require JSON stdout.
+
 Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
 --data-boundary boundary.json` when GitHub read projections are part of a
 high-stakes coding route. In zero-trust mode, Tau blocks read receipts that
