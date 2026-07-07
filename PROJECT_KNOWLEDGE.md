@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 zero-trust debug target shell-control gate:
+  `src/tau_coding/debug_session_receipt.py` now blocks zero-trust
+  `tau.debug_session_packet.v1` targets that contain shell-control syntax such
+  as `;`, `&&`, pipes, command substitution, redirects, or newlines. This
+  records `unsafe_debug_target` while preserving legacy non-zero-trust debug
+  packets. `tests/test_debug_session_receipt.py` pins both the zero-trust block
+  and the legacy allowance. `docs/coding-workers.md` documents the target gate.
+  Focused proof: `git diff --check -- src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> `All checks passed!`; `uv run pytest tests/test_debug_session_receipt.py
+  -q` -> `27 passed in 0.47s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-debug-target-gate-20260707T085804Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `303 passed in 8.12s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local zero-trust
+  debug evidence receipts fail closed on command-chain target syntax and still
+  compose with the current coding capability sanity suite; it does not prove
+  debugger conclusion correctness, live debugger adapter execution, semantic
+  code correctness, live OMP/SciLLM semantic worker execution, provider/model
+  quality, GitHub mutation, full sandbox isolation, legal compliance, ITAR
+  compliance, or full goal completion.
+
 - 2026-07-07 worker substrate course-correction rung:
   Worker validation now maps high-stakes substrate failures to actionable
   `tau.course_correction.v1` triggers instead of generic `invalid_receipt`.

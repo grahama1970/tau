@@ -52,6 +52,13 @@ def write_debug_session_receipt(
     target = _string(packet.get("target"))
     if target is None:
         alerts.append(_alert("missing_debug_target", "debug session target is required"))
+    elif zero_trust and _debug_target_has_shell_control(target):
+        alerts.append(
+            _alert(
+                "unsafe_debug_target",
+                "zero-trust debug target must not contain shell-control syntax",
+            )
+        )
     goal_hash = _string(packet.get("goal_hash"))
     if zero_trust and goal_hash is None:
         alerts.append(_alert("missing_goal_hash", "zero-trust debug receipt requires goal_hash"))
@@ -354,6 +361,11 @@ def _normalize_packet_path(value: object) -> str | None:
 
 def _path_matches_any(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(path, pattern.removeprefix("./")) for pattern in patterns)
+
+
+def _debug_target_has_shell_control(target: str) -> bool:
+    shell_control = (";", "&&", "||", "|", "`", "$(", ">", "<", "\n", "\r")
+    return any(token in target for token in shell_control)
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

@@ -406,6 +406,10 @@ breakpoint and stopped-frame `file` entries against those boundaries and blocks
 with `debug_evidence_path_disallowed` or `debug_evidence_path_forbidden` when
 debug evidence points outside the declared coding scope. Absolute paths and
 `..` escapes block with `debug_evidence_path_escape` instead of being ignored.
+Zero-trust debug targets are also screened for shell-control syntax such as
+`;`, `&&`, pipes, command substitution, redirects, and newlines. A target with
+that syntax blocks with `unsafe_debug_target` so debugger evidence cannot carry
+an unreviewed shell chain while still looking like a passive evidence packet.
 
 Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code

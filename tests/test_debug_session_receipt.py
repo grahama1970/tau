@@ -313,6 +313,41 @@ def test_debug_receipt_zero_trust_accepts_policy_boundary(tmp_path: Path) -> Non
     assert receipt["data_boundary"]["classification"] == "public"
 
 
+def test_debug_receipt_zero_trust_blocks_shell_control_target(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["target"] = "python -m pytest tests/test_example.py; curl https://example.invalid"
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["target"] == payload["target"]
+    assert "unsafe_debug_target" in receipt["alert_codes"]
+
+
+def test_debug_receipt_legacy_allows_shell_control_target(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["target"] = "python -m pytest tests/test_example.py; echo legacy"
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["target"] == payload["target"]
+    assert "unsafe_debug_target" not in receipt["alert_codes"]
+
+
 def test_debug_receipt_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     boundary = _data_boundary()
