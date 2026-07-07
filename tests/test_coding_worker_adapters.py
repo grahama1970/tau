@@ -1946,8 +1946,26 @@ def test_omp_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
     assert payload["high_stakes"] is True
     assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
     assert payload["policy_profile"]["profile_id"] == "test-zero-trust"
+    assert payload["policy_profile_sha256"] == _inline_json_sha256(payload["policy_profile"])
+    assert payload["policy_profile_bytes"] == _inline_json_bytes(payload["policy_profile"])
+    assert payload["policy_profile_artifact"] == {
+        "label": "inline_policy_profile",
+        "path": None,
+        "exists": True,
+        "sha256": _inline_json_sha256(payload["policy_profile"]),
+        "bytes": _inline_json_bytes(payload["policy_profile"]),
+    }
     assert payload["data_boundary"]["schema"] == "tau.data_boundary.v1"
     assert payload["data_boundary"]["classification"] == "public"
+    assert payload["data_boundary_sha256"] == _inline_json_sha256(payload["data_boundary"])
+    assert payload["data_boundary_bytes"] == _inline_json_bytes(payload["data_boundary"])
+    assert payload["data_boundary_artifact"] == {
+        "label": "inline_data_boundary",
+        "path": None,
+        "exists": True,
+        "sha256": _inline_json_sha256(payload["data_boundary"]),
+        "bytes": _inline_json_bytes(payload["data_boundary"]),
+    }
 
 
 def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
@@ -1980,8 +1998,12 @@ def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None
     assert payload["high_stakes"] is True
     assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
     assert payload["policy_profile"]["profile_id"] == "test-zero-trust"
+    assert payload["policy_profile_sha256"] == _inline_json_sha256(payload["policy_profile"])
+    assert payload["policy_profile_artifact"]["label"] == "inline_policy_profile"
     assert payload["data_boundary"]["schema"] == "tau.data_boundary.v1"
     assert payload["data_boundary"]["classification"] == "public"
+    assert payload["data_boundary_sha256"] == _inline_json_sha256(payload["data_boundary"])
+    assert payload["data_boundary_artifact"]["label"] == "inline_data_boundary"
 
 
 def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path: Path) -> None:
@@ -2724,6 +2746,18 @@ def _github_policy_requirements() -> dict:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _inline_json_sha256(payload: dict) -> str:
+    return f"sha256:{hashlib.sha256(_inline_json_bytes_payload(payload)).hexdigest()}"
+
+
+def _inline_json_bytes(payload: dict) -> int:
+    return len(_inline_json_bytes_payload(payload))
+
+
+def _inline_json_bytes_payload(payload: dict) -> bytes:
+    return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
 def _policy_profile() -> dict:

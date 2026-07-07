@@ -707,6 +707,11 @@ and byte count. Validation and launch receipts also carry
 `herdr_receipt_path`, `high_stakes`, `policy_profile`, `data_boundary`, and
 `substrate_receipts` so the worker result or launch request remains tied to the
 same containment metadata and the referenced sandbox/Herdr receipt content.
+Inline `policy_profile` and `data_boundary` objects are hash-bound with
+`policy_profile_sha256`, `policy_profile_bytes`, `policy_profile_artifact`,
+`data_boundary_sha256`, `data_boundary_bytes`, and
+`data_boundary_artifact`, using canonical JSON bytes for the exact metadata
+Tau enforced.
 Each substrate receipt descriptor records the referenced path, existence,
 SHA-256, byte count, schema, status, `ok`, `mocked`, `live`, and
 `provider_live` fields when the receipt can be read.

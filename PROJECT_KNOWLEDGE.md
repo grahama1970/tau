@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker policy/data-boundary hash binding rung:
+  `src/tau_coding/coding_worker_adapters.py` now hash-binds inline
+  `policy_profile` and `data_boundary` work-order metadata into OMP/SciLLM
+  worker validation and launch receipts. Receipts keep the enforced objects and
+  additionally record canonical JSON `policy_profile_sha256`,
+  `policy_profile_bytes`, `policy_profile_artifact`, `data_boundary_sha256`,
+  `data_boundary_bytes`, and `data_boundary_artifact`. The descriptors are
+  explicitly labeled as inline metadata, not filesystem artifacts.
+  `tests/test_coding_worker_adapters.py` asserts the exact canonical hashes and
+  byte counts on high-stakes Herdr-visible OMP and SciLLM launch receipts.
+  Focused proof: `git diff --check --
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `78 passed in 4.80s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-policy-boundary-hashes-20260707T142000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `339 passed in 9.41s`. This proves worker
+  receipts now record hashes for the exact inline policy/data-boundary metadata
+  Tau enforced and still compose with the maintained coding-capability sanity
+  suite; it does not prove worker truthfulness, semantic code correctness, live
+  OMP/SciLLM semantic execution, ITAR compliance, legal compliance, or full
+  goal completion.
+
 - 2026-07-07 compliance package coding-evidence validation rung:
   `src/tau_coding/package_validate.py` now inspects
   `coding-evidence-receipts/` when that directory is present in a compliance

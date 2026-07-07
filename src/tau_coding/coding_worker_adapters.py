@@ -1123,7 +1123,9 @@ def _substrate_metadata(work_order: Mapping[str, Any]) -> dict[str, Any]:
         "substrate_receipts": _referenced_substrate_receipts(work_order),
         "high_stakes": bool(work_order.get("high_stakes") or work_order.get("zero_trust")),
         "policy_profile": work_order.get("policy_profile"),
+        **_inline_json_metadata("policy_profile", work_order.get("policy_profile")),
         "data_boundary": work_order.get("data_boundary"),
+        **_inline_json_metadata("data_boundary", work_order.get("data_boundary")),
     }
 
 
@@ -1145,6 +1147,27 @@ def _referenced_substrate_receipts(work_order: Mapping[str, Any]) -> list[dict[s
         )
         if artifact is not None
     ]
+
+
+def _inline_json_metadata(label: str, value: object) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {
+            f"{label}_sha256": None,
+            f"{label}_bytes": None,
+            f"{label}_artifact": None,
+        }
+    encoded = (json.dumps(dict(value), indent=2, sort_keys=True) + "\n").encode("utf-8")
+    return {
+        f"{label}_sha256": f"sha256:{hashlib.sha256(encoded).hexdigest()}",
+        f"{label}_bytes": len(encoded),
+        f"{label}_artifact": {
+            "label": f"inline_{label}",
+            "path": None,
+            "exists": True,
+            "sha256": f"sha256:{hashlib.sha256(encoded).hexdigest()}",
+            "bytes": len(encoded),
+        },
+    }
 
 
 def _referenced_receipt_artifact(
