@@ -467,6 +467,16 @@ def _approval_receipt(
         return None
     resolved = path.expanduser().resolve()
     try:
+        resolved.relative_to(repo)
+    except ValueError:
+        alerts.append(
+            _alert(
+                "approval_receipt_outside_repo",
+                f"approval receipt must be inside the planned repo: {resolved}",
+            )
+        )
+        return None
+    try:
         payload = json.loads(resolved.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         alerts.append(

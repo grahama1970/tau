@@ -465,8 +465,11 @@ plan apply-eligible. The approval receipt must also bind
 path>`; approvals for a different repo block with
 `approval_receipt_target_mismatch`. The receipt can then mark the plan
 `apply_eligible:true`, but this commit-plan lane still does not run
-`git commit`. High-risk paths such as `.github/`, `secrets/`, `.env`,
-`pyproject.toml`, `uv.lock`, and `package-lock.json` are flagged for approval
+`git commit`. Approval receipts must also resolve inside the planned repo;
+out-of-repo approval artifacts block with `approval_receipt_outside_repo` even
+when their JSON claims the right `target_id`. High-risk paths such as
+`.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and
+`package-lock.json` are flagged for approval
 unless a valid working-tree mutation approval receipt is supplied. Untracked
 sensitive paths such as `.env`, `.env.*`, private-key files, and `secrets/**`
 still block with `untracked_sensitive_files` so a commit plan cannot quietly
