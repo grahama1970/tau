@@ -385,27 +385,48 @@ def _write_worker_receipt(
 
     required_artifacts = _string_list(work_order.get("required_artifacts"))
     result_artifacts = _string_list(result.get("artifacts"))
+    normalized_result_artifacts = _repo_relative_worker_paths(result_artifacts, repo)
+    missing_result_artifacts = [
+        artifact for artifact in result_artifacts if not _path_exists(artifact, repo)
+    ]
+    outside_result_artifacts = _artifacts_outside_repo(result_artifacts, repo)
+    disallowed_result_artifacts = [
+        artifact
+        for artifact in normalized_result_artifacts
+        if not _path_allowed(artifact, allowed_paths)
+        or _path_forbidden(artifact, forbidden_paths)
+    ]
     missing_required_artifacts = _missing_required_artifacts(
         required_artifacts,
         result_artifacts,
         repo,
     )
+    if missing_result_artifacts:
+        alerts.append(
+            _alert(
+                "missing_result_artifact",
+                f"worker result declared missing artifacts: {missing_result_artifacts}",
+            )
+        )
+    if outside_result_artifacts:
+        alerts.append(
+            _alert(
+                "artifact_outside_repo",
+                f"worker result artifacts must stay under repo: {outside_result_artifacts}",
+            )
+        )
+    if disallowed_result_artifacts:
+        alerts.append(
+            _alert(
+                "disallowed_result_artifact",
+                f"worker result artifacts outside allowed paths: {disallowed_result_artifacts}",
+            )
+        )
     if missing_required_artifacts:
         alerts.append(
             _alert(
                 "missing_required_artifact",
                 f"worker result missing required artifacts: {missing_required_artifacts}",
-            )
-        )
-    outside_required_artifacts = _artifacts_outside_repo(
-        [artifact for artifact in result_artifacts if artifact in set(required_artifacts)],
-        repo,
-    )
-    if outside_required_artifacts:
-        alerts.append(
-            _alert(
-                "artifact_outside_repo",
-                f"worker result artifacts must stay under repo: {outside_required_artifacts}",
             )
         )
 
@@ -466,6 +487,8 @@ def _write_worker_receipt(
         "normalized_changed_files": normalized_changed_files,
         "required_artifacts": required_artifacts,
         "result_artifacts": result_artifacts,
+        "normalized_result_artifacts": normalized_result_artifacts,
+        "result_artifact_descriptors": _result_artifact_descriptors(result_artifacts, repo),
         "required_artifact_descriptors": _required_artifact_descriptors(
             required_artifacts,
             result_artifacts,
@@ -1185,6 +1208,20 @@ def _required_artifact_descriptors(
         if artifact not in result_names:
             continue
         descriptor = _referenced_receipt_artifact("required_artifact", artifact, repo)
+        if descriptor is None:
+            continue
+        descriptor["artifact"] = artifact
+        descriptors.append(descriptor)
+    return descriptors
+
+
+def _result_artifact_descriptors(
+    result_artifacts: list[str],
+    repo: Path | None,
+) -> list[dict[str, Any]]:
+    descriptors: list[dict[str, Any]] = []
+    for artifact in result_artifacts:
+        descriptor = _referenced_receipt_artifact("result_artifact", artifact, repo)
         if descriptor is None:
             continue
         descriptor["artifact"] = artifact

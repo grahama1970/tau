@@ -51,7 +51,7 @@ cat > "${WORK_ORDER}" <<JSON
   "goal_hash": "sha256:omp-worker-example-goal",
   "attempt": 1,
   "repo": "${REPO_DIR}",
-  "allowed_paths": ["src/**", "tests/**"],
+  "allowed_paths": ["src/**", "tests/**", "logs/**"],
   "forbidden_paths": ["secrets/**", ".env", ".github/**"],
   "task": "Make a bounded coding change and return a structured worker result.",
   "required_artifacts": ["logs/pytest.log"],

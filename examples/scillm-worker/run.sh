@@ -37,7 +37,7 @@ cat > "${WORK_ORDER}" <<JSON
   "goal_hash": "sha256:scillm-worker-example-goal",
   "attempt": 1,
   "repo": "${REPO_DIR}",
-  "allowed_paths": ["src/**", "tests/**"],
+  "allowed_paths": ["src/**", "tests/**", "logs/**"],
   "forbidden_paths": ["secrets/**", ".env", ".github/**"],
   "task": "Use SciLLM OpenCode serve as a bounded coding delegate and return structured evidence.",
   "required_artifacts": ["logs/pytest.log"],

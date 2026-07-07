@@ -546,9 +546,11 @@ Current validation adapters:
   SciLLM OpenCode serve
 
 These adapters reject missing results, invalid schemas, prose-only results,
-goal-hash drift, disallowed file changes, missing required artifacts, PASS test
-claims without durable logs, public GitHub mutation without policy receipts, and
-external research without research-query/source receipts. When a worker result
+goal-hash drift, disallowed file changes, missing result artifacts, missing
+required artifacts, result artifacts outside the work-order allowlist or inside
+forbidden paths, PASS test claims without durable logs, public GitHub mutation
+without policy receipts, and external research without research-query/source
+receipts. When a worker result
 does declare a GitHub apply policy receipt, research-query safety receipt, or
 research-source receipt, Tau resolves the receipt under the work-order repo,
 requires the expected schema and `status:"PASS"`/`ok:true`, rejects mocked
@@ -576,7 +578,10 @@ substrates must include an existing `tau.sandbox_run_receipt.v1` receipt with
 with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. Binding
 metadata alone is not an admissible high-stakes Herdr substrate. Validation
 receipts record `work_order_sha256`, `result_sha256`, byte counts, and
-`validated_artifacts` for the exact JSON artifacts Tau inspected. Launch
+`validated_artifacts` for the exact JSON artifacts Tau inspected. Worker result
+artifacts are recorded in `result_artifact_descriptors` with resolved path,
+existence, SHA-256, byte count, and original artifact string when they exist and
+stay inside the worker repo. Launch
 receipts record `work_order_sha256`, `work_order_bytes`, and
 `work_order_artifact` before dry-run or apply launch so the process/HTTP
 request is bound to the exact work order Tau preflighted. Each validated or

@@ -747,17 +747,17 @@ def test_worker_records_required_artifact_descriptors(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
         schema="tau.executor.omp.v1",
-        required_artifacts=["logs/pytest.log"],
+        required_artifacts=["tests/pytest.log"],
     )
     work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
     repo = Path(work_order_payload["repo"])
-    log = repo / "logs" / "pytest.log"
+    log = repo / "tests" / "pytest.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_text("1 passed\n", encoding="utf-8")
     result = _write_result(
         tmp_path,
         schema="tau.omp_worker_result.v1",
-        artifacts=["logs/pytest.log"],
+        artifacts=["tests/pytest.log"],
     )
 
     payload = write_omp_worker_receipt(
@@ -774,9 +774,119 @@ def test_worker_records_required_artifact_descriptors(tmp_path: Path) -> None:
             "exists": True,
             "sha256": f"sha256:{_sha256(log)}",
             "bytes": log.stat().st_size,
-            "artifact": "logs/pytest.log",
+            "artifact": "tests/pytest.log",
         }
     ]
+    assert payload["result_artifact_descriptors"] == [
+        {
+            "label": "result_artifact",
+            "path": str(log.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(log)}",
+            "bytes": log.stat().st_size,
+            "artifact": "tests/pytest.log",
+        }
+    ]
+
+
+def test_worker_blocks_missing_result_artifact(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=["tests/missing-artifact.log"],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_result_artifact" in payload["alert_codes"]
+    assert payload["result_artifact_descriptors"] == []
+
+
+def test_worker_blocks_result_artifact_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    outside = tmp_path / "outside" / "worker-artifact.log"
+    outside.parent.mkdir()
+    outside.write_text("outside evidence\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=[str(outside)],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "artifact_outside_repo" in payload["alert_codes"]
+    assert "missing_result_artifact" in payload["alert_codes"]
+    assert payload["result_artifact_descriptors"] == []
+
+
+def test_worker_blocks_result_artifact_outside_allowed_paths(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    artifact = repo / "docs" / "review.md"
+    artifact.parent.mkdir()
+    artifact.write_text("review evidence\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=["docs/review.md"],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "disallowed_result_artifact" in payload["alert_codes"]
+    assert payload["normalized_result_artifacts"] == ["docs/review.md"]
+    assert payload["result_artifact_descriptors"] == [
+        {
+            "label": "result_artifact",
+            "path": str(artifact.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(artifact)}",
+            "bytes": artifact.stat().st_size,
+            "artifact": "docs/review.md",
+        }
+    ]
+
+
+def test_worker_blocks_result_artifact_in_forbidden_path(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    artifact = repo / "secrets" / "debug.log"
+    artifact.parent.mkdir()
+    artifact.write_text("secret evidence\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=["secrets/debug.log"],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "disallowed_result_artifact" in payload["alert_codes"]
+    assert payload["result_artifact_descriptors"][0]["path"] == str(artifact.resolve())
 
 
 def test_worker_blocks_required_artifact_outside_repo(tmp_path: Path) -> None:

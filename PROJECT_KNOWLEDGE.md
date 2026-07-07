@@ -5,6 +5,41 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker result artifact containment rung:
+  `src/tau_coding/coding_worker_adapters.py` now validates all worker-declared
+  `artifacts`, not only required artifacts. Worker result artifacts must exist,
+  resolve inside the work-order repo, match `allowed_paths`, and avoid
+  `forbidden_paths`; otherwise Tau blocks with `missing_result_artifact`,
+  `artifact_outside_repo`, or `disallowed_result_artifact`.
+  `tau.omp_worker_receipt.v1` / `tau.scillm_worker_receipt.v1` now also record
+  `normalized_result_artifacts` and `result_artifact_descriptors` with resolved
+  path, existence, SHA-256, byte count, and original artifact string for
+  existing in-repo artifacts. The OMP and SciLLM worker examples now include
+  `logs/**` in the work-order `allowed_paths` because they deliberately declare
+  `logs/pytest.log` as a required/result artifact. `docs/coding-workers.md`
+  documents the artifact boundary. Focused proof: `git diff --check --
+  PROJECT_KNOWLEDGE.md docs/coding-workers.md
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py
+  examples/omp-worker/run.sh examples/scillm-worker/run.sh`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `74 passed in 4.65s`; `examples/omp-worker/run.sh
+  /tmp/tau-omp-worker-example-artifact-boundary-focused &&
+  examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-example-artifact-boundary-focused` -> both emitted
+  `status:"PASS"` demo receipts. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-artifact-boundary-20260707T084357Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `301 passed in 8.02s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local worker
+  validation blocks missing, outside-repo, outside-allowlist, and forbidden
+  worker result artifacts while recording descriptors for admissible artifacts
+  and preserving the copyable worker examples; it does not prove live
+  OMP/SciLLM semantic worker execution, worker truthfulness, semantic code
+  correctness, legal compliance, ITAR compliance, live GitHub mutation,
+  provider/model quality, full sandbox isolation, or full goal completion.
+
 - 2026-07-07 worker GitHub policy requirements rung:
   `src/tau_coding/coding_worker_adapters.py` now requires worker-cited
   `tau.github_apply_policy_receipt.v1` receipts for public GitHub mutations to
