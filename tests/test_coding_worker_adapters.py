@@ -264,6 +264,94 @@ def test_worker_blocks_public_github_mutation_without_policy_receipt(tmp_path: P
     assert "github_mutation_requires_policy" in receipt["alert_codes"]
 
 
+def test_worker_accepts_public_github_mutation_with_policy_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=False,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["side_effect_receipts"] == [
+        {
+            "label": "github_apply_policy_receipt",
+            "path": str(policy_receipt.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(policy_receipt)}",
+            "bytes": policy_receipt.stat().st_size,
+            "schema": "tau.github_apply_policy_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "mutation_index": 0,
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+        }
+    ]
+
+
+def test_worker_blocks_public_github_mutation_with_non_pass_policy_receipt(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="BLOCKED",
+        ok=False,
+        mocked=False,
+        live=False,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "github_apply_policy_receipt_not_pass" in receipt["alert_codes"]
+    assert receipt["side_effect_receipts"][0]["status"] == "BLOCKED"
+
+
 def test_worker_blocks_external_research_without_receipt(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
@@ -279,6 +367,77 @@ def test_worker_blocks_external_research_without_receipt(tmp_path: Path) -> None
 
     assert receipt["status"] == "BLOCKED"
     assert "external_research_requires_receipt" in receipt["alert_codes"]
+
+
+def test_worker_accepts_external_research_with_query_safety_receipt(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    research_receipt = repo / "receipts" / "research-query-safety.json"
+    _write_reference_receipt(
+        research_receipt,
+        schema="tau.research_query_safety_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_query_safety_receipt"] = "receipts/research-query-safety.json"
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["research_receipts"] == [
+        {
+            "label": "research_query_safety_receipt",
+            "path": str(research_receipt.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(research_receipt)}",
+            "bytes": research_receipt.stat().st_size,
+            "schema": "tau.research_query_safety_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+        }
+    ]
+
+
+def test_worker_blocks_external_research_receipt_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    outside_receipt = tmp_path / "outside" / "research-query-safety.json"
+    _write_reference_receipt(
+        outside_receipt,
+        schema="tau.research_query_safety_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_query_safety_receipt"] = str(outside_receipt)
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "research_query_safety_receipt_outside_repo" in receipt["alert_codes"]
+    assert receipt["research_receipts"] == []
 
 
 def test_worker_records_test_log_artifact_descriptors(tmp_path: Path) -> None:
@@ -1997,6 +2156,34 @@ def _write_result(
     path = tmp_path / "worker-result.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _write_reference_receipt(
+    path: Path,
+    *,
+    schema: str,
+    status: str,
+    ok: bool,
+    mocked: bool,
+    live: bool,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema": schema,
+                "status": status,
+                "ok": ok,
+                "mocked": mocked,
+                "live": live,
+                "provider_live": False,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def _sha256(path: Path) -> str:

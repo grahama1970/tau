@@ -548,7 +548,14 @@ Current validation adapters:
 These adapters reject missing results, invalid schemas, prose-only results,
 goal-hash drift, disallowed file changes, missing required artifacts, PASS test
 claims without durable logs, public GitHub mutation without policy receipts, and
-external research without research-query/source receipts. High-stakes work
+external research without research-query/source receipts. When a worker result
+does declare a GitHub apply policy receipt, research-query safety receipt, or
+research-source receipt, Tau resolves the receipt under the work-order repo,
+requires the expected schema and `status:"PASS"`/`ok:true`, rejects mocked
+receipts, and records SHA-256/byte descriptors in `side_effect_receipts` or
+`research_receipts`. A referenced policy or research receipt makes the worker
+claim admissible for review; it does not prove live GitHub mutation, research
+truth, source sufficiency, or worker trustworthiness. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution
 or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
 before Tau accepts the worker result. The metadata must use and pass the current

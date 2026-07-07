@@ -5,6 +5,37 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker side-effect/research receipt gate rung:
+  `src/tau_coding/coding_worker_adapters.py` now validates worker-declared
+  public GitHub mutation and external research receipts as durable repo-local
+  artifacts instead of accepting truthy path fields. Public GitHub mutation
+  claims require a repo-local `tau.github_apply_policy_receipt.v1` with
+  `status:"PASS"`, `ok:true`, and `mocked:false`; external research claims
+  require a repo-local `tau.research_query_safety_receipt.v1` or
+  `tau.research_source_receipt.v1` with the same PASS/non-mocked gate. Missing,
+  outside-repo, unreadable, wrong-schema, non-PASS, or mocked receipts fail
+  closed. Accepted receipts are hash-bound into `side_effect_receipts` and
+  `research_receipts` descriptors with path, SHA-256, byte count, schema,
+  status, `ok`, `mocked`, `live`, and `provider_live`. `docs/coding-workers.md`
+  documents that these receipts make worker claims admissible for review but do
+  not prove live GitHub mutation, research truth, source sufficiency, or worker
+  trustworthiness. Focused proof: `git diff --check -- docs/coding-workers.md
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `65 passed in 4.70s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-receipt-side-effect-gates-20260707T082531Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `292 passed in 8.09s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local worker
+  validation can admit side-effect/research claims only when bound to valid
+  policy/research receipts and still composes with the current coding
+  capability sanity suite; it does not prove live GitHub mutation, live external
+  research, research truth, worker truthfulness, semantic code correctness,
+  legal compliance, ITAR compliance, full sandbox isolation, or full goal
+  completion.
+
 - 2026-07-07 commit-plan approval-gated apply eligibility rung:
   `src/tau_coding/commit_plan.py` now accepts an optional
   `approval_receipt_path` and validates `tau.approval_gate_receipt.v1` receipts

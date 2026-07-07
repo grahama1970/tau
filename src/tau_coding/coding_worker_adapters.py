@@ -22,6 +22,9 @@ from tau_coding.policy_profile import (
     validate_policy_profile,
 )
 
+GITHUB_APPLY_POLICY_RECEIPT_SCHEMA = "tau.github_apply_policy_receipt.v1"
+RESEARCH_QUERY_SAFETY_RECEIPT_SCHEMA = "tau.research_query_safety_receipt.v1"
+RESEARCH_SOURCE_RECEIPT_SCHEMA = "tau.research_source_receipt.v1"
 OMP_WORK_ORDER_SCHEMA = "tau.executor.omp.v1"
 OMP_WORKER_RESULT_SCHEMA = "tau.omp_worker_result.v1"
 OMP_WORKER_RECEIPT_SCHEMA = "tau.omp_worker_receipt.v1"
@@ -427,21 +430,9 @@ def _write_worker_receipt(
             )
         )
 
-    if _requested_public_github_mutation(result):
-        alerts.append(
-            _alert(
-                "github_mutation_requires_policy",
-                "public GitHub mutation requires apply policy receipt",
-            )
-        )
+    side_effect_receipts = _validate_github_mutation_receipts(result, repo, alerts)
 
-    if _external_research_without_receipt(result):
-        alerts.append(
-            _alert(
-                "external_research_requires_receipt",
-                "external research requires a research-query or source receipt",
-            )
-        )
+    research_receipts = _validate_external_research_receipts(result, repo, alerts)
 
     ok = not alerts
     payload = {
@@ -481,6 +472,8 @@ def _write_worker_receipt(
             repo,
         ),
         "test_log_artifacts": _test_log_artifact_descriptors(result, repo),
+        "side_effect_receipts": side_effect_receipts,
+        "research_receipts": research_receipts,
         "next_recommended_route": result.get("next_recommended_route"),
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
@@ -1319,25 +1312,158 @@ def _resolve_repo_artifact_path(path: str, repo: Path | None) -> Path | None:
     return resolved
 
 
-def _requested_public_github_mutation(result: Mapping[str, Any]) -> bool:
+def _validate_github_mutation_receipts(
+    result: Mapping[str, Any],
+    repo: Path | None,
+    alerts: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
     mutations = result.get("requested_mutations")
+    descriptors: list[dict[str, Any]] = []
     if not isinstance(mutations, list):
-        return False
-    for mutation in mutations:
+        return descriptors
+    for index, mutation in enumerate(mutations):
         if not isinstance(mutation, Mapping):
             continue
         target = str(mutation.get("target") or "")
-        if target.startswith("github:") and not mutation.get("github_apply_policy_receipt"):
-            return True
-    return False
+        if not target.startswith("github:"):
+            continue
+        receipt_path = _string(mutation.get("github_apply_policy_receipt"))
+        if not receipt_path:
+            alerts.append(
+                _alert(
+                    "github_mutation_requires_policy",
+                    "public GitHub mutation requires apply policy receipt",
+                )
+            )
+            continue
+        descriptor = _validated_worker_reference_receipt(
+            label="github_apply_policy_receipt",
+            raw_path=receipt_path,
+            repo=repo,
+            alerts=alerts,
+            expected_schema=GITHUB_APPLY_POLICY_RECEIPT_SCHEMA,
+            missing_code="github_apply_policy_receipt_missing",
+            outside_repo_code="github_apply_policy_receipt_outside_repo",
+            unreadable_code="github_apply_policy_receipt_unreadable",
+            not_object_code="github_apply_policy_receipt_not_object",
+            invalid_schema_code="github_apply_policy_receipt_invalid_schema",
+            not_pass_code="github_apply_policy_receipt_not_pass",
+            mocked_code="github_apply_policy_receipt_mocked",
+        )
+        if descriptor is not None:
+            descriptor["mutation_index"] = index
+            descriptor["target"] = target
+            descriptor["action"] = _string(mutation.get("action"))
+            descriptors.append(descriptor)
+    return descriptors
 
 
-def _external_research_without_receipt(result: Mapping[str, Any]) -> bool:
+def _validate_external_research_receipts(
+    result: Mapping[str, Any],
+    repo: Path | None,
+    alerts: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    descriptors: list[dict[str, Any]] = []
     if result.get("external_research_used") is not True:
-        return False
-    return not (
-        result.get("research_query_safety_receipt") or result.get("research_source_receipt")
-    )
+        return descriptors
+    query_receipt = _string(result.get("research_query_safety_receipt"))
+    source_receipt = _string(result.get("research_source_receipt"))
+    if not query_receipt and not source_receipt:
+        alerts.append(
+            _alert(
+                "external_research_requires_receipt",
+                "external research requires a research-query or source receipt",
+            )
+        )
+        return descriptors
+    if query_receipt:
+        descriptor = _validated_worker_reference_receipt(
+            label="research_query_safety_receipt",
+            raw_path=query_receipt,
+            repo=repo,
+            alerts=alerts,
+            expected_schema=RESEARCH_QUERY_SAFETY_RECEIPT_SCHEMA,
+            missing_code="research_query_safety_receipt_missing",
+            outside_repo_code="research_query_safety_receipt_outside_repo",
+            unreadable_code="research_query_safety_receipt_unreadable",
+            not_object_code="research_query_safety_receipt_not_object",
+            invalid_schema_code="research_query_safety_receipt_invalid_schema",
+            not_pass_code="research_query_safety_receipt_not_pass",
+            mocked_code="research_query_safety_receipt_mocked",
+        )
+        if descriptor is not None:
+            descriptors.append(descriptor)
+    if source_receipt:
+        descriptor = _validated_worker_reference_receipt(
+            label="research_source_receipt",
+            raw_path=source_receipt,
+            repo=repo,
+            alerts=alerts,
+            expected_schema=RESEARCH_SOURCE_RECEIPT_SCHEMA,
+            missing_code="research_source_receipt_missing",
+            outside_repo_code="research_source_receipt_outside_repo",
+            unreadable_code="research_source_receipt_unreadable",
+            not_object_code="research_source_receipt_not_object",
+            invalid_schema_code="research_source_receipt_invalid_schema",
+            not_pass_code="research_source_receipt_not_pass",
+            mocked_code="research_source_receipt_mocked",
+        )
+        if descriptor is not None:
+            descriptors.append(descriptor)
+    return descriptors
+
+
+def _validated_worker_reference_receipt(
+    *,
+    label: str,
+    raw_path: str,
+    repo: Path | None,
+    alerts: list[dict[str, Any]],
+    expected_schema: str,
+    missing_code: str,
+    outside_repo_code: str,
+    unreadable_code: str,
+    not_object_code: str,
+    invalid_schema_code: str,
+    not_pass_code: str,
+    mocked_code: str,
+) -> dict[str, Any] | None:
+    path = _resolve_repo_artifact_path(raw_path, repo)
+    if path is None:
+        alerts.append(_alert(outside_repo_code, f"{label} must resolve inside the worker repo"))
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        alerts.append(_alert(missing_code, f"{label} does not exist"))
+        return None
+    except (OSError, json.JSONDecodeError) as exc:
+        alerts.append(_alert(unreadable_code, f"{label} is unreadable: {exc}"))
+        return None
+    if not isinstance(payload, Mapping):
+        alerts.append(_alert(not_object_code, f"{label} root must be a JSON object"))
+        return None
+
+    descriptor = {
+        "label": label,
+        "path": str(path),
+        "exists": True,
+        "sha256": _artifact_sha256_uri(path),
+        "bytes": _artifact_size(path),
+        "schema": payload.get("schema"),
+        "status": payload.get("status"),
+        "ok": payload.get("ok"),
+        "mocked": payload.get("mocked"),
+        "live": payload.get("live"),
+        "provider_live": payload.get("provider_live"),
+    }
+    if payload.get("schema") != expected_schema:
+        alerts.append(_alert(invalid_schema_code, f"{label} schema must be {expected_schema}"))
+    if payload.get("ok") is not True or payload.get("status") != "PASS":
+        alerts.append(_alert(not_pass_code, f"{label} must be PASS"))
+    if payload.get("mocked") is not False:
+        alerts.append(_alert(mocked_code, f"{label} cannot be mocked"))
+    return descriptor
 
 
 def _model_provider_route(
