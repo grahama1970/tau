@@ -94,7 +94,10 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 str(examples / "coding-reliability-basic" / "run.sh"),
                 str(run_dir / "coding-reliability-basic"),
             ],
-            purpose="Run hash-bound patch, diagnostics, review, commit-plan, and reliability demo.",
+            purpose=(
+                "Run hash-bound patch, diagnostics, debug/GitHub evidence, "
+                "review, commit-plan, and reliability demo."
+            ),
             output_artifact=run_dir / "coding-reliability-basic" / "demo-receipt.json",
             expected_artifact=examples / "coding-reliability-basic" / "expected-receipt.json",
         ),

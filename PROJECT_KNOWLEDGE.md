@@ -5,6 +5,41 @@
 
 ## Current Understanding
 
+- 2026-07-07 coding reliability example debug/GitHub evidence coverage:
+  `examples/coding-reliability-basic/run.sh` now writes
+  `debug-session-receipt.json` and `github-read-receipt.json` in addition to
+  the existing patch, diagnostics, test-run, review, commit-plan, and
+  orchestration reliability receipts. The GitHub receipt is intentionally a
+  dry-run read-only projection for `issue://grahama1970/tau/67`; it is included
+  as a required demo artifact and DAG evidence but is not passed into
+  `commit-plan`, because commit planning correctly rejects non-live evidence
+  receipts. `examples/coding-reliability-basic/expected-receipt.json` now
+  requires both receipts, `examples/coding-reliability-basic/README.md`
+  documents the additional evidence lanes and non-claims, and
+  `scripts/run-coding-capability-sanity.py` names the debug/GitHub evidence in
+  the maintained example check. Focused proof: `bash -n
+  examples/coding-reliability-basic/run.sh` -> pass; `git diff --check --
+  examples/coding-reliability-basic/run.sh
+  examples/coding-reliability-basic/README.md
+  examples/coding-reliability-basic/expected-receipt.json` -> pass;
+  `python3 -m json.tool
+  examples/coding-reliability-basic/expected-receipt.json >/dev/null` -> pass;
+  `uv run pytest tests/test_debug_session_receipt.py
+  tests/test_github_read_schemes.py tests/test_coding_capability_sanity_runner.py
+  -q` -> `74 passed in 0.80s`; direct example
+  `/tmp/tau-coding-reliability-basic-debug-github-20260707T-test2/demo-receipt.json`
+  -> `status:"PASS"`, `mocked:false`, `live:true`, artifacts include
+  `work-repo/.tau/receipts/debug-session-receipt.json` and
+  `work-repo/.tau/receipts/github-read-receipt.json`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-debug-github-example-20260707T1718Z/coding-capability-sanity-receipt.json`
+  -> `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:17`, `failed_check_count:0`; embedded focused coding tests
+  `515 passed in 12.64s`. This proves the copyable coding reliability demo now
+  exercises debug-session and dry-run GitHub read evidence lanes; it does not
+  prove semantic code correctness, live GitHub object existence, GitHub
+  mutation, provider/model quality, human acceptance, legal compliance, or full
+  sandbox isolation on every host.
+
 - 2026-07-07 OMP example real-binary override:
   `examples/omp-worker/run.sh` now honors `OMP_BIN=/path/to/omp` for the
   doctor and apply-launch portions of the copyable OMP worker example, while

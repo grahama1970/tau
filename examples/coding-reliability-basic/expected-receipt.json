@@ -10,6 +10,8 @@
     "work-repo/.tau/receipts/valid-code-patch-receipt.json",
     "work-repo/.tau/receipts/lsp-diagnostics-receipt.json",
     "work-repo/.tau/receipts/test-run-receipt.json",
+    "work-repo/.tau/receipts/debug-session-receipt.json",
+    "work-repo/.tau/receipts/github-read-receipt.json",
     "work-repo/.tau/receipts/review-findings-pass-receipt.json",
     "work-repo/.tau/receipts/review-findings-revise-receipt.json",
     "work-repo/.tau/receipts/review-findings-blocked-receipt.json",

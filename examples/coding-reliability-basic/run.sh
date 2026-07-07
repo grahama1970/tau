@@ -105,6 +105,63 @@ uv run tau test-run \
   --tested-path tests/test_example.py \
   > "${RECEIPTS}/test-run.stdout.json"
 
+cat > "${OUT}/debug-stdout.log" <<'LOG'
+answer() returned 42 during the focused debug evidence capture.
+LOG
+
+cat > "${OUT}/debug-stderr.log" <<'LOG'
+LOG
+
+cat > "${OUT}/debug-session.json" <<JSON
+{
+  "schema": "tau.debug_session_packet.v1",
+  "goal_hash": "${GOAL_HASH}",
+  "target": "python3 -m pytest -q tests/test_example.py",
+  "adapter": "debugpy",
+  "adapter_available": true,
+  "allowed_paths": ["src/**", "tests/**"],
+  "forbidden_paths": ["secrets/**"],
+  "breakpoints": [
+    {
+      "file": "src/example.py",
+      "line": 2,
+      "condition": null
+    }
+  ],
+  "stopped_frame": {
+    "file": "src/example.py",
+    "line": 2,
+    "function": "answer"
+  },
+  "variables": [
+    {
+      "name": "result",
+      "value": "42"
+    }
+  ],
+  "commands": [
+    {
+      "command": "continue"
+    }
+  ],
+  "stdout_path": "debug-stdout.log",
+  "stderr_path": "debug-stderr.log",
+  "conclusion": "The focused debug evidence packet observed the corrected return value path."
+}
+JSON
+
+uv run tau debug-session-receipt \
+  --session "${OUT}/debug-session.json" \
+  --out "${RECEIPTS}/debug-session-receipt.json" \
+  --goal-hash "${GOAL_HASH}" \
+  > "${RECEIPTS}/debug-session.stdout.json"
+
+uv run tau github-read \
+  --uri issue://grahama1970/tau/67 \
+  --goal-hash "${GOAL_HASH}" \
+  --out "${RECEIPTS}/github-read-receipt.json" \
+  > "${RECEIPTS}/github-read.stdout.json"
+
 cat > "${OUT}/review-findings-pass.json" <<JSON
 {
   "schema": "tau.review_findings.v1",
@@ -216,6 +273,7 @@ uv run tau commit-plan \
   --evidence-receipt "${RECEIPTS}/valid-code-patch-receipt.json" \
   --evidence-receipt "${RECEIPTS}/lsp-diagnostics-receipt.json" \
   --evidence-receipt "${RECEIPTS}/test-run-receipt.json" \
+  --evidence-receipt "${RECEIPTS}/debug-session-receipt.json" \
   --evidence-receipt "${RECEIPTS}/review-findings-pass-receipt.json" \
   > "${RECEIPTS}/commit-plan.stdout.json"
 
@@ -251,6 +309,8 @@ dag = {
         str(receipts / "valid-code-patch-receipt.json"),
         str(receipts / "lsp-diagnostics-receipt.json"),
         str(receipts / "test-run-receipt.json"),
+        str(receipts / "debug-session-receipt.json"),
+        str(receipts / "github-read-receipt.json"),
         str(receipts / "review-findings-pass-receipt.json"),
         str(receipts / "review-findings-revise-receipt.json"),
         str(receipts / "review-findings-blocked-receipt.json"),
@@ -288,7 +348,7 @@ summary = {
     "proves": [
         "Tau blocked a stale hash-bound code patch.",
         "Tau applied a valid hash-bound exact replacement patch.",
-        "Tau wrote local diagnostics, a focused test-run receipt, PASS/REVISE/BLOCKED review-findings, commit-plan, and orchestration reliability receipts.",
+        "Tau wrote local diagnostics, focused test-run, debug-session, dry-run GitHub read, PASS/REVISE/BLOCKED review-findings, commit-plan, and orchestration reliability receipts.",
     ],
     "does_not_prove": [
         "Semantic code correctness.",
@@ -296,6 +356,7 @@ summary = {
         "Provider/model quality.",
         "Full DAG execution.",
         "GitHub mutation.",
+        "Live GitHub object existence.",
         "Legal compliance.",
     ],
 }

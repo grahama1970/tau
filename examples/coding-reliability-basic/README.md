@@ -3,10 +3,11 @@
 This example shows Tau-native coding evidence without trusting a coding agent.
 It creates a temporary repository, blocks a stale hash-bound patch, applies a
 valid hash-bound patch, collects local diagnostics, runs a focused pytest check
-through a typed Tau test-run receipt, validates structured review findings for
-`PASS`, `REVISE`, and `BLOCKED` routes, proposes a dry-run commit plan from the
-PASS review and test-run receipts, and summarizes orchestration reliability from
-a synthetic DAG receipt.
+through a typed Tau test-run receipt, records a structured debug-session
+receipt, creates a dry-run GitHub read projection receipt, validates structured
+review findings for `PASS`, `REVISE`, and `BLOCKED` routes, proposes a dry-run
+commit plan from the PASS review and evidence receipts, and summarizes
+orchestration reliability from a synthetic DAG receipt.
 
 Run:
 
@@ -31,11 +32,11 @@ The final artifact is:
 - Tau can block a stale code patch by base-file hash.
 - Tau can apply a valid exact-replacement patch with before/after hashes.
 - Tau can write LSP-style diagnostics, focused test-run, structured
-  PASS/REVISE/BLOCKED review, commit-plan, and orchestration reliability
-  receipts.
+  debug-session, dry-run GitHub read, PASS/REVISE/BLOCKED review, commit-plan,
+  and orchestration reliability receipts.
 
 ## Non-Claims
 
 This example does not prove semantic code correctness, agent truthfulness,
-provider/model quality, full DAG execution, GitHub mutation, or legal
-compliance.
+provider/model quality, full DAG execution, GitHub mutation, live GitHub object
+existence, or legal compliance.
