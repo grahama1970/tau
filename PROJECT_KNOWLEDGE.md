@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:25 EDT by agent
+**Last updated:** 2026-07-07 00:29 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 commit-plan policy read denylist rung:
+  `src/tau_coding/commit_plan.py` now honors
+  `policy_profile.filesystem.read_denylist` when recording changed file
+  artifacts for `tau.commit_plan_receipt.v1`. Matching changed files remain
+  visible by path and Git status but are not content-inspected: Tau records
+  `policy_read_denied:true`, `exists:null`, `bytes:null`, and `sha256:null`,
+  then blocks the plan with `policy_read_denied`. Focused proof: `git diff
+  --check docs/coding-workers.md src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> `All checks
+  passed!`; `uv run pytest tests/test_commit_plan.py -q` -> `19 passed in
+  0.73s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-policy-read-denylist-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-policy-read-denylist-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `209 passed in
+  6.73s`. This proves deterministic local commit-plan receipts avoid hashing
+  policy-denied changed file content and compose with the current coding
+  capability sanity suite; it does not prove semantic commit grouping
+  optimality, semantic code correctness, legal compliance, live worker
+  execution, or full goal completion.
 
 - 2026-07-07 LSP policy read denylist rung:
   `src/tau_coding/lsp_receipts.py` now honors

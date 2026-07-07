@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import subprocess
@@ -56,7 +57,12 @@ def write_commit_plan_receipt(
         data_boundary=data_boundary,
         goal_hash=goal_hash,
     )
-    changed = _changed_file_artifacts(resolved_repo, _git_changed_files(resolved_repo))
+    changed = _changed_file_artifacts(
+        resolved_repo,
+        _git_changed_files(resolved_repo),
+        policy_profile=policy_profile,
+        alerts=alerts,
+    )
     groups = _commit_groups(changed)
     evidence_receipts = _evidence_receipts(
         evidence_receipt_paths or [],
@@ -172,10 +178,30 @@ def _git_changed_files(repo: Path) -> list[dict[str, str]]:
     return changed
 
 
-def _changed_file_artifacts(repo: Path, changed: list[dict[str, str]]) -> list[dict[str, Any]]:
+def _changed_file_artifacts(
+    repo: Path,
+    changed: list[dict[str, str]],
+    *,
+    policy_profile: dict[str, Any] | None,
+    alerts: list[dict[str, str]],
+) -> list[dict[str, Any]]:
     artifacts: list[dict[str, Any]] = []
+    read_denylist = _policy_read_denylist(policy_profile)
     for item in changed:
         artifact: dict[str, Any] = dict(item)
+        if _path_denied_by_policy(item["path"], read_denylist):
+            artifact["exists"] = None
+            artifact["bytes"] = None
+            artifact["sha256"] = None
+            artifact["policy_read_denied"] = True
+            alerts.append(
+                _alert(
+                    "policy_read_denied",
+                    f"policy_profile.filesystem.read_denylist denied {item['path']}",
+                )
+            )
+            artifacts.append(artifact)
+            continue
         path = repo / item["path"]
         if path.exists() and path.is_file():
             artifact["exists"] = True
@@ -185,12 +211,21 @@ def _changed_file_artifacts(repo: Path, changed: list[dict[str, str]]) -> list[d
             artifact["exists"] = False
             artifact["bytes"] = None
             artifact["sha256"] = None
+        artifact["policy_read_denied"] = False
         artifacts.append(artifact)
     return artifacts
 
 
 def _reviewable_file_artifacts(changed: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    fields = ("path", "status", "original_path", "exists", "bytes", "sha256")
+    fields = (
+        "path",
+        "status",
+        "original_path",
+        "exists",
+        "bytes",
+        "sha256",
+        "policy_read_denied",
+    )
     return [{field: item.get(field) for field in fields} for item in changed]
 
 
@@ -424,6 +459,28 @@ def _required_evidence(group_id: str) -> list[str]:
 
 def _is_high_risk(path: str) -> bool:
     return any(path == pattern or path.startswith(pattern) for pattern in HIGH_RISK_PATTERNS)
+
+
+def _policy_read_denylist(policy_profile: dict[str, Any] | None) -> list[str] | None:
+    if policy_profile is None:
+        return None
+    filesystem = policy_profile.get("filesystem")
+    if not isinstance(filesystem, dict):
+        return None
+    read_denylist = filesystem.get("read_denylist")
+    if not isinstance(read_denylist, list) or not all(
+        isinstance(item, str) for item in read_denylist
+    ):
+        return None
+    return [item for item in read_denylist]
+
+
+def _path_denied_by_policy(path: str, read_denylist: list[str] | None) -> bool:
+    if read_denylist is None:
+        return False
+    return any(
+        fnmatch.fnmatch(path, pattern.removeprefix("./")) for pattern in read_denylist
+    )
 
 
 def _sha256(path: Path) -> str:

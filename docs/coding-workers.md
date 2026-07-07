@@ -255,7 +255,10 @@ their SHA-256 hashes and byte counts when the file still exists, dependency
 order, risk level, required evidence per group, lockfile handling, and approval
 requirements. Deleted files are recorded with `exists:false`, `bytes:null`, and
 `sha256:null` so reviewers can distinguish absent content from missing
-evidence.
+evidence. When `policy_profile.filesystem.read_denylist` matches a changed
+file, Tau records the path and status but withholds content inspection by
+setting `policy_read_denied:true`, `exists:null`, `bytes:null`, and
+`sha256:null`, then blocks the plan with `policy_read_denied`.
 
 CLI:
 

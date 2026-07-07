@@ -36,6 +36,7 @@ def test_commit_plan_groups_related_changes(tmp_path: Path) -> None:
         "exists": True,
         "bytes": len("value = 1\n"),
         "sha256": f"sha256:{_sha256(repo / 'src' / 'example.py')}",
+        "policy_read_denied": False,
     } in payload["changed_file_artifacts"]
 
 
@@ -323,6 +324,36 @@ def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     assert payload["policy_profile"]["profile_id"] == "test"
     assert payload["data_boundary"]["classification"] == "public"
     assert payload["evidence_receipts"][0]["goal_hash_matches"] is True
+
+
+def test_commit_plan_zero_trust_honors_policy_read_denylist(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    secret = repo / "secrets" / "token.py"
+    secret.parent.mkdir()
+    secret.write_text("token = 'do-not-read'\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": [], "read_denylist": ["secrets/**"]},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    changed = payload["changed_files"][0]
+    assert payload["status"] == "BLOCKED"
+    assert "policy_read_denied" in payload["alert_codes"]
+    assert changed["path"] == "secrets/token.py"
+    assert changed["policy_read_denied"] is True
+    assert changed["exists"] is None
+    assert changed["sha256"] is None
+    assert changed["bytes"] is None
+    assert payload["changed_file_artifacts"][0]["policy_read_denied"] is True
 
 
 def test_commit_plan_blocks_evidence_receipt_goal_hash_mismatch(tmp_path: Path) -> None:
