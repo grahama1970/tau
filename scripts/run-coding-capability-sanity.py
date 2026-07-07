@@ -447,6 +447,63 @@ def run_check(check: Check, *, repo: Path) -> dict[str, Any]:
 
 def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -> dict[str, Any]:
     failed = [record for record in records if record.get("ok") is not True]
+    passed_check_ids = {
+        str(record.get("check_id")) for record in records if record.get("ok") is True
+    }
+    live_scillm_passed = "scillm_worker_live_example_run" in passed_check_ids
+    live_omp_passed = "omp_worker_live_example_run" in passed_check_ids
+    proves = [
+        "Tau's focused coding receipt tests pass in this checkout.",
+        "Tau's copyable zero-trust example produces a parseable preflight receipt.",
+        "Tau's copyable memory/evidence, coding, and worker examples produce "
+        "parseable receipts.",
+        "Tau can initialize a coding zero-trust starter with explicit "
+        "coding evidence requirements.",
+        "Tau records worker launch requests without trusting worker execution.",
+        "Tau validates a read-only skill capability registry before treating "
+        "skill outputs as admissible Tau evidence.",
+        "Tau validates project-profile capability provider requirements "
+        "against the configured skill capability registry.",
+        "Tau records bounded skill invocation receipts for dry-run, execute, "
+        "and existing-artifact ingestion paths.",
+        "Tau adapts debugger and code-runner skill artifacts into Tau receipt "
+        "validators before treating them as evidence.",
+        "Tau adapts review-code artifacts into Tau review findings before "
+        "treating reviewer output as evidence.",
+        "Tau adapts create-evidence-case artifacts into Tau evidence-case "
+        "gate receipts before treating evidence cases as dispatch inputs.",
+        "Tau adapts research artifacts into Tau research-source receipts "
+        "before treating external research as evidence.",
+        "Tau exercises deterministic malicious skill-artifact fixtures "
+        "against composition wrappers and adapters.",
+        "Tau exercises memory-first gates, package/report/API surfaces, "
+        "provenance/signing, and adversarial containment tests.",
+        "Tau's ITAR-grade containment example emits local fail-closed and "
+        "review-package receipts.",
+        "Tau exercises Herdr observation and sandbox-run policy receipt tests.",
+    ]
+    does_not_prove = [
+        "ITAR compliance.",
+        "Provider/model semantic quality.",
+        "Semantic code correctness.",
+        "GitHub mutation.",
+        "Human acceptance.",
+        "Legal compliance.",
+        "Full sandbox isolation on every host.",
+    ]
+    if live_scillm_passed:
+        proves.append(
+            "Tau posted a bounded live SciLLM OpenCode-serve worker request and "
+            "validated the returned worker-result artifact."
+        )
+    else:
+        does_not_prove.append("Live SciLLM worker execution.")
+    if live_omp_passed:
+        proves.append(
+            "Tau ran the live OMP worker probe and validated the worker-result artifact."
+        )
+    else:
+        does_not_prove.append("Live OMP worker execution.")
     return {
         "schema": RECEIPT_SCHEMA,
         "ok": not failed,
@@ -493,46 +550,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "orchestration reliability receipts",
         ],
         "proof_scope": {
-            "proves": [
-                "Tau's focused coding receipt tests pass in this checkout.",
-                "Tau's copyable zero-trust example produces a parseable preflight receipt.",
-                "Tau's copyable memory/evidence, coding, and worker examples produce "
-                "parseable receipts.",
-                "Tau can initialize a coding zero-trust starter with explicit "
-                "coding evidence requirements.",
-                "Tau records worker launch requests without trusting worker execution.",
-                "Tau validates a read-only skill capability registry before treating "
-                "skill outputs as admissible Tau evidence.",
-                "Tau validates project-profile capability provider requirements "
-                "against the configured skill capability registry.",
-                "Tau records bounded skill invocation receipts for dry-run, execute, "
-                "and existing-artifact ingestion paths.",
-                "Tau adapts debugger and code-runner skill artifacts into Tau receipt "
-                "validators before treating them as evidence.",
-                "Tau adapts review-code artifacts into Tau review findings before "
-                "treating reviewer output as evidence.",
-                "Tau adapts create-evidence-case artifacts into Tau evidence-case "
-                "gate receipts before treating evidence cases as dispatch inputs.",
-                "Tau adapts research artifacts into Tau research-source receipts "
-                "before treating external research as evidence.",
-                "Tau exercises deterministic malicious skill-artifact fixtures "
-                "against composition wrappers and adapters.",
-                "Tau exercises memory-first gates, package/report/API surfaces, "
-                "provenance/signing, and adversarial containment tests.",
-                "Tau's ITAR-grade containment example emits local fail-closed and "
-                "review-package receipts.",
-                "Tau exercises Herdr observation and sandbox-run policy receipt tests.",
-            ],
-            "does_not_prove": [
-                "ITAR compliance.",
-                "Live OMP or SciLLM semantic worker execution.",
-                "Provider/model semantic quality.",
-                "Semantic code correctness.",
-                "GitHub mutation.",
-                "Human acceptance.",
-                "Legal compliance.",
-                "Full sandbox isolation on every host.",
-            ],
+            "proves": proves,
+            "does_not_prove": does_not_prove,
         },
         "timestamp": datetime.now(UTC).isoformat(),
     }
