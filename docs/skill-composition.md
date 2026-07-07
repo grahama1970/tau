@@ -312,6 +312,18 @@ from tau_coding.skill_composition_redteam import run_skill_composition_redteam
 receipt = run_skill_composition_redteam(run_dir=Path("/tmp/tau-skill-redteam"))
 ```
 
+Operator command:
+
+```bash
+uv run tau skill-composition-redteam --run-dir /tmp/tau-skill-redteam
+```
+
+The command writes:
+
+```text
+/tmp/tau-skill-redteam/skill-composition-redteam-receipt.json
+```
+
 Current fixtures cover:
 
 - debugger proof missing goal hash;
@@ -330,4 +342,4 @@ the skills, call providers, or prove semantic correctness.
 The next composition layers should be implemented as separate slices:
 
 1. Model-worker adapter.
-2. CLI/run-status integration for the skill-composition red-team receipt.
+2. Run-status integration for the skill-composition red-team receipt.

@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+from typer.testing import CliRunner
+
+from tau_coding.cli import app
 from tau_coding.skill_composition_redteam import (
     SKILL_COMPOSITION_REDTEAM_RECEIPT_SCHEMA,
     run_skill_composition_redteam,
@@ -39,3 +42,21 @@ def test_skill_composition_redteam_requires_fail_closed_skill_adapters(
         )
     )
     assert on_disk == receipt
+
+
+def test_cli_skill_composition_redteam_writes_receipt(tmp_path: Path) -> None:
+    run_dir = tmp_path / "cli-redteam"
+
+    result = CliRunner().invoke(app, ["skill-composition-redteam", "--run-dir", str(run_dir)])
+    payload = json.loads(result.output)
+    written = json.loads(
+        (run_dir / "skill-composition-redteam-receipt.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert result.exit_code == 0
+    assert payload == written
+    assert payload["schema"] == SKILL_COMPOSITION_REDTEAM_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    assert payload["passed_attempt_count"] == payload["attempt_count"]

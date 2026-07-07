@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:28 EDT by agent
+**Last updated:** 2026-07-07 09:33 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 skill-composition red-team CLI rung:
+  `src/tau_coding/cli.py` exposes `uv run tau skill-composition-redteam
+  --run-dir <dir>` for the existing
+  `tau.skill_composition_redteam_receipt.v1` adversarial suite.
+  `tests/test_skill_composition_redteam.py` verifies the CLI writes
+  `skill-composition-redteam-receipt.json` and that stdout matches the written
+  receipt. `docs/skill-composition.md` documents the operator command and now
+  leaves run-status integration as the next separate composition layer.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/cli.py src/tau_coding/skill_composition_redteam.py
+  tests/test_skill_composition_redteam.py docs/skill-composition.md` -> `All
+  checks passed!`; `uv run pytest tests/test_skill_composition_redteam.py -q`
+  -> `2 passed in 0.43s`; CLI smoke
+  `uv run tau skill-composition-redteam --run-dir
+  /tmp/tau-skill-composition-redteam-cli-proof-...` ->
+  `tau.skill_composition_redteam_receipt.v1 PASS 7 7` with stdout matching
+  the written receipt; py_compile and `git diff --check` -> pass. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-skill-redteam-cli-20260707T131009Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `454 passed in 11.06s`. This proves the
+  deterministic red-team suite is reachable from the Tau CLI and remains in
+  aggregate sanity coverage; it does not prove live skill execution, exhaustive
+  attack coverage, skill output semantic correctness, provider/model quality,
+  or future route correctness.
 
 - 2026-07-07 skill-composition red-team rung:
   `src/tau_coding/skill_composition_redteam.py` adds
