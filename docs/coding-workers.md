@@ -4,6 +4,24 @@ Tau's coding layer is a containment layer, not a standalone coding-agent race.
 Agents and external workers may propose code changes, but Tau decides what can
 count by checking policy, hashes, receipts, review findings, and evidence.
 
+## Starter Profile
+
+Use the coding starter when creating a project that should collect coding
+evidence before trusting any agent-authored patch:
+
+```bash
+uv run tau init --profile coding-zero-trust --out .
+```
+
+The profile writes `.tau/policy-profile.json`, `.tau/data-boundary.json`,
+`.tau/command-policy.json`, `.tau/dag-template.json`, and `.tau/README.md`.
+The DAG template includes a `tau.coding_contract.v1` block requiring
+hash-bound patch receipts, LSP diagnostics, structured review findings, dry-run
+commit planning, and course-correction receipts for blocked routes.
+
+This starter does not prove semantic code correctness, sandbox isolation,
+human identity, legal compliance, or provider/model quality.
+
 ## Current Tau-Native Primitives
 
 ### Hash-Bound Code Patches

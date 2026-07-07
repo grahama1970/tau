@@ -79,6 +79,21 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             output_artifact=run_dir / "coding-reliability-basic" / "demo-receipt.json",
         ),
         Check(
+            check_id="coding_zero_trust_init",
+            command=[
+                uv_bin,
+                "run",
+                "tau",
+                "init",
+                "--profile",
+                "coding-zero-trust",
+                "--out",
+                str(run_dir / "coding-zero-trust-init"),
+            ],
+            purpose="Create the coding zero-trust starter profile.",
+            output_artifact=run_dir / "coding-zero-trust-init" / ".tau" / "dag-template.json",
+        ),
+        Check(
             check_id="omp_worker_example_syntax",
             command=["bash", "-n", str(examples / "omp-worker" / "run.sh")],
             purpose="Check OMP worker example shell syntax.",
@@ -271,6 +286,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
         "checks": records,
         "coverage": [
             "hash-bound code patch receipts",
+            "coding zero-trust init starter profile",
             "zero-trust policy/data-boundary preflight receipts",
             "coding course-correction receipts",
             "structured review findings",
@@ -297,6 +313,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
                 "Tau's focused coding receipt tests pass in this checkout.",
                 "Tau's copyable zero-trust example produces a parseable preflight receipt.",
                 "Tau's copyable coding and worker examples produce parseable receipts.",
+                "Tau can initialize a coding zero-trust starter with explicit "
+                "coding evidence requirements.",
                 "Tau records worker launch requests without trusting worker execution.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
                 "provenance/signing, and adversarial containment tests.",

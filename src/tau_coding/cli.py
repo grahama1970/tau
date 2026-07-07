@@ -2986,7 +2986,10 @@ def _parse_init_cli_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"unknown init option: {arg}")
         index += 1
     if options["profile"] is None:
-        raise RuntimeError("Usage: tau init --profile zero-trust [--out <dir>] [--force]")
+        raise RuntimeError(
+            "Usage: tau init --profile zero-trust|coding-zero-trust "
+            "[--out <dir>] [--force]"
+        )
     return options
 
 

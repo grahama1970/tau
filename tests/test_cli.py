@@ -150,6 +150,29 @@ def test_cli_init_zero_trust_creates_starter_files(tmp_path: Path) -> None:
     assert (tmp_path / ".tau" / "README.md").exists()
 
 
+def test_cli_init_coding_zero_trust_creates_coding_template(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "init",
+            "--profile",
+            "coding-zero-trust",
+            "--out",
+            str(tmp_path),
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload["schema"] == "tau.init_receipt.v1"
+    assert payload["ok"] is True
+    assert payload["status"] == "PASS"
+    assert payload["profile"] == "coding-zero-trust"
+    dag = json.loads((tmp_path / ".tau" / "dag-template.json").read_text(encoding="utf-8"))
+    assert dag["coding_contract"]["agent_truthfulness"] == "NOT_CLAIMED"
+    assert "tau.commit_plan_receipt.v1 before commit approval" in dag["required_evidence"]
+
+
 def test_cli_init_zero_trust_blocks_existing_files(tmp_path: Path) -> None:
     first = CliRunner().invoke(
         app,

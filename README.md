@@ -369,6 +369,15 @@ uv sync
 uv run tau --help
 ```
 
+Create a local coding zero-trust starter when the project should require
+hash-bound patch, diagnostics, review, commit-plan, and course-correction
+receipts before coding work counts:
+
+```bash
+uv run tau init --profile coding-zero-trust --out /tmp/tau-coding-starter
+python -m json.tool /tmp/tau-coding-starter/.tau/dag-template.json
+```
+
 Inspect the starter policy and data-boundary fixtures:
 
 ```bash

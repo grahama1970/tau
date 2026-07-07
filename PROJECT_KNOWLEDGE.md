@@ -1,9 +1,42 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:41 EDT by agent
+**Last updated:** 2026-07-06 22:49 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding zero-trust init starter rung:
+  `src/tau_coding/init_project.py` now supports
+  `tau init --profile coding-zero-trust`, producing `.tau/` starter files with
+  a coding-specific `tau.dag_contract.v1` template and
+  `tau.coding_contract.v1` metadata. The starter keeps the zero-trust local
+  default-deny posture while requiring hash-bound patch receipts, LSP
+  diagnostics, structured review findings, dry-run commit planning, and
+  course-correction receipts before coding work can count. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/init_project.py
+  src/tau_coding/cli.py tests/test_init_project.py tests/test_cli.py
+  scripts/run-coding-capability-sanity.py` -> pass; `uv run pytest
+  tests/test_init_project.py
+  tests/test_cli.py::test_cli_init_zero_trust_creates_starter_files
+  tests/test_cli.py::test_cli_init_coding_zero_trust_creates_coding_template
+  tests/test_cli.py::test_cli_init_zero_trust_blocks_existing_files -q` ->
+  `8 passed in 0.43s`. Direct CLI proof:
+  `uv run tau init --profile coding-zero-trust --out
+  /tmp/tau-coding-zero-trust-init-proof` exited 0 and created five files; the
+  generated DAG template has `schema:"tau.dag_contract.v1"`,
+  `dag_id:"coding-zero-trust"`, `coding_contract.schema:"tau.coding_contract.v1"`,
+  `agent_truthfulness:"NOT_CLAIMED"`, and six required evidence entries.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-coding-init-proof` wrote
+  `/tmp/tau-coding-capability-sanity-coding-init-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `196 passed in 6.60s`. This proves Tau can initialize a local coding
+  zero-trust starter and the starter composes with the current deterministic
+  coding sanity suite; it does not prove semantic code correctness, live OMP or
+  SciLLM semantic worker execution, provider/model quality, GitHub mutation,
+  human acceptance, legal compliance, ITAR compliance, or full sandbox
+  isolation on every host.
 
 - 2026-07-06 run-report source artifact binding rung:
   `src/tau_coding/run_report.py` now records `source_artifacts` on

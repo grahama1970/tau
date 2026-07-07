@@ -12,7 +12,7 @@ from tau_coding.handoff_dispatch import TAU_COMMAND_SPEC_POLICY_SCHEMA
 from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
 
 INIT_RECEIPT_SCHEMA = "tau.init_receipt.v1"
-SUPPORTED_PROFILES = {"zero-trust"}
+SUPPORTED_PROFILES = {"zero-trust", "coding-zero-trust"}
 
 
 def initialize_tau_project(
@@ -28,7 +28,7 @@ def initialize_tau_project(
 
     root = out_dir.expanduser().resolve()
     tau_dir = root / ".tau"
-    files = _starter_files()
+    files = _starter_files(profile)
     existing = [
         str((tau_dir / name).relative_to(root))
         for name in files
@@ -88,13 +88,13 @@ def initialize_tau_project(
     }
 
 
-def _starter_files() -> dict[str, dict[str, Any] | str]:
+def _starter_files(profile: str) -> dict[str, dict[str, Any] | str]:
     return {
         "policy-profile.json": _zero_trust_policy_profile(),
         "data-boundary.json": _zero_trust_data_boundary(),
-        "command-policy.json": _zero_trust_command_policy(),
-        "dag-template.json": _zero_trust_dag_template(),
-        "README.md": _zero_trust_readme(),
+        "command-policy.json": _zero_trust_command_policy(profile),
+        "dag-template.json": _zero_trust_dag_template(profile),
+        "README.md": _zero_trust_readme(profile),
     }
 
 
@@ -150,10 +150,13 @@ def _zero_trust_data_boundary() -> dict[str, Any]:
     }
 
 
-def _zero_trust_command_policy() -> dict[str, Any]:
+def _zero_trust_command_policy(profile: str) -> dict[str, Any]:
+    allowed_command_roots = ["python", "python3", "uv"]
+    if profile == "coding-zero-trust":
+        allowed_command_roots.append("git")
     return {
         "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
-        "allowed_command_roots": ["python", "python3", "uv"],
+        "allowed_command_roots": allowed_command_roots,
         "denied_commands": ["curl", "wget", "ssh", "scp", "gh"],
         "allowed_cwd_roots": ["."],
         "allows_network": False,
@@ -162,19 +165,20 @@ def _zero_trust_command_policy() -> dict[str, Any]:
     }
 
 
-def _zero_trust_dag_template() -> dict[str, Any]:
-    return {
+def _zero_trust_dag_template(profile: str) -> dict[str, Any]:
+    template: dict[str, Any] = {
         "schema": "tau.dag_contract.v1",
-        "dag_id": "zero-trust-basic",
+        "dag_id": profile,
         "goal": {
-            "goal_id": "zero-trust-basic",
+            "goal_id": profile,
             "goal_version": 1,
             "goal_hash": "sha256:replace-with-goal-hash",
         },
         "target": {
             "repo": "local",
-            "target": "zero-trust-basic",
+            "target": profile,
             "allowed_paths": ["./scratch/**", "./receipts/**"],
+            "forbidden_paths": ["secrets/**", ".env", ".env.*"],
         },
         "policy_profile": ".tau/policy-profile.json",
         "data_boundary": ".tau/data-boundary.json",
@@ -207,9 +211,59 @@ def _zero_trust_dag_template() -> dict[str, Any]:
             "malformed_handoff",
         ],
     }
+    if profile == "coding-zero-trust":
+        template["target"]["allowed_paths"] = [
+            "src/**",
+            "tests/**",
+            "docs/**",
+            "scratch/**",
+            "receipts/**",
+        ]
+        template["required_evidence"] = [
+            "zero-trust-preflight-receipt.json",
+            "tau.code_patch_receipt.v1 before applying code changes",
+            "tau.lsp_diagnostics_receipt.v1 before and after patch application",
+            "tau.review_findings.v1 before PASS routing",
+            "tau.commit_plan_receipt.v1 before commit approval",
+            "tau.course_correction.v1 for BLOCKED or repeated-failure routes",
+        ]
+        template["coding_contract"] = {
+            "schema": "tau.coding_contract.v1",
+            "patch_receipts_required": True,
+            "review_findings_required": True,
+            "diagnostics_required": True,
+            "commit_plan_dry_run_required": True,
+            "course_correction_required_for_blocked_routes": True,
+            "agent_truthfulness": "NOT_CLAIMED",
+        }
+    return template
 
 
-def _zero_trust_readme() -> str:
+def _zero_trust_readme(profile: str) -> str:
+    if profile == "coding-zero-trust":
+        return """# Tau Coding Zero-Trust Starter
+
+This directory was created by `tau init --profile coding-zero-trust`.
+
+Files:
+
+- `policy-profile.json`: default-deny local Tau policy profile.
+- `data-boundary.json`: starter data boundary. Replace it before high-stakes use.
+- `command-policy.json`: default-deny command policy starter with local `git`
+  available for read-only coding evidence collection.
+- `dag-template.json`: coding evidence DAG template that requires hash-bound
+  patch receipts, LSP diagnostics, structured review findings, dry-run commit
+  planning, and course-correction receipts.
+
+Agents remain untrusted. The template treats code patches, reviewer output, and
+worker results as claims until Tau binds them to policy, hashes, receipts, and
+evidence.
+
+This starter does not prove ITAR compliance, export-control legal sufficiency,
+sandbox isolation, signed provenance, human identity verification,
+provider/model semantic safety, semantic code correctness, or compliance
+package completeness.
+"""
     return """# Tau Zero-Trust Starter
 
 This directory was created by `tau init --profile zero-trust`.
@@ -230,7 +284,7 @@ provider/model semantic safety, or compliance package completeness.
 def _proof_scope() -> dict[str, list[str]]:
     return {
         "proves": [
-            "Tau wrote a zero-trust starter file set.",
+            "Tau wrote a Tau starter file set.",
             "The starter includes policy, data-boundary, command-policy, DAG template, "
             "and README files.",
         ],
@@ -240,6 +294,7 @@ def _proof_scope() -> dict[str, list[str]]:
             "Runtime sandbox enforcement.",
             "Human identity verification.",
             "Provider/model semantic safety.",
+            "Semantic code correctness.",
             "Compliance package completeness.",
         ],
     }
