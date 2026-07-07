@@ -494,6 +494,14 @@ def _approval_receipt(
             _alert("approval_receipt_not_approved", "approval receipt approved must be true")
         )
         valid = False
+    if payload.get("mocked") is not False:
+        alerts.append(
+            _alert(
+                "approval_receipt_mocked",
+                "approval receipt cannot be mocked for commit-plan apply eligibility",
+            )
+        )
+        valid = False
     if payload.get("requested_action") != COMMIT_PLAN_APPLY_APPROVAL_ACTION:
         alerts.append(
             _alert(

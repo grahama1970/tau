@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 commit-plan mocked approval fail-closed rung:
+  `src/tau_coding/commit_plan.py` now rejects mocked
+  `tau.approval_gate_receipt.v1` artifacts for commit-plan apply eligibility.
+  A PASS/approved approval receipt with `requested_action:"working_tree_mutation"`
+  but `mocked:true` blocks with `approval_receipt_mocked`, leaves
+  `approval_receipt:null`, and keeps `apply_eligible:false`; the existing
+  `approval_required_to_apply` guard remains in force. Focused proof:
+  `git diff --check -- src/tau_coding/commit_plan.py tests/test_commit_plan.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/commit_plan.py tests/test_commit_plan.py`
+  -> `All checks passed!`; `uv run pytest tests/test_commit_plan.py -q` ->
+  `32 passed in 0.98s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-mocked-approval-20260707T100000Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-mocked-approval-20260707T100000Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded
+  `coding_receipt_tests` `313 passed in 8.20s`. This rung is intended to prove
+  deterministic local commit plans cannot treat mocked human approval as
+  authority for working-tree mutation; it does not prove human identity,
+  legal sufficiency, actual commits, provider/model quality, or full goal
+  completion.
+
 - 2026-07-07 code patch root-generated path fail-closed rung:
   `src/tau_coding/code_patch.py` now treats repo-root generated/vendor
   directories as built-in forbidden code patch targets, not only nested

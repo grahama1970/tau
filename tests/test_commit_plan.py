@@ -419,6 +419,29 @@ def test_commit_plan_apply_blocks_wrong_approval_action(tmp_path: Path) -> None:
     assert "approval_required_to_apply" in payload["alert_codes"]
 
 
+def test_commit_plan_apply_blocks_mocked_approval_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    approval = _write_approval_receipt(
+        repo,
+        requested_action="working_tree_mutation",
+        mocked=True,
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        apply=True,
+        approval_receipt_path=approval,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["apply_eligible"] is False
+    assert payload["approval_receipt"] is None
+    assert "approval_receipt_mocked" in payload["alert_codes"]
+    assert "approval_required_to_apply" in payload["alert_codes"]
+
+
 def test_commit_plan_high_risk_path_accepts_working_tree_approval(
     tmp_path: Path,
 ) -> None:
@@ -790,7 +813,12 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _write_approval_receipt(repo: Path, *, requested_action: str) -> Path:
+def _write_approval_receipt(
+    repo: Path,
+    *,
+    requested_action: str,
+    mocked: bool = False,
+) -> Path:
     path = repo / f"approval-{requested_action}.json"
     path.write_text(
         json.dumps(
@@ -798,7 +826,7 @@ def _write_approval_receipt(repo: Path, *, requested_action: str) -> Path:
                 "schema": "tau.approval_gate_receipt.v1",
                 "ok": True,
                 "status": "PASS",
-                "mocked": False,
+                "mocked": mocked,
                 "live": False,
                 "approved": True,
                 "requested_action": requested_action,
