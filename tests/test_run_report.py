@@ -68,6 +68,9 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "debugpy" in html
     assert "python -m pytest tests/test_example.py" in html
     assert "log_artifact_count" in html
+    assert "tau.commit_plan_receipt.v1" in html
+    assert "changed_file_count" in html
+    assert "high_risk_path_count" in html
     assert "policy_profile_sha256" in html
     assert "data_boundary_sha256" in html
     assert 'id="receipts"' in html
@@ -219,6 +222,26 @@ def _write_report_run(tmp_path: Path) -> Path:
                 {"label": "stderr", "path": "debug.stderr.txt"},
             ],
             "variable_redaction_count": 1,
+        },
+    )
+    _write_json(
+        receipts_dir / "commit-plan-receipt.json",
+        {
+            "schema": "tau.commit_plan_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "dry_run": True,
+            "apply_requested": False,
+            "apply_eligible": False,
+            "changed_file_count": 3,
+            "group_count": 2,
+            "evidence_receipt_count": 1,
+            "approval_required": True,
+            "high_risk_paths": [{"path": "pyproject.toml"}],
         },
     )
     return run_dir

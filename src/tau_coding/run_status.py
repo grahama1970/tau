@@ -1800,6 +1800,14 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "adapter_available": payload.get("adapter_available"),
                 "log_artifact_count": _count_list(payload.get("log_artifacts")),
                 "variable_redaction_count": payload.get("variable_redaction_count"),
+                "dry_run": payload.get("dry_run"),
+                "apply_requested": payload.get("apply_requested"),
+                "apply_eligible": payload.get("apply_eligible"),
+                "changed_file_count": payload.get("changed_file_count"),
+                "group_count": payload.get("group_count"),
+                "evidence_receipt_count": payload.get("evidence_receipt_count"),
+                "approval_required": payload.get("approval_required"),
+                "high_risk_path_count": _count_list(payload.get("high_risk_paths")),
             }
         )
     return {

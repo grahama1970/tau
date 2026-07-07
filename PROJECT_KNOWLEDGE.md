@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report commit-plan review fields:
+  `src/tau_coding/run_status.py` now preserves commit-plan receipt fields in
+  coding evidence summaries: `dry_run`, `apply_requested`, `apply_eligible`,
+  `changed_file_count`, `group_count`, `evidence_receipt_count`,
+  `approval_required`, and `high_risk_path_count`. `tests/test_run_status.py`
+  pins the summary for `tau.commit_plan_receipt.v1` with a dry-run, three
+  changed files, two commit groups, one evidence receipt, approval required,
+  and one high-risk path; `tests/test_run_report.py` asserts the static report
+  includes the commit-plan schema and review fields. This makes R4 atomic
+  commit-plan evidence inspectable in `tau run-status` / `tau report`; it does
+  not prove the grouping is semantically optimal, code correctness, tests
+  passed, or that commits were created. Proof for the implementation commit:
+  `uv run ruff check --select I,F,E501 src/tau_coding/run_status.py
+  src/tau_coding/run_report.py tests/test_run_status.py
+  tests/test_run_report.py tests/test_commit_plan.py docs/run-report.md` ->
+  `All checks passed!`; `uv run pytest tests/test_run_status.py
+  tests/test_run_report.py tests/test_commit_plan.py -q` -> `70 passed in
+  1.18s`; `git diff --check -- src/tau_coding/run_status.py
+  tests/test_run_status.py tests/test_run_report.py docs/run-report.md
+  PROJECT_KNOWLEDGE.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-commit-plan-report-20260707T142236Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `466 passed in 10.76s`.
+
 - 2026-07-07 run-status/report debugger evidence fields:
   `src/tau_coding/run_status.py` now preserves debugger receipt fields in
   coding evidence summaries: `debug_adapter`, `debug_target`,
