@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 20:50 EDT by agent
+**Last updated:** 2026-07-06 20:55 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding capability zero-trust basic aggregate coverage rung:
+  `examples/zero-trust-basic/run.sh` now accepts an optional output directory so
+  aggregate sanity can hash/read the exact `zero-trust-preflight-receipt.json`
+  it produced. `scripts/run-coding-capability-sanity.py` now includes
+  `zero_trust_basic_example_syntax` and `zero_trust_basic_example_run`, and its
+  coverage names zero-trust policy/data-boundary preflight receipts. Pre-wiring
+  proof: `bash -n examples/zero-trust-basic/run.sh &&
+  examples/zero-trust-basic/run.sh /tmp/tau-zero-trust-basic-proof` exited 0
+  and printed `schema:"tau.zero_trust_preflight_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `mocked:false`, `live:false`, `provider_live:false`, and
+  `alert_count:0`. This proves the copyable policy/data-boundary preflight
+  example can write a deterministic receipt directory; it does not prove ITAR
+  compliance, export-control legal sufficiency, runtime sandbox enforcement,
+  human identity verification, provider/model semantic safety, or compliance
+  package completeness. After wiring it into aggregate sanity, `uv run ruff
+  check --select I,F,E501 scripts/run-coding-capability-sanity.py` passed;
+  `bash -n examples/zero-trust-basic/run.sh &&
+  examples/zero-trust-basic/run.sh /tmp/tau-zero-trust-basic-proof-2 &&
+  python -m json.tool
+  /tmp/tau-zero-trust-basic-proof-2/zero-trust-preflight-receipt.json
+  >/dev/null` exited 0; and `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-zero-trust-example-proof` exited 0 with
+  `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage entry
+  `zero-trust policy/data-boundary preflight receipts`, and embedded focused
+  coding tests `154 passed in 5.91s`.
 
 - 2026-07-06 coding capability ITAR-grade containment example coverage rung:
   `examples/itar-grade-containment/` already exercises controlled-boundary

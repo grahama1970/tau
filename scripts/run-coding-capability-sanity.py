@@ -49,6 +49,21 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
     examples = repo / "examples"
     return [
         Check(
+            check_id="zero_trust_basic_example_syntax",
+            command=["bash", "-n", str(examples / "zero-trust-basic" / "run.sh")],
+            purpose="Check zero-trust basic example shell syntax.",
+            timeout_seconds=30,
+        ),
+        Check(
+            check_id="zero_trust_basic_example_run",
+            command=[
+                str(examples / "zero-trust-basic" / "run.sh"),
+                str(run_dir / "zero-trust-basic"),
+            ],
+            purpose="Run policy/data-boundary preflight example.",
+            output_artifact=run_dir / "zero-trust-basic" / "zero-trust-preflight-receipt.json",
+        ),
+        Check(
             check_id="coding_reliability_example_syntax",
             command=["bash", "-n", str(examples / "coding-reliability-basic" / "run.sh")],
             purpose="Check coding reliability example shell syntax.",
@@ -256,6 +271,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
         "checks": records,
         "coverage": [
             "hash-bound code patch receipts",
+            "zero-trust policy/data-boundary preflight receipts",
             "coding course-correction receipts",
             "structured review findings",
             "LSP diagnostics, symbols, and rename planning receipts",
@@ -279,6 +295,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
         "proof_scope": {
             "proves": [
                 "Tau's focused coding receipt tests pass in this checkout.",
+                "Tau's copyable zero-trust example produces a parseable preflight receipt.",
                 "Tau's copyable coding and worker examples produce parseable receipts.",
                 "Tau records worker launch requests without trusting worker execution.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
