@@ -411,7 +411,10 @@ high-stakes coding route. In zero-trust mode, Tau blocks read receipts that
 omit the active goal hash, policy metadata, or boundary metadata. If the active
 data boundary sets `public_repo_allowed:false`, Tau blocks the read with
 `public_repo_denied` and does not execute `gh`; the projection remains a local
-review artifact and does not authorize external GitHub access.
+review artifact and does not authorize external GitHub access. When the active
+policy profile declares `github.allowed_repos`, Tau also blocks reads outside
+that repo allowlist with `github_repo_not_allowed`; malformed allowlists block
+with `invalid_github_allowed_repos`.
 
 The receipt records the active goal hash, parsed target, a suggested `gh` read
 command, blocked mutation verbs, and `mutation_allowed:false`. It also writes a

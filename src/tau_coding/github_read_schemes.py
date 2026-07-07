@@ -384,7 +384,38 @@ def _coding_policy_alerts(
                 "zero-trust data_boundary does not allow public GitHub repository reads",
             )
         )
+    if zero_trust and parsed is not None and policy_profile is not None:
+        repo_alerts = _policy_repo_allowlist_alerts(policy_profile, parsed)
+        alerts.extend(repo_alerts)
     return alerts
+
+
+def _policy_repo_allowlist_alerts(
+    policy_profile: dict[str, Any],
+    parsed: dict[str, Any],
+) -> list[dict[str, str]]:
+    github = policy_profile.get("github")
+    if not isinstance(github, dict) or "allowed_repos" not in github:
+        return []
+    allowed_repos = github.get("allowed_repos")
+    if not isinstance(allowed_repos, list) or not all(
+        isinstance(item, str) and item for item in allowed_repos
+    ):
+        return [
+            _alert(
+                "invalid_github_allowed_repos",
+                "policy_profile.github.allowed_repos must be a list of non-empty strings",
+            )
+        ]
+    repo = parsed.get("repo")
+    if not isinstance(repo, str) or repo not in allowed_repos:
+        return [
+            _alert(
+                "github_repo_not_allowed",
+                "GitHub read repo is outside policy_profile.github.allowed_repos",
+            )
+        ]
+    return []
 
 
 def _alert(code: str, message: str) -> dict[str, str]:

@@ -176,6 +176,54 @@ def test_github_read_zero_trust_public_repo_denied_skips_execute(tmp_path: Path)
     assert not marker.exists()
 
 
+def test_github_read_zero_trust_blocks_repo_outside_policy_allowlist(
+    tmp_path: Path,
+) -> None:
+    gh_bin = _write_fake_gh(tmp_path)
+    marker = tmp_path / "fake-gh-called.json"
+
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "github": {"allowed_repos": ["grahama1970/other"]},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        execute=True,
+        gh_bin=str(gh_bin),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "github_repo_not_allowed" in receipt["alert_codes"]
+    assert receipt["execution"]["execute_requested"] is True
+    assert receipt["execution"]["command_executed"] is False
+    assert not marker.exists()
+
+
+def test_github_read_zero_trust_blocks_invalid_policy_repo_allowlist(
+    tmp_path: Path,
+) -> None:
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "github": {"allowed_repos": "grahama1970/tau"},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_github_allowed_repos" in receipt["alert_codes"]
+
+
 def test_github_read_execute_runs_read_only_command_and_records_logs(tmp_path: Path) -> None:
     gh_bin = _write_fake_gh(tmp_path)
     out = tmp_path / "github-read-receipt.json"
