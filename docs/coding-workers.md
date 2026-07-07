@@ -714,6 +714,10 @@ sandbox and Herdr receipts must also carry `goal_hash` matching the worker work
 order; missing or stale bindings block with
 `sandbox_receipt_missing_goal_hash`, `herdr_receipt_missing_goal_hash`,
 `sandbox_receipt_goal_hash_mismatch`, or `herdr_receipt_goal_hash_mismatch`.
+Referenced sandbox and Herdr receipt paths must resolve inside the worker repo;
+absolute paths outside the repo block with `sandbox_receipt_outside_repo` or
+`herdr_receipt_outside_repo` and are not recorded as admissible substrate
+descriptors.
 Use `uv run tau sandbox-run --goal-hash sha256:...` when creating a sandbox
 receipt that will be referenced by a high-stakes worker work order; otherwise
 the worker substrate gate will reject it as unbound. `uv run tau sandbox-run`

@@ -3,15 +3,16 @@ set -euo pipefail
 
 OUT_DIR="${1:-/tmp/tau-scillm-worker-example}"
 REPO_DIR="${OUT_DIR}/repo"
+RECEIPTS_DIR="${REPO_DIR}/.tau/receipts"
 WORK_ORDER="${OUT_DIR}/work-order.json"
 RESULT="${OUT_DIR}/scillm-result.json"
 RECEIPT="${OUT_DIR}/scillm-worker-receipt.json"
 LAUNCH_RECEIPT="${OUT_DIR}/scillm-worker-launch-receipt.json"
 APPLY_LAUNCH_RECEIPT="${OUT_DIR}/scillm-worker-launch-apply-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
-SANDBOX_RECEIPT="${OUT_DIR}/sandbox-run-receipt.json"
+SANDBOX_RECEIPT="${RECEIPTS_DIR}/sandbox-run-receipt.json"
 
-mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${REPO_DIR}/logs"
+mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${REPO_DIR}/logs" "${RECEIPTS_DIR}"
 printf 'def answer():\n    return 42\n' > "${REPO_DIR}/src/example.py"
 printf 'fixture pytest log\n' > "${REPO_DIR}/logs/pytest.log"
 

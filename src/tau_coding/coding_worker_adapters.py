@@ -590,6 +590,7 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "herdr_binding_required",
         "herdr_receipt_required",
         "herdr_receipt_missing",
+        "herdr_receipt_outside_repo",
         "herdr_receipt_unreadable",
         "herdr_receipt_not_object",
         "herdr_receipt_invalid_schema",
@@ -604,6 +605,7 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "invalid_high_stakes_substrate",
         "sandbox_receipt_required",
         "sandbox_receipt_missing",
+        "sandbox_receipt_outside_repo",
         "sandbox_receipt_unreadable",
         "sandbox_receipt_not_object",
         "sandbox_receipt_invalid_schema",
@@ -992,6 +994,7 @@ def _append_work_order_gate_alerts(
                 repo,
                 alerts,
                 missing_code="sandbox_receipt_missing",
+                outside_repo_code="sandbox_receipt_outside_repo",
                 unreadable_code="sandbox_receipt_unreadable",
                 not_object_code="sandbox_receipt_not_object",
                 missing_message=(
@@ -1039,6 +1042,7 @@ def _append_work_order_gate_alerts(
                 repo,
                 alerts,
                 missing_code="herdr_receipt_missing",
+                outside_repo_code="herdr_receipt_outside_repo",
                 unreadable_code="herdr_receipt_unreadable",
                 not_object_code="herdr_receipt_not_object",
                 missing_message="high-stakes Herdr worker herdr_receipt_path does not exist",
@@ -1225,13 +1229,15 @@ def _load_referenced_receipt(
     alerts: list[dict[str, Any]],
     *,
     missing_code: str,
+    outside_repo_code: str,
     unreadable_code: str,
     not_object_code: str,
     missing_message: str,
 ) -> Mapping[str, Any] | None:
-    path = Path(path_value)
-    if not path.is_absolute() and repo is not None:
-        path = repo / path
+    path = _resolve_repo_artifact_path(path_value, repo)
+    if path is None:
+        alerts.append(_alert(outside_repo_code, "referenced receipt must resolve inside repo"))
+        return None
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:

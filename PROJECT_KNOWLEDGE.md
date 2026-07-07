@@ -5,6 +5,39 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker substrate receipt repo-scope rung:
+  `src/tau_coding/coding_worker_adapters.py` now requires high-stakes
+  `sandbox_receipt_path` and `herdr_receipt_path` values to resolve inside the
+  worker repository before Tau reads them as containment evidence. Absolute
+  substrate receipt paths outside the repo block with
+  `sandbox_receipt_outside_repo` or `herdr_receipt_outside_repo`, are omitted
+  from `substrate_receipts`, and map to the existing sandbox/Herdr
+  course-correction triggers. OMP and SciLLM apply-launch paths inherit the same
+  gate before process/HTTP execution. `tests/test_coding_worker_adapters.py`
+  covers validation blocks for external sandbox and Herdr receipts plus OMP and
+  SciLLM apply-launch skip behavior. `docs/coding-workers.md` documents the
+  repo-scoped substrate receipt rule. `examples/omp-worker/run.sh` and
+  `examples/scillm-worker/run.sh` now store example sandbox receipts under the
+  worker repo at `.tau/receipts/sandbox-run-receipt.json`. Focused proof: `git
+  diff --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md` -> pass; `uv run
+  python -m py_compile src/tau_coding/coding_worker_adapters.py` -> pass; `uv
+  run ruff check --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `82 passed in 5.29s`;
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-repo-scope-proof` ->
+  `status:PASS`, `ok:true`, `mocked:true`, `live:mixed`;
+  `examples/scillm-worker/run.sh /tmp/tau-scillm-worker-repo-scope-proof` ->
+  `status:PASS`, `ok:true`, `mocked:true`, `live:mixed`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-substrate-repo-scope-20260707T123000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `386 passed in 10.05s`. This proves
+  high-stakes worker substrate receipts are now repo-scoped and the copyable
+  worker examples compose with that invariant; it does not prove live OMP or
+  live SciLLM semantic worker execution, semantic code correctness,
+  provider/model quality, GitHub mutation, legal compliance, ITAR compliance, or
+  full sandbox isolation on every host.
+
 - 2026-07-07 commit-plan evidence repo-scope rung:
   `src/tau_coding/commit_plan.py` now requires every
   `--evidence-receipt` path to resolve inside the repository being planned.

@@ -1184,6 +1184,31 @@ def test_high_stakes_sandbox_worker_blocks_missing_goal_hash(
     assert payload["course_correction"]["trigger"] == "receipt_timeout"
 
 
+def test_high_stakes_sandbox_worker_blocks_external_sandbox_receipt(
+    tmp_path: Path,
+) -> None:
+    outside_receipt = tmp_path / "outside" / "sandbox-receipt.json"
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+        sandbox_receipt_path=str(outside_receipt),
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "sandbox_receipt_outside_repo" in payload["alert_codes"]
+    assert payload["substrate_receipts"] == []
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+
+
 def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -1396,6 +1421,30 @@ def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) ->
 
     assert payload["status"] == "BLOCKED"
     assert "herdr_receipt_missing" in payload["alert_codes"]
+
+
+def test_high_stakes_herdr_worker_blocks_external_receipt_path(tmp_path: Path) -> None:
+    outside_receipt = tmp_path / "outside" / "herdr-observation-gate.json"
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path=str(outside_receipt),
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "herdr_receipt_outside_repo" in payload["alert_codes"]
+    assert payload["substrate_receipts"] == []
+    assert payload["course_correction"]["trigger"] == "herdr_stale"
 
 
 def test_high_stakes_herdr_worker_records_receipt_descriptor(tmp_path: Path) -> None:
@@ -1847,6 +1896,37 @@ def test_omp_worker_launch_apply_skips_process_when_substrate_blocks(
     assert not marker.exists()
 
 
+def test_omp_worker_launch_apply_skips_process_when_substrate_receipt_outside_repo(
+    tmp_path: Path,
+) -> None:
+    marker = tmp_path / "fake-omp-ran"
+    fake_omp = _write_fake_omp(tmp_path, marker=marker)
+    outside_receipt = tmp_path / "outside" / "sandbox-receipt.json"
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+        sandbox_receipt_path=str(outside_receipt),
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "sandbox_receipt_outside_repo" in payload["alert_codes"]
+    assert payload["substrate_receipts"] == []
+    assert not marker.exists()
+
+
 def test_cli_omp_worker_launch_apply_records_process_receipt(tmp_path: Path) -> None:
     fake_omp = _write_fake_omp(tmp_path)
     work_order = _write_work_order(
@@ -2266,6 +2346,43 @@ def test_scillm_worker_launch_apply_skips_http_when_substrate_blocks(
     assert payload["http_executed"] is False
     assert payload["launch_skipped"] is True
     assert "herdr_receipt_missing" in payload["alert_codes"]
+    assert requests == []
+
+
+def test_scillm_worker_launch_apply_skips_http_when_substrate_receipt_outside_repo(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    outside_receipt = tmp_path / "outside" / "sandbox-receipt.json"
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        execution_substrate="docker-sandbox",
+        sandbox_receipt_path=str(outside_receipt),
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "sandbox_receipt_outside_repo" in payload["alert_codes"]
+    assert payload["substrate_receipts"] == []
     assert requests == []
 
 
