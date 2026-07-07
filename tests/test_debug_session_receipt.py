@@ -276,6 +276,38 @@ def test_debug_receipt_zero_trust_accepts_policy_boundary(tmp_path: Path) -> Non
     assert receipt["data_boundary"]["classification"] == "public"
 
 
+def test_debug_receipt_zero_trust_honors_log_read_denylist(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": [], "read_denylist": ["debug-stdout.txt"]},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    stderr = tmp_path / "debug-stderr.txt"
+    assert receipt["status"] == "BLOCKED"
+    assert "policy_read_denied" in receipt["alert_codes"]
+    assert receipt["stdout_path"] is None
+    assert receipt["stdout_sha256"] is None
+    assert receipt["stdout_bytes"] is None
+    assert receipt["log_artifacts"] == [
+        {
+            "label": "stderr",
+            "path": str(stderr.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(stderr)}",
+            "bytes": stderr.stat().st_size,
+        }
+    ]
+
+
 def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     out = tmp_path / "debug-session-receipt.json"

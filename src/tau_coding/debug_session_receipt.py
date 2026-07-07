@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 from collections.abc import Mapping
@@ -62,12 +63,14 @@ def write_debug_session_receipt(
         resolved_session.parent,
         "stdout_path",
         alerts,
+        policy_profile=policy_profile,
     )
     stderr_path = _optional_debug_log_path(
         packet.get("stderr_path"),
         resolved_session.parent,
         "stderr_path",
         alerts,
+        policy_profile=policy_profile,
     )
 
     ok = not alerts
@@ -143,6 +146,8 @@ def _optional_debug_log_path(
     base_dir: Path,
     field: str,
     alerts: list[dict[str, Any]],
+    *,
+    policy_profile: dict[str, Any] | None,
 ) -> Path | None:
     if not isinstance(value, str) or not value:
         return None
@@ -152,12 +157,20 @@ def _optional_debug_log_path(
     resolved = candidate.resolve()
     resolved_base = base_dir.resolve()
     try:
-        resolved.relative_to(resolved_base)
+        relative = resolved.relative_to(resolved_base).as_posix()
     except ValueError:
         alerts.append(
             _alert(
                 f"{field}_outside_session_dir",
                 f"{field} must stay under the debug session directory",
+            )
+        )
+        return None
+    if _path_denied_by_policy(relative, _policy_read_denylist(policy_profile)):
+        alerts.append(
+            _alert(
+                "policy_read_denied",
+                f"policy_profile.filesystem.read_denylist denied {relative}",
             )
         )
         return None
@@ -268,6 +281,28 @@ def _coding_policy_alerts(
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
     return alerts
+
+
+def _policy_read_denylist(policy_profile: dict[str, Any] | None) -> list[str] | None:
+    if policy_profile is None:
+        return None
+    filesystem = policy_profile.get("filesystem")
+    if not isinstance(filesystem, dict):
+        return None
+    read_denylist = filesystem.get("read_denylist")
+    if not isinstance(read_denylist, list) or not all(
+        isinstance(item, str) for item in read_denylist
+    ):
+        return None
+    return [item for item in read_denylist]
+
+
+def _path_denied_by_policy(path: str, read_denylist: list[str] | None) -> bool:
+    if read_denylist is None:
+        return False
+    return any(
+        fnmatch.fnmatch(path, pattern.removeprefix("./")) for pattern in read_denylist
+    )
 
 
 def _alert(code: str, message: str) -> dict[str, str]:

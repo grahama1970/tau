@@ -342,7 +342,9 @@ when debugger evidence is part of a high-stakes coding route. In zero-trust
 mode, Tau blocks debug receipts that omit policy, boundary, or `goal_hash`
 metadata. Use `--goal-hash sha256:...` when the caller needs to bind the
 session packet to an expected active goal hash; a mismatch records
-`goal_hash_mismatch`.
+`goal_hash_mismatch`. When `policy_profile.filesystem.read_denylist` matches a
+declared stdout/stderr log artifact, Tau blocks with `policy_read_denied` and
+does not include a SHA-256 or byte count for that denied log.
 
 Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code
