@@ -279,6 +279,7 @@ def test_worker_accepts_public_github_mutation_with_policy_receipt(tmp_path: Pat
         extra={
             "target": {"repo": "grahama1970/tau", "target": "issue#67"},
             "actions": ["comment"],
+            "requirements": _github_policy_requirements(),
         },
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
@@ -314,6 +315,7 @@ def test_worker_accepts_public_github_mutation_with_policy_receipt(tmp_path: Pat
             "provider_live": False,
             "receipt_target": {"repo": "grahama1970/tau", "target": "issue#67"},
             "receipt_actions": ["comment"],
+            "receipt_requirements": _github_policy_requirements(),
             "mutation_index": 0,
             "target": "github:grahama1970/tau#67",
             "action": "comment",
@@ -338,6 +340,7 @@ def test_worker_blocks_public_github_mutation_with_non_pass_policy_receipt(
         extra={
             "target": {"repo": "grahama1970/tau", "target": "issue#67"},
             "actions": ["comment"],
+            "requirements": _github_policy_requirements(),
         },
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
@@ -379,6 +382,7 @@ def test_worker_blocks_public_github_mutation_policy_target_mismatch(
         extra={
             "target": {"repo": "grahama1970/tau", "target": "issue#999"},
             "actions": ["comment"],
+            "requirements": _github_policy_requirements(),
         },
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
@@ -423,6 +427,7 @@ def test_worker_blocks_public_github_mutation_policy_action_mismatch(
         extra={
             "target": {"repo": "grahama1970/tau", "target": "issue#67"},
             "actions": ["label"],
+            "requirements": _github_policy_requirements(),
         },
     )
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
@@ -445,6 +450,146 @@ def test_worker_blocks_public_github_mutation_policy_action_mismatch(
     assert receipt["status"] == "BLOCKED"
     assert "github_apply_policy_receipt_action_mismatch" in receipt["alert_codes"]
     assert receipt["side_effect_receipts"][0]["receipt_actions"] == ["label"]
+
+
+def test_worker_blocks_public_github_mutation_policy_without_requirements(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "actions": ["comment"],
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "github_apply_policy_receipt_requirements_invalid" in receipt["alert_codes"]
+
+
+def test_worker_blocks_public_github_comment_policy_without_redaction_requirement(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "actions": ["comment"],
+            "requirements": {
+                "approval_packet": True,
+                "preflight": True,
+                "redaction": False,
+            },
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "comment",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert (
+        "github_apply_policy_receipt_missing_redaction_requirement"
+        in receipt["alert_codes"]
+    )
+
+
+def test_worker_blocks_public_github_mutation_policy_without_approval_or_preflight(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    policy_receipt = repo / "receipts" / "github-apply-policy.json"
+    _write_reference_receipt(
+        policy_receipt,
+        schema="tau.github_apply_policy_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=False,
+        extra={
+            "target": {"repo": "grahama1970/tau", "target": "issue#67"},
+            "actions": ["label"],
+            "requirements": {
+                "approval_packet": False,
+                "preflight": False,
+                "redaction": True,
+            },
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["requested_mutations"] = [
+        {
+            "target": "github:grahama1970/tau#67",
+            "action": "label",
+            "github_apply_policy_receipt": "receipts/github-apply-policy.json",
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert (
+        "github_apply_policy_receipt_missing_approval_requirement"
+        in receipt["alert_codes"]
+    )
+    assert (
+        "github_apply_policy_receipt_missing_preflight_requirement"
+        in receipt["alert_codes"]
+    )
 
 
 def test_worker_blocks_external_research_without_receipt(tmp_path: Path) -> None:
@@ -2279,6 +2424,14 @@ def _write_reference_receipt(
         + "\n",
         encoding="utf-8",
     )
+
+
+def _github_policy_requirements() -> dict:
+    return {
+        "approval_packet": True,
+        "preflight": True,
+        "redaction": True,
+    }
 
 
 def _sha256(path: Path) -> str:

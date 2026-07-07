@@ -556,9 +556,11 @@ receipts, and records SHA-256/byte descriptors in `side_effect_receipts` or
 `research_receipts`. For GitHub mutations, Tau also checks that the apply
 policy receipt target and actions match the worker's requested
 `github:owner/repo#number` or `github:owner/repo:issue#number` target and
-requested action. A referenced policy or research receipt makes the worker
-claim admissible for review; it does not prove live GitHub mutation, research
-truth, source sufficiency, or worker trustworthiness. High-stakes work
+requested action. The policy receipt must also carry a `requirements` object
+with `approval_packet:true` and `preflight:true`; public GitHub comments must
+also carry `redaction:true`. A referenced policy or research receipt makes the
+worker claim admissible for review; it does not prove live GitHub mutation,
+research truth, source sufficiency, or worker trustworthiness. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution
 or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
 before Tau accepts the worker result. The metadata must use and pass the current

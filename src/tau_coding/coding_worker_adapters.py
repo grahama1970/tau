@@ -1467,6 +1467,8 @@ def _validated_worker_reference_receipt(
         descriptor["receipt_target"] = payload.get("target")
     if "actions" in payload:
         descriptor["receipt_actions"] = payload.get("actions")
+    if "requirements" in payload:
+        descriptor["receipt_requirements"] = payload.get("requirements")
     if payload.get("schema") != expected_schema:
         alerts.append(_alert(invalid_schema_code, f"{label} schema must be {expected_schema}"))
     if payload.get("ok") is not True or payload.get("status") != "PASS":
@@ -1515,6 +1517,36 @@ def _append_github_policy_receipt_match_alerts(
             _alert(
                 "github_apply_policy_receipt_action_mismatch",
                 "GitHub apply policy receipt actions must include requested worker action",
+            )
+        )
+    requirements = descriptor.get("receipt_requirements")
+    if not isinstance(requirements, Mapping):
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_requirements_invalid",
+                "GitHub apply policy receipt requirements must be an object",
+            )
+        )
+        return
+    if requirements.get("approval_packet") is not True:
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_missing_approval_requirement",
+                "GitHub mutation policy receipt must require an approval packet",
+            )
+        )
+    if requirements.get("preflight") is not True:
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_missing_preflight_requirement",
+                "GitHub mutation policy receipt must require preflight",
+            )
+        )
+    if worker_action == "comment" and requirements.get("redaction") is not True:
+        alerts.append(
+            _alert(
+                "github_apply_policy_receipt_missing_redaction_requirement",
+                "Public GitHub comment policy receipt must require redaction",
             )
         )
 

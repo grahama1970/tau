@@ -5,6 +5,36 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker GitHub policy requirements rung:
+  `src/tau_coding/coding_worker_adapters.py` now requires worker-cited
+  `tau.github_apply_policy_receipt.v1` receipts for public GitHub mutations to
+  include gate coverage, not only target/action match. The worker adapter copies
+  receipt `requirements` into the `side_effect_receipts` descriptor and blocks
+  malformed or missing requirements with
+  `github_apply_policy_receipt_requirements_invalid`, missing approval coverage
+  with `github_apply_policy_receipt_missing_approval_requirement`, missing
+  preflight coverage with
+  `github_apply_policy_receipt_missing_preflight_requirement`, and public
+  comment receipts without redaction coverage with
+  `github_apply_policy_receipt_missing_redaction_requirement`.
+  `docs/coding-workers.md` documents the requirements gate. Focused proof:
+  `git diff --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `70 passed in 4.81s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-github-policy-requirements-20260707T083650Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `297 passed in 8.07s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local worker
+  validation rejects GitHub mutation policy receipts that omit approval,
+  preflight, or comment-redaction requirement coverage and still composes with
+  the current coding capability sanity suite; it does not prove live GitHub
+  mutation, worker truthfulness, semantic code correctness, human acceptance,
+  legal compliance, ITAR compliance, full sandbox isolation, provider/model
+  quality, or full goal completion.
+
 - 2026-07-07 worker GitHub policy receipt target/action match rung:
   `src/tau_coding/coding_worker_adapters.py` now verifies that a worker-cited
   `tau.github_apply_policy_receipt.v1` matches the worker's requested public
