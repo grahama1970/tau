@@ -54,6 +54,13 @@ def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
     )
 
     assert payload["baseline_severity_counts"] == baseline["severity_counts"]
+    baseline_path = Path(baseline["receipt_path"])
+    assert payload["baseline_receipt_artifact"] == {
+        "path": str(baseline_path.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(baseline_path)}",
+        "bytes": baseline_path.stat().st_size,
+    }
     assert payload["diagnostic_delta"]["error"] > 0
     assert payload["diagnostics_increased"] is True
 

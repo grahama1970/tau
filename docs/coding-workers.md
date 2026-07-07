@@ -191,11 +191,12 @@ uv run tau lsp-diagnostics \
 ```
 
 The receipt records `baseline_severity_counts`, `diagnostic_delta`, and
-`diagnostics_increased`. This is a regression signal for Tau course correction,
-not proof that the code is semantically correct. Baseline receipts must be
-`status:"PASS"` with `ok:true`; BLOCKED or failed baseline diagnostics receipts
-are recorded as `baseline_receipt_not_pass` and do not produce a before/after
-delta.
+`diagnostics_increased`. It also records `baseline_receipt_artifact` with path,
+existence, SHA-256, and byte count for the exact baseline receipt inspected.
+This is a regression signal for Tau course correction, not proof that the code
+is semantically correct. Baseline receipts must be `status:"PASS"` with
+`ok:true`; BLOCKED or failed baseline diagnostics receipts are recorded as
+`baseline_receipt_not_pass` and do not produce a before/after delta.
 When a diagnostics receipt carries `goal_hash`, the baseline diagnostics receipt
 must carry the same `goal_hash`; missing or mismatched baseline goal hashes
 block before/after comparison.

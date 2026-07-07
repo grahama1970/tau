@@ -98,6 +98,7 @@ def write_lsp_diagnostics_receipt(
             if baseline_receipt_path is not None
             else None
         ),
+        "baseline_receipt_artifact": _optional_artifact_summary(baseline_receipt_path),
         "baseline_severity_counts": baseline_counts,
         "diagnostic_delta": diagnostic_delta,
         "diagnostics_increased": (
@@ -333,6 +334,12 @@ def _artifact_summary(path: Path) -> dict[str, Any]:
         "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
         "bytes": resolved.stat().st_size,
     }
+
+
+def _optional_artifact_summary(path: Path | None) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    return _artifact_summary(path)
 
 
 def _severity_counts(diagnostics: list[dict[str, Any]]) -> dict[str, int]:

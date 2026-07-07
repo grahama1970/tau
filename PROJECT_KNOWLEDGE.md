@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:23 EDT by agent
+**Last updated:** 2026-07-06 23:27 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 LSP diagnostics baseline artifact rung:
+  `src/tau_coding/lsp_receipts.py` now records `baseline_receipt_artifact` on
+  `tau.lsp_diagnostics_receipt.v1` when a baseline diagnostics receipt is
+  supplied. The descriptor records the exact baseline receipt path, existence,
+  SHA-256, and byte count, binding diagnostic deltas to the prior receipt file
+  that Tau inspected. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/lsp_receipts.py tests/test_lsp_receipts.py` -> pass; `uv run
+  pytest tests/test_lsp_receipts.py -q` -> `20 passed in 0.69s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-baseline-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-lsp-baseline-artifact-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.61s`. This proves deterministic local LSP diagnostics
+  receipts expose hash-bound baseline receipt artifacts for before/after
+  comparison and compose with the current coding capability sanity suite; it
+  does not prove semantic code correctness, full IDE language-server parity,
+  live OMP or SciLLM semantic worker execution, provider/model quality, GitHub
+  mutation, human acceptance, legal compliance, or full sandbox isolation on
+  every host.
 
 - 2026-07-06 GitHub read projection artifact rung:
   `src/tau_coding/github_read_schemes.py` now writes a
