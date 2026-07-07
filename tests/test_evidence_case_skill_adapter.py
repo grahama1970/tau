@@ -98,6 +98,20 @@ def test_evidence_case_adapter_blocks_boundary_policy_mismatch(tmp_path: Path) -
     assert "data_boundary mismatches create-evidence-case artifact" in receipt["errors"]
 
 
+def test_evidence_case_adapter_blocks_boundary_id_mismatch(tmp_path: Path) -> None:
+    case = _write_case(tmp_path, data_boundary={**_data_boundary(), "boundary_id": "public"})
+
+    receipt = write_evidence_case_skill_adapter_receipt(
+        case_path=case,
+        output_path=tmp_path / "evidence-case-adapter-receipt.json",
+        repo_root=tmp_path,
+        data_boundary={**_data_boundary(), "boundary_id": "controlled"},
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "data_boundary mismatches create-evidence-case artifact" in receipt["errors"]
+
+
 def test_cli_evidence_case_skill_adapter_writes_receipt(tmp_path: Path) -> None:
     case = _write_case(tmp_path)
     out = tmp_path / "evidence-case-adapter-receipt.json"
@@ -171,6 +185,7 @@ def _policy_profile() -> dict:
 def _data_boundary() -> dict:
     return {
         "schema": DATA_BOUNDARY_SCHEMA,
+        "boundary_id": "public",
         "classification": "public",
         "export_controlled": False,
         "itar": False,

@@ -108,6 +108,30 @@ def test_skill_invocation_blocks_missing_goal_hash_in_zero_trust(tmp_path: Path)
     assert "goal_hash is required when zero_trust is true" in receipt["errors"]
 
 
+def test_skill_invocation_blocks_mocked_when_live_required(tmp_path: Path) -> None:
+    request_path = _write_request(
+        tmp_path,
+        {
+            "mode": "dry_run",
+            "zero_trust": True,
+            "live_required": True,
+            "mocked": True,
+            "live": False,
+            "command": ["echo", "mocked"],
+        },
+    )
+
+    receipt = write_skill_invocation_receipt(
+        request_path=request_path,
+        output_path=tmp_path / "receipt.json",
+        repo_root=tmp_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "live execution is required when live_required is true" in receipt["errors"]
+    assert "mocked execution is forbidden when live_required is true" in receipt["errors"]
+
+
 def test_skill_invocation_blocks_artifact_outside_repo(tmp_path: Path) -> None:
     outside = tmp_path.parent / "outside-skill-artifact.txt"
     outside.write_text("outside\n", encoding="utf-8")

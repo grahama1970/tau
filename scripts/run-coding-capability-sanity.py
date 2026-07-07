@@ -202,6 +202,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "src/tau_coding/review_code_skill_adapter.py",
                 "src/tau_coding/evidence_case_skill_adapter.py",
                 "src/tau_coding/research_skill_adapter.py",
+                "src/tau_coding/skill_composition_redteam.py",
                 "src/tau_coding/cli.py",
                 "tests/test_code_patch.py",
                 "tests/test_review_findings.py",
@@ -232,6 +233,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_review_code_skill_adapter.py",
                 "tests/test_evidence_case_skill_adapter.py",
                 "tests/test_research_skill_adapter.py",
+                "tests/test_skill_composition_redteam.py",
             ],
             purpose="Run focused import/style checks for coding capability modules.",
         ),
@@ -270,6 +272,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
                 "tests/test_review_code_skill_adapter.py",
                 "tests/test_evidence_case_skill_adapter.py",
                 "tests/test_research_skill_adapter.py",
+                "tests/test_skill_composition_redteam.py",
                 "-q",
             ],
             purpose=(
@@ -366,6 +369,7 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "review-code skill adapter receipts",
             "create-evidence-case skill adapter receipts",
             "research skill adapter receipts",
+            "skill-composition adversarial red-team receipts",
             "compliance evidence package receipts",
             "run report generation",
             "local API preflight surfaces",
@@ -399,6 +403,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
                 "gate receipts before treating evidence cases as dispatch inputs.",
                 "Tau adapts research artifacts into Tau research-source receipts "
                 "before treating external research as evidence.",
+                "Tau exercises deterministic malicious skill-artifact fixtures "
+                "against composition wrappers and adapters.",
                 "Tau exercises memory-first gates, package/report/API surfaces, "
                 "provenance/signing, and adversarial containment tests.",
                 "Tau's ITAR-grade containment example emits local fail-closed and "

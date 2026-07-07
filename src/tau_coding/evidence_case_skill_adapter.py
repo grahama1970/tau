@@ -278,6 +278,7 @@ def _policy_key(value: dict[str, Any]) -> dict[str, Any]:
 def _boundary_key(value: dict[str, Any]) -> dict[str, Any]:
     return {
         "schema": value.get("schema"),
+        "boundary_id": value.get("boundary_id"),
         "classification": value.get("classification"),
         "export_controlled": value.get("export_controlled"),
         "itar": value.get("itar"),

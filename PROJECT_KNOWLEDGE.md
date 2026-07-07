@@ -1,9 +1,43 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:19 EDT by agent
+**Last updated:** 2026-07-07 09:28 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 skill-composition red-team rung:
+  `src/tau_coding/skill_composition_redteam.py` adds
+  `tau.skill_composition_redteam_receipt.v1`, a deterministic local adversarial
+  suite for Tau/agent-skills composition boundaries. It feeds malicious or
+  under-specified skill artifacts into existing Tau adapters and requires each
+  attempt to fail closed: debugger proof missing goal hash, review-code PASS
+  with a blocking finding, code-runner patch outside allowlist, Dogpile report
+  without query-safety receipt, create-evidence-case boundary mismatch,
+  skill-invocation artifact outside repo root, and mocked skill invocation when
+  high-stakes live execution is required. `src/tau_coding/skill_invocation.py`
+  now blocks `live_required:true` unless `live:true` and `mocked` is not true.
+  `src/tau_coding/evidence_case_skill_adapter.py` now includes `boundary_id`
+  in data-boundary compatibility checks. `scripts/run-coding-capability-sanity.py`
+  includes the red-team module and test in aggregate lint/test coverage.
+  `docs/skill-composition.md` documents the red-team boundary. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/skill_invocation.py tests/test_skill_invocation.py
+  src/tau_coding/evidence_case_skill_adapter.py
+  tests/test_evidence_case_skill_adapter.py
+  src/tau_coding/skill_composition_redteam.py
+  tests/test_skill_composition_redteam.py scripts/run-coding-capability-sanity.py
+  docs/skill-composition.md` -> `All checks passed!`; `uv run pytest
+  tests/test_skill_invocation.py tests/test_evidence_case_skill_adapter.py
+  tests/test_skill_composition_redteam.py -q` -> `14 passed in 0.45s`; `uv
+  run python -m py_compile ...` -> pass; `git diff --check -- ...` -> pass.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-skill-redteam-20260707T130534Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `453 passed in 11.22s`. This proves
+  deterministic local fail-closed coverage for the listed malicious
+  skill-artifact cases; it does not prove exhaustive attack coverage, live
+  skill execution, skill output semantic correctness, provider/model quality,
+  future route correctness, or task closure.
 
 - 2026-07-07 course-correction skill-route rung:
   `src/tau_coding/course_correction.py` now maps selected

@@ -300,10 +300,34 @@ Missing or registry-mismatched providers fail closed with
 skill still needs a Tau invocation receipt and an adapter receipt before its
 artifact is admissible.
 
+## Skill-Composition Red Team
+
+The local red-team suite feeds malicious or under-specified skill artifacts into
+Tau wrappers/adapters and requires each one to fail closed:
+
+```python
+from pathlib import Path
+from tau_coding.skill_composition_redteam import run_skill_composition_redteam
+
+receipt = run_skill_composition_redteam(run_dir=Path("/tmp/tau-skill-redteam"))
+```
+
+Current fixtures cover:
+
+- debugger proof missing goal hash;
+- review-code PASS with a blocking finding;
+- code-runner patch outside the allowlist;
+- Dogpile/research report without query-safety receipt;
+- create-evidence-case data-boundary mismatch;
+- skill invocation artifact outside the repo;
+- mocked skill invocation when high-stakes live execution is required.
+
+The suite proves only deterministic local fail-closed behavior. It does not run
+the skills, call providers, or prove semantic correctness.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
 1. Model-worker adapter.
-2. A skill-composition red-team suite that proves Tau does not blindly trust
-   skill outputs.
+2. CLI/run-status integration for the skill-composition red-team receipt.

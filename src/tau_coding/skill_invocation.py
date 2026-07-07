@@ -113,6 +113,10 @@ def _validate_request_shape(request: dict[str, Any], *, errors: list[str]) -> No
         errors.append(f"mode must be one of {sorted(ALLOWED_SKILL_INVOCATION_MODES)}")
     if request.get("zero_trust") is True and not _non_empty_str(request.get("goal_hash")):
         errors.append("goal_hash is required when zero_trust is true")
+    if request.get("live_required") is True and request.get("live") is not True:
+        errors.append("live execution is required when live_required is true")
+    if request.get("live_required") is True and request.get("mocked") is True:
+        errors.append("mocked execution is forbidden when live_required is true")
     if request.get("mode") in {"dry_run", "execute"} and not _command_list(request.get("command")):
         errors.append("command must be a non-empty string list for dry_run or execute mode")
     if request.get("mode") == "ingest_existing" and not isinstance(request.get("artifacts"), list):
