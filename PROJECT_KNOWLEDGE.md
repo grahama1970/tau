@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:09 EDT by agent
+**Last updated:** 2026-07-07 00:13 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 commit-plan evidence receipt descriptor rung:
+  `src/tau_coding/commit_plan.py` now records `exists:true` on
+  `tau.commit_plan_receipt.v1.evidence_receipts` for supporting evidence
+  artifacts, aligning commit planning with the normalized coding artifact shape
+  used by code-patch, LSP, review, GitHub read, worker, and debugger receipts.
+  Focused proof: `git diff --check docs/coding-workers.md
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> `All checks passed!`; `uv run pytest
+  tests/test_commit_plan.py -q` -> `18 passed in 0.78s`. Aggregate coding
+  sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-evidence-exists-proof` wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-evidence-exists-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.65s`. This proves deterministic local commit-plan receipts expose
+  supporting evidence artifacts as normalized descriptors and compose with the
+  current coding capability sanity suite; it does not prove semantic grouping
+  optimality, semantic code correctness, tests passed for real changes, GitHub
+  mutation, human acceptance, live worker execution, or full goal completion.
 
 - 2026-07-07 debugger log artifact descriptor rung:
   `src/tau_coding/debug_session_receipt.py` now records `exists:true` on

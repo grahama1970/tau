@@ -270,9 +270,9 @@ uv run tau commit-plan \
 
 Tau blocks source changes that have neither changed tests nor explicit evidence
 receipts. The receipt records each evidence artifact path, schema, status,
-`ok`, `mocked`, `live`, `provider_live`, and SHA-256 plus byte count so a later
-reviewer can inspect the exact artifact and proof mode that supported the
-proposed atomic commit. Evidence receipts only count when they report
+`ok`, `mocked`, `live`, `provider_live`, existence, and SHA-256 plus byte count
+so a later reviewer can inspect the exact artifact and proof mode that
+supported the proposed atomic commit. Evidence receipts only count when they report
 `status:"PASS"` and `ok:true` from a supported Tau coding evidence schema;
 BLOCKED, failed, or unknown-schema receipts are recorded but cannot justify a
 source commit group.

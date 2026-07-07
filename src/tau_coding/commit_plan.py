@@ -286,6 +286,7 @@ def _evidence_receipts(
         receipts.append(
             {
                 "path": str(resolved),
+                "exists": True,
                 "sha256": f"sha256:{_sha256(resolved)}",
                 "bytes": resolved.stat().st_size,
                 "schema": schema,

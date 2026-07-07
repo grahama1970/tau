@@ -124,6 +124,7 @@ def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path)
     assert payload["evidence_receipts"][0]["live"] is True
     assert payload["evidence_receipts"][0]["provider_live"] is False
     assert payload["evidence_receipts"][0]["covered_paths"] == ["src.py"]
+    assert payload["evidence_receipts"][0]["exists"] is True
     assert payload["evidence_receipts"][0]["sha256"].startswith("sha256:")
     assert payload["evidence_receipts"][0]["bytes"] == evidence.stat().st_size
 
