@@ -1867,6 +1867,7 @@ def main(
             payload = write_github_read_receipt(
                 uri=str(options["uri"]),
                 output_path=Path(str(options["out"])),
+                goal_hash=_optional_str(options.get("goal_hash")),
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
@@ -4878,6 +4879,7 @@ def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "goal_hash": None,
         "execute": False,
         "gh_bin": "gh",
         "timeout_s": 30,
@@ -4890,6 +4892,7 @@ def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
             "--out",
             "--policy-profile",
             "--data-boundary",
+            "--goal-hash",
             "--gh-bin",
             "--timeout-s",
         }:
@@ -4905,6 +4908,8 @@ def _parse_github_read_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         elif arg.startswith("--gh-bin="):
             options["gh_bin"] = arg.partition("=")[2]
         elif arg.startswith("--timeout-s="):

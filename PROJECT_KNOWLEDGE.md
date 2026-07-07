@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:58 EDT by agent
+**Last updated:** 2026-07-06 22:02 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GitHub read goal-hash evidence binding rung:
+  `src/tau_coding/github_read_schemes.py` now records `goal_hash` on
+  `tau.github_read_receipt.v1` and requires it for zero-trust GitHub read
+  projections. The CLI `github-read` command now accepts `--goal-hash`, and
+  `docs/coding-workers.md` documents the high-stakes goal-hash requirement.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py src/tau_coding/cli.py
+  tests/test_github_read_schemes.py` -> pass; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `14 passed in 0.58s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-goal-hash-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-github-read-goal-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, coverage entry `GitHub read receipts`, and embedded
+  focused coding tests `188 passed in 6.09s`. This proves deterministic local
+  GitHub read receipts can be bound to the active goal before being used as
+  coding evidence; it does not prove live GitHub auth succeeds, GitHub object
+  existence, content freshness without execute mode, semantic correctness of
+  GitHub content, live GitHub mutation, provider/model quality, legal
+  compliance, or full sandbox isolation.
 
 - 2026-07-06 LSP goal-hash evidence binding rung:
   `src/tau_coding/lsp_receipts.py` now records `goal_hash` on diagnostics,

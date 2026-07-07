@@ -26,6 +26,7 @@ def write_github_read_receipt(
     *,
     uri: str,
     output_path: Path,
+    goal_hash: str | None = None,
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
@@ -37,6 +38,7 @@ def write_github_read_receipt(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        goal_hash=goal_hash,
     )
     parsed = _parse_github_uri(uri)
     if parsed is None:
@@ -67,6 +69,7 @@ def write_github_read_receipt(
         "mocked": False,
         "live": bool(execution["command_executed"]),
         "provider_live": False,
+        "goal_hash": goal_hash,
         "zero_trust": zero_trust,
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
@@ -309,8 +312,11 @@ def _coding_policy_alerts(
     zero_trust: bool,
     policy_profile: dict[str, Any] | None,
     data_boundary: dict[str, Any] | None,
+    goal_hash: str | None,
 ) -> list[dict[str, str]]:
     alerts: list[dict[str, str]] = []
+    if zero_trust and not goal_hash:
+        alerts.append(_alert("missing_goal_hash", "zero-trust GitHub read requires goal_hash"))
     if zero_trust and policy_profile is None:
         alerts.append(
             _alert("missing_policy_profile", "zero-trust GitHub read requires policy_profile")

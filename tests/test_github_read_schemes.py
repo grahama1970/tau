@@ -13,10 +13,12 @@ def test_github_read_issue_scheme_is_read_only(tmp_path: Path) -> None:
     receipt = write_github_read_receipt(
         uri="issue://grahama1970/tau/67",
         output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
     )
 
     assert receipt["schema"] == GITHUB_READ_RECEIPT_SCHEMA
     assert receipt["status"] == "PASS"
+    assert receipt["goal_hash"] == "sha256:goal"
     assert receipt["read_only"] is True
     assert receipt["mutation_allowed"] is False
     assert receipt["parsed"] == {
@@ -91,6 +93,7 @@ def test_github_read_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -
     )
 
     assert receipt["status"] == "BLOCKED"
+    assert "missing_goal_hash" in receipt["alert_codes"]
     assert "missing_policy_profile" in receipt["alert_codes"]
     assert "missing_data_boundary" in receipt["alert_codes"]
     assert receipt["mutation_allowed"] is False
@@ -100,12 +103,14 @@ def test_github_read_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     receipt = write_github_read_receipt(
         uri="issue://grahama1970/tau/67",
         output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
         zero_trust=True,
         policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
         data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
     )
 
     assert receipt["status"] == "PASS"
+    assert receipt["goal_hash"] == "sha256:goal"
     assert receipt["zero_trust"] is True
     assert receipt["policy_profile"]["profile_id"] == "test"
     assert receipt["data_boundary"]["classification"] == "public"
@@ -179,6 +184,8 @@ def test_cli_github_read_writes_receipt(tmp_path: Path) -> None:
             "pr://grahama1970/tau/12",
             "--out",
             str(out),
+            "--goal-hash",
+            "sha256:goal",
         ],
     )
 
@@ -186,6 +193,7 @@ def test_cli_github_read_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == GITHUB_READ_RECEIPT_SCHEMA
+    assert payload["goal_hash"] == "sha256:goal"
     assert payload["parsed"]["kind"] == "pr"
 
 
@@ -238,6 +246,7 @@ def test_cli_github_read_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 

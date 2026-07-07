@@ -306,6 +306,7 @@ CLI:
 ```bash
 uv run tau github-read \
   --uri issue://grahama1970/tau/67 \
+  --goal-hash sha256:... \
   --out github-read-receipt.json
 ```
 
@@ -315,21 +316,23 @@ bounded read-only `gh` command and persist stdout/stderr sidecars:
 ```bash
 uv run tau github-read \
   --uri issue://grahama1970/tau/67 \
+  --goal-hash sha256:... \
   --out github-read-receipt.json \
   --execute
 ```
 
-Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
-when GitHub read projections are part of a high-stakes coding route. In
-zero-trust mode, Tau blocks read receipts that omit policy or boundary
-metadata.
+Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
+--data-boundary boundary.json` when GitHub read projections are part of a
+high-stakes coding route. In zero-trust mode, Tau blocks read receipts that
+omit the active goal hash, policy metadata, or boundary metadata.
 
-The receipt records the parsed target, a suggested `gh` read command, blocked
-mutation verbs, and `mutation_allowed:false`. In execute mode it records the
-exact command, exit code, timeout state, stdout/stderr artifact paths, SHA-256
-hashes, byte counts, and artifact descriptors. It does not authorize mutation,
-prove semantic correctness of GitHub content, or prove content freshness unless
-a real `gh` command completed for that target at that time.
+The receipt records the active goal hash, parsed target, a suggested `gh` read
+command, blocked mutation verbs, and `mutation_allowed:false`. In execute mode
+it records the exact command, exit code, timeout state, stdout/stderr artifact
+paths, SHA-256 hashes, byte counts, and artifact descriptors. It does not
+authorize mutation, prove semantic correctness of GitHub content, or prove
+content freshness unless a real `gh` command completed for that target at that
+time.
 
 GitHub mutation remains separate. Commenting, labeling, closing, merging,
 pushing, and releasing must go through `tau.github_apply_policy_receipt.v1`
