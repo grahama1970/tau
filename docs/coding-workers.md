@@ -441,6 +441,8 @@ the harness rules separately from whether the code is correct. It reports:
 - unexpected nodes and edges
 - required receipt and evidence presence
 - existence plus SHA-256/byte-count binding for the DAG receipt and required receipts
+- required receipt validity: required receipts must be `status:"PASS"`,
+  `ok:true`, `mocked:false`, and `live:true`
 - course-correction emission and handling
 - retry budget discipline
 - terminal condition validity

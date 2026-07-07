@@ -118,6 +118,7 @@ def write_orchestration_reliability_receipt(
         and terminal_condition_valid
         and course_corrections_followed
         and not required_receipt_report["missing"]
+        and not required_receipt_report["invalid"]
         and not unhandled_herdr_blocks
         and not blocked_without_correction
     )
@@ -241,6 +242,8 @@ def _alerts(
         alerts.append({"severity": "BLOCK", "code": "course_correction_ignored"})
     if required_receipt_report["missing"]:
         alerts.append({"severity": "BLOCK", "code": "required_receipt_missing"})
+    if required_receipt_report["invalid"]:
+        alerts.append({"severity": "BLOCK", "code": "required_receipt_invalid"})
     for gate in unhandled_herdr_blocks:
         alerts.append(
             {
@@ -395,18 +398,40 @@ def _terminal_condition_valid(dag_receipt: Mapping[str, Any]) -> bool:
     )
 
 
-def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, list[str]]:
+def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, Any]:
     present: list[str] = []
     missing: list[str] = []
     present_artifacts: list[dict[str, Any]] = []
+    invalid: list[dict[str, str]] = []
     for receipt in required_receipts:
         resolved = receipt.expanduser().resolve()
         if resolved.exists():
             present.append(str(resolved))
-            present_artifacts.append(_receipt_artifact_descriptor(resolved))
+            descriptor = _receipt_artifact_descriptor(resolved)
+            present_artifacts.append(descriptor)
+            reason = _required_receipt_invalid_reason(descriptor)
+            if reason:
+                invalid.append({"path": str(resolved), "reason": reason})
         else:
             missing.append(str(resolved))
-    return {"present": present, "missing": missing, "present_artifacts": present_artifacts}
+    return {
+        "present": present,
+        "missing": missing,
+        "invalid": invalid,
+        "present_artifacts": present_artifacts,
+    }
+
+
+def _required_receipt_invalid_reason(descriptor: Mapping[str, Any]) -> str | None:
+    if descriptor.get("schema") is None:
+        return "unreadable_or_missing_schema"
+    if descriptor.get("ok") is not True or descriptor.get("status") != "PASS":
+        return "status_not_pass"
+    if descriptor.get("mocked") is not False:
+        return "mocked"
+    if descriptor.get("live") is not True:
+        return "not_live"
+    return None
 
 
 def _read_first_json(paths: list[Path]) -> dict[str, Any]:

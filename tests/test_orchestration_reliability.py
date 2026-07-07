@@ -80,6 +80,58 @@ def test_orchestration_reliability_blocks_missing_receipt(tmp_path: Path) -> Non
     assert "missing_dag_or_run_receipt" in payload["alert_codes"]
 
 
+def test_orchestration_reliability_blocks_required_receipt_not_pass(tmp_path: Path) -> None:
+    artifact = _write_required_receipt(tmp_path / "worker-receipt.json", status="BLOCKED")
+    dag_receipt = _write_dag_receipt(tmp_path, artifacts=[str(artifact)])
+
+    payload = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+        required_receipts=[artifact],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["required_receipts_present"] is True
+    assert "required_receipt_invalid" in payload["alert_codes"]
+    assert payload["required_receipts"]["invalid"] == [
+        {"path": str(artifact.resolve()), "reason": "status_not_pass"}
+    ]
+
+
+def test_orchestration_reliability_blocks_mocked_required_receipt(tmp_path: Path) -> None:
+    artifact = _write_required_receipt(tmp_path / "worker-receipt.json", mocked=True)
+    dag_receipt = _write_dag_receipt(tmp_path, artifacts=[str(artifact)])
+
+    payload = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+        required_receipts=[artifact],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "required_receipt_invalid" in payload["alert_codes"]
+    assert payload["required_receipts"]["invalid"] == [
+        {"path": str(artifact.resolve()), "reason": "mocked"}
+    ]
+
+
+def test_orchestration_reliability_blocks_non_live_required_receipt(tmp_path: Path) -> None:
+    artifact = _write_required_receipt(tmp_path / "worker-receipt.json", live=False)
+    dag_receipt = _write_dag_receipt(tmp_path, artifacts=[str(artifact)])
+
+    payload = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+        required_receipts=[artifact],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "required_receipt_invalid" in payload["alert_codes"]
+    assert payload["required_receipts"]["invalid"] == [
+        {"path": str(artifact.resolve()), "reason": "not_live"}
+    ]
+
+
 def test_orchestration_reliability_blocks_ignored_course_correction(tmp_path: Path) -> None:
     correction = tmp_path / "course-correction.json"
     correction.write_text("{}", encoding="utf-8")
@@ -254,6 +306,32 @@ def _write_dag_receipt(
     }
     path = tmp_path / "dag-receipt.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_required_receipt(
+    path: Path,
+    *,
+    status: str = "PASS",
+    mocked: bool = False,
+    live: bool = True,
+) -> Path:
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.command_loop_receipt.v1",
+                "status": status,
+                "ok": status == "PASS",
+                "mocked": mocked,
+                "live": live,
+                "provider_live": False,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return path
 
 

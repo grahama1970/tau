@@ -1,9 +1,36 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 01:47 EDT by agent
+**Last updated:** 2026-07-07 01:51 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 orchestration reliability required-receipt validity rung:
+  `src/tau_coding/orchestration_reliability.py` now treats required receipts as
+  invalid, not merely present, when a required receipt is unreadable or missing
+  schema, not `status:"PASS"`/`ok:true`, `mocked:true`, or not `live:true`.
+  `tau.orchestration_reliability_receipt.v1.required_receipts` now includes an
+  `invalid` list with per-receipt reasons such as `status_not_pass`, `mocked`,
+  and `not_live`, and the top-level receipt blocks with
+  `required_receipt_invalid`. `docs/coding-workers.md` documents that required
+  receipts must be PASS, ok, non-mocked, and live. Focused proof: `uv run
+  python -m py_compile src/tau_coding/orchestration_reliability.py` -> pass;
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> `All checks passed!`; `uv run
+  pytest tests/test_orchestration_reliability.py -q` -> `11 passed in 0.42s`.
+  Aggregate sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-required-receipt-validity-proof-20260707T055124Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-required-receipt-validity-proof-20260707T055124Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `241 passed in
+  6.86s`. This proves deterministic local orchestration reliability receipts no
+  longer allow BLOCKED, mocked, or non-live required receipts to satisfy a
+  coding run's required-receipt gate; it does not prove code correctness,
+  agent truthfulness, live provider/model quality, legal compliance, GitHub
+  mutation safety, full sandbox isolation, or full goal completion.
 
 - 2026-07-07 Herdr worker receipt-required rung:
   `src/tau_coding/coding_worker_adapters.py` now requires high-stakes Herdr
