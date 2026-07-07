@@ -57,8 +57,33 @@ def test_compliance_package_collects_coding_evidence_receipts(tmp_path: Path) ->
             "status": "PASS",
             "ok": True,
         },
+        "code-runner-worker-receipt.json": {
+            "schema": "tau.code_runner_worker_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "memory-intent-acquisition-receipt.json": {
+            "schema": "tau.memory_intent_acquisition_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "evidence-case-acquisition-receipt.json": {
+            "schema": "tau.evidence_case_acquisition_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "evidence-case-skill-adapter-receipt.json": {
+            "schema": "tau.evidence_case_skill_adapter_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
         "test-run-receipt.json": {
             "schema": "tau.test_run_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "review-code-skill-adapter-receipt.json": {
+            "schema": "tau.review_code_skill_adapter_receipt.v1",
             "status": "PASS",
             "ok": True,
         },
@@ -74,6 +99,16 @@ def test_compliance_package_collects_coding_evidence_receipts(tmp_path: Path) ->
         },
         "github-read-receipt.json": {
             "schema": "tau.github_read_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "debugger-skill-adapter-receipt.json": {
+            "schema": "tau.debugger_skill_adapter_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+        },
+        "research-skill-adapter-receipt.json": {
+            "schema": "tau.research_skill_adapter_receipt.v1",
             "status": "PASS",
             "ok": True,
         },

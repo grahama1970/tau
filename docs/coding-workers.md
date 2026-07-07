@@ -1030,8 +1030,9 @@ does not replace result validation.
 
 `uv run tau compliance-package <run-dir> --out <package-dir>` copies Tau-native
 coding evidence receipts into `coding-evidence-receipts/` when a run produced
-them. This includes patch, LSP, focused test-run, review findings, commit-plan,
-course-correction, debug-session, OMP worker, SciLLM worker, and orchestration
+them. This includes patch, Graph Memory acquisition, Tau skill-adapter wrapper,
+LSP, focused test-run, review findings, commit-plan, course-correction,
+debug-session, OMP readiness, OMP worker, SciLLM worker, and orchestration
 reliability receipts.
 
 Packaging these receipts makes coding evidence easier to review. It does not
