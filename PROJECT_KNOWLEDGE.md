@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 20:55 EDT by agent
+**Last updated:** 2026-07-06 21:02 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debug-session malformed evidence fail-closed rung:
+  `src/tau_coding/debug_session_receipt.py` now blocks
+  `tau.debug_session_packet.v1` packets that omit `target` or provide malformed
+  structured evidence fields. `breakpoints`, `variables`, and `commands` must
+  be arrays, and `stopped_frame` must be an object; otherwise the receipt is
+  `BLOCKED` with alert codes such as `missing_debug_target`,
+  `invalid_breakpoints`, `invalid_stopped_frame`, `invalid_variables`, and
+  `invalid_commands`. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> pass; `uv run pytest tests/test_debug_session_receipt.py -q` -> `11
+  passed in 0.47s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-session-proof` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-debug-session-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `debug-session receipts`, and embedded focused coding tests `163 passed
+  in 5.86s`. This proves deterministic local fail-closed validation for missing
+  debug targets and malformed debug evidence shapes; it does not prove live DAP
+  adapter launch, bug repair, semantic debug completeness, code correctness,
+  provider/model quality, legal compliance, or full sandbox isolation.
 
 - 2026-07-06 coding capability zero-trust basic aggregate coverage rung:
   `examples/zero-trust-basic/run.sh` now accepts an optional output directory so

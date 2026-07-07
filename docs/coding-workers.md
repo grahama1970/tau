@@ -218,6 +218,11 @@ and `node`. The receipt records the target, adapter availability, breakpoints,
 stopped frame, variables, commands, stdout/stderr artifacts, SHA-256 hashes,
 byte counts, conclusion, and non-claims.
 
+Tau blocks debug receipts when the session packet omits the target command, uses
+an unsupported adapter, refers to missing stdout/stderr artifacts, or provides
+malformed structured evidence fields. `breakpoints`, `variables`, and
+`commands` must be arrays; `stopped_frame` must be an object.
+
 CLI:
 
 ```bash

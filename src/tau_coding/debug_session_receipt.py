@@ -42,6 +42,14 @@ def write_debug_session_receipt(
         alerts.append(_alert("unsupported_debug_adapter", "adapter is not supported"))
     if required and not adapter_available:
         alerts.append(_alert("debug_adapter_unavailable", "required debug adapter is unavailable"))
+    target = _string(packet.get("target"))
+    if target is None:
+        alerts.append(_alert("missing_debug_target", "debug session target is required"))
+
+    breakpoints = _optional_list(packet.get("breakpoints"), "breakpoints", alerts)
+    stopped_frame = _optional_mapping(packet.get("stopped_frame"), "stopped_frame", alerts)
+    variables = _optional_list(packet.get("variables"), "variables", alerts)
+    commands = _optional_list(packet.get("commands"), "commands", alerts)
 
     stdout_path = _optional_existing_path(packet.get("stdout_path"), resolved_session.parent)
     stderr_path = _optional_existing_path(packet.get("stderr_path"), resolved_session.parent)
@@ -62,13 +70,13 @@ def write_debug_session_receipt(
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
         "session_path": str(resolved_session),
-        "target": packet.get("target"),
+        "target": target,
         "adapter": adapter,
         "adapter_available": adapter_available,
-        "breakpoints": _list(packet.get("breakpoints")),
-        "stopped_frame": _mapping(packet.get("stopped_frame")),
-        "variables": _list(packet.get("variables")),
-        "commands": _list(packet.get("commands")),
+        "breakpoints": breakpoints,
+        "stopped_frame": stopped_frame,
+        "variables": variables,
+        "commands": commands,
         "stdout_path": str(stdout_path) if stdout_path is not None else None,
         "stdout_sha256": _sha256_uri(stdout_path),
         "stdout_bytes": stdout_path.stat().st_size if stdout_path is not None else None,
@@ -149,12 +157,30 @@ def _string(value: object) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
-def _list(value: object) -> list[Any]:
-    return value if isinstance(value, list) else []
+def _optional_list(
+    value: object,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    alerts.append(_alert(f"invalid_{field}", f"{field} must be a list"))
+    return []
 
 
-def _mapping(value: object) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+def _optional_mapping(
+    value: object,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, Mapping):
+        return dict(value)
+    alerts.append(_alert(f"invalid_{field}", f"{field} must be an object"))
+    return {}
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

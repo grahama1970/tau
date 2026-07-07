@@ -38,6 +38,42 @@ def test_debug_receipt_blocks_missing_adapter_when_required(tmp_path: Path) -> N
     assert "debug_adapter_unavailable" in receipt["alert_codes"]
 
 
+def test_debug_receipt_blocks_missing_target(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload.pop("target")
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_debug_target" in receipt["alert_codes"]
+
+
+def test_debug_receipt_blocks_malformed_evidence_shapes(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["breakpoints"] = "not-list"
+    payload["stopped_frame"] = []
+    payload["variables"] = "not-list"
+    payload["commands"] = "not-list"
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_breakpoints" in receipt["alert_codes"]
+    assert "invalid_stopped_frame" in receipt["alert_codes"]
+    assert "invalid_variables" in receipt["alert_codes"]
+    assert "invalid_commands" in receipt["alert_codes"]
+
+
 def test_debug_receipt_records_variables_and_frames(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
 
