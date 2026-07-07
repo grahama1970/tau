@@ -77,6 +77,13 @@ def test_review_findings_passes_with_no_blocking_findings(tmp_path: Path) -> Non
     assert receipt["finding_count"] == 0
     assert receipt["findings_sha256"] == f"sha256:{_sha256_file(findings_path)}"
     assert receipt["findings_bytes"] == findings_path.stat().st_size
+    assert receipt["findings_artifact"] == {
+        "label": "review_findings",
+        "path": str(findings_path.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256_file(findings_path)}",
+        "bytes": findings_path.stat().st_size,
+    }
     assert "The reviewer is correct." in receipt["proof_scope"]["does_not_prove"]
 
 
@@ -115,6 +122,13 @@ def test_review_findings_writes_blocked_receipt_for_missing_findings_artifact(
     assert receipt["findings_path"] == str(findings_path.resolve())
     assert receipt["findings_sha256"] is None
     assert receipt["findings_bytes"] is None
+    assert receipt["findings_artifact"] == {
+        "label": "review_findings",
+        "path": str(findings_path.resolve()),
+        "exists": False,
+        "sha256": None,
+        "bytes": None,
+    }
     assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
 
 

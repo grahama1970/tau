@@ -153,6 +153,10 @@ def write_review_findings_receipt(
     receipt["findings_path"] = str(findings_path.expanduser().resolve())
     receipt["findings_sha256"] = _artifact_sha256_uri(findings_path.expanduser().resolve())
     receipt["findings_bytes"] = _artifact_size(findings_path.expanduser().resolve())
+    receipt["findings_artifact"] = _artifact_descriptor(
+        "review_findings",
+        findings_path.expanduser().resolve(),
+    )
     receipt["receipt_path"] = str(resolved_receipt)
     resolved_receipt.write_text(
         json.dumps(receipt, indent=2, sort_keys=True) + "\n",
@@ -326,3 +330,13 @@ def _artifact_size(path: Path | None) -> int | None:
         return path.stat().st_size
     except OSError:
         return None
+
+
+def _artifact_descriptor(label: str, path: Path | None) -> dict[str, Any]:
+    return {
+        "label": label,
+        "path": str(path) if path is not None else None,
+        "exists": bool(path is not None and path.exists()),
+        "sha256": _artifact_sha256_uri(path),
+        "bytes": _artifact_size(path),
+    }

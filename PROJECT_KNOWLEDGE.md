@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:27 EDT by agent
+**Last updated:** 2026-07-06 23:30 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 review-findings artifact descriptor rung:
+  `src/tau_coding/review_findings.py` now records `findings_artifact` on
+  `tau.review_findings.v1` receipts, with label, resolved findings path,
+  existence, SHA-256, and byte count. Existing scalar `findings_path`,
+  `findings_sha256`, and `findings_bytes` fields remain for compatibility,
+  while the descriptor gives structured reviewer output the same artifact shape
+  used by other coding evidence receipts. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py` -> pass; `uv run pytest
+  tests/test_review_findings.py -q` -> `13 passed in 0.45s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-findings-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-review-findings-artifact-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.61s`. This proves deterministic local review-findings
+  receipts expose the reviewer findings input as a hash-bound artifact
+  descriptor and compose with the current coding capability sanity suite; it
+  does not prove reviewer correctness, code semantic correctness, exhaustive
+  review, live OMP or SciLLM semantic worker execution, provider/model quality,
+  GitHub mutation, human acceptance, legal compliance, or full sandbox isolation
+  on every host.
 
 - 2026-07-06 LSP diagnostics baseline artifact rung:
   `src/tau_coding/lsp_receipts.py` now records `baseline_receipt_artifact` on
