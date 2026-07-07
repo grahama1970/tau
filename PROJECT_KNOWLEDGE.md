@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:06 EDT by agent
+**Last updated:** 2026-07-06 21:09 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 worker policy/data-boundary schema gate rung:
+  `src/tau_coding/coding_worker_adapters.py` now requires high-stakes OMP and
+  SciLLM worker work orders to carry schema-valid containment metadata:
+  `policy_profile.schema` must be `tau.policy_profile.v1`, and
+  `data_boundary.schema` must be `tau.data_boundary.v1`. Invalid metadata now
+  blocks validation and launch receipts with `invalid_policy_profile_schema` or
+  `invalid_data_boundary_schema`; mere nonempty dicts no longer satisfy the
+  zero-trust worker gate. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` -> `36
+  passed in 3.16s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-policy-schema-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-policy-schema-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entries for `OMP/SciLLM worker validation receipts` and bounded launch
+  receipts, and embedded focused coding tests `168 passed in 5.99s`. This
+  proves deterministic local schema gating for high-stakes worker containment
+  metadata; it does not prove live OMP/SciLLM semantic worker execution,
+  provider/model quality, code correctness, legal compliance, or full sandbox
+  isolation.
 
 - 2026-07-06 code-patch malformed artifact receipt rung:
   `src/tau_coding/code_patch.py` now writes BLOCKED

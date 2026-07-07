@@ -303,6 +303,44 @@ def test_zero_trust_worker_blocks_missing_data_boundary(tmp_path: Path) -> None:
     assert "missing_data_boundary" in payload["alert_codes"]
 
 
+def test_zero_trust_worker_blocks_invalid_policy_schema(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        policy_profile={"profile_id": "missing-schema"},
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_policy_profile_schema" in payload["alert_codes"]
+
+
+def test_zero_trust_worker_blocks_invalid_data_boundary_schema(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        data_boundary={"classification": "public"},
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_data_boundary_schema" in payload["alert_codes"]
+
+
 def test_scillm_worker_records_model_provider_route(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -573,8 +611,10 @@ def test_omp_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
     assert payload["execution_substrate"] == "herdr-visible"
     assert payload["herdr_binding"] == {"pane_id": "w1:p1", "workspace_id": "w1"}
     assert payload["high_stakes"] is True
-    assert payload["policy_profile"] == {"profile_id": "test-zero-trust"}
-    assert payload["data_boundary"] == {"classification": "public"}
+    assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
+    assert payload["policy_profile"]["profile_id"] == "test-zero-trust"
+    assert payload["data_boundary"]["schema"] == "tau.data_boundary.v1"
+    assert payload["data_boundary"]["classification"] == "public"
 
 
 def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None:
@@ -599,8 +639,10 @@ def test_scillm_worker_launch_records_substrate_metadata(tmp_path: Path) -> None
     assert payload["execution_substrate"] == "herdr-visible"
     assert payload["herdr_binding"] == {"pane_id": "w1:p1", "workspace_id": "w1"}
     assert payload["high_stakes"] is True
-    assert payload["policy_profile"] == {"profile_id": "test-zero-trust"}
-    assert payload["data_boundary"] == {"classification": "public"}
+    assert payload["policy_profile"]["schema"] == "tau.policy_profile.v1"
+    assert payload["policy_profile"]["profile_id"] == "test-zero-trust"
+    assert payload["data_boundary"]["schema"] == "tau.data_boundary.v1"
+    assert payload["data_boundary"]["classification"] == "public"
 
 
 def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path: Path) -> None:
@@ -945,8 +987,14 @@ def _write_work_order(
     schema: str,
     high_stakes: bool = False,
     execution_substrate: str | None = "docker-sandbox",
-    policy_profile: dict | None = {"profile_id": "test-zero-trust"},
-    data_boundary: dict | None = {"classification": "public"},
+    policy_profile: dict | None = {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test-zero-trust",
+    },
+    data_boundary: dict | None = {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+    },
     sandbox_receipt_path: str | None = "sandbox-receipt.json",
     herdr_binding: dict | None = {"workspace_id": "w1", "pane_id": "w1:p1"},
     herdr_receipt_path: str | None = None,

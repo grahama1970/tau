@@ -15,6 +15,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+
 OMP_WORK_ORDER_SCHEMA = "tau.executor.omp.v1"
 OMP_WORKER_RESULT_SCHEMA = "tau.omp_worker_result.v1"
 OMP_WORKER_RECEIPT_SCHEMA = "tau.omp_worker_receipt.v1"
@@ -802,13 +804,35 @@ def _append_work_order_gate_alerts(
                 not_pass_code="herdr_receipt_not_pass",
                 label="Herdr observation receipt",
             )
-    if high_stakes and not work_order.get("policy_profile"):
+    policy_profile = work_order.get("policy_profile")
+    data_boundary = work_order.get("data_boundary")
+    if high_stakes and not policy_profile:
         alerts.append(
             _alert("missing_policy_profile", "zero-trust coding worker requires policy_profile")
         )
-    if high_stakes and not work_order.get("data_boundary"):
+    elif high_stakes and (
+        not isinstance(policy_profile, Mapping)
+        or policy_profile.get("schema") != POLICY_PROFILE_SCHEMA
+    ):
+        alerts.append(
+            _alert(
+                "invalid_policy_profile_schema",
+                f"zero-trust coding worker policy_profile.schema must be {POLICY_PROFILE_SCHEMA}",
+            )
+        )
+    if high_stakes and not data_boundary:
         alerts.append(
             _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
+        )
+    elif high_stakes and (
+        not isinstance(data_boundary, Mapping)
+        or data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA
+    ):
+        alerts.append(
+            _alert(
+                "invalid_data_boundary_schema",
+                f"zero-trust coding worker data_boundary.schema must be {DATA_BOUNDARY_SCHEMA}",
+            )
         )
 
 
