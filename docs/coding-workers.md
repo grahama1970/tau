@@ -293,9 +293,10 @@ inspected debug session packet's `session_sha256` and `session_bytes`, with
 `null` values when the packet is missing.
 
 Tau blocks debug receipts when the session packet omits the target command, uses
-an unsupported adapter, refers to missing stdout/stderr artifacts, or provides
-malformed structured evidence fields. `breakpoints`, `variables`, and
-`commands` must be arrays; `stopped_frame` must be an object.
+an unsupported adapter, refers to missing stdout/stderr artifacts, points
+stdout/stderr outside the debug session packet directory, or provides malformed
+structured evidence fields. `breakpoints`, `variables`, and `commands` must be
+arrays; `stopped_frame` must be an object.
 
 CLI:
 

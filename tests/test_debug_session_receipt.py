@@ -151,6 +151,41 @@ def test_debug_receipt_records_log_artifact_hashes(tmp_path: Path) -> None:
     ]
 
 
+def test_debug_receipt_blocks_log_paths_outside_session_directory(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path / "session")
+    outside = tmp_path / "outside-debug-stdout.txt"
+    outside.write_text("outside log\n", encoding="utf-8")
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["stdout_path"] = str(outside)
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "stdout_path_outside_session_dir" in receipt["alert_codes"]
+    assert receipt["stdout_path"] is None
+    assert receipt["stdout_sha256"] is None
+
+
+def test_debug_receipt_blocks_missing_log_path(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["stdout_path"] = "missing-debug-stdout.txt"
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "stdout_path_missing" in receipt["alert_codes"]
+    assert receipt["stdout_path"] is None
+
+
 def test_debug_receipt_never_claims_fix_correctness(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
 
@@ -281,6 +316,7 @@ def _write_debug_session(
     adapter_available: bool = True,
     goal_hash: str | None = "sha256:debug-goal",
 ) -> Path:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     stdout = tmp_path / "debug-stdout.txt"
     stderr = tmp_path / "debug-stderr.txt"
     stdout.write_text("stopped at breakpoint\n", encoding="utf-8")

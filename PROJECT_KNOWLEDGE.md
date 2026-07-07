@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:53 EDT by agent
+**Last updated:** 2026-07-06 22:57 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debug-session log containment rung:
+  `src/tau_coding/debug_session_receipt.py` now requires `stdout_path` and
+  `stderr_path` artifacts referenced by a `tau.debug_session_packet.v1` to
+  resolve under the debug session packet directory before Tau hashes them into
+  `tau.debug_session_receipt.v1`. Missing log paths still fail closed, and
+  outside paths now fail closed with `stdout_path_outside_session_dir` or
+  `stderr_path_outside_session_dir`, preventing a debug packet from laundering
+  arbitrary host files into debugger evidence. Focused proof: `uv run ruff
+  check --select I,F,E501 src/tau_coding/debug_session_receipt.py
+  tests/test_debug_session_receipt.py` -> pass; `uv run pytest
+  tests/test_debug_session_receipt.py -q` -> `17 passed in 0.43s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-log-containment-proof` wrote
+  `/tmp/tau-coding-capability-sanity-debug-log-containment-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `198 passed in 6.67s`. This proves deterministic local debug-session
+  receipts now confine referenced log artifacts to the session directory and
+  compose with the current coding capability sanity suite; it does not prove
+  debugger semantic conclusions, bug fixes, semantic code correctness, live OMP
+  or SciLLM semantic worker execution, provider/model quality, GitHub mutation,
+  human acceptance, legal compliance, ITAR compliance, or full sandbox
+  isolation on every host.
 
 - 2026-07-06 commit-plan evidence byte binding rung:
   `src/tau_coding/commit_plan.py` now records byte counts on each supporting

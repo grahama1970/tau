@@ -57,12 +57,18 @@ def write_debug_session_receipt(
     variables = _optional_list(packet.get("variables"), "variables", alerts)
     commands = _optional_list(packet.get("commands"), "commands", alerts)
 
-    stdout_path = _optional_existing_path(packet.get("stdout_path"), resolved_session.parent)
-    stderr_path = _optional_existing_path(packet.get("stderr_path"), resolved_session.parent)
-    if packet.get("stdout_path") and stdout_path is None:
-        alerts.append(_alert("stdout_path_missing", "stdout_path does not exist"))
-    if packet.get("stderr_path") and stderr_path is None:
-        alerts.append(_alert("stderr_path_missing", "stderr_path does not exist"))
+    stdout_path = _optional_debug_log_path(
+        packet.get("stdout_path"),
+        resolved_session.parent,
+        "stdout_path",
+        alerts,
+    )
+    stderr_path = _optional_debug_log_path(
+        packet.get("stderr_path"),
+        resolved_session.parent,
+        "stderr_path",
+        alerts,
+    )
 
     ok = not alerts
     payload = {
@@ -131,14 +137,33 @@ def _read_json_object(path: Path, alerts: list[dict[str, Any]]) -> dict[str, Any
     return payload
 
 
-def _optional_existing_path(value: object, base_dir: Path) -> Path | None:
+def _optional_debug_log_path(
+    value: object,
+    base_dir: Path,
+    field: str,
+    alerts: list[dict[str, Any]],
+) -> Path | None:
     if not isinstance(value, str) or not value:
         return None
     candidate = Path(value).expanduser()
     if not candidate.is_absolute():
         candidate = base_dir / candidate
     resolved = candidate.resolve()
-    return resolved if resolved.exists() else None
+    resolved_base = base_dir.resolve()
+    try:
+        resolved.relative_to(resolved_base)
+    except ValueError:
+        alerts.append(
+            _alert(
+                f"{field}_outside_session_dir",
+                f"{field} must stay under the debug session directory",
+            )
+        )
+        return None
+    if not resolved.exists():
+        alerts.append(_alert(f"{field}_missing", f"{field} does not exist"))
+        return None
+    return resolved
 
 
 def _log_artifacts(*, stdout_path: Path | None, stderr_path: Path | None) -> list[dict[str, Any]]:
