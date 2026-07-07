@@ -77,6 +77,40 @@ def test_review_findings_passes_with_no_blocking_findings(tmp_path: Path) -> Non
     assert "The reviewer is correct." in receipt["proof_scope"]["does_not_prove"]
 
 
+def test_review_findings_writes_blocked_receipt_for_unreadable_findings(
+    tmp_path: Path,
+) -> None:
+    findings_path = tmp_path / "findings.json"
+    receipt_path = tmp_path / "receipt.json"
+    findings_path.write_text("{not-json", encoding="utf-8")
+
+    receipt = write_review_findings_receipt(
+        findings_path=findings_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_findings_unreadable" in receipt["alert_codes"]
+    assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
+def test_review_findings_writes_blocked_receipt_for_non_object_findings(
+    tmp_path: Path,
+) -> None:
+    findings_path = tmp_path / "findings.json"
+    receipt_path = tmp_path / "receipt.json"
+    findings_path.write_text("[]", encoding="utf-8")
+
+    receipt = write_review_findings_receipt(
+        findings_path=findings_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "review_findings_not_object" in receipt["alert_codes"]
+    assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
 def test_review_findings_blocks_goal_hash_mismatch() -> None:
     receipt = validate_review_findings(
         _payload(verdict="PASS", findings=[]),
@@ -187,6 +221,29 @@ def test_cli_review_findings_zero_trust_missing_boundary_exits_blocked(
     assert payload["status"] == "BLOCKED"
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_cli_review_findings_unreadable_writes_blocked_receipt(tmp_path: Path) -> None:
+    findings_path = tmp_path / "findings.json"
+    receipt_path = tmp_path / "receipt.json"
+    findings_path.write_text("{not-json", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "review-findings",
+            "--findings",
+            str(findings_path),
+            "--out",
+            str(receipt_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "review_findings_unreadable" in payload["alert_codes"]
 
 
 def _payload(*, verdict: str, findings: list[dict]) -> dict:

@@ -128,7 +128,8 @@ def write_review_findings_receipt(
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    payload = _read_json_object(findings_path.expanduser().resolve())
+    read_alerts: list[dict[str, Any]] = []
+    payload = _read_json_object(findings_path.expanduser().resolve(), read_alerts)
     receipt = validate_review_findings(
         payload,
         expected_goal_hash=expected_goal_hash,
@@ -136,6 +137,12 @@ def write_review_findings_receipt(
         policy_profile=policy_profile,
         data_boundary=data_boundary,
     )
+    if read_alerts:
+        receipt["alerts"] = read_alerts + list(receipt["alerts"])
+        receipt["alert_codes"] = [alert["code"] for alert in receipt["alerts"]]
+        receipt["ok"] = False
+        receipt["status"] = "BLOCKED"
+        receipt["derived_verdict"] = "BLOCKED"
     resolved_receipt = (
         receipt_path.expanduser().resolve()
         if receipt_path is not None
@@ -248,13 +255,25 @@ def _route_for_findings(findings: list[dict[str, Any]]) -> str:
     return "PASS"
 
 
-def _read_json_object(path: Path) -> dict[str, Any]:
+def _read_json_object(path: Path, alerts: list[dict[str, Any]]) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        alerts.append(_alert("review_findings_missing", "review findings artifact is missing"))
+        return {}
     except (OSError, json.JSONDecodeError) as exc:
-        raise RuntimeError(f"review findings are not readable JSON: {exc}") from exc
+        alerts.append(
+            _alert(
+                "review_findings_unreadable",
+                f"review findings are not readable JSON: {exc}",
+            )
+        )
+        return {}
     if not isinstance(payload, dict):
-        raise RuntimeError("review findings root must be an object")
+        alerts.append(
+            _alert("review_findings_not_object", "review findings root must be an object")
+        )
+        return {}
     return payload
 
 

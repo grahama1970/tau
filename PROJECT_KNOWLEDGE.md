@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:23 EDT by agent
+**Last updated:** 2026-07-06 21:26 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 review-findings malformed artifact receipt rung:
+  `src/tau_coding/review_findings.py` now writes BLOCKED
+  `tau.review_findings.v1` receipts for missing, unreadable/non-JSON, and
+  non-object reviewer findings artifacts instead of raising before a receipt
+  can be inspected. New alert codes include `review_findings_missing`,
+  `review_findings_unreadable`, and `review_findings_not_object`; the CLI path
+  emits the same receipt JSON and exits nonzero for malformed findings
+  artifacts. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/review_findings.py tests/test_review_findings.py` -> pass;
+  `uv run pytest tests/test_review_findings.py -q` -> `12 passed in 0.39s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-findings-malformed-proof` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-review-findings-malformed-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `structured review findings`, and embedded focused coding tests `176
+  passed in 5.97s`. This proves deterministic local fail-closed receipt
+  generation for malformed reviewer finding artifacts; it does not prove
+  reviewer correctness, review exhaustiveness, semantic code correctness,
+  provider/model quality, legal compliance, or live worker execution.
 
 - 2026-07-06 code-patch line-span anchor hardening rung:
   `src/tau_coding/code_patch.py` now rejects partial-substring `line_span`
