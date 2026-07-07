@@ -5,6 +5,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
+from tau_coding.course_correction import write_course_correction_receipt
 from tau_coding.orchestration_reliability import (
     ORCHESTRATION_RELIABILITY_RECEIPT_SCHEMA,
     write_orchestration_reliability_receipt,
@@ -75,6 +76,62 @@ def test_orchestration_reliability_blocks_ignored_course_correction(tmp_path: Pa
     assert "course_correction_ignored" in payload["alert_codes"]
 
 
+def test_orchestration_reliability_blocks_invalid_course_correction_artifact(
+    tmp_path: Path,
+) -> None:
+    correction = tmp_path / "course-correction.json"
+    correction.write_text(json.dumps({"schema": "not.tau.course_correction.v1"}), encoding="utf-8")
+    dag_receipt = _write_dag_receipt(
+        tmp_path,
+        status="BLOCKED",
+        course_correction_artifacts=[str(correction)],
+    )
+
+    payload = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["course_corrections_followed"] is False
+    assert payload["course_correction_artifact_report"]["invalid"] == [
+        {"path": str(correction.resolve()), "reason": "schema_mismatch"}
+    ]
+    assert "course_correction_ignored" in payload["alert_codes"]
+
+
+def test_orchestration_reliability_accepts_valid_course_correction_artifact(
+    tmp_path: Path,
+) -> None:
+    correction = tmp_path / "course-correction.json"
+    write_course_correction_receipt(
+        correction,
+        trigger="receipt_timeout",
+        dag_id="coding-dag",
+        goal_hash="sha256:active-goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+    )
+    dag_receipt = _write_dag_receipt(
+        tmp_path,
+        status="BLOCKED",
+        course_correction_artifacts=[str(correction)],
+    )
+
+    payload = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+    )
+
+    assert payload["course_corrections_followed"] is True
+    assert payload["course_correction_artifact_report"]["missing"] == []
+    assert payload["course_correction_artifact_report"]["invalid"] == []
+    assert payload["course_correction_artifact_report"]["valid"][0]["path"] == str(
+        correction.resolve()
+    )
+
+
 def test_orchestration_reliability_never_claims_code_correctness(tmp_path: Path) -> None:
     dag_receipt = _write_dag_receipt(tmp_path)
 
@@ -112,14 +169,15 @@ def test_cli_orchestration_reliability_writes_receipt(tmp_path: Path) -> None:
 def _write_dag_receipt(
     tmp_path: Path,
     *,
+    status: str = "PASS",
     artifacts: list[str] | None = None,
     course_correction_artifacts: list[str] | None = None,
 ) -> Path:
     payload = {
         "schema": "tau.dag_receipt.v1",
-        "ok": True,
-        "status": "PASS",
-        "verdict": "PASS",
+        "ok": status == "PASS",
+        "status": status,
+        "verdict": status,
         "dag_id": "coding-dag",
         "active_goal_hash": "sha256:active-goal",
         "terminal_nodes": ["human"],

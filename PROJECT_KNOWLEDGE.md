@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:34 EDT by agent
+**Last updated:** 2026-07-06 21:37 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 orchestration course-correction artifact admissibility rung:
+  `src/tau_coding/orchestration_reliability.py` now validates declared
+  `course_correction_artifacts` instead of treating path existence as enough.
+  A declared course-correction artifact must parse as
+  `tau.course_correction.v1`, have `status:"REQUIRED"`,
+  `next_allowed:false`, `input_valid:true`, a matching DAG goal hash when
+  present, and a `required_next_action`; otherwise the reliability receipt
+  records the invalid artifact in `course_correction_artifact_report` and
+  sets `course_corrections_followed:false`. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> pass; `uv run pytest
+  tests/test_orchestration_reliability.py -q` -> `7 passed in 0.44s`.
+  Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-orchestration-course-correction-proof`
+  exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-orchestration-course-correction-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `orchestration reliability receipts`, and embedded focused coding
+  tests `181 passed in 5.97s`. This proves deterministic local orchestration
+  reliability receipts no longer accept fake or malformed course-correction
+  artifacts as followed corrections; it does not prove semantic code
+  correctness, provider/model quality, human acceptance, legal compliance,
+  complete sandbox isolation, or live worker execution.
 
 - 2026-07-06 LSP baseline admissibility rung:
   `src/tau_coding/lsp_receipts.py` now rejects baseline diagnostics receipts

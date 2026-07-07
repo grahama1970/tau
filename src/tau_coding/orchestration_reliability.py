@@ -9,6 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.course_correction import COURSE_CORRECTION_SCHEMA
+
 ORCHESTRATION_RELIABILITY_SCHEMA = "tau.orchestration_reliability_receipt.v1"
 ORCHESTRATION_RELIABILITY_RECEIPT_SCHEMA = ORCHESTRATION_RELIABILITY_SCHEMA
 DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
@@ -98,9 +100,13 @@ def write_orchestration_reliability_receipt(
     )
     terminal_condition_valid = _terminal_condition_valid(dag_receipt)
     course_correction_paths = _course_correction_paths(dag_receipt)
-    course_corrections_followed = _course_corrections_followed(
+    course_correction_artifact_report = _course_correction_artifact_report(
         dag_receipt,
         course_correction_paths,
+    )
+    course_corrections_followed = _course_corrections_followed(
+        dag_receipt,
+        course_correction_artifact_report,
     )
     required_receipt_report = _required_receipt_report(required_receipts)
     reliable = (
@@ -159,6 +165,7 @@ def write_orchestration_reliability_receipt(
         "course_correction_count": len(all_corrections),
         "course_corrections_emitted": bool(course_correction_paths or all_corrections),
         "course_correction_artifacts": course_correction_paths,
+        "course_correction_artifact_report": course_correction_artifact_report,
         "course_corrections_followed": course_corrections_followed,
         "retry_budget_respected": retry_budget_respected,
         "terminal_condition_valid": terminal_condition_valid,
@@ -310,13 +317,61 @@ def _course_correction_paths(dag_receipt: Mapping[str, Any]) -> list[str]:
 
 def _course_corrections_followed(
     dag_receipt: Mapping[str, Any],
-    course_correction_paths: list[str],
+    course_correction_artifact_report: dict[str, Any],
 ) -> bool:
-    if not course_correction_paths:
+    if not course_correction_artifact_report["declared"]:
         return True
     if dag_receipt.get("status") == "PASS":
         return False
-    return all(Path(path).expanduser().exists() for path in course_correction_paths)
+    return not (
+        course_correction_artifact_report["missing"]
+        or course_correction_artifact_report["invalid"]
+    )
+
+
+def _course_correction_artifact_report(
+    dag_receipt: Mapping[str, Any],
+    course_correction_paths: list[str],
+) -> dict[str, Any]:
+    active_goal_hash = dag_receipt.get("active_goal_hash") or dag_receipt.get("goal_hash")
+    report: dict[str, Any] = {
+        "declared": list(course_correction_paths),
+        "valid": [],
+        "missing": [],
+        "invalid": [],
+    }
+    for value in course_correction_paths:
+        path = Path(value).expanduser()
+        resolved = str(path.resolve())
+        if not path.exists():
+            report["missing"].append(resolved)
+            continue
+        payload = _read_json(path)
+        reason = _course_correction_invalid_reason(payload, active_goal_hash)
+        if reason:
+            report["invalid"].append({"path": resolved, "reason": reason})
+            continue
+        report["valid"].append(_artifact_descriptor(path))
+    return report
+
+
+def _course_correction_invalid_reason(
+    payload: Mapping[str, Any],
+    active_goal_hash: object,
+) -> str | None:
+    if payload.get("schema") != COURSE_CORRECTION_SCHEMA:
+        return "schema_mismatch"
+    if payload.get("status") != "REQUIRED":
+        return "status_not_required"
+    if payload.get("next_allowed") is not False:
+        return "next_allowed_not_false"
+    if payload.get("input_valid") is not True:
+        return "input_not_valid"
+    if active_goal_hash and payload.get("goal_hash") not in {None, active_goal_hash}:
+        return "goal_hash_mismatch"
+    if not payload.get("required_next_action"):
+        return "missing_required_next_action"
+    return None
 
 
 def _terminal_condition_valid(dag_receipt: Mapping[str, Any]) -> bool:
