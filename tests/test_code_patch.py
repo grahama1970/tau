@@ -590,6 +590,68 @@ def test_code_patch_zero_trust_requires_policy_and_data_boundary(tmp_path: Path)
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_zero_trust_blocks_patch_artifact_outside_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    target = repo / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    patch_path = _write_patch(
+        outside,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=repo,
+        zero_trust=True,
+        policy_profile=_policy_profile(write_allowlist=["src/**"]),
+        data_boundary=_data_boundary(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "code_patch_outside_repo" in receipt["alert_codes"]
+    assert receipt["applied"] is False
+    assert receipt["patch_path"] == str(patch_path.resolve())
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_legacy_allows_patch_artifact_outside_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    target = repo / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    patch_path = _write_patch(
+        outside,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=repo,
+    )
+
+    assert receipt["status"] == "PASS"
+    assert "code_patch_outside_repo" not in receipt["alert_codes"]
+    assert receipt["applied"] is True
+    assert target.read_text(encoding="utf-8") == after
+
+
 def test_code_patch_receipt_records_policy_and_data_boundary(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()

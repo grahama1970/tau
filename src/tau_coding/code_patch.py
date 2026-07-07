@@ -61,6 +61,14 @@ def apply_code_patch_receipt(
     resolved_patch = patch_path.expanduser().resolve()
     resolved_repo = repo_root.expanduser().resolve()
     alerts: list[dict[str, Any]] = []
+    patch_inside_repo = _path_inside_root(resolved_patch, resolved_repo)
+    if zero_trust and not patch_inside_repo:
+        alerts.append(
+            _alert(
+                "code_patch_outside_repo",
+                "zero-trust code patch artifact must stay inside repo_root",
+            )
+        )
     payload = _read_json_object(resolved_patch, alerts)
     before_sha: str | None = None
     after_sha: str | None = None
@@ -301,6 +309,14 @@ def _resolve_target(repo_root: Path, target_text: str) -> tuple[Path | None, str
     except ValueError:
         return None, None
     return target, relative.as_posix()
+
+
+def _path_inside_root(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
 
 
 def _path_allowed(path: str, patterns: list[str]) -> bool:

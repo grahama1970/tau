@@ -5,6 +5,29 @@
 
 ## Current Understanding
 
+- 2026-07-07 zero-trust code-patch artifact repo-scope rung:
+  `src/tau_coding/code_patch.py` now blocks zero-trust
+  `tau.code_patch.v1` artifacts whose `--patch` path resolves outside
+  `repo_root`. External zero-trust patch artifacts emit
+  `code_patch_outside_repo`, preserve the inspected patch artifact path/hash
+  fields for audit, and do not apply. Legacy non-zero-trust patch application
+  keeps its previous behavior for external patch files. `tests/test_code_patch.py`
+  covers the zero-trust block and legacy allow behavior. `docs/coding-workers.md`
+  documents the zero-trust repo-scoped patch artifact rule. Focused proof:
+  `git diff --check -- src/tau_coding/code_patch.py tests/test_code_patch.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run python -m
+  py_compile src/tau_coding/code_patch.py` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/code_patch.py tests/test_code_patch.py` ->
+  `All checks passed!`; `uv run pytest tests/test_code_patch.py -q` -> `32
+  passed in 0.58s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-code-patch-artifact-scope-20260707T200000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `392 passed in 10.12s`. This proves
+  high-stakes code-patch execution cannot silently apply an out-of-repo patch
+  artifact; it does not prove semantic code correctness, full test-suite
+  success, agent truthfulness, provider/model quality, legal compliance, ITAR
+  compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 orchestration reliability required-receipt run-scope rung:
   `src/tau_coding/orchestration_reliability.py` now requires explicitly
   supplied `--required-receipt` paths to resolve under the active `--run-dir`
