@@ -180,6 +180,49 @@ def test_course_correction_forbids_same_context_after_two_failures() -> None:
     assert "test_failure_receipt" in payload["required_evidence_before_retry"]
 
 
+def test_course_correction_created_for_provider_crashed() -> None:
+    payload = build_course_correction_receipt(
+        trigger="provider_crashed",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        observed_state={"provider_state": "crashed"},
+        live=True,
+        provider_live=True,
+    )
+
+    assert payload["trigger"] == "provider_crashed"
+    assert payload["required_next_action"] == "retry_node_or_route_goal_guardian"
+    assert payload["live"] is True
+    assert payload["provider_live"] is True
+    assert "continue_without_bound_receipt" in payload["forbidden_next_routes"]
+    assert (
+        "node_receipt_or_timeout_diagnostics"
+        in payload["required_evidence_before_retry"]
+    )
+
+
+def test_course_correction_created_for_herdr_stale() -> None:
+    payload = build_course_correction_receipt(
+        trigger="herdr_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        observed_state={"pane_age_seconds": 901, "receipt_missing": True},
+        live=True,
+    )
+
+    assert payload["trigger"] == "herdr_stale"
+    assert payload["required_next_action"] == "send_reminder_or_route_human"
+    assert "send_reminder" in payload["allowed_next_routes"]
+    assert "start_parallel_duplicate_without_policy" in payload["forbidden_next_routes"]
+    assert "herdr_monitor_snapshot" in payload["required_evidence_before_retry"]
+
+
 def test_course_correction_after_two_attempts_warns_without_attempt_evidence() -> None:
     payload = build_course_correction_receipt(
         trigger="brave_search_required_after_two_attempts",

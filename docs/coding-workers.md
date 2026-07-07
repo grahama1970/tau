@@ -162,6 +162,9 @@ as patch receipts and worker results.
 - `debugger_evidence_required`
 - `worker_result_missing`
 - `worker_changed_forbidden_path`
+- `receipt_timeout`
+- `provider_crashed`
+- `herdr_stale`
 
 These triggers route coding failures away from blind retry and toward bounded
 next actions such as fresh patch receipts, structured review, debugger evidence,

@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 course-correction provider/Herdr trigger coverage rung:
+  `tests/test_course_correction.py` now explicitly covers
+  `provider_crashed` and `herdr_stale` course-correction triggers, and
+  `docs/coding-workers.md` lists `receipt_timeout`, `provider_crashed`, and
+  `herdr_stale` in the coding course-correction trigger set. The implementation
+  already routed `provider_crashed` through bounded receipt retry /
+  goal-guardian escalation and `herdr_stale` through reminder or human /
+  goal-guardian escalation; this slice pins that behavior in tests and docs.
+  Focused proof: `uv run python -m py_compile
+  src/tau_coding/course_correction.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/course_correction.py
+  tests/test_course_correction.py` -> `All checks passed!`; `uv run pytest
+  tests/test_course_correction.py -q` -> `13 passed in 0.47s`. Aggregate
+  sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-course-correction-provider-herdr-proof-20260707T055552Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-course-correction-provider-herdr-proof-20260707T055552Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `243 passed in
+  6.83s`. This proves deterministic local course-correction policy coverage for
+  provider crash and stale Herdr states and that the focused coding capability
+  sanity suite still passes; it does not prove live provider recovery,
+  execution of the correction action, provider/model semantic quality, code
+  correctness, legal compliance, GitHub mutation safety, full sandbox
+  isolation, or full goal completion.
+
 - 2026-07-07 orchestration reliability required-receipt validity rung:
   `src/tau_coding/orchestration_reliability.py` now treats required receipts as
   invalid, not merely present, when a required receipt is unreadable or missing
