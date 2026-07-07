@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker launch work-order artifact binding rerung: after reading
+  the current `agent-skills/skills/scillm/SKILL.md` contract, Tau's OMP and
+  SciLLM coding worker launch receipts now record the exact preflighted work
+  order artifact. `tau.omp_worker_launch_receipt.v1` and
+  `tau.scillm_worker_launch_receipt.v1` now include `work_order_sha256`,
+  `work_order_bytes`, and `work_order_artifact` with label, resolved path,
+  existence, SHA-256, and byte count before dry-run or apply launch. This binds
+  the OMP process request and SciLLM `/v1/scillm/opencode/runs` HTTP request to
+  the exact work order Tau gated for route, policy/data-boundary, and
+  Herdr/sandbox substrate evidence. Focused proof: `git diff --check --
+  docs/coding-workers.md src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `61 passed in 4.73s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-worker-launch-work-order-binding-20260707T081258Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `284 passed in 8.03s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local launch
+  receipts are hash-bound to their preflighted work orders and compose with the
+  current coding capability sanity suite; it does not prove live OMP/SciLLM
+  semantic worker execution, worker truthfulness, provider/model quality,
+  semantic code correctness, GitHub mutation, human acceptance, legal
+  compliance, ITAR compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 environment provenance policy/data-boundary reference
   fail-closed rung: `src/tau_coding/provenance.py` now treats supplied
   `environment-manifest` `policy_profile` and `data_boundary` values as local

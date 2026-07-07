@@ -930,6 +930,15 @@ def test_omp_worker_launch_builds_dry_run_rpc_request(tmp_path: Path) -> None:
     assert payload["status"] == "PASS"
     assert payload["dry_run"] is True
     assert payload["live"] is False
+    assert payload["work_order_sha256"] == f"sha256:{_sha256(work_order)}"
+    assert payload["work_order_bytes"] == work_order.stat().st_size
+    assert payload["work_order_artifact"] == {
+        "label": "work_order",
+        "path": str(work_order.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(work_order)}",
+        "bytes": work_order.stat().st_size,
+    }
     assert payload["command"] == ["omp", "--mode", "rpc", "--no-session"]
     assert payload["stdin_jsonl"][0]["type"] == "prompt"
     assert payload["stdin_jsonl"][0]["metadata"]["goal_hash"] == "sha256:goal"
@@ -1209,6 +1218,15 @@ def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) ->
     assert payload["status"] == "PASS"
     assert payload["dry_run"] is True
     assert payload["live"] is False
+    assert payload["work_order_sha256"] == f"sha256:{_sha256(work_order)}"
+    assert payload["work_order_bytes"] == work_order.stat().st_size
+    assert payload["work_order_artifact"] == {
+        "label": "work_order",
+        "path": str(work_order.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(work_order)}",
+        "bytes": work_order.stat().st_size,
+    }
     assert payload["url"] == "http://localhost:4001/v1/scillm/opencode/runs"
     assert payload["request_payload"]["agent"] == "build"
     assert payload["request_payload"]["skills"] == ["memory", "debugger", "scillm"]

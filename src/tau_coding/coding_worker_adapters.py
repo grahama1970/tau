@@ -116,6 +116,7 @@ def write_omp_worker_launch_receipt(
         alerts=alerts,
         timeout_s=timeout_s,
     )
+    work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
     ok = not alerts
     payload = {
         "schema": OMP_WORKER_LAUNCH_RECEIPT_SCHEMA,
@@ -133,6 +134,9 @@ def write_omp_worker_launch_receipt(
         "timeout_s": timeout_s,
         "worker_kind": "omp",
         "work_order_path": str(resolved_work_order),
+        "work_order_sha256": _artifact_sha256_uri(resolved_work_order),
+        "work_order_bytes": _artifact_size(resolved_work_order),
+        "work_order_artifact": work_order_artifacts[0] if work_order_artifacts else None,
         "work_order_schema": work_order.get("schema"),
         "dag_id": work_order.get("dag_id"),
         "node_id": work_order.get("node_id"),
@@ -239,6 +243,7 @@ def write_scillm_worker_launch_receipt(
         alerts=alerts,
         request_timeout_s=request_timeout_s,
     )
+    work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
     ok = not alerts
     payload = {
         "schema": SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
@@ -256,6 +261,9 @@ def write_scillm_worker_launch_receipt(
         "request_timeout_s": request_timeout_s,
         "worker_kind": "scillm",
         "work_order_path": str(resolved_work_order),
+        "work_order_sha256": _artifact_sha256_uri(resolved_work_order),
+        "work_order_bytes": _artifact_size(resolved_work_order),
+        "work_order_artifact": work_order_artifacts[0] if work_order_artifacts else None,
         "work_order_schema": work_order.get("schema"),
         "dag_id": work_order.get("dag_id"),
         "node_id": work_order.get("node_id"),
