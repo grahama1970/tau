@@ -79,7 +79,8 @@ def run_zero_trust_redteam(*, run_dir: Path) -> dict[str, Any]:
             "proves": [
                 "Tau executed deterministic malicious fixtures against local containment gates.",
                 "Each listed attempt passed only if Tau produced the expected fail-closed alert.",
-                "No external provider, research, GitHub, Memory, browser, or Docker command was executed.",
+                "No external provider, research, GitHub, Memory, browser, or Docker command "
+                "was executed.",
             ],
             "does_not_prove": [
                 "Exhaustive malicious-agent coverage.",
@@ -372,7 +373,11 @@ def _attempt_summary(
 ) -> dict[str, Any]:
     alert_codes = receipt.get("alert_codes")
     if not isinstance(alert_codes, list):
-        alert_codes = [alert.get("code") for alert in receipt.get("alerts", []) if isinstance(alert, dict)]
+        alert_codes = [
+            alert.get("code")
+            for alert in receipt.get("alerts", [])
+            if isinstance(alert, dict)
+        ]
     blocked = receipt.get("ok") is False and expected_code in alert_codes
     return {
         "attempt_id": attempt_id,
@@ -396,7 +401,10 @@ def _write_policy(root: Path) -> Path:
             "requires_data_boundary": True,
             "network": {"default": "deny"},
             "providers": {"cloud_llm": "deny", "local_model": "allow"},
-            "research": {"external_search": "allow_with_approval", "manual_sanitized_receipt": "allow"},
+            "research": {
+                "external_search": "allow_with_approval",
+                "manual_sanitized_receipt": "allow",
+            },
             "memory": {"read": "allow", "write": "approval_required"},
             "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
             "filesystem": {"write_allowlist": [str(root)], "read_denylist": []},
@@ -435,7 +443,9 @@ def _write_research_auth(root: Path) -> Path:
             "allowed_methods": ["brave-search"],
             "sanitized_query_sha256": (
                 "sha256:"
-                f"{_text_sha256('Find public NIST publications on secure research workflow review')}"
+                f"{_text_sha256(
+                    'Find public NIST publications on secure research workflow review'
+                )}"
             ),
             "data_boundary_classification": "ITAR",
             "approver": {"id": "human:graham"},

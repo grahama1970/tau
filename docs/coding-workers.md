@@ -318,13 +318,17 @@ scripts/run-coding-capability-sanity.py \
 The receipt covers hash-bound patch receipts, course correction, structured
 review findings, LSP receipts, commit planning, debugger evidence, GitHub reads,
 worker validation, dry-run worker launch receipts, bounded apply-launch
-mechanics, Herdr observation gates, sandbox-run policy receipts, and
+mechanics, memory intent/evidence-case gates, Graph Memory acquisition
+receipts, compliance evidence package receipts, run report generation, local API
+preflight surfaces, provenance/signing, zero-trust adversarial red-team
+receipts, Herdr observation gates, sandbox-run policy receipts, and
 orchestration reliability. It records `mocked:"mixed"` and `live:"mixed"`
 because the worker examples use fixture worker results and deterministic local
 apply fixtures while the coding reliability example exercises local
-receipt-producing commands. It does not prove live OMP/SciLLM semantic worker
-execution, provider/model quality, semantic code correctness, GitHub mutation,
-human acceptance, legal compliance, or full sandbox isolation on every host.
+receipt-producing commands. It does not prove live Graph Memory, live
+OMP/SciLLM semantic worker execution, provider/model quality, semantic code
+correctness, GitHub mutation, human acceptance, legal compliance, or full
+sandbox isolation on every host.
 
 ## Intended Worker Adapters
 

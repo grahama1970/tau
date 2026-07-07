@@ -1,9 +1,46 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 20:29 EDT by agent
+**Last updated:** 2026-07-06 20:42 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 coding capability memory-first aggregate sanity rung:
+  `scripts/run-coding-capability-sanity.py` now includes the existing
+  memory-first and inspectability surfaces in the aggregate coding sanity
+  lint/test set: `memory_evidence_gate`, `memory_acquisition`,
+  `compliance_package`, `run_report`, `server`, `provenance`,
+  `receipt_signing`, and `zero_trust_redteam`, plus their focused tests. The
+  receipt coverage now names memory intent/evidence-case gates, Graph Memory
+  acquisition receipts, compliance evidence package receipts, run report
+  generation, local API preflight surfaces, actor/environment provenance,
+  signed receipt envelopes, and zero-trust adversarial red-team receipts. Focused
+  proof target: `uv run pytest tests/test_memory_evidence_gate.py
+  tests/test_memory_acquisition.py tests/test_compliance_package.py
+  tests/test_run_report.py tests/test_server.py tests/test_provenance.py
+  tests/test_receipt_signing.py tests/test_zero_trust_redteam.py -q` -> `30
+  passed in 2.71s`. This proves those deterministic local tests are stable
+  before wiring them into aggregate sanity. Follow-up proof after wiring:
+  `uv run ruff check --select I,F,E501 scripts/run-coding-capability-sanity.py
+  src/tau_coding/memory_evidence_gate.py src/tau_coding/memory_acquisition.py
+  src/tau_coding/compliance_package.py src/tau_coding/run_report.py
+  src/tau_coding/server.py src/tau_coding/provenance.py
+  src/tau_coding/receipt_signing.py src/tau_coding/zero_trust_redteam.py
+  tests/test_memory_evidence_gate.py tests/test_memory_acquisition.py
+  tests/test_compliance_package.py tests/test_run_report.py tests/test_server.py
+  tests/test_provenance.py tests/test_receipt_signing.py
+  tests/test_zero_trust_redteam.py` -> pass; the same focused pytest command
+  -> `30 passed in 2.62s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-memory-product-proof` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-memory-product-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:8`, `failed_check_count:0`, coverage
+  entries for the memory-first gates, package/report/API surfaces,
+  provenance/signing, red-team receipts, Herdr observation, sandbox-run, and
+  orchestration reliability, and embedded focused coding tests `154 passed in
+  5.86s`. This does not prove live Graph Memory, live OMP/SciLLM semantic worker
+  execution, provider/model quality, semantic code correctness, GitHub mutation,
+  human acceptance, legal compliance, or full sandbox isolation on every host.
 
 - 2026-07-06 coding capability Herdr/sandbox sanity coverage rung:
   `scripts/run-coding-capability-sanity.py` now includes

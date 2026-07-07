@@ -443,7 +443,9 @@ def _compat_evidence_case_receipt(
         alerts.append(_alert("missing_evidence_case", "Evidence case is required."))
     elif isinstance(evidence_case, Mapping):
         if evidence_case.get("schema") != "memory.evidence_case.v1":
-            alerts.append(_alert("invalid_evidence_case_schema", "Evidence case schema is invalid."))
+            alerts.append(
+                _alert("invalid_evidence_case_schema", "Evidence case schema is invalid.")
+            )
         if not evidence_case.get("sha256"):
             alerts.append(_alert("evidence_case_hash_missing", "Evidence case hash is missing."))
         if _compat_boundary_key(evidence_case.get("data_boundary")) != _compat_boundary_key(
