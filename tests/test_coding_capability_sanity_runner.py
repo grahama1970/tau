@@ -278,6 +278,80 @@ def test_expected_artifact_derives_alert_codes_from_alerts(tmp_path: Path) -> No
     assert payload["errors"] == []
 
 
+def test_expected_artifact_requires_named_artifacts(tmp_path: Path) -> None:
+    runner = _load_runner()
+    expected = tmp_path / "expected.json"
+    actual = tmp_path / "receipt.json"
+    required_artifact = "work-repo/.tau/receipts/code-patch-receipt.json"
+    expected.write_text(
+        json.dumps(
+            {
+                "schema": "tau.coding_reliability_basic_demo_receipt.v1",
+                "status": "PASS",
+                "expected_required_artifacts": [required_artifact],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    actual.write_text(
+        json.dumps(
+            {
+                "schema": "tau.coding_reliability_basic_demo_receipt.v1",
+                "status": "PASS",
+                "artifacts": [],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = runner._check_expected_artifact(  # noqa: SLF001
+        actual_path=actual,
+        expected_path=expected,
+    )
+
+    assert payload["ok"] is False
+    assert f"required artifact missing: {required_artifact}" in payload["errors"]
+
+
+def test_expected_artifact_accepts_named_artifacts(tmp_path: Path) -> None:
+    runner = _load_runner()
+    expected = tmp_path / "expected.json"
+    actual = tmp_path / "receipt.json"
+    required_artifact = "work-repo/.tau/receipts/code-patch-receipt.json"
+    expected.write_text(
+        json.dumps(
+            {
+                "schema": "tau.coding_reliability_basic_demo_receipt.v1",
+                "status": "PASS",
+                "expected_required_artifacts": [required_artifact],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    actual.write_text(
+        json.dumps(
+            {
+                "schema": "tau.coding_reliability_basic_demo_receipt.v1",
+                "status": "PASS",
+                "artifacts": [required_artifact],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = runner._check_expected_artifact(  # noqa: SLF001
+        actual_path=actual,
+        expected_path=expected,
+    )
+
+    assert payload["ok"] is True
+    assert payload["errors"] == []
+
+
 def _load_runner() -> ModuleType:
     path = Path(__file__).resolve().parents[1] / "scripts" / "run-coding-capability-sanity.py"
     spec = importlib.util.spec_from_file_location("run_coding_capability_sanity", path)

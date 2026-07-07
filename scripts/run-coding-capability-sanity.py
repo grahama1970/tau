@@ -95,6 +95,7 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ],
             purpose="Run hash-bound patch, diagnostics, review, commit-plan, and reliability demo.",
             output_artifact=run_dir / "coding-reliability-basic" / "demo-receipt.json",
+            expected_artifact=examples / "coding-reliability-basic" / "expected-receipt.json",
         ),
         Check(
             check_id="coding_zero_trust_init",
@@ -537,6 +538,16 @@ def _check_expected_artifact(
         errors.extend(_check_apply_launch_result_artifact(actual))
     if expected.get("expected_apply_launch_log_artifacts") is True:
         errors.extend(_check_apply_launch_log_artifacts(actual))
+    expected_required_artifacts = expected.get("expected_required_artifacts")
+    if isinstance(expected_required_artifacts, list):
+        errors.extend(
+            _check_required_artifacts(
+                actual=actual,
+                required=[
+                    item for item in expected_required_artifacts if isinstance(item, str)
+                ],
+            )
+        )
 
     return {
         "read_ok": True,
@@ -547,6 +558,18 @@ def _check_expected_artifact(
         "expected_status": expected.get("status"),
         "actual_status": actual.get("status"),
     }
+
+
+def _check_required_artifacts(*, actual: dict[str, Any], required: list[str]) -> list[str]:
+    artifacts = actual.get("artifacts")
+    if not isinstance(artifacts, list):
+        return ["artifacts missing or not a list"]
+    actual_artifacts = {item for item in artifacts if isinstance(item, str)}
+    return [
+        f"required artifact missing: {artifact}"
+        for artifact in required
+        if artifact not in actual_artifacts
+    ]
 
 
 def _expected_artifact_actual_value(actual: dict[str, Any], key: str) -> Any:

@@ -1,0 +1,19 @@
+{
+  "schema": "tau.coding_reliability_basic_demo_receipt.v1",
+  "status": "PASS",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "expected_required_artifacts": [
+    "work-repo/.tau/receipts/stale-code-patch-receipt.json",
+    "work-repo/.tau/receipts/valid-code-patch-receipt.json",
+    "work-repo/.tau/receipts/lsp-diagnostics-receipt.json",
+    "work-repo/.tau/receipts/test-run-receipt.json",
+    "work-repo/.tau/receipts/review-findings-pass-receipt.json",
+    "work-repo/.tau/receipts/review-findings-revise-receipt.json",
+    "work-repo/.tau/receipts/review-findings-blocked-receipt.json",
+    "work-repo/.tau/receipts/commit-plan-receipt.json",
+    "work-repo/.tau/receipts/orchestration-reliability-receipt.json"
+  ]
+}

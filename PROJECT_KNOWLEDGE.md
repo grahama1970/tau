@@ -1,9 +1,39 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:20 EDT by agent
+**Last updated:** 2026-07-07 12:24 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 coding-reliability expected-receipt artifact gate:
+  The coding-capability sanity runner now enforces
+  `examples/coding-reliability-basic/expected-receipt.json` for the copyable
+  coding reliability example. `scripts/run-coding-capability-sanity.py`
+  attaches that expected receipt to `coding_reliability_example_run` and checks
+  `expected_required_artifacts` against the example receipt's `artifacts` list,
+  so the aggregate runner fails if key native coding evidence receipts are not
+  emitted. The required artifacts are the stale/valid code-patch receipts, LSP
+  diagnostics, focused test-run, PASS/REVISE/BLOCKED review findings, commit
+  plan, and orchestration reliability receipts. `tests/test_coding_capability_sanity_runner.py`
+  covers missing and accepted required artifact lists. Focused proof: `git diff
+  --check -- scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py
+  examples/coding-reliability-basic/expected-receipt.json` -> pass; `uv run
+  python -m py_compile scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run ruff check
+  --select I,F,E501 scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> `All checks passed!`; `uv
+  run pytest tests/test_coding_capability_sanity_runner.py -q` -> `8 passed in
+  0.04s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-coding-reliability-expected-20260707T162900Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `check_count:17`, `failed_check_count:0`,
+  `coding_reliability_example_run.expected_artifact_payload.ok:true`, errors
+  `[]`, embedded coding receipt tests `500 passed in 11.97s`. This proves the
+  maintained aggregate sanity surface now fails if the copyable coding
+  reliability example stops emitting the expected receipt set; it does not
+  prove semantic code correctness, agent truthfulness, provider/model quality,
+  full DAG execution, GitHub mutation, legal compliance, or full sandbox
+  isolation.
 
 - 2026-07-07 aggregate expected-receipt enforcement:
   The coding-capability sanity runner now enforces existing expected receipts
