@@ -41,12 +41,16 @@ def test_code_patch_passes_when_base_hash_and_post_hash_match(tmp_path: Path) ->
     assert receipt["before_sha256"] == f"sha256:{_sha256_text(before)}"
     assert receipt["after_sha256"] == f"sha256:{_sha256_text(after)}"
     assert receipt["target_artifact_before"] == {
+        "label": "target_before",
         "path": str(target.resolve()),
+        "exists": True,
         "sha256": f"sha256:{_sha256_text(before)}",
         "bytes": len(before.encode("utf-8")),
     }
     assert receipt["target_artifact_after"] == {
+        "label": "target_after",
         "path": str(target.resolve()),
+        "exists": True,
         "sha256": f"sha256:{_sha256_text(after)}",
         "bytes": len(after.encode("utf-8")),
     }
@@ -72,11 +76,19 @@ def test_code_patch_blocks_stale_base_hash(tmp_path: Path) -> None:
     assert "stale_base_hash" in receipt["alert_codes"]
     assert receipt["applied"] is False
     assert receipt["target_artifact_before"] == {
+        "label": "target_before",
         "path": str(target.resolve()),
+        "exists": True,
         "sha256": f"sha256:{_sha256_text(actual)}",
         "bytes": len(actual.encode("utf-8")),
     }
-    assert receipt["target_artifact_after"] == receipt["target_artifact_before"]
+    assert receipt["target_artifact_after"] == {
+        "label": "target_after",
+        "path": str(target.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256_text(actual)}",
+        "bytes": len(actual.encode("utf-8")),
+    }
     assert target.read_text(encoding="utf-8") == actual
 
 

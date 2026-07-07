@@ -98,7 +98,7 @@ def apply_code_patch_receipt(
             ):
                 alerts.append(_alert("forbidden_path", "target_file is forbidden or generated"))
             before_sha = f"sha256:{_sha256(target_path)}"
-            target_artifact_before = _target_artifact_descriptor(target_path)
+            target_artifact_before = _target_artifact_descriptor("target_before", target_path)
             expected_base = _sha256_string(payload.get("base_file_sha256"))
             if expected_base is None:
                 alerts.append(
@@ -145,11 +145,11 @@ def apply_code_patch_receipt(
     if ok and apply and target_path is not None and staged_text is not None:
         target_path.write_text(staged_text, encoding="utf-8")
         after_sha = f"sha256:{_sha256(target_path)}"
-        target_artifact_after = _target_artifact_descriptor(target_path)
+        target_artifact_after = _target_artifact_descriptor("target_after", target_path)
         applied = True
     elif target_path is not None and target_path.is_file():
         after_sha = f"sha256:{_sha256(target_path)}"
-        target_artifact_after = _target_artifact_descriptor(target_path)
+        target_artifact_after = _target_artifact_descriptor("target_after", target_path)
 
     receipt = {
         "schema": CODE_PATCH_RECEIPT_SCHEMA,
@@ -395,10 +395,12 @@ def _artifact_size(path: Path | None) -> int | None:
         return None
 
 
-def _target_artifact_descriptor(path: Path) -> dict[str, Any]:
+def _target_artifact_descriptor(label: str, path: Path) -> dict[str, Any]:
     resolved = path.expanduser().resolve()
     return {
+        "label": label,
         "path": str(resolved),
+        "exists": resolved.exists(),
         "sha256": _artifact_sha256_uri(resolved),
         "bytes": _artifact_size(resolved),
     }

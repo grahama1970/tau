@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:45 EDT by agent
+**Last updated:** 2026-07-06 23:48 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 code-patch target artifact descriptor rung:
+  `src/tau_coding/code_patch.py` now records `target_artifact_before` and
+  `target_artifact_after` using the same descriptor shape as other Tau coding
+  evidence artifacts: label, resolved path, existence, SHA-256, and byte count.
+  This makes hash-bound patch receipts easier to consume alongside review,
+  diagnostics, worker, and commit-plan receipts without special-casing target
+  file state. Focused proof: `git diff --check PROJECT_KNOWLEDGE.md
+  docs/coding-workers.md src/tau_coding/code_patch.py tests/test_code_patch.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> `All checks
+  passed!`; `uv run pytest tests/test_code_patch.py -q` -> `16 passed in
+  0.43s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-target-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-target-artifact-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.74s`. This proves deterministic local code-patch receipts expose target
+  before/after state as normalized artifact descriptors and compose with the
+  current coding capability sanity suite; it does not prove semantic patch
+  correctness, full test-suite sufficiency for a real change, production
+  safety, agent truthfulness, live worker execution, or full goal completion.
 
 - 2026-07-06 commit-plan evidence relevance rung:
   `src/tau_coding/commit_plan.py` now derives `covered_paths` for each
