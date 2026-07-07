@@ -5,6 +5,38 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker adapter policy/data-boundary validity fail-closed rung:
+  `src/tau_coding/coding_worker_adapters.py` now validates full
+  `tau.policy_profile.v1` and `tau.data_boundary.v1` objects on high-stakes
+  OMP/SciLLM work orders before accepting worker validation or launch receipts.
+  It blocks malformed policy/boundary metadata with `invalid_policy_profile` or
+  `invalid_data_boundary` and refuses
+  `data_boundary.classification:"classified-not-allowed"` with
+  `classified_not_allowed`. `tests/test_coding_worker_adapters.py` pins this
+  with `test_zero_trust_worker_blocks_invalid_data_boundary` and full valid
+  default policy/boundary fixtures for high-stakes work orders. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `61 passed in 4.74s`. Aggregate proof: the first aggregate run
+  `/tmp/tau-coding-capability-sanity-worker-boundary-proof-20260707T074257Z/coding-capability-sanity-receipt.json`
+  blocked because `examples/omp-worker/run.sh` and
+  `examples/scillm-worker/run.sh` still emitted abbreviated policy/boundary
+  objects. The examples now carry full valid zero-trust metadata. `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-boundary-proof-20260707T074410Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-worker-boundary-proof-20260707T074410Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `277 passed in 7.89s`. This proves deterministic local OMP/SciLLM worker
+  receipts fail closed on invalid high-stakes policy/boundary metadata before
+  worker outputs or launches can support coding continuation; it does not prove
+  worker trustworthiness, semantic code correctness, live OMP/SciLLM semantic
+  worker execution, provider/model quality, full sandbox isolation, legal
+  compliance, or full goal completion.
+
 - 2026-07-07 LSP and commit-plan policy/data-boundary validity fail-closed
   rung: `src/tau_coding/lsp_receipts.py` and
   `src/tau_coding/commit_plan.py` now validate full `tau.policy_profile.v1`

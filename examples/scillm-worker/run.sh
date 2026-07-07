@@ -50,15 +50,44 @@ cat > "${WORK_ORDER}" <<JSON
   "policy_profile": {
     "schema": "tau.policy_profile.v1",
     "profile_id": "scillm-worker-example-zero-trust",
-    "default_decision": "deny"
+    "default_decision": "deny",
+    "requires_data_boundary": true,
+    "network": {
+      "default": "deny",
+      "allowed_domains": []
+    },
+    "providers": {
+      "cloud_llm": "deny",
+      "local_model": "allow_with_approval"
+    },
+    "research": {
+      "external_search": "deny",
+      "manual_sanitized_receipt": "allow_with_review"
+    },
+    "memory": {
+      "read": "allow",
+      "write": "approval_required"
+    },
+    "github": {
+      "public_mutation": "deny",
+      "dry_run_projection": "allow"
+    },
+    "filesystem": {
+      "write_allowlist": ["src/**", "tests/**", "logs/**"],
+      "read_denylist": []
+    }
   },
   "data_boundary": {
     "schema": "tau.data_boundary.v1",
     "classification": "public",
     "export_controlled": false,
+    "itar": false,
+    "technical_data": false,
+    "foreign_person_access": "allowed",
     "external_provider_allowed": false,
     "external_research_allowed": false,
-    "public_repo_allowed": false
+    "public_repo_allowed": false,
+    "notes": []
   },
   "model_provider_route": {
     "surface": "opencode_serve",

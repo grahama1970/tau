@@ -15,7 +15,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+from tau_coding.policy_profile import (
+    DATA_BOUNDARY_SCHEMA,
+    POLICY_PROFILE_SCHEMA,
+    validate_data_boundary,
+    validate_policy_profile,
+)
 
 OMP_WORK_ORDER_SCHEMA = "tau.executor.omp.v1"
 OMP_WORKER_RESULT_SCHEMA = "tau.omp_worker_result.v1"
@@ -905,6 +910,12 @@ def _append_work_order_gate_alerts(
                 f"zero-trust coding worker policy_profile.schema must be {POLICY_PROFILE_SCHEMA}",
             )
         )
+    elif high_stakes and isinstance(policy_profile, Mapping):
+        errors = validate_policy_profile(dict(policy_profile))
+        if errors:
+            alerts.append(
+                _alert("invalid_policy_profile", "policy_profile is invalid", errors=errors)
+            )
     if high_stakes and not data_boundary:
         alerts.append(
             _alert("missing_data_boundary", "zero-trust coding worker requires data_boundary")
@@ -919,6 +930,19 @@ def _append_work_order_gate_alerts(
                 f"zero-trust coding worker data_boundary.schema must be {DATA_BOUNDARY_SCHEMA}",
             )
         )
+    elif high_stakes and isinstance(data_boundary, Mapping):
+        errors = validate_data_boundary(dict(data_boundary))
+        if errors:
+            alerts.append(
+                _alert("invalid_data_boundary", "data_boundary is invalid", errors=errors)
+            )
+        if data_boundary.get("classification") == "classified-not-allowed":
+            alerts.append(
+                _alert(
+                    "classified_not_allowed",
+                    "classified-not-allowed data may not be routed to coding workers",
+                )
+            )
 
 
 def _substrate_metadata(work_order: Mapping[str, Any]) -> dict[str, Any]:
@@ -1388,8 +1412,11 @@ def _artifact_path(raw_path: object) -> Path | None:
     return path if path.exists() else None
 
 
-def _alert(code: str, message: str) -> dict[str, str]:
-    return {"severity": "BLOCK", "code": code, "message": message}
+def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": "BLOCK", "code": code, "message": message}
+    if errors:
+        alert["errors"] = errors
+    return alert
 
 
 def _utc_stamp() -> str:

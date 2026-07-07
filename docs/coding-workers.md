@@ -535,10 +535,14 @@ claims without durable logs, public GitHub mutation without policy receipts, and
 external research without research-query/source receipts. High-stakes work
 orders must name an allowed execution substrate such as Herdr-visible execution
 or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
-before Tau accepts the worker result. The metadata must use the current schemas:
-`policy_profile.schema` must be `tau.policy_profile.v1`, and
-`data_boundary.schema` must be `tau.data_boundary.v1`. Sandbox substrates must
-include an existing `tau.sandbox_run_receipt.v1` receipt with `status:"PASS"`,
+before Tau accepts the worker result. The metadata must use and pass the current
+schemas: `policy_profile.schema` must be `tau.policy_profile.v1`, and
+`data_boundary.schema` must be `tau.data_boundary.v1`. Tau blocks malformed
+policy or boundary objects with `invalid_policy_profile` or
+`invalid_data_boundary`, and refuses `classified-not-allowed` boundaries before
+worker validation or launch can support a high-stakes coding route. Sandbox
+substrates must include an existing `tau.sandbox_run_receipt.v1` receipt with
+`status:"PASS"`,
 `ok:true`, `mocked:false`, and `live:true`; Herdr substrates must include both
 `herdr_binding` and an existing `tau.herdr_observation_gate_receipt.v1` receipt
 with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. Binding

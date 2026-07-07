@@ -843,6 +843,30 @@ def test_zero_trust_worker_blocks_invalid_data_boundary_schema(tmp_path: Path) -
     assert "invalid_data_boundary_schema" in payload["alert_codes"]
 
 
+def test_zero_trust_worker_blocks_invalid_data_boundary(tmp_path: Path) -> None:
+    boundary = _data_boundary()
+    boundary["classification"] = "classified-not-allowed"
+    boundary.pop("foreign_person_access")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        data_boundary=boundary,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_data_boundary" in payload["alert_codes"]
+    assert "classified_not_allowed" in payload["alert_codes"]
+    assert "foreign_person_access must be one of" in payload["alerts"][0]["errors"][0]
+
+
 def test_scillm_worker_records_model_provider_route(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -1756,20 +1780,17 @@ def test_cli_scillm_worker_validate_writes_receipt(tmp_path: Path) -> None:
     assert payload["schema"] == SCILLM_WORKER_RECEIPT_SCHEMA
 
 
+_DEFAULT_METADATA = object()
+
+
 def _write_work_order(
     tmp_path: Path,
     *,
     schema: str,
     high_stakes: bool = False,
     execution_substrate: str | None = "docker-sandbox",
-    policy_profile: dict | None = {
-        "schema": "tau.policy_profile.v1",
-        "profile_id": "test-zero-trust",
-    },
-    data_boundary: dict | None = {
-        "schema": "tau.data_boundary.v1",
-        "classification": "public",
-    },
+    policy_profile: object = _DEFAULT_METADATA,
+    data_boundary: object = _DEFAULT_METADATA,
     sandbox_receipt_path: str | None = "sandbox-receipt.json",
     herdr_binding: dict | None = {"workspace_id": "w1", "pane_id": "w1:p1"},
     herdr_receipt_path: str | None = None,
@@ -1839,9 +1860,15 @@ def _write_work_order(
     }
     if execution_substrate is not None:
         payload["execution_substrate"] = execution_substrate
-    if policy_profile is not None:
+    if policy_profile is _DEFAULT_METADATA:
+        if high_stakes:
+            payload["policy_profile"] = _policy_profile()
+    elif policy_profile is not None:
         payload["policy_profile"] = policy_profile
-    if data_boundary is not None:
+    if data_boundary is _DEFAULT_METADATA:
+        if high_stakes:
+            payload["data_boundary"] = _data_boundary()
+    elif data_boundary is not None:
         payload["data_boundary"] = data_boundary
     if sandbox_receipt_path is not None:
         payload["sandbox_receipt_path"] = sandbox_receipt_path
@@ -1956,3 +1983,36 @@ def _write_result(
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _policy_profile() -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test-zero-trust",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": ["src/**", "tests/**"], "read_denylist": []},
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }
