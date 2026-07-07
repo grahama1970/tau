@@ -50,11 +50,18 @@ non-claims
 ```
 
 The `coding evidence` section scans the run directory for Tau coding receipt
-schemas such as patch, LSP, focused test-run, review findings, commit-plan,
-debug, GitHub read, OMP/SciLLM worker, course-correction, and orchestration
-reliability receipts. It records relative path, schema, status, `ok`,
+schemas such as patch, Tau skill-adapter wrappers, LSP, focused test-run,
+review findings, commit-plan, debug, GitHub read, OMP/SciLLM worker,
+course-correction, and orchestration reliability receipts. It records relative path, schema, status, `ok`,
 `mocked`, `live`, `provider_live`, receipt SHA-256, goal hash, and any
 policy/data-boundary hashes present on the receipt.
+Skill-adapter receipts such as `tau.code_runner_worker_receipt.v1`,
+`tau.debugger_skill_adapter_receipt.v1`,
+`tau.evidence_case_skill_adapter_receipt.v1`,
+`tau.review_code_skill_adapter_receipt.v1`, and
+`tau.research_skill_adapter_receipt.v1` are surfaced as evidence that Tau
+ingested and wrapped a skill artifact; they do not prove the wrapped skill,
+worker, model, research, or reviewer was truthful.
 For course-correction receipts it also surfaces route fields such as `trigger`
 and `required_next_action`; for GitHub read receipts it surfaces `uri`,
 `github_read_kind`, `read_only`, and `mutation_allowed` so read evidence is

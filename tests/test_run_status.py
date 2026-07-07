@@ -1812,6 +1812,38 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
     assert "Code correctness." in status["coding_evidence"]["does_not_prove"]
 
 
+def test_run_status_summarizes_skill_adapter_coding_evidence(tmp_path: Path) -> None:
+    receipts_dir = tmp_path / "receipts" / "coding"
+    schemas = [
+        "tau.code_runner_worker_receipt.v1",
+        "tau.debugger_skill_adapter_receipt.v1",
+        "tau.evidence_case_skill_adapter_receipt.v1",
+        "tau.review_code_skill_adapter_receipt.v1",
+        "tau.research_skill_adapter_receipt.v1",
+    ]
+    for index, schema in enumerate(schemas, start=1):
+        _write_json(
+            receipts_dir / f"adapter-{index}.json",
+            {
+                "schema": schema,
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "goal_hash": "sha256:goal",
+            },
+        )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == len(schemas)
+    seen = {receipt["schema"] for receipt in status["coding_evidence"]["receipts"]}
+    assert seen == set(schemas)
+    for schema in schemas:
+        assert schema in status["coding_evidence"]["supported_schemas"]
+
+
 def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path) -> None:
     receipt_path = tmp_path / "skill-composition-redteam-receipt.json"
     _write_json(

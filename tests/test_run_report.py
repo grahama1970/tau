@@ -56,6 +56,11 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert 'id="dag-steps"' in html
     assert 'id="coding-evidence"' in html
     assert "tau.test_run_receipt.v1" in html
+    assert "tau.code_runner_worker_receipt.v1" in html
+    assert "tau.debugger_skill_adapter_receipt.v1" in html
+    assert "tau.evidence_case_skill_adapter_receipt.v1" in html
+    assert "tau.review_code_skill_adapter_receipt.v1" in html
+    assert "tau.research_skill_adapter_receipt.v1" in html
     assert "tau.course_correction.v1" in html
     assert "patch_stale" in html
     assert "retry_node" in html
@@ -186,6 +191,28 @@ def _write_report_run(tmp_path: Path) -> Path:
             "data_boundary_sha256": "sha256:boundary",
         },
     )
+    for file_name, schema in [
+        ("code-runner-worker-receipt.json", "tau.code_runner_worker_receipt.v1"),
+        ("debugger-skill-adapter-receipt.json", "tau.debugger_skill_adapter_receipt.v1"),
+        (
+            "evidence-case-skill-adapter-receipt.json",
+            "tau.evidence_case_skill_adapter_receipt.v1",
+        ),
+        ("review-code-skill-adapter-receipt.json", "tau.review_code_skill_adapter_receipt.v1"),
+        ("research-skill-adapter-receipt.json", "tau.research_skill_adapter_receipt.v1"),
+    ]:
+        _write_json(
+            receipts_dir / file_name,
+            {
+                "schema": schema,
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "goal_hash": "sha256:report-test",
+            },
+        )
     _write_json(
         receipts_dir / "course-correction-receipt.json",
         {
