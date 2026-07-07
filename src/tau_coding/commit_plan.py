@@ -277,6 +277,7 @@ def _evidence_receipts(
             {
                 "path": str(resolved),
                 "sha256": f"sha256:{_sha256(resolved)}",
+                "bytes": resolved.stat().st_size,
                 "schema": schema,
                 "schema_supported": schema_supported,
                 "status": status,

@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:49 EDT by agent
+**Last updated:** 2026-07-06 22:53 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan evidence byte binding rung:
+  `src/tau_coding/commit_plan.py` now records byte counts on each supporting
+  evidence receipt listed in `tau.commit_plan_receipt.v1.evidence_receipts`,
+  alongside the existing evidence receipt path, SHA-256, schema, status, and
+  goal-hash match fields. This lets reviewers bind a proposed commit group to
+  exact supporting receipt artifacts by both content hash and size. Focused
+  proof: `uv run ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> pass; `uv run pytest tests/test_commit_plan.py
+  -q` -> `17 passed in 0.66s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-evidence-bytes-proof` wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-evidence-bytes-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `196 passed in 6.63s`. This proves deterministic local commit-plan receipts
+  now bind supporting evidence receipts with byte counts and compose with the
+  current coding capability sanity suite; it does not prove semantic code
+  correctness, optimal commit grouping, live OMP or SciLLM semantic worker
+  execution, provider/model quality, GitHub mutation, human acceptance, legal
+  compliance, ITAR compliance, or full sandbox isolation on every host.
 
 - 2026-07-06 coding zero-trust init starter rung:
   `src/tau_coding/init_project.py` now supports
