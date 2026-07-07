@@ -50,7 +50,7 @@ def test_github_read_pr_diff_scheme_is_read_only(tmp_path: Path) -> None:
 
 def test_github_read_commit_scheme_is_read_only(tmp_path: Path) -> None:
     receipt = write_github_read_receipt(
-        uri="commit://grahama1970/tau/abc123",
+        uri="commit://grahama1970/tau/abc1234",
         output_path=tmp_path / "github-read-receipt.json",
     )
 
@@ -58,6 +58,18 @@ def test_github_read_commit_scheme_is_read_only(tmp_path: Path) -> None:
     assert receipt["read_only"] is True
     assert receipt["parsed"]["kind"] == "commit"
     assert "Any GitHub mutation is allowed." in receipt["proof_scope"]["does_not_prove"]
+
+
+def test_github_read_commit_scheme_blocks_non_sha_identifier(tmp_path: Path) -> None:
+    receipt = write_github_read_receipt(
+        uri="commit://grahama1970/tau/main",
+        output_path=tmp_path / "github-read-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["mutation_allowed"] is False
+    assert "invalid_commit_identifier" in receipt["alert_codes"]
+    assert receipt["suggested_gh_command"] == []
 
 
 def test_github_read_blocks_unsupported_uri(tmp_path: Path) -> None:

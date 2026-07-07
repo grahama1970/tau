@@ -258,6 +258,10 @@ diff://owner/repo/pull/456
 commit://owner/repo/<sha>
 ```
 
+The `commit://` form requires a short or full hexadecimal commit SHA. Branch
+names, tag names, and other moving refs are rejected for this read scheme so a
+commit evidence receipt stays tied to an immutable object.
+
 CLI:
 
 ```bash

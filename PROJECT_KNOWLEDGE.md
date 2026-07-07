@@ -1,9 +1,28 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:12 EDT by agent
+**Last updated:** 2026-07-06 21:17 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GitHub commit-read immutable identifier rung:
+  `src/tau_coding/github_read_schemes.py` now requires
+  `commit://owner/repo/<sha>` to use a short or full hexadecimal commit SHA
+  from 7 to 40 characters. Branch names, tag names, and other moving refs such
+  as `commit://grahama1970/tau/main` now BLOCK with
+  `invalid_commit_identifier` and do not produce a suggested
+  `gh api repos/.../commits/<ref>` command. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/github_read_schemes.py
+  tests/test_github_read_schemes.py` -> pass; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `14 passed in 0.49s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-commit-sha-proof` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-github-commit-sha-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `GitHub read receipts`, and embedded focused coding tests `170 passed
+  in 5.96s`. This proves deterministic local commit-read URI parsing rejects
+  moving refs; it does not prove live GitHub auth, object existence, GitHub
+  mutation, semantic code correctness, legal compliance, or human acceptance.
 
 - 2026-07-06 commit-plan evidence receipt status gate rung:
   `src/tau_coding/commit_plan.py` now records but rejects evidence receipts that

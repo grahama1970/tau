@@ -18,7 +18,8 @@ GITHUB_READ_RECEIPT_SCHEMA = "tau.github_read_receipt.v1"
 _ISSUE_RE = re.compile(r"^issue://([^/]+)/([^/]+)/([0-9]+)$")
 _PR_RE = re.compile(r"^pr://([^/]+)/([^/]+)/([0-9]+)$")
 _DIFF_RE = re.compile(r"^diff://([^/]+)/([^/]+)/pull/([0-9]+)$")
-_COMMIT_RE = re.compile(r"^commit://([^/]+)/([^/]+)/([A-Za-z0-9._-]+)$")
+_COMMIT_PREFIX_RE = re.compile(r"^commit://")
+_COMMIT_RE = re.compile(r"^commit://([^/]+)/([^/]+)/([A-Fa-f0-9]{7,40})$")
 
 
 def write_github_read_receipt(
@@ -39,7 +40,15 @@ def write_github_read_receipt(
     )
     parsed = _parse_github_uri(uri)
     if parsed is None:
-        alerts.append(_alert("unsupported_github_read_uri", "unsupported GitHub read URI"))
+        if _COMMIT_PREFIX_RE.match(uri):
+            alerts.append(
+                _alert(
+                    "invalid_commit_identifier",
+                    "commit:// GitHub read URI requires a short or full hex SHA",
+                )
+            )
+        else:
+            alerts.append(_alert("unsupported_github_read_uri", "unsupported GitHub read URI"))
         parsed = {}
     ok = not alerts
     suggested_command = _suggested_gh_command(parsed)
