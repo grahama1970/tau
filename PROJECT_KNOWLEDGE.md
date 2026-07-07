@@ -5,6 +5,37 @@
 
 ## Current Understanding
 
+- 2026-07-07 commit-plan evidence repo-scope rung:
+  `src/tau_coding/commit_plan.py` now requires every
+  `--evidence-receipt` path to resolve inside the repository being planned.
+  External evidence receipts block with `evidence_receipt_outside_repo`, are not
+  loaded into `evidence_receipts`, and therefore cannot satisfy source-change
+  test/evidence coverage. `tests/test_commit_plan.py` covers an external
+  `tau.test_run_receipt.v1` that otherwise claims live PASS coverage for
+  `src.py`; the commit plan remains BLOCKED and still reports
+  `source_changes_lack_tests_or_evidence`. `docs/coding-workers.md` documents
+  the repo-scope rule. `examples/coding-reliability-basic/run.sh` now stores its
+  copyable example receipts under `work-repo/.tau/receipts`, so the example
+  matches the same admissible evidence model. Focused proof: `git diff --check
+  -- src/tau_coding/commit_plan.py tests/test_commit_plan.py
+  docs/coding-workers.md examples/coding-reliability-basic/run.sh
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run python -m py_compile
+  src/tau_coding/commit_plan.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> `All checks
+  passed!`; `uv run pytest tests/test_commit_plan.py -q` -> `35 passed in
+  1.00s`;
+  `examples/coding-reliability-basic/run.sh
+  /tmp/tau-coding-reliability-basic-repo-scope-proof-final` -> demo receipt
+  `status:PASS`, `ok:true`, `mocked:false`, `live:true`, 19 receipt/stdout
+  artifacts under `work-repo/.tau/receipts`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-commit-plan-evidence-repo-scope-20260707T180000Z-v2/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`. This
+  proves commit-plan evidence receipt paths are now repo-scoped and the coding
+  reliability example composes with that invariant; it does not prove semantic
+  code correctness, full-suite health beyond the recorded aggregate checks, live
+  OMP/SciLLM semantic execution, provider/model quality, legal compliance, ITAR
+  compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 test-run tested-path fail-closed rung:
   `src/tau_coding/test_run_receipt.py` now blocks invalid `tested_paths` before
   executing the pytest-shaped command. Empty, absolute, or `..`-escaping tested

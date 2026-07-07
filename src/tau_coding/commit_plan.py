@@ -359,6 +359,16 @@ def _evidence_receipts(
     for path in paths:
         resolved = path.expanduser().resolve()
         try:
+            resolved.relative_to(repo)
+        except ValueError:
+            alerts.append(
+                _alert(
+                    "evidence_receipt_outside_repo",
+                    f"evidence receipt must be inside the repo: {resolved}",
+                )
+            )
+            continue
+        try:
             payload = json.loads(resolved.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             alerts.append(

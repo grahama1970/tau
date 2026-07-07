@@ -5,10 +5,11 @@ EXAMPLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${EXAMPLE_DIR}/../.." && pwd)"
 OUT="${1:-"${TMPDIR:-/tmp}/tau-coding-reliability-basic"}"
 WORK_REPO="${OUT}/work-repo"
+RECEIPTS="${WORK_REPO}/.tau/receipts"
 GOAL_HASH="sha256:demo-coding-goal"
 
 rm -rf "${OUT}"
-mkdir -p "${WORK_REPO}/src" "${WORK_REPO}/tests" "${OUT}/receipts" "${OUT}/patches"
+mkdir -p "${WORK_REPO}/src" "${WORK_REPO}/tests" "${RECEIPTS}" "${OUT}/patches"
 
 cat > "${WORK_REPO}/src/example.py" <<'PY'
 def answer() -> int:
@@ -73,9 +74,9 @@ cd "${REPO_ROOT}"
 if uv run tau code-patch \
   --patch "${OUT}/patches/stale-code-patch.json" \
   --repo "${WORK_REPO}" \
-  --out "${OUT}/receipts/stale-code-patch-receipt.json" \
+  --out "${RECEIPTS}/stale-code-patch-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
-  > "${OUT}/receipts/stale-code-patch.stdout.json"; then
+  > "${RECEIPTS}/stale-code-patch.stdout.json"; then
   echo "expected stale code patch to fail closed" >&2
   exit 1
 fi
@@ -83,18 +84,18 @@ fi
 uv run tau code-patch \
   --patch "${OUT}/patches/valid-code-patch.json" \
   --repo "${WORK_REPO}" \
-  --out "${OUT}/receipts/valid-code-patch-receipt.json" \
+  --out "${RECEIPTS}/valid-code-patch-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
-  > "${OUT}/receipts/valid-code-patch.stdout.json"
+  > "${RECEIPTS}/valid-code-patch.stdout.json"
 
 uv run tau lsp-diagnostics \
   --workspace "${WORK_REPO}" \
-  --out "${OUT}/receipts/lsp-diagnostics-receipt.json" \
-  > "${OUT}/receipts/lsp-diagnostics.stdout.json"
+  --out "${RECEIPTS}/lsp-diagnostics-receipt.json" \
+  > "${RECEIPTS}/lsp-diagnostics.stdout.json"
 
 uv run tau test-run \
   --repo "${WORK_REPO}" \
-  --out "${OUT}/receipts/test-run-receipt.json" \
+  --out "${RECEIPTS}/test-run-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
   --command python3 \
   --command -m \
@@ -102,7 +103,7 @@ uv run tau test-run \
   --command -q \
   --tested-path src/example.py \
   --tested-path tests/test_example.py \
-  > "${OUT}/receipts/test-run.stdout.json"
+  > "${RECEIPTS}/test-run.stdout.json"
 
 cat > "${OUT}/review-findings-pass.json" <<JSON
 {
@@ -116,9 +117,9 @@ JSON
 
 uv run tau review-findings \
   --findings "${OUT}/review-findings-pass.json" \
-  --out "${OUT}/receipts/review-findings-pass-receipt.json" \
+  --out "${RECEIPTS}/review-findings-pass-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
-  > "${OUT}/receipts/review-findings-pass.stdout.json"
+  > "${RECEIPTS}/review-findings-pass.stdout.json"
 
 cat > "${OUT}/review-findings-revise.json" <<JSON
 {
@@ -143,9 +144,9 @@ JSON
 
 uv run tau review-findings \
   --findings "${OUT}/review-findings-revise.json" \
-  --out "${OUT}/receipts/review-findings-revise-receipt.json" \
+  --out "${RECEIPTS}/review-findings-revise-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
-  > "${OUT}/receipts/review-findings-revise.stdout.json"
+  > "${RECEIPTS}/review-findings-revise.stdout.json"
 
 cat > "${OUT}/review-findings-blocked.json" <<JSON
 {
@@ -161,7 +162,7 @@ cat > "${OUT}/review-findings-blocked.json" <<JSON
       "file": "src/example.py",
       "line": 2,
       "claim": "The patch would skip the required policy gate.",
-      "evidence": ["receipts/valid-code-patch-receipt.json"],
+      "evidence": [".tau/receipts/valid-code-patch-receipt.json"],
       "required_action": "block"
     }
   ]
@@ -170,11 +171,11 @@ JSON
 
 uv run tau review-findings \
   --findings "${OUT}/review-findings-blocked.json" \
-  --out "${OUT}/receipts/review-findings-blocked-receipt.json" \
+  --out "${RECEIPTS}/review-findings-blocked-receipt.json" \
   --goal-hash "${GOAL_HASH}" \
-  > "${OUT}/receipts/review-findings-blocked.stdout.json"
+  > "${RECEIPTS}/review-findings-blocked.stdout.json"
 
-python3 - "${OUT}/receipts" <<'PY'
+python3 - "${RECEIPTS}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -211,21 +212,21 @@ PY
 
 uv run tau commit-plan \
   --repo "${WORK_REPO}" \
-  --out "${OUT}/receipts/commit-plan-receipt.json" \
-  --evidence-receipt "${OUT}/receipts/valid-code-patch-receipt.json" \
-  --evidence-receipt "${OUT}/receipts/lsp-diagnostics-receipt.json" \
-  --evidence-receipt "${OUT}/receipts/test-run-receipt.json" \
-  --evidence-receipt "${OUT}/receipts/review-findings-pass-receipt.json" \
-  > "${OUT}/receipts/commit-plan.stdout.json"
+  --out "${RECEIPTS}/commit-plan-receipt.json" \
+  --evidence-receipt "${RECEIPTS}/valid-code-patch-receipt.json" \
+  --evidence-receipt "${RECEIPTS}/lsp-diagnostics-receipt.json" \
+  --evidence-receipt "${RECEIPTS}/test-run-receipt.json" \
+  --evidence-receipt "${RECEIPTS}/review-findings-pass-receipt.json" \
+  > "${RECEIPTS}/commit-plan.stdout.json"
 
-python3 - "${OUT}" "${GOAL_HASH}" <<'PY'
+python3 - "${OUT}" "${RECEIPTS}" "${GOAL_HASH}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 out = Path(sys.argv[1])
-goal_hash = sys.argv[2]
-receipts = out / "receipts"
+receipts = Path(sys.argv[2])
+goal_hash = sys.argv[3]
 dag = {
     "schema": "tau.dag_receipt.v1",
     "ok": True,
@@ -265,16 +266,17 @@ PY
 
 uv run tau orchestration-reliability \
   --dag-receipt "${OUT}/dag-receipt.json" \
-  --out "${OUT}/receipts/orchestration-reliability-receipt.json" \
-  > "${OUT}/receipts/orchestration-reliability.stdout.json"
+  --out "${RECEIPTS}/orchestration-reliability-receipt.json" \
+  > "${RECEIPTS}/orchestration-reliability.stdout.json"
 
-python3 - "${OUT}" <<'PY'
+python3 - "${OUT}" "${RECEIPTS}" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 out = Path(sys.argv[1])
-receipt_paths = sorted(str(path.relative_to(out)) for path in (out / "receipts").glob("*.json"))
+receipts = Path(sys.argv[2])
+receipt_paths = sorted(str(path.relative_to(out)) for path in receipts.glob("*.json"))
 summary = {
     "schema": "tau.coding_reliability_basic_demo_receipt.v1",
     "ok": True,

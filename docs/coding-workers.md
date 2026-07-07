@@ -406,6 +406,9 @@ supported the proposed atomic commit. Evidence receipts only count when they rep
 `status:"PASS"` and `ok:true` from a supported Tau coding evidence schema;
 BLOCKED, failed, mocked, non-live, or unknown-schema receipts are recorded but
 cannot justify a source commit group.
+Evidence receipt paths must be inside the repository being planned; external
+paths block with `evidence_receipt_outside_repo` and do not count toward source
+coverage.
 For source-only changes, evidence must also cover at least one changed source
 path. Tau derives `covered_paths` from common receipt fields such as
 `target_file`, `changed_files`, `inspected_artifacts`, `findings[].file`, and

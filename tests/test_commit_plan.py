@@ -224,6 +224,37 @@ def test_commit_plan_blocks_source_change_with_unrelated_evidence_receipt(
     assert payload["evidence_receipts"][0]["covered_paths"] == ["other.py"]
 
 
+def test_commit_plan_blocks_external_evidence_receipt_path(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    external = tmp_path / "external-evidence.json"
+    external.write_text(
+        json.dumps(
+            {
+                "schema": "tau.test_run_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "tested_paths": ["src.py"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[external],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "evidence_receipt_outside_repo" in payload["alert_codes"]
+    assert "source_changes_lack_tests_or_evidence" in payload["alert_codes"]
+    assert payload["evidence_receipts"] == []
+
+
 def test_commit_plan_blocks_source_change_with_partial_evidence_coverage(
     tmp_path: Path,
 ) -> None:
