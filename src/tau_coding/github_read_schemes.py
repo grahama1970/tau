@@ -153,7 +153,7 @@ def _execute_read_command(
             ],
         )
     resolved_gh = shutil.which(gh_bin) if "/" not in gh_bin else gh_bin
-    if not resolved_gh:
+    if not resolved_gh or not Path(resolved_gh).exists():
         return _empty_execution(
             execute_requested=True,
             alerts=[_alert("github_read_gh_missing", "gh executable was not found")],

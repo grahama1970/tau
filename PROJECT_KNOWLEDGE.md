@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 03:03 EDT by agent
+**Last updated:** 2026-07-07 03:06 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 GitHub read missing absolute `gh` fail-closed rung:
+  `src/tau_coding/github_read_schemes.py` now blocks execute-mode GitHub read
+  receipts when `--gh-bin` is an absolute/path-like value that does not exist,
+  instead of letting `subprocess.run` raise before Tau can write a receipt.
+  The receipt now returns `status:"BLOCKED"` with `github_read_gh_missing` and
+  `execution.command_executed:false`. `tests/test_github_read_schemes.py` pins
+  this with `test_github_read_execute_blocks_missing_absolute_gh_bin`.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py` ->
+  `All checks passed!`; `uv run pytest tests/test_github_read_schemes.py -q`
+  -> `20 passed in 0.50s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-gh-missing-proof-20260707T070520Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-github-read-gh-missing-proof-20260707T070520Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `267 passed in
+  7.93s`. This proves deterministic local GitHub read receipts fail closed
+  when the configured GitHub CLI executable is missing; it does not prove live
+  GitHub auth, object freshness, GitHub mutation, semantic code correctness,
+  live OMP/SciLLM semantic worker execution, provider/model quality, human
+  acceptance, legal compliance, full sandbox isolation, or full goal
+  completion.
 
 - 2026-07-07 debug-session malformed policy-list fail-closed rung:
   `src/tau_coding/debug_session_receipt.py` now blocks malformed

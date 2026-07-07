@@ -319,6 +319,20 @@ def test_github_read_execute_skips_invalid_uri(tmp_path: Path) -> None:
     assert not marker.exists()
 
 
+def test_github_read_execute_blocks_missing_absolute_gh_bin(tmp_path: Path) -> None:
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        execute=True,
+        gh_bin=str(tmp_path / "missing-gh"),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["execution"]["execute_requested"] is True
+    assert receipt["execution"]["command_executed"] is False
+    assert "github_read_gh_missing" in receipt["alert_codes"]
+
+
 def test_cli_github_read_writes_receipt(tmp_path: Path) -> None:
     out = tmp_path / "github-read-receipt.json"
 
