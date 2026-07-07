@@ -827,6 +827,8 @@ def _append_work_order_gate_alerts(
                 expected_schema=SANDBOX_RUN_RECEIPT_SCHEMA,
                 invalid_schema_code="sandbox_receipt_invalid_schema",
                 not_pass_code="sandbox_receipt_not_pass",
+                mocked_code="sandbox_receipt_mocked",
+                non_live_code="sandbox_receipt_not_live",
                 label="sandbox receipt",
             )
     if high_stakes and substrate in {"herdr", "herdr-visible"}:
@@ -855,6 +857,8 @@ def _append_work_order_gate_alerts(
                 expected_schema=HERDR_OBSERVATION_GATE_RECEIPT_SCHEMA,
                 invalid_schema_code="herdr_receipt_invalid_schema",
                 not_pass_code="herdr_receipt_not_pass",
+                mocked_code="herdr_receipt_mocked",
+                non_live_code="herdr_receipt_not_live",
                 label="Herdr observation receipt",
             )
     policy_profile = work_order.get("policy_profile")
@@ -1007,6 +1011,8 @@ def _append_referenced_receipt_status_alerts(
     expected_schema: str,
     invalid_schema_code: str,
     not_pass_code: str,
+    mocked_code: str,
+    non_live_code: str,
     label: str,
 ) -> None:
     if receipt is None:
@@ -1015,6 +1021,12 @@ def _append_referenced_receipt_status_alerts(
         alerts.append(_alert(invalid_schema_code, f"{label} schema must be {expected_schema}"))
     if receipt.get("ok") is not True or receipt.get("status") != "PASS":
         alerts.append(_alert(not_pass_code, f"{label} must be PASS before worker acceptance"))
+    if receipt.get("mocked") is not False:
+        alerts.append(_alert(mocked_code, f"{label} cannot be mocked for high-stakes workers"))
+    if receipt.get("live") is not True:
+        alerts.append(
+            _alert(non_live_code, f"{label} must record live:true for high-stakes workers")
+        )
 
 
 def _scillm_opencode_request_payload(

@@ -517,10 +517,10 @@ or a sandbox, and must carry `policy_profile` plus `data_boundary` metadata
 before Tau accepts the worker result. The metadata must use the current schemas:
 `policy_profile.schema` must be `tau.policy_profile.v1`, and
 `data_boundary.schema` must be `tau.data_boundary.v1`. Sandbox substrates must
-include an existing `tau.sandbox_run_receipt.v1` receipt with `status:"PASS"`
-and `ok:true`; Herdr substrates must include `herdr_binding` or an existing
-`tau.herdr_observation_gate_receipt.v1` receipt with `status:"PASS"` and
-`ok:true`. Validation receipts record
+include an existing `tau.sandbox_run_receipt.v1` receipt with `status:"PASS"`,
+`ok:true`, `mocked:false`, and `live:true`; Herdr substrates must include
+`herdr_binding` or an existing `tau.herdr_observation_gate_receipt.v1` receipt
+with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. Validation receipts record
 `work_order_sha256`, `result_sha256`, byte counts, and `validated_artifacts`
 for the exact JSON artifacts Tau inspected. Each validated artifact descriptor
 records label, resolved path, existence, SHA-256, and byte count. Validation and

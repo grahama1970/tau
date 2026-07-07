@@ -34,10 +34,10 @@ cat > "${SANDBOX_RECEIPT}" <<JSON
   "schema": "tau.sandbox_run_receipt.v1",
   "ok": true,
   "status": "PASS",
-  "mocked": true,
-  "live": false,
+  "mocked": false,
+  "live": true,
   "provider_live": false,
-  "command_executed": false,
+  "command_executed": true,
   "network_egress": "denied"
 }
 JSON
