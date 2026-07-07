@@ -121,6 +121,10 @@ Routing rules:
 
 P0/P1 findings require evidence. Tau blocks understated verdicts such as a
 declared `PASS` with P1/P2 findings or a declared `REVISE` with P0 findings.
+When `allowed_paths` or `forbidden_paths` are present, they must be lists of
+non-empty strings; malformed path-scope fields block instead of becoming an
+empty permissive scope. Finding files are normalized as repo-relative POSIX
+paths and checked against those scopes.
 The receipt records the inspected findings artifact's `findings_sha256` and
 `findings_bytes`, plus `findings_artifact` with label, path, existence,
 SHA-256, and byte count. It does not prove the reviewer is correct or

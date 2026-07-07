@@ -282,6 +282,56 @@ def test_review_findings_blocks_file_matching_forbidden_paths() -> None:
     assert "finding_path_forbidden" in receipt["alert_codes"]
 
 
+def test_review_findings_blocks_malformed_allowed_paths() -> None:
+    payload = _payload(
+        verdict="REVISE",
+        findings=[
+            {
+                "id": "finding-001",
+                "severity": "P2",
+                "confidence": 0.7,
+                "file": "src/example.py",
+                "line": 3,
+                "claim": "Malformed scope should not become permissive.",
+                "evidence": ["src/example.py:3"],
+                "required_action": "revise",
+            }
+        ],
+    )
+    payload["allowed_paths"] = "src/**"
+
+    receipt = validate_review_findings(payload)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_allowed_paths" in receipt["alert_codes"]
+    assert receipt["allowed_paths"] == []
+
+
+def test_review_findings_blocks_malformed_forbidden_paths() -> None:
+    payload = _payload(
+        verdict="REVISE",
+        findings=[
+            {
+                "id": "finding-001",
+                "severity": "P2",
+                "confidence": 0.7,
+                "file": "src/example.py",
+                "line": 3,
+                "claim": "Malformed forbidden scope should not be ignored.",
+                "evidence": ["src/example.py:3"],
+                "required_action": "revise",
+            }
+        ],
+    )
+    payload["forbidden_paths"] = ["secrets/**", ""]
+
+    receipt = validate_review_findings(payload)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_forbidden_paths" in receipt["alert_codes"]
+    assert receipt["forbidden_paths"] == []
+
+
 def test_review_findings_blocks_absolute_or_escaping_file_path() -> None:
     payload = _payload(
         verdict="REVISE",

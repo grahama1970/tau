@@ -62,8 +62,16 @@ def validate_review_findings(
         alerts.append(_alert("invalid_findings", "findings must be a list"))
         findings_raw = []
 
-    allowed_paths = _string_list(payload.get("allowed_paths"))
-    forbidden_paths = _string_list(payload.get("forbidden_paths"))
+    allowed_paths, allowed_paths_alerts = _optional_string_list(
+        payload.get("allowed_paths"),
+        field="allowed_paths",
+    )
+    forbidden_paths, forbidden_paths_alerts = _optional_string_list(
+        payload.get("forbidden_paths"),
+        field="forbidden_paths",
+    )
+    alerts.extend(allowed_paths_alerts)
+    alerts.extend(forbidden_paths_alerts)
     normalized_findings: list[dict[str, Any]] = []
     for index, item in enumerate(findings_raw):
         normalized, item_alerts = _validate_finding(
@@ -405,10 +413,23 @@ def _normalize_finding_file(
     return normalized, alerts
 
 
-def _string_list(value: object) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return [item for item in value if isinstance(item, str) and item]
+def _optional_string_list(
+    value: object,
+    *,
+    field: str,
+) -> tuple[list[str], list[dict[str, str]]]:
+    if value is None:
+        return [], []
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) and item for item in value
+    ):
+        return [], [
+            _alert(
+                f"invalid_{field}",
+                f"review findings {field} must be a list of non-empty strings",
+            )
+        ]
+    return [item for item in value], []
 
 
 def _path_allowed(path: str, patterns: list[str]) -> bool:

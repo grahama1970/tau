@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 review findings path-scope schema gate:
+  `src/tau_coding/review_findings.py` now blocks malformed
+  `allowed_paths` or `forbidden_paths` fields on `tau.review_findings.v1`
+  payloads instead of silently collapsing them to empty scopes. This preserves
+  the path-boundary invariant for structured reviewer findings: path-scope
+  controls must be explicit lists of non-empty strings before reviewer output
+  can route coding work. `tests/test_review_findings.py` pins malformed
+  allowed and forbidden path scopes with `invalid_allowed_paths` and
+  `invalid_forbidden_paths`. Focused proof: `git diff --check --
+  src/tau_coding/review_findings.py tests/test_review_findings.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py` -> `All checks passed!`; `uv run pytest
+  tests/test_review_findings.py -q` -> `21 passed in 0.43s`. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-review-scope-schema-20260707T091500Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `305 passed in 8.14s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local structured
+  review finding receipts fail closed on malformed path-scope fields and still
+  compose with the current coding capability sanity suite; it does not prove
+  reviewer correctness, exhaustive issue detection, semantic code correctness,
+  live OMP/SciLLM semantic worker execution, provider/model quality, GitHub
+  mutation, full sandbox isolation, legal compliance, ITAR compliance, or full
+  goal completion.
+
 - 2026-07-07 zero-trust debug target shell-control gate:
   `src/tau_coding/debug_session_receipt.py` now blocks zero-trust
   `tau.debug_session_packet.v1` targets that contain shell-control syntax such
