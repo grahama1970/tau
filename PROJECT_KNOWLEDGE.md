@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:30 EDT by agent
+**Last updated:** 2026-07-06 21:34 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 LSP baseline admissibility rung:
+  `src/tau_coding/lsp_receipts.py` now rejects baseline diagnostics receipts
+  unless they are `status:"PASS"` with `ok:true`. BLOCKED or failed baselines
+  record `baseline_receipt_not_pass` and do not produce
+  `baseline_severity_counts`, `diagnostic_delta`, or a
+  `diagnostics_increased` before/after comparison. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py` -> pass; `uv run pytest
+  tests/test_lsp_receipts.py -q` -> `18 passed in 0.62s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-baseline-pass-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-lsp-baseline-pass-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, coverage entry `LSP diagnostics, symbols, and
+  rename planning receipts`, and embedded focused coding tests `179 passed in
+  5.92s`. This proves deterministic local LSP baseline comparisons only use
+  admissible PASS baseline receipts; it does not prove semantic code
+  correctness, complete language-server parity, safe rename application,
+  provider/model quality, legal compliance, or live worker execution.
 
 - 2026-07-06 course-correction attempt-evidence rung:
   `src/tau_coding/course_correction.py` now records `input_valid`, `alerts`,

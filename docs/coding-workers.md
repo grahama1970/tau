@@ -160,7 +160,10 @@ uv run tau lsp-diagnostics \
 
 The receipt records `baseline_severity_counts`, `diagnostic_delta`, and
 `diagnostics_increased`. This is a regression signal for Tau course correction,
-not proof that the code is semantically correct.
+not proof that the code is semantically correct. Baseline receipts must be
+`status:"PASS"` with `ok:true`; BLOCKED or failed baseline diagnostics receipts
+are recorded as `baseline_receipt_not_pass` and do not produce a before/after
+delta.
 
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when LSP evidence is part of a high-stakes coding route. In zero-trust mode,

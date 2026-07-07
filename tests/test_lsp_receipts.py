@@ -58,6 +58,36 @@ def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
     assert payload["diagnostics_increased"] is True
 
 
+def test_lsp_diagnostics_blocks_non_pass_baseline_receipt(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def ok():\n    return 1\n", encoding="utf-8")
+    baseline = tmp_path / "blocked-baseline.json"
+    baseline.write_text(
+        json.dumps(
+            {
+                "schema": LSP_DIAGNOSTICS_RECEIPT_SCHEMA,
+                "ok": False,
+                "status": "BLOCKED",
+                "severity_counts": {"error": 0, "warning": 0, "information": 0, "hint": 0},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "after-diagnostics.json",
+        baseline_receipt_path=baseline,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "baseline_receipt_not_pass" in payload["alert_codes"]
+    assert payload["baseline_severity_counts"] is None
+    assert payload["diagnostic_delta"] is None
+    assert payload["diagnostics_increased"] == "NOT_EVALUATED"
+
+
 def test_lsp_diagnostics_blocks_when_server_unavailable_if_required(tmp_path: Path) -> None:
     payload = write_lsp_diagnostics_receipt(
         workspace=tmp_path / "missing",

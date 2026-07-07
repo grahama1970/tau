@@ -344,6 +344,14 @@ def _read_baseline_receipt(
             )
         )
         return None
+    if payload.get("ok") is not True or payload.get("status") != "PASS":
+        alerts.append(
+            _alert(
+                "baseline_receipt_not_pass",
+                "baseline diagnostics receipt must be PASS with ok:true",
+            )
+        )
+        return None
     return payload
 
 
