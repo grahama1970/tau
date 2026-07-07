@@ -1,0 +1,23 @@
+{
+  "schema": "tau.omp_worker_live_example_receipt.v1",
+  "status": "PASS",
+  "ok": true,
+  "mocked": false,
+  "live": "mixed",
+  "provider_live": false,
+  "expected_doctor_receipt_schema": "tau.omp_worker_doctor_receipt.v1",
+  "expected_doctor_receipt_status": "PASS",
+  "expected_doctor_command_found": true,
+  "expected_doctor_version_executed": true,
+  "expected_doctor_version_exit_code": 0,
+  "expected_launch_receipt_schema": "tau.omp_worker_launch_receipt.v1",
+  "expected_launch_status": "PASS",
+  "expected_inner_receipt_schema": "tau.omp_worker_receipt.v1",
+  "expected_inner_status": "PASS",
+  "expected_worker_receipt_alert_codes": [],
+  "expected_apply_launch_process_executed": true,
+  "expected_apply_launch_exit_code": 0,
+  "expected_apply_launch_stdout_jsonl_valid": true,
+  "expected_apply_launch_response_frame_count": 1,
+  "expected_apply_launch_log_artifacts": true
+}

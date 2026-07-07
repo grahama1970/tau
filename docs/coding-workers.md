@@ -980,6 +980,26 @@ worker artifact through Tau validation. It still does not prove the worker is
 trustworthy, semantic code correctness, provider/model quality, or full sandbox
 isolation.
 
+To exercise a configured OMP-compatible RPC binary without falling back to the
+fixture worker, opt in explicitly and pass `OMP_BIN`:
+
+```bash
+TAU_CODING_SANITY_LIVE_OMP=1 \
+  OMP_BIN="$(command -v omp)" \
+  uv run python scripts/run-coding-capability-sanity.py \
+    --repo . \
+    --run-dir /tmp/tau-coding-capability-sanity-live-omp
+```
+
+The live OMP check runs `examples/omp-worker/live-run.sh`, writes its worker repo
+under ignored `.tmp/`, runs `omp-worker-doctor`, invokes the configured
+`OMP_BIN` through `omp-worker-launch --apply`, and then validates a
+`tau.omp_worker_result.v1` with `omp-worker-validate`. This proves Tau can drive
+the configured OMP-compatible RPC command and validate the bounded result
+contract. It still does not prove OMP performed live coding work, worker
+trustworthiness, semantic code correctness, provider/model quality, or full
+sandbox isolation.
+
 The aggregate coding sanity runner treats worker example
 `expected-receipt.json` files as executable contracts. For OMP and SciLLM
 worker examples it checks the demo receipt schema/status, launch receipt

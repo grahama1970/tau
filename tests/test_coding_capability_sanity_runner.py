@@ -566,6 +566,51 @@ def test_build_checks_wires_live_herdr_expected_receipt_when_enabled(
     )
 
 
+def test_build_checks_unsets_omp_bin_for_default_omp_example(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("OMP_BIN", "/not/the/fixture")
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    omp_check = next(check for check in checks if check.check_id == "omp_worker_example_run")
+    assert omp_check.command[:3] == ["env", "-u", "OMP_BIN"]
+
+
+def test_build_checks_excludes_live_omp_by_default(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.delenv("TAU_CODING_SANITY_LIVE_OMP", raising=False)
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    assert "omp_worker_live_example_run" not in {check.check_id for check in checks}
+
+
+def test_build_checks_wires_live_omp_expected_receipt_when_enabled(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("TAU_CODING_SANITY_LIVE_OMP", "1")
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    omp_check = next(
+        check for check in checks if check.check_id == "omp_worker_live_example_run"
+    )
+    assert omp_check.output_artifact == (
+        repo / ".tmp" / tmp_path.name / "omp-worker-live" / "demo-receipt.json"
+    )
+    assert omp_check.expected_artifact == (
+        repo / "examples" / "omp-worker" / "expected-live-receipt.json"
+    )
+
+
 def test_build_checks_excludes_live_scillm_by_default(
     tmp_path: Path, monkeypatch
 ) -> None:

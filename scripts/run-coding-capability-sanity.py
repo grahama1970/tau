@@ -140,7 +140,13 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
         ),
         Check(
             check_id="omp_worker_example_run",
-            command=[str(examples / "omp-worker" / "run.sh"), str(run_dir / "omp-worker")],
+            command=[
+                "env",
+                "-u",
+                "OMP_BIN",
+                str(examples / "omp-worker" / "run.sh"),
+                str(run_dir / "omp-worker"),
+            ],
             purpose="Run OMP worker launch-request and result-validation demo.",
             output_artifact=run_dir / "omp-worker" / "demo-receipt.json",
             expected_artifact=examples / "omp-worker" / "expected-receipt.json",
@@ -324,6 +330,31 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ),
         ]
         checks[-2:-2] = live_herdr_checks
+    if os.environ.get("TAU_CODING_SANITY_LIVE_OMP") == "1":
+        live_omp_run_dir = repo / ".tmp" / run_dir.name / "omp-worker-live"
+        live_omp_checks = [
+            Check(
+                check_id="omp_worker_live_example_syntax",
+                command=["bash", "-n", str(examples / "omp-worker" / "live-run.sh")],
+                purpose="Check live OMP worker example shell syntax.",
+                timeout_seconds=30,
+            ),
+            Check(
+                check_id="omp_worker_live_example_run",
+                command=[
+                    str(examples / "omp-worker" / "live-run.sh"),
+                    str(live_omp_run_dir),
+                ],
+                purpose=(
+                    "Run Tau -> configured OMP RPC identity/launch probe and "
+                    "result validation when explicitly enabled."
+                ),
+                timeout_seconds=300,
+                output_artifact=live_omp_run_dir / "demo-receipt.json",
+                expected_artifact=examples / "omp-worker" / "expected-live-receipt.json",
+            ),
+        ]
+        checks[-2:-2] = live_omp_checks
     if os.environ.get("TAU_CODING_SANITY_LIVE_SCILLM") == "1":
         live_scillm_run_dir = repo / ".tmp" / run_dir.name / "scillm-worker-live"
         live_scillm_checks = [

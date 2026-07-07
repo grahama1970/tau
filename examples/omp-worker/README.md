@@ -48,6 +48,23 @@ of the deterministic fixture, set `OMP_BIN`:
 OMP_BIN="$(command -v omp)" examples/omp-worker/run.sh /tmp/tau-omp-worker-real-probe
 ```
 
+For an explicit live OMP transport sanity check with no fallback to the fixture,
+use `live-run.sh` and point `OMP_BIN` at the installed oh-my-pi/OMP-compatible
+binary:
+
+```bash
+OMP_BIN="$(command -v omp)" examples/omp-worker/live-run.sh /tmp/tau-omp-worker-live
+```
+
+The live check fails immediately if `OMP_BIN` is unset. It runs
+`omp-worker-doctor`, posts a bounded `omp --mode rpc --no-session` request
+through `omp-worker-launch --apply`, and validates a prewritten
+`tau.omp_worker_result.v1` with `omp-worker-validate`. This proves Tau can
+drive the configured OMP-compatible RPC command and validate the result
+contract. It still does not prove OMP performed coding work, worker
+trustworthiness, semantic code correctness, provider/model quality, or full
+sandbox isolation.
+
 This example proves only the Tau-side receipt validation path. Unless
 `OMP_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
 launched a real OMP worker. The default doctor receipt uses the deterministic
