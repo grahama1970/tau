@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:09 EDT by agent
+**Last updated:** 2026-07-06 23:13 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 code-patch target artifact descriptor rung:
+  `src/tau_coding/code_patch.py` now records `target_artifact_before` and
+  `target_artifact_after` on `tau.code_patch_receipt.v1` receipts when the
+  target file exists. Each descriptor records the resolved target path,
+  SHA-256, and byte count for the file state before and after the attempted
+  apply, binding hash-bound patch receipts to concrete target file artifacts
+  in addition to the existing `before_sha256`, `staged_sha256`, and
+  `after_sha256` fields. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> pass; `uv run
+  pytest tests/test_code_patch.py -q` -> `16 passed in 0.43s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-target-artifacts-proof` wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-target-artifacts-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.66s`. This proves deterministic local code-patch receipts
+  now expose target file artifact descriptors around patch application and
+  compose with the current coding capability sanity suite; it does not prove
+  patch semantic correctness, full test success, production safety, agent
+  truthfulness, provider/model quality, legal compliance, ITAR compliance, or
+  full sandbox isolation on every host.
 
 - 2026-07-06 orchestration required receipt metadata rung:
   `src/tau_coding/orchestration_reliability.py` now records schema/status

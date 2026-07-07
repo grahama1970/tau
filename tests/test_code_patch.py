@@ -40,13 +40,24 @@ def test_code_patch_passes_when_base_hash_and_post_hash_match(tmp_path: Path) ->
     assert receipt["patch_bytes"] == patch_path.stat().st_size
     assert receipt["before_sha256"] == f"sha256:{_sha256_text(before)}"
     assert receipt["after_sha256"] == f"sha256:{_sha256_text(after)}"
+    assert receipt["target_artifact_before"] == {
+        "path": str(target.resolve()),
+        "sha256": f"sha256:{_sha256_text(before)}",
+        "bytes": len(before.encode("utf-8")),
+    }
+    assert receipt["target_artifact_after"] == {
+        "path": str(target.resolve()),
+        "sha256": f"sha256:{_sha256_text(after)}",
+        "bytes": len(after.encode("utf-8")),
+    }
     assert target.read_text(encoding="utf-8") == after
 
 
 def test_code_patch_blocks_stale_base_hash(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()
-    target.write_text("value = 2\n", encoding="utf-8")
+    actual = "value = 2\n"
+    target.write_text(actual, encoding="utf-8")
     patch_path = _write_patch(
         tmp_path,
         target_file="src/example.py",
@@ -60,7 +71,13 @@ def test_code_patch_blocks_stale_base_hash(tmp_path: Path) -> None:
     assert receipt["status"] == "BLOCKED"
     assert "stale_base_hash" in receipt["alert_codes"]
     assert receipt["applied"] is False
-    assert target.read_text(encoding="utf-8") == "value = 2\n"
+    assert receipt["target_artifact_before"] == {
+        "path": str(target.resolve()),
+        "sha256": f"sha256:{_sha256_text(actual)}",
+        "bytes": len(actual.encode("utf-8")),
+    }
+    assert receipt["target_artifact_after"] == receipt["target_artifact_before"]
+    assert target.read_text(encoding="utf-8") == actual
 
 
 def test_code_patch_blocks_missing_anchor(tmp_path: Path) -> None:

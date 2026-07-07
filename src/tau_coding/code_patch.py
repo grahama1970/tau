@@ -53,6 +53,8 @@ def apply_code_patch_receipt(
     after_sha: str | None = None
     staged_sha: str | None = None
     target_path: Path | None = None
+    target_artifact_before: dict[str, Any] | None = None
+    target_artifact_after: dict[str, Any] | None = None
     relative_target: str | None = None
     operations: list[dict[str, str]] = []
     staged_text: str | None = None
@@ -96,6 +98,7 @@ def apply_code_patch_receipt(
             ):
                 alerts.append(_alert("forbidden_path", "target_file is forbidden or generated"))
             before_sha = f"sha256:{_sha256(target_path)}"
+            target_artifact_before = _target_artifact_descriptor(target_path)
             expected_base = _sha256_string(payload.get("base_file_sha256"))
             if expected_base is None:
                 alerts.append(
@@ -142,9 +145,11 @@ def apply_code_patch_receipt(
     if ok and apply and target_path is not None and staged_text is not None:
         target_path.write_text(staged_text, encoding="utf-8")
         after_sha = f"sha256:{_sha256(target_path)}"
+        target_artifact_after = _target_artifact_descriptor(target_path)
         applied = True
     elif target_path is not None and target_path.is_file():
         after_sha = f"sha256:{_sha256(target_path)}"
+        target_artifact_after = _target_artifact_descriptor(target_path)
 
     receipt = {
         "schema": CODE_PATCH_RECEIPT_SCHEMA,
@@ -170,6 +175,8 @@ def apply_code_patch_receipt(
         "before_sha256": before_sha,
         "staged_sha256": staged_sha,
         "after_sha256": after_sha,
+        "target_artifact_before": target_artifact_before,
+        "target_artifact_after": target_artifact_after,
         "expected_post_sha256": expected_post,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
@@ -386,6 +393,15 @@ def _artifact_size(path: Path | None) -> int | None:
         return path.stat().st_size
     except OSError:
         return None
+
+
+def _target_artifact_descriptor(path: Path) -> dict[str, Any]:
+    resolved = path.expanduser().resolve()
+    return {
+        "path": str(resolved),
+        "sha256": _artifact_sha256_uri(resolved),
+        "bytes": _artifact_size(resolved),
+    }
 
 
 def _sha256_text(text: str) -> str:
