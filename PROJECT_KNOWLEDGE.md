@@ -1,9 +1,44 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 10:47 EDT by agent
+**Last updated:** 2026-07-07 10:54 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 SciLLM worker launch result-artifact gate:
+  `src/tau_coding/coding_worker_adapters.py` now requires apply-mode
+  `tau.scillm_worker_launch_receipt.v1` responses to name the work order's
+  exact `result_path` and for that artifact to exist before the launch receipt
+  can PASS. The receipt records `expected_worker_result_path`,
+  `response_result_artifact`, `response_result_path`,
+  `response_result_sha256`, and `response_result_bytes`. A completed SciLLM
+  HTTP response without the worker result artifact now blocks with
+  `missing_scillm_worker_result_artifact`; a named but unreadable/missing
+  result blocks with `scillm_worker_result_artifact_missing`. This keeps
+  `scillm-worker-launch --apply` aligned with the `$scillm` contract: Tau
+  talks to the localhost SciLLM OpenCode-serve endpoint and treats the worker
+  output as an artifact that still must pass `scillm-worker-validate`, not as
+  trusted prose or a merge. `examples/scillm-worker/run.sh` and
+  `examples/scillm-worker/expected-receipt.json` now expose this result
+  artifact requirement. Focused proof: `uv run python -m py_compile
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py
+  docs/coding-workers.md` -> `All checks passed!`; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `86 passed in 5.82s`;
+  `examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-result-artifact-example-final-20260707T145523Z`
+  -> PASS demo receipt with apply launch `response_result_sha256:
+  sha256:6b52288c70c133c56862fb3b0ed3ceace92ff5bc1baef77224841d29aa88baf2`;
+  `git diff --check -- src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py docs/coding-workers.md
+  examples/scillm-worker/run.sh` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-scillm-result-artifact-final-20260707T145532Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `473 passed in 11.19s`. This does not prove
+  live SciLLM semantic worker execution, OpenCode result truthfulness, semantic
+  code correctness, provider/model quality, legal compliance, or full sandbox
+  isolation on every host.
 
 - 2026-07-07 run-status/report orchestration reliability fields:
   `src/tau_coding/run_status.py` now preserves

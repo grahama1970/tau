@@ -2213,7 +2213,7 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert payload["run_id"] == "run-123"
     assert payload["session_id"] == "sess-123"
     assert payload["scillm_run_status"] == "completed"
-    assert payload["response_artifacts"] == ["events.jsonl"]
+    assert payload["response_artifacts"] == ["events.jsonl", "worker-result.json"]
     assert payload["response_path"]
     response_path = Path(payload["response_path"])
     assert payload["response_sha256"] == f"sha256:{_sha256(response_path)}"
@@ -2229,8 +2229,21 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
             "bytes": response_path.stat().st_size,
         }
     ]
+    result_artifact = Path(payload["response_result_path"])
+    assert payload["expected_worker_result_path"] == "worker-result.json"
+    assert payload["response_result_artifact"] == {
+        "label": "scillm_worker_result",
+        "path": str(result_artifact),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(result_artifact)}",
+        "bytes": result_artifact.stat().st_size,
+        "artifact": "worker-result.json",
+    }
+    assert payload["response_result_sha256"] == f"sha256:{_sha256(result_artifact)}"
+    assert payload["response_result_bytes"] == result_artifact.stat().st_size
     response_payload = json.loads(response_path.read_text(encoding="utf-8"))
     assert response_payload["run_id"] == "run-123"
+    assert response_payload["result_path"] == "worker-result.json"
     assert requests[0]["path"] == "/v1/scillm/opencode/runs"
     assert requests[0]["authorization"] == "Bearer test-token"
     assert requests[0]["caller_skill"] == "tau-test"
@@ -2271,6 +2284,50 @@ def test_scillm_worker_launch_apply_blocks_incomplete_success_response(
     assert requests[0]["path"] == "/v1/scillm/opencode/runs"
     assert "missing_scillm_run_status" in payload["alert_codes"]
     assert "missing_scillm_run_identifier" in payload["alert_codes"]
+
+
+def test_scillm_worker_launch_apply_blocks_missing_result_artifact(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server(
+        response={
+            "schema": "scillm.opencode_serve.run.v1",
+            "run_id": "run-123",
+            "session_id": "sess-123",
+            "status": "completed",
+            "assistant_text": "fixture response without worker result",
+            "artifacts": ["events.jsonl"],
+        }
+    )
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is True
+    assert payload["http_status"] == 200
+    assert payload["response_result_artifact"] is None
+    assert payload["response_result_sha256"] is None
+    assert "missing_scillm_worker_result_artifact" in payload["alert_codes"]
+    assert requests[0]["path"] == "/v1/scillm/opencode/runs"
 
 
 def test_scillm_worker_launch_apply_uses_local_env_auth_token(
@@ -2875,9 +2932,31 @@ def _start_fake_scillm_server(
                 "session_id": "sess-123",
                 "status": "completed",
                 "assistant_text": "fixture response",
-                "artifacts": ["events.jsonl"],
+                "artifacts": ["events.jsonl", "worker-result.json"],
+                "result_path": "worker-result.json",
                 }
             )
+            if response is None:
+                repo = Path(str(requests[-1]["payload"].get("cwd")))
+                repo.mkdir(parents=True, exist_ok=True)
+                (repo / "worker-result.json").write_text(
+                    json.dumps(
+                        {
+                            "schema": "tau.scillm_worker_result.v1",
+                            "status": "NEEDS_REVIEW",
+                            "goal_hash": "sha256:goal",
+                            "changed_files": [],
+                            "artifacts": [],
+                            "tests_run": [],
+                            "findings": [{"id": "fixture"}],
+                            "next_recommended_route": "reviewer",
+                        },
+                        indent=2,
+                        sort_keys=True,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
             encoded = json.dumps(response_payload, sort_keys=True).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

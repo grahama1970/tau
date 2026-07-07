@@ -884,13 +884,17 @@ With `--apply`, `scillm-worker-launch` posts the bounded request to the
 configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the
 receipt, and records `http_executed`, `http_status`, `response_path`,
 `response_sha256`, response byte count, `run_id`, `session_id`,
-`scillm_run_status`, response artifacts, and `http_artifacts`. HTTP error
-artifacts are also hash-bound when present. A generic HTTP 200 JSON object is
-not accepted as an admissible launch result: Tau requires
-`scillm_run_status:"completed"` and at least one of `run_id` or `session_id`,
-otherwise the launch receipt is BLOCKED with `missing_scillm_run_status` or
-`missing_scillm_run_identifier`. Apply mode requires bearer auth from one of
-these sources:
+`scillm_run_status`, response artifacts, the expected worker result artifact,
+and `http_artifacts`. HTTP error artifacts are also hash-bound when present. A
+generic HTTP 200 JSON object is not accepted as an admissible launch result:
+Tau requires `scillm_run_status:"completed"`, at least one of `run_id` or
+`session_id`, and a response artifact that points to the work order's exact
+`result_path`. Missing run status, identifiers, or result artifacts block with
+`missing_scillm_run_status`,
+`missing_scillm_run_identifier`, or `missing_scillm_worker_result_artifact`.
+When the response names the result but the artifact is absent or unreadable,
+Tau blocks with `scillm_worker_result_artifact_missing`. Apply mode requires
+bearer auth from one of these sources:
 
 - explicit `--auth-token`
 - local `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`, or `SCILLM_AUTH_TOKEN`
@@ -901,10 +905,10 @@ Tau records only `headers.authorization: REDACTED` plus
 `headers.authorization_source`; it never writes the bearer token to the receipt.
 If no auth source is available, Tau fails closed before issuing the HTTP
 request. This proves only that Tau sent the bounded request to the configured
-SciLLM endpoint and captured its response. It does not prove the OpenCode worker
-result is truthful or sufficient for closure, a worker result artifact is valid,
-code changed, or code is correct. A worker result must still pass
-`scillm-worker-validate`.
+SciLLM endpoint, captured its response, and found the named worker result
+artifact. It does not prove the OpenCode worker result is truthful or
+sufficient for closure, the worker result schema is valid, code changed, or
+code is correct. A worker result must still pass `scillm-worker-validate`.
 
 Copyable examples:
 

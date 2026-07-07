@@ -7,6 +7,7 @@
   "expected_inner_status": "PASS",
   "expected_worker_receipt_alert_codes": [],
   "expected_substrate_receipt_bindings": ["goal_hash", "work_order_sha256"],
+  "expected_apply_launch_result_artifact": true,
   "expected_launch_url": "http://localhost:4001/v1/scillm/opencode/runs",
   "expected_model_provider_route": {
     "surface": "opencode_serve",

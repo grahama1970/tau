@@ -157,6 +157,8 @@ from threading import Thread
 
 work_order = Path(sys.argv[1])
 out = Path(sys.argv[2])
+work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+result_path = work_order_payload["result_path"]
 requests = []
 
 
@@ -178,7 +180,8 @@ class Handler(BaseHTTPRequestHandler):
             "session_id": "example-session",
             "status": "completed",
             "assistant_text": "fixture OpenCode serve response",
-            "artifacts": ["events.jsonl"],
+            "artifacts": ["events.jsonl", result_path],
+            "result_path": result_path,
         }
         encoded = json.dumps(response, sort_keys=True).encode("utf-8")
         self.send_response(200)
@@ -292,6 +295,14 @@ payload = {
     "apply_launch_http_status": apply_launch_receipt.get("http_status"),
     "apply_launch_response_path": apply_launch_receipt.get("response_path"),
     "apply_launch_response_sha256": apply_launch_receipt.get("response_sha256"),
+    "apply_launch_expected_worker_result_path": (
+        apply_launch_receipt.get("expected_worker_result_path")
+    ),
+    "apply_launch_response_result_path": apply_launch_receipt.get("response_result_path"),
+    "apply_launch_response_result_sha256": apply_launch_receipt.get("response_result_sha256"),
+    "apply_launch_response_result_artifact": apply_launch_receipt.get(
+        "response_result_artifact"
+    ),
     "apply_launch_http_artifacts": apply_launch_receipt.get("http_artifacts", []),
     "apply_launch_run_id": apply_launch_receipt.get("run_id"),
     "model_provider_route": route,

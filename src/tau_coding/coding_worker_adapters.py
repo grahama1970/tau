@@ -249,6 +249,11 @@ def write_scillm_worker_launch_receipt(
         alerts=alerts,
         request_timeout_s=request_timeout_s,
     )
+    response_result_artifact = _scillm_response_result_artifact(
+        work_order=work_order,
+        launch_result=launch_result,
+        alerts=alerts,
+    )
     work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
     ok = not alerts
     payload = {
@@ -305,6 +310,17 @@ def write_scillm_worker_launch_receipt(
         "session_id": launch_result["session_id"],
         "scillm_run_status": launch_result["scillm_run_status"],
         "response_artifacts": launch_result["response_artifacts"],
+        "expected_worker_result_path": work_order.get("result_path"),
+        "response_result_artifact": response_result_artifact,
+        "response_result_path": (
+            response_result_artifact.get("path") if response_result_artifact else None
+        ),
+        "response_result_sha256": (
+            response_result_artifact.get("sha256") if response_result_artifact else None
+        ),
+        "response_result_bytes": (
+            response_result_artifact.get("bytes") if response_result_artifact else None
+        ),
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -870,7 +886,10 @@ def _maybe_post_scillm_opencode_run(
                 "SciLLM response requires run_id or session_id",
             )
         )
-    artifacts = response_payload.get("artifacts")
+    artifacts = _string_list(response_payload.get("artifacts"))
+    response_result_path = _string(response_payload.get("result_path"))
+    if response_result_path and response_result_path not in artifacts:
+        artifacts.append(response_result_path)
     result.update(
         {
             "http_executed": True,
@@ -882,10 +901,72 @@ def _maybe_post_scillm_opencode_run(
             "run_id": run_id,
             "session_id": session_id,
             "scillm_run_status": run_status or None,
-            "response_artifacts": artifacts if isinstance(artifacts, list) else [],
+            "response_artifacts": artifacts,
         }
     )
     return result
+
+
+def _scillm_response_result_artifact(
+    *,
+    work_order: Mapping[str, Any],
+    launch_result: Mapping[str, Any],
+    alerts: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    if not launch_result.get("http_executed"):
+        return None
+    if launch_result.get("timed_out") or not launch_result.get("response_path"):
+        return None
+    expected = _string(work_order.get("result_path"))
+    if not expected:
+        alerts.append(
+            _alert(
+                "missing_scillm_expected_result_path",
+                "SciLLM worker work order result_path is required for apply launch",
+            )
+        )
+        return None
+    repo = _repo_root(work_order)
+    expected_path = _resolve_worker_result_path(expected, repo)
+    artifact_paths = _string_list(launch_result.get("response_artifacts"))
+    matched = False
+    for artifact in artifact_paths:
+        artifact_path = _resolve_worker_result_path(artifact, repo)
+        if artifact_path == expected_path:
+            matched = True
+            break
+    if not matched:
+        alerts.append(
+            _alert(
+                "missing_scillm_worker_result_artifact",
+                "SciLLM apply response must include the expected worker result artifact",
+            )
+        )
+        return None
+    if not expected_path.exists() or not expected_path.is_file():
+        alerts.append(
+            _alert(
+                "scillm_worker_result_artifact_missing",
+                "SciLLM apply response named the worker result artifact but it was not readable",
+            )
+        )
+        return None
+    descriptor = {
+        "label": "scillm_worker_result",
+        "path": str(expected_path),
+        "exists": True,
+        "sha256": _artifact_sha256_uri(expected_path),
+        "bytes": _artifact_size(expected_path),
+    }
+    descriptor["artifact"] = expected
+    return descriptor
+
+
+def _resolve_worker_result_path(path: str, repo: Path | None) -> Path:
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute() and repo is not None:
+        candidate = repo / candidate
+    return candidate.resolve()
 
 
 def _repo_root(work_order: Mapping[str, Any]) -> Path | None:
