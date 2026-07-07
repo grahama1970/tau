@@ -39,6 +39,7 @@ def test_github_read_issue_scheme_is_read_only(tmp_path: Path) -> None:
     assert receipt["projection_artifact"] == {
         "label": "github_read_projection",
         "path": str(projection_path.resolve()),
+        "exists": True,
         "sha256": f"sha256:{_sha256(projection_path)}",
         "bytes": projection_path.stat().st_size,
     }
@@ -156,12 +157,14 @@ def test_github_read_execute_runs_read_only_command_and_records_logs(tmp_path: P
         {
             "label": "stdout",
             "path": str(stdout_path),
+            "exists": True,
             "sha256": f"sha256:{_sha256(stdout_path)}",
             "bytes": stdout_path.stat().st_size,
         },
         {
             "label": "stderr",
             "path": str(stderr_path),
+            "exists": True,
             "sha256": f"sha256:{_sha256(stderr_path)}",
             "bytes": stderr_path.stat().st_size,
         },

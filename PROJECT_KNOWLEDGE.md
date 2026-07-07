@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:53 EDT by agent
+**Last updated:** 2026-07-06 23:58 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GitHub read artifact descriptor rung:
+  `src/tau_coding/github_read_schemes.py` now records `exists:true` on
+  `tau.github_read_receipt.v1` projection and execute-mode stdout/stderr
+  artifact descriptors, aligning GitHub read evidence with the normalized
+  coding artifact shape used by code-patch, review, diagnostics, worker, and
+  commit-plan receipts. Focused proof: `git diff --check
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py`
+  -> `All checks passed!`; `uv run pytest tests/test_github_read_schemes.py
+  -q` -> `14 passed in 0.54s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-artifact-exists-proof` wrote
+  `/tmp/tau-coding-capability-sanity-github-read-artifact-exists-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.70s`. This proves deterministic local GitHub read receipts expose
+  projection/stdout/stderr evidence as normalized artifact descriptors and
+  compose with the current coding capability sanity suite; it does not prove
+  live GitHub auth, GitHub object existence, semantic correctness of GitHub
+  content, GitHub mutation, live worker execution, or full goal completion.
 
 - 2026-07-06 code-patch input artifact descriptor rung:
   `src/tau_coding/code_patch.py` now records `patch_artifact` on

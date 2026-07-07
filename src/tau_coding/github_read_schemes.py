@@ -263,6 +263,7 @@ def _artifact_descriptors(*items: tuple[str, Path]) -> list[dict[str, Any]]:
             {
                 "label": label,
                 "path": str(resolved),
+                "exists": True,
                 "sha256": _sha256_uri(resolved),
                 "bytes": resolved.stat().st_size,
             }
@@ -275,6 +276,7 @@ def _artifact_descriptor(label: str, path: Path) -> dict[str, Any]:
     return {
         "label": label,
         "path": str(resolved),
+        "exists": resolved.exists(),
         "sha256": _sha256_uri(resolved),
         "bytes": resolved.stat().st_size,
     }
