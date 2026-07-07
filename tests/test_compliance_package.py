@@ -102,25 +102,39 @@ def test_compliance_package_force_rewrites_output(tmp_path: Path) -> None:
     assert (out_dir / "package-manifest.json").exists()
 
 
-def _write_zero_trust_run(tmp_path: Path) -> Path:
+def test_compliance_package_blocks_invalid_packaged_data_boundary(tmp_path: Path) -> None:
+    run_dir = _write_zero_trust_run(
+        tmp_path,
+        data_boundary={
+            **_valid_data_boundary(),
+            "classification": "classified-not-allowed",
+            "foreign_person_access": "invalid",
+        },
+    )
+    out_dir = tmp_path / "package"
+
+    manifest = build_compliance_evidence_package(run_dir=run_dir, out_dir=out_dir)
+
+    assert manifest["ok"] is False
+    assert manifest["status"] == "BLOCKED"
+    assert any(error.startswith("invalid_data_boundary:") for error in manifest["errors"])
+    assert any(error.startswith("classified_not_allowed:") for error in manifest["errors"])
+    assert "ITAR compliance." in manifest["proof_scope"]["does_not_prove"]
+
+
+def _write_zero_trust_run(
+    tmp_path: Path,
+    *,
+    policy_profile: dict | None = None,
+    data_boundary: dict | None = None,
+) -> Path:
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     contract_path = tmp_path / "dag-contract-source.json"
     policy_path = tmp_path / "policy-profile-source.json"
     boundary_path = tmp_path / "data-boundary-source.json"
-    policy = {
-        "schema": "tau.policy_profile.v1",
-        "profile_id": "itar-zero-trust-local-only",
-        "default_decision": "deny",
-        "requires_data_boundary": True,
-    }
-    boundary = {
-        "schema": "tau.data_boundary.v1",
-        "classification": "public",
-        "export_controlled": False,
-        "itar": False,
-        "technical_data": False,
-    }
+    policy = policy_profile or _valid_policy_profile()
+    boundary = data_boundary or _valid_data_boundary()
     _write_json(policy_path, policy)
     _write_json(boundary_path, boundary)
     contract = {
@@ -174,3 +188,36 @@ def _write_zero_trust_run(tmp_path: Path) -> Path:
 
 def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _valid_policy_profile() -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "itar-zero-trust-local-only",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": [], "read_denylist": []},
+    }
+
+
+def _valid_data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": True,
+        "notes": [],
+    }

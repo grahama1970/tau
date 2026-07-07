@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 compliance package policy/data-boundary validity fail-closed rung:
+  `src/tau_coding/compliance_package.py` now validates packaged
+  `policy-profile.json` and `data-boundary.json` with the same
+  `tau.policy_profile.v1` and `tau.data_boundary.v1` validators used by
+  zero-trust preflight. If a package can read those artifacts from the DAG
+  contract, malformed metadata blocks package creation with
+  `invalid_policy_profile` or `invalid_data_boundary` errors, and
+  `data_boundary.classification:"classified-not-allowed"` blocks with
+  `classified_not_allowed`. `docs/compliance-package.md` documents that the
+  compliance package consumes validated zero-trust metadata instead of merely
+  copying it. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py` ->
+  `All checks passed!`; `uv run pytest tests/test_compliance_package.py -q`
+  -> `5 passed in 0.43s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-compliance-boundary-proof-20260707T075340Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-compliance-boundary-proof-20260707T075340Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `279 passed in 7.89s`. This proves deterministic local compliance evidence
+  packaging refuses malformed packaged zero-trust policy/boundary metadata
+  before emitting a PASS package manifest and still composes with the current
+  coding capability sanity suite; it does not prove ITAR compliance, legal
+  sufficiency, full sandbox enforcement, human identity verification,
+  provider/model quality, live worker semantic execution, or full goal
+  completion.
+
 - 2026-07-07 GitHub read policy/data-boundary validity fail-closed rung:
   `src/tau_coding/github_read_schemes.py` now validates full
   `tau.policy_profile.v1` and `tau.data_boundary.v1` objects in zero-trust

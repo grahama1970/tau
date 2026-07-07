@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.policy_profile import validate_data_boundary, validate_policy_profile
+
 COMPLIANCE_PACKAGE_SCHEMA = "tau.compliance_evidence_package.v1"
 
 NON_CLAIMS = [
@@ -125,6 +127,14 @@ def build_compliance_evidence_package(
     else:
         for kind in ("dag_contract", "goal", "policy_profile", "data_boundary"):
             missing.append({"kind": kind, "reason": "no readable DAG contract was found"})
+
+    validation_errors = _packaged_boundary_errors(resolved_out)
+    if validation_errors:
+        return _blocked_receipt(
+            run_dir=resolved_run,
+            out_dir=resolved_out,
+            errors=validation_errors,
+        )
 
     for kind, filename in EXPECTED_FILES.items():
         if kind in {"dag_receipt", "dag_contract", "goal", "policy_profile", "data_boundary"}:
@@ -346,6 +356,26 @@ def _read_optional_json(path: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
+
+
+def _packaged_boundary_errors(package_dir: Path) -> list[str]:
+    errors: list[str] = []
+    policy_path = package_dir / EXPECTED_FILES["policy_profile"]
+    boundary_path = package_dir / EXPECTED_FILES["data_boundary"]
+    if policy_path.exists():
+        policy = _read_optional_json(policy_path)
+        policy_errors = validate_policy_profile(policy)
+        errors.extend(f"invalid_policy_profile: {error}" for error in policy_errors)
+    if boundary_path.exists():
+        boundary = _read_optional_json(boundary_path)
+        boundary_errors = validate_data_boundary(boundary)
+        errors.extend(f"invalid_data_boundary: {error}" for error in boundary_errors)
+        if boundary.get("classification") == "classified-not-allowed":
+            errors.append(
+                "classified_not_allowed: compliance packages refuse "
+                "classified-not-allowed data boundaries"
+            )
+    return errors
 
 
 def _blocked_receipt(*, run_dir: Path, out_dir: Path, errors: list[str]) -> dict[str, Any]:

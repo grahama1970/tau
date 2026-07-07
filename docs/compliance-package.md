@@ -45,6 +45,13 @@ non-claims.md
 Some entries may be absent when the source run did not produce that receipt.
 Absence is recorded in `package-manifest.json` under `missing_expected_items`.
 
+The package refuses malformed zero-trust boundary metadata. If
+`policy-profile.json` or `data-boundary.json` can be read from the DAG contract,
+Tau validates the full `tau.policy_profile.v1` and `tau.data_boundary.v1`
+objects before writing a PASS manifest. Invalid fields block the package with
+`invalid_policy_profile` or `invalid_data_boundary` errors, and
+`classification:"classified-not-allowed"` blocks with `classified_not_allowed`.
+
 ## Manifest
 
 `package-manifest.json` uses:
