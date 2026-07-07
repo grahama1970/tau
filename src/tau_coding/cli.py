@@ -4801,7 +4801,7 @@ def _parse_scillm_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
         "caller_skill": "tau",
         "apply": False,
         "auth_token": None,
-        "request_timeout_s": 650,
+        "request_timeout_s": 600,
     }
     index = 0
     while index < len(args):

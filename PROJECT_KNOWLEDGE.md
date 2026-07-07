@@ -1,9 +1,42 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 01:36 EDT by agent
+**Last updated:** 2026-07-07 01:42 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 SciLLM worker proxy-contract rung:
+  `src/tau_coding/coding_worker_adapters.py` and `src/tau_coding/cli.py` now
+  default `scillm-worker-launch` request timeout to 600 seconds, matching the
+  current `$scillm` OpenCode serve contract. The launch gate also blocks
+  malformed SciLLM base URLs before apply with
+  `invalid_scillm_base_url_scheme` / `invalid_scillm_base_url_host`, while
+  preserving the existing raw local OpenCode port block
+  `raw_opencode_base_url`. `docs/coding-workers.md` now states that Tau uses
+  the SciLLM proxy service, normally `http://localhost:4001`, with
+  `/v1/scillm/opencode/runs`, not direct provider APIs, chat completions, raw
+  OpenCode ports, or `opencode-go/*` as an OpenCode serve agent profile.
+  Focused proof: `uv run python -m py_compile
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py` -> pass;
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py src/tau_coding/cli.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `50 passed in 3.65s`;
+  `bash -n examples/scillm-worker/run.sh && examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-proxy-contract-proof` exited 0 and wrote a PASS
+  `tau.scillm_worker_example_receipt.v1` demo receipt. Aggregate sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-scillm-proxy-contract-proof-20260707T054206Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-scillm-proxy-contract-proof-20260707T054206Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `237 passed in
+  6.82s`. This proves deterministic local SciLLM worker launch gating honors
+  the documented proxy/timeout contract and blocks malformed launch URLs before
+  apply; it does not prove live SciLLM semantic worker execution,
+  provider/model quality, code correctness, legal compliance, GitHub mutation
+  safety, full sandbox isolation, or full goal completion.
 
 - 2026-07-07 code-patch dry-run receipt rung:
   `src/tau_coding/code_patch.py` now records `apply_requested` and `dry_run` in

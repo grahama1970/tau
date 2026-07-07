@@ -989,6 +989,8 @@ def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) ->
     assert payload["url"] == "http://localhost:4001/v1/scillm/opencode/runs"
     assert payload["request_payload"]["agent"] == "build"
     assert payload["request_payload"]["skills"] == ["memory", "debugger", "scillm"]
+    assert payload["request_timeout_s"] == 600
+    assert payload["request_payload"]["timeout_s"] == 600
     assert payload["request_payload"]["scillm_metadata"]["goal_hash"] == "sha256:goal"
 
 
@@ -1385,6 +1387,34 @@ def test_scillm_worker_launch_blocks_raw_opencode_local_port(tmp_path: Path) -> 
     assert "raw_opencode_base_url" in payload["alert_codes"]
 
 
+def test_scillm_worker_launch_blocks_malformed_base_url(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+        scillm_base_url="file:///tmp/not-scillm",
+        apply=True,
+        auth_token="test-token",
+        request_timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert "invalid_scillm_base_url_scheme" in payload["alert_codes"]
+    assert "invalid_scillm_base_url_host" in payload["alert_codes"]
+
+
 def test_cli_scillm_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -1416,6 +1446,7 @@ def test_cli_scillm_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA
     assert payload["headers"]["x_caller_skill"] == "tau-test"
+    assert payload["request_timeout_s"] == 600
 
 
 def test_cli_scillm_worker_validate_writes_receipt(tmp_path: Path) -> None:

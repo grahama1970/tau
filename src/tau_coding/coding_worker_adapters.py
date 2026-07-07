@@ -182,7 +182,7 @@ def write_scillm_worker_launch_receipt(
     caller_skill: str = "tau",
     apply: bool = False,
     auth_token: str | None = None,
-    request_timeout_s: int = 650,
+    request_timeout_s: int = 600,
 ) -> dict[str, Any]:
     """Write a SciLLM OpenCode-serve launch request receipt."""
 
@@ -212,13 +212,7 @@ def write_scillm_worker_launch_receipt(
         alerts.append(
             _alert("chat_model_used_as_agent", "OpenCode serve agent must be an agent profile")
         )
-    if _is_raw_opencode_local_url(scillm_base_url):
-        alerts.append(
-            _alert(
-                "raw_opencode_base_url",
-                "SciLLM worker launch must target the SciLLM proxy, not a raw OpenCode port",
-            )
-        )
+    _append_scillm_base_url_alerts(scillm_base_url, alerts)
     auth_source = "explicit" if auth_token else "missing"
     effective_auth_token = auth_token
     if not effective_auth_token and _is_local_scillm_url(scillm_base_url):
@@ -737,6 +731,25 @@ def _repo_root(work_order: Mapping[str, Any]) -> Path | None:
 def _is_local_scillm_url(base_url: str) -> bool:
     parsed = urllib.parse.urlparse(base_url)
     return parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+
+
+def _append_scillm_base_url_alerts(base_url: str, alerts: list[dict[str, Any]]) -> None:
+    parsed = urllib.parse.urlparse(base_url)
+    if parsed.scheme not in {"http", "https"}:
+        alerts.append(
+            _alert("invalid_scillm_base_url_scheme", "SciLLM base URL must use http or https")
+        )
+    if not parsed.hostname:
+        alerts.append(
+            _alert("invalid_scillm_base_url_host", "SciLLM base URL must include a host")
+        )
+    if _is_raw_opencode_local_url(base_url):
+        alerts.append(
+            _alert(
+                "raw_opencode_base_url",
+                "SciLLM worker launch must target the SciLLM proxy, not a raw OpenCode port",
+            )
+        )
 
 
 def _is_raw_opencode_local_url(base_url: str) -> bool:
