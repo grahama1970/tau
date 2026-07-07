@@ -110,6 +110,13 @@ def apply_code_patch_receipt(
     )
     alerts.extend(allowed_paths_alerts)
     alerts.extend(forbidden_paths_alerts)
+    if not allowed_paths:
+        alerts.append(
+            _alert(
+                "missing_allowed_paths",
+                "allowed_paths must include at least one path pattern",
+            )
+        )
     if not target_text:
         alerts.append(_alert("missing_target_file", "target_file is required"))
     else:

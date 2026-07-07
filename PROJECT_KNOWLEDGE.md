@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:47 EDT by agent
+**Last updated:** 2026-07-07 09:21 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 code-patch allowed-path requirement:
+  `src/tau_coding/code_patch.py` now blocks `tau.code_patch.v1` artifacts that
+  omit `allowed_paths` or provide an empty effective allowlist. This makes the
+  R1 patch contract's path scope mandatory instead of only using it when
+  supplied. `tests/test_code_patch.py` pins this with
+  `test_code_patch_blocks_missing_allowed_paths`, asserting the receipt is
+  `BLOCKED`, no write is applied, `missing_allowed_paths` is present in
+  `alert_codes`, and the target file remains unchanged. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/code_patch.py
+  tests/test_code_patch.py` -> `All checks passed!`; `uv run pytest
+  tests/test_code_patch.py -q` -> `33 passed in 0.52s`; `uv run python -m
+  py_compile src/tau_coding/code_patch.py` -> pass; `git diff --check --
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> pass. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-code-patch-allowed-paths-20260707T132213Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `457 passed in 10.54s`. This proves the
+  deterministic patch gate rejects missing allowlists; it does not prove patch
+  semantic correctness or full coding workflow success.
 
 - 2026-07-07 skill-composition non-claim guardrails:
   `src/tau_coding/skill_composition_redteam.py` now exposes
