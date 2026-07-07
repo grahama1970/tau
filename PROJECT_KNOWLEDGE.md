@@ -1,9 +1,36 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:39 EDT by agent
+**Last updated:** 2026-07-07 09:47 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 skill-composition non-claim guardrails:
+  `src/tau_coding/skill_composition_redteam.py` now exposes
+  `REQUIRED_UNPROVEN_CLAIMS` and pins the red-team receipt's
+  `proof_scope.does_not_prove` to these deterministic pass/fail guardrails:
+  live skill execution, provider/model semantic quality, exhaustive skill attack
+  coverage, future route correctness, and skill output correctness without Tau
+  adapter validation. `tests/test_skill_composition_redteam.py` fails if any of
+  those strings are removed from `does_not_prove` or appear in
+  `proof_scope.proves`. `docs/skill-composition.md` documents the same
+  guardrails. Focused proof: `python3 -m py_compile
+  src/tau_coding/skill_composition_redteam.py src/tau_coding/run_status.py` ->
+  pass; `uv run ruff check src/tau_coding/skill_composition_redteam.py
+  tests/test_skill_composition_redteam.py src/tau_coding/run_status.py
+  tests/test_run_status.py` -> `All checks passed!`; `uv run pytest
+  tests/test_skill_composition_redteam.py tests/test_run_status.py -q` ->
+  `30 passed in 0.52s`; broader proof `uv run pytest
+  tests/test_skill_composition_redteam.py tests/test_skill_invocation.py
+  tests/test_run_status.py tests/test_course_correction.py
+  tests/test_skill_capability_registry.py -q` -> `68 passed in 0.66s`.
+  Operator proof: `uv run tau skill-composition-redteam --run-dir
+  /tmp/tau-nonclaim-guardrails-20260707T1320Z` wrote
+  `/tmp/tau-nonclaim-guardrails-20260707T1320Z/skill-composition-redteam-receipt.json`
+  with `status:PASS`, `ok:true`, `attempt_count:7`,
+  `passed_attempt_count:7`, and the exact five `does_not_prove` strings.
+  This proves deterministic non-claim guardrails for those unproven areas; it
+  does not prove any of those areas are now true.
 
 - 2026-07-07 skill-composition red-team run-status rung:
   `src/tau_coding/run_status.py` now treats

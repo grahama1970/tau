@@ -19,6 +19,13 @@ from tau_coding.skill_invocation import (
 
 SKILL_COMPOSITION_REDTEAM_RECEIPT_SCHEMA = "tau.skill_composition_redteam_receipt.v1"
 GOAL_HASH = "sha256:skill-composition-goal"
+REQUIRED_UNPROVEN_CLAIMS = [
+    "Live skill execution.",
+    "Provider/model semantic quality.",
+    "Exhaustive skill attack coverage.",
+    "Future route correctness.",
+    "Skill output correctness without Tau adapter validation.",
+]
 
 
 def run_skill_composition_redteam(*, run_dir: Path) -> dict[str, Any]:
@@ -58,11 +65,7 @@ def run_skill_composition_redteam(*, run_dir: Path) -> dict[str, Any]:
                 "No external skill, provider, Memory, research, GitHub, or browser call was made.",
             ],
             "does_not_prove": [
-                "Exhaustive skill attack coverage.",
-                "Skill output semantic correctness.",
-                "Live agent-skills execution.",
-                "Provider/model semantic quality.",
-                "Future route correctness.",
+                *REQUIRED_UNPROVEN_CLAIMS,
             ],
         },
         "timestamp": _utc_stamp(),

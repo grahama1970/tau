@@ -337,6 +337,16 @@ Current fixtures cover:
 The suite proves only deterministic local fail-closed behavior. It does not run
 the skills, call providers, or prove semantic correctness.
 
+The suite also has deterministic non-claim checks. It must keep these claims in
+`proof_scope.does_not_prove`, and tests fail if they move into
+`proof_scope.proves`:
+
+- Live skill execution.
+- Provider/model semantic quality.
+- Exhaustive skill attack coverage.
+- Future route correctness.
+- Skill output correctness without Tau adapter validation.
+
 `tau run-status <run-dir>` includes
 `tau.skill_composition_redteam_receipt.v1` under `coding_evidence` when the
 receipt is present in the run directory. The summary reports the receipt path,

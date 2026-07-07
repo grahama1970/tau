@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.skill_composition_redteam import (
+    REQUIRED_UNPROVEN_CLAIMS,
     SKILL_COMPOSITION_REDTEAM_RECEIPT_SCHEMA,
     run_skill_composition_redteam,
 )
@@ -36,6 +37,9 @@ def test_skill_composition_redteam_requires_fail_closed_skill_adapters(
         for attempt in receipt["attempts"]
         if attempt["course_correction_required"]
     )
+    assert receipt["proof_scope"]["does_not_prove"] == REQUIRED_UNPROVEN_CLAIMS
+    for unproven_claim in REQUIRED_UNPROVEN_CLAIMS:
+        assert _claim_is_not_in_proves(unproven_claim, receipt["proof_scope"]["proves"])
     on_disk = json.loads(
         (tmp_path / "skill-composition-redteam-receipt.json").read_text(
             encoding="utf-8"
@@ -60,3 +64,30 @@ def test_cli_skill_composition_redteam_writes_receipt(tmp_path: Path) -> None:
     assert payload["schema"] == SKILL_COMPOSITION_REDTEAM_RECEIPT_SCHEMA
     assert payload["status"] == "PASS"
     assert payload["passed_attempt_count"] == payload["attempt_count"]
+    assert payload["proof_scope"]["does_not_prove"] == REQUIRED_UNPROVEN_CLAIMS
+
+
+def test_skill_composition_redteam_checks_explicit_unproven_claims(
+    tmp_path: Path,
+) -> None:
+    receipt = run_skill_composition_redteam(run_dir=tmp_path)
+
+    assert REQUIRED_UNPROVEN_CLAIMS == [
+        "Live skill execution.",
+        "Provider/model semantic quality.",
+        "Exhaustive skill attack coverage.",
+        "Future route correctness.",
+        "Skill output correctness without Tau adapter validation.",
+    ]
+    assert set(REQUIRED_UNPROVEN_CLAIMS).issubset(
+        set(receipt["proof_scope"]["does_not_prove"])
+    )
+    assert all(
+        _claim_is_not_in_proves(claim, receipt["proof_scope"]["proves"])
+        for claim in REQUIRED_UNPROVEN_CLAIMS
+    )
+
+
+def _claim_is_not_in_proves(claim: str, proves: list[str]) -> bool:
+    normalized_claim = claim.rstrip(".").lower()
+    return all(normalized_claim not in prove.lower() for prove in proves)
