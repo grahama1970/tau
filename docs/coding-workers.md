@@ -227,6 +227,10 @@ default; it records references, planned edits, the hash-bound inspected source
 artifacts, and the hash/byte count of the intermediate symbol receipt used to
 derive the rename plan. Rename plans block when the symbol is absent, the source
 or target name is not a valid identifier, or the requested rename is a no-op.
+Because rename planning is write intent, `policy_profile.filesystem.write_allowlist`
+is enforced when present: denied planned edit paths are recorded in
+`policy_write_denied_paths`, each planned edit records `policy_write_allowed`,
+and the receipt blocks with `policy_write_disallowed`.
 
 CLI:
 

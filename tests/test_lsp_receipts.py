@@ -291,6 +291,59 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
 
 
+def test_lsp_rename_plan_blocks_policy_write_disallowed(tmp_path: Path) -> None:
+    source = tmp_path / "src" / "example.py"
+    source.parent.mkdir()
+    source.write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="target",
+        new_name="renamed",
+        output_path=tmp_path / "rename.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": ["tests/**"], "read_denylist": []},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "policy_write_disallowed" in payload["alert_codes"]
+    assert payload["policy_write_denied_paths"] == ["src/example.py", "src/example.py"]
+    assert all(item["policy_write_allowed"] is False for item in payload["planned_edits"])
+    assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
+
+
+def test_lsp_rename_plan_accepts_policy_write_allowlist(tmp_path: Path) -> None:
+    source = tmp_path / "src" / "example.py"
+    source.parent.mkdir()
+    source.write_text("def target():\n    return target()\n", encoding="utf-8")
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="target",
+        new_name="renamed",
+        output_path=tmp_path / "rename.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"write_allowlist": ["src/**"], "read_denylist": []},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["policy_write_denied_paths"] == []
+    assert all(item["policy_write_allowed"] is True for item in payload["planned_edits"])
+    assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
+
+
 def test_lsp_rename_plan_blocks_missing_symbol(tmp_path: Path) -> None:
     source = tmp_path / "example.py"
     source.write_text("def target():\n    return target()\n", encoding="utf-8")

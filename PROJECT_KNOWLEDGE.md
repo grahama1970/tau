@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:55 EDT by agent
+**Last updated:** 2026-07-07 01:00 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 LSP rename write-allowlist rung:
+  `src/tau_coding/lsp_receipts.py` now treats `tau.lsp_rename_receipt.v1`
+  planned edits as write intent when `policy_profile.filesystem.write_allowlist`
+  is present. Rename planned edit files are normalized relative to the
+  workspace, each edit records `policy_write_allowed`, denied edit paths are
+  recorded in `policy_write_denied_paths`, and denied plans block with
+  `policy_write_disallowed`. Focused proof: `git diff --check
+  docs/coding-workers.md src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/lsp_receipts.py tests/test_lsp_receipts.py` -> `All checks
+  passed!`; `uv run pytest tests/test_lsp_receipts.py -q` -> `25 passed in
+  0.63s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-rename-write-allowlist-proof` wrote
+  `/tmp/tau-coding-capability-sanity-lsp-rename-write-allowlist-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `221 passed in
+  6.75s`. This proves deterministic local LSP rename-plan receipts honor the
+  active write allowlist before proposing high-stakes rename edit routes; it
+  does not prove semantic rename safety, live provider/model quality, legal
+  compliance, GitHub mutation safety, full sandbox isolation, or full goal
+  completion.
 
 - 2026-07-07 worker changed-files repo-boundary rung:
   `src/tau_coding/coding_worker_adapters.py` now normalizes absolute

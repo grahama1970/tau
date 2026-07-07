@@ -222,6 +222,27 @@ def write_lsp_rename_plan_receipt(
         alerts.append(_alert("rename_noop", "rename new_name must differ from symbol"))
     if not references:
         alerts.append(_alert("symbol_not_found", "rename symbol was not found in workspace"))
+    planned_edits = [
+        _planned_rename_edit(
+            reference=item,
+            symbol=symbol,
+            new_name=new_name,
+            workspace=workspace,
+            policy_profile=policy_profile,
+        )
+        for item in references
+    ]
+    policy_write_denied_paths = [
+        item["file"] for item in planned_edits if item.get("policy_write_allowed") is False
+    ]
+    if policy_write_denied_paths:
+        alerts.append(
+            _alert(
+                "policy_write_disallowed",
+                "policy_profile.filesystem.write_allowlist denied planned edits: "
+                f"{policy_write_denied_paths}",
+            )
+        )
     ok = not alerts
     payload = {
         "schema": LSP_RENAME_RECEIPT_SCHEMA,
@@ -242,12 +263,10 @@ def write_lsp_rename_plan_receipt(
         "symbol_receipt_artifact": _artifact_summary(symbol_receipt_path),
         "reference_count": len(references),
         "policy_read_denied_paths": list(symbol_receipt.get("policy_read_denied_paths", [])),
+        "policy_write_denied_paths": policy_write_denied_paths,
         "inspected_artifacts": list(symbol_receipt.get("inspected_artifacts", [])),
         "references": references,
-        "planned_edits": [
-            {"file": item["file"], "line": item["line"], "old": symbol, "new": new_name}
-            for item in references
-        ],
+        "planned_edits": planned_edits,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": _lsp_proof_scope("rename plan"),
@@ -370,6 +389,60 @@ def _policy_read_denylist(policy_profile: Mapping[str, Any] | None) -> list[str]
     ):
         return None
     return [item for item in read_denylist]
+
+
+def _planned_rename_edit(
+    *,
+    reference: Mapping[str, Any],
+    symbol: str,
+    new_name: str,
+    workspace: Path,
+    policy_profile: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    path = _relative_reference_path(reference.get("file"), workspace)
+    write_allowlist = _policy_write_allowlist(policy_profile)
+    policy_write_allowed = (
+        None
+        if write_allowlist is None
+        else any(
+            fnmatch.fnmatch(path, _normalize_policy_glob(pattern))
+            for pattern in write_allowlist
+        )
+    )
+    return {
+        "file": path,
+        "line": reference.get("line"),
+        "old": symbol,
+        "new": new_name,
+        "policy_write_allowed": policy_write_allowed,
+    }
+
+
+def _relative_reference_path(value: object, workspace: Path) -> str:
+    path = str(value or "")
+    if not path:
+        return path
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        return path
+    try:
+        return candidate.resolve().relative_to(workspace.expanduser().resolve()).as_posix()
+    except ValueError:
+        return path
+
+
+def _policy_write_allowlist(policy_profile: Mapping[str, Any] | None) -> list[str] | None:
+    if policy_profile is None:
+        return None
+    filesystem = policy_profile.get("filesystem")
+    if not isinstance(filesystem, Mapping):
+        return None
+    write_allowlist = filesystem.get("write_allowlist")
+    if not isinstance(write_allowlist, list) or not all(
+        isinstance(item, str) for item in write_allowlist
+    ):
+        return None
+    return [item for item in write_allowlist]
 
 
 def _normalize_policy_glob(pattern: str) -> str:
