@@ -1787,6 +1787,10 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "data_boundary_sha256": payload.get("data_boundary_sha256"),
                 "attempt_count": payload.get("attempt_count"),
                 "passed_attempt_count": payload.get("passed_attempt_count"),
+                "trigger": payload.get("trigger"),
+                "node_id": payload.get("node_id"),
+                "agent": payload.get("agent"),
+                "required_next_action": payload.get("required_next_action"),
             }
         )
     return {

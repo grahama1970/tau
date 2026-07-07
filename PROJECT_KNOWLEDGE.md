@@ -5,6 +5,29 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report course-correction routing fields:
+  `src/tau_coding/run_status.py` now includes optional `trigger`, `node_id`,
+  `agent`, and `required_next_action` fields for coding evidence receipts,
+  which makes `tau.course_correction.v1` routing context visible through
+  `tau run-status` and the static `tau report` Coding Evidence section.
+  `tests/test_run_status.py` pins these fields for a `patch_stale`
+  course-correction receipt, and `tests/test_run_report.py` asserts the HTML
+  report includes `tau.course_correction.v1`, `patch_stale`, and `retry_node`.
+  Focused proof: `uv run python -m py_compile src/tau_coding/run_status.py
+  src/tau_coding/run_report.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/run_status.py src/tau_coding/run_report.py
+  tests/test_run_status.py tests/test_run_report.py` -> `All checks passed!`;
+  `uv run pytest tests/test_run_status.py tests/test_run_report.py -q` -> `31
+  passed in 0.50s`; `git diff --check -- src/tau_coding/run_status.py
+  src/tau_coding/run_report.py tests/test_run_status.py tests/test_run_report.py`
+  -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-run-report-course-correction-20260707T140354Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `463 passed in 10.60s`. This proves the
+  deterministic report/status surfaces preserve course-correction routing
+  context for inspection; it does not prove the correction was executed,
+  semantic code correctness, worker truthfulness, or closure.
+
 - 2026-07-07 compliance package course-correction evidence rung:
   `src/tau_coding/compliance_package.py` now collects standalone
   `course-correction` / `course_correction` JSON receipts into

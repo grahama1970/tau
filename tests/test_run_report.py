@@ -58,6 +58,9 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert 'id="dag-steps"' in html
     assert 'id="coding-evidence"' in html
     assert "tau.test_run_receipt.v1" in html
+    assert "tau.course_correction.v1" in html
+    assert "patch_stale" in html
+    assert "retry_node" in html
     assert "policy_profile_sha256" in html
     assert "data_boundary_sha256" in html
     assert 'id="receipts"' in html
@@ -151,6 +154,23 @@ def _write_report_run(tmp_path: Path) -> Path:
             "goal_hash": "sha256:report-test",
             "policy_profile_sha256": "sha256:policy",
             "data_boundary_sha256": "sha256:boundary",
+        },
+    )
+    _write_json(
+        receipts_dir / "course-correction-receipt.json",
+        {
+            "schema": "tau.course_correction.v1",
+            "ok": False,
+            "status": "REQUIRED",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "trigger": "patch_stale",
+            "node_id": "coder",
+            "agent": "coder",
+            "attempt": 2,
+            "required_next_action": "retry_node",
         },
     )
     return run_dir

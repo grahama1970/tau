@@ -655,6 +655,9 @@ self-hash field would become stale as soon as it is written. Instead it records
 `receipt_sha256_excludes_self:true` and `unsigned_receipt_preimage_sha256`,
 which hashes the unsigned receipt body before those self-reference metadata
 fields are added.
+The report's Coding Evidence section includes course-correction receipt route
+fields such as `trigger`, `node_id`, `agent`, and `required_next_action` when
+those receipts are present.
 
 CLI:
 
