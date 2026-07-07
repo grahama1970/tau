@@ -186,10 +186,10 @@ receipts that omit the active goal hash, policy profile, or data boundary.
 
 `tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
 symbol lookup and rename planning. Rename planning does not apply edits by
-default; it records references, planned edits, and the hash-bound inspected
-source artifacts as evidence for review. Rename plans block when the symbol is
-absent, the source or target name is not a valid identifier, or the requested
-rename is a no-op.
+default; it records references, planned edits, the hash-bound inspected source
+artifacts, and the hash/byte count of the intermediate symbol receipt used to
+derive the rename plan. Rename plans block when the symbol is absent, the source
+or target name is not a valid identifier, or the requested rename is a no-op.
 
 CLI:
 

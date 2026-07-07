@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:23 EDT by agent
+**Last updated:** 2026-07-06 22:28 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 LSP rename-plan symbol receipt binding rung:
+  `src/tau_coding/lsp_receipts.py` now records `symbol_receipt_artifact` on
+  `tau.lsp_rename_receipt.v1` receipts so rename plans are bound to the exact
+  intermediate symbol receipt Tau generated and used to derive references and
+  planned edits. The artifact record includes path, existence, SHA-256, and
+  byte count. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/lsp_receipts.py tests/test_lsp_receipts.py` -> pass; `uv run
+  pytest tests/test_lsp_receipts.py -q` -> `20 passed in 0.68s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-rename-symbol-receipt-proof` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-lsp-rename-symbol-receipt-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `195 passed in
+  6.59s`. This proves deterministic local rename-plan receipts now bind the
+  symbol lookup receipt they consumed and the coding capability aggregate still
+  composes; it does not prove semantic rename safety, complete language server
+  parity, runtime behavior, code correctness, provider/model quality, legal
+  compliance, or full sandbox isolation.
 
 - 2026-07-06 debug-session packet hash binding rung:
   `src/tau_coding/debug_session_receipt.py` now records `session_sha256` and

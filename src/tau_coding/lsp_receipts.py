@@ -175,10 +175,11 @@ def write_lsp_rename_plan_receipt(
     policy_profile: Mapping[str, Any] | None = None,
     data_boundary: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    symbol_receipt_path = output_path.with_name(output_path.stem + ".symbols.tmp.json")
     symbol_receipt = write_lsp_symbol_receipt(
         workspace=workspace,
         query=symbol,
-        output_path=output_path.with_name(output_path.stem + ".symbols.tmp.json"),
+        output_path=symbol_receipt_path,
         goal_hash=goal_hash,
         zero_trust=zero_trust,
         policy_profile=policy_profile,
@@ -211,6 +212,7 @@ def write_lsp_rename_plan_receipt(
         "symbol": symbol,
         "new_name": new_name,
         "applied": False,
+        "symbol_receipt_artifact": _artifact_summary(symbol_receipt_path),
         "reference_count": len(references),
         "inspected_artifacts": list(symbol_receipt.get("inspected_artifacts", [])),
         "references": references,
@@ -319,6 +321,18 @@ def _file_artifacts(paths: Iterable[Path]) -> list[dict[str, Any]]:
             }
         )
     return artifacts
+
+
+def _artifact_summary(path: Path) -> dict[str, Any]:
+    resolved = path.expanduser().resolve()
+    if not resolved.exists() or not resolved.is_file():
+        return {"path": str(resolved), "exists": False, "sha256": None, "bytes": None}
+    return {
+        "path": str(resolved),
+        "exists": True,
+        "sha256": f"sha256:{hashlib.sha256(resolved.read_bytes()).hexdigest()}",
+        "bytes": resolved.stat().st_size,
+    }
 
 
 def _severity_counts(diagnostics: list[dict[str, Any]]) -> dict[str, int]:

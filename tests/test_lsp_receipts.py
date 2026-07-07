@@ -184,6 +184,13 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert payload["goal_hash"] == "sha256:goal"
     assert payload["applied"] is False
     assert payload["reference_count"] == 2
+    symbol_receipt = tmp_path / "rename.symbols.tmp.json"
+    assert payload["symbol_receipt_artifact"] == {
+        "path": str(symbol_receipt.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(symbol_receipt)}",
+        "bytes": symbol_receipt.stat().st_size,
+    }
     assert payload["inspected_artifacts"] == [
         {
             "path": str(source.resolve()),
