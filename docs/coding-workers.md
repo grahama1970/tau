@@ -365,7 +365,9 @@ uv run tau debug-session-receipt \
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when debugger evidence is part of a high-stakes coding route. In zero-trust
 mode, Tau blocks debug receipts that omit policy, boundary, or `goal_hash`
-metadata. Use `--goal-hash sha256:...` when the caller needs to bind the
+metadata, carry invalid `tau.policy_profile.v1` / `tau.data_boundary.v1`
+objects, or mark the boundary as `classified-not-allowed`. Use
+`--goal-hash sha256:...` when the caller needs to bind the
 session packet to an expected active goal hash; a mismatch records
 `goal_hash_mismatch`. When `policy_profile.filesystem.read_denylist` matches a
 declared stdout/stderr log artifact, Tau blocks with `policy_read_denied` and

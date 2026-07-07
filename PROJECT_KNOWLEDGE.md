@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 debug evidence policy/data-boundary validity fail-closed rung:
+  `src/tau_coding/debug_session_receipt.py` now validates full
+  `tau.policy_profile.v1` and `tau.data_boundary.v1` objects in zero-trust
+  mode before accepting debugger/DAP evidence receipts. It blocks malformed
+  policy/boundary metadata with `invalid_policy_profile` or
+  `invalid_data_boundary` and refuses
+  `data_boundary.classification:"classified-not-allowed"` with
+  `classified_not_allowed`. `tests/test_debug_session_receipt.py` pins this
+  with `test_debug_receipt_zero_trust_blocks_invalid_data_boundary` and valid
+  zero-trust fixtures. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> `All checks passed!`; `uv run pytest tests/test_debug_session_receipt.py
+  -q` -> `25 passed in 0.54s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-boundary-proof-20260707T073141Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-debug-boundary-proof-20260707T073141Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, and `provider_live:false`. This proves deterministic local
+  debug-session receipts fail closed on invalid zero-trust policy/boundary
+  metadata before debugger evidence can support coding work; it does not prove
+  the debug conclusion is semantically complete, the bug is fixed, legal
+  compliance, full sandbox isolation, live OMP/SciLLM semantic worker execution,
+  or full goal completion.
+
 - 2026-07-07 review findings policy/data-boundary validity fail-closed rung:
   `src/tau_coding/review_findings.py` now validates full
   `tau.policy_profile.v1` and `tau.data_boundary.v1` objects in zero-trust
