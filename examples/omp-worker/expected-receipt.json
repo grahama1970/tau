@@ -1,6 +1,11 @@
 {
   "schema": "tau.omp_worker_example_receipt.v1",
   "status": "PASS",
+  "expected_doctor_receipt_schema": "tau.omp_worker_doctor_receipt.v1",
+  "expected_doctor_receipt_status": "PASS",
+  "expected_doctor_command_found": true,
+  "expected_doctor_version_executed": true,
+  "expected_doctor_version_exit_code": 0,
   "expected_launch_receipt_schema": "tau.omp_worker_launch_receipt.v1",
   "expected_launch_status": "PASS",
   "expected_launch_command": ["omp", "--mode", "rpc", "--no-session"],

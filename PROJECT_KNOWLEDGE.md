@@ -1,9 +1,53 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:59 EDT by agent
+**Last updated:** 2026-07-07 13:05 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 OMP worker doctor readiness receipt:
+  `src/tau_coding/coding_worker_adapters.py` now emits
+  `tau.omp_worker_doctor_receipt.v1` via `write_omp_worker_doctor_receipt`,
+  and `src/tau_coding/cli.py` exposes it as `uv run tau omp-worker-doctor`.
+  The doctor resolves the configured OMP command, runs `--version`, captures
+  stdout/stderr sidecars with hashes and byte counts, and blocks missing
+  commands with `omp_command_missing`, timeouts with `omp_version_timeout`, and
+  nonzero version probes with `omp_version_nonzero_exit`. The copyable
+  `examples/omp-worker` flow now writes `omp-worker-doctor-receipt.json` before
+  launch/validate, projects doctor fields into `demo-receipt.json`, and
+  `examples/omp-worker/expected-receipt.json` plus
+  `scripts/run-coding-capability-sanity.py` enforce the expected doctor schema,
+  status, command availability, version execution, and exit code. Local
+  environment evidence: `omp` is not installed in this shell, and the local
+  `/home/graham/workspace/experiments/oh-my-pi` source CLI currently fails
+  before startup with missing workspace dependency
+  `@oh-my-pi/pi-utils/dirs`; `uv run tau omp-worker-doctor --out
+  /tmp/tau-omp-worker-doctor-missing-*.json --omp-bin
+  /tmp/definitely-missing-omp --timeout-s 5` wrote a BLOCKED receipt with
+  `command_found:false`, `version_executed:false`, and
+  `alert_codes:["omp_command_missing"]`. Focused proof: `uv run ruff check
+  --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  src/tau_coding/cli.py tests/test_coding_worker_adapters.py
+  tests/test_coding_capability_sanity_runner.py
+  scripts/run-coding-capability-sanity.py docs/coding-workers.md` ->
+  `All checks passed!`; targeted OMP doctor tests and sanity expected-field
+  test -> `4 passed in 0.58s`; broader focused tests
+  `uv run pytest tests/test_coding_worker_adapters.py
+  tests/test_coding_capability_sanity_runner.py -q` -> `116 passed in
+  6.93s`; direct example
+  `/tmp/tau-omp-worker-doctor-example-20260707T170441Z/demo-receipt.json` ->
+  `status:"PASS"`, `doctor_receipt_schema:"tau.omp_worker_doctor_receipt.v1"`,
+  `doctor_receipt_status:"PASS"`, `doctor_command_found:true`,
+  `doctor_version_executed:true`, `doctor_version_exit_code:0`, plus the prior
+  OMP JSONL frame fields. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-omp-doctor-20260707T170451Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`,
+  `failed_check_count:0`. This proves Tau now has an explicit OMP readiness
+  preflight artifact and the maintained example/sanity path enforces it; it
+  does not prove a real `oh-my-pi` binary is installed on this host, OMP can
+  perform coding work, OMP accepted an RPC request semantically, semantic code
+  correctness, provider/model quality, legal compliance, or full sandbox
+  isolation.
 
 - 2026-07-07 OMP RPC response-frame gate:
   `src/tau_coding/coding_worker_adapters.py` now requires apply-mode

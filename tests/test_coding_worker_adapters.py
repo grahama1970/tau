@@ -10,10 +10,12 @@ from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.coding_worker_adapters import (
+    OMP_WORKER_DOCTOR_RECEIPT_SCHEMA,
     OMP_WORKER_LAUNCH_RECEIPT_SCHEMA,
     OMP_WORKER_RECEIPT_SCHEMA,
     SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
     SCILLM_WORKER_RECEIPT_SCHEMA,
+    write_omp_worker_doctor_receipt,
     write_omp_worker_launch_receipt,
     write_omp_worker_receipt,
     write_scillm_worker_launch_receipt,
@@ -1915,6 +1917,69 @@ def test_omp_worker_launch_blocks_wrong_surface(tmp_path: Path) -> None:
     assert "invalid_omp_surface" in payload["alert_codes"]
 
 
+def test_omp_worker_doctor_blocks_missing_binary(tmp_path: Path) -> None:
+    payload = write_omp_worker_doctor_receipt(
+        output_path=tmp_path / "omp-doctor-receipt.json",
+        omp_bin=str(tmp_path / "missing-omp"),
+        timeout_s=5,
+    )
+
+    assert payload["schema"] == OMP_WORKER_DOCTOR_RECEIPT_SCHEMA
+    assert payload["status"] == "BLOCKED"
+    assert payload["ok"] is False
+    assert payload["command_found"] is False
+    assert payload["version_executed"] is False
+    assert "omp_command_missing" in payload["alert_codes"]
+
+
+def test_omp_worker_doctor_records_version_probe(tmp_path: Path) -> None:
+    fake_omp = _write_fake_omp(tmp_path)
+    out = tmp_path / "omp-doctor-receipt.json"
+
+    payload = write_omp_worker_doctor_receipt(
+        output_path=out,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["schema"] == OMP_WORKER_DOCTOR_RECEIPT_SCHEMA
+    assert payload["status"] == "PASS"
+    assert payload["command_found"] is True
+    assert payload["command_path"] == str(fake_omp.resolve())
+    assert payload["version_command"] == [str(fake_omp.resolve()), "--version"]
+    assert payload["version_executed"] is True
+    assert payload["version_exit_code"] == 0
+    assert payload["version_stdout_path"]
+    stdout_path = Path(payload["version_stdout_path"])
+    assert stdout_path.read_text(encoding="utf-8") == "fake-omp 0.0.0\n"
+    assert payload["version_stdout_sha256"] == f"sha256:{_sha256(stdout_path)}"
+    assert payload["identity_artifacts"][0]["label"] == "version_stdout"
+
+
+def test_cli_omp_worker_doctor_writes_receipt(tmp_path: Path) -> None:
+    fake_omp = _write_fake_omp(tmp_path)
+    out = tmp_path / "omp-doctor-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "omp-worker-doctor",
+            "--out",
+            str(out),
+            "--omp-bin",
+            str(fake_omp),
+            "--timeout-s",
+            "5",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "PASS"
+    assert payload["version_stdout_sha256"]
+
+
 def test_cli_omp_worker_launch_writes_dry_run_receipt(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -3306,6 +3371,9 @@ def _write_fake_omp(
                 "import json",
                 "import sys",
                 "from pathlib import Path",
+                "if '--version' in sys.argv:",
+                "    print('fake-omp 0.0.0')",
+                "    raise SystemExit(0)",
                 marker_line,
                 *output_lines,
             ]

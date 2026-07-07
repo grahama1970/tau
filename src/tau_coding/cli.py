@@ -41,6 +41,7 @@ from tau_coding.browser_cdp_proof import (
 from tau_coding.code_patch import apply_code_patch_receipt
 from tau_coding.code_runner_skill_adapter import write_code_runner_skill_adapter_receipt
 from tau_coding.coding_worker_adapters import (
+    write_omp_worker_doctor_receipt,
     write_omp_worker_launch_receipt,
     write_omp_worker_receipt,
     write_scillm_worker_launch_receipt,
@@ -1867,6 +1868,19 @@ def main(
                 output_path=Path(str(options["out"])),
                 caller_skill=str(options["caller_skill"]),
                 apply=bool(options["apply"]),
+                omp_bin=str(options["omp_bin"]),
+                timeout_s=int(options["timeout_s"]),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "omp-worker-doctor":
+        try:
+            options = _parse_omp_worker_doctor_cli_args(positional_args[1:])
+            payload = write_omp_worker_doctor_receipt(
+                output_path=Path(str(options["out"])),
                 omp_bin=str(options["omp_bin"]),
                 timeout_s=int(options["timeout_s"]),
             )
@@ -5089,6 +5103,35 @@ def _parse_omp_worker_launch_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError("Usage: tau omp-worker-launch --work-order <json> --out <receipt>")
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau omp-worker-launch --work-order <json> --out <receipt>")
+    return options
+
+
+def _parse_omp_worker_doctor_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "out": None,
+        "omp_bin": "omp",
+        "timeout_s": 10,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--out", "--omp-bin", "--timeout-s"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            key = arg.removeprefix("--").replace("-", "_")
+            options[key] = int(args[index]) if key == "timeout_s" else args[index]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--omp-bin="):
+            options["omp_bin"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = int(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown omp-worker-doctor option: {arg}")
+        index += 1
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau omp-worker-doctor --out <receipt>")
     return options
 
 

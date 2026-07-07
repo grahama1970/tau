@@ -849,6 +849,10 @@ uv run tau omp-worker-launch \
   --work-order omp-work-order.json \
   --out omp-worker-launch-receipt.json
 
+uv run tau omp-worker-doctor \
+  --out omp-worker-doctor-receipt.json \
+  --omp-bin omp
+
 uv run tau omp-worker-launch \
   --work-order omp-work-order.json \
   --out omp-worker-launch-receipt.json \
@@ -890,6 +894,13 @@ parseable OMP-shaped process output. It does not prove OMP accepted the request
 semantically, a real `oh-my-pi` binary was used, the worker result artifact is
 valid, code changed, or code is correct. A worker result must still pass
 `omp-worker-validate`.
+
+`omp-worker-doctor` is the readiness preflight for this path. It resolves the
+configured OMP command, runs `--version`, captures stdout/stderr artifacts, and
+writes `tau.omp_worker_doctor_receipt.v1`. A missing binary, timeout, or
+nonzero version probe blocks the doctor receipt. This proves only OMP command
+availability and identity-probe capture; it does not prove OMP can perform
+coding work or accept an RPC request.
 
 For SciLLM coding delegates, Tau uses the SciLLM proxy service, normally
 `http://localhost:4001`, and the OpenCode serve surface
@@ -966,7 +977,9 @@ quality, or semantic code correctness.
 
 `examples/omp-worker` validates a bounded OMP-shaped worker result. By default
 it uses a fixture result and marks the demo `mocked:true`, `live:false`; it
-also writes a dry-run `omp-worker-launch-receipt.json` showing the exact OMP
+also writes an `omp-worker-doctor-receipt.json` against the deterministic local
+`fake-omp` command, proving the doctor/identity-probe path only. The example
+then writes a dry-run `omp-worker-launch-receipt.json` showing the exact OMP
 RPC command and prompt frame Tau would send, plus a deterministic
 `omp-worker-launch-apply-receipt.json` using a local `fake-omp` executable to
 exercise process launch, stdout/stderr capture, and JSONL response-frame

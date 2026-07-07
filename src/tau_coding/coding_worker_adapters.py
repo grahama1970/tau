@@ -6,6 +6,7 @@ import fnmatch
 import hashlib
 import json
 import os
+import shutil
 import socket
 import subprocess
 import urllib.error
@@ -31,6 +32,7 @@ OMP_WORK_ORDER_SCHEMA = "tau.executor.omp.v1"
 OMP_WORKER_RESULT_SCHEMA = "tau.omp_worker_result.v1"
 OMP_WORKER_RECEIPT_SCHEMA = "tau.omp_worker_receipt.v1"
 OMP_WORKER_LAUNCH_RECEIPT_SCHEMA = "tau.omp_worker_launch_receipt.v1"
+OMP_WORKER_DOCTOR_RECEIPT_SCHEMA = "tau.omp_worker_doctor_receipt.v1"
 OMP_RPC_COMMAND = ["omp", "--mode", "rpc", "--no-session"]
 SCILLM_WORK_ORDER_SCHEMA = "tau.executor.scillm_worker.v1"
 SCILLM_WORKER_RESULT_SCHEMA = "tau.scillm_worker_result.v1"
@@ -181,6 +183,86 @@ def write_omp_worker_launch_receipt(
                 "OMP accepted or ran the request.",
                 "A real oh-my-pi binary was used unless independently identified.",
                 "A worker result artifact is valid without omp-worker-validate.",
+                "The worker is trustworthy.",
+                "The code is semantically correct.",
+                "Provider/model semantic quality.",
+            ],
+        },
+        "timestamp": _utc_stamp(),
+    }
+    payload["receipt_path"] = str(resolved_output)
+    _write_json(output_path, payload)
+    return payload
+
+
+def write_omp_worker_doctor_receipt(
+    *,
+    output_path: Path,
+    omp_bin: str = "omp",
+    timeout_s: int = 10,
+) -> dict[str, Any]:
+    """Write an OMP worker readiness receipt without launching coding work."""
+
+    resolved_output = output_path.expanduser().resolve()
+    alerts: list[dict[str, Any]] = []
+    command_path = _resolve_command_path(omp_bin)
+    stdout_path = resolved_output.with_suffix(resolved_output.suffix + ".version.stdout.txt")
+    stderr_path = resolved_output.with_suffix(resolved_output.suffix + ".version.stderr.txt")
+    version_result = {
+        "executed": False,
+        "exit_code": None,
+        "timed_out": False,
+        "stdout_path": None,
+        "stderr_path": None,
+    }
+    if command_path is None:
+        alerts.append(_alert("omp_command_missing", f"OMP command is missing: {omp_bin}"))
+    elif timeout_s <= 0:
+        alerts.append(_alert("invalid_timeout", "timeout_s must be positive"))
+    else:
+        version_result = _run_omp_identity_probe(
+            command_path=command_path,
+            stdout_path=stdout_path,
+            stderr_path=stderr_path,
+            timeout_s=timeout_s,
+            alerts=alerts,
+        )
+
+    ok = not alerts
+    payload = {
+        "schema": OMP_WORKER_DOCTOR_RECEIPT_SCHEMA,
+        "ok": ok,
+        "status": "PASS" if ok else "BLOCKED",
+        "mocked": False,
+        "live": version_result["executed"],
+        "provider_live": False,
+        "omp_bin": omp_bin,
+        "command_path": command_path,
+        "command_found": command_path is not None,
+        "version_command": [command_path, "--version"] if command_path else None,
+        "version_executed": version_result["executed"],
+        "version_exit_code": version_result["exit_code"],
+        "version_timed_out": version_result["timed_out"],
+        "version_stdout_path": version_result["stdout_path"],
+        "version_stdout_sha256": _artifact_sha256_uri(version_result["stdout_path"]),
+        "version_stdout_bytes": _artifact_size(version_result["stdout_path"]),
+        "version_stderr_path": version_result["stderr_path"],
+        "version_stderr_sha256": _artifact_sha256_uri(version_result["stderr_path"]),
+        "version_stderr_bytes": _artifact_size(version_result["stderr_path"]),
+        "identity_artifacts": _artifact_descriptors(
+            ("version_stdout", version_result["stdout_path"]),
+            ("version_stderr", version_result["stderr_path"]),
+        ),
+        "alerts": alerts,
+        "alert_codes": [alert["code"] for alert in alerts],
+        "proof_scope": {
+            "proves": [
+                "Tau checked whether the configured OMP command is available.",
+                "Tau captured OMP identity probe stdout/stderr when the command ran.",
+            ],
+            "does_not_prove": [
+                "OMP can perform coding work.",
+                "OMP accepted an RPC request.",
                 "The worker is trustworthy.",
                 "The code is semantically correct.",
                 "Provider/model semantic quality.",
@@ -837,6 +919,66 @@ def _parse_jsonl_response_frames(stdout: str) -> tuple[list[dict[str, Any]], lis
             continue
         frames.append(frame)
     return frames, errors
+
+
+def _resolve_command_path(command: str) -> str | None:
+    if not command:
+        return None
+    candidate = Path(command).expanduser()
+    if candidate.parent != Path(".") or candidate.is_absolute():
+        if candidate.exists() and os.access(candidate, os.X_OK):
+            return str(candidate.resolve())
+        return None
+    found = shutil.which(command)
+    return str(Path(found).resolve()) if found else None
+
+
+def _run_omp_identity_probe(
+    *,
+    command_path: str,
+    stdout_path: Path,
+    stderr_path: Path,
+    timeout_s: int,
+    alerts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    stdout_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        completed = subprocess.run(
+            [command_path, "--version"],
+            text=True,
+            capture_output=True,
+            timeout=timeout_s,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout_path.write_text(exc.stdout or "", encoding="utf-8")
+        stderr_path.write_text(exc.stderr or "", encoding="utf-8")
+        alerts.append(
+            _alert("omp_version_timeout", f"OMP version probe timed out after {timeout_s}s")
+        )
+        return {
+            "executed": True,
+            "exit_code": None,
+            "timed_out": True,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+        }
+    stdout_path.write_text(completed.stdout, encoding="utf-8")
+    stderr_path.write_text(completed.stderr, encoding="utf-8")
+    if completed.returncode != 0:
+        alerts.append(
+            _alert(
+                "omp_version_nonzero_exit",
+                f"OMP version probe exited {completed.returncode}",
+            )
+        )
+    return {
+        "executed": True,
+        "exit_code": completed.returncode,
+        "timed_out": False,
+        "stdout_path": str(stdout_path),
+        "stderr_path": str(stderr_path),
+    }
 
 
 def _maybe_post_scillm_opencode_run(

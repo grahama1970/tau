@@ -9,6 +9,7 @@ RESULT="${RECEIPTS_DIR}/omp-result.json"
 RECEIPT="${RECEIPTS_DIR}/omp-worker-receipt.json"
 LAUNCH_RECEIPT="${OUT_DIR}/omp-worker-launch-receipt.json"
 APPLY_LAUNCH_RECEIPT="${OUT_DIR}/omp-worker-launch-apply-receipt.json"
+DOCTOR_RECEIPT="${OUT_DIR}/omp-worker-doctor-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
 SANDBOX_RECEIPT="${RECEIPTS_DIR}/sandbox-run-receipt.json"
 FAKE_OMP="${OUT_DIR}/fake-omp"
@@ -20,6 +21,10 @@ cat > "${FAKE_OMP}" <<'PY'
 #!/usr/bin/env python3
 import json
 import sys
+
+if "--version" in sys.argv:
+    print("fake-omp 0.0.0")
+    raise SystemExit(0)
 
 payload = json.loads(sys.stdin.readline())
 print(json.dumps({
@@ -149,6 +154,11 @@ else
 JSON
 fi
 
+uv run tau omp-worker-doctor \
+  --out "${DOCTOR_RECEIPT}" \
+  --omp-bin "${FAKE_OMP}" \
+  --timeout-s 5 >/tmp/tau-omp-worker-doctor.stdout.json
+
 uv run tau omp-worker-launch \
   --work-order "${WORK_ORDER}" \
   --out "${LAUNCH_RECEIPT}" >/tmp/tau-omp-worker-launch.stdout.json
@@ -165,7 +175,7 @@ uv run tau omp-worker-validate \
   --result "${RESULT}" \
   --out "${RECEIPT}" >/tmp/tau-omp-worker-validate.stdout.json
 
-python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${APPLY_LAUNCH_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
+python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${APPLY_LAUNCH_RECEIPT}" "${DOCTOR_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -174,12 +184,15 @@ demo_path = Path(sys.argv[1])
 receipt_path = Path(sys.argv[2])
 launch_receipt_path = Path(sys.argv[3])
 apply_launch_receipt_path = Path(sys.argv[4])
-worker_result_source = sys.argv[5]
+doctor_receipt_path = Path(sys.argv[5])
+worker_result_source = sys.argv[6]
 receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 launch_receipt = json.loads(launch_receipt_path.read_text(encoding="utf-8"))
 apply_launch_receipt = json.loads(apply_launch_receipt_path.read_text(encoding="utf-8"))
+doctor_receipt = json.loads(doctor_receipt_path.read_text(encoding="utf-8"))
 ok = (
     receipt.get("ok") is True
+    and doctor_receipt.get("ok") is True
     and launch_receipt.get("ok") is True
     and apply_launch_receipt.get("ok") is True
 )
@@ -198,6 +211,13 @@ payload = {
     "worker_receipt_work_order_sha256": receipt.get("work_order_sha256"),
     "worker_receipt_result_sha256": receipt.get("result_sha256"),
     "worker_receipt_validated_artifacts": receipt.get("validated_artifacts", []),
+    "doctor_receipt_path": str(doctor_receipt_path),
+    "doctor_receipt_schema": doctor_receipt.get("schema"),
+    "doctor_receipt_status": doctor_receipt.get("status"),
+    "doctor_command_found": doctor_receipt.get("command_found"),
+    "doctor_version_executed": doctor_receipt.get("version_executed"),
+    "doctor_version_exit_code": doctor_receipt.get("version_exit_code"),
+    "doctor_version_stdout_sha256": doctor_receipt.get("version_stdout_sha256"),
     "launch_receipt_path": str(launch_receipt_path),
     "launch_receipt_schema": launch_receipt.get("schema"),
     "launch_receipt_status": launch_receipt.get("status"),

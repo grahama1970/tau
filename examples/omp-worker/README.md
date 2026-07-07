@@ -17,6 +17,10 @@ uv run tau omp-worker-launch \
   --work-order work-order.json \
   --out omp-worker-launch-receipt.json
 
+uv run tau omp-worker-doctor \
+  --out omp-worker-doctor-receipt.json \
+  --omp-bin fake-omp
+
 uv run tau omp-worker-launch \
   --work-order work-order.json \
   --out omp-worker-launch-apply-receipt.json \
@@ -39,10 +43,13 @@ OMP_WORKER_RESULT=/path/to/omp-result.json examples/omp-worker/run.sh /tmp/tau-o
 
 This example proves only the Tau-side receipt validation path. Unless
 `OMP_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
-launched a real OMP worker. The default apply launch uses a deterministic local
-`fake-omp` executable to prove Tau can invoke an OMP-compatible process and
-capture stdout/stderr, and require parseable RPC JSONL response frames. The
+launched a real OMP worker. The default doctor receipt uses the deterministic
+local `fake-omp` executable to prove the OMP command identity-probe path only.
+The default apply launch uses the same deterministic local `fake-omp`
+executable to prove Tau can invoke an OMP-compatible process and capture
+stdout/stderr, and require parseable RPC JSONL response frames. The
 maintained sanity check requires the example receipt to show
+`doctor_command_found:true`, `doctor_version_executed:true`,
 `apply_launch_process_executed:true`, `apply_launch_exit_code:0`,
 `apply_launch_stdout_jsonl_valid:true`, `apply_launch_response_frame_count:1`,
 and hash-bound stdout/stderr descriptors. It does not prove a real `oh-my-pi`
