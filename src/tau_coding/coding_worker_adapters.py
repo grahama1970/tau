@@ -126,6 +126,13 @@ def write_omp_worker_launch_receipt(
     )
     work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
     ok = not alerts
+    course_correction_path, course_correction = _worker_launch_course_correction_artifact(
+        output_path=resolved_output,
+        worker_kind="omp",
+        work_order=work_order,
+        alert_codes=[alert["code"] for alert in alerts],
+        launch_result=launch_result,
+    )
     payload = {
         "schema": OMP_WORKER_LAUNCH_RECEIPT_SCHEMA,
         "ok": ok,
@@ -171,6 +178,11 @@ def write_omp_worker_launch_receipt(
         ),
         "caller_skill": caller_skill,
         "model_provider_route": route,
+        "course_correction_path": str(course_correction_path) if course_correction_path else None,
+        "course_correction_artifacts": (
+            [str(course_correction_path)] if course_correction_path else []
+        ),
+        "course_correction": course_correction,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -355,6 +367,13 @@ def write_scillm_worker_launch_receipt(
     )
     work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
     ok = not alerts
+    course_correction_path, course_correction = _worker_launch_course_correction_artifact(
+        output_path=resolved_output,
+        worker_kind="scillm",
+        work_order=work_order,
+        alert_codes=[alert["code"] for alert in alerts],
+        launch_result=launch_result,
+    )
     payload = {
         "schema": SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA,
         "ok": ok,
@@ -421,6 +440,11 @@ def write_scillm_worker_launch_receipt(
         "response_result_bytes": (
             response_result_artifact.get("bytes") if response_result_artifact else None
         ),
+        "course_correction_path": str(course_correction_path) if course_correction_path else None,
+        "course_correction_artifacts": (
+            [str(course_correction_path)] if course_correction_path else []
+        ),
+        "course_correction": course_correction,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
         "proof_scope": {
@@ -740,6 +764,69 @@ def _worker_course_correction_artifact(
     return path, payload
 
 
+def _worker_launch_course_correction_artifact(
+    *,
+    output_path: Path,
+    worker_kind: str,
+    work_order: Mapping[str, Any],
+    alert_codes: list[str],
+    launch_result: Mapping[str, Any],
+) -> tuple[Path | None, dict[str, Any] | None]:
+    trigger = _worker_launch_course_correction_trigger(alert_codes)
+    if trigger is None:
+        return None, None
+    node_id = _string(work_order.get("node_id")) or f"{worker_kind}-worker"
+    agent = _string(work_order.get("agent")) or worker_kind
+    attempt = work_order.get("attempt")
+    attempt_number = attempt if isinstance(attempt, int) and attempt >= 0 else 0
+    path = (
+        output_path.expanduser().resolve().parent
+        / "course-corrections"
+        / f"{_safe_file_stem(node_id)}-attempt-{attempt_number:03d}-{trigger}.json"
+    )
+    executed = bool(
+        launch_result.get("process_executed") or launch_result.get("http_executed")
+    )
+    payload = build_course_correction_receipt(
+        trigger=trigger,
+        dag_id=_string(work_order.get("dag_id")),
+        goal_hash=_string(work_order.get("goal_hash")),
+        target=work_order.get("target") if isinstance(work_order.get("target"), dict) else {},
+        node_id=node_id,
+        agent=agent,
+        attempt=attempt_number,
+        observed_state={
+            "worker_kind": worker_kind,
+            "phase": "worker_launch",
+            "alert_codes": alert_codes,
+            "launch_result": {
+                key: launch_result.get(key)
+                for key in (
+                    "process_executed",
+                    "http_executed",
+                    "launch_skipped",
+                    "exit_code",
+                    "http_status",
+                    "timed_out",
+                )
+                if key in launch_result
+            },
+            "work_order_path": str(Path(_string(work_order.get("work_order_path"))).resolve())
+            if _string(work_order.get("work_order_path"))
+            else None,
+            "launch_receipt_path": str(output_path.expanduser().resolve()),
+        },
+        observed_artifact_path=output_path,
+        errors=alert_codes,
+        stop_reason=trigger,
+        mocked=False,
+        live=executed,
+        provider_live=False,
+    )
+    _write_json(path, payload)
+    return path, payload
+
+
 def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
     if not alert_codes:
         return None
@@ -806,6 +893,65 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         return "herdr_stale"
     if any(code in sandbox_codes for code in alert_codes):
         return "receipt_timeout"
+    return "invalid_receipt"
+
+
+def _worker_launch_course_correction_trigger(alert_codes: list[str]) -> str | None:
+    if not alert_codes:
+        return None
+    if "missing_scillm_auth_token" in alert_codes:
+        return "provider_auth_required"
+    if any(
+        code in alert_codes
+        for code in {
+            "omp_launch_timeout",
+            "scillm_launch_timeout",
+            "sandbox_receipt_missing",
+            "sandbox_receipt_unreadable",
+            "sandbox_receipt_not_object",
+            "sandbox_receipt_not_live",
+            "sandbox_receipt_mocked",
+            "sandbox_receipt_not_pass",
+            "sandbox_receipt_goal_hash_mismatch",
+            "sandbox_receipt_work_order_sha256_mismatch",
+        }
+    ):
+        return "receipt_timeout"
+    if any(
+        code in alert_codes
+        for code in {
+            "herdr_binding_required",
+            "herdr_receipt_required",
+            "herdr_receipt_missing",
+            "herdr_receipt_unreadable",
+            "herdr_receipt_not_object",
+            "herdr_receipt_not_live",
+            "herdr_receipt_mocked",
+            "herdr_receipt_not_pass",
+            "herdr_receipt_goal_hash_mismatch",
+            "herdr_receipt_work_order_sha256_mismatch",
+        }
+    ):
+        return "herdr_stale"
+    if any(
+        code in alert_codes
+        for code in {
+            "missing_scillm_worker_result_artifact",
+            "scillm_worker_result_artifact_missing",
+        }
+    ):
+        return "worker_result_missing"
+    if any(
+        code in alert_codes
+        for code in {
+            "omp_command_missing",
+            "omp_launch_nonzero_exit",
+            "scillm_http_error",
+            "scillm_connection_error",
+            "scillm_run_not_completed",
+        }
+    ):
+        return "provider_crashed"
     return "invalid_receipt"
 
 

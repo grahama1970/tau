@@ -917,6 +917,10 @@ metadata, and records `process_executed`, `exit_code`, `timed_out`,
 `response_frames`, `response_metadata`, and `log_artifacts`.
 Missing metadata blocks with `omp_response_metadata_missing`; mismatches block
 with `omp_metadata_mismatch`.
+Blocked OMP launch receipts also write a `tau.course_correction.v1` artifact
+under `course-corrections/` and record `course_correction_path`,
+`course_correction_artifacts`, and `course_correction` so the orchestrator can
+route repair instead of retrying blindly.
 This proves only that Tau sent a bounded request to a local process and captured
 parseable OMP-shaped process output. It does not prove OMP accepted the request
 semantically, a real `oh-my-pi` binary was used, the worker result artifact is
@@ -960,6 +964,11 @@ Tau requires `scillm_run_status:"completed"`, at least one of `run_id` or
 If the response includes `scillm_metadata`, Tau compares its schema, DAG id,
 node id, attempt, goal hash, result path, and receipt path against the worker
 request metadata; mismatches block with `scillm_metadata_mismatch`.
+Blocked SciLLM launch receipts use the same `tau.course_correction.v1` artifact
+contract as OMP launch receipts. Missing local auth maps to
+`provider_auth_required`, unavailable or failed providers map to
+`provider_crashed`, stale Herdr gates map to `herdr_stale`, and missing worker
+result artifacts map to `worker_result_missing`.
 When the response names the result but the artifact is absent or unreadable,
 Tau blocks with `scillm_worker_result_artifact_missing`. Socket-level request
 timeouts, including `urllib` errors whose reason is a timeout, are recorded as

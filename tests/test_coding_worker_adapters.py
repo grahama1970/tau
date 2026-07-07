@@ -2589,6 +2589,12 @@ def test_omp_worker_launch_apply_skips_process_when_substrate_blocks(
     assert payload["launch_skipped"] is True
     assert "sandbox_receipt_mocked" in payload["alert_codes"]
     assert payload["substrate_receipts"][0]["mocked"] is True
+    assert payload["course_correction"]["schema"] == "tau.course_correction.v1"
+    assert payload["course_correction"]["trigger"] == "receipt_timeout"
+    assert payload["course_correction"]["observed_state"]["phase"] == "worker_launch"
+    assert payload["course_correction"]["observed_state"]["worker_kind"] == "omp"
+    assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
+    assert Path(payload["course_correction_path"]).exists()
     assert not marker.exists()
 
 
@@ -3223,6 +3229,21 @@ def test_scillm_worker_launch_local_apply_blocks_without_auth_token(
     assert payload["headers"]["authorization"] == "REDACTED_REQUIRED"
     assert payload["headers"]["authorization_source"] == "missing"
     assert "missing_scillm_auth_token" in payload["alert_codes"]
+    assert payload["course_correction"]["schema"] == "tau.course_correction.v1"
+    assert payload["course_correction"]["trigger"] == "provider_auth_required"
+    assert payload["course_correction"]["required_next_action"] == (
+        "repair_provider_auth_then_retry_or_route_human"
+    )
+    assert payload["course_correction"]["observed_state"]["phase"] == "worker_launch"
+    assert payload["course_correction"]["observed_state"]["worker_kind"] == "scillm"
+    assert payload["course_correction"]["observed_state"]["launch_result"] == {
+        "http_executed": False,
+        "launch_skipped": True,
+        "http_status": None,
+        "timed_out": False,
+    }
+    assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
+    assert Path(payload["course_correction_path"]).exists()
 
 
 def test_scillm_worker_launch_remote_apply_requires_auth_token(tmp_path: Path) -> None:
