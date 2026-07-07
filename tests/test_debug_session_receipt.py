@@ -152,6 +152,41 @@ def test_debug_receipt_records_variables_and_frames(tmp_path: Path) -> None:
 
     assert receipt["stopped_frame"]["function"] == "answer"
     assert receipt["variables"] == [{"name": "value", "value": "41"}]
+    assert receipt["variable_redaction_count"] == 0
+
+
+def test_debug_receipt_redacts_sensitive_variable_values(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+    payload = json.loads(session.read_text(encoding="utf-8"))
+    payload["variables"] = [
+        {"name": "api_token", "value": "secret-token"},
+        {"name": "password", "value": "secret-password"},
+        {"name": "value", "value": "41"},
+    ]
+    session.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["variable_redaction_count"] == 2
+    assert receipt["variables"][0] == {
+        "name": "api_token",
+        "value": "[REDACTED]",
+        "value_sha256": f"sha256:{hashlib.sha256(b'secret-token').hexdigest()}",
+        "redacted": True,
+    }
+    assert receipt["variables"][1] == {
+        "name": "password",
+        "value": "[REDACTED]",
+        "value_sha256": f"sha256:{hashlib.sha256(b'secret-password').hexdigest()}",
+        "redacted": True,
+    }
+    assert receipt["variables"][2] == {"name": "value", "value": "41"}
+    assert "secret-token" not in json.dumps(receipt)
+    assert "secret-password" not in json.dumps(receipt)
 
 
 def test_debug_receipt_records_log_artifact_hashes(tmp_path: Path) -> None:

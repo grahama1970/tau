@@ -450,6 +450,11 @@ records the inspected debug session packet's `session_sha256` and
 is exposed as a `session_artifact` descriptor with label, path, existence,
 SHA-256, and byte count so debug evidence can be reviewed through the same
 artifact pattern as other coding receipts.
+Debugger variables with sensitive-looking names such as `token`, `password`,
+`secret`, `api_key`, `credential`, or `auth` are redacted before receipt write;
+Tau records `value_sha256`, `redacted:true`, and `variable_redaction_count`
+instead of storing the raw value. This reduces debug-evidence leakage, but does
+not prove every sensitive value was discovered.
 
 Tau blocks debug receipts when the session packet omits the target command, uses
 an unsupported adapter, refers to missing stdout/stderr artifacts, points

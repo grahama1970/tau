@@ -75,6 +75,7 @@ def write_debug_session_receipt(
     breakpoints = _optional_list(packet.get("breakpoints"), "breakpoints", alerts)
     stopped_frame = _optional_mapping(packet.get("stopped_frame"), "stopped_frame", alerts)
     variables = _optional_list(packet.get("variables"), "variables", alerts)
+    variables, variable_redaction_count = _sanitize_debug_variables(variables)
     commands = _optional_list(packet.get("commands"), "commands", alerts)
     _validate_debug_evidence_paths(
         breakpoints=breakpoints,
@@ -125,6 +126,7 @@ def write_debug_session_receipt(
         "breakpoints": breakpoints,
         "stopped_frame": stopped_frame,
         "variables": variables,
+        "variable_redaction_count": variable_redaction_count,
         "commands": commands,
         "stdout_path": str(stdout_path) if stdout_path is not None else None,
         "stdout_sha256": _sha256_uri(stdout_path),
@@ -145,6 +147,7 @@ def write_debug_session_receipt(
                 "The bug is fixed.",
                 "The debug conclusion is semantically complete.",
                 "The code is correct.",
+                "Redaction found every sensitive value.",
                 "Provider/model semantic quality.",
             ],
         },
@@ -245,6 +248,10 @@ def _sha256_uri(path: Path | None) -> str | None:
         return None
 
 
+def _sha256_text(value: str) -> str:
+    return f"sha256:{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
+
+
 def _artifact_size(path: Path | None) -> int | None:
     if path is None:
         return None
@@ -295,6 +302,41 @@ def _optional_string_list(
         return value
     alerts.append(_alert(f"invalid_{field}", f"{field} must be a list of non-empty strings"))
     return []
+
+
+def _sanitize_debug_variables(variables: list[Any]) -> tuple[list[Any], int]:
+    sanitized: list[Any] = []
+    redaction_count = 0
+    for item in variables:
+        if not isinstance(item, Mapping):
+            sanitized.append(item)
+            continue
+        variable = dict(item)
+        name = variable.get("name")
+        value = variable.get("value")
+        if isinstance(name, str) and _sensitive_variable_name(name) and value is not None:
+            variable["value_sha256"] = _sha256_text(str(value))
+            variable["value"] = "[REDACTED]"
+            variable["redacted"] = True
+            redaction_count += 1
+        sanitized.append(variable)
+    return sanitized, redaction_count
+
+
+def _sensitive_variable_name(name: str) -> bool:
+    lowered = name.lower()
+    sensitive_tokens = (
+        "api_key",
+        "apikey",
+        "auth",
+        "bearer",
+        "credential",
+        "key",
+        "password",
+        "secret",
+        "token",
+    )
+    return any(token in lowered for token in sensitive_tokens)
 
 
 def _validate_debug_evidence_paths(
