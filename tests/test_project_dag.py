@@ -1682,6 +1682,94 @@ def test_project_dag_blocks_missing_required_evidence_with_reviewer_action(
     }
 
 
+def test_project_dag_blocks_provider_auth_failure_before_evidence_retry(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", [{"kind": "source_summary"}]),
+    )
+    _write_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {
+                    "kind": "storyboard_identity_review",
+                    "schema": "persona_dream.identity_continuity_review.v1",
+                    "status": "FAIL",
+                    "blocking_findings": [
+                        "identity review call failed: HTTP Error 401: Unauthorized",
+                        "image generation failed: 403 PERMISSION_DENIED: leaked API key",
+                    ],
+                    "model_policy": {
+                        "provider": "codex",
+                        "auth": "codex-oauth",
+                        "model": "gpt-5.5",
+                    },
+                }
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "PROVIDER_AUTH_REQUIRED"
+    assert receipt["alerts"][0]["code"] == "provider_auth_required"
+    assert receipt["dag_error"]["failure_code"] == "provider_auth_required"
+    assert receipt["dag_error"]["failed_node"] == "coder"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_provider_auth",
+        "next_agent": "goal-guardian",
+        "reason": "Refresh provider OAuth/readiness before retrying the DAG node.",
+    }
+    assert len(receipt["course_correction_artifacts"]) == 1
+    course_correction = json.loads(
+        Path(receipt["course_correction_artifacts"][0]).read_text(encoding="utf-8")
+    )
+    assert course_correction["schema"] == "tau.course_correction.v1"
+    assert course_correction["trigger"] == "provider_auth_required"
+    assert (
+        course_correction["required_next_action"]
+        == "repair_provider_auth_then_retry_or_route_human"
+    )
+    assert "regenerate_artifacts_before_auth_repair" in course_correction[
+        "forbidden_next_routes"
+    ]
+    assert "provider_auth_repair_receipt" in course_correction[
+        "required_evidence_before_retry"
+    ]
+    assert course_correction["required_action"]["type"] == "repair_provider_auth"
+    assert (
+        course_correction["required_action"]["repair_function"]
+        == "tau_coding.battle_scillm.preflight_battle_scillm_auth"
+    )
+    assert course_correction["required_action"]["required_receipt_schemas"] == [
+        "tau.battle_scillm_auth_preflight.v1",
+        "tau.provider_readiness_run_receipt.v1",
+    ]
+    assert (
+        "identity review call failed: HTTP Error 401: Unauthorized"
+        in course_correction["observed_state"]["errors"]
+    )
+    assert (
+        "image generation failed: 403 PERMISSION_DENIED: leaked API key"
+        in course_correction["observed_state"]["errors"]
+    )
+
+
 def test_project_dag_blocks_reviewer_target_mismatch(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     reviewer = _reviewer_handoff(goal_hash="sha256:active-goal")

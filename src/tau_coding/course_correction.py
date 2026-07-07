@@ -445,7 +445,15 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["continue_without_bound_receipt"],
             ["fresh_work_order", "node_receipt_or_timeout_diagnostics"],
         )
-    if trigger in {"provider_auth_required", "provider_interstitial"}:
+    if trigger == "provider_auth_required":
+        return _policy(
+            "repair_provider_auth_then_retry_or_route_human",
+            "Provider authentication failed; refresh OAuth/readiness before retrying.",
+            ["auth-repair", "provider-readiness", "human"],
+            ["retry_same_context", "regenerate_artifacts_before_auth_repair"],
+            ["provider_auth_repair_receipt", "provider_readiness_receipt"],
+        )
+    if trigger == "provider_interstitial":
         return _policy(
             "route_human",
             "Provider state requires explicit operator action before continuation.",

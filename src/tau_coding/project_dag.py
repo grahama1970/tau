@@ -83,6 +83,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.monitor_alerts.pointless_unit_test_drift",
     },
+    "provider_auth_required": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.provider_auth.failure_classifier",
+    },
     "brave_search_required_after_two_attempts": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.retry_policy.brave_search_course_correction",
@@ -929,6 +933,40 @@ def _run_bounded_ready_queue_project_dag(
                     responses[node_id] = response
                     node_alerts = _node_response_alerts(contract, contract.nodes[node_id], response)
                     if node_alerts:
+                        auth_alert = next(
+                            (
+                                item
+                                for item in node_alerts
+                                if item.get("code") == "provider_auth_required"
+                            ),
+                            None,
+                        )
+                        if auth_alert is not None:
+                            auth_evidence = (
+                                auth_alert.get("evidence")
+                                if isinstance(auth_alert.get("evidence"), dict)
+                                else {}
+                            )
+                            auth_errors = [
+                                str(item)
+                                for item in auth_evidence.get("auth_errors", [])
+                                if isinstance(item, str)
+                            ]
+                            artifact = _write_course_correction_receipt(
+                                contract=contract,
+                                receipt_dir=receipt_dir,
+                                node_id=node_id,
+                                node=contract.nodes[node_id],
+                                attempt=node_attempts[node_id],
+                                code="provider_auth_required",
+                                reason=auth_alert["message"],
+                                stop_reason="provider_auth_required",
+                                errors=auth_errors,
+                            )
+                            course_correction_artifacts.append(str(artifact))
+                            auth_evidence["course_correction_receipt"] = str(artifact)
+                            auth_alert["evidence"] = auth_evidence
+                            errors.extend(auth_errors)
                         alerts.extend(node_alerts)
                         failed = True
                     else:
@@ -1445,9 +1483,7 @@ def _requires_sandbox_run(contract: ProjectDagContract) -> bool:
 def _requires_compliance_package_validation(contract: ProjectDagContract) -> bool:
     if contract.payload.get("requires_compliance_package_validation") is True:
         return True
-    if contract.payload.get("requires_review_ready_package") is True:
-        return True
-    return False
+    return contract.payload.get("requires_review_ready_package") is True
 
 
 def _embedded_data_boundary(contract: ProjectDagContract) -> dict[str, Any] | None:
@@ -2331,6 +2367,10 @@ def _node_response_alerts(
     response: dict[str, Any],
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
+    auth_alert = _provider_auth_failure_alert(node, response)
+    if auth_alert is not None:
+        alerts.append(auth_alert)
+        return alerts
     missing = _missing_required_evidence(node.required_evidence, response)
     if missing:
         alerts.append(
@@ -2344,6 +2384,87 @@ def _node_response_alerts(
     if node.reviewer is not None:
         alerts.extend(_reviewer_alerts(contract, node, response))
     return alerts
+
+
+def _provider_auth_failure_alert(
+    node: ProjectDagNode,
+    response: dict[str, Any],
+) -> dict[str, Any] | None:
+    failures = _provider_auth_failures(response)
+    if not failures:
+        return None
+    return _alert(
+        "BLOCK",
+        "provider_auth_required",
+        (
+            "Provider authentication failed before required evidence could be produced. "
+            "Repair or refresh OAuth/readiness before retrying this DAG node."
+        ),
+        {
+            "node_id": node.node_id,
+            "agent": node.agent,
+            "auth_errors": failures,
+            "required_evidence": list(node.required_evidence),
+        },
+    )
+
+
+def _provider_auth_failures(value: Any) -> list[str]:
+    failures: list[str] = []
+    _collect_provider_auth_failures(value, failures=failures)
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for item in failures:
+        normalized = " ".join(item.split())
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(normalized)
+    return deduped
+
+
+def _collect_provider_auth_failures(value: Any, *, failures: list[str]) -> None:
+    if isinstance(value, dict):
+        for child in value.values():
+            _collect_provider_auth_failures(child, failures=failures)
+        return
+    if isinstance(value, list):
+        for child in value:
+            _collect_provider_auth_failures(child, failures=failures)
+        return
+    if not isinstance(value, str):
+        return
+    lower = value.lower()
+    has_auth_error = (
+        "401" in lower
+        or ("403" in lower and "permission_denied" in lower)
+        or "permission denied" in lower
+        or "unauthorized" in lower
+        or "leaked api key" in lower
+        or "api key leaked" in lower
+        or "oauth" in lower
+        and any(marker in lower for marker in ("expired", "stale", "invalid", "auth"))
+    )
+    if not has_auth_error:
+        return
+    if any(
+        marker in lower
+        for marker in (
+            "http error 401",
+            "http error 403",
+            "401 unauthorized",
+            "403 permission_denied",
+            "permission_denied",
+            "permission denied",
+            "unauthorized",
+            "leaked api key",
+            "api key leaked",
+            "oauth",
+            "auth failed",
+            "authentication failed",
+        )
+    ):
+        failures.append(value)
 
 
 def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
@@ -3044,6 +3165,12 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
                 "and provider-route evidence before dispatch."
             ),
         }
+    if normalized == "provider_auth_required":
+        return {
+            "type": "repair_provider_auth",
+            "next_agent": "goal-guardian",
+            "reason": "Refresh provider OAuth/readiness before retrying the DAG node.",
+        }
     if normalized in {
         "missing_required_evidence",
         "missing_reviewer_verdict",
@@ -3281,21 +3408,14 @@ def _write_course_correction_receipt(
     errors: list[str],
 ) -> Path:
     path = receipt_dir / "course-corrections" / f"{node_id}-attempt-{attempt:03d}-{code}.json"
-    query = _brave_search_query(contract, node_id, node, stop_reason, errors)
-    required_action = {
-        "skill": "brave-search",
-        "skill_reference": "$brave-search",
-        "query": query,
-        "command": [
-            "python",
-            ".pi/skills/brave-search/brave_search.py",
-            "web",
-            query,
-            "--count",
-            "5",
-        ],
-        "receipt_required": True,
-    }
+    required_action = _course_correction_required_action(
+        contract=contract,
+        node_id=node_id,
+        node=node,
+        code=code,
+        stop_reason=stop_reason,
+        errors=errors,
+    )
     blocked_report_required = {
         "required": True,
         "fields": [
@@ -3333,6 +3453,52 @@ def _write_course_correction_receipt(
     )
     _write_json(path, payload)
     return path
+
+
+def _course_correction_required_action(
+    *,
+    contract: ProjectDagContract,
+    node_id: str,
+    node: ProjectDagNode,
+    code: str,
+    stop_reason: str,
+    errors: list[str],
+) -> dict[str, Any]:
+    if code == "provider_auth_required":
+        return {
+            "skill": "tau",
+            "skill_reference": "$tau",
+            "type": "repair_provider_auth",
+            "description": (
+                "Run the existing SciLLM/Codex OAuth auth preflight with stale OAuth "
+                "repair enabled, then rerun provider readiness before retrying this node."
+            ),
+            "repair_function": "tau_coding.battle_scillm.preflight_battle_scillm_auth",
+            "repair_default": (
+                "attempt stale OAuth proxy recreation unless "
+                "TAU_DISABLE_STALE_AUTH_REPAIR is set"
+            ),
+            "receipt_required": True,
+            "required_receipt_schemas": [
+                "tau.battle_scillm_auth_preflight.v1",
+                "tau.provider_readiness_run_receipt.v1",
+            ],
+        }
+    query = _brave_search_query(contract, node_id, node, stop_reason, errors)
+    return {
+        "skill": "brave-search",
+        "skill_reference": "$brave-search",
+        "query": query,
+        "command": [
+            "python",
+            ".pi/skills/brave-search/brave_search.py",
+            "web",
+            query,
+            "--count",
+            "5",
+        ],
+        "receipt_required": True,
+    }
 
 
 def _brave_search_query(

@@ -1,9 +1,52 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 11:49 EDT by agent
+**Last updated:** 2026-07-07 11:53 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 provider-auth course-correction gate:
+  `src/tau_coding/project_dag.py` now classifies nested provider authentication
+  failures in bounded ready-queue node responses before falling through to normal
+  missing-evidence or reviewer repair. Provider failures including
+  `401 Unauthorized`, stale/invalid OAuth text, and `403 PERMISSION_DENIED`
+  leaked-key failures block with `provider_auth_required`, write a
+  `tau.course_correction.v1` artifact, and return a DAG recommended action of
+  `repair_provider_auth` through `goal-guardian`. `src/tau_coding/course_correction.py`
+  maps `provider_auth_required` to
+  `repair_provider_auth_then_retry_or_route_human`, allows only `auth-repair`,
+  `provider-readiness`, or `human`, forbids `retry_same_context` and
+  `regenerate_artifacts_before_auth_repair`, and requires
+  `provider_auth_repair_receipt` plus `provider_readiness_receipt` before retry.
+  `tests/test_project_dag.py` covers a provider-sensitive node response carrying
+  both `HTTP Error 401: Unauthorized` and `403 PERMISSION_DENIED: leaked API key`;
+  `tests/test_course_correction.py` covers the direct CLI receipt policy. Course
+  correction `required_action` now names Tau's existing
+  `tau_coding.battle_scillm.preflight_battle_scillm_auth` repair function and
+  requires `tau.battle_scillm_auth_preflight.v1` plus
+  `tau.provider_readiness_run_receipt.v1` evidence before retry. Docs:
+  `docs/course-correction.md`. Focused proof: `git diff --check --
+  src/tau_coding/course_correction.py src/tau_coding/project_dag.py
+  tests/test_course_correction.py tests/test_project_dag.py
+  docs/course-correction.md PROJECT_KNOWLEDGE.md` -> pass; `uv run python -m
+  py_compile src/tau_coding/course_correction.py src/tau_coding/project_dag.py
+  tests/test_course_correction.py tests/test_project_dag.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/course_correction.py
+  src/tau_coding/project_dag.py tests/test_course_correction.py
+  tests/test_project_dag.py docs/course-correction.md` -> `All checks passed!`;
+  `uv run pytest tests/test_course_correction.py tests/test_project_dag.py -q`
+  -> `77 passed in 2.32s`; `uv run pytest
+  tests/test_battle_scillm_auth_preflight.py -q` -> `3 passed in 0.38s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-provider-auth-course-correction-20260707T155450Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `492 passed in 11.82s`. This proves Tau routes
+  provider auth failures to an
+  internal auth-repair/readiness correction instead of letting the project agent
+  treat missing image/review evidence as normal coding drift; it does not prove
+  a live OAuth refresh, live SciLLM/OpenCode semantic worker execution,
+  provider/model quality, legal compliance, human acceptance, or that the repair
+  action was executed.
 
 - 2026-07-07 worker work-order output path containment:
   `src/tau_coding/coding_worker_adapters.py` now requires bounded worker work

@@ -57,6 +57,15 @@ Repeated-failure triggers are evidence-gated. `two_failed_attempts` requires
 `two_attempt_failure_receipt` and `replan_or_debug_receipt` required before a
 new attempt.
 
+Provider-auth failures are also fail-closed. `provider_auth_required` routes to
+`repair_provider_auth_then_retry_or_route_human`, allows only `auth-repair`,
+`provider-readiness`, or `human`, forbids normal same-context retry and artifact
+regeneration before auth repair, and requires `provider_auth_repair_receipt`
+plus `provider_readiness_receipt` before retry. Project DAGs classify nested
+provider errors such as `401 Unauthorized`, stale/invalid OAuth, and
+`403 PERMISSION_DENIED` leaked-key failures into this trigger before treating
+missing evidence as a normal reviewer repair.
+
 Legacy DAG course-correction receipts also preserve `code`, `required_action`,
 and `blocked_report_required` fields so existing run-status and proof summaries
 remain compatible.

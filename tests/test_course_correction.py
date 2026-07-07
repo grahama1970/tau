@@ -540,8 +540,13 @@ def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> N
     assert payload == on_disk
     assert payload["schema"] == COURSE_CORRECTION_SCHEMA
     assert payload["trigger"] == "provider_auth_required"
-    assert payload["required_next_action"] == "route_human"
-    assert payload["allowed_next_routes"] == ["human"]
+    assert payload["required_next_action"] == "repair_provider_auth_then_retry_or_route_human"
+    assert payload["allowed_next_routes"] == ["auth-repair", "provider-readiness", "human"]
+    assert "regenerate_artifacts_before_auth_repair" in payload["forbidden_next_routes"]
+    assert payload["required_evidence_before_retry"] == [
+        "provider_auth_repair_receipt",
+        "provider_readiness_receipt",
+    ]
     assert payload["observed_state"] == {"herdr_state": "auth_required"}
     assert payload["observed_artifact"]["path"] == str(receipt_path.resolve())
     assert payload["observed_artifact"]["exists"] is False
