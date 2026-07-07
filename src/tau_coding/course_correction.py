@@ -40,6 +40,7 @@ def build_course_correction_receipt(
     policy = _policy_for_trigger(normalized_trigger)
     alerts = _input_alerts_for_trigger(
         trigger=normalized_trigger,
+        goal_hash=goal_hash,
         attempt=attempt,
         observed_state=observed_state or {},
     )
@@ -297,10 +298,19 @@ def _normalize_trigger(trigger: str) -> str:
 def _input_alerts_for_trigger(
     *,
     trigger: str,
+    goal_hash: str | None,
     attempt: int | None,
     observed_state: dict[str, Any],
 ) -> list[dict[str, str]]:
     alerts: list[dict[str, str]] = []
+    if not goal_hash:
+        alerts.append(
+            {
+                "severity": "BLOCK",
+                "code": "missing_goal_hash",
+                "message": "course correction requires goal_hash",
+            }
+        )
     if trigger not in {
         "brave_search_required_after_two_attempts",
         "test_failed_twice",

@@ -127,6 +127,10 @@ next actions such as fresh patch receipts, structured review, debugger evidence,
 quarantine, goal-guardian review, or human review.
 
 Course-correction receipts include `input_valid`, `alerts`, and `alert_codes`.
+They also require `goal_hash`; missing goal binding records
+`missing_goal_hash` and makes the receipt invalid input. When a DAG receipt has
+an active goal hash, orchestration reliability rejects declared
+course-correction artifacts that omit or mismatch that goal hash.
 Triggers that claim repeated failure, such as
 `brave_search_required_after_two_attempts`, `test_failed_twice`, and
 `two_failed_attempts`, require either `attempt >= 2` or

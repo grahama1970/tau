@@ -132,6 +132,41 @@ def test_orchestration_reliability_accepts_valid_course_correction_artifact(
     )
 
 
+def test_orchestration_reliability_blocks_unbound_course_correction_artifact(
+    tmp_path: Path,
+) -> None:
+    correction = tmp_path / "course-correction.json"
+    correction.write_text(
+        json.dumps(
+            {
+                "schema": "tau.course_correction.v1",
+                "status": "REQUIRED",
+                "next_allowed": False,
+                "input_valid": True,
+                "required_next_action": "retry_node",
+            }
+        ),
+        encoding="utf-8",
+    )
+    dag_receipt = _write_dag_receipt(
+        tmp_path,
+        status="BLOCKED",
+        course_correction_artifacts=[str(correction)],
+    )
+
+    payload = write_orchestration_reliability_receipt(
+        dag_receipt_path=dag_receipt,
+        output_path=tmp_path / "orchestration-reliability.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["course_corrections_followed"] is False
+    assert payload["course_correction_artifact_report"]["invalid"] == [
+        {"path": str(correction.resolve()), "reason": "missing_goal_hash"}
+    ]
+    assert "course_correction_ignored" in payload["alert_codes"]
+
+
 def test_orchestration_reliability_never_claims_code_correctness(tmp_path: Path) -> None:
     dag_receipt = _write_dag_receipt(tmp_path)
 

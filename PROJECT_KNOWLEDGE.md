@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:02 EDT by agent
+**Last updated:** 2026-07-06 22:08 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 course-correction goal-hash binding rung:
+  `src/tau_coding/course_correction.py` now marks course-correction receipts
+  without `goal_hash` as `input_valid:false` with `missing_goal_hash`, and
+  `src/tau_coding/orchestration_reliability.py` rejects declared
+  course-correction artifacts missing `goal_hash` whenever the DAG receipt has
+  an active goal hash. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/course_correction.py
+  src/tau_coding/orchestration_reliability.py tests/test_course_correction.py
+  tests/test_orchestration_reliability.py` -> pass; `uv run pytest
+  tests/test_course_correction.py tests/test_orchestration_reliability.py -q`
+  -> `18 passed in 0.43s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-course-correction-goal-hash-proof`
+  exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-course-correction-goal-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, coverage entry `coding course-correction receipts`
+  / `orchestration reliability receipts`, and embedded focused coding tests
+  `190 passed in 6.06s`. This proves deterministic local orchestration
+  reliability no longer treats unbound course-correction artifacts as followed
+  corrections for active-goal DAGs; it does not prove semantic sufficiency of
+  the correction, execution of the required next action, agent truthfulness,
+  provider/model quality, live worker semantic execution, legal compliance, or
+  full sandbox isolation.
 
 - 2026-07-06 GitHub read goal-hash evidence binding rung:
   `src/tau_coding/github_read_schemes.py` now records `goal_hash` on

@@ -92,6 +92,19 @@ def test_course_correction_created_for_stale_patch() -> None:
     assert "apply_unvalidated_patch" in payload["forbidden_next_routes"]
 
 
+def test_course_correction_missing_goal_hash_is_invalid_input() -> None:
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+    )
+
+    assert payload["input_valid"] is False
+    assert "missing_goal_hash" in payload["alert_codes"]
+
+
 def test_course_correction_created_for_reviewer_p0() -> None:
     payload = build_course_correction_receipt(
         trigger="reviewer_p0",

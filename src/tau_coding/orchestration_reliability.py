@@ -367,7 +367,9 @@ def _course_correction_invalid_reason(
         return "next_allowed_not_false"
     if payload.get("input_valid") is not True:
         return "input_not_valid"
-    if active_goal_hash and payload.get("goal_hash") not in {None, active_goal_hash}:
+    if active_goal_hash and not payload.get("goal_hash"):
+        return "missing_goal_hash"
+    if active_goal_hash and payload.get("goal_hash") != active_goal_hash:
         return "goal_hash_mismatch"
     if not payload.get("required_next_action"):
         return "missing_required_next_action"
