@@ -1,5 +1,7 @@
 import hashlib
 import json
+import socket
+import urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
@@ -2567,6 +2569,82 @@ def test_scillm_worker_launch_apply_blocks_invalid_timeout_before_http(
     assert payload["timed_out"] is False
     assert "invalid_timeout" in payload["alert_codes"]
     assert requests == []
+
+
+def test_scillm_worker_launch_apply_records_socket_timeout(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    def raise_timeout(*args, **kwargs):
+        raise socket.timeout("timed out")
+
+    monkeypatch.setattr("urllib.request.urlopen", raise_timeout)
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+        scillm_base_url="http://localhost:4001",
+        apply=True,
+        auth_token="test-token",
+        request_timeout_s=1,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is True
+    assert payload["launch_skipped"] is False
+    assert payload["timed_out"] is True
+    assert payload["error_path"] is None
+    assert "scillm_launch_timeout" in payload["alert_codes"]
+    assert "scillm_connection_error" not in payload["alert_codes"]
+
+
+def test_scillm_worker_launch_apply_records_urlerror_timeout(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+
+    def raise_timeout(*args, **kwargs):
+        raise urllib.error.URLError(socket.timeout("timed out"))
+
+    monkeypatch.setattr("urllib.request.urlopen", raise_timeout)
+
+    payload = write_scillm_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "launch-receipt.json",
+        scillm_base_url="http://localhost:4001",
+        apply=True,
+        auth_token="test-token",
+        request_timeout_s=1,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is True
+    assert payload["launch_skipped"] is False
+    assert payload["timed_out"] is True
+    assert payload["error_path"] is None
+    assert "scillm_launch_timeout" in payload["alert_codes"]
+    assert "scillm_connection_error" not in payload["alert_codes"]
 
 
 def test_cli_scillm_worker_launch_apply_records_http_receipt(tmp_path: Path) -> None:

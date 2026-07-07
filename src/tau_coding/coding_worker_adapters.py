@@ -6,6 +6,7 @@ import fnmatch
 import hashlib
 import json
 import os
+import socket
 import subprocess
 import urllib.error
 import urllib.parse
@@ -825,7 +826,7 @@ def _maybe_post_scillm_opencode_run(
         with urllib.request.urlopen(request, timeout=request_timeout_s) as response:
             response_body = response.read().decode("utf-8", errors="replace")
             http_status = response.status
-    except TimeoutError:
+    except (TimeoutError, socket.timeout):
         alerts.append(
             _alert(
                 "scillm_launch_timeout",
@@ -849,6 +850,17 @@ def _maybe_post_scillm_opencode_run(
         )
         return result
     except urllib.error.URLError as exc:
+        if isinstance(exc.reason, (TimeoutError, socket.timeout)):
+            alerts.append(
+                _alert(
+                    "scillm_launch_timeout",
+                    f"SciLLM OpenCode serve request timed out after {request_timeout_s}s",
+                )
+            )
+            result.update(
+                {"http_executed": True, "launch_skipped": False, "timed_out": True}
+            )
+            return result
         error_path.parent.mkdir(parents=True, exist_ok=True)
         error_path.write_text(str(exc), encoding="utf-8")
         alerts.append(_alert("scillm_connection_error", f"SciLLM request failed: {exc}"))

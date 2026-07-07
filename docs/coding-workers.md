@@ -911,8 +911,10 @@ Tau requires `scillm_run_status:"completed"`, at least one of `run_id` or
 `missing_scillm_run_status`,
 `missing_scillm_run_identifier`, or `missing_scillm_worker_result_artifact`.
 When the response names the result but the artifact is absent or unreadable,
-Tau blocks with `scillm_worker_result_artifact_missing`. Apply mode requires
-bearer auth from one of these sources:
+Tau blocks with `scillm_worker_result_artifact_missing`. Socket-level request
+timeouts, including `urllib` errors whose reason is a timeout, are recorded as
+`scillm_launch_timeout` with `timed_out:true`; they are not treated as generic
+connection errors. Apply mode requires bearer auth from one of these sources:
 
 - explicit `--auth-token`
 - local `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`, or `SCILLM_AUTH_TOKEN`
