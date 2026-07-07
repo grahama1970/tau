@@ -71,7 +71,6 @@ from tau_coding.dag_stress_poc import (
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
-from tau_coding.dogpile_skill_adapter import write_dogpile_skill_adapter_receipt
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
@@ -1963,6 +1962,11 @@ def main(
             payload = write_project_profile_validation_receipt(
                 profile_path=Path(str(options["profile"])),
                 output_path=Path(str(options["out"])),
+                capability_registry_path=(
+                    Path(str(options["registry"]))
+                    if options.get("registry") is not None
+                    else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -2072,30 +2076,6 @@ def main(
                 expected_goal_hash=_optional_str(options.get("goal_hash")),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
-            )
-        except RuntimeError as exc:
-            raise typer.BadParameter(str(exc)) from exc
-        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
-        raise typer.Exit(1 if payload.get("ok") is not True else 0)
-
-    if prompt_option is None and command == "dogpile-skill-adapter":
-        try:
-            options = _parse_dogpile_skill_adapter_cli_args(positional_args[1:])
-            payload = write_dogpile_skill_adapter_receipt(
-                dogpile_path=Path(str(options["dogpile"])),
-                output_path=Path(str(options["out"])),
-                source_packet_path=(
-                    Path(str(options["source_packet"]))
-                    if options.get("source_packet") is not None
-                    else None
-                ),
-                research_receipt_path=(
-                    Path(str(options["research_receipt"]))
-                    if options.get("research_receipt") is not None
-                    else None
-                ),
-                expected_query=_optional_str(options.get("expected_query")),
-                classification=str(options.get("classification") or "evidence_candidate"),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -5301,11 +5281,11 @@ def _parse_herdr_observation_gate_cli_args(args: list[str]) -> dict[str, object]
 
 
 def _parse_project_profile_validate_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {"profile": None, "out": None}
+    options: dict[str, object] = {"profile": None, "out": None, "registry": None}
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--profile", "--out"}:
+        if arg in {"--profile", "--out", "--registry"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -5314,6 +5294,8 @@ def _parse_project_profile_validate_cli_args(args: list[str]) -> dict[str, objec
             options["profile"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--registry="):
+            options["registry"] = arg.partition("=")[2]
         else:
             raise RuntimeError(f"unknown project-profile-validate option: {arg}")
         index += 1
@@ -5615,56 +5597,6 @@ def _parse_evidence_case_skill_adapter_cli_args(args: list[str]) -> dict[str, ob
         raise RuntimeError(
             "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
             "--repo-root <dir>"
-        )
-    return options
-
-
-def _parse_dogpile_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
-    options: dict[str, object] = {
-        "dogpile": None,
-        "out": None,
-        "source_packet": None,
-        "research_receipt": None,
-        "expected_query": None,
-        "classification": "evidence_candidate",
-    }
-    index = 0
-    while index < len(args):
-        arg = args[index]
-        if arg in {
-            "--dogpile",
-            "--out",
-            "--source-packet",
-            "--research-receipt",
-            "--expected-query",
-            "--classification",
-        }:
-            index += 1
-            if index >= len(args):
-                raise RuntimeError(f"{arg} requires a value")
-            options[arg.removeprefix("--").replace("-", "_")] = args[index]
-        elif arg.startswith("--dogpile="):
-            options["dogpile"] = arg.partition("=")[2]
-        elif arg.startswith("--out="):
-            options["out"] = arg.partition("=")[2]
-        elif arg.startswith("--source-packet="):
-            options["source_packet"] = arg.partition("=")[2]
-        elif arg.startswith("--research-receipt="):
-            options["research_receipt"] = arg.partition("=")[2]
-        elif arg.startswith("--expected-query="):
-            options["expected_query"] = arg.partition("=")[2]
-        elif arg.startswith("--classification="):
-            options["classification"] = arg.partition("=")[2]
-        else:
-            raise RuntimeError(f"unknown dogpile-skill-adapter option: {arg}")
-        index += 1
-    if not _optional_str(options.get("dogpile")):
-        raise RuntimeError(
-            "Usage: tau dogpile-skill-adapter --dogpile <json> --out <receipt>"
-        )
-    if not _optional_str(options.get("out")):
-        raise RuntimeError(
-            "Usage: tau dogpile-skill-adapter --dogpile <json> --out <receipt>"
         )
     return options
 

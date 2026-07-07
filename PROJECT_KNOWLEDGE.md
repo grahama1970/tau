@@ -1,9 +1,42 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 08:44 EDT by agent
+**Last updated:** 2026-07-07 08:54 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 research skill adapter rung:
+  `src/tau_coding/research_skill_adapter.py` adds
+  `tau.research_skill_adapter_receipt.v1` for ingesting research artifacts only
+  after a passing `tau.research_query_safety_receipt.v1`, converting sources
+  into `tau.research_source_packet.v1`, and validating them through
+  `tau.research_source_receipt.v1`. The adapter supports flat
+  `dogpile.report.v1`-style `sources` and real Dogpile
+  `dogpile_partial_results.json` shape with `requested_query`, nested
+  `results.stage1/stage2`, provider counts, and degraded provider metadata.
+  `src/tau_coding/cli.py` exposes `research-skill-adapter`.
+  `tests/test_research_skill_adapter.py` covers missing/blocked query safety,
+  report/query-safety hash matching, Dogpile partial-result source extraction,
+  review-required design-input non-claims, and the CLI path.
+  `scripts/run-coding-capability-sanity.py` includes the research adapter module
+  and tests in aggregate lint/test coverage. Focused proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/research_skill_adapter.py tests/test_research_skill_adapter.py
+  src/tau_coding/cli.py scripts/run-coding-capability-sanity.py` -> `All
+  checks passed!`; `uv run pytest tests/test_research_skill_adapter.py
+  tests/test_research_source_receipt.py tests/test_research_query_gate.py -q`
+  -> `16 passed in 0.45s`; `uv run python -m py_compile
+  src/tau_coding/research_skill_adapter.py src/tau_coding/cli.py
+  scripts/run-coding-capability-sanity.py` -> pass; `git diff --check -- ...`
+  -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-research-adapter-20260707T125412Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `435 passed in 10.61s`. This proves local
+  deterministic research-adapter wiring, query-safety pre-gating,
+  Dogpile-shaped source extraction, research-source receipt validation, CLI
+  receipt writing, and aggregate sanity coverage; it does not prove source
+  truth, live Dogpile execution, research sufficiency, provider/model quality,
+  implementation closure, or legal/compliance sufficiency.
 
 - 2026-07-07 create-evidence-case skill adapter rung:
   `src/tau_coding/evidence_case_skill_adapter.py` adds

@@ -243,12 +243,50 @@ input. It does not call external research services itself.
 This still does not prove cited sources are true, the research is closure proof,
 or that the research is sufficient for implementation.
 
+## Project Profile Capability Providers
+
+Project profiles can now declare which skill provider must satisfy a Tau
+capability:
+
+```json
+{
+  "schema": "tau.project_profile.v1",
+  "project_id": "tau-self-fix",
+  "capability_providers": {
+    "debug_runtime_state": "debugger",
+    "bounded_code_fix": "code-runner",
+    "code_review": "review-code",
+    "deep_research": "dogpile",
+    "evidence_case": "create-evidence-case",
+    "model_worker": "scillm"
+  },
+  "course_correction": {
+    "allowed_actions": ["route_reviewer", "run_brave_search_then_retry"],
+    "forbid_retry_same_context_after": 2,
+    "action_capabilities": {
+      "route_reviewer": "code_review",
+      "run_brave_search_then_retry": "deep_research"
+    }
+  }
+}
+```
+
+```bash
+uv run tau project-profile-validate \
+  --profile /tmp/project-profile.json \
+  --registry /tmp/skill-capability-registry.json \
+  --out /tmp/project-profile-validation-receipt.json
+```
+
+This is a binding and validation layer only. It does not invoke skills or trust
+skill output. Tau still requires invocation receipts, adapter receipts, and
+downstream DAG/course-correction validation before a skill result counts.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
 1. Model-worker adapter.
-2. Project-profile capability provider requirements.
-3. Course-correction routing through validated capability providers.
-4. A skill-composition red-team suite that proves Tau does not blindly trust
+2. Course-correction routing through validated capability providers.
+3. A skill-composition red-team suite that proves Tau does not blindly trust
    skill outputs.

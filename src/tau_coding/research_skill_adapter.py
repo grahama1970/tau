@@ -91,6 +91,8 @@ def write_research_skill_adapter_receipt(
         "classification": classification,
         "query": source_packet.get("query"),
         "source_count": source_receipt.get("source_count"),
+        "provider_counts": _provider_counts(source_packet.get("sources")),
+        "degraded_providers": _degraded_providers(report),
         "review_required": source_receipt.get("review_required"),
         "errors": errors,
         "course_correction": _course_correction(errors),
@@ -179,6 +181,8 @@ def _normalize_source(index: int, source: Any, *, errors: list[str]) -> dict[str
             if isinstance(source.get("extraction_artifact"), str)
             else None
         ),
+        "provider": source.get("provider") if isinstance(source.get("provider"), str) else None,
+        "stage": source.get("stage") if isinstance(source.get("stage"), str) else None,
         "relevance": _relevance(source.get("relevance")),
         "claims_supported": [item for item in claims if isinstance(item, str) and item],
     }
@@ -189,11 +193,20 @@ def _sources(report: dict[str, Any]) -> list[Any]:
         value = report.get(field)
         if isinstance(value, list):
             return value
+    results = report.get("results")
+    if isinstance(results, dict):
+        return _dogpile_sources(results)
     return []
 
 
 def _query(report: dict[str, Any]) -> str:
-    for field in ("query", "original_query", "sanitized_query"):
+    for field in (
+        "query",
+        "requested_query",
+        "effective_query",
+        "original_query",
+        "sanitized_query",
+    ):
         value = report.get(field)
         if isinstance(value, str) and value.strip():
             return value.strip()
@@ -235,6 +248,111 @@ def _relevance(value: Any) -> str:
         if normalized in {"HIGH", "MEDIUM", "LOW"}:
             return normalized
     return "MEDIUM"
+
+
+def _dogpile_sources(results: dict[str, Any]) -> list[dict[str, Any]]:
+    found: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for stage, providers in results.items():
+        if not isinstance(providers, dict):
+            continue
+        for provider, value in providers.items():
+            for item in _walk_source_items(value):
+                url = _string(item.get("url")) or _string(item.get("link"))
+                title = _string(item.get("title"))
+                if not url or not title:
+                    continue
+                if url in seen:
+                    continue
+                seen.add(url)
+                found.append(
+                    {
+                        **item,
+                        "provider": str(provider),
+                        "stage": str(stage),
+                        "claims_supported": _claims_supported(item, provider=str(provider)),
+                    }
+                )
+    return found
+
+
+def _walk_source_items(value: Any) -> list[dict[str, Any]]:
+    found: list[dict[str, Any]] = []
+    if isinstance(value, dict):
+        if isinstance(value.get("title"), str) and (
+            isinstance(value.get("url"), str) or isinstance(value.get("link"), str)
+        ):
+            found.append(value)
+        for nested in value.values():
+            if isinstance(nested, dict | list):
+                found.extend(_walk_source_items(nested))
+    elif isinstance(value, list):
+        for item in value:
+            if isinstance(item, dict | list):
+                found.extend(_walk_source_items(item))
+    return found
+
+
+def _claims_supported(source: dict[str, Any], *, provider: str) -> list[str]:
+    claims = source.get("claims_supported", source.get("claims"))
+    if isinstance(claims, str) and claims.strip():
+        return [claims.strip()]
+    if isinstance(claims, list):
+        values = [claim for claim in claims if isinstance(claim, str) and claim.strip()]
+        if values:
+            return values
+    description = source.get("description", source.get("snippet", source.get("summary")))
+    if isinstance(description, str) and description.strip():
+        return [description.strip()[:240]]
+    return [f"Dogpile {provider} result for the research query."]
+
+
+def _provider_counts(sources: Any) -> dict[str, int]:
+    if not isinstance(sources, list):
+        return {}
+    counts: dict[str, int] = {}
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        provider = _string(source.get("provider")) or "unknown"
+        counts[provider] = counts.get(provider, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _degraded_providers(report: dict[str, Any]) -> list[dict[str, str]]:
+    results = report.get("results")
+    if not isinstance(results, dict):
+        return []
+    degraded: list[dict[str, str]] = []
+    for stage, providers in results.items():
+        if not isinstance(providers, dict):
+            continue
+        for provider, value in providers.items():
+            reason = _degraded_reason(value)
+            if reason:
+                degraded.append(
+                    {
+                        "stage": str(stage),
+                        "provider": str(provider),
+                        "reason": reason,
+                    }
+                )
+    return degraded
+
+
+def _degraded_reason(value: Any) -> str | None:
+    if isinstance(value, dict):
+        for key in ("error", "skipped"):
+            raw = value.get(key)
+            if isinstance(raw, str) and raw.strip():
+                return raw.strip()
+    if isinstance(value, list) and len(value) == 1 and isinstance(value[0], dict):
+        title = _string(value[0].get("title"))
+        if title.lower().startswith("error "):
+            return title
+    if isinstance(value, str) and value.lower().startswith("error"):
+        return value.strip()
+    return None
 
 
 def _course_correction(errors: list[str]) -> dict[str, Any] | None:

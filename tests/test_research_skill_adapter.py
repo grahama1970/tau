@@ -70,6 +70,27 @@ def test_research_adapter_hashes_dogpile_report(tmp_path: Path) -> None:
     assert source_receipt["source_count"] == 1
 
 
+def test_research_adapter_extracts_dogpile_partial_results_shape(tmp_path: Path) -> None:
+    report = _write_dogpile_partial_results(tmp_path)
+    safety = _write_query_safety_receipt(tmp_path)
+
+    receipt = write_research_skill_adapter_receipt(
+        report_path=report,
+        query_safety_receipt_path=safety,
+        output_path=tmp_path / "research-adapter-receipt.json",
+        repo_root=tmp_path,
+    )
+
+    source_packet = json.loads((tmp_path / "research-source-packet.json").read_text())
+    assert receipt["status"] == "PASS"
+    assert receipt["source_count"] == 3
+    assert receipt["provider_counts"] == {"brave": 2, "stage2_github": 1}
+    assert receipt["degraded_providers"][0]["provider"] == "youtube"
+    assert source_packet["query"] == _QUERY
+    assert source_packet["sources"][0]["provider"] == "brave"
+    assert source_packet["sources"][2]["provider"] == "stage2_github"
+
+
 def test_research_adapter_marks_research_as_design_input_not_closure(tmp_path: Path) -> None:
     report = _write_report(tmp_path)
     safety = _write_query_safety_receipt(tmp_path)
@@ -132,6 +153,55 @@ def _write_report(tmp_path: Path, *, query: str = _QUERY) -> Path:
         "limitations": ["Research is design input only."],
     }
     path = tmp_path / "dogpile-report.json"
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_dogpile_partial_results(tmp_path: Path) -> Path:
+    payload = {
+        "requested_query": _QUERY,
+        "effective_query": _QUERY,
+        "updated_at": "2026-07-07T12:00:00Z",
+        "status": "completed",
+        "results": {
+            "stage1": {
+                "brave": {
+                    "results": [
+                        {
+                            "title": "NIST Secure Software Development Framework",
+                            "description": "Secure development guidance.",
+                            "url": "https://csrc.nist.gov/Projects/ssdf",
+                        },
+                        {
+                            "title": "CISA Secure by Design",
+                            "description": "Secure by design guidance.",
+                            "url": "https://www.cisa.gov/securebydesign",
+                        },
+                    ]
+                },
+                "youtube": [
+                    {
+                        "title": "Error searching YouTube: yt-dlp not installed.",
+                        "url": "",
+                    }
+                ],
+            },
+            "stage2": {
+                "stage2_github": {
+                    "github_details": [
+                        {
+                            "title": "example/repo",
+                            "summary": "Repository with receipt-backed CI examples.",
+                            "url": "https://github.com/example/repo",
+                            "relevance": "HIGH",
+                        }
+                    ]
+                }
+            },
+        },
+        "final_report": "# Dogpile Report: adaptive DAG research for Tau\n\nSources found.",
+    }
+    path = tmp_path / "dogpile-partial-results.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 
