@@ -180,12 +180,17 @@ def build_compliance_evidence_package(
         },
     }
     manifest_path = resolved_out / "package-manifest.json"
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    manifest_payload_bytes = _canonical_json_bytes(manifest)
     manifest["manifest_path"] = str(manifest_path)
-    manifest["manifest_sha256"] = f"sha256:{_sha256(manifest_path)}"
+    manifest["manifest_payload_sha256"] = (
+        f"sha256:{hashlib.sha256(manifest_payload_bytes).hexdigest()}"
+    )
+    manifest["manifest_payload_bytes"] = len(manifest_payload_bytes)
+    manifest["manifest_hash_scope"] = (
+        "manifest_payload_sha256 covers the manifest before manifest_path and "
+        "manifest_payload_* metadata are added; JSON files cannot contain a stable "
+        "SHA-256 hash of their own final bytes."
+    )
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -283,6 +288,10 @@ def _write_generated_json(
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     items.append(_item_for_path(destination, kind=kind, source_path=source_path))
+
+
+def _canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
+    return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
 def _copy_matching_receipts(

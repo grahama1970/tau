@@ -66,9 +66,16 @@ items[].sha256
 items[].source_path
 items[].source_sha256
 items[].schema
+manifest_path
+manifest_payload_sha256
+manifest_payload_bytes
+manifest_hash_scope
 ```
 
-The manifest is a review index. It is not a validator for evidence sufficiency.
+`manifest_payload_sha256` covers the manifest payload before self-reference
+metadata is added. The manifest cannot contain a stable hash of its own final
+bytes. The manifest is a review index. It is not a validator for evidence
+sufficiency.
 
 ## Non-Claims
 

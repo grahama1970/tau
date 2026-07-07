@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -44,6 +45,34 @@ def test_compliance_package_collects_zero_trust_dag_artifacts(tmp_path: Path) ->
         "non_claims",
     }.issubset(item_kinds)
     assert all(str(item["sha256"]).startswith("sha256:") for item in manifest["items"])
+
+
+def test_compliance_package_manifest_hash_scope_is_explicit(tmp_path: Path) -> None:
+    run_dir = _write_zero_trust_run(tmp_path)
+    out_dir = tmp_path / "package"
+
+    manifest = build_compliance_evidence_package(run_dir=run_dir, out_dir=out_dir)
+    written = json.loads((out_dir / "package-manifest.json").read_text(encoding="utf-8"))
+    payload_without_manifest_metadata = dict(written)
+    for key in (
+        "manifest_hash_scope",
+        "manifest_path",
+        "manifest_payload_bytes",
+        "manifest_payload_sha256",
+    ):
+        payload_without_manifest_metadata.pop(key)
+    canonical = (
+        json.dumps(payload_without_manifest_metadata, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+
+    assert manifest == written
+    assert written["manifest_payload_sha256"] == (
+        f"sha256:{hashlib.sha256(canonical).hexdigest()}"
+    )
+    assert written["manifest_payload_bytes"] == len(canonical)
+    assert "cannot contain a stable SHA-256 hash of their own final bytes" in written[
+        "manifest_hash_scope"
+    ]
 
 
 def test_compliance_package_blocks_nonempty_output_without_force(tmp_path: Path) -> None:

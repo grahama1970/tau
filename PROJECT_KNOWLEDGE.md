@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:33 EDT by agent
+**Last updated:** 2026-07-06 22:37 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 compliance package manifest hash-scope rung:
+  `src/tau_coding/compliance_package.py` now records
+  `manifest_payload_sha256`, `manifest_payload_bytes`, and
+  `manifest_hash_scope` on `tau.compliance_evidence_package.v1` manifests
+  instead of implying the JSON file can contain a stable SHA-256 of its own
+  final bytes. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py` ->
+  pass; `uv run pytest tests/test_compliance_package.py -q` -> `4 passed in
+  0.39s`. Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-compliance-manifest-hash-scope-proof`
+  exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-compliance-manifest-hash-scope-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `196 passed in
+  6.62s`. This proves deterministic local compliance package manifests now
+  make their hash scope explicit and the coding capability aggregate still
+  composes; it does not prove compliance evidence sufficiency, ITAR compliance,
+  legal sufficiency, Memory fact truth, provider/model quality, human
+  acceptance, or full sandbox isolation.
 
 - 2026-07-06 worker substrate receipt hash binding rung:
   `src/tau_coding/coding_worker_adapters.py` now records
