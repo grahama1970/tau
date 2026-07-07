@@ -224,6 +224,7 @@ from tau_coding.skill_capability_registry import (
     write_default_skill_capability_registry,
     write_skill_capability_registry_validation_receipt,
 )
+from tau_coding.skill_invocation import write_skill_invocation_receipt
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
@@ -1989,6 +1990,23 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
+
+    if prompt_option is None and command == "skill-invocation":
+        try:
+            options = _parse_skill_invocation_cli_args(positional_args[1:])
+            payload = write_skill_invocation_receipt(
+                request_path=Path(str(options["request"])),
+                output_path=Path(str(options["out"])),
+                repo_root=(
+                    Path(str(options["repo_root"]))
+                    if options.get("repo_root") is not None
+                    else None
+                ),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(1 if payload.get("ok") is not True else 0)
 
     if prompt_option is None and command == "loop2-serve":
         try:
@@ -5248,6 +5266,42 @@ def _parse_skill_capability_registry_default_cli_args(args: list[str]) -> dict[s
         index += 1
     if not _optional_str(options.get("out")):
         raise RuntimeError("Usage: tau skill-capability-registry-default --out <registry.json>")
+    return options
+
+
+def _parse_skill_invocation_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "request": None,
+        "out": None,
+        "repo_root": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--request", "--out", "--repo-root"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--request="):
+            options["request"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--repo-root="):
+            options["repo_root"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown skill-invocation option: {arg}")
+        index += 1
+    if not _optional_str(options.get("request")):
+        raise RuntimeError(
+            "Usage: tau skill-invocation --request <json> --out <receipt> "
+            "[--repo-root <dir>]"
+        )
+    if not _optional_str(options.get("out")):
+        raise RuntimeError(
+            "Usage: tau skill-invocation --request <json> --out <receipt> "
+            "[--repo-root <dir>]"
+        )
     return options
 
 

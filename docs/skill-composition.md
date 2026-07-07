@@ -80,14 +80,43 @@ It does not prove:
 - provider/model quality;
 - future route correctness.
 
+## Skill Invocation Receipts
+
+The generic invocation wrapper records a bounded skill call or an ingested skill
+artifact under Tau context:
+
+```bash
+uv run tau skill-invocation \
+  --request /tmp/tau-skill-request.json \
+  --out /tmp/tau-skill-invocation-receipt.json \
+  --repo-root /path/to/repo
+```
+
+The request schema is `tau.skill_invocation_request.v1`. The receipt schema is
+`tau.skill_invocation_receipt.v1`.
+
+Supported modes:
+
+| Mode | Behavior |
+| --- | --- |
+| `dry_run` | Record the command and bindings without executing the skill. |
+| `execute` | Run the command locally, capture stdout/stderr/exit code, and record bindings. |
+| `ingest_existing` | Hash existing repo-contained artifacts without running a command. |
+
+Artifact bindings use `tau.skill_artifact_binding.v1` and fail closed if an
+artifact path escapes the configured repo root.
+
+The invocation receipt still does not make a native skill artifact admissible by
+itself. Skill-specific adapters must validate debugger, code-runner, review,
+evidence-case, research, or model-worker artifacts before a DAG can treat those
+outputs as evidence.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
-1. `tau.skill_invocation_receipt.v1` for bounded dry-run, execute, and
-   ingest-existing skill calls.
-2. Skill-specific adapters from native skill artifacts into Tau receipts.
-3. Project-profile capability provider requirements.
-4. Course-correction routing through validated capability providers.
-5. A skill-composition red-team suite that proves Tau does not blindly trust
+1. Skill-specific adapters from native skill artifacts into Tau receipts.
+2. Project-profile capability provider requirements.
+3. Course-correction routing through validated capability providers.
+4. A skill-composition red-team suite that proves Tau does not blindly trust
    skill outputs.
