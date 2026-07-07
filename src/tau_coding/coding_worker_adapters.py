@@ -596,6 +596,7 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "herdr_receipt_not_pass",
         "herdr_receipt_mocked",
         "herdr_receipt_not_live",
+        "herdr_receipt_goal_hash_mismatch",
     }
     sandbox_codes = {
         "substrate_required",
@@ -608,6 +609,7 @@ def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:
         "sandbox_receipt_not_pass",
         "sandbox_receipt_mocked",
         "sandbox_receipt_not_live",
+        "sandbox_receipt_goal_hash_mismatch",
     }
     forbidden_codes = {
         "changed_file_outside_repo",
@@ -1004,6 +1006,13 @@ def _append_work_order_gate_alerts(
                 non_live_code="sandbox_receipt_not_live",
                 label="sandbox receipt",
             )
+            _append_referenced_receipt_binding_alerts(
+                sandbox_receipt,
+                work_order,
+                alerts,
+                goal_mismatch_code="sandbox_receipt_goal_hash_mismatch",
+                label="sandbox receipt",
+            )
     if high_stakes and substrate in {"herdr", "herdr-visible"}:
         herdr_binding = isinstance(work_order.get("herdr_binding"), Mapping)
         herdr_receipt_path = _string(work_order.get("herdr_receipt_path"))
@@ -1039,6 +1048,13 @@ def _append_work_order_gate_alerts(
                 not_pass_code="herdr_receipt_not_pass",
                 mocked_code="herdr_receipt_mocked",
                 non_live_code="herdr_receipt_not_live",
+                label="Herdr observation receipt",
+            )
+            _append_referenced_receipt_binding_alerts(
+                herdr_receipt,
+                work_order,
+                alerts,
+                goal_mismatch_code="herdr_receipt_goal_hash_mismatch",
                 label="Herdr observation receipt",
             )
     policy_profile = work_order.get("policy_profile")
@@ -1225,6 +1241,27 @@ def _append_referenced_receipt_status_alerts(
     if receipt.get("live") is not True:
         alerts.append(
             _alert(non_live_code, f"{label} must record live:true for high-stakes workers")
+        )
+
+
+def _append_referenced_receipt_binding_alerts(
+    receipt: Mapping[str, Any] | None,
+    work_order: Mapping[str, Any],
+    alerts: list[dict[str, Any]],
+    *,
+    goal_mismatch_code: str,
+    label: str,
+) -> None:
+    if receipt is None:
+        return
+    receipt_goal_hash = _string(receipt.get("goal_hash"))
+    work_order_goal_hash = _string(work_order.get("goal_hash"))
+    if receipt_goal_hash and work_order_goal_hash and receipt_goal_hash != work_order_goal_hash:
+        alerts.append(
+            _alert(
+                goal_mismatch_code,
+                f"{label} goal_hash must match the worker work order goal_hash",
+            )
         )
 
 

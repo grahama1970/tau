@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 worker substrate goal-hash binding rung:
+  `src/tau_coding/coding_worker_adapters.py` now rejects high-stakes sandbox
+  or Herdr substrate receipts that declare a `goal_hash` different from the
+  worker work order `goal_hash`. Sandbox mismatches block with
+  `sandbox_receipt_goal_hash_mismatch` and route to the existing
+  `receipt_timeout` course-correction path; Herdr mismatches block with
+  `herdr_receipt_goal_hash_mismatch` and route to `herdr_stale`. This prevents
+  stale-but-PASS substrate receipts from being reused as admissible evidence
+  for a different coding goal. Focused proof: `git diff --check --
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `76 passed in 4.80s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-worker-substrate-goal-binding-20260707T094000Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-worker-substrate-goal-binding-20260707T094000Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded `coding_receipt_tests`
+  `311 passed in 8.19s`. This proves deterministic local worker validation
+  blocks stale substrate evidence before high-stakes coding worker results can
+  support DAG continuation and still composes with the current coding-capability
+  sanity suite; it does not prove live OMP or SciLLM semantic worker execution,
+  full sandbox isolation, provider/model quality, legal compliance, or full
+  goal completion.
+
 - 2026-07-07 GitHub read target-name fail-closed rung: `src/tau_coding/
   github_read_schemes.py` now validates parsed GitHub owner/repo tokens for
   `issue://`, `pr://`, `diff://`, and `commit://` read receipts before

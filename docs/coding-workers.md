@@ -606,8 +606,11 @@ substrates must include an existing `tau.sandbox_run_receipt.v1` receipt with
 `status:"PASS"`,
 `ok:true`, `mocked:false`, and `live:true`; Herdr substrates must include both
 `herdr_binding` and an existing `tau.herdr_observation_gate_receipt.v1` receipt
-with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. Binding
-metadata alone is not an admissible high-stakes Herdr substrate. Validation
+with `status:"PASS"`, `ok:true`, `mocked:false`, and `live:true`. When a
+referenced sandbox or Herdr receipt carries `goal_hash`, Tau requires it to
+match the worker work order and blocks stale substrate receipts with
+`sandbox_receipt_goal_hash_mismatch` or `herdr_receipt_goal_hash_mismatch`.
+Binding metadata alone is not an admissible high-stakes Herdr substrate. Validation
 receipts record `work_order_sha256`, `result_sha256`, byte counts, and
 `validated_artifacts` for the exact JSON artifacts Tau inspected. Worker result
 artifacts are recorded in `result_artifact_descriptors` with resolved path,
