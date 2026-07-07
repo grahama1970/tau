@@ -5,6 +5,39 @@
 
 ## Current Understanding
 
+- 2026-07-07 orchestration reliability controlled-block terminal rung:
+  `src/tau_coding/orchestration_reliability.py` now treats a DAG receipt with
+  `status:"BLOCKED"` as a valid orchestration terminal condition only when it
+  declares a valid `tau.course_correction.v1` artifact and that artifact
+  passes the existing course-correction binding checks. This restores Tau's
+  intended distinction between task success and reliable containment: a
+  controlled blocked run can be reliable without claiming code correctness or
+  agent truthfulness. `tests/test_orchestration_reliability.py` now asserts
+  that a valid course-correction artifact produces `status:"PASS"`,
+  `reliable_orchestration:true`, and `terminal_condition_valid:true`; the
+  pre-patch assertion failed with `status:"BLOCKED"`. Focused proof:
+  `uv run pytest
+  tests/test_orchestration_reliability.py::test_orchestration_reliability_accepts_valid_course_correction_artifact
+  -q` failed before the patch with `AssertionError: assert 'BLOCKED' ==
+  'PASS'`; after the patch, `git diff --check --
+  src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> `All checks passed!`; `uv run
+  pytest tests/test_orchestration_reliability.py -q` -> `12 passed in
+  0.39s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-orchestration-controlled-block-20260707T092200Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `307 passed in 8.11s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local
+  orchestration reliability receipts can classify a blocked-but-corrected DAG
+  as reliable containment without claiming task success; it does not prove code
+  correctness, agent truthfulness, course-correction execution, live
+  OMP/SciLLM semantic worker execution, provider/model quality, GitHub
+  mutation, future route correctness, legal compliance, ITAR compliance, full
+  sandbox isolation, or full goal completion.
+
 - 2026-07-07 code-patch path-scope schema gate:
   `src/tau_coding/code_patch.py` now blocks malformed `allowed_paths` or
   `forbidden_paths` fields on `tau.code_patch.v1` artifacts instead of

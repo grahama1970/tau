@@ -504,6 +504,12 @@ the harness rules separately from whether the code is correct. It reports:
 - terminal condition validity
 - `agent_truthfulness: NOT_CLAIMED`
 
+For orchestration reliability, a terminal condition can be either a clean
+`PASS` route to a declared terminal node or a controlled `BLOCKED` stop with a
+valid declared `tau.course_correction.v1` artifact. A controlled blocked run
+does not mean the coding task succeeded; it means Tau stopped safely and left a
+bounded next-action receipt.
+
 CLI:
 
 ```bash

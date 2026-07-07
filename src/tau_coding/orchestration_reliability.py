@@ -101,7 +101,6 @@ def write_orchestration_reliability_receipt(
     required_evidence_present = (
         not missing_artifacts and "missing_required_evidence" not in dag_alert_codes
     )
-    terminal_condition_valid = _terminal_condition_valid(dag_receipt)
     course_correction_paths = _course_correction_paths(dag_receipt)
     course_correction_artifact_report = _course_correction_artifact_report(
         dag_receipt,
@@ -110,6 +109,11 @@ def write_orchestration_reliability_receipt(
     course_corrections_followed = _course_corrections_followed(
         dag_receipt,
         course_correction_artifact_report,
+    )
+    terminal_condition_valid = _terminal_condition_valid(
+        dag_receipt,
+        course_corrections_followed=course_corrections_followed,
+        declared_course_corrections=bool(course_correction_artifact_report["declared"]),
     )
     required_receipt_report = _required_receipt_report(required_receipts)
     reliable = (
@@ -389,7 +393,14 @@ def _course_correction_invalid_reason(
     return None
 
 
-def _terminal_condition_valid(dag_receipt: Mapping[str, Any]) -> bool:
+def _terminal_condition_valid(
+    dag_receipt: Mapping[str, Any],
+    *,
+    course_corrections_followed: bool,
+    declared_course_corrections: bool,
+) -> bool:
+    if dag_receipt.get("status") == "BLOCKED":
+        return declared_course_corrections and course_corrections_followed
     if dag_receipt.get("status") != "PASS":
         return False
     terminal_nodes = {

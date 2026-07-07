@@ -218,7 +218,10 @@ def test_orchestration_reliability_accepts_valid_course_correction_artifact(
         output_path=tmp_path / "orchestration-reliability.json",
     )
 
+    assert payload["status"] == "PASS"
+    assert payload["reliable_orchestration"] is True
     assert payload["course_corrections_followed"] is True
+    assert payload["terminal_condition_valid"] is True
     assert payload["course_correction_artifact_report"]["missing"] == []
     assert payload["course_correction_artifact_report"]["invalid"] == []
     assert payload["course_correction_artifact_report"]["valid"][0]["path"] == str(
