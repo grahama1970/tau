@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 coding course-correction trigger set rung:
+  `src/tau_coding/course_correction.py` now exposes
+  `CODING_COURSE_CORRECTION_TRIGGERS`, the explicit R9 coding trigger set:
+  `patch_stale`, `patch_failed`, `lsp_diagnostics_regressed`,
+  `reviewer_p0`, `reviewer_p1`, `test_failed_twice`,
+  `debugger_evidence_required`, `worker_result_missing`,
+  `worker_changed_forbidden_path`, `receipt_timeout`, `provider_crashed`, and
+  `herdr_stale`. Course-correction receipts now include
+  `known_coding_trigger:true|false`, and `tests/test_course_correction.py`
+  verifies every required trigger maps to a non-default bounded policy with
+  explicit forbidden routes and required evidence. Focused proof: `uv run
+  python -m py_compile src/tau_coding/course_correction.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/course_correction.py
+  tests/test_course_correction.py` -> `All checks passed!`; `uv run pytest
+  tests/test_course_correction.py -q` -> `14 passed in 0.46s`. Aggregate
+  proof: `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-course-triggers-proof-20260707T062514Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-course-triggers-proof-20260707T062514Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `252 passed in
+  7.35s`. This proves deterministic local R9 trigger routing coverage; it
+  does not prove that a correction was executed, semantic code correctness,
+  live worker behavior, provider/model quality, legal compliance, full sandbox
+  isolation, or full goal completion.
+
 - 2026-07-07 coding reliability review-route example rung:
   `examples/coding-reliability-basic/run.sh` now demonstrates all three
   structured reviewer routes required by R14. It writes

@@ -9,6 +9,22 @@ from pathlib import Path
 from typing import Any
 
 COURSE_CORRECTION_SCHEMA = "tau.course_correction.v1"
+CODING_COURSE_CORRECTION_TRIGGERS = frozenset(
+    {
+        "patch_stale",
+        "patch_failed",
+        "lsp_diagnostics_regressed",
+        "reviewer_p0",
+        "reviewer_p1",
+        "test_failed_twice",
+        "debugger_evidence_required",
+        "worker_result_missing",
+        "worker_changed_forbidden_path",
+        "receipt_timeout",
+        "provider_crashed",
+        "herdr_stale",
+    }
+)
 
 
 def build_course_correction_receipt(
@@ -54,6 +70,7 @@ def build_course_correction_receipt(
         "input_valid": not alerts,
         "code": normalized_trigger,
         "trigger": normalized_trigger,
+        "known_coding_trigger": normalized_trigger in CODING_COURSE_CORRECTION_TRIGGERS,
         "mocked": mocked,
         "live": live,
         "provider_live": provider_live,

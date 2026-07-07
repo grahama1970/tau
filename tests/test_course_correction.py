@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.course_correction import (
+    CODING_COURSE_CORRECTION_TRIGGERS,
     COURSE_CORRECTION_SCHEMA,
     build_course_correction_receipt,
     write_course_correction_receipt,
@@ -221,6 +222,41 @@ def test_course_correction_created_for_herdr_stale() -> None:
     assert "send_reminder" in payload["allowed_next_routes"]
     assert "start_parallel_duplicate_without_policy" in payload["forbidden_next_routes"]
     assert "herdr_monitor_snapshot" in payload["required_evidence_before_retry"]
+
+
+def test_course_correction_supports_all_required_coding_triggers() -> None:
+    expected = {
+        "patch_stale",
+        "patch_failed",
+        "lsp_diagnostics_regressed",
+        "reviewer_p0",
+        "reviewer_p1",
+        "test_failed_twice",
+        "debugger_evidence_required",
+        "worker_result_missing",
+        "worker_changed_forbidden_path",
+        "receipt_timeout",
+        "provider_crashed",
+        "herdr_stale",
+    }
+
+    assert CODING_COURSE_CORRECTION_TRIGGERS == expected
+    for trigger in sorted(expected):
+        payload = build_course_correction_receipt(
+            trigger=trigger,
+            dag_id="dag-1",
+            goal_hash="sha256:goal",
+            node_id="coder",
+            agent="coder",
+            attempt=2,
+            observed_state={"attempt_count": 2},
+        )
+
+        assert payload["known_coding_trigger"] is True
+        assert payload["required_next_action"] != "block_run"
+        assert payload["forbidden_next_routes"] != ["continue_normally"]
+        assert payload["required_evidence_before_retry"] != ["blocker_summary"]
+        assert payload["alert_codes"] == []
 
 
 def test_course_correction_after_two_attempts_warns_without_attempt_evidence() -> None:
