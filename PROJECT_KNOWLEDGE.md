@@ -1,9 +1,41 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:07 EDT by agent
+**Last updated:** 2026-07-07 12:11 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 OMP worker apply-launch expected-artifact gate:
+  The OMP worker copyable example and aggregate coding sanity suite now
+  mechanically assert that the apply launch path actually ran and produced
+  hash-bound stdout/stderr descriptors. `examples/omp-worker/expected-receipt.json`
+  requires `apply_launch_process_executed:true`, `apply_launch_exit_code:0`,
+  and apply-launch log artifacts; `scripts/run-coding-capability-sanity.py`
+  compares those expected fields and checks that the stdout/stderr descriptors
+  exist with `sha256:` values matching the top-level example receipt fields.
+  `examples/omp-worker/README.md` documents that this proves Tau can invoke an
+  OMP-compatible process and capture logs, not that a real `oh-my-pi` binary ran
+  semantically. Focused proof: `git diff --check --
+  examples/omp-worker/expected-receipt.json examples/omp-worker/README.md
+  scripts/run-coding-capability-sanity.py` -> pass; `uv run python -m
+  py_compile scripts/run-coding-capability-sanity.py` -> pass; `uv run ruff
+  check --select I,F,E501 scripts/run-coding-capability-sanity.py` -> `All
+  checks passed!`; `bash -n examples/omp-worker/run.sh` -> pass; `uv run
+  pytest tests/test_coding_capability_sanity_runner.py -q` -> `2 passed in
+  0.14s`; direct example
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-apply-expected-example` ->
+  PASS with `apply_launch_process_executed:true`,
+  `apply_launch_exit_code:0`, stdout hash
+  `sha256:53de9ba897924b9fe1eefad2f1cdd46563990b8e842f14f5dde1048c3679c89e`,
+  and stderr hash
+  `sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-omp-apply-expected-20260707T161500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `check_count:17`, `failed_check_count:0`. This proves the
+  maintained sanity suite now fails if the OMP worker example stops proving its
+  apply launch process/log artifacts; it does not prove live OMP semantic worker
+  execution, a real `oh-my-pi` binary, semantic code correctness, provider/model
+  quality, legal compliance, human acceptance, or full sandbox isolation.
 
 - 2026-07-07 SciLLM worker timeout expected-artifact gate:
   The SciLLM worker copyable example and aggregate coding sanity suite now

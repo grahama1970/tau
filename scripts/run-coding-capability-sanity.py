@@ -485,6 +485,8 @@ def _check_expected_artifact(
         "expected_launch_url": "launch_url",
         "expected_launch_worker_timeout_s": "launch_worker_timeout_s",
         "expected_apply_launch_worker_timeout_s": "apply_launch_worker_timeout_s",
+        "expected_apply_launch_process_executed": "apply_launch_process_executed",
+        "expected_apply_launch_exit_code": "apply_launch_exit_code",
         "expected_inner_receipt_schema": "worker_receipt_schema",
         "expected_inner_status": "worker_receipt_status",
         "expected_worker_receipt_alert_codes": "worker_receipt_alert_codes",
@@ -521,6 +523,8 @@ def _check_expected_artifact(
 
     if expected.get("expected_apply_launch_result_artifact") is True:
         errors.extend(_check_apply_launch_result_artifact(actual))
+    if expected.get("expected_apply_launch_log_artifacts") is True:
+        errors.extend(_check_apply_launch_log_artifacts(actual))
 
     return {
         "read_ok": True,
@@ -557,6 +561,43 @@ def _check_apply_launch_result_artifact(actual: dict[str, Any]) -> list[str]:
             "apply_launch_response_result_artifact.path does not match "
             "apply_launch_response_result_path"
         )
+    return errors
+
+
+def _check_apply_launch_log_artifacts(actual: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    stdout_path = actual.get("apply_launch_stdout_path")
+    stdout_sha = actual.get("apply_launch_stdout_sha256")
+    stderr_sha = actual.get("apply_launch_stderr_sha256")
+    artifacts = actual.get("apply_launch_log_artifacts")
+    if not isinstance(stdout_path, str) or not stdout_path:
+        errors.append("apply_launch_stdout_path missing")
+    if not isinstance(stdout_sha, str) or not stdout_sha.startswith("sha256:"):
+        errors.append("apply_launch_stdout_sha256 missing or invalid")
+    if not isinstance(stderr_sha, str) or not stderr_sha.startswith("sha256:"):
+        errors.append("apply_launch_stderr_sha256 missing or invalid")
+    if not isinstance(artifacts, list) or len(artifacts) < 2:
+        errors.append("apply_launch_log_artifacts missing stdout/stderr descriptors")
+        return errors
+    by_label = {
+        item.get("label"): item
+        for item in artifacts
+        if isinstance(item, dict) and isinstance(item.get("label"), str)
+    }
+    stdout_descriptor = by_label.get("stdout")
+    stderr_descriptor = by_label.get("stderr")
+    if not isinstance(stdout_descriptor, dict):
+        errors.append("apply_launch_log_artifacts missing stdout descriptor")
+    elif stdout_descriptor.get("exists") is not True:
+        errors.append("apply_launch_log_artifacts stdout descriptor does not exist")
+    elif stdout_descriptor.get("sha256") != stdout_sha:
+        errors.append("apply_launch_log_artifacts stdout sha256 mismatch")
+    if not isinstance(stderr_descriptor, dict):
+        errors.append("apply_launch_log_artifacts missing stderr descriptor")
+    elif stderr_descriptor.get("exists") is not True:
+        errors.append("apply_launch_log_artifacts stderr descriptor does not exist")
+    elif stderr_descriptor.get("sha256") != stderr_sha:
+        errors.append("apply_launch_log_artifacts stderr sha256 mismatch")
     return errors
 
 
