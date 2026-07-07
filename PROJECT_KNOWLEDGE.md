@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 code-patch fail-closed invariant coverage rung:
+  `tests/test_code_patch.py` now directly pins three R1 fail-closed invariants
+  that were already implemented in `tau.code_patch_receipt.v1` but not
+  explicitly covered: `target_path_escape` blocks `../` writes outside
+  `repo_root`, malformed patch operations such as non-`replace` ops block with
+  `malformed_patch`, and staged content whose SHA-256 does not match
+  `expected_post_sha256` blocks with `expected_post_sha256_mismatch`. Each
+  test asserts `applied:false` and verifies the target content was not changed.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> `All checks
+  passed!`; `uv run pytest tests/test_code_patch.py -q` -> `23 passed in
+  0.53s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-fail-closed-proof-20260707T064321Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-fail-closed-proof-20260707T064321Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `259 passed in
+  7.80s`. This proves deterministic local code-patch receipts fail closed for
+  path escapes, malformed patch operations, and post-hash mismatches; it does
+  not prove semantic patch correctness, full test success for arbitrary
+  changes, agent truthfulness, provider/model quality, full sandbox isolation,
+  or full goal completion.
+
 - 2026-07-07 debug zero-trust policy schema gate rung:
   `tests/test_debug_session_receipt.py` now directly pins R5/R11
   policy/data-boundary enforcement for debugger evidence. A zero-trust

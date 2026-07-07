@@ -290,6 +290,70 @@ def test_code_patch_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_blocks_target_path_escape(tmp_path: Path) -> None:
+    outside = tmp_path.parent / "outside.py"
+    outside.write_text("value = 1\n", encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="../outside.py",
+        before="value = 1\n",
+        after="value = 2\n",
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "target_path_escape" in receipt["alert_codes"]
+    assert receipt["applied"] is False
+    assert outside.read_text(encoding="utf-8") == "value = 1\n"
+
+
+def test_code_patch_blocks_malformed_patch_operations(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after="value = 2\n",
+        patch=json.dumps([{"op": "delete", "old": "value = 1"}]),
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "malformed_patch" in receipt["alert_codes"]
+    assert receipt["applied"] is False
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_blocks_expected_post_hash_mismatch(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after="value = 2\n",
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+    payload = json.loads(patch_path.read_text(encoding="utf-8"))
+    payload["expected_post_sha256"] = f"sha256:{_sha256_text('wrong\\n')}"
+    patch_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "expected_post_sha256_mismatch" in receipt["alert_codes"]
+    assert receipt["applied"] is False
+    assert target.read_text(encoding="utf-8") == before
+
+
 def test_code_patch_writes_blocked_receipt_for_unreadable_patch(tmp_path: Path) -> None:
     patch_path = tmp_path / "patch.json"
     receipt_path = tmp_path / "receipt.json"
