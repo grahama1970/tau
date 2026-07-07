@@ -38,6 +38,13 @@ def test_code_patch_passes_when_base_hash_and_post_hash_match(tmp_path: Path) ->
     assert receipt["applied"] is True
     assert receipt["patch_sha256"] == f"sha256:{_sha256_file(patch_path)}"
     assert receipt["patch_bytes"] == patch_path.stat().st_size
+    assert receipt["patch_artifact"] == {
+        "label": "code_patch",
+        "path": str(patch_path.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256_file(patch_path)}",
+        "bytes": patch_path.stat().st_size,
+    }
     assert receipt["before_sha256"] == f"sha256:{_sha256_text(before)}"
     assert receipt["after_sha256"] == f"sha256:{_sha256_text(after)}"
     assert receipt["target_artifact_before"] == {
@@ -265,6 +272,13 @@ def test_code_patch_writes_blocked_receipt_for_unreadable_patch(tmp_path: Path) 
     assert "code_patch_unreadable" in receipt["alert_codes"]
     assert receipt["patch_sha256"] == f"sha256:{_sha256_file(patch_path)}"
     assert receipt["patch_bytes"] == patch_path.stat().st_size
+    assert receipt["patch_artifact"] == {
+        "label": "code_patch",
+        "path": str(patch_path.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256_file(patch_path)}",
+        "bytes": patch_path.stat().st_size,
+    }
     assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
 
 
@@ -285,6 +299,13 @@ def test_code_patch_writes_blocked_receipt_for_missing_patch_artifact(
     assert receipt["patch_path"] == str(patch_path.resolve())
     assert receipt["patch_sha256"] is None
     assert receipt["patch_bytes"] is None
+    assert receipt["patch_artifact"] == {
+        "label": "code_patch",
+        "path": str(patch_path.resolve()),
+        "exists": False,
+        "sha256": None,
+        "bytes": None,
+    }
     assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
 
 

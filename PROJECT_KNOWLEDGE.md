@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:48 EDT by agent
+**Last updated:** 2026-07-06 23:53 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 code-patch input artifact descriptor rung:
+  `src/tau_coding/code_patch.py` now records `patch_artifact` on
+  `tau.code_patch_receipt.v1`, alongside the legacy `patch_path`,
+  `patch_sha256`, and `patch_bytes` fields. The descriptor records label,
+  resolved path, existence, SHA-256, and byte count for valid, unreadable, and
+  missing patch inputs, giving downstream coding evidence consumers the same
+  artifact shape used by target before/after, review, diagnostics, worker, and
+  commit-plan receipts. Focused proof: `git diff --check PROJECT_KNOWLEDGE.md
+  docs/coding-workers.md src/tau_coding/code_patch.py tests/test_code_patch.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> `All checks
+  passed!`; `uv run pytest tests/test_code_patch.py -q` -> `16 passed in
+  0.44s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-input-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-input-artifact-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.66s`. This proves deterministic local code-patch receipts expose the patch
+  input as a normalized artifact descriptor and compose with the current coding
+  capability sanity suite; it does not prove semantic patch correctness, full
+  test-suite sufficiency for a real change, production safety, agent
+  truthfulness, live worker execution, or full goal completion.
 
 - 2026-07-06 code-patch target artifact descriptor rung:
   `src/tau_coding/code_patch.py` now records `target_artifact_before` and

@@ -60,13 +60,15 @@ disallowed, explicitly forbidden, or generated paths, goal-hash mismatches,
 malformed patch operations, and post-hash mismatches. The receipt records the
 active `policy_profile`, `data_boundary`, `allowed_paths`, `forbidden_paths`,
 built-in generated-path patterns, and the inspected patch artifact's
-`patch_sha256` plus `patch_bytes`. When the target file exists, the receipt also
-records `target_artifact_before` and `target_artifact_after` descriptors with
-label, resolved path, existence, SHA-256, and byte count for the file state
-before and after the attempted apply. Passing the receipt proves only that the
-deterministic patch gate ran against that exact patch artifact and the
-before/after hashes matched. It does not prove semantic correctness, test
-success, production safety, or agent truthfulness.
+`patch_sha256` plus `patch_bytes`. The same patch input is exposed as
+`patch_artifact` with label, resolved path, existence, SHA-256, and byte count.
+When the target file exists, the receipt also records `target_artifact_before`
+and `target_artifact_after` descriptors with label, resolved path, existence,
+SHA-256, and byte count for the file state before and after the attempted apply.
+Passing the receipt proves only that the deterministic patch gate ran against
+that exact patch artifact and the before/after hashes matched. It does not
+prove semantic correctness, test success, production safety, or agent
+truthfulness.
 
 Unreadable, missing, or non-object patch artifacts also produce BLOCKED
 `tau.code_patch_receipt.v1` receipts. Tau records alert codes such as

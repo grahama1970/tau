@@ -164,6 +164,7 @@ def apply_code_patch_receipt(
         "patch_path": str(resolved_patch),
         "patch_sha256": _artifact_sha256_uri(resolved_patch),
         "patch_bytes": _artifact_size(resolved_patch),
+        "patch_artifact": _artifact_descriptor("code_patch", resolved_patch),
         "repo_root": str(resolved_repo),
         "goal_hash": goal_hash,
         "target_file": relative_target,
@@ -393,6 +394,16 @@ def _artifact_size(path: Path | None) -> int | None:
         return path.stat().st_size
     except OSError:
         return None
+
+
+def _artifact_descriptor(label: str, path: Path | None) -> dict[str, Any]:
+    return {
+        "label": label,
+        "path": str(path) if path is not None else None,
+        "exists": bool(path is not None and path.exists()),
+        "sha256": _artifact_sha256_uri(path),
+        "bytes": _artifact_size(path),
+    }
 
 
 def _target_artifact_descriptor(label: str, path: Path) -> dict[str, Any]:
