@@ -21,6 +21,7 @@ def write_debug_session_receipt(
     session_path: Path,
     output_path: Path,
     required: bool = False,
+    expected_goal_hash: str | None = None,
     zero_trust: bool = False,
     policy_profile: dict[str, Any] | None = None,
     data_boundary: dict[str, Any] | None = None,
@@ -45,6 +46,11 @@ def write_debug_session_receipt(
     target = _string(packet.get("target"))
     if target is None:
         alerts.append(_alert("missing_debug_target", "debug session target is required"))
+    goal_hash = _string(packet.get("goal_hash"))
+    if zero_trust and goal_hash is None:
+        alerts.append(_alert("missing_goal_hash", "zero-trust debug receipt requires goal_hash"))
+    if expected_goal_hash and goal_hash != expected_goal_hash:
+        alerts.append(_alert("goal_hash_mismatch", "debug session goal_hash mismatches expected"))
 
     breakpoints = _optional_list(packet.get("breakpoints"), "breakpoints", alerts)
     stopped_frame = _optional_mapping(packet.get("stopped_frame"), "stopped_frame", alerts)
@@ -70,6 +76,8 @@ def write_debug_session_receipt(
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
         "session_path": str(resolved_session),
+        "goal_hash": goal_hash,
+        "expected_goal_hash": expected_goal_hash,
         "target": target,
         "adapter": adapter,
         "adapter_available": adapter_available,

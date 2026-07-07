@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:37 EDT by agent
+**Last updated:** 2026-07-06 21:42 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 debug-session goal-hash binding rung:
+  `src/tau_coding/debug_session_receipt.py` now records `goal_hash` from
+  `tau.debug_session_packet.v1` packets and supports caller-supplied
+  `expected_goal_hash`. Zero-trust debug receipts now block when the packet
+  omits `goal_hash`; expected-goal mismatches block with
+  `goal_hash_mismatch`. The CLI `debug-session-receipt` command accepts
+  `--goal-hash` and forwards it to the receipt writer. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/debug_session_receipt.py
+  src/tau_coding/cli.py tests/test_debug_session_receipt.py
+  tests/test_lsp_receipts.py` -> pass; `uv run pytest
+  tests/test_debug_session_receipt.py tests/test_lsp_receipts.py -q` -> `31
+  passed in 0.71s`. Aggregate proof: the first aggregate run
+  `/tmp/tau-coding-capability-sanity-debug-goal-hash-proof` failed because
+  `expected_goal_hash` had been accidentally passed to `lsp-diagnostics`;
+  after removing that bad LSP call-site argument,
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-goal-hash-proof-3` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-debug-goal-hash-proof-3/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `debug-session receipts`, and embedded focused coding tests `183
+  passed in 5.93s`. This proves deterministic local debug receipts can be
+  bound to the active goal hash in zero-trust/high-stakes lanes; it does not
+  prove debugger conclusions are semantically complete, the bug is fixed,
+  provider/model quality, legal compliance, or live worker execution.
 
 - 2026-07-06 orchestration course-correction artifact admissibility rung:
   `src/tau_coding/orchestration_reliability.py` now validates declared

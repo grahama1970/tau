@@ -244,9 +244,9 @@ future approval lane authorizes commit application. High-risk paths such as
 
 `tau.debug_session_receipt.v1` records debugger/DAP evidence from a structured
 local session packet. Supported adapter labels are `debugpy`, `lldb-dap`, `dlv`,
-and `node`. The receipt records the target, adapter availability, breakpoints,
-stopped frame, variables, commands, stdout/stderr artifacts, SHA-256 hashes,
-byte counts, conclusion, and non-claims.
+and `node`. The receipt records the goal hash, target, adapter availability,
+breakpoints, stopped frame, variables, commands, stdout/stderr artifacts,
+SHA-256 hashes, byte counts, conclusion, and non-claims.
 
 Tau blocks debug receipts when the session packet omits the target command, uses
 an unsupported adapter, refers to missing stdout/stderr artifacts, or provides
@@ -263,7 +263,10 @@ uv run tau debug-session-receipt \
 
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when debugger evidence is part of a high-stakes coding route. In zero-trust
-mode, Tau blocks debug receipts that omit policy or boundary metadata.
+mode, Tau blocks debug receipts that omit policy, boundary, or `goal_hash`
+metadata. Use `--goal-hash sha256:...` when the caller needs to bind the
+session packet to an expected active goal hash; a mismatch records
+`goal_hash_mismatch`.
 
 Use `--required` when a missing adapter must block the coding route. The receipt
 does not prove the bug is fixed, the debug conclusion is complete, or the code

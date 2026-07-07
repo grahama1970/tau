@@ -1847,6 +1847,7 @@ def main(
                 session_path=Path(str(options["session"])),
                 output_path=Path(str(options["out"])),
                 required=bool(options["required"]),
+                expected_goal_hash=_optional_str(options.get("goal_hash")),
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
@@ -4815,7 +4816,7 @@ def _parse_debug_session_receipt_cli_args(args: list[str]) -> dict[str, object]:
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--session", "--out", "--policy-profile", "--data-boundary"}:
+        if arg in {"--session", "--out", "--goal-hash", "--policy-profile", "--data-boundary"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -4824,6 +4825,8 @@ def _parse_debug_session_receipt_cli_args(args: list[str]) -> dict[str, object]:
             options["session"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         elif arg.startswith("--policy-profile="):
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):

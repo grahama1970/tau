@@ -23,6 +23,7 @@ def test_debug_receipt_records_adapter_and_target(tmp_path: Path) -> None:
     assert receipt["status"] == "PASS"
     assert receipt["adapter"] == "debugpy"
     assert receipt["target"] == "python -m pytest tests/test_example.py"
+    assert receipt["goal_hash"] == "sha256:debug-goal"
 
 
 def test_debug_receipt_blocks_missing_adapter_when_required(tmp_path: Path) -> None:
@@ -142,6 +143,36 @@ def test_debug_receipt_zero_trust_blocks_missing_policy_boundary(tmp_path: Path)
     assert "missing_data_boundary" in receipt["alert_codes"]
 
 
+def test_debug_receipt_zero_trust_blocks_missing_goal_hash(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path, goal_hash=None)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "missing_goal_hash" in receipt["alert_codes"]
+
+
+def test_debug_receipt_blocks_expected_goal_hash_mismatch(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        expected_goal_hash="sha256:other-goal",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["goal_hash"] == "sha256:debug-goal"
+    assert receipt["expected_goal_hash"] == "sha256:other-goal"
+    assert "goal_hash_mismatch" in receipt["alert_codes"]
+
+
 def test_debug_receipt_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
 
@@ -155,6 +186,7 @@ def test_debug_receipt_zero_trust_accepts_policy_boundary(tmp_path: Path) -> Non
 
     assert receipt["status"] == "PASS"
     assert receipt["zero_trust"] is True
+    assert receipt["goal_hash"] == "sha256:debug-goal"
     assert receipt["policy_profile"]["profile_id"] == "test"
     assert receipt["data_boundary"]["classification"] == "public"
 
@@ -171,6 +203,8 @@ def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
             str(session),
             "--out",
             str(out),
+            "--goal-hash",
+            "sha256:debug-goal",
         ],
     )
 
@@ -178,6 +212,7 @@ def test_cli_debug_session_receipt_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == DEBUG_SESSION_RECEIPT_SCHEMA
+    assert payload["expected_goal_hash"] == "sha256:debug-goal"
 
 
 def test_cli_debug_session_zero_trust_missing_boundary_exits_blocked(
@@ -210,6 +245,7 @@ def _write_debug_session(
     tmp_path: Path,
     *,
     adapter_available: bool = True,
+    goal_hash: str | None = "sha256:debug-goal",
 ) -> Path:
     stdout = tmp_path / "debug-stdout.txt"
     stderr = tmp_path / "debug-stderr.txt"
@@ -217,6 +253,7 @@ def _write_debug_session(
     stderr.write_text("", encoding="utf-8")
     payload = {
         "schema": "tau.debug_session_packet.v1",
+        "goal_hash": goal_hash,
         "target": "python -m pytest tests/test_example.py",
         "adapter": "debugpy",
         "adapter_available": adapter_available,
@@ -228,6 +265,8 @@ def _write_debug_session(
         "stderr_path": str(stderr),
         "conclusion": "The failing value is still 41 before the patch.",
     }
+    if goal_hash is None:
+        payload.pop("goal_hash")
     path = tmp_path / "debug-session.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
