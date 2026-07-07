@@ -1,9 +1,37 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:02 EDT by agent
+**Last updated:** 2026-07-07 00:06 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 worker adapter artifact descriptor rung:
+  `src/tau_coding/coding_worker_adapters.py` now records `exists:true` on
+  OMP/SciLLM worker validated artifact descriptors, substrate receipt
+  descriptors, required artifact descriptors, accepted PASS test-log
+  descriptors, OMP launch stdout/stderr descriptors, and SciLLM launch response
+  descriptors. This aligns worker validation and launch receipts with the
+  normalized coding artifact shape used by code-patch, LSP, review, GitHub
+  read, and commit-plan receipts. Focused proof: `git diff --check
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `41 passed in 3.68s`.
+  Aggregate coding sanity proof: `scripts/run-coding-capability-sanity.py
+  --run-dir /tmp/tau-coding-capability-sanity-worker-artifact-exists-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-artifact-exists-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.64s`. This proves deterministic local OMP/SciLLM worker receipts expose
+  validated work orders, worker results, substrate receipts, required
+  artifacts, test logs, and launch IO/HTTP evidence as normalized artifact
+  descriptors and compose with the current coding capability sanity suite; it
+  does not prove live OMP or SciLLM semantic worker execution, provider/model
+  semantic quality, semantic code correctness, full sandbox isolation on every
+  host, or full goal completion.
 
 - 2026-07-07 LSP inspected artifact descriptor rung:
   `src/tau_coding/lsp_receipts.py` now records `exists:true` on

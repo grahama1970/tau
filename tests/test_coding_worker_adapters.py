@@ -92,12 +92,14 @@ def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Pa
         {
             "label": "work_order",
             "path": str(work_order.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(work_order)}",
             "bytes": work_order.stat().st_size,
         },
         {
             "label": "worker_result",
             "path": str(result.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(result)}",
             "bytes": result.stat().st_size,
         },
@@ -106,6 +108,7 @@ def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Pa
         {
             "label": "sandbox_receipt",
             "path": str(sandbox_receipt.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(sandbox_receipt)}",
             "bytes": sandbox_receipt.stat().st_size,
             "schema": "tau.sandbox_run_receipt.v1",
@@ -166,6 +169,7 @@ def test_worker_records_test_log_artifact_descriptors(tmp_path: Path) -> None:
         {
             "label": "test_log",
             "path": str(test_log.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(test_log)}",
             "bytes": test_log.stat().st_size,
             "test_index": 0,
@@ -226,6 +230,7 @@ def test_worker_records_required_artifact_descriptors(tmp_path: Path) -> None:
         {
             "label": "required_artifact",
             "path": str(log.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(log)}",
             "bytes": log.stat().st_size,
             "artifact": "logs/pytest.log",
@@ -418,6 +423,7 @@ def test_high_stakes_herdr_worker_records_receipt_descriptor(tmp_path: Path) -> 
         {
             "label": "herdr_receipt",
             "path": str(herdr_receipt.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(herdr_receipt)}",
             "bytes": herdr_receipt.stat().st_size,
             "schema": "tau.herdr_observation_gate_receipt.v1",
@@ -576,6 +582,7 @@ def test_omp_worker_launch_builds_dry_run_rpc_request(tmp_path: Path) -> None:
         {
             "label": "sandbox_receipt",
             "path": str(sandbox_receipt.resolve()),
+            "exists": True,
             "sha256": f"sha256:{_sha256(sandbox_receipt)}",
             "bytes": sandbox_receipt.stat().st_size,
             "schema": "tau.sandbox_run_receipt.v1",
@@ -671,12 +678,14 @@ def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -
         {
             "label": "stdout",
             "path": str(stdout_path),
+            "exists": True,
             "sha256": f"sha256:{_sha256(stdout_path)}",
             "bytes": stdout_path.stat().st_size,
         },
         {
             "label": "stderr",
             "path": str(stderr_path),
+            "exists": True,
             "sha256": f"sha256:{_sha256(stderr_path)}",
             "bytes": stderr_path.stat().st_size,
         },
@@ -873,6 +882,7 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
         {
             "label": "response",
             "path": str(response_path),
+            "exists": True,
             "sha256": f"sha256:{_sha256(response_path)}",
             "bytes": response_path.stat().st_size,
         }

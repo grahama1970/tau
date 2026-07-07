@@ -897,6 +897,7 @@ def _referenced_receipt_artifact(
     return {
         "label": label,
         "path": str(path),
+        "exists": True,
         "sha256": _artifact_sha256_uri(path),
         "bytes": _artifact_size(path),
     }
@@ -1205,6 +1206,7 @@ def _artifact_descriptors(*items: tuple[str, object]) -> list[dict[str, Any]]:
             {
                 "label": label,
                 "path": str(path),
+                "exists": True,
                 "sha256": _artifact_sha256_uri(path),
                 "bytes": path.stat().st_size,
             }

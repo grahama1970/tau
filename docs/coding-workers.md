@@ -485,28 +485,29 @@ and `ok:true`; Herdr substrates must include `herdr_binding` or an existing
 `tau.herdr_observation_gate_receipt.v1` receipt with `status:"PASS"` and
 `ok:true`. Validation receipts record
 `work_order_sha256`, `result_sha256`, byte counts, and `validated_artifacts`
-for the exact JSON artifacts Tau inspected. Validation and launch receipts also
-carry `execution_substrate`, `sandbox_receipt_path`, `herdr_binding`,
-`herdr_receipt_path`, `high_stakes`, `policy_profile`, `data_boundary`, and
-`substrate_receipts` so the worker result or launch request remains tied to the
-same containment metadata and the referenced sandbox/Herdr receipt content.
-Each substrate receipt descriptor records the referenced path, SHA-256, byte
-count, schema, status, `ok`, `mocked`, `live`, and `provider_live` fields when
-the receipt can be read.
+for the exact JSON artifacts Tau inspected. Each validated artifact descriptor
+records label, resolved path, existence, SHA-256, and byte count. Validation and
+launch receipts also carry `execution_substrate`, `sandbox_receipt_path`,
+`herdr_binding`, `herdr_receipt_path`, `high_stakes`, `policy_profile`,
+`data_boundary`, and `substrate_receipts` so the worker result or launch request
+remains tied to the same containment metadata and the referenced sandbox/Herdr
+receipt content. Each substrate receipt descriptor records the referenced path,
+existence, SHA-256, byte count, schema, status, `ok`, `mocked`, `live`, and
+`provider_live` fields when the receipt can be read.
 
 Required artifacts are not satisfied by strings alone. When a work order names a
 required artifact, the worker result must list that artifact and the referenced
 file must exist under the repo or at its absolute path before Tau accepts the
 worker receipt. Accepted required artifacts are recorded in
 `required_artifact_descriptors` with the declared artifact name, resolved path,
-SHA-256, and byte count.
+existence, SHA-256, and byte count.
 
 PASS test claims are treated the same way. When a worker result lists
 `tests_run[].status:"PASS"`, it must include an existing `log_path` or
 `stdout_path`; accepted test logs are recorded in `test_log_artifacts` with the
-test name/status, declared artifact path, resolved path, SHA-256, and byte
-count. This lets downstream reviewers distinguish "the worker claimed pytest
-passed" from "Tau inspected the exact log artifact behind that claim."
+test name/status, declared artifact path, resolved path, existence, SHA-256,
+and byte count. This lets downstream reviewers distinguish "the worker claimed
+pytest passed" from "Tau inspected the exact log artifact behind that claim."
 
 CLI:
 
