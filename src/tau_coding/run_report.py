@@ -13,6 +13,22 @@ from tau_coding.run_status import build_run_status
 
 RUN_REPORT_RECEIPT_SCHEMA = "tau.run_report_receipt.v1"
 
+CODING_EVIDENCE_SCHEMAS = {
+    "tau.code_patch_receipt.v1",
+    "tau.lsp_diagnostics_receipt.v1",
+    "tau.lsp_symbol_receipt.v1",
+    "tau.lsp_rename_receipt.v1",
+    "tau.test_run_receipt.v1",
+    "tau.review_findings.v1",
+    "tau.commit_plan_receipt.v1",
+    "tau.debug_session_receipt.v1",
+    "tau.github_read_receipt.v1",
+    "tau.omp_worker_receipt.v1",
+    "tau.scillm_worker_receipt.v1",
+    "tau.course_correction.v1",
+    "tau.orchestration_reliability_receipt.v1",
+}
+
 NON_CLAIMS = [
     "ITAR compliance.",
     "Export-control legal sufficiency.",
@@ -128,6 +144,7 @@ def _report_sections(
         "artifacts": run_status.get("artifacts", {}),
         "dag_receipt": dag_receipt or None,
     }
+    coding_evidence = _coding_evidence_summary(run_dir)
     return [
         {"id": "goal", "title": "Goal", "payload": goal},
         {"id": "policy", "title": "Policy", "payload": policy},
@@ -135,10 +152,46 @@ def _report_sections(
         {"id": "memory-intent", "title": "Memory Intent", "payload": memory_intent},
         {"id": "evidence-case", "title": "Evidence Case", "payload": evidence_case},
         {"id": "dag-steps", "title": "DAG Steps", "payload": dag_steps},
+        {"id": "coding-evidence", "title": "Coding Evidence", "payload": coding_evidence},
         {"id": "receipts", "title": "Receipts", "payload": receipts},
         {"id": "decisions", "title": "Blocked / Allowed Decisions", "payload": decisions},
         {"id": "non-claims", "title": "Non-Claims", "payload": NON_CLAIMS},
     ]
+
+
+def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
+    receipts = []
+    for path in sorted(run_dir.rglob("*.json")):
+        payload = _read_optional_json(path)
+        schema = payload.get("schema")
+        if schema not in CODING_EVIDENCE_SCHEMAS:
+            continue
+        receipts.append(
+            {
+                "relative_path": path.relative_to(run_dir).as_posix(),
+                "schema": schema,
+                "status": payload.get("status"),
+                "ok": payload.get("ok"),
+                "mocked": payload.get("mocked"),
+                "live": payload.get("live"),
+                "provider_live": payload.get("provider_live"),
+                "sha256": f"sha256:{_sha256(path)}",
+                "goal_hash": payload.get("goal_hash") or payload.get("active_goal_hash"),
+                "policy_profile_sha256": payload.get("policy_profile_sha256"),
+                "data_boundary_sha256": payload.get("data_boundary_sha256"),
+            }
+        )
+    return {
+        "receipt_count": len(receipts),
+        "receipts": receipts,
+        "supported_schemas": sorted(CODING_EVIDENCE_SCHEMAS),
+        "does_not_prove": [
+            "Code correctness.",
+            "Worker truthfulness.",
+            "Live provider execution.",
+            "Closure.",
+        ],
+    }
 
 
 def _render_html(

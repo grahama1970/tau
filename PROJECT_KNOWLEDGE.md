@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-report coding evidence section rung:
+  `src/tau_coding/run_report.py` now renders a first-class
+  `coding-evidence` static HTML section by scanning the run directory for Tau
+  coding receipt schemas, including patch, LSP, focused test-run, review
+  findings, commit-plan, debug, GitHub read, OMP/SciLLM worker,
+  course-correction, and orchestration reliability receipts. The section records
+  relative path, schema, status, `ok`, `mocked`, `live`, `provider_live`,
+  receipt SHA-256, goal hash, and any `policy_profile_sha256` /
+  `data_boundary_sha256` fields present on the receipt. `tests/test_run_report.py`
+  now writes a representative `tau.test_run_receipt.v1` into the report fixture
+  and asserts that the static HTML includes the coding evidence section and
+  policy/boundary hash fields. Focused proof: `git diff --check --
+  src/tau_coding/run_report.py tests/test_run_report.py docs/run-report.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/run_report.py tests/test_run_report.py` -> `All checks
+  passed!`; `uv run pytest tests/test_run_report.py
+  tests/test_compliance_package.py tests/test_package_validate.py -q` ->
+  `21 passed in 0.54s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-run-report-coding-evidence-20260707T143500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `339 passed in 9.35s`. This proves the static
+  report now makes coding receipts inspectable without inventing operational
+  truth; it does not prove semantic code correctness, live OMP/SciLLM semantic
+  execution, provider/model quality, ITAR compliance, legal compliance, or full
+  goal completion.
+
 - 2026-07-07 worker policy/data-boundary hash binding rung:
   `src/tau_coding/coding_worker_adapters.py` now hash-binds inline
   `policy_profile` and `data_boundary` work-order metadata into OMP/SciLLM

@@ -43,10 +43,18 @@ data boundary
 memory intent
 evidence case
 DAG steps
+coding evidence
 receipts
 blocked / allowed decisions
 non-claims
 ```
+
+The `coding evidence` section scans the run directory for Tau coding receipt
+schemas such as patch, LSP, focused test-run, review findings, commit-plan,
+debug, GitHub read, OMP/SciLLM worker, course-correction, and orchestration
+reliability receipts. It records relative path, schema, status, `ok`,
+`mocked`, `live`, `provider_live`, receipt SHA-256, goal hash, and any
+policy/data-boundary hashes present on the receipt.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.
