@@ -962,6 +962,24 @@ examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
 examples/itar-grade-containment/run.sh /tmp/tau-itar-grade-containment-demo
 ```
 
+To exercise a real local SciLLM/OpenCode-serve worker path, opt in explicitly:
+
+```bash
+TAU_CODING_SANITY_LIVE_SCILLM=1 \
+  uv run python scripts/run-coding-capability-sanity.py \
+    --repo . \
+    --run-dir /tmp/tau-coding-capability-sanity-live-scillm
+```
+
+The live check runs `examples/scillm-worker/live-run.sh`, writes its worker repo
+under ignored `.tmp/` so the SciLLM/OpenCode container can see `cwd`, posts to
+`http://localhost:4001/v1/scillm/opencode/runs`, and then validates the returned
+`tau.scillm_worker_result.v1` with `scillm-worker-validate`. This proves Tau can
+drive the local SciLLM OpenCode-serve surface and reject or accept the returned
+worker artifact through Tau validation. It still does not prove the worker is
+trustworthy, semantic code correctness, provider/model quality, or full sandbox
+isolation.
+
 The aggregate coding sanity runner treats worker example
 `expected-receipt.json` files as executable contracts. For OMP and SciLLM
 worker examples it checks the demo receipt schema/status, launch receipt

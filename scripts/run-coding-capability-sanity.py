@@ -324,6 +324,31 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             ),
         ]
         checks[-2:-2] = live_herdr_checks
+    if os.environ.get("TAU_CODING_SANITY_LIVE_SCILLM") == "1":
+        live_scillm_run_dir = repo / ".tmp" / run_dir.name / "scillm-worker-live"
+        live_scillm_checks = [
+            Check(
+                check_id="scillm_worker_live_example_syntax",
+                command=["bash", "-n", str(examples / "scillm-worker" / "live-run.sh")],
+                purpose="Check live SciLLM worker example shell syntax.",
+                timeout_seconds=30,
+            ),
+            Check(
+                check_id="scillm_worker_live_example_run",
+                command=[
+                    str(examples / "scillm-worker" / "live-run.sh"),
+                    str(live_scillm_run_dir),
+                ],
+                purpose=(
+                    "Run live Tau -> SciLLM OpenCode-serve worker launch and "
+                    "result validation when explicitly enabled."
+                ),
+                timeout_seconds=300,
+                output_artifact=live_scillm_run_dir / "demo-receipt.json",
+                expected_artifact=examples / "scillm-worker" / "expected-live-receipt.json",
+            ),
+        ]
+        checks[-2:-2] = live_scillm_checks
     return checks
 
 

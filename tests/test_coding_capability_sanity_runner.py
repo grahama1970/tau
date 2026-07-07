@@ -566,6 +566,38 @@ def test_build_checks_wires_live_herdr_expected_receipt_when_enabled(
     )
 
 
+def test_build_checks_excludes_live_scillm_by_default(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.delenv("TAU_CODING_SANITY_LIVE_SCILLM", raising=False)
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    assert "scillm_worker_live_example_run" not in {check.check_id for check in checks}
+
+
+def test_build_checks_wires_live_scillm_expected_receipt_when_enabled(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("TAU_CODING_SANITY_LIVE_SCILLM", "1")
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    scillm_check = next(
+        check for check in checks if check.check_id == "scillm_worker_live_example_run"
+    )
+    assert scillm_check.output_artifact == (
+        repo / ".tmp" / tmp_path.name / "scillm-worker-live" / "demo-receipt.json"
+    )
+    assert scillm_check.expected_artifact == (
+        repo / "examples" / "scillm-worker" / "expected-live-receipt.json"
+    )
+
+
 def test_build_receipt_derives_provider_live_from_records(tmp_path: Path) -> None:
     runner = _load_runner()
     repo = Path(__file__).resolve().parents[1]
