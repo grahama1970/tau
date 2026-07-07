@@ -466,6 +466,9 @@ carry `execution_substrate`, `sandbox_receipt_path`, `herdr_binding`,
 `herdr_receipt_path`, `high_stakes`, `policy_profile`, `data_boundary`, and
 `substrate_receipts` so the worker result or launch request remains tied to the
 same containment metadata and the referenced sandbox/Herdr receipt content.
+Each substrate receipt descriptor records the referenced path, SHA-256, byte
+count, schema, status, `ok`, `mocked`, `live`, and `provider_live` fields when
+the receipt can be read.
 
 Required artifacts are not satisfied by strings alone. When a work order names a
 required artifact, the worker result must list that artifact and the referenced

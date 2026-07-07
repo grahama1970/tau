@@ -864,12 +864,12 @@ def _referenced_substrate_receipts(work_order: Mapping[str, Any]) -> list[dict[s
     return [
         artifact
         for artifact in (
-            _referenced_receipt_artifact(
+            _referenced_substrate_receipt_artifact(
                 "sandbox_receipt",
                 work_order.get("sandbox_receipt_path"),
                 repo,
             ),
-            _referenced_receipt_artifact(
+            _referenced_substrate_receipt_artifact(
                 "herdr_receipt",
                 work_order.get("herdr_receipt_path"),
                 repo,
@@ -899,6 +899,33 @@ def _referenced_receipt_artifact(
         "sha256": _artifact_sha256_uri(path),
         "bytes": _artifact_size(path),
     }
+
+
+def _referenced_substrate_receipt_artifact(
+    label: str,
+    raw_path: object,
+    repo: Path | None,
+) -> dict[str, Any] | None:
+    descriptor = _referenced_receipt_artifact(label, raw_path, repo)
+    if descriptor is None:
+        return None
+    try:
+        payload = json.loads(Path(str(descriptor["path"])).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return descriptor
+    if not isinstance(payload, Mapping):
+        return descriptor
+    descriptor.update(
+        {
+            "schema": payload.get("schema"),
+            "status": payload.get("status"),
+            "ok": payload.get("ok"),
+            "mocked": payload.get("mocked"),
+            "live": payload.get("live"),
+            "provider_live": payload.get("provider_live"),
+        }
+    )
+    return descriptor
 
 
 def _load_referenced_receipt(

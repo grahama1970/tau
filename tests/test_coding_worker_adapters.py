@@ -108,6 +108,12 @@ def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Pa
             "path": str(sandbox_receipt.resolve()),
             "sha256": f"sha256:{_sha256(sandbox_receipt)}",
             "bytes": sandbox_receipt.stat().st_size,
+            "schema": "tau.sandbox_run_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": True,
+            "live": False,
+            "provider_live": False,
         }
     ]
 
@@ -332,6 +338,58 @@ def test_high_stakes_herdr_worker_blocks_missing_receipt_path(tmp_path: Path) ->
     assert "herdr_receipt_missing" in payload["alert_codes"]
 
 
+def test_high_stakes_herdr_worker_records_receipt_descriptor(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        execution_substrate="herdr-visible",
+        sandbox_receipt_path=None,
+        herdr_receipt_path="herdr-observation-gate.json",
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    herdr_receipt = Path(work_order_payload["repo"]) / "herdr-observation-gate.json"
+    herdr_receipt.write_text(
+        json.dumps(
+            {
+                "schema": "tau.herdr_observation_gate_receipt.v1",
+                "status": "PASS",
+                "ok": True,
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["substrate_receipts"] == [
+        {
+            "label": "herdr_receipt",
+            "path": str(herdr_receipt.resolve()),
+            "sha256": f"sha256:{_sha256(herdr_receipt)}",
+            "bytes": herdr_receipt.stat().st_size,
+            "schema": "tau.herdr_observation_gate_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+        }
+    ]
+
+
 def test_zero_trust_worker_blocks_missing_policy(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -480,6 +538,12 @@ def test_omp_worker_launch_builds_dry_run_rpc_request(tmp_path: Path) -> None:
             "path": str(sandbox_receipt.resolve()),
             "sha256": f"sha256:{_sha256(sandbox_receipt)}",
             "bytes": sandbox_receipt.stat().st_size,
+            "schema": "tau.sandbox_run_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": True,
+            "live": False,
+            "provider_live": False,
         }
     ]
 
