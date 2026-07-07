@@ -38,6 +38,7 @@ def validate_review_findings(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        expected_goal_hash=expected_goal_hash,
     )
     if payload.get("schema") != REVIEW_FINDINGS_SCHEMA:
         alerts.append(_alert("invalid_schema", f"schema must be {REVIEW_FINDINGS_SCHEMA}"))
@@ -340,8 +341,16 @@ def _coding_policy_alerts(
     zero_trust: bool,
     policy_profile: dict[str, Any] | None,
     data_boundary: dict[str, Any] | None,
+    expected_goal_hash: str | None,
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
+    if zero_trust and not expected_goal_hash:
+        alerts.append(
+            _alert(
+                "missing_expected_goal_hash",
+                "zero-trust review findings require caller expected_goal_hash",
+            )
+        )
     if zero_trust and policy_profile is None:
         alerts.append(
             _alert("missing_policy_profile", "zero-trust review findings require policy_profile")

@@ -362,13 +362,29 @@ def test_review_findings_zero_trust_blocks_missing_policy_boundary() -> None:
     )
 
     assert receipt["status"] == "BLOCKED"
+    assert "missing_expected_goal_hash" in receipt["alert_codes"]
     assert "missing_policy_profile" in receipt["alert_codes"]
     assert "missing_data_boundary" in receipt["alert_codes"]
+
+
+def test_review_findings_zero_trust_requires_expected_goal_hash() -> None:
+    receipt = validate_review_findings(
+        _payload(verdict="PASS", findings=[]),
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["goal_hash"] == "sha256:goal"
+    assert "missing_expected_goal_hash" in receipt["alert_codes"]
+    assert "goal_hash_mismatch" not in receipt["alert_codes"]
 
 
 def test_review_findings_zero_trust_accepts_policy_boundary() -> None:
     receipt = validate_review_findings(
         _payload(verdict="PASS", findings=[]),
+        expected_goal_hash="sha256:goal",
         zero_trust=True,
         policy_profile=_policy_profile(),
         data_boundary=_data_boundary(),
@@ -387,6 +403,7 @@ def test_review_findings_zero_trust_blocks_invalid_data_boundary() -> None:
 
     receipt = validate_review_findings(
         _payload(verdict="PASS", findings=[]),
+        expected_goal_hash="sha256:goal",
         zero_trust=True,
         policy_profile=_policy_profile(),
         data_boundary=boundary,
@@ -448,8 +465,44 @@ def test_cli_review_findings_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_expected_goal_hash" not in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
+
+
+def test_cli_review_findings_zero_trust_missing_goal_hash_exits_blocked(
+    tmp_path: Path,
+) -> None:
+    findings_path = tmp_path / "findings.json"
+    receipt_path = tmp_path / "receipt.json"
+    policy_path = tmp_path / "policy-profile.json"
+    boundary_path = tmp_path / "data-boundary.json"
+    findings_path.write_text(json.dumps(_payload(verdict="PASS", findings=[])), encoding="utf-8")
+    policy_path.write_text(json.dumps(_policy_profile()), encoding="utf-8")
+    boundary_path.write_text(json.dumps(_data_boundary()), encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "review-findings",
+            "--findings",
+            str(findings_path),
+            "--out",
+            str(receipt_path),
+            "--zero-trust",
+            "--policy-profile",
+            str(policy_path),
+            "--data-boundary",
+            str(boundary_path),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert payload["goal_hash"] == "sha256:goal"
+    assert "missing_expected_goal_hash" in payload["alert_codes"]
 
 
 def test_cli_review_findings_unreadable_writes_blocked_receipt(tmp_path: Path) -> None:

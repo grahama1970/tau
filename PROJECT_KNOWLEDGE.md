@@ -5,6 +5,34 @@
 
 ## Current Understanding
 
+- 2026-07-07 zero-trust review expected-goal binding rung:
+  `src/tau_coding/review_findings.py` now requires the caller to supply an
+  expected goal hash when validating zero-trust structured review findings. A
+  review findings packet that carries its own `goal_hash` is no longer
+  sufficient for high-stakes review evidence; missing caller binding blocks
+  with `missing_expected_goal_hash`, and packet/caller mismatch continues to
+  block with `goal_hash_mismatch`. The CLI path therefore requires `uv run tau
+  review-findings --zero-trust --goal-hash sha256:...` alongside
+  `--policy-profile` and `--data-boundary` for admissible zero-trust reviewer
+  findings. Focused proof: `git diff --check --
+  src/tau_coding/review_findings.py tests/test_review_findings.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/review_findings.py
+  tests/test_review_findings.py` -> `All checks passed!`; `uv run pytest
+  tests/test_review_findings.py -q` -> `23 passed in 0.47s`. Aggregate proof:
+  `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-expected-goal-20260707T112500Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-review-expected-goal-20260707T112500Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded
+  `coding_receipt_tests` `323 passed in 8.21s`. This proves deterministic local
+  zero-trust review findings cannot self-bind to packet-authored goals without
+  a caller-supplied expected goal hash; it does not prove reviewer truthfulness,
+  semantic code correctness, provider/model quality, legal compliance, or full
+  goal completion.
+
 - 2026-07-07 commit-plan full source evidence coverage rung:
   `src/tau_coding/commit_plan.py` now requires supported evidence receipts to
   cover every changed source path when a commit plan has source-only changes

@@ -154,11 +154,14 @@ uv run tau review-findings \
   --goal-hash sha256:...
 ```
 
-Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
-when reviewer findings are part of a high-stakes coding route. In zero-trust
-mode, Tau blocks review finding receipts that omit policy or boundary metadata,
+Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
+--data-boundary boundary.json` when reviewer findings are part of a high-stakes
+coding route. In zero-trust mode, Tau blocks review finding receipts that omit
+the caller-supplied expected goal hash, policy metadata, or boundary metadata,
 carry invalid `tau.policy_profile.v1` / `tau.data_boundary.v1` objects, or mark
-the boundary as `classified-not-allowed`.
+the boundary as `classified-not-allowed`. Missing caller binding records
+`missing_expected_goal_hash`; a packet/caller mismatch records
+`goal_hash_mismatch`.
 Review finding payloads may also declare `allowed_paths` and `forbidden_paths`;
 Tau normalizes each `findings[].file` to a repo-relative path and blocks
 absolute paths, `..` escapes, files outside `allowed_paths`, or files matching
