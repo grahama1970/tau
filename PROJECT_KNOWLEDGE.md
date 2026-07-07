@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 LSP exact-symbol evidence rung: `src/tau_coding/lsp_receipts.py`
+  now records Python symbol references from exact `tokenize.NAME` identifier
+  tokens instead of substring matches. `tau.lsp_symbol_receipt.v1` blocks
+  invalid queries with `invalid_query`, ignores matches inside longer
+  identifiers, comments, and string literals, and `tau.lsp_rename_receipt.v1`
+  derives planned edits from the same exact-token evidence. Focused proof:
+  `git diff --check -- src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/lsp_receipts.py tests/test_lsp_receipts.py` -> `All checks
+  passed!`; `uv run pytest tests/test_lsp_receipts.py -q` -> `32 passed in
+  0.76s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-token-symbols-20260707T110500Z` exited
+  `0` and wrote
+  `/tmp/tau-coding-capability-sanity-lsp-token-symbols-20260707T110500Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded
+  `coding_receipt_tests` `320 passed in 8.22s`. This proves deterministic local
+  LSP-style symbol and rename evidence no longer treats substring hits as
+  identifier references; it does not prove semantic code correctness, full IDE
+  language-server parity, safe rename application, provider/model quality,
+  legal compliance, or full goal completion.
+
 - 2026-07-07 zero-trust debug expected-goal binding rung:
   `src/tau_coding/debug_session_receipt.py` now requires the caller to supply
   an expected goal hash when writing a zero-trust debug session receipt. A

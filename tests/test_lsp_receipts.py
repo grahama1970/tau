@@ -316,6 +316,73 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
     assert source.read_text(encoding="utf-8") == "def target():\n    return target()\n"
 
 
+def test_lsp_symbols_match_exact_identifier_tokens(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text(
+        "\n".join(
+            [
+                "def target():",
+                "    not_target = 'target string'",
+                "    # target comment",
+                "    return target()",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_lsp_symbol_receipt(
+        workspace=tmp_path,
+        query="target",
+        output_path=tmp_path / "symbols.json",
+        goal_hash="sha256:goal",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["reference_count"] == 2
+    assert [item["line"] for item in payload["references"]] == [1, 4]
+    assert all("column" in item for item in payload["references"])
+
+
+def test_lsp_symbols_block_invalid_query(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("target = 1\n", encoding="utf-8")
+
+    payload = write_lsp_symbol_receipt(
+        workspace=tmp_path,
+        query="",
+        output_path=tmp_path / "symbols.json",
+        goal_hash="sha256:goal",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "invalid_query" in payload["alert_codes"]
+    assert payload["reference_count"] == 0
+
+
+def test_lsp_rename_plan_ignores_substring_identifier_matches(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text(
+        "def target():\n    not_target = 1\n    return target()\n",
+        encoding="utf-8",
+    )
+
+    payload = write_lsp_rename_plan_receipt(
+        workspace=tmp_path,
+        symbol="target",
+        new_name="renamed",
+        output_path=tmp_path / "rename.json",
+        goal_hash="sha256:goal",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["reference_count"] == 2
+    assert [item["line"] for item in payload["references"]] == [1, 3]
+    assert [item["file"] for item in payload["planned_edits"]] == ["example.py", "example.py"]
+    assert source.read_text(encoding="utf-8") == (
+        "def target():\n    not_target = 1\n    return target()\n"
+    )
+
+
 def test_lsp_rename_plan_blocks_policy_write_disallowed(tmp_path: Path) -> None:
     source = tmp_path / "src" / "example.py"
     source.parent.mkdir()

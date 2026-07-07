@@ -10,9 +10,11 @@ from __future__ import annotations
 import ast
 import fnmatch
 import hashlib
+import io
 import json
 import shutil
 import subprocess
+import tokenize
 from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
@@ -165,6 +167,8 @@ def write_lsp_symbol_receipt(
         )
         for path in read_denied_paths
     )
+    if not query.isidentifier():
+        alerts.append(_alert("invalid_query", "symbol query must be a valid Python identifier"))
     references = _symbol_references(files, query)
     ok = not alerts
     payload = {
@@ -337,11 +341,28 @@ def _ast_diagnostics(files: list[Path]) -> list[dict[str, Any]]:
 
 def _symbol_references(files: list[Path], query: str) -> list[dict[str, Any]]:
     references: list[dict[str, Any]] = []
+    if not query.isidentifier():
+        return references
     for path in files:
-        lines = path.read_text(encoding="utf-8").splitlines()
-        for line_number, line in enumerate(lines, start=1):
-            if query in line:
-                references.append({"file": str(path), "line": line_number, "text": line.strip()})
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        try:
+            tokens = tokenize.generate_tokens(io.StringIO(text).readline)
+            for token in tokens:
+                if token.type != tokenize.NAME or token.string != query:
+                    continue
+                line_number = token.start[0]
+                line = lines[line_number - 1] if 0 < line_number <= len(lines) else ""
+                references.append(
+                    {
+                        "file": str(path),
+                        "line": line_number,
+                        "column": token.start[1] + 1,
+                        "text": line.strip(),
+                    }
+                )
+        except tokenize.TokenError:
+            continue
     return references
 
 

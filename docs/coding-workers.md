@@ -261,11 +261,14 @@ and blocks the receipt with `policy_read_denied` instead of reading denied
 source files.
 
 `tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
-symbol lookup and rename planning. Rename planning does not apply edits by
-default; it records references, planned edits, the hash-bound inspected source
-artifacts, and the hash/byte count of the intermediate symbol receipt used to
-derive the rename plan. Rename plans block when the symbol is absent, the source
-or target name is not a valid identifier, or the requested rename is a no-op.
+symbol lookup and rename planning. Symbol lookup is token-based for Python
+sources: Tau records exact identifier tokens, not substring matches in longer
+identifiers, comments, or string literals. Invalid symbol queries block with
+`invalid_query`. Rename planning does not apply edits by default; it records
+references, planned edits, the hash-bound inspected source artifacts, and the
+hash/byte count of the intermediate symbol receipt used to derive the rename
+plan. Rename plans block when the symbol is absent, the source or target name is
+not a valid identifier, or the requested rename is a no-op.
 Because rename planning is write intent, `policy_profile.filesystem.write_allowlist`
 is enforced when present: denied planned edit paths are recorded in
 `policy_write_denied_paths`, each planned edit records `policy_write_allowed`,
