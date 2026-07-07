@@ -30,6 +30,9 @@ tau.run_report_receipt.v1
 
 The report is generated from `tau run-status` plus known run artifacts such as
 `dag-receipt.json` and its `contract_path`.
+The report receipt records `source_artifacts` with SHA-256 hashes and byte
+counts for those source artifacts when they exist, so reviewers can identify
+the exact DAG receipt and contract rendered into the static HTML.
 
 Rendered sections:
 

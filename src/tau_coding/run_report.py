@@ -44,8 +44,9 @@ def write_run_report(*, run_dir: Path, out_path: Path, force: bool = False) -> d
         )
 
     run_status = build_run_status(resolved_run)
-    dag_receipt = _read_optional_json(resolved_run / "dag-receipt.json")
-    contract = _load_contract(dag_receipt)
+    dag_receipt_path = resolved_run / "dag-receipt.json"
+    dag_receipt = _read_optional_json(dag_receipt_path)
+    contract, contract_path = _load_contract(dag_receipt)
     sections = _report_sections(
         run_status=run_status,
         dag_receipt=dag_receipt,
@@ -67,6 +68,10 @@ def write_run_report(*, run_dir: Path, out_path: Path, force: bool = False) -> d
         "run_dir": str(resolved_run),
         "report_path": str(resolved_out),
         "report_sha256": f"sha256:{_sha256(resolved_out)}",
+        "source_artifacts": _source_artifacts(
+            ("dag_receipt", dag_receipt_path),
+            ("dag_contract", contract_path),
+        ),
         "section_count": len(sections),
         "sections": [section["id"] for section in sections],
         "source_status": {
@@ -235,11 +240,12 @@ def _render_section(section: dict[str, Any]) -> str:
     )
 
 
-def _load_contract(dag_receipt: dict[str, Any]) -> dict[str, Any]:
+def _load_contract(dag_receipt: dict[str, Any]) -> tuple[dict[str, Any], Path | None]:
     contract_path = dag_receipt.get("contract_path")
     if not isinstance(contract_path, str) or not contract_path:
-        return {}
-    return _read_optional_json(Path(contract_path).expanduser().resolve())
+        return {}, None
+    path = Path(contract_path).expanduser().resolve()
+    return _read_optional_json(path), path
 
 
 def _read_optional_json(path: Path) -> dict[str, Any]:
@@ -267,6 +273,25 @@ def _blocked_receipt(*, run_dir: Path, out_path: Path, errors: list[str]) -> dic
             "does_not_prove": NON_CLAIMS,
         },
     }
+
+
+def _source_artifacts(*items: tuple[str, Path | None]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for label, path in items:
+        if path is None:
+            continue
+        resolved = path.expanduser().resolve()
+        if not resolved.exists() or not resolved.is_file():
+            continue
+        artifacts.append(
+            {
+                "label": label,
+                "path": str(resolved),
+                "sha256": f"sha256:{_sha256(resolved)}",
+                "bytes": resolved.stat().st_size,
+            }
+        )
+    return artifacts
 
 
 def _sha256(path: Path) -> str:

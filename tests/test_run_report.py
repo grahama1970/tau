@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -15,6 +16,24 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert receipt["status"] == "PASS"
     assert receipt["mocked"] is False
     assert receipt["live"] is False
+    dag_receipt = run_dir / "dag-receipt.json"
+    contract = Path(
+        json.loads(dag_receipt.read_text(encoding="utf-8"))["contract_path"]
+    )
+    assert receipt["source_artifacts"] == [
+        {
+            "label": "dag_receipt",
+            "path": str(dag_receipt.resolve()),
+            "sha256": f"sha256:{_sha256(dag_receipt)}",
+            "bytes": dag_receipt.stat().st_size,
+        },
+        {
+            "label": "dag_contract",
+            "path": str(contract.resolve()),
+            "sha256": f"sha256:{_sha256(contract)}",
+            "bytes": contract.stat().st_size,
+        },
+    ]
     assert report_path.exists()
     assert Path(str(receipt["receipt_path"])).exists()
     html = report_path.read_text(encoding="utf-8")
@@ -107,3 +126,7 @@ def _write_report_run(tmp_path: Path) -> Path:
 
 def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

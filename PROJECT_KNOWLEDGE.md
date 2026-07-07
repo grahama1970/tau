@@ -1,9 +1,29 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:37 EDT by agent
+**Last updated:** 2026-07-06 22:41 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 run-report source artifact binding rung:
+  `src/tau_coding/run_report.py` now records `source_artifacts` on
+  `tau.run_report_receipt.v1` receipts for the `dag-receipt.json` and DAG
+  contract rendered into a static HTML report. Each source artifact descriptor
+  includes label, path, SHA-256, and byte count. Focused proof: `uv run ruff
+  check --select I,F,E501 src/tau_coding/run_report.py
+  tests/test_run_report.py` -> pass; `uv run pytest tests/test_run_report.py
+  -q` -> `3 passed in 0.35s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-run-report-source-artifacts-proof` wrote
+  `/tmp/tau-coding-capability-sanity-run-report-source-artifacts-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `196 passed in 6.63s`. This proves deterministic local run-report receipts
+  now bind the core source artifacts used for rendering and compose with the
+  current coding capability sanity suite; it does not prove UI correctness
+  beyond the static HTML artifact, compliance evidence sufficiency, ITAR
+  compliance, code correctness, provider/model quality, human acceptance, or
+  full sandbox isolation.
 
 - 2026-07-06 compliance package manifest hash-scope rung:
   `src/tau_coding/compliance_package.py` now records
