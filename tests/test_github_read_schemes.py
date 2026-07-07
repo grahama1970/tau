@@ -29,6 +29,19 @@ def test_github_read_issue_scheme_is_read_only(tmp_path: Path) -> None:
         "repo": "grahama1970/tau",
     }
     assert receipt["suggested_gh_command"][:4] == ["gh", "issue", "view", "67"]
+    projection_path = tmp_path / "github-read-receipt.json.projection.json"
+    projection = json.loads(projection_path.read_text(encoding="utf-8"))
+    assert projection["schema"] == "tau.github_read_projection.v1"
+    assert projection["uri"] == "issue://grahama1970/tau/67"
+    assert projection["mutation_allowed"] is False
+    assert receipt["projection_sha256"] == f"sha256:{_sha256(projection_path)}"
+    assert receipt["projection_bytes"] == projection_path.stat().st_size
+    assert receipt["projection_artifact"] == {
+        "label": "github_read_projection",
+        "path": str(projection_path.resolve()),
+        "sha256": f"sha256:{_sha256(projection_path)}",
+        "bytes": projection_path.stat().st_size,
+    }
 
 
 def test_github_read_pr_diff_scheme_is_read_only(tmp_path: Path) -> None:

@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:20 EDT by agent
+**Last updated:** 2026-07-06 23:23 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 GitHub read projection artifact rung:
+  `src/tau_coding/github_read_schemes.py` now writes a
+  `tau.github_read_projection.v1` sidecar for every `tau.github_read_receipt.v1`
+  and records it as `projection_artifact` with path, SHA-256, and byte count.
+  This binds dry-run GitHub read evidence to a reviewable immutable projection
+  artifact instead of only embedding parsed fields in the receipt. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py` ->
+  pass; `uv run pytest tests/test_github_read_schemes.py -q` -> `14 passed in
+  0.52s`. Aggregate proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-projection-proof` wrote
+  `/tmp/tau-coding-capability-sanity-github-read-projection-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:13`,
+  `failed_check_count:0`, `provider_live:false`, and embedded coding tests
+  `200 passed in 6.57s`. This proves deterministic local GitHub read receipts
+  expose a reviewable hash-bound projection artifact and compose with the
+  current coding capability sanity suite; it does not prove live GitHub auth,
+  GitHub content truth or freshness without execute mode, GitHub mutation,
+  semantic code correctness, live OMP or SciLLM semantic worker execution,
+  provider/model quality, human acceptance, legal compliance, or full sandbox
+  isolation on every host.
 
 - 2026-07-06 debug-session packet artifact descriptor rung:
   `src/tau_coding/debug_session_receipt.py` now records `session_artifact` on

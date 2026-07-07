@@ -54,6 +54,13 @@ def write_github_read_receipt(
         parsed = {}
     ok = not alerts
     suggested_command = _suggested_gh_command(parsed)
+    projection_path = _sidecar_path(output_path, "projection.json")
+    projection = _read_projection(
+        uri=uri,
+        parsed=parsed,
+        suggested_command=suggested_command,
+    )
+    _write_json(projection_path, projection)
     execution = _execute_read_command(
         output_path=output_path,
         command=suggested_command,
@@ -80,6 +87,10 @@ def write_github_read_receipt(
         "mutation_allowed": False,
         "blocked_mutations": ["comment", "label", "close", "merge", "push", "release"],
         "suggested_gh_command": suggested_command,
+        "projection_path": str(projection_path),
+        "projection_sha256": _sha256_uri(projection_path),
+        "projection_bytes": projection_path.stat().st_size,
+        "projection_artifact": _artifact_descriptor("github_read_projection", projection_path),
         "execution": execution,
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
@@ -103,6 +114,24 @@ def write_github_read_receipt(
     payload["receipt_path"] = str(output_path.expanduser().resolve())
     _write_json(output_path, payload)
     return payload
+
+
+def _read_projection(
+    *,
+    uri: str,
+    parsed: dict[str, Any],
+    suggested_command: list[str],
+) -> dict[str, Any]:
+    return {
+        "schema": "tau.github_read_projection.v1",
+        "uri": uri,
+        "parsed": parsed,
+        "read_only": True,
+        "dry_run_projection": True,
+        "mutation_allowed": False,
+        "blocked_mutations": ["comment", "label", "close", "merge", "push", "release"],
+        "suggested_gh_command": suggested_command,
+    }
 
 
 def _execute_read_command(
@@ -239,6 +268,16 @@ def _artifact_descriptors(*items: tuple[str, Path]) -> list[dict[str, Any]]:
             }
         )
     return artifacts
+
+
+def _artifact_descriptor(label: str, path: Path) -> dict[str, Any]:
+    resolved = path.expanduser().resolve()
+    return {
+        "label": label,
+        "path": str(resolved),
+        "sha256": _sha256_uri(resolved),
+        "bytes": resolved.stat().st_size,
+    }
 
 
 def _sha256_uri(path: Path) -> str:

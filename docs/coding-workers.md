@@ -366,12 +366,14 @@ high-stakes coding route. In zero-trust mode, Tau blocks read receipts that
 omit the active goal hash, policy metadata, or boundary metadata.
 
 The receipt records the active goal hash, parsed target, a suggested `gh` read
-command, blocked mutation verbs, and `mutation_allowed:false`. In execute mode
-it records the exact command, exit code, timeout state, stdout/stderr artifact
-paths, SHA-256 hashes, byte counts, and artifact descriptors. It does not
-authorize mutation, prove semantic correctness of GitHub content, or prove
-content freshness unless a real `gh` command completed for that target at that
-time.
+command, blocked mutation verbs, and `mutation_allowed:false`. It also writes a
+`tau.github_read_projection.v1` sidecar and records it as `projection_artifact`
+with path, SHA-256, and byte count, so dry-run GitHub read evidence is tied to a
+reviewable immutable projection artifact. In execute mode it records the exact
+command, exit code, timeout state, stdout/stderr artifact paths, SHA-256 hashes,
+byte counts, and artifact descriptors. It does not authorize mutation, prove
+semantic correctness of GitHub content, or prove content freshness unless a real
+`gh` command completed for that target at that time.
 
 GitHub mutation remains separate. Commenting, labeling, closing, merging,
 pushing, and releasing must go through `tau.github_apply_policy_receipt.v1`
