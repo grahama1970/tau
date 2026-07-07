@@ -238,6 +238,62 @@ def test_worker_records_required_artifact_descriptors(tmp_path: Path) -> None:
     ]
 
 
+def test_worker_blocks_required_artifact_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        required_artifacts=[str(tmp_path / "outside" / "worker-artifact.log")],
+    )
+    outside = tmp_path / "outside" / "worker-artifact.log"
+    outside.parent.mkdir()
+    outside.write_text("outside evidence\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=[str(outside)],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "artifact_outside_repo" in payload["alert_codes"]
+    assert "missing_required_artifact" in payload["alert_codes"]
+    assert payload["required_artifact_descriptors"] == []
+
+
+def test_worker_blocks_pass_test_log_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    outside = tmp_path / "outside" / "pytest.log"
+    outside.parent.mkdir()
+    outside.write_text("1 passed\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        tests_run=[
+            {
+                "name": "pytest",
+                "status": "PASS",
+                "log_path": str(outside),
+            }
+        ],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "test_log_outside_repo" in payload["alert_codes"]
+    assert "tests_passed_without_logs" in payload["alert_codes"]
+    assert payload["test_log_artifacts"] == []
+
+
 def test_high_stakes_worker_requires_substrate(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,

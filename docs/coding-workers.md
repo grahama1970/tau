@@ -519,17 +519,20 @@ existence, SHA-256, byte count, schema, status, `ok`, `mocked`, `live`, and
 
 Required artifacts are not satisfied by strings alone. When a work order names a
 required artifact, the worker result must list that artifact and the referenced
-file must exist under the repo or at its absolute path before Tau accepts the
-worker receipt. Accepted required artifacts are recorded in
+file must exist under the work-order repo before Tau accepts the worker receipt.
+Absolute paths outside the repo are blocked with `artifact_outside_repo`.
+Accepted required artifacts are recorded in
 `required_artifact_descriptors` with the declared artifact name, resolved path,
 existence, SHA-256, and byte count.
 
 PASS test claims are treated the same way. When a worker result lists
 `tests_run[].status:"PASS"`, it must include an existing `log_path` or
-`stdout_path`; accepted test logs are recorded in `test_log_artifacts` with the
-test name/status, declared artifact path, resolved path, existence, SHA-256,
-and byte count. This lets downstream reviewers distinguish "the worker claimed
-pytest passed" from "Tau inspected the exact log artifact behind that claim."
+`stdout_path` under the work-order repo. Absolute paths outside the repo are
+blocked with `test_log_outside_repo`; accepted test logs are recorded in
+`test_log_artifacts` with the test name/status, declared artifact path, resolved
+path, existence, SHA-256, and byte count. This lets downstream reviewers
+distinguish "the worker claimed pytest passed" from "Tau inspected the exact log
+artifact behind that claim."
 
 CLI:
 

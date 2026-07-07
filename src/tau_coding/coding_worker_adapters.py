@@ -371,6 +371,17 @@ def _write_worker_receipt(
                 f"worker result missing required artifacts: {missing_required_artifacts}",
             )
         )
+    outside_required_artifacts = _artifacts_outside_repo(
+        [artifact for artifact in result_artifacts if artifact in set(required_artifacts)],
+        repo,
+    )
+    if outside_required_artifacts:
+        alerts.append(
+            _alert(
+                "artifact_outside_repo",
+                f"worker result artifacts must stay under repo: {outside_required_artifacts}",
+            )
+        )
 
     if _worker_result_is_prose_only(result):
         alerts.append(_alert("prose_only_result", "worker result must include structured evidence"))
@@ -383,6 +394,14 @@ def _write_worker_receipt(
     if _tests_claim_pass_without_logs(result, repo):
         alerts.append(
             _alert("tests_passed_without_logs", "tests_run PASS entries require log paths")
+        )
+    outside_test_logs = _test_logs_outside_repo(result, repo)
+    if outside_test_logs:
+        alerts.append(
+            _alert(
+                "test_log_outside_repo",
+                f"worker test log artifacts must stay under repo: {outside_test_logs}",
+            )
         )
 
     if _requested_public_github_mutation(result):
@@ -888,10 +907,9 @@ def _referenced_receipt_artifact(
     path_value = _string(raw_path)
     if not path_value:
         return None
-    path = Path(path_value).expanduser()
-    if not path.is_absolute() and repo is not None:
-        path = repo / path
-    path = path.resolve()
+    path = _resolve_repo_artifact_path(path_value, repo)
+    if path is None:
+        return None
     if not path.exists() or not path.is_file():
         return None
     return {
@@ -1100,9 +1118,9 @@ def _tests_claim_pass_without_logs(result: Mapping[str, Any], repo: Path | None)
         log_path = _string(item.get("log_path") or item.get("stdout_path"))
         if not log_path:
             return True
-        candidate = Path(log_path).expanduser()
-        if not candidate.is_absolute() and repo is not None:
-            candidate = repo / candidate
+        candidate = _resolve_repo_artifact_path(log_path, repo)
+        if candidate is None:
+            return True
         if not candidate.exists():
             return True
     return False
@@ -1134,10 +1152,54 @@ def _test_log_artifact_descriptors(
 
 
 def _path_exists(path: str, repo: Path | None) -> bool:
+    candidate = _resolve_repo_artifact_path(path, repo)
+    if candidate is None:
+        return False
+    return candidate.exists()
+
+
+def _artifacts_outside_repo(artifacts: list[str], repo: Path | None) -> list[str]:
+    return [artifact for artifact in artifacts if _path_outside_repo(artifact, repo)]
+
+
+def _test_logs_outside_repo(result: Mapping[str, Any], repo: Path | None) -> list[str]:
+    tests = result.get("tests_run")
+    if not isinstance(tests, list):
+        return []
+    outside: list[str] = []
+    for item in tests:
+        if not isinstance(item, Mapping):
+            continue
+        log_path = _string(item.get("log_path") or item.get("stdout_path"))
+        if log_path and _path_outside_repo(log_path, repo):
+            outside.append(log_path)
+    return outside
+
+
+def _path_outside_repo(path: str, repo: Path | None) -> bool:
+    if repo is None:
+        return False
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        return False
+    try:
+        candidate.resolve().relative_to(repo.resolve())
+    except ValueError:
+        return True
+    return False
+
+
+def _resolve_repo_artifact_path(path: str, repo: Path | None) -> Path | None:
     candidate = Path(path).expanduser()
     if not candidate.is_absolute() and repo is not None:
         candidate = repo / candidate
-    return candidate.exists()
+    resolved = candidate.resolve()
+    if repo is not None:
+        try:
+            resolved.relative_to(repo.resolve())
+        except ValueError:
+            return None
+    return resolved
 
 
 def _requested_public_github_mutation(result: Mapping[str, Any]) -> bool:
