@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 GitHub read target-name fail-closed rung: `src/tau_coding/
+  github_read_schemes.py` now validates parsed GitHub owner/repo tokens for
+  `issue://`, `pr://`, `diff://`, and `commit://` read receipts before
+  accepting the target or executing `gh`. Malformed owner/repo names block with
+  `invalid_github_target`; execute mode records `execute_requested:true` but
+  keeps `command_executed:false`, so a malformed read target cannot become a
+  live GitHub command. Focused proof: `git diff --check --
+  src/tau_coding/github_read_schemes.py tests/test_github_read_schemes.py
+  docs/coding-workers.md PROJECT_KNOWLEDGE.md` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/github_read_schemes.py
+  tests/test_github_read_schemes.py` -> `All checks passed!`; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `23 passed in 0.46s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-github-target-name-proof-20260707T093000Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-github-target-name-proof-20260707T093000Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded `coding_receipt_tests`
+  `309 passed in 8.19s`. This proves deterministic local GitHub read receipts
+  fail closed on malformed target names before GitHub read evidence can support
+  coding work and still compose with the current coding-capability sanity
+  suite; it does not prove GitHub content truth, live GitHub auth, content
+  freshness unless execute mode captures `gh` output, mutation authorization,
+  provider/model quality, legal compliance, or full goal completion.
+
 - 2026-07-07 orchestration reliability controlled-block terminal rung:
   `src/tau_coding/orchestration_reliability.py` now treats a DAG receipt with
   `status:"BLOCKED"` as a valid orchestration terminal condition only when it

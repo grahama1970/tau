@@ -25,6 +25,8 @@ _PR_RE = re.compile(r"^pr://([^/]+)/([^/]+)/([0-9]+)$")
 _DIFF_RE = re.compile(r"^diff://([^/]+)/([^/]+)/pull/([0-9]+)$")
 _COMMIT_PREFIX_RE = re.compile(r"^commit://")
 _COMMIT_RE = re.compile(r"^commit://([^/]+)/([^/]+)/([A-Fa-f0-9]{7,40})$")
+_GITHUB_OWNER_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
+_GITHUB_REPO_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 
 
 def write_github_read_receipt(
@@ -58,6 +60,16 @@ def write_github_read_receipt(
         else:
             alerts.append(_alert("unsupported_github_read_uri", "unsupported GitHub read URI"))
         parsed = {}
+    else:
+        target_errors = _github_target_errors(parsed)
+        if target_errors:
+            alerts.append(
+                _alert(
+                    "invalid_github_target",
+                    "GitHub read URI owner/repo is malformed",
+                    errors=target_errors,
+                )
+            )
     ok = not alerts
     suggested_command = _suggested_gh_command(parsed)
     projection_path = _sidecar_path(output_path, "projection.json")
@@ -440,6 +452,22 @@ def _policy_repo_allowlist_alerts(
             )
         ]
     return []
+
+
+def _github_target_errors(parsed: dict[str, Any]) -> list[str]:
+    owner = parsed.get("owner")
+    name = parsed.get("name")
+    errors: list[str] = []
+    if not isinstance(owner, str) or not _GITHUB_OWNER_RE.fullmatch(owner):
+        errors.append(
+            "owner must be a GitHub owner name using alphanumeric characters or internal hyphens"
+        )
+    if not isinstance(name, str) or not _GITHUB_REPO_RE.fullmatch(name):
+        errors.append(
+            "repo must be a non-empty GitHub repo name using alphanumeric, "
+            "dot, underscore, or hyphen characters"
+        )
+    return errors
 
 
 def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:

@@ -135,6 +135,36 @@ def test_github_read_blocks_unsupported_uri(tmp_path: Path) -> None:
     assert receipt["mutation_allowed"] is False
 
 
+def test_github_read_blocks_malformed_owner_repo(tmp_path: Path) -> None:
+    receipt = write_github_read_receipt(
+        uri="issue://bad owner/tau;rm/67",
+        output_path=tmp_path / "github-read-receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_github_target" in receipt["alert_codes"]
+    assert receipt["execution"]["command_executed"] is False
+    assert receipt["mutation_allowed"] is False
+
+
+def test_github_read_execute_skips_malformed_owner_repo(tmp_path: Path) -> None:
+    gh_bin = _write_fake_gh(tmp_path)
+    marker = tmp_path / "fake-gh-called.json"
+
+    receipt = write_github_read_receipt(
+        uri="issue://bad owner/tau;rm/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        execute=True,
+        gh_bin=str(gh_bin),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_github_target" in receipt["alert_codes"]
+    assert receipt["execution"]["execute_requested"] is True
+    assert receipt["execution"]["command_executed"] is False
+    assert not marker.exists()
+
+
 def test_github_read_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
     receipt = write_github_read_receipt(
         uri="issue://grahama1970/tau/67",

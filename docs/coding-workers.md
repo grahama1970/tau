@@ -437,6 +437,10 @@ commit://owner/repo/<sha>
 The `commit://` form requires a short or full hexadecimal commit SHA. Branch
 names, tag names, and other moving refs are rejected for this read scheme so a
 commit evidence receipt stays tied to an immutable object.
+All supported forms also validate GitHub owner and repo tokens before accepting
+the target. Malformed names, including whitespace/control-like or shell-like
+characters, block with `invalid_github_target` before execute mode can invoke
+`gh`.
 
 CLI:
 
