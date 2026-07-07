@@ -92,6 +92,18 @@ uv run tau lsp-diagnostics \
   --out "${OUT}/receipts/lsp-diagnostics-receipt.json" \
   > "${OUT}/receipts/lsp-diagnostics.stdout.json"
 
+uv run tau test-run \
+  --repo "${WORK_REPO}" \
+  --out "${OUT}/receipts/test-run-receipt.json" \
+  --goal-hash "${GOAL_HASH}" \
+  --command python3 \
+  --command -m \
+  --command pytest \
+  --command -q \
+  --tested-path src/example.py \
+  --tested-path tests/test_example.py \
+  > "${OUT}/receipts/test-run.stdout.json"
+
 cat > "${OUT}/review-findings-pass.json" <<JSON
 {
   "schema": "tau.review_findings.v1",
@@ -202,6 +214,7 @@ uv run tau commit-plan \
   --out "${OUT}/receipts/commit-plan-receipt.json" \
   --evidence-receipt "${OUT}/receipts/valid-code-patch-receipt.json" \
   --evidence-receipt "${OUT}/receipts/lsp-diagnostics-receipt.json" \
+  --evidence-receipt "${OUT}/receipts/test-run-receipt.json" \
   --evidence-receipt "${OUT}/receipts/review-findings-pass-receipt.json" \
   > "${OUT}/receipts/commit-plan.stdout.json"
 
@@ -236,6 +249,7 @@ dag = {
     "artifacts": [
         str(receipts / "valid-code-patch-receipt.json"),
         str(receipts / "lsp-diagnostics-receipt.json"),
+        str(receipts / "test-run-receipt.json"),
         str(receipts / "review-findings-pass-receipt.json"),
         str(receipts / "review-findings-revise-receipt.json"),
         str(receipts / "review-findings-blocked-receipt.json"),
@@ -272,7 +286,7 @@ summary = {
     "proves": [
         "Tau blocked a stale hash-bound code patch.",
         "Tau applied a valid hash-bound exact replacement patch.",
-        "Tau wrote local diagnostics, PASS/REVISE/BLOCKED review-findings, commit-plan, and orchestration reliability receipts.",
+        "Tau wrote local diagnostics, a focused test-run receipt, PASS/REVISE/BLOCKED review-findings, commit-plan, and orchestration reliability receipts.",
     ],
     "does_not_prove": [
         "Semantic code correctness.",

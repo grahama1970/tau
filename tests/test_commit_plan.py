@@ -158,6 +158,40 @@ def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path)
     assert payload["evidence_receipts"][0]["bytes"] == evidence.stat().st_size
 
 
+def test_commit_plan_accepts_source_change_with_test_run_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "test-run.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.test_run_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "tested_paths": ["src.py"],
+                "tests_passed": True,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["evidence_receipt_count"] == 1
+    assert payload["evidence_receipts"][0]["schema"] == "tau.test_run_receipt.v1"
+    assert payload["evidence_receipts"][0]["schema_supported"] is True
+    assert payload["evidence_receipts"][0]["covered_paths"] == ["src.py"]
+
+
 def test_commit_plan_blocks_source_change_with_unrelated_evidence_receipt(
     tmp_path: Path,
 ) -> None:

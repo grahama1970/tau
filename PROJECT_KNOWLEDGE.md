@@ -1,9 +1,41 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 05:40 EDT by agent
+**Last updated:** 2026-07-07 06:27 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 focused test-run receipt rung:
+  `src/tau_coding/test_run_receipt.py` adds `tau.test_run_receipt.v1`, a
+  narrow local pytest-shaped coding evidence receipt. The CLI command
+  `uv run tau test-run --repo . --out test-run-receipt.json` accepts only
+  `python -m pytest`, `pytest`, or `uv run pytest` command forms, records
+  stdout/stderr artifacts, `tested_paths`, return code, timeout, and
+  `tests_passed`, and blocks missing goal/policy/data-boundary metadata in
+  zero-trust mode before command execution. `src/tau_coding/commit_plan.py` now
+  treats `tau.test_run_receipt.v1` as supported evidence and consumes
+  `tested_paths` for source-path coverage. `examples/coding-reliability-basic`
+  now runs `tau test-run` after the valid hash-bound patch and passes that
+  receipt into `tau commit-plan`. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/test_run_receipt.py tests/test_test_run_receipt.py
+  src/tau_coding/cli.py src/tau_coding/commit_plan.py tests/test_commit_plan.py
+  scripts/run-coding-capability-sanity.py` -> `All checks passed!`; `uv run
+  pytest tests/test_test_run_receipt.py tests/test_commit_plan.py -q` ->
+  `41 passed in 2.27s`; live example
+  `examples/coding-reliability-basic/run.sh
+  /tmp/tau-coding-reliability-basic-test-run-20260707T124500Z` -> `PASS`,
+  with `receipts/test-run-receipt.json` showing `tests_passed:true` and
+  `receipts/commit-plan-receipt.json` showing `tau.test_run_receipt.v1`,
+  `schema_supported:true`, covered paths `src/example.py` and
+  `tests/test_example.py`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-test-run-receipt-20260707T130000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  coverage includes `focused test-run receipts`, embedded coding receipt tests
+  `338 passed in 9.37s`. This proves Tau can record and consume focused local
+  pytest evidence as a coding receipt; it does not prove semantic code
+  correctness, full-suite health unless the full suite was the command, agent
+  truthfulness, provider/model quality, ITAR compliance, legal compliance, or
+  full goal completion.
 
 - 2026-07-07 zero-trust review expected-goal binding rung:
   `src/tau_coding/review_findings.py` now requires the caller to supply an

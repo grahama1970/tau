@@ -27,6 +27,7 @@ SUPPORTED_EVIDENCE_RECEIPT_SCHEMAS = {
     "tau.lsp_diagnostics_receipt.v1",
     "tau.lsp_symbol_receipt.v1",
     "tau.lsp_rename_receipt.v1",
+    "tau.test_run_receipt.v1",
     "tau.review_findings.v1",
     "tau.debug_session_receipt.v1",
     "tau.github_read_receipt.v1",
@@ -542,7 +543,7 @@ def _uncovered_source_paths(
 def _covered_paths_from_receipt(payload: dict[str, Any], repo: Path) -> list[str]:
     paths: set[str] = set()
     _append_covered_path(paths, payload.get("target_file"), repo)
-    for field in ("changed_files", "result_artifacts", "required_artifacts"):
+    for field in ("changed_files", "result_artifacts", "required_artifacts", "tested_paths"):
         value = payload.get(field)
         if isinstance(value, list):
             for item in value:

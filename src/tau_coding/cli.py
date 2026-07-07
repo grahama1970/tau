@@ -220,6 +220,7 @@ from tau_coding.session_export import (
     normalize_export_format,
 )
 from tau_coding.session_manager import CodingSessionRecord, SessionManager
+from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
 from tau_coding.tui import run_tui_app
@@ -1738,6 +1739,25 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
+            )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit(0 if payload.get("ok") is True else 1)
+
+    if prompt_option is None and command == "test-run":
+        try:
+            options = _parse_test_run_cli_args(positional_args[1:])
+            payload = write_test_run_receipt(
+                repo=Path(str(options["repo"])),
+                output_path=Path(str(options["out"])),
+                command=[str(item) for item in options["command"]],
+                tested_paths=[str(item) for item in options["tested_paths"]],
+                goal_hash=_optional_str(options.get("goal_hash")),
+                zero_trust=bool(options["zero_trust"]),
+                policy_profile=_read_optional_json_object(options.get("policy_profile")),
+                data_boundary=_read_optional_json_object(options.get("data_boundary")),
+                timeout_s=int(options["timeout_s"]),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4620,6 +4640,80 @@ def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
         raise RuntimeError(
             "Usage: tau lsp-rename-plan --symbol <symbol> --new-name <name> --out <receipt>"
         )
+    return options
+
+
+def _parse_test_run_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "repo": ".",
+        "out": None,
+        "command": [],
+        "tested_paths": [],
+        "timeout_s": 120,
+        "zero_trust": False,
+        "policy_profile": None,
+        "data_boundary": None,
+        "goal_hash": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--repo",
+            "--out",
+            "--command",
+            "--tested-path",
+            "--timeout-s",
+            "--policy-profile",
+            "--data-boundary",
+            "--goal-hash",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            if arg == "--command":
+                command = options["command"]
+                if isinstance(command, list):
+                    command.append(args[index])
+            elif arg == "--tested-path":
+                tested_paths = options["tested_paths"]
+                if isinstance(tested_paths, list):
+                    tested_paths.append(args[index])
+            else:
+                options[arg.removeprefix("--").replace("-", "_")] = args[index]
+        elif arg.startswith("--repo="):
+            options["repo"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--command="):
+            command = options["command"]
+            if isinstance(command, list):
+                command.append(arg.partition("=")[2])
+        elif arg.startswith("--tested-path="):
+            tested_paths = options["tested_paths"]
+            if isinstance(tested_paths, list):
+                tested_paths.append(arg.partition("=")[2])
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = arg.partition("=")[2]
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = arg.partition("=")[2]
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
+        elif arg == "--zero-trust":
+            options["zero_trust"] = True
+        else:
+            raise RuntimeError(f"unknown test-run option: {arg}")
+        index += 1
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau test-run --repo <repo> --out <receipt>")
+    if not options["command"]:
+        options["command"] = [sys.executable, "-m", "pytest", "-q"]
+    try:
+        options["timeout_s"] = int(str(options["timeout_s"]))
+    except ValueError as exc:
+        raise RuntimeError("--timeout-s must be an integer") from exc
     return options
 
 

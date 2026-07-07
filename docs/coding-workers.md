@@ -16,8 +16,9 @@ uv run tau init --profile coding-zero-trust --out .
 The profile writes `.tau/policy-profile.json`, `.tau/data-boundary.json`,
 `.tau/command-policy.json`, `.tau/dag-template.json`, and `.tau/README.md`.
 The DAG template includes a `tau.coding_contract.v1` block requiring
-hash-bound patch receipts, LSP diagnostics, structured review findings, dry-run
-commit planning, and course-correction receipts for blocked routes.
+hash-bound patch receipts, LSP diagnostics, focused test-run receipts,
+structured review findings, dry-run commit planning, and course-correction
+receipts for blocked routes.
 
 This starter does not prove semantic code correctness, sandbox isolation,
 human identity, legal compliance, or provider/model quality.
@@ -300,6 +301,39 @@ uv run tau lsp-rename-plan \
 These receipts do not prove semantic correctness, complete language-server
 parity, or that a rename is safe to apply.
 
+### Focused Test-Run Receipts
+
+`tau.test_run_receipt.v1` records a focused local pytest-shaped command for
+coding work. It is intentionally not a general shell runner: Tau accepts
+`python -m pytest`, `pytest`, or `uv run pytest` command forms and rejects other
+commands with `disallowed_test_command`.
+
+CLI:
+
+```bash
+uv run tau test-run \
+  --repo . \
+  --out test-run-receipt.json \
+  --goal-hash sha256:... \
+  --command python3 \
+  --command -m \
+  --command pytest \
+  --command -q \
+  --tested-path src/example.py
+```
+
+The receipt records the command, return code, timeout, stdout/stderr artifacts,
+`tested_paths`, and `tests_passed`. `tested_paths` lets `tau commit-plan`
+connect focused test evidence to changed source paths without inferring
+semantic coverage from a passing command. In zero-trust mode, Tau requires the
+active goal hash, `tau.policy_profile.v1`, and `tau.data_boundary.v1` before
+running the command.
+
+This receipt proves only that Tau ran the named focused test command and
+captured its artifacts. It does not prove semantic correctness, full-suite
+health unless the full suite was the command, agent truthfulness, or
+provider/model quality.
+
 ### Atomic Commit Planning
 
 `tau.commit_plan_receipt.v1` inspects a Git working tree and proposes dry-run
@@ -315,8 +349,9 @@ setting `policy_read_denied:true`, `exists:null`, `bytes:null`, and
 `policy_profile.filesystem.write_allowlist` is present, every changed path must
 match that allowlist; otherwise the plan blocks with `policy_write_disallowed`
 and records `policy_write_allowed:false` for the affected file.
-For source-only changes without changed tests, supported evidence receipts must
-cover every changed source path. Partial evidence coverage blocks with
+For source-only changes without changed tests, supported evidence receipts,
+including `tau.test_run_receipt.v1`, must cover every changed source path.
+Partial evidence coverage blocks with
 `source_changes_lack_relevant_evidence` and records the uncovered source paths
 in the alert `errors` field.
 
