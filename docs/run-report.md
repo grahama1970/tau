@@ -83,6 +83,13 @@ counts, `model_route_surface`, `model_route_agent`, `model_route_endpoint`,
 `http_executed`, `process_executed`, and `launch_skipped` so bounded worker
 evidence is visible without trusting the worker as correct or assuming a launch
 ran.
+For orchestration reliability receipts it surfaces `reliable_orchestration`,
+`goal_hash_preserved`, `dag_routes_respected`, `required_receipts_present`,
+`required_evidence_present`, `course_corrections_emitted`,
+`course_corrections_followed`, `retry_budget_respected`,
+`terminal_condition_valid`, `agent_truthfulness`, `missing_receipt_count`,
+`unhandled_herdr_block_count`, and `course_correction_count` so DAG control
+discipline is visible without claiming code correctness or agent truthfulness.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.

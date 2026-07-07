@@ -1,9 +1,40 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:32 EDT by agent
+**Last updated:** 2026-07-07 10:47 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 run-status/report orchestration reliability fields:
+  `src/tau_coding/run_status.py` now preserves
+  `tau.orchestration_reliability_receipt.v1` control-discipline fields in
+  coding evidence summaries: `reliable_orchestration`,
+  `goal_hash_preserved`, `dag_routes_respected`,
+  `required_receipts_present`, `required_evidence_present`,
+  `course_corrections_emitted`, `course_corrections_followed`,
+  `retry_budget_respected`, `terminal_condition_valid`,
+  `agent_truthfulness`, `missing_receipt_count`,
+  `unhandled_herdr_block_count`, and `course_correction_count`.
+  `tests/test_run_status.py` pins those fields for an orchestration
+  reliability receipt; `tests/test_run_report.py` asserts the static report
+  renders the schema, `reliable_orchestration`, `agent_truthfulness`, and
+  `NOT_CLAIMED`. This makes R10 orchestration reliability inspectable in
+  `tau run-status` / `tau report` without claiming code correctness or agent
+  truthfulness. Focused proof: `uv run python -m py_compile
+  src/tau_coding/run_status.py tests/test_run_status.py
+  tests/test_run_report.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/run_status.py tests/test_run_status.py
+  tests/test_run_report.py docs/run-report.md` -> `All checks passed!`;
+  `uv run pytest tests/test_run_status.py tests/test_run_report.py -q` ->
+  `40 passed in 0.57s`; `git diff --check --
+  src/tau_coding/run_status.py tests/test_run_status.py
+  tests/test_run_report.py docs/run-report.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-orchestration-report-20260707T144523Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `472 passed in 10.79s`. This does not prove
+  code correctness, agent truthfulness, live OMP or SciLLM semantic worker
+  execution, provider/model quality, legal compliance, human acceptance, or
+  full sandbox isolation on every host.
 
 - 2026-07-07 run-status/report worker adapter fields:
   `src/tau_coding/run_status.py` now treats

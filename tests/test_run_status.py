@@ -1793,6 +1793,19 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
         }
     ]
     assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -1893,6 +1906,19 @@ def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path)
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
     assert (
         "tau.skill_composition_redteam_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -2065,6 +2091,54 @@ def test_run_status_summarizes_scillm_worker_launch_fields(tmp_path: Path) -> No
     assert summary["launch_skipped"] is True
 
 
+def test_run_status_summarizes_orchestration_reliability_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "orchestration-reliability-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.orchestration_reliability_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "reliable_orchestration": True,
+            "goal_hash_preserved": True,
+            "dag_routes_respected": True,
+            "required_receipts_present": True,
+            "required_evidence_present": True,
+            "course_corrections_emitted": True,
+            "course_corrections_followed": True,
+            "retry_budget_respected": True,
+            "terminal_condition_valid": True,
+            "agent_truthfulness": "NOT_CLAIMED",
+            "missing_receipt_count": 0,
+            "unhandled_herdr_block_count": 0,
+            "course_correction_count": 1,
+        },
+    )
+
+    status = build_run_status(tmp_path)
+    summary = status["coding_evidence"]["receipts"][0]
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert summary["schema"] == "tau.orchestration_reliability_receipt.v1"
+    assert summary["reliable_orchestration"] is True
+    assert summary["goal_hash_preserved"] is True
+    assert summary["dag_routes_respected"] is True
+    assert summary["required_receipts_present"] is True
+    assert summary["required_evidence_present"] is True
+    assert summary["course_corrections_emitted"] is True
+    assert summary["course_corrections_followed"] is True
+    assert summary["retry_budget_respected"] is True
+    assert summary["terminal_condition_valid"] is True
+    assert summary["agent_truthfulness"] == "NOT_CLAIMED"
+    assert summary["missing_receipt_count"] == 0
+    assert summary["unhandled_herdr_block_count"] == 0
+    assert summary["course_correction_count"] == 1
+
+
 def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) -> None:
     receipt_path = tmp_path / "receipts" / "course-correction-receipt.json"
     _write_json(
@@ -2163,6 +2237,19 @@ def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) 
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
 
 
@@ -2268,6 +2355,19 @@ def test_run_status_summarizes_github_read_boundaries(tmp_path: Path) -> None:
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
 
 
@@ -2377,6 +2477,19 @@ def test_run_status_summarizes_debug_session_evidence_fields(tmp_path: Path) -> 
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
 
 
@@ -2481,6 +2594,19 @@ def test_run_status_summarizes_commit_plan_review_fields(tmp_path: Path) -> None
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
 
 
@@ -2582,6 +2708,19 @@ def test_run_status_summarizes_lsp_diagnostics_fields(tmp_path: Path) -> None:
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
 
 
@@ -2685,6 +2824,19 @@ def test_run_status_summarizes_lsp_rename_plan_fields(tmp_path: Path) -> None:
             "http_executed": None,
             "process_executed": None,
             "launch_skipped": None,
+            "reliable_orchestration": None,
+            "goal_hash_preserved": None,
+            "dag_routes_respected": None,
+            "required_receipts_present": None,
+            "required_evidence_present": None,
+            "course_corrections_emitted": None,
+            "course_corrections_followed": None,
+            "retry_budget_respected": None,
+            "terminal_condition_valid": None,
+            "agent_truthfulness": None,
+            "missing_receipt_count": None,
+            "unhandled_herdr_block_count": None,
+            "course_correction_count": None,
     }
 
 

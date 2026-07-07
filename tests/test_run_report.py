@@ -69,6 +69,10 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "docker-sandbox" in html
     assert "tau.scillm_worker_launch_receipt.v1" in html
     assert "opencode_serve" in html
+    assert "tau.orchestration_reliability_receipt.v1" in html
+    assert "reliable_orchestration" in html
+    assert "agent_truthfulness" in html
+    assert "NOT_CLAIMED" in html
     assert "tau.github_read_receipt.v1" in html
     assert "issue://grahama1970/tau/67" in html
     assert "mutation_allowed" in html
@@ -291,6 +295,31 @@ def _write_report_run(tmp_path: Path) -> Path:
             "apply_requested": False,
             "http_executed": False,
             "launch_skipped": True,
+        },
+    )
+    _write_json(
+        receipts_dir / "orchestration-reliability-receipt.json",
+        {
+            "schema": "tau.orchestration_reliability_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "reliable_orchestration": True,
+            "goal_hash_preserved": True,
+            "dag_routes_respected": True,
+            "required_receipts_present": True,
+            "required_evidence_present": True,
+            "course_corrections_emitted": True,
+            "course_corrections_followed": True,
+            "retry_budget_respected": True,
+            "terminal_condition_valid": True,
+            "agent_truthfulness": "NOT_CLAIMED",
+            "missing_receipt_count": 0,
+            "unhandled_herdr_block_count": 0,
+            "course_correction_count": 1,
         },
     )
     _write_json(

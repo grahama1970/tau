@@ -1840,6 +1840,19 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "http_executed": payload.get("http_executed"),
                 "process_executed": payload.get("process_executed"),
                 "launch_skipped": payload.get("launch_skipped"),
+                "reliable_orchestration": payload.get("reliable_orchestration"),
+                "goal_hash_preserved": payload.get("goal_hash_preserved"),
+                "dag_routes_respected": payload.get("dag_routes_respected"),
+                "required_receipts_present": payload.get("required_receipts_present"),
+                "required_evidence_present": payload.get("required_evidence_present"),
+                "course_corrections_emitted": payload.get("course_corrections_emitted"),
+                "course_corrections_followed": payload.get("course_corrections_followed"),
+                "retry_budget_respected": payload.get("retry_budget_respected"),
+                "terminal_condition_valid": payload.get("terminal_condition_valid"),
+                "agent_truthfulness": payload.get("agent_truthfulness"),
+                "missing_receipt_count": payload.get("missing_receipt_count"),
+                "unhandled_herdr_block_count": payload.get("unhandled_herdr_block_count"),
+                "course_correction_count": payload.get("course_correction_count"),
             }
         )
     return {
