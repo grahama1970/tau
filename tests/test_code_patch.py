@@ -380,6 +380,69 @@ def test_code_patch_receipt_records_policy_and_data_boundary(tmp_path: Path) -> 
     assert receipt["allowed_paths"] == ["src/**", "tests/**"]
 
 
+def test_code_patch_honors_policy_filesystem_write_allowlist(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "local",
+            "filesystem": {"write_allowlist": ["./src/**"], "read_denylist": []},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["applied"] is True
+    assert target.read_text(encoding="utf-8") == after
+
+
+def test_code_patch_blocks_policy_filesystem_write_disallow(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "local",
+            "filesystem": {"write_allowlist": ["tests/**"], "read_denylist": []},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["applied"] is False
+    assert "policy_write_disallowed" in receipt["alert_codes"]
+    assert target.read_text(encoding="utf-8") == before
+
+
 def test_cli_code_patch_writes_receipt(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()

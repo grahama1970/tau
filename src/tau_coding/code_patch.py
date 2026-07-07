@@ -92,6 +92,17 @@ def apply_code_patch_receipt(
         else:
             if not _path_allowed(relative_target, allowed_paths):
                 alerts.append(_alert("disallowed_path", "target_file is outside allowed_paths"))
+            policy_write_allowlist = _policy_write_allowlist(policy_profile)
+            if policy_write_allowlist is not None and not _path_allowed(
+                relative_target,
+                policy_write_allowlist,
+            ):
+                alerts.append(
+                    _alert(
+                        "policy_write_disallowed",
+                        "target_file is outside policy_profile.filesystem.write_allowlist",
+                    )
+                )
             if _path_forbidden(relative_target, forbidden_paths) or _path_forbidden(
                 relative_target,
                 list(GENERATED_PATH_PATTERNS),
@@ -251,11 +262,31 @@ def _resolve_target(repo_root: Path, target_text: str) -> tuple[Path | None, str
 
 
 def _path_allowed(path: str, patterns: list[str]) -> bool:
-    return bool(patterns) and any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
+    return bool(patterns) and any(
+        fnmatch.fnmatch(path, _normalize_policy_glob(pattern)) for pattern in patterns
+    )
 
 
 def _path_forbidden(path: str, patterns: list[str]) -> bool:
-    return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
+    return any(fnmatch.fnmatch(path, _normalize_policy_glob(pattern)) for pattern in patterns)
+
+
+def _policy_write_allowlist(policy_profile: Mapping[str, Any] | None) -> list[str] | None:
+    if policy_profile is None:
+        return None
+    filesystem = policy_profile.get("filesystem")
+    if not isinstance(filesystem, Mapping):
+        return None
+    write_allowlist = filesystem.get("write_allowlist")
+    if not isinstance(write_allowlist, list) or not all(
+        isinstance(item, str) for item in write_allowlist
+    ):
+        return None
+    return [item for item in write_allowlist]
+
+
+def _normalize_policy_glob(pattern: str) -> str:
+    return pattern.removeprefix("./")
 
 
 def _anchor_errors(anchors: list[object], text: str) -> list[str]:

@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:17 EDT by agent
+**Last updated:** 2026-07-07 00:21 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 code-patch policy write allowlist rung:
+  `src/tau_coding/code_patch.py` now enforces
+  `policy_profile.filesystem.write_allowlist` when present, so
+  `tau.code_patch_receipt.v1` blocks `target_file` writes outside the active
+  zero-trust policy allowlist with `policy_write_disallowed`. The check runs in
+  addition to patch-local `allowed_paths`, explicit `forbidden_paths`,
+  generated-path patterns, base hash, anchors, and post hash. Policy patterns
+  accept repo-relative globs such as `src/**` and `./src/**`; an empty policy
+  write allowlist denies all writes. Focused proof: `git diff --check
+  docs/coding-workers.md src/tau_coding/code_patch.py tests/test_code_patch.py`
+  -> pass; `uv run ruff check --select I,F,E501 src/tau_coding/code_patch.py
+  tests/test_code_patch.py` -> `All checks passed!`; `uv run pytest
+  tests/test_code_patch.py -q` -> `18 passed in 0.51s`. Aggregate coding
+  sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-policy-write-allowlist-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-policy-write-allowlist-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `205 passed in
+  6.60s`. This proves deterministic local hash-bound patch receipts honor the
+  active policy write allowlist when it is present and compose with the current
+  coding capability sanity suite; it does not prove semantic code correctness,
+  full test success for arbitrary changes, runtime sandbox enforcement, legal
+  compliance, live worker execution, or full goal completion.
 
 - 2026-07-07 orchestration reliability artifact existence rung:
   `src/tau_coding/orchestration_reliability.py` now records `exists:true` on
