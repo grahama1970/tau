@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:08 EDT by agent
+**Last updated:** 2026-07-06 22:12 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 SciLLM OpenCode-serve response admissibility rung:
+  `src/tau_coding/coding_worker_adapters.py` now blocks
+  `tau.scillm_worker_launch_receipt.v1` apply launches when SciLLM returns a
+  generic HTTP 200 JSON response without `status:"completed"` or without a
+  `run_id`/`session_id` binding. The new alerts are
+  `missing_scillm_run_status` and `missing_scillm_run_identifier`, preventing
+  the Tau launch receipt from treating arbitrary JSON as a completed coding
+  delegate run. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run pytest tests/test_coding_worker_adapters.py -q` ->
+  `38 passed in 3.59s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-scillm-response-admissibility-proof`
+  exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-scillm-response-admissibility-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `191 passed in
+  6.55s`. This proves deterministic local SciLLM launch response parsing now
+  fails closed for incomplete success responses and the coding capability
+  aggregate still composes; it does not prove live SciLLM semantic worker
+  execution, provider/model quality, code correctness, worker result validity
+  without `scillm-worker-validate`, legal compliance, or full sandbox
+  isolation.
 
 - 2026-07-06 course-correction goal-hash binding rung:
   `src/tau_coding/course_correction.py` now marks course-correction receipts

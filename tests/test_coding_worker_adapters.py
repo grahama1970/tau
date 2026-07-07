@@ -728,6 +728,40 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert "test-token" not in json.dumps(payload)
 
 
+def test_scillm_worker_launch_apply_blocks_incomplete_success_response(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server(response={})
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is True
+    assert payload["http_status"] == 200
+    assert requests[0]["path"] == "/v1/scillm/opencode/runs"
+    assert "missing_scillm_run_status" in payload["alert_codes"]
+    assert "missing_scillm_run_identifier" in payload["alert_codes"]
+
+
 def test_scillm_worker_launch_apply_uses_local_env_auth_token(
     tmp_path: Path,
     monkeypatch,
@@ -1110,7 +1144,9 @@ def _write_fake_omp(tmp_path: Path, *, marker: Path | None = None) -> Path:
     return script
 
 
-def _start_fake_scillm_server() -> tuple[ThreadingHTTPServer, str, list[dict]]:
+def _start_fake_scillm_server(
+    response: dict | None = None,
+) -> tuple[ThreadingHTTPServer, str, list[dict]]:
     requests: list[dict] = []
 
     class Handler(BaseHTTPRequestHandler):
@@ -1125,15 +1161,19 @@ def _start_fake_scillm_server() -> tuple[ThreadingHTTPServer, str, list[dict]]:
                     "payload": json.loads(body),
                 }
             )
-            response = {
+            response_payload = (
+                response
+                if response is not None
+                else {
                 "schema": "scillm.opencode_serve.run.v1",
                 "run_id": "run-123",
                 "session_id": "sess-123",
                 "status": "completed",
                 "assistant_text": "fixture response",
                 "artifacts": ["events.jsonl"],
-            }
-            encoded = json.dumps(response, sort_keys=True).encode("utf-8")
+                }
+            )
+            encoded = json.dumps(response_payload, sort_keys=True).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(encoded)))

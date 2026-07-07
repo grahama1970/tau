@@ -664,8 +664,19 @@ def _maybe_post_scillm_opencode_run(
         response_payload = {}
 
     run_status = _string(response_payload.get("status"))
-    if run_status and run_status != "completed":
+    run_id = response_payload.get("run_id")
+    session_id = response_payload.get("session_id")
+    if not run_status:
+        alerts.append(_alert("missing_scillm_run_status", "SciLLM response status is required"))
+    elif run_status != "completed":
         alerts.append(_alert("scillm_run_not_completed", f"SciLLM run status is {run_status}"))
+    if not (_string(run_id) or _string(session_id)):
+        alerts.append(
+            _alert(
+                "missing_scillm_run_identifier",
+                "SciLLM response requires run_id or session_id",
+            )
+        )
     artifacts = response_payload.get("artifacts")
     result.update(
         {
@@ -675,8 +686,8 @@ def _maybe_post_scillm_opencode_run(
             "timed_out": False,
             "response_path": str(response_path),
             "response_schema": response_payload.get("schema"),
-            "run_id": response_payload.get("run_id"),
-            "session_id": response_payload.get("session_id"),
+            "run_id": run_id,
+            "session_id": session_id,
             "scillm_run_status": run_status or None,
             "response_artifacts": artifacts if isinstance(artifacts, list) else [],
         }

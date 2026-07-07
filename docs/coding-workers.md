@@ -508,8 +508,12 @@ configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the
 receipt, and records `http_executed`, `http_status`, `response_path`,
 `response_sha256`, response byte count, `run_id`, `session_id`,
 `scillm_run_status`, response artifacts, and `http_artifacts`. HTTP error
-artifacts are also hash-bound when present. Apply mode requires bearer auth
-from one of these sources:
+artifacts are also hash-bound when present. A generic HTTP 200 JSON object is
+not accepted as an admissible launch result: Tau requires
+`scillm_run_status:"completed"` and at least one of `run_id` or `session_id`,
+otherwise the launch receipt is BLOCKED with `missing_scillm_run_status` or
+`missing_scillm_run_identifier`. Apply mode requires bearer auth from one of
+these sources:
 
 - explicit `--auth-token`
 - local `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`, or `SCILLM_AUTH_TOKEN`
