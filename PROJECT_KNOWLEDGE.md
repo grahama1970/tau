@@ -1,9 +1,40 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:58 EDT by agent
+**Last updated:** 2026-07-06 20:22 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 SciLLM worker local auth-source rung: commit `831b7c1a`
+  updates `src/tau_coding/coding_worker_adapters.py` so
+  `tau.scillm_worker_launch_receipt.v1` apply mode fails closed unless SciLLM
+  bearer auth is supplied explicitly or discovered for a localhost Scillm
+  endpoint from `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`, `SCILLM_AUTH_TOKEN`,
+  `SCILLM_ENV_PATH`, or the local Scillm project `.env`. Receipts record
+  `headers.authorization:"REDACTED"` plus `headers.authorization_source`; they
+  do not write bearer tokens. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `32 passed in 3.03s`. Live local
+  Scillm proof: `SCILLM_ENV_PATH=/home/graham/workspace/experiments/scillm/.env
+  uv run tau scillm-worker-launch --work-order
+  .tmp/tau-live-scillm-worker-launch/scillm-work-order.json --out
+  .tmp/tau-live-scillm-worker-launch/scillm-worker-launch-live-receipt.json
+  --apply --request-timeout-s 180 --caller-skill tau` exited 0; the receipt
+  reports `http_status:200`, `scillm_run_status:"completed"`,
+  `run_id:"oc-01e0d7c0b510"`, `mocked:false`, `live:true`, and
+  `authorization_source:"env_file:/home/graham/workspace/experiments/scillm/.env"`.
+  Commit `3724cfdf` updates `docs/coding-workers.md` and
+  `examples/scillm-worker/` to document the same auth-source behavior and
+  non-claims. Follow-up aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-post-scillm-auth` exited 0 with
+  `status:"PASS"`, `check_count:8`, `failed_check_count:0`, and embedded
+  focused tests `110 passed in 3.59s`. This proves Tau can launch a bounded
+  SciLLM OpenCode-serve request against the local Scillm endpoint with
+  non-leaking auth-source recording; it does not prove the OpenCode worker
+  result is truthful or sufficient for closure, semantic code correctness,
+  provider/model quality, legal compliance, or live OMP execution.
 
 - 2026-07-06 orchestration reliability artifact hash binding rung:
   `src/tau_coding/orchestration_reliability.py` now records
