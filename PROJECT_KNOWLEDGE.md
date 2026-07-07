@@ -5,6 +5,29 @@
 
 ## Current Understanding
 
+- 2026-07-07 compliance package course-correction evidence rung:
+  `src/tau_coding/compliance_package.py` now collects standalone
+  `course-correction` / `course_correction` JSON receipts into
+  `coding-evidence-receipts/` so blocked coding routes can be exported with the
+  patch, LSP, review, commit-plan, worker, and orchestration reliability
+  evidence. `tests/test_compliance_package.py` pins this by adding a
+  `tau.course_correction.v1` receipt to the coding evidence package test and
+  requiring it to be copied and reflected in manifest item schemas. Focused
+  proof: `uv run python -m py_compile src/tau_coding/compliance_package.py` ->
+  pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py` ->
+  `All checks passed!`; `uv run pytest tests/test_compliance_package.py -q` ->
+  `6 passed in 0.38s`; `git diff --check --
+  src/tau_coding/compliance_package.py tests/test_compliance_package.py` ->
+  pass. This proves deterministic compliance evidence packaging now includes
+  declared coding course-correction receipts; it does not prove legal
+  compliance, ITAR compliance, correction execution, semantic code correctness,
+  or worker truthfulness.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-compliance-course-correction-20260707T135937Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `462 passed in 10.62s`.
+
 - 2026-07-07 code-patch course-correction binding rung:
   `src/tau_coding/code_patch.py` now embeds a `tau.course_correction.v1`
   object inside BLOCKED `tau.code_patch_receipt.v1` receipts. Stale base hashes

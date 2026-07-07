@@ -60,6 +60,8 @@ RECEIPT_DIRECTORIES = {
         "review_findings",
         "commit-plan",
         "commit_plan",
+        "course-correction",
+        "course_correction",
         "debug-session",
         "debug_session",
         "omp-worker",
