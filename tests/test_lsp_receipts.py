@@ -58,6 +58,19 @@ def test_lsp_diagnostics_receipt_records_baseline_delta(tmp_path: Path) -> None:
     assert payload["diagnostics_increased"] is True
 
 
+def test_lsp_diagnostics_receipt_records_goal_hash(tmp_path: Path) -> None:
+    (tmp_path / "example.py").write_text("def ok():\n    return 1\n", encoding="utf-8")
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "diagnostics.json",
+        goal_hash="sha256:goal",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["goal_hash"] == "sha256:goal"
+
+
 def test_lsp_diagnostics_blocks_non_pass_baseline_receipt(tmp_path: Path) -> None:
     source = tmp_path / "example.py"
     source.write_text("def ok():\n    return 1\n", encoding="utf-8")
@@ -88,6 +101,28 @@ def test_lsp_diagnostics_blocks_non_pass_baseline_receipt(tmp_path: Path) -> Non
     assert payload["diagnostics_increased"] == "NOT_EVALUATED"
 
 
+def test_lsp_diagnostics_blocks_baseline_goal_hash_mismatch(tmp_path: Path) -> None:
+    source = tmp_path / "example.py"
+    source.write_text("def ok():\n    return 1\n", encoding="utf-8")
+    baseline = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "baseline-diagnostics.json",
+        goal_hash="sha256:other",
+    )
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=tmp_path,
+        output_path=tmp_path / "after-diagnostics.json",
+        goal_hash="sha256:goal",
+        baseline_receipt_path=Path(baseline["receipt_path"]),
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "baseline_receipt_goal_hash_mismatch" in payload["alert_codes"]
+    assert payload["baseline_severity_counts"] is None
+    assert payload["diagnostic_delta"] is None
+
+
 def test_lsp_diagnostics_blocks_when_server_unavailable_if_required(tmp_path: Path) -> None:
     payload = write_lsp_diagnostics_receipt(
         workspace=tmp_path / "missing",
@@ -109,6 +144,7 @@ def test_lsp_diagnostics_zero_trust_blocks_missing_policy_boundary(tmp_path: Pat
     )
 
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
@@ -119,12 +155,14 @@ def test_lsp_diagnostics_zero_trust_accepts_policy_boundary(tmp_path: Path) -> N
     payload = write_lsp_diagnostics_receipt(
         workspace=tmp_path,
         output_path=tmp_path / "diagnostics.json",
+        goal_hash="sha256:goal",
         zero_trust=True,
         policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
         data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
     )
 
     assert payload["status"] == "PASS"
+    assert payload["goal_hash"] == "sha256:goal"
     assert payload["zero_trust"] is True
     assert payload["policy_profile"]["profile_id"] == "test"
     assert payload["data_boundary"]["classification"] == "public"
@@ -139,9 +177,11 @@ def test_lsp_rename_plan_records_references_without_applying_by_default(tmp_path
         symbol="target",
         new_name="renamed",
         output_path=tmp_path / "rename.json",
+        goal_hash="sha256:goal",
     )
 
     assert payload["schema"] == LSP_RENAME_RECEIPT_SCHEMA
+    assert payload["goal_hash"] == "sha256:goal"
     assert payload["applied"] is False
     assert payload["reference_count"] == 2
     assert payload["inspected_artifacts"] == [
@@ -214,6 +254,7 @@ def test_lsp_symbols_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -
     )
 
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
@@ -230,6 +271,7 @@ def test_lsp_rename_plan_zero_trust_blocks_missing_policy_boundary(tmp_path: Pat
     )
 
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
@@ -260,6 +302,8 @@ def test_cli_lsp_symbols_writes_receipt(tmp_path: Path) -> None:
             "lookup_symbol",
             "--out",
             str(out),
+            "--goal-hash",
+            "sha256:goal",
         ],
     )
 
@@ -267,6 +311,7 @@ def test_cli_lsp_symbols_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == LSP_SYMBOL_RECEIPT_SCHEMA
+    assert payload["goal_hash"] == "sha256:goal"
     assert payload["reference_count"] == 2
     assert payload["inspected_artifacts"] == [
         {
@@ -302,6 +347,7 @@ def test_cli_lsp_symbols_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
@@ -333,6 +379,7 @@ def test_cli_lsp_rename_plan_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 
@@ -359,6 +406,7 @@ def test_cli_lsp_diagnostics_zero_trust_missing_boundary_exits_blocked(
     assert result.exit_code == 1
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
+    assert "missing_goal_hash" in payload["alert_codes"]
     assert "missing_policy_profile" in payload["alert_codes"]
     assert "missing_data_boundary" in payload["alert_codes"]
 

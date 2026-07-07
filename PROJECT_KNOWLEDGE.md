@@ -1,9 +1,33 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:54 EDT by agent
+**Last updated:** 2026-07-06 21:58 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 LSP goal-hash evidence binding rung:
+  `src/tau_coding/lsp_receipts.py` now records `goal_hash` on diagnostics,
+  symbol, and rename-plan receipts; zero-trust LSP receipts require
+  `goal_hash`; and diagnostics baseline comparisons reject missing or
+  mismatched baseline goal hashes when the current receipt is goal-bound. The
+  CLI `lsp-diagnostics`, `lsp-symbols`, and `lsp-rename-plan` commands now
+  accept `--goal-hash`, and `docs/coding-workers.md` documents the high-stakes
+  goal-hash requirement plus baseline binding. Focused proof: `uv run ruff
+  check --select I,F,E501 src/tau_coding/lsp_receipts.py src/tau_coding/cli.py
+  tests/test_lsp_receipts.py` -> pass; `uv run pytest
+  tests/test_lsp_receipts.py -q` -> `20 passed in 0.74s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-lsp-goal-hash-proof` exited 0 and wrote
+  `/tmp/tau-coding-capability-sanity-lsp-goal-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, coverage entry `LSP diagnostics, symbols, and rename
+  planning receipts`, and embedded focused coding tests `188 passed in
+  6.11s`. This proves deterministic local LSP evidence receipts can be bound
+  to the active goal and baseline diagnostics comparisons cannot silently reuse
+  a PASS receipt from another goal; it does not prove semantic code
+  correctness, complete language-server parity, safe rename application,
+  provider/model quality, live OMP/SciLLM semantic worker execution, legal
+  compliance, GitHub mutation, or full sandbox isolation.
 
 - 2026-07-06 commit-plan goal-hash evidence binding rung:
   `src/tau_coding/commit_plan.py` now records `goal_hash` on

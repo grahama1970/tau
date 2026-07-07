@@ -30,6 +30,7 @@ def write_lsp_diagnostics_receipt(
     *,
     workspace: Path,
     output_path: Path,
+    goal_hash: str | None = None,
     required: bool = False,
     zero_trust: bool = False,
     policy_profile: Mapping[str, Any] | None = None,
@@ -41,6 +42,7 @@ def write_lsp_diagnostics_receipt(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        goal_hash=goal_hash,
     )
     files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
     diagnostics: list[dict[str, Any]] = []
@@ -59,7 +61,11 @@ def write_lsp_diagnostics_receipt(
         alerts.append(_alert("lsp_server_unavailable", "required diagnostics adapter unavailable"))
 
     severity_counts = _severity_counts(diagnostics)
-    baseline = _read_baseline_receipt(baseline_receipt_path, alerts)
+    baseline = _read_baseline_receipt(
+        baseline_receipt_path,
+        alerts,
+        expected_goal_hash=goal_hash,
+    )
     baseline_counts = (
         _normalize_severity_counts(baseline.get("severity_counts"))
         if baseline is not None
@@ -74,6 +80,7 @@ def write_lsp_diagnostics_receipt(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "goal_hash": goal_hash,
         "zero_trust": zero_trust,
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
@@ -114,6 +121,7 @@ def write_lsp_symbol_receipt(
     workspace: Path,
     query: str,
     output_path: Path,
+    goal_hash: str | None = None,
     zero_trust: bool = False,
     policy_profile: Mapping[str, Any] | None = None,
     data_boundary: Mapping[str, Any] | None = None,
@@ -123,6 +131,7 @@ def write_lsp_symbol_receipt(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        goal_hash=goal_hash,
     )
     files = _workspace_files(resolved_workspace, DEFAULT_INCLUDE_GLOBS)
     references = _symbol_references(files, query)
@@ -134,6 +143,7 @@ def write_lsp_symbol_receipt(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "goal_hash": goal_hash,
         "zero_trust": zero_trust,
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
@@ -160,6 +170,7 @@ def write_lsp_rename_plan_receipt(
     symbol: str,
     new_name: str,
     output_path: Path,
+    goal_hash: str | None = None,
     zero_trust: bool = False,
     policy_profile: Mapping[str, Any] | None = None,
     data_boundary: Mapping[str, Any] | None = None,
@@ -168,6 +179,7 @@ def write_lsp_rename_plan_receipt(
         workspace=workspace,
         query=symbol,
         output_path=output_path.with_name(output_path.stem + ".symbols.tmp.json"),
+        goal_hash=goal_hash,
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
@@ -190,6 +202,7 @@ def write_lsp_rename_plan_receipt(
         "mocked": False,
         "live": True,
         "provider_live": False,
+        "goal_hash": goal_hash,
         "zero_trust": zero_trust,
         "policy_profile": policy_profile,
         "data_boundary": data_boundary,
@@ -322,6 +335,8 @@ def _severity_counts(diagnostics: list[dict[str, Any]]) -> dict[str, int]:
 def _read_baseline_receipt(
     baseline_receipt_path: Path | None,
     alerts: list[dict[str, Any]],
+    *,
+    expected_goal_hash: str | None,
 ) -> dict[str, Any] | None:
     if baseline_receipt_path is None:
         return None
@@ -352,6 +367,24 @@ def _read_baseline_receipt(
             )
         )
         return None
+    baseline_goal_hash = payload.get("goal_hash")
+    if expected_goal_hash is not None:
+        if not isinstance(baseline_goal_hash, str) or not baseline_goal_hash:
+            alerts.append(
+                _alert(
+                    "baseline_receipt_missing_goal_hash",
+                    "baseline diagnostics receipt must include goal_hash",
+                )
+            )
+            return None
+        if baseline_goal_hash != expected_goal_hash:
+            alerts.append(
+                _alert(
+                    "baseline_receipt_goal_hash_mismatch",
+                    "baseline diagnostics receipt goal_hash does not match current receipt",
+                )
+            )
+            return None
     return payload
 
 
@@ -384,8 +417,11 @@ def _coding_policy_alerts(
     zero_trust: bool,
     policy_profile: Mapping[str, Any] | None,
     data_boundary: Mapping[str, Any] | None,
+    goal_hash: str | None,
 ) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
+    if zero_trust and not goal_hash:
+        alerts.append(_alert("missing_goal_hash", "zero-trust LSP receipt requires goal_hash"))
     if zero_trust and policy_profile is None:
         alerts.append(
             _alert("missing_policy_profile", "zero-trust diagnostics require policy_profile")

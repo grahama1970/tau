@@ -154,6 +154,7 @@ To compare a post-change workspace against a previous diagnostics receipt:
 ```bash
 uv run tau lsp-diagnostics \
   --workspace . \
+  --goal-hash sha256:... \
   --baseline-receipt before-diagnostics.json \
   --out after-diagnostics.json
 ```
@@ -164,11 +165,14 @@ not proof that the code is semantically correct. Baseline receipts must be
 `status:"PASS"` with `ok:true`; BLOCKED or failed baseline diagnostics receipts
 are recorded as `baseline_receipt_not_pass` and do not produce a before/after
 delta.
+When a diagnostics receipt carries `goal_hash`, the baseline diagnostics receipt
+must carry the same `goal_hash`; missing or mismatched baseline goal hashes
+block before/after comparison.
 
-Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
-when LSP evidence is part of a high-stakes coding route. In zero-trust mode,
-Tau blocks diagnostics, symbol, and rename-plan receipts that omit the policy
-profile or data boundary.
+Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
+--data-boundary boundary.json` when LSP evidence is part of a high-stakes coding
+route. In zero-trust mode, Tau blocks diagnostics, symbol, and rename-plan
+receipts that omit the active goal hash, policy profile, or data boundary.
 
 `tau.lsp_symbol_receipt.v1` and `tau.lsp_rename_receipt.v1` provide read-only
 symbol lookup and rename planning. Rename planning does not apply edits by
@@ -180,11 +184,16 @@ rename is a no-op.
 CLI:
 
 ```bash
-uv run tau lsp-symbols --workspace . --query Example --out lsp-symbols.json
+uv run tau lsp-symbols \
+  --workspace . \
+  --query Example \
+  --goal-hash sha256:... \
+  --out lsp-symbols.json
 uv run tau lsp-rename-plan \
   --workspace . \
   --symbol Example \
   --new-name BetterExample \
+  --goal-hash sha256:... \
   --out lsp-rename-plan.json
 ```
 

@@ -1688,6 +1688,7 @@ def main(
             payload = write_lsp_diagnostics_receipt(
                 workspace=Path(str(options["workspace"])),
                 output_path=Path(str(options["out"])),
+                goal_hash=_optional_str(options.get("goal_hash")),
                 required=bool(options["required"]),
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
@@ -1710,6 +1711,7 @@ def main(
                 workspace=Path(str(options["workspace"])),
                 query=str(options["query"]),
                 output_path=Path(str(options["out"])),
+                goal_hash=_optional_str(options.get("goal_hash")),
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
@@ -1727,6 +1729,7 @@ def main(
                 symbol=str(options["symbol"]),
                 new_name=str(options["new_name"]),
                 output_path=Path(str(options["out"])),
+                goal_hash=_optional_str(options.get("goal_hash")),
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
@@ -4450,6 +4453,7 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "goal_hash": None,
         "baseline_receipt": None,
     }
     index = 0
@@ -4460,6 +4464,7 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
             "--out",
             "--policy-profile",
             "--data-boundary",
+            "--goal-hash",
             "--baseline-receipt",
         }:
             index += 1
@@ -4474,6 +4479,8 @@ def _parse_lsp_diagnostics_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         elif arg.startswith("--baseline-receipt="):
             options["baseline_receipt"] = arg.partition("=")[2]
         elif arg == "--required":
@@ -4496,11 +4503,19 @@ def _parse_lsp_symbols_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "goal_hash": None,
     }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--workspace", "--query", "--out", "--policy-profile", "--data-boundary"}:
+        if arg in {
+            "--workspace",
+            "--query",
+            "--out",
+            "--policy-profile",
+            "--data-boundary",
+            "--goal-hash",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -4515,6 +4530,8 @@ def _parse_lsp_symbols_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         elif arg == "--zero-trust":
             options["zero_trust"] = True
         else:
@@ -4540,6 +4557,7 @@ def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
         "zero_trust": False,
         "policy_profile": None,
         "data_boundary": None,
+        "goal_hash": None,
     }
     index = 0
     while index < len(args):
@@ -4551,6 +4569,7 @@ def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
             "--out",
             "--policy-profile",
             "--data-boundary",
+            "--goal-hash",
         }:
             index += 1
             if index >= len(args):
@@ -4568,6 +4587,8 @@ def _parse_lsp_rename_plan_cli_args(args: list[str]) -> dict[str, object]:
             options["policy_profile"] = arg.partition("=")[2]
         elif arg.startswith("--data-boundary="):
             options["data_boundary"] = arg.partition("=")[2]
+        elif arg.startswith("--goal-hash="):
+            options["goal_hash"] = arg.partition("=")[2]
         elif arg == "--zero-trust":
             options["zero_trust"] = True
         else:
