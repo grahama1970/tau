@@ -282,11 +282,28 @@ This is a binding and validation layer only. It does not invoke skills or trust
 skill output. Tau still requires invocation receipts, adapter receipts, and
 downstream DAG/course-correction validation before a skill result counts.
 
+## Course-Correction Skill Routes
+
+`tau.course_correction.v1` can now include a `skill_routes` block when Tau has a
+capability registry or project-profile providers. The block answers which skill
+provider may satisfy the required next action.
+
+Examples:
+
+- `debug_or_route_reviewer` maps to `debugger` or `review-code`;
+- `route_reviewer` maps to `review-code`;
+- `run_brave_search_then_retry` maps to `dogpile`;
+- `retry_node` maps to `code-runner` or `scillm`.
+
+Missing or registry-mismatched providers fail closed with
+`skill_capability_route_unavailable`. The route map is not execution proof; a
+skill still needs a Tau invocation receipt and an adapter receipt before its
+artifact is admissible.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
 1. Model-worker adapter.
-2. Course-correction routing through validated capability providers.
-3. A skill-composition red-team suite that proves Tau does not blindly trust
+2. A skill-composition red-team suite that proves Tau does not blindly trust
    skill outputs.

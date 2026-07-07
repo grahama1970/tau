@@ -1,9 +1,39 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 08:54 EDT by agent
+**Last updated:** 2026-07-07 09:19 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 course-correction skill-route rung:
+  `src/tau_coding/course_correction.py` now maps selected
+  `tau.course_correction.v1` actions to declared skill capabilities without
+  invoking skills or mutating routes. `skill_routes` can bind
+  `debug_or_route_reviewer` to debugger/review-code, `route_reviewer` to
+  review-code, `run_brave_search_then_retry` to dogpile, and retry actions to
+  code-runner/scillm capability options. Capability options are alternatives,
+  not all-required providers: for example, `debug_or_route_reviewer` can pass
+  with only `debug_runtime_state` / `debugger` available. Explicit
+  project-profile `capability_providers` are authoritative; missing required
+  providers or registry-conflicting providers fail closed with
+  `skill_capability_route_unavailable`. `tests/test_course_correction.py`
+  covers debug, review, research, missing-provider routes, and available
+  alternative-provider routing. `docs/course-correction.md` and
+  `docs/skill-composition.md` document the boundary. Proof:
+  `uv run ruff check --select I,F,E501
+  src/tau_coding/course_correction.py tests/test_course_correction.py
+  docs/course-correction.md docs/skill-composition.md` -> `All checks
+  passed!`; `uv run pytest tests/test_course_correction.py -q` -> `26 passed
+  in 0.54s`; `uv run python -m py_compile
+  src/tau_coding/course_correction.py` -> pass; `git diff --check -- ...` ->
+  pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-course-routes-20260707T130105Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `450 passed in 10.64s`. This proves local
+  deterministic action-to-capability routing and fail-closed missing-provider
+  behavior; it does not prove skill execution, skill output admissibility,
+  course-correction execution, live provider behavior, or future route
+  correctness.
 
 - 2026-07-07 research skill adapter rung:
   `src/tau_coding/research_skill_adapter.py` adds

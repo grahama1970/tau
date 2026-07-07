@@ -47,6 +47,15 @@ KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
     }
 )
 
+COURSE_CORRECTION_ACTION_CAPABILITY_OPTIONS: dict[str, list[list[str]]] = {
+    "debug_or_route_reviewer": [["debug_runtime_state"], ["code_review"]],
+    "route_reviewer": [["code_review"]],
+    "route_reviewer_or_debug": [["code_review"], ["debug_runtime_state"]],
+    "run_brave_search_then_retry": [["deep_research"]],
+    "retry_node": [["bounded_code_fix"], ["model_worker"]],
+    "retry_node_or_route_goal_guardian": [["bounded_code_fix"], ["model_worker"]],
+}
+
 
 def build_course_correction_receipt(
     *,
@@ -68,6 +77,8 @@ def build_course_correction_receipt(
     mocked: bool = False,
     live: bool = False,
     provider_live: bool = False,
+    capability_registry: dict[str, Any] | None = None,
+    capability_providers: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Build a normalized course-correction receipt.
 
@@ -140,6 +151,23 @@ def build_course_correction_receipt(
         payload["required_action"] = required_action
     if blocked_report_required is not None:
         payload["blocked_report_required"] = blocked_report_required
+    if capability_registry is not None or capability_providers is not None:
+        skill_routes = resolve_course_correction_skill_routes(
+            payload,
+            capability_registry=capability_registry,
+            capability_providers=capability_providers,
+        )
+        payload["skill_routes"] = skill_routes
+        if skill_routes["status"] == "BLOCKED":
+            payload["input_valid"] = False
+            for error in skill_routes["errors"]:
+                alert = {
+                    "severity": "BLOCK",
+                    "code": "skill_capability_route_unavailable",
+                    "message": error,
+                }
+                payload["alerts"].append(alert)
+                payload["alert_codes"].append(alert["code"])
     return payload
 
 
@@ -164,6 +192,8 @@ def write_course_correction_receipt(
     mocked: bool = False,
     live: bool = False,
     provider_live: bool = False,
+    capability_registry: dict[str, Any] | None = None,
+    capability_providers: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     payload = build_course_correction_receipt(
         trigger=trigger,
@@ -184,11 +214,160 @@ def write_course_correction_receipt(
         mocked=mocked,
         live=live,
         provider_live=provider_live,
+        capability_registry=capability_registry,
+        capability_providers=capability_providers,
     )
     resolved = output_path.expanduser().resolve()
     resolved.parent.mkdir(parents=True, exist_ok=True)
     resolved.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return payload
+
+
+def resolve_course_correction_skill_routes(
+    course_correction: dict[str, Any],
+    *,
+    capability_registry: dict[str, Any] | None = None,
+    capability_providers: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Resolve the skill providers that can satisfy a correction action.
+
+    This function is intentionally declarative. It does not invoke skills,
+    mutate route state, or decide that a correction has been executed.
+    """
+
+    action = course_correction.get("required_next_action")
+    trigger = course_correction.get("trigger")
+    errors: list[str] = []
+    routes: list[dict[str, Any]] = []
+    if not isinstance(action, str) or not action.strip():
+        errors.append("course correction missing required_next_action")
+        action = ""
+    option_groups = COURSE_CORRECTION_ACTION_CAPABILITY_OPTIONS.get(action, [])
+    registry_capabilities = _registry_capabilities(capability_registry, errors=errors)
+    providers = _resolved_capability_providers(
+        capability_registry=capability_registry,
+        capability_providers=capability_providers,
+    )
+    option_errors: list[str] = []
+    for option in option_groups:
+        candidate_errors: list[str] = []
+        candidate_routes: list[dict[str, Any]] = []
+        for capability in option:
+            route = _skill_route_for_capability(
+                capability,
+                providers=providers,
+                registry_capabilities=registry_capabilities,
+                errors=candidate_errors,
+            )
+            if route is not None:
+                candidate_routes.append(route)
+        if candidate_errors:
+            option_errors.extend(candidate_errors)
+            continue
+        routes.extend(candidate_routes)
+    if option_groups and not routes:
+        errors.extend(option_errors)
+        errors.append(f"no available skill capability provider for action {action}")
+    status = "PASS" if not errors else "BLOCKED"
+    return {
+        "schema": "tau.course_correction_skill_routes.v1",
+        "ok": not errors,
+        "status": status,
+        "trigger": trigger,
+        "required_next_action": action,
+        "required_capability_options": option_groups,
+        "routes": routes,
+        "route_count": len(routes),
+        "errors": errors,
+        "proof_scope": {
+            "proves": [
+                "Tau mapped a course-correction action to declared skill capabilities.",
+                "Tau checked mapped providers against the supplied capability registry "
+                "when one was provided.",
+            ],
+            "does_not_prove": [
+                "Any skill was invoked.",
+                "The skill output is admissible.",
+                "The correction action has been executed.",
+            ],
+        },
+    }
+
+
+def _registry_capabilities(
+    capability_registry: dict[str, Any] | None,
+    *,
+    errors: list[str],
+) -> dict[str, Any]:
+    if capability_registry is None:
+        return {}
+    if capability_registry.get("schema") != "tau.skill_capability_registry.v1":
+        errors.append("capability_registry schema must be tau.skill_capability_registry.v1")
+        return {}
+    capabilities = capability_registry.get("capabilities")
+    if not isinstance(capabilities, dict):
+        errors.append("capability_registry.capabilities must be an object")
+        return {}
+    return capabilities
+
+
+def _resolved_capability_providers(
+    *,
+    capability_registry: dict[str, Any] | None,
+    capability_providers: dict[str, str] | None,
+) -> dict[str, str]:
+    providers: dict[str, str] = {}
+    if isinstance(capability_providers, dict):
+        for capability, skill in capability_providers.items():
+            if isinstance(capability, str) and isinstance(skill, str) and skill.strip():
+                providers[capability] = skill
+        return providers
+    registry_capabilities = capability_registry.get("capabilities") if capability_registry else None
+    if isinstance(registry_capabilities, dict):
+        for capability, entry in registry_capabilities.items():
+            if not isinstance(capability, str) or not isinstance(entry, dict):
+                continue
+            skill = entry.get("skill")
+            if isinstance(skill, str) and skill.strip():
+                providers[capability] = skill
+    return providers
+
+
+def _skill_route_for_capability(
+    capability: str,
+    *,
+    providers: dict[str, str],
+    registry_capabilities: dict[str, Any],
+    errors: list[str],
+) -> dict[str, Any] | None:
+    skill = providers.get(capability)
+    if not skill:
+        errors.append(f"required skill capability missing: {capability}")
+        return None
+    registry_entry = registry_capabilities.get(capability)
+    if registry_entry is not None and not isinstance(registry_entry, dict):
+        errors.append(f"registry capability entry must be an object: {capability}")
+        return None
+    if isinstance(registry_entry, dict):
+        registry_skill = registry_entry.get("skill")
+        if registry_skill != skill:
+            errors.append(f"provider for capability {capability} does not match registry")
+            return None
+    return {
+        "capability": capability,
+        "skill": skill,
+        "tau_receipt_schema": (
+            registry_entry.get("tau_receipt_schema")
+            if isinstance(registry_entry, dict)
+            else None
+        ),
+        "pre_gate": registry_entry.get("pre_gate") if isinstance(registry_entry, dict) else None,
+        "native_artifact_schema": (
+            registry_entry.get("native_artifact_schema")
+            if isinstance(registry_entry, dict)
+            else None
+        ),
+    }
 
 
 def _policy_for_trigger(trigger: str) -> dict[str, Any]:

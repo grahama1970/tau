@@ -61,6 +61,26 @@ Legacy DAG course-correction receipts also preserve `code`, `required_action`,
 and `blocked_report_required` fields so existing run-status and proof summaries
 remain compatible.
 
+## Skill Capability Routes
+
+Course-correction receipts may include `skill_routes` when Tau is given a
+`tau.skill_capability_registry.v1` registry or project-profile capability
+providers. This maps bounded correction actions to agent-skills providers:
+
+| Correction action | Capability provider route |
+| --- | --- |
+| `debug_or_route_reviewer` | `debug_runtime_state` / `debugger`, or `code_review` / `review-code` |
+| `route_reviewer` | `code_review` / `review-code` |
+| `route_reviewer_or_debug` | `code_review` / `review-code`, or `debug_runtime_state` / `debugger` |
+| `run_brave_search_then_retry` | `deep_research` / `dogpile` |
+| `retry_node` | `bounded_code_fix` / `code-runner`, or `model_worker` / `scillm` |
+| `retry_node_or_route_goal_guardian` | `bounded_code_fix` / `code-runner`, or `model_worker` / `scillm` |
+
+If a required provider is missing or conflicts with the registry, Tau marks the
+course-correction input invalid and adds a `skill_capability_route_unavailable`
+alert. This is still only routing evidence. It does not invoke the skill and it
+does not make a skill result admissible.
+
 ## Non-Claims
 
 `tau.course_correction.v1` does not prove:

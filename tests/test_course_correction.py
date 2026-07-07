@@ -9,6 +9,7 @@ from tau_coding.course_correction import (
     CODING_COURSE_CORRECTION_TRIGGERS,
     COURSE_CORRECTION_SCHEMA,
     build_course_correction_receipt,
+    resolve_course_correction_skill_routes,
     write_course_correction_receipt,
 )
 
@@ -310,7 +311,7 @@ def test_course_correction_supports_all_required_coding_triggers() -> None:
         "herdr_stale",
     }
 
-    assert CODING_COURSE_CORRECTION_TRIGGERS == expected
+    assert expected == CODING_COURSE_CORRECTION_TRIGGERS
     for trigger in sorted(expected):
         payload = build_course_correction_receipt(
             trigger=trigger,
@@ -397,6 +398,106 @@ def test_course_correction_two_failed_attempts_warns_without_attempt_evidence() 
     assert "attempt_evidence_below_required_threshold" in payload["alert_codes"]
 
 
+def test_course_correction_maps_debug_to_debugger_skill() -> None:
+    payload = build_course_correction_receipt(
+        trigger="debugger_evidence_required",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        capability_registry=_registry(),
+        capability_providers=_capability_providers(),
+    )
+
+    assert payload["skill_routes"]["status"] == "PASS"
+    assert {
+        route["capability"]: route["skill"] for route in payload["skill_routes"]["routes"]
+    } == {
+        "debug_runtime_state": "debugger",
+        "code_review": "review-code",
+    }
+
+
+def test_course_correction_maps_review_to_review_code_skill() -> None:
+    payload = build_course_correction_receipt(
+        trigger="reviewer_revise",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="reviewer",
+        agent="reviewer",
+        attempt=1,
+    )
+
+    routes = resolve_course_correction_skill_routes(
+        payload,
+        capability_registry=_registry(),
+        capability_providers=_capability_providers(),
+    )
+
+    assert routes["status"] == "PASS"
+    assert routes["routes"][0]["capability"] == "code_review"
+    assert routes["routes"][0]["skill"] == "review-code"
+
+
+def test_course_correction_maps_research_to_dogpile_skill() -> None:
+    payload = build_course_correction_receipt(
+        trigger="brave_search_required_after_two_attempts",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=2,
+    )
+
+    routes = resolve_course_correction_skill_routes(
+        payload,
+        capability_registry=_registry(),
+        capability_providers=_capability_providers(),
+    )
+
+    assert routes["status"] == "PASS"
+    assert routes["routes"][0]["capability"] == "deep_research"
+    assert routes["routes"][0]["skill"] == "dogpile"
+    assert routes["routes"][0]["pre_gate"] == "tau.research_query_safety_receipt.v1"
+
+
+def test_course_correction_blocks_when_required_skill_missing() -> None:
+    payload = build_course_correction_receipt(
+        trigger="brave_search_required_after_two_attempts",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=2,
+        capability_registry=_registry(),
+        capability_providers={"code_review": "review-code"},
+    )
+
+    assert payload["skill_routes"]["status"] == "BLOCKED"
+    assert payload["input_valid"] is False
+    assert "skill_capability_route_unavailable" in payload["alert_codes"]
+    assert "required skill capability missing: deep_research" in payload["skill_routes"]["errors"]
+
+
+def test_course_correction_allows_available_alternative_skill() -> None:
+    payload = build_course_correction_receipt(
+        trigger="debugger_evidence_required",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        capability_registry=_registry(),
+        capability_providers={"debug_runtime_state": "debugger"},
+    )
+
+    assert payload["skill_routes"]["status"] == "PASS"
+    assert payload["skill_routes"]["route_count"] == 1
+    assert payload["skill_routes"]["routes"][0]["skill"] == "debugger"
+    assert "skill_capability_route_unavailable" not in payload["alert_codes"]
+
+
 def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> None:
     receipt_path = tmp_path / "course-correction.json"
 
@@ -450,3 +551,53 @@ def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> N
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _capability_providers() -> dict[str, str]:
+    return {
+        "debug_runtime_state": "debugger",
+        "bounded_code_fix": "code-runner",
+        "code_review": "review-code",
+        "deep_research": "dogpile",
+        "evidence_case": "create-evidence-case",
+        "model_worker": "scillm",
+    }
+
+
+def _registry() -> dict:
+    return {
+        "schema": "tau.skill_capability_registry.v1",
+        "capabilities": {
+            "debug_runtime_state": {
+                "skill": "debugger",
+                "native_artifact_schema": "debugger.proof.v1",
+                "tau_receipt_schema": "tau.debug_session_receipt.v1",
+            },
+            "bounded_code_fix": {
+                "skill": "code-runner",
+                "native_artifact_schema": "code_runner.result.v1",
+                "tau_receipt_schema": "tau.code_patch_receipt.v1",
+            },
+            "code_review": {
+                "skill": "review-code",
+                "native_artifact_schema": "review_result.json",
+                "tau_receipt_schema": "tau.review_findings.v1",
+            },
+            "deep_research": {
+                "skill": "dogpile",
+                "native_artifact_schema": "dogpile.report.v1",
+                "pre_gate": "tau.research_query_safety_receipt.v1",
+                "tau_receipt_schema": "tau.research_source_receipt.v1",
+            },
+            "evidence_case": {
+                "skill": "create-evidence-case",
+                "native_artifact_schema": "create_evidence_case.result.v1",
+                "tau_receipt_schema": "tau.evidence_case_gate_receipt.v1",
+            },
+            "model_worker": {
+                "skill": "scillm",
+                "native_artifact_schema": "scillm.worker_result.v1",
+                "tau_receipt_schema": "tau.scillm_worker_receipt.v1",
+            },
+        },
+    }
