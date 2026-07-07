@@ -156,6 +156,54 @@ def test_environment_manifest_records_declared_controls(tmp_path: Path) -> None:
     assert "Runtime sandbox enforcement." in manifest["proof_scope"]["does_not_prove"]
 
 
+def test_environment_manifest_validates_policy_and_boundary_references(
+    tmp_path: Path,
+) -> None:
+    policy_path = tmp_path / "policy-profile.json"
+    boundary_path = tmp_path / "data-boundary.json"
+    _write_json(policy_path, _valid_policy_profile())
+    _write_json(boundary_path, _valid_data_boundary())
+
+    manifest = build_environment_manifest(
+        run_id="run-1",
+        network_policy="deny",
+        provider_access="denied",
+        mounted_paths=[],
+        secrets_visible=[],
+        tool_versions={},
+        policy_profile=str(policy_path),
+        data_boundary=str(boundary_path),
+    )
+
+    assert manifest["ok"] is True
+    assert manifest["status"] == "PASS"
+    assert manifest["policy_profile_artifact"]["schema"] == "tau.policy_profile.v1"
+    assert manifest["data_boundary_artifact"]["schema"] == "tau.data_boundary.v1"
+    assert str(manifest["policy_profile_artifact"]["sha256"]).startswith("sha256:")
+
+
+def test_environment_manifest_blocks_invalid_data_boundary_reference(tmp_path: Path) -> None:
+    policy_path = tmp_path / "policy-profile.json"
+    boundary_path = tmp_path / "data-boundary.json"
+    _write_json(policy_path, _valid_policy_profile())
+    _write_json(boundary_path, {"schema": "tau.data_boundary.v1", "classification": "maybe"})
+
+    manifest = build_environment_manifest(
+        run_id="run-1",
+        network_policy="deny",
+        provider_access="denied",
+        mounted_paths=[],
+        secrets_visible=[],
+        tool_versions={},
+        policy_profile=str(policy_path),
+        data_boundary=str(boundary_path),
+    )
+
+    assert manifest["ok"] is False
+    assert manifest["status"] == "BLOCKED"
+    assert any(error.startswith("data_boundary:") for error in manifest["errors"])
+
+
 def test_environment_manifest_blocks_unknown_network_policy() -> None:
     errors = validate_environment_manifest(
         {
@@ -170,3 +218,40 @@ def test_environment_manifest_blocks_unknown_network_policy() -> None:
     )
 
     assert "network_policy must be one of" in errors[0]
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _valid_policy_profile() -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": [], "read_denylist": []},
+    }
+
+
+def _valid_data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": True,
+        "notes": [],
+    }

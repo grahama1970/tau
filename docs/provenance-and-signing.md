@@ -62,6 +62,12 @@ present:
 }
 ```
 
+When `policy_profile` or `data_boundary` is present on an environment manifest,
+Tau treats the value as a local JSON artifact reference. The referenced file
+must exist, contain valid JSON, and validate as `tau.policy_profile.v1` or
+`tau.data_boundary.v1`; the manifest records the referenced artifact hash and
+schema.
+
 `tau.signed_receipt.v1` is a local HMAC-SHA256 envelope over receipt input
 hashes. Verification with the same local key can detect changed input files.
 When `--actor-manifest` or `--environment-manifest` is supplied, signing first

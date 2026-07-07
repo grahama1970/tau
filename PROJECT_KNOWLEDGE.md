@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 environment provenance policy/data-boundary reference
+  fail-closed rung: `src/tau_coding/provenance.py` now treats supplied
+  `environment-manifest` `policy_profile` and `data_boundary` values as local
+  JSON artifact references. When present, the referenced file must exist,
+  contain a JSON object, and validate as `tau.policy_profile.v1` or
+  `tau.data_boundary.v1`. The environment manifest records artifact existence,
+  SHA-256, and schema for those references. Malformed policy/boundary
+  references block the environment manifest before it can be signed as
+  provenance. `docs/provenance-and-signing.md` documents the reference rule.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/provenance.py tests/test_provenance.py` -> `All checks
+  passed!`; `uv run pytest tests/test_provenance.py tests/test_receipt_signing.py
+  -q` -> `14 passed in 0.39s`. Aggregate sanity proof:
+  `/tmp/tau-coding-capability-sanity-environment-boundary-proof-20260707T080726Z/coding-capability-sanity-receipt.json`
+  -> `status: PASS`, `check_count: 13`, `failed_check_count: 0`, embedded
+  `coding_receipt_tests` tail `284 passed in 7.96s`, `live: mixed`, `mocked:
+  mixed`, `provider_live: false`. This proves deterministic local environment
+  manifests fail closed on missing or malformed cited policy/data-boundary
+  artifacts and remain compatible with signed-receipt provenance validation; it
+  does not prove runtime sandbox enforcement, network egress enforcement,
+  secret absence outside declared lists, legal identity, ITAR compliance,
+  provider/model quality, live worker semantic execution, or full goal
+  completion.
+
 - 2026-07-07 actor provenance eligibility shape fail-closed rung:
   `src/tau_coding/provenance.py` now validates optional actor
   `eligibility` metadata on `tau.actor_manifest.v1` entries. When present,

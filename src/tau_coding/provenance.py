@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import platform
 import subprocess
@@ -10,6 +11,8 @@ from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from tau_coding.policy_profile import validate_data_boundary, validate_policy_profile
 
 ACTOR_MANIFEST_SCHEMA = "tau.actor_manifest.v1"
 ENVIRONMENT_MANIFEST_SCHEMA = "tau.environment_manifest.v1"
@@ -105,7 +108,9 @@ def build_environment_manifest(
         "secrets_visible": list(secrets_visible or []),
         "tool_versions": merged_tool_versions,
         "policy_profile": policy_profile,
+        "policy_profile_artifact": _optional_json_reference(policy_profile),
         "data_boundary": data_boundary,
+        "data_boundary_artifact": _optional_json_reference(data_boundary),
         "proof_scope": {
             "proves": [
                 "Tau recorded declared environment controls for this run.",
@@ -171,6 +176,20 @@ def validate_environment_manifest(payload: Mapping[str, Any]) -> list[str]:
         for key, value in tool_versions.items()
     ):
         errors.append("tool_versions must be an object of string values")
+    errors.extend(
+        _validate_optional_json_reference(
+            payload.get("policy_profile"),
+            field="policy_profile",
+            validator=validate_policy_profile,
+        )
+    )
+    errors.extend(
+        _validate_optional_json_reference(
+            payload.get("data_boundary"),
+            field="data_boundary",
+            validator=validate_data_boundary,
+        )
+    )
     return errors
 
 
@@ -256,12 +275,58 @@ def _command_version(args: list[str]) -> str | None:
     return result.stdout.strip() or result.stderr.strip() or None
 
 
+def _optional_json_reference(value: str | None) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    path = Path(value).expanduser().resolve()
+    payload = _read_json_object_or_none(path)
+    artifact = {
+        "path": str(path),
+        "exists": path.exists() and path.is_file(),
+        "sha256": f"sha256:{_sha256(path)}" if path.exists() and path.is_file() else None,
+    }
+    if isinstance(payload, Mapping) and isinstance(payload.get("schema"), str):
+        artifact["schema"] = payload["schema"]
+    return artifact
+
+
+def _validate_optional_json_reference(value: Any, *, field: str, validator: Any) -> list[str]:
+    if value is None:
+        return []
+    if not _non_empty_string(value):
+        return [f"{field} must be a non-empty path string when present"]
+    path = Path(value).expanduser().resolve()
+    if not path.exists() or not path.is_file():
+        return [f"{field} path must exist and be a file: {path}"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"{field} path must contain valid JSON: {path}: {exc}"]
+    except OSError as exc:
+        return [f"{field} path could not be read: {path}: {exc}"]
+    if not isinstance(payload, Mapping):
+        return [f"{field} path must contain a JSON object: {path}"]
+    return [f"{field}: {error}" for error in validator(payload)]
+
+
+def _read_json_object_or_none(path: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
     path.expanduser().resolve().write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _utc_stamp() -> str:
