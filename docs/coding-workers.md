@@ -493,6 +493,13 @@ worker receipt. Accepted required artifacts are recorded in
 `required_artifact_descriptors` with the declared artifact name, resolved path,
 SHA-256, and byte count.
 
+PASS test claims are treated the same way. When a worker result lists
+`tests_run[].status:"PASS"`, it must include an existing `log_path` or
+`stdout_path`; accepted test logs are recorded in `test_log_artifacts` with the
+test name/status, declared artifact path, resolved path, SHA-256, and byte
+count. This lets downstream reviewers distinguish "the worker claimed pytest
+passed" from "Tau inspected the exact log artifact behind that claim."
+
 CLI:
 
 ```bash

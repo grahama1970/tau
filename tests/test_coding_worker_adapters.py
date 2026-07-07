@@ -136,6 +136,46 @@ def test_worker_blocks_tests_passed_without_logs(tmp_path: Path) -> None:
     assert "tests_passed_without_logs" in payload["alert_codes"]
 
 
+def test_worker_records_test_log_artifact_descriptors(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    test_log = repo / "logs" / "pytest.log"
+    test_log.parent.mkdir(parents=True, exist_ok=True)
+    test_log.write_text("1 passed\n", encoding="utf-8")
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        tests_run=[
+            {
+                "name": "pytest",
+                "status": "PASS",
+                "log_path": "logs/pytest.log",
+            }
+        ],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["test_log_artifacts"] == [
+        {
+            "label": "test_log",
+            "path": str(test_log.resolve()),
+            "sha256": f"sha256:{_sha256(test_log)}",
+            "bytes": test_log.stat().st_size,
+            "test_index": 0,
+            "test_name": "pytest",
+            "test_status": "PASS",
+            "artifact": "logs/pytest.log",
+        }
+    ]
+
+
 def test_worker_blocks_claimed_required_artifact_that_does_not_exist(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,

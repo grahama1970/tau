@@ -437,6 +437,7 @@ def _write_worker_receipt(
             result_artifacts,
             repo,
         ),
+        "test_log_artifacts": _test_log_artifact_descriptors(result, repo),
         "next_recommended_route": result.get("next_recommended_route"),
         "alerts": alerts,
         "alert_codes": [alert["code"] for alert in alerts],
@@ -1104,6 +1105,31 @@ def _tests_claim_pass_without_logs(result: Mapping[str, Any], repo: Path | None)
         if not candidate.exists():
             return True
     return False
+
+
+def _test_log_artifact_descriptors(
+    result: Mapping[str, Any],
+    repo: Path | None,
+) -> list[dict[str, Any]]:
+    tests = result.get("tests_run")
+    if not isinstance(tests, list):
+        return []
+    descriptors: list[dict[str, Any]] = []
+    for index, item in enumerate(tests):
+        if not isinstance(item, Mapping):
+            continue
+        log_path = _string(item.get("log_path") or item.get("stdout_path"))
+        if not log_path:
+            continue
+        descriptor = _referenced_receipt_artifact("test_log", log_path, repo)
+        if descriptor is None:
+            continue
+        descriptor["test_index"] = index
+        descriptor["test_name"] = _string(item.get("name"))
+        descriptor["test_status"] = _string(item.get("status"))
+        descriptor["artifact"] = log_path
+        descriptors.append(descriptor)
+    return descriptors
 
 
 def _path_exists(path: str, repo: Path | None) -> bool:

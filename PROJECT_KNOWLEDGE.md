@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:42 EDT by agent
+**Last updated:** 2026-07-06 23:41 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 worker test-log artifact rung:
+  `src/tau_coding/coding_worker_adapters.py` now records accepted worker test
+  logs in `test_log_artifacts` on OMP/SciLLM worker validation receipts. When a
+  worker result claims `tests_run[].status:"PASS"` with an existing `log_path`
+  or `stdout_path`, Tau records the test name/status, declared artifact path,
+  resolved path, SHA-256, and byte count so PASS test claims remain tied to the
+  concrete log that made them admissible. Focused proof: `git diff --check
+  PROJECT_KNOWLEDGE.md docs/coding-workers.md
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `41 passed in 3.60s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-test-log-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-worker-test-log-artifact-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `202 passed in
+  6.61s`. This proves deterministic local worker validation receipts bind
+  accepted PASS test logs to exact log artifacts and compose with the current
+  coding capability sanity suite; it does not prove live OMP or SciLLM semantic
+  worker execution, provider/model quality, semantic code correctness, GitHub
+  mutation, human acceptance, legal compliance, or full sandbox isolation on
+  every host.
 
 - 2026-07-06 course-correction observed artifact rung:
   `src/tau_coding/course_correction.py` now accepts an optional observed
