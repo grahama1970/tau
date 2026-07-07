@@ -2347,6 +2347,7 @@ def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -
     assert payload["response_schemas"] == ["fake.omp.rpc.response"]
     assert payload["response_frames"][0]["schema"] == "fake.omp.rpc.response"
     assert payload["response_frames"][0]["received_type"] == "prompt"
+    assert payload["response_metadata"] == [payload["stdin_jsonl"][0]["metadata"]]
     assert payload["stdout_path"]
     assert payload["stderr_path"]
     stdout_path = Path(payload["stdout_path"])
@@ -2375,6 +2376,63 @@ def test_omp_worker_launch_apply_runs_process_and_records_logs(tmp_path: Path) -
     assert stdout_payload["schema"] == "fake.omp.rpc.response"
     assert stdout_payload["received_type"] == "prompt"
     assert Path(payload["stderr_path"]).read_text(encoding="utf-8") == ""
+
+
+def test_omp_worker_launch_apply_blocks_missing_response_metadata(
+    tmp_path: Path,
+) -> None:
+    fake_omp = _write_fake_omp(tmp_path, stdout_mode="no-metadata")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is True
+    assert payload["stdout_jsonl_valid"] is True
+    assert payload["response_frame_count"] == 1
+    assert payload["response_metadata"] == []
+    assert "omp_response_metadata_missing" in payload["alert_codes"]
+
+
+def test_omp_worker_launch_apply_blocks_response_metadata_mismatch(
+    tmp_path: Path,
+) -> None:
+    fake_omp = _write_fake_omp(tmp_path, stdout_mode="wrong-metadata")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is True
+    assert payload["response_metadata"][0]["dag_id"] == "wrong-dag"
+    assert "omp_metadata_mismatch" in payload["alert_codes"]
+    mismatch_alert = next(
+        alert for alert in payload["alerts"] if alert["code"] == "omp_metadata_mismatch"
+    )
+    assert "metadata.dag_id expected" in mismatch_alert["errors"][0]
+    assert "metadata.goal_hash expected" in mismatch_alert["errors"][1]
 
 
 def test_omp_worker_launch_apply_blocks_empty_stdout_rpc_response(
@@ -3776,6 +3834,26 @@ def _write_fake_omp(
         output_lines = [
             "payload = json.loads(sys.stdin.readline())",
             "print('not-json')",
+        ]
+    elif stdout_mode == "no-metadata":
+        output_lines = [
+            "payload = json.loads(sys.stdin.readline())",
+            "print(json.dumps({",
+            "    'schema': 'fake.omp.rpc.response',",
+            "    'received_type': payload.get('type'),",
+            "}, sort_keys=True))",
+        ]
+    elif stdout_mode == "wrong-metadata":
+        output_lines = [
+            "payload = json.loads(sys.stdin.readline())",
+            "metadata = dict(payload.get('metadata') or {})",
+            "metadata['dag_id'] = 'wrong-dag'",
+            "metadata['goal_hash'] = 'sha256:wrong'",
+            "print(json.dumps({",
+            "    'schema': 'fake.omp.rpc.response',",
+            "    'received_type': payload.get('type'),",
+            "    'metadata': metadata,",
+            "}, sort_keys=True))",
         ]
     else:
         output_lines = [

@@ -247,11 +247,13 @@ payload = {
     "apply_launch_stdout_jsonl_valid": apply_launch_receipt.get("stdout_jsonl_valid"),
     "apply_launch_response_frame_count": apply_launch_receipt.get("response_frame_count"),
     "apply_launch_response_schemas": apply_launch_receipt.get("response_schemas", []),
+    "apply_launch_response_metadata": apply_launch_receipt.get("response_metadata", []),
     "apply_launch_log_artifacts": apply_launch_receipt.get("log_artifacts", []),
     "proof_scope": {
         "proves": [
             "Tau built a dry-run OMP RPC launch request from a bounded work order.",
             "Tau invoked a deterministic local OMP-compatible process and captured stdout/stderr.",
+            "Tau required the OMP-compatible response frame to echo Tau's work-order metadata.",
             "Tau validated an OMP-shaped worker result against a bounded work order.",
             "Tau checked goal hash, changed paths, required artifacts, test logs, and substrate metadata."
         ],

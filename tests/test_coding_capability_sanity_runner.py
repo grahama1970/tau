@@ -206,6 +206,7 @@ def test_expected_artifact_checks_omp_apply_launch_response_frames(
                 "expected_apply_launch_stdout_jsonl_valid": True,
                 "expected_apply_launch_response_frame_count": 1,
                 "expected_apply_launch_response_schemas": ["fake.omp.rpc.response"],
+                "expected_apply_launch_response_metadata": True,
             }
         )
         + "\n",
@@ -219,6 +220,17 @@ def test_expected_artifact_checks_omp_apply_launch_response_frames(
                 "apply_launch_stdout_jsonl_valid": True,
                 "apply_launch_response_frame_count": 1,
                 "apply_launch_response_schemas": ["fake.omp.rpc.response"],
+                "apply_launch_response_metadata": [
+                    {
+                        "schema": "tau.executor.omp.v1",
+                        "dag_id": "omp-worker-example",
+                        "node_id": "coder",
+                        "attempt": 1,
+                        "goal_hash": "sha256:omp-worker-example-goal",
+                        "result_path": "/tmp/worker-result.json",
+                        "receipt_path": "/tmp/worker-receipt.json",
+                    }
+                ],
             }
         )
         + "\n",

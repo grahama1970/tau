@@ -643,6 +643,8 @@ def _check_expected_artifact(
         errors.extend(_check_apply_launch_result_artifact(actual))
     if expected.get("expected_apply_launch_log_artifacts") is True:
         errors.extend(_check_apply_launch_log_artifacts(actual))
+    if expected.get("expected_apply_launch_response_metadata") is True:
+        errors.extend(_check_apply_launch_response_metadata(actual))
     expected_required_artifacts = expected.get("expected_required_artifacts")
     if isinstance(expected_required_artifacts, list):
         errors.extend(
@@ -789,6 +791,34 @@ def _check_apply_launch_log_artifacts(actual: dict[str, Any]) -> list[str]:
         errors.append("apply_launch_log_artifacts stderr sha256 mismatch")
     elif stderr_descriptor.get("path") != stderr_path:
         errors.append("apply_launch_log_artifacts stderr path mismatch")
+    return errors
+
+
+def _check_apply_launch_response_metadata(actual: dict[str, Any]) -> list[str]:
+    metadata_records = actual.get("apply_launch_response_metadata")
+    if not isinstance(metadata_records, list) or not metadata_records:
+        return ["apply_launch_response_metadata missing"]
+    metadata = metadata_records[0]
+    if not isinstance(metadata, dict):
+        return ["apply_launch_response_metadata[0] is not an object"]
+    errors: list[str] = []
+    required = {
+        "schema": "tau.executor.omp.v1",
+        "dag_id": "omp-worker-example",
+        "node_id": "coder",
+        "attempt": 1,
+        "goal_hash": "sha256:omp-worker-example-goal",
+    }
+    for key, expected in required.items():
+        if metadata.get(key) != expected:
+            errors.append(
+                f"apply_launch_response_metadata[0].{key} expected {expected!r}, "
+                f"got {metadata.get(key)!r}"
+            )
+    for key in ("result_path", "receipt_path"):
+        value = metadata.get(key)
+        if not isinstance(value, str) or not value:
+            errors.append(f"apply_launch_response_metadata[0].{key} missing")
     return errors
 
 

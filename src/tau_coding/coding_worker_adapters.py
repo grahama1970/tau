@@ -164,6 +164,7 @@ def write_omp_worker_launch_receipt(
         "response_frame_count": launch_result["response_frame_count"],
         "response_schemas": launch_result["response_schemas"],
         "response_frames": launch_result["response_frames"],
+        "response_metadata": launch_result["response_metadata"],
         "log_artifacts": _artifact_descriptors(
             ("stdout", launch_result["stdout_path"]),
             ("stderr", launch_result["stderr_path"]),
@@ -886,6 +887,7 @@ def _maybe_run_omp_rpc_launch(
         "response_frame_count": 0,
         "response_schemas": [],
         "response_frames": [],
+        "response_metadata": [],
     }
     if not apply:
         return result
@@ -940,6 +942,11 @@ def _maybe_run_omp_rpc_launch(
     response_frames, jsonl_errors = _parse_jsonl_response_frames(completed.stdout)
     for error in jsonl_errors:
         alerts.append(error)
+    response_metadata = _omp_response_metadata(
+        response_frames=response_frames,
+        expected_metadata=stdin_payload.get("metadata", {}),
+        alerts=alerts,
+    )
     response_schemas = sorted(
         {
             schema
@@ -959,9 +966,49 @@ def _maybe_run_omp_rpc_launch(
             "response_frame_count": len(response_frames),
             "response_schemas": response_schemas,
             "response_frames": response_frames,
+            "response_metadata": response_metadata,
         }
     )
     return result
+
+
+def _omp_response_metadata(
+    *,
+    response_frames: list[dict[str, Any]],
+    expected_metadata: object,
+    alerts: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not response_frames:
+        return []
+    if not isinstance(expected_metadata, Mapping):
+        alerts.append(_alert("omp_request_metadata_missing", "OMP request metadata is missing"))
+        return []
+    metadata_records: list[dict[str, Any]] = []
+    for index, frame in enumerate(response_frames, start=1):
+        metadata = frame.get("metadata")
+        if not isinstance(metadata, Mapping):
+            alerts.append(
+                _alert(
+                    "omp_response_metadata_missing",
+                    f"OMP RPC stdout frame {index} must echo request metadata",
+                )
+            )
+            continue
+        metadata_record = dict(metadata)
+        metadata_records.append(metadata_record)
+        mismatches = _omp_metadata_mismatches(
+            actual=metadata_record,
+            expected=expected_metadata,
+        )
+        if mismatches:
+            alerts.append(
+                _alert(
+                    "omp_metadata_mismatch",
+                    "OMP response metadata must match the worker request metadata",
+                    errors=mismatches,
+                )
+            )
+    return metadata_records
 
 
 def _parse_jsonl_response_frames(stdout: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -1238,6 +1285,27 @@ def _scillm_metadata_mismatches(
         if key in actual and actual.get(key) != expected.get(key):
             mismatches.append(
                 f"scillm_metadata.{key} expected {expected.get(key)!r} got {actual.get(key)!r}"
+            )
+    return mismatches
+
+
+def _omp_metadata_mismatches(
+    actual: Mapping[str, Any],
+    expected: Mapping[str, Any],
+) -> list[str]:
+    mismatches: list[str] = []
+    for key in (
+        "schema",
+        "dag_id",
+        "node_id",
+        "attempt",
+        "goal_hash",
+        "result_path",
+        "receipt_path",
+    ):
+        if key in actual and actual.get(key) != expected.get(key):
+            mismatches.append(
+                f"metadata.{key} expected {expected.get(key)!r} got {actual.get(key)!r}"
             )
     return mismatches
 
