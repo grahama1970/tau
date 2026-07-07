@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 13:05 EDT by agent
+**Last updated:** 2026-07-07 13:09 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 OMP example real-binary override:
+  `examples/omp-worker/run.sh` now honors `OMP_BIN=/path/to/omp` for the
+  doctor and apply-launch portions of the copyable OMP worker example, while
+  retaining the deterministic local `fake-omp` default used by maintained
+  sanity checks. The demo receipt now records `omp_bin`, `omp_command_source`,
+  `doctor_command_path`, and `apply_launch_command`, so reviewers can tell
+  whether the example used the fixture or an externally supplied OMP command.
+  `examples/omp-worker/README.md` and `docs/coding-workers.md` document the
+  `OMP_BIN="$(command -v omp)" examples/omp-worker/run.sh ...` path. Focused
+  proof: `bash -n examples/omp-worker/run.sh` -> pass; `git diff --check --
+  examples/omp-worker/run.sh examples/omp-worker/README.md
+  docs/coding-workers.md` -> pass; direct default example
+  `/tmp/tau-omp-worker-ompbin-default-20260707T170824Z/demo-receipt.json` ->
+  `status:"PASS"`, `omp_command_source:"fake"`,
+  `doctor_command_found:true`, `doctor_version_executed:true`,
+  `apply_launch_stdout_jsonl_valid:true`, and
+  `apply_launch_response_schemas:["fake.omp.rpc.response"]`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-ompbin-example-20260707T170836Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`,
+  `failed_check_count:0`. This improves the OMP adapter example so a real OMP
+  binary can be probed when available; it does not prove real OMP is installed
+  on this host, OMP accepted an RPC request semantically, OMP performed live
+  coding work, semantic code correctness, provider/model quality, legal
+  compliance, or full sandbox isolation.
 
 - 2026-07-07 OMP worker doctor readiness receipt:
   `src/tau_coding/coding_worker_adapters.py` now emits

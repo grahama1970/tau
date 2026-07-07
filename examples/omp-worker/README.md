@@ -41,6 +41,13 @@ JSON file with schema `tau.omp_worker_result.v1`:
 OMP_WORKER_RESULT=/path/to/omp-result.json examples/omp-worker/run.sh /tmp/tau-omp-worker-live
 ```
 
+To run the doctor/apply-launch portion against an installed OMP binary instead
+of the deterministic fixture, set `OMP_BIN`:
+
+```bash
+OMP_BIN="$(command -v omp)" examples/omp-worker/run.sh /tmp/tau-omp-worker-real-probe
+```
+
 This example proves only the Tau-side receipt validation path. Unless
 `OMP_WORKER_RESULT` points at a real worker artifact, it does not prove Tau
 launched a real OMP worker. The default doctor receipt uses the deterministic

@@ -993,6 +993,13 @@ uv run tau omp-worker-launch \
   --out omp-worker-launch-receipt.json
 ```
 
+When a real OMP binary is installed, the copyable example can run the
+doctor/apply-launch portion against it:
+
+```bash
+OMP_BIN="$(command -v omp)" examples/omp-worker/run.sh /tmp/tau-omp-worker-real-probe
+```
+
 Dry-run launch does not prove live OMP execution. Apply launch proves only that
 Tau invoked the configured local process and captured parseable OMP-shaped
 stdout/stderr artifacts; it does not replace result validation.

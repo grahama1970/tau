@@ -13,6 +13,11 @@ DOCTOR_RECEIPT="${OUT_DIR}/omp-worker-doctor-receipt.json"
 DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
 SANDBOX_RECEIPT="${RECEIPTS_DIR}/sandbox-run-receipt.json"
 FAKE_OMP="${OUT_DIR}/fake-omp"
+OMP_BIN="${OMP_BIN:-${FAKE_OMP}}"
+OMP_COMMAND_SOURCE="env"
+if [[ "${OMP_BIN}" == "${FAKE_OMP}" ]]; then
+  OMP_COMMAND_SOURCE="fake"
+fi
 
 mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${REPO_DIR}/logs" "${RECEIPTS_DIR}"
 printf 'def answer():\n    return 42\n' > "${REPO_DIR}/src/example.py"
@@ -156,7 +161,7 @@ fi
 
 uv run tau omp-worker-doctor \
   --out "${DOCTOR_RECEIPT}" \
-  --omp-bin "${FAKE_OMP}" \
+  --omp-bin "${OMP_BIN}" \
   --timeout-s 5 >/tmp/tau-omp-worker-doctor.stdout.json
 
 uv run tau omp-worker-launch \
@@ -167,7 +172,7 @@ uv run tau omp-worker-launch \
   --work-order "${WORK_ORDER}" \
   --out "${APPLY_LAUNCH_RECEIPT}" \
   --apply \
-  --omp-bin "${FAKE_OMP}" \
+  --omp-bin "${OMP_BIN}" \
   --timeout-s 5 >/tmp/tau-omp-worker-launch-apply.stdout.json
 
 uv run tau omp-worker-validate \
@@ -175,7 +180,7 @@ uv run tau omp-worker-validate \
   --result "${RESULT}" \
   --out "${RECEIPT}" >/tmp/tau-omp-worker-validate.stdout.json
 
-python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${APPLY_LAUNCH_RECEIPT}" "${DOCTOR_RECEIPT}" "${WORKER_RESULT_SOURCE}" <<'PY'
+python3 - "${DEMO_RECEIPT}" "${RECEIPT}" "${LAUNCH_RECEIPT}" "${APPLY_LAUNCH_RECEIPT}" "${DOCTOR_RECEIPT}" "${WORKER_RESULT_SOURCE}" "${OMP_BIN}" "${OMP_COMMAND_SOURCE}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -186,6 +191,8 @@ launch_receipt_path = Path(sys.argv[3])
 apply_launch_receipt_path = Path(sys.argv[4])
 doctor_receipt_path = Path(sys.argv[5])
 worker_result_source = sys.argv[6]
+omp_bin = sys.argv[7]
+omp_command_source = sys.argv[8]
 receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 launch_receipt = json.loads(launch_receipt_path.read_text(encoding="utf-8"))
 apply_launch_receipt = json.loads(apply_launch_receipt_path.read_text(encoding="utf-8"))
@@ -203,6 +210,8 @@ payload = {
     "mocked": worker_result_source == "fixture",
     "live": "mixed",
     "provider_live": False,
+    "omp_bin": omp_bin,
+    "omp_command_source": omp_command_source,
     "worker_result_source": worker_result_source,
     "worker_receipt_path": str(receipt_path),
     "worker_receipt_schema": receipt.get("schema"),
@@ -218,6 +227,7 @@ payload = {
     "doctor_version_executed": doctor_receipt.get("version_executed"),
     "doctor_version_exit_code": doctor_receipt.get("version_exit_code"),
     "doctor_version_stdout_sha256": doctor_receipt.get("version_stdout_sha256"),
+    "doctor_command_path": doctor_receipt.get("command_path"),
     "launch_receipt_path": str(launch_receipt_path),
     "launch_receipt_schema": launch_receipt.get("schema"),
     "launch_receipt_status": launch_receipt.get("status"),
@@ -227,6 +237,7 @@ payload = {
     "apply_launch_receipt_schema": apply_launch_receipt.get("schema"),
     "apply_launch_receipt_status": apply_launch_receipt.get("status"),
     "apply_launch_receipt_alert_codes": apply_launch_receipt.get("alert_codes", []),
+    "apply_launch_command": apply_launch_receipt.get("command"),
     "apply_launch_process_executed": apply_launch_receipt.get("process_executed"),
     "apply_launch_exit_code": apply_launch_receipt.get("exit_code"),
     "apply_launch_stdout_path": apply_launch_receipt.get("stdout_path"),
