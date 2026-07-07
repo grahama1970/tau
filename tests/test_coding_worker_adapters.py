@@ -799,7 +799,147 @@ def test_high_stakes_worker_blocks_external_research_without_query_safety_receip
 
     assert receipt["status"] == "BLOCKED"
     assert "external_research_requires_query_safety_receipt" in receipt["alert_codes"]
+    assert "external_research_denied_by_policy" in receipt["alert_codes"]
+    assert "external_research_denied_by_data_boundary" in receipt["alert_codes"]
     assert receipt["research_receipts"][0]["label"] == "research_source_receipt"
+
+
+def test_high_stakes_worker_accepts_research_query_receipt_bound_to_boundary(
+    tmp_path: Path,
+) -> None:
+    policy = _policy_profile()
+    policy["research"]["external_search"] = "allow_with_review"
+    boundary = _data_boundary()
+    boundary["external_research_allowed"] = True
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        policy_profile=policy,
+        data_boundary=boundary,
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    research_receipt = repo / "receipts" / "research-query-safety.json"
+    _write_reference_receipt(
+        research_receipt,
+        schema="tau.research_query_safety_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+        extra={
+            "policy_profile": {
+                "schema": "tau.policy_profile.v1",
+                "sha256": _inline_json_sha256(work_order_payload["policy_profile"]),
+            },
+            "data_boundary": {
+                "schema": "tau.data_boundary.v1",
+                "sha256": _inline_json_sha256(work_order_payload["data_boundary"]),
+            },
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_query_safety_receipt"] = "receipts/research-query-safety.json"
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["research_receipts"][0]["receipt_policy_profile"]["sha256"] == (
+        _inline_json_sha256(work_order_payload["policy_profile"])
+    )
+    assert receipt["research_receipts"][0]["receipt_data_boundary"]["sha256"] == (
+        _inline_json_sha256(work_order_payload["data_boundary"])
+    )
+
+
+def test_high_stakes_worker_blocks_research_query_receipt_without_boundary_hashes(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    research_receipt = repo / "receipts" / "research-query-safety.json"
+    _write_reference_receipt(
+        research_receipt,
+        schema="tau.research_query_safety_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_query_safety_receipt"] = "receipts/research-query-safety.json"
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "research_query_safety_policy_binding_missing" in receipt["alert_codes"]
+    assert "research_query_safety_boundary_binding_missing" in receipt["alert_codes"]
+
+
+def test_high_stakes_worker_blocks_research_query_receipt_boundary_mismatch(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    research_receipt = repo / "receipts" / "research-query-safety.json"
+    _write_reference_receipt(
+        research_receipt,
+        schema="tau.research_query_safety_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+        extra={
+            "policy_profile": {
+                "schema": "tau.policy_profile.v1",
+                "sha256": _inline_json_sha256(work_order_payload["policy_profile"]),
+            },
+            "data_boundary": {
+                "schema": "tau.data_boundary.v1",
+                "sha256": "sha256:stale",
+            },
+        },
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_query_safety_receipt"] = "receipts/research-query-safety.json"
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "research_query_safety_boundary_mismatch" in receipt["alert_codes"]
+    assert "research_query_safety_policy_mismatch" not in receipt["alert_codes"]
 
 
 def test_worker_blocks_external_research_receipt_outside_repo(tmp_path: Path) -> None:

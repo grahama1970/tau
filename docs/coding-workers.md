@@ -740,7 +740,12 @@ results may reference either a research-query safety receipt or a research-sourc
 receipt. High-stakes and zero-trust worker results that declare
 `external_research_used:true` must include a `research_query_safety_receipt`;
 a source receipt alone is not enough because the external query itself is the
-egress boundary. When a worker result does declare a GitHub apply policy
+egress boundary. The high-stakes query-safety receipt must also record
+`policy_profile.sha256` and `data_boundary.sha256` values matching the worker
+work order, so a query approved under a different boundary cannot authorize this
+worker. If the work-order policy denies external search or the data boundary
+sets `external_research_allowed:false`, Tau blocks the worker even when it cites
+a research receipt. When a worker result does declare a GitHub apply policy
 receipt, research-query safety receipt, or research-source receipt, Tau resolves
 the receipt under the work-order repo, requires the expected schema and
 `status:"PASS"`/`ok:true`, rejects mocked receipts, and records SHA-256/byte

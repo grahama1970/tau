@@ -584,6 +584,9 @@ def _write_worker_receipt(
         repo,
         alerts,
         high_stakes=bool(work_order.get("high_stakes") or work_order.get("zero_trust")),
+        policy_profile=work_order.get("policy_profile"),
+        data_boundary=work_order.get("data_boundary"),
+        work_order=work_order,
     )
 
     ok = not alerts
@@ -1533,6 +1536,11 @@ def _inline_json_metadata(label: str, value: object) -> dict[str, Any]:
     }
 
 
+def _inline_json_sha256_uri(value: Mapping[str, Any]) -> str:
+    encoded = (json.dumps(dict(value), indent=2, sort_keys=True) + "\n").encode("utf-8")
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+
+
 def _referenced_receipt_artifact(
     label: str,
     raw_path: object,
@@ -2027,12 +2035,32 @@ def _validate_external_research_receipts(
     alerts: list[dict[str, Any]],
     *,
     high_stakes: bool = False,
+    policy_profile: object = None,
+    data_boundary: object = None,
+    work_order: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     descriptors: list[dict[str, Any]] = []
     if result.get("external_research_used") is not True:
         return descriptors
     query_receipt = _string(result.get("research_query_safety_receipt"))
     source_receipt = _string(result.get("research_source_receipt"))
+    if high_stakes:
+        if _policy_research_external_search(policy_profile) == "deny":
+            alerts.append(
+                _alert(
+                    "external_research_denied_by_policy",
+                    "worker policy_profile denies external research",
+                )
+            )
+        if isinstance(data_boundary, Mapping) and data_boundary.get(
+            "external_research_allowed"
+        ) is False:
+            alerts.append(
+                _alert(
+                    "external_research_denied_by_data_boundary",
+                    "worker data_boundary denies external research",
+                )
+            )
     if high_stakes and not query_receipt:
         alerts.append(
             _alert(
@@ -2064,6 +2092,12 @@ def _validate_external_research_receipts(
             mocked_code="research_query_safety_receipt_mocked",
         )
         if descriptor is not None:
+            if high_stakes:
+                _append_research_query_boundary_match_alerts(
+                    descriptor=descriptor,
+                    work_order=work_order or {},
+                    alerts=alerts,
+                )
             descriptors.append(descriptor)
     if source_receipt:
         descriptor = _validated_worker_reference_receipt(
@@ -2083,6 +2117,70 @@ def _validate_external_research_receipts(
         if descriptor is not None:
             descriptors.append(descriptor)
     return descriptors
+
+
+def _policy_research_external_search(policy_profile: object) -> str | None:
+    if not isinstance(policy_profile, Mapping):
+        return None
+    research = policy_profile.get("research")
+    if not isinstance(research, Mapping):
+        return None
+    value = research.get("external_search")
+    return value if isinstance(value, str) else None
+
+
+def _append_research_query_boundary_match_alerts(
+    *,
+    descriptor: Mapping[str, Any],
+    work_order: Mapping[str, Any],
+    alerts: list[dict[str, Any]],
+) -> None:
+    policy = work_order.get("policy_profile")
+    boundary = work_order.get("data_boundary")
+    receipt_policy = descriptor.get("receipt_policy_profile")
+    receipt_boundary = descriptor.get("receipt_data_boundary")
+    if isinstance(policy, Mapping):
+        expected_policy_sha = _inline_json_sha256_uri(policy)
+        receipt_policy_sha = (
+            _string(receipt_policy.get("sha256"))
+            if isinstance(receipt_policy, Mapping)
+            else None
+        )
+        if not receipt_policy_sha:
+            alerts.append(
+                _alert(
+                    "research_query_safety_policy_binding_missing",
+                    "high-stakes research-query receipt must record policy_profile.sha256",
+                )
+            )
+        elif receipt_policy_sha != expected_policy_sha:
+            alerts.append(
+                _alert(
+                    "research_query_safety_policy_mismatch",
+                    "research-query receipt policy_profile hash must match worker policy_profile",
+                )
+            )
+    if isinstance(boundary, Mapping):
+        expected_boundary_sha = _inline_json_sha256_uri(boundary)
+        receipt_boundary_sha = (
+            _string(receipt_boundary.get("sha256"))
+            if isinstance(receipt_boundary, Mapping)
+            else None
+        )
+        if not receipt_boundary_sha:
+            alerts.append(
+                _alert(
+                    "research_query_safety_boundary_binding_missing",
+                    "high-stakes research-query receipt must record data_boundary.sha256",
+                )
+            )
+        elif receipt_boundary_sha != expected_boundary_sha:
+            alerts.append(
+                _alert(
+                    "research_query_safety_boundary_mismatch",
+                    "research-query receipt data_boundary hash must match worker data_boundary",
+                )
+            )
 
 
 def _validated_worker_reference_receipt(
@@ -2135,6 +2233,10 @@ def _validated_worker_reference_receipt(
         descriptor["receipt_actions"] = payload.get("actions")
     if "requirements" in payload:
         descriptor["receipt_requirements"] = payload.get("requirements")
+    if "policy_profile" in payload:
+        descriptor["receipt_policy_profile"] = payload.get("policy_profile")
+    if "data_boundary" in payload:
+        descriptor["receipt_data_boundary"] = payload.get("data_boundary")
     if payload.get("schema") != expected_schema:
         alerts.append(_alert(invalid_schema_code, f"{label} schema must be {expected_schema}"))
     if payload.get("ok") is not True or payload.get("status") != "PASS":
