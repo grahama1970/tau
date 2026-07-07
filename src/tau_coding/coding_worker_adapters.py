@@ -579,7 +579,12 @@ def _write_worker_receipt(
 
     side_effect_receipts = _validate_github_mutation_receipts(result, repo, alerts)
 
-    research_receipts = _validate_external_research_receipts(result, repo, alerts)
+    research_receipts = _validate_external_research_receipts(
+        result,
+        repo,
+        alerts,
+        high_stakes=bool(work_order.get("high_stakes") or work_order.get("zero_trust")),
+    )
 
     ok = not alerts
     course_correction_path, course_correction = _worker_course_correction_artifact(
@@ -2020,12 +2025,21 @@ def _validate_external_research_receipts(
     result: Mapping[str, Any],
     repo: Path | None,
     alerts: list[dict[str, Any]],
+    *,
+    high_stakes: bool = False,
 ) -> list[dict[str, Any]]:
     descriptors: list[dict[str, Any]] = []
     if result.get("external_research_used") is not True:
         return descriptors
     query_receipt = _string(result.get("research_query_safety_receipt"))
     source_receipt = _string(result.get("research_source_receipt"))
+    if high_stakes and not query_receipt:
+        alerts.append(
+            _alert(
+                "external_research_requires_query_safety_receipt",
+                "high-stakes external research requires a research-query safety receipt",
+            )
+        )
     if not query_receipt and not source_receipt:
         alerts.append(
             _alert(

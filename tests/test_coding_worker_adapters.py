@@ -734,6 +734,74 @@ def test_worker_accepts_external_research_with_query_safety_receipt(tmp_path: Pa
     ]
 
 
+def test_worker_legacy_accepts_external_research_with_source_receipt(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    research_receipt = repo / "receipts" / "research-source.json"
+    _write_reference_receipt(
+        research_receipt,
+        schema="tau.research_source_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_source_receipt"] = "receipts/research-source.json"
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["research_receipts"][0]["label"] == "research_source_receipt"
+    assert receipt["research_receipts"][0]["schema"] == "tau.research_source_receipt.v1"
+
+
+def test_high_stakes_worker_blocks_external_research_without_query_safety_receipt(
+    tmp_path: Path,
+) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    research_receipt = repo / "receipts" / "research-source.json"
+    _write_reference_receipt(
+        research_receipt,
+        schema="tau.research_source_receipt.v1",
+        status="PASS",
+        ok=True,
+        mocked=False,
+        live=True,
+    )
+    result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["external_research_used"] = True
+    payload["research_source_receipt"] = "receipts/research-source.json"
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "external_research_requires_query_safety_receipt" in receipt["alert_codes"]
+    assert receipt["research_receipts"][0]["label"] == "research_source_receipt"
+
+
 def test_worker_blocks_external_research_receipt_outside_repo(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     outside_receipt = tmp_path / "outside" / "research-query-safety.json"
