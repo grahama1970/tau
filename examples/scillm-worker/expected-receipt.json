@@ -9,6 +9,8 @@
   "expected_substrate_receipt_bindings": ["goal_hash", "work_order_sha256"],
   "expected_apply_launch_result_artifact": true,
   "expected_launch_url": "http://localhost:4001/v1/scillm/opencode/runs",
+  "expected_launch_worker_timeout_s": 120,
+  "expected_apply_launch_worker_timeout_s": 120,
   "expected_model_provider_route": {
     "surface": "opencode_serve",
     "endpoint": "/v1/scillm/opencode/runs",

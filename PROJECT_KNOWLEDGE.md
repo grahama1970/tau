@@ -1,9 +1,39 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:04 EDT by agent
+**Last updated:** 2026-07-07 12:07 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 SciLLM worker timeout expected-artifact gate:
+  The SciLLM worker copyable example and aggregate coding sanity suite now
+  mechanically assert the explicit worker timeout policy. `examples/scillm-worker/run.sh`
+  emits `launch_worker_timeout_s` and `apply_launch_worker_timeout_s` from the
+  underlying `tau.scillm_worker_launch_receipt.v1` request payloads;
+  `examples/scillm-worker/expected-receipt.json` requires both values to be
+  `120`; and `scripts/run-coding-capability-sanity.py` compares
+  `expected_launch_worker_timeout_s` and
+  `expected_apply_launch_worker_timeout_s` against the example receipt. The
+  example README now distinguishes worker `timeout_s` from Tau's
+  `--request-timeout-s` transport bound. Focused proof: `git diff --check --
+  examples/scillm-worker/run.sh examples/scillm-worker/expected-receipt.json
+  examples/scillm-worker/README.md scripts/run-coding-capability-sanity.py` ->
+  pass; `uv run python -m py_compile scripts/run-coding-capability-sanity.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  scripts/run-coding-capability-sanity.py` -> `All checks passed!`; `bash -n
+  examples/scillm-worker/run.sh` -> pass; `uv run pytest
+  tests/test_coding_capability_sanity_runner.py -q` -> `2 passed in 0.06s`;
+  direct example
+  `examples/scillm-worker/run.sh /tmp/tau-scillm-worker-timeout-expected-example`
+  -> PASS with `launch_worker_timeout_s:120` and
+  `apply_launch_worker_timeout_s:120`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-scillm-timeout-expected-20260707T161000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `494 passed in 11.76s`. This proves the
+  maintained sanity suite now fails if the SciLLM worker example stops carrying
+  the explicit worker timeout through both launch receipts; it does not prove
+  live SciLLM semantic worker execution, provider/model quality, semantic code
+  correctness, legal compliance, human acceptance, or full sandbox isolation.
 
 - 2026-07-07 SciLLM worker explicit timeout policy:
   `src/tau_coding/coding_worker_adapters.py` no longer injects an OpenCode serve

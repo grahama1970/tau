@@ -38,7 +38,13 @@ surface: opencode_serve
 endpoint: /v1/scillm/opencode/runs
 agent: build
 skills: memory,debugger,scillm
+timeout_s: 120
 ```
+
+The `timeout_s` field is the worker timeout sent inside the
+`POST /v1/scillm/opencode/runs` payload. Tau does not add this field when it is
+absent from the work order; `--request-timeout-s` is only the HTTP transport
+timeout for the Tau-to-SciLLM request.
 
 To validate a result produced by a real SciLLM/OpenCode serve worker, set
 `SCILLM_WORKER_RESULT` to a JSON file with schema

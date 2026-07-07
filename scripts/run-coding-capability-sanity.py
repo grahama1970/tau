@@ -483,6 +483,8 @@ def _check_expected_artifact(
         "expected_launch_status": "launch_receipt_status",
         "expected_launch_command": "launch_command",
         "expected_launch_url": "launch_url",
+        "expected_launch_worker_timeout_s": "launch_worker_timeout_s",
+        "expected_apply_launch_worker_timeout_s": "apply_launch_worker_timeout_s",
         "expected_inner_receipt_schema": "worker_receipt_schema",
         "expected_inner_status": "worker_receipt_status",
         "expected_worker_receipt_alert_codes": "worker_receipt_alert_codes",

@@ -288,12 +288,18 @@ payload = {
     "launch_receipt_status": launch_receipt.get("status"),
     "launch_receipt_alert_codes": launch_receipt.get("alert_codes", []),
     "launch_url": launch_receipt.get("url"),
+    "launch_request_timeout_s": launch_receipt.get("request_timeout_s"),
+    "launch_worker_timeout_s": launch_receipt.get("request_payload", {}).get("timeout_s"),
     "apply_launch_receipt_path": str(apply_launch_receipt_path),
     "apply_launch_receipt_schema": apply_launch_receipt.get("schema"),
     "apply_launch_receipt_status": apply_launch_receipt.get("status"),
     "apply_launch_receipt_alert_codes": apply_launch_receipt.get("alert_codes", []),
     "apply_launch_http_executed": apply_launch_receipt.get("http_executed"),
     "apply_launch_http_status": apply_launch_receipt.get("http_status"),
+    "apply_launch_request_timeout_s": apply_launch_receipt.get("request_timeout_s"),
+    "apply_launch_worker_timeout_s": (
+        apply_launch_receipt.get("request_payload", {}).get("timeout_s")
+    ),
     "apply_launch_response_path": apply_launch_receipt.get("response_path"),
     "apply_launch_response_sha256": apply_launch_receipt.get("response_sha256"),
     "apply_launch_expected_worker_result_path": (
