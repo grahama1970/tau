@@ -466,8 +466,8 @@ def test_code_patch_receipt_records_policy_and_data_boundary(tmp_path: Path) -> 
         patch_path=patch_path,
         repo_root=tmp_path,
         zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "local"},
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=["src/**", "tests/**"]),
+        data_boundary=_data_boundary(),
     )
 
     assert receipt["status"] == "PASS"
@@ -495,12 +495,8 @@ def test_code_patch_honors_policy_filesystem_write_allowlist(tmp_path: Path) -> 
         patch_path=patch_path,
         repo_root=tmp_path,
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "local",
-            "filesystem": {"write_allowlist": ["./src/**"], "read_denylist": []},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=["./src/**"]),
+        data_boundary=_data_boundary(),
     )
 
     assert receipt["status"] == "PASS"
@@ -526,17 +522,46 @@ def test_code_patch_blocks_policy_filesystem_write_disallow(tmp_path: Path) -> N
         patch_path=patch_path,
         repo_root=tmp_path,
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "local",
-            "filesystem": {"write_allowlist": ["tests/**"], "read_denylist": []},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(write_allowlist=["tests/**"]),
+        data_boundary=_data_boundary(),
     )
 
     assert receipt["status"] == "BLOCKED"
     assert receipt["applied"] is False
     assert "policy_write_disallowed" in receipt["alert_codes"]
+    assert target.read_text(encoding="utf-8") == before
+
+
+def test_code_patch_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+    boundary = _data_boundary()
+    boundary["classification"] = "classified-not-allowed"
+    boundary.pop("foreign_person_access")
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        zero_trust=True,
+        policy_profile=_policy_profile(write_allowlist=["src/**"]),
+        data_boundary=boundary,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["applied"] is False
+    assert "invalid_data_boundary" in receipt["alert_codes"]
+    assert "classified_not_allowed" in receipt["alert_codes"]
+    assert "foreign_person_access must be one of" in receipt["alerts"][0]["errors"][0]
     assert target.read_text(encoding="utf-8") == before
 
 
@@ -678,3 +703,36 @@ def _sha256_text(value: str) -> str:
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _policy_profile(*, write_allowlist: list[str]) -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "local",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": write_allowlist, "read_denylist": []},
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }

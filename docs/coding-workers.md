@@ -60,8 +60,11 @@ disallowed, policy-write-disallowed, explicitly forbidden, or generated paths,
 goal-hash mismatches, malformed patch operations, and post-hash mismatches. If
 the active `policy_profile.filesystem.write_allowlist` is present, the target
 file must match that policy allowlist as well as the patch-local
-`allowed_paths`; an empty policy write allowlist denies all writes. The receipt
-records the active `policy_profile`, `data_boundary`, `allowed_paths`,
+`allowed_paths`; an empty policy write allowlist denies all writes. In
+zero-trust mode, the patch gate also validates the full `tau.policy_profile.v1`
+and `tau.data_boundary.v1` shapes and blocks `classified-not-allowed` data with
+`classified_not_allowed` before applying any patch. The receipt records the
+active `policy_profile`, `data_boundary`, `allowed_paths`,
 `forbidden_paths`, built-in generated-path patterns, and the inspected patch artifact's
 `patch_sha256` plus `patch_bytes`. The same patch input is exposed as
 `patch_artifact` with label, resolved path, existence, SHA-256, and byte count.

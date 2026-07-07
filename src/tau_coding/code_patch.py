@@ -10,7 +10,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+from tau_coding.policy_profile import (
+    DATA_BOUNDARY_SCHEMA,
+    POLICY_PROFILE_SCHEMA,
+    validate_data_boundary,
+    validate_policy_profile,
+)
 
 CODE_PATCH_SCHEMA = "tau.code_patch.v1"
 CODE_PATCH_RECEIPT_SCHEMA = "tau.code_patch_receipt.v1"
@@ -240,6 +245,12 @@ def _policy_boundary_alerts(
                 f"policy_profile.schema must be {POLICY_PROFILE_SCHEMA}",
             )
         )
+    else:
+        errors = validate_policy_profile(policy_profile)
+        if errors:
+            alerts.append(
+                _alert("invalid_policy_profile", "policy_profile is invalid", errors=errors)
+            )
     if data_boundary is None:
         alerts.append(
             _alert("missing_data_boundary", "zero-trust code patch requires data_boundary")
@@ -251,6 +262,19 @@ def _policy_boundary_alerts(
                 f"data_boundary.schema must be {DATA_BOUNDARY_SCHEMA}",
             )
         )
+    else:
+        errors = validate_data_boundary(data_boundary)
+        if errors:
+            alerts.append(
+                _alert("invalid_data_boundary", "data_boundary is invalid", errors=errors)
+            )
+        if data_boundary.get("classification") == "classified-not-allowed":
+            alerts.append(
+                _alert(
+                    "classified_not_allowed",
+                    "classified-not-allowed data may not be routed to code patch execution",
+                )
+            )
     return alerts
 
 
@@ -467,8 +491,11 @@ def _sha256_string(value: object) -> str | None:
     return f"sha256:{raw}"
 
 
-def _alert(code: str, message: str) -> dict[str, str]:
-    return {"severity": "BLOCK", "code": code, "message": message}
+def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": "BLOCK", "code": code, "message": message}
+    if errors:
+        alert["errors"] = errors
+    return alert
 
 
 def _utc_stamp() -> str:

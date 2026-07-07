@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 code patch policy/data-boundary validity fail-closed rung:
+  `src/tau_coding/code_patch.py` now validates full `tau.policy_profile.v1`
+  and `tau.data_boundary.v1` objects in zero-trust mode before applying a
+  hash-bound patch, instead of accepting schema-only metadata. It also blocks
+  `data_boundary.classification:"classified-not-allowed"` with
+  `classified_not_allowed`. `tests/test_code_patch.py` pins this with
+  `test_code_patch_zero_trust_blocks_invalid_data_boundary` and updated valid
+  policy/data-boundary fixtures. Focused proof: `uv run ruff check --select
+  I,F,E501 src/tau_coding/code_patch.py tests/test_code_patch.py` -> `All
+  checks passed!`; `uv run pytest tests/test_code_patch.py -q` -> `24 passed
+  in 0.48s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-boundary-proof-20260707T072326Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-boundary-proof-20260707T072326Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `272 passed in 7.98s`. This proves deterministic local code-patch receipts fail closed
+  on invalid zero-trust policy/boundary metadata before patch application; it
+  does not prove semantic patch correctness, full test-suite safety, legal
+  compliance, full sandbox isolation, live OMP/SciLLM semantic worker
+  execution, or full goal completion.
+
 - 2026-07-07 Memory intent policy threshold fail-closed rung:
   `src/tau_coding/project_dag.py` now resolves
   `policy_profile.memory.min_intent_confidence` and passes it into the
