@@ -39,13 +39,21 @@ def write_test_run_receipt(
     stdout_path = resolved_out.with_suffix(resolved_out.suffix + ".stdout.txt")
     stderr_path = resolved_out.with_suffix(resolved_out.suffix + ".stderr.txt")
     selected_command = list(command or [sys.executable, "-m", "pytest", "-q"])
-    normalized_tested_paths = _normalize_tested_paths(tested_paths or [])
+    normalized_tested_paths, tested_path_errors = _normalize_tested_paths(tested_paths or [])
     alerts = _coding_policy_alerts(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
         goal_hash=goal_hash,
     )
+    if tested_path_errors:
+        alerts.append(
+            _alert(
+                "invalid_tested_path",
+                "tested_paths must be non-empty relative paths inside the repo",
+                errors=tested_path_errors,
+            )
+        )
     if timeout_s <= 0:
         alerts.append(_alert("invalid_timeout", "timeout_s must be greater than zero"))
     if not resolved_repo.is_dir():
@@ -163,16 +171,19 @@ def _allowed_pytest_command(command: Sequence[str]) -> bool:
     return False
 
 
-def _normalize_tested_paths(values: Sequence[str]) -> list[str]:
+def _normalize_tested_paths(values: Sequence[str]) -> tuple[list[str], list[str]]:
     normalized: list[str] = []
+    errors: list[str] = []
     for value in values:
         if not isinstance(value, str) or not value:
+            errors.append("tested path must be a non-empty string")
             continue
         path = value.replace("\\", "/").removeprefix("./")
         if path.startswith("../") or path == ".." or Path(path).is_absolute():
+            errors.append(f"tested path escapes repo: {value}")
             continue
         normalized.append(path)
-    return sorted(set(normalized))
+    return sorted(set(normalized)), errors
 
 
 def _coding_policy_alerts(

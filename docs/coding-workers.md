@@ -338,9 +338,11 @@ uv run tau test-run \
 The receipt records the command, return code, timeout, stdout/stderr artifacts,
 `tested_paths`, and `tests_passed`. `tested_paths` lets `tau commit-plan`
 connect focused test evidence to changed source paths without inferring
-semantic coverage from a passing command. In zero-trust mode, Tau requires the
-active goal hash, `tau.policy_profile.v1`, and `tau.data_boundary.v1` before
-running the command.
+semantic coverage from a passing command. Tested paths must be non-empty
+relative paths inside the repo; absolute paths or `..` escapes block with
+`invalid_tested_path` before the test command can run. In zero-trust mode, Tau
+requires the active goal hash, `tau.policy_profile.v1`, and
+`tau.data_boundary.v1` before running the command.
 
 This receipt proves only that Tau ran the named focused test command and
 captured its artifacts. It does not prove semantic correctness, full-suite

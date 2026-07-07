@@ -69,6 +69,23 @@ def test_test_run_receipt_blocks_disallowed_command_without_execution(tmp_path: 
     assert payload["live"] is False
 
 
+def test_test_run_receipt_blocks_escaped_tested_path_without_execution(tmp_path: Path) -> None:
+    _write_passing_test(tmp_path)
+
+    payload = write_test_run_receipt(
+        repo=tmp_path,
+        output_path=tmp_path / "test-run.json",
+        command=[sys.executable, "-m", "pytest", "-q"],
+        tested_paths=["../secret.py", "/tmp/outside.py"],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_result"] is None
+    assert payload["live"] is False
+    assert payload["tested_paths"] == []
+    assert "invalid_tested_path" in payload["alert_codes"]
+
+
 def test_test_run_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
     _write_passing_test(tmp_path)
 
@@ -168,6 +185,39 @@ def test_cli_test_run_failing_pytest_exits_blocked(tmp_path: Path) -> None:
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["status"] == "BLOCKED"
     assert "test_command_failed" in payload["alert_codes"]
+
+
+def test_cli_test_run_blocks_escaped_tested_path(tmp_path: Path) -> None:
+    _write_passing_test(tmp_path)
+    out = tmp_path / "test-run.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "test-run",
+            "--repo",
+            str(tmp_path),
+            "--out",
+            str(out),
+            "--command",
+            sys.executable,
+            "--command",
+            "-m",
+            "--command",
+            "pytest",
+            "--command",
+            "-q",
+            "--tested-path",
+            "../secret.py",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_result"] is None
+    assert "invalid_tested_path" in payload["alert_codes"]
 
 
 def _write_passing_test(path: Path) -> None:

@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 07:30 EDT by agent
+**Last updated:** 2026-07-07 07:34 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 test-run tested-path fail-closed rung:
+  `src/tau_coding/test_run_receipt.py` now blocks invalid `tested_paths` before
+  executing the pytest-shaped command. Empty, absolute, or `..`-escaping tested
+  path declarations produce `invalid_tested_path`, leave `command_result:null`,
+  and keep `live:false`, so a malformed focused test receipt cannot later
+  support commit-plan source coverage. `tests/test_test_run_receipt.py` covers
+  both direct API and CLI rejection for escaped tested paths, and
+  `docs/coding-workers.md` documents the path-scope rule. Focused proof:
+  `git diff --check -- src/tau_coding/test_run_receipt.py
+  tests/test_test_run_receipt.py docs/coding-workers.md` -> pass; `uv run
+  python -m py_compile src/tau_coding/test_run_receipt.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/test_run_receipt.py
+  tests/test_test_run_receipt.py` -> `All checks passed!`; `uv run pytest
+  tests/test_test_run_receipt.py -q` -> `9 passed in 1.60s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-test-run-tested-paths-20260707T174500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `381 passed in 9.73s`. This proves focused
+  test-run receipts no longer silently discard escaped coverage paths and still
+  compose with the focused coding capability sanity suite; it does not prove
+  semantic code correctness, full-suite health unless that command was run,
+  provider/model quality, live OMP/SciLLM semantic execution, legal compliance,
+  ITAR compliance, or full sandbox isolation on every host.
 
 - 2026-07-07 sandbox-run goal-hash substrate binding rung:
   `src/tau_coding/sandbox_run.py` now accepts and records an optional
