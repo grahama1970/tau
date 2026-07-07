@@ -1,9 +1,28 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:09 EDT by agent
+**Last updated:** 2026-07-06 21:12 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan evidence receipt status gate rung:
+  `src/tau_coding/commit_plan.py` now records but rejects evidence receipts that
+  are not `status:"PASS"` with `ok:true`; a source change can no longer be
+  justified by a blocked or failed evidence artifact merely because the JSON is
+  readable. The new alert code is `evidence_receipt_not_pass`. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> pass; `uv run pytest tests/test_commit_plan.py
+  -q` -> `14 passed in 0.66s`. Aggregate proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-evidence-status-proof` exited 0 and
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-evidence-status-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `check_count:12`, `failed_check_count:0`, coverage
+  entry `commit-plan receipts`, and embedded focused coding tests `169 passed
+  in 5.93s`. This proves deterministic local commit-plan gating rejects failed
+  evidence receipts as source-change justification; it does not prove semantic
+  grouping correctness, code correctness, live worker execution, GitHub
+  mutation, legal compliance, or human acceptance.
 
 - 2026-07-06 worker policy/data-boundary schema gate rung:
   `src/tau_coding/coding_worker_adapters.py` now requires high-stakes OMP and

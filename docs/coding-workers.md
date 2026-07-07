@@ -198,7 +198,9 @@ uv run tau commit-plan \
 Tau blocks source changes that have neither changed tests nor explicit evidence
 receipts. The receipt records each evidence artifact path, schema, status, and
 SHA-256 so a later reviewer can inspect what supported the proposed atomic
-commit.
+commit. Evidence receipts only count when they report `status:"PASS"` and
+`ok:true`; BLOCKED or failed receipts are recorded but cannot justify a source
+commit group.
 
 Commit plans also emit non-blocking `warnings` and `warning_codes` when the
 working tree mixes independent commit-group classes, such as docs with runtime

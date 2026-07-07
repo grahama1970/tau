@@ -118,6 +118,33 @@ def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path)
     assert payload["evidence_receipts"][0]["sha256"].startswith("sha256:")
 
 
+def test_commit_plan_blocks_source_change_with_blocked_evidence_receipt(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "blocked-diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": False,
+                "status": "BLOCKED",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["evidence_receipt_count"] == 1
+    assert "evidence_receipt_not_pass" in payload["alert_codes"]
+
+
 def test_commit_plan_warns_when_docs_mix_with_runtime_changes(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src").mkdir()

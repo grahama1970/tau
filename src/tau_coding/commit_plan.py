@@ -219,13 +219,21 @@ def _evidence_receipts(
             continue
         schema = payload.get("schema")
         status = payload.get("status")
+        ok = payload.get("ok")
+        if ok is not True or status != "PASS":
+            alerts.append(
+                _alert(
+                    "evidence_receipt_not_pass",
+                    f"evidence receipt must be PASS with ok:true: {resolved}",
+                )
+            )
         receipts.append(
             {
                 "path": str(resolved),
                 "sha256": f"sha256:{_sha256(resolved)}",
                 "schema": schema,
                 "status": status,
-                "ok": payload.get("ok"),
+                "ok": ok,
             }
         )
     return receipts
