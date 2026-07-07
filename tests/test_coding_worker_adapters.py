@@ -65,6 +65,24 @@ def test_omp_worker_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
     assert Path(payload["course_correction_path"]).exists()
 
 
+def test_scillm_worker_blocks_dollar_schema_key(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.scillm_worker.v1")
+    result = _write_result(tmp_path, schema="tau.scillm_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["$schema"] = payload.pop("schema")
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_scillm_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_result_schema" in receipt["alert_codes"]
+    assert "result_schema_key_misspelled" in receipt["alert_codes"]
+
+
 def test_omp_worker_blocks_disallowed_changed_file(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     result = _write_result(
@@ -2328,6 +2346,12 @@ def test_scillm_worker_launch_builds_dry_run_opencode_request(tmp_path: Path) ->
     assert payload["request_timeout_s"] == 600
     assert "timeout_s" not in payload["request_payload"]
     assert payload["request_payload"]["scillm_metadata"]["goal_hash"] == "sha256:goal"
+    prompt = payload["request_payload"]["prompt"]
+    assert "Result path: worker-result.json" in prompt
+    assert "Receipt path: worker-receipt.json" in prompt
+    assert "Write a tau.scillm_worker_result.v1 JSON artifact at Result path." in prompt
+    assert "Use a top-level key named schema; do not use $schema." in prompt
+    assert "status, goal_hash, changed_files, artifacts, tests_run, findings" in prompt
 
 
 def test_scillm_worker_launch_honors_explicit_worker_timeout(tmp_path: Path) -> None:

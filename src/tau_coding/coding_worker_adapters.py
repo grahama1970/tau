@@ -464,6 +464,13 @@ def _write_worker_receipt(
         )
     if result.get("schema") != expected_result_schema:
         alerts.append(_alert("invalid_result_schema", f"schema must be {expected_result_schema}"))
+        if result.get("$schema") == expected_result_schema:
+            alerts.append(
+                _alert(
+                    "result_schema_key_misspelled",
+                    "worker result must use key 'schema', not '$schema'",
+                )
+            )
 
     goal_hash = _string(work_order.get("goal_hash"))
     result_goal_hash = _string(result.get("goal_hash"))
@@ -1742,6 +1749,8 @@ def _scillm_worker_prompt(work_order: Mapping[str, Any]) -> str:
     allowed_paths = ", ".join(_string_list(work_order.get("allowed_paths"))) or "(none)"
     forbidden_paths = ", ".join(_string_list(work_order.get("forbidden_paths"))) or "(none)"
     required_artifacts = ", ".join(_string_list(work_order.get("required_artifacts"))) or "(none)"
+    result_path = _string(work_order.get("result_path")) or "(missing)"
+    receipt_path = _string(work_order.get("receipt_path")) or "(missing)"
     return "\n".join(
         [
             "You are an untrusted coding worker running under Tau.",
@@ -1750,6 +1759,12 @@ def _scillm_worker_prompt(work_order: Mapping[str, Any]) -> str:
             f"Allowed paths: {allowed_paths}",
             f"Forbidden paths: {forbidden_paths}",
             f"Required artifacts: {required_artifacts}",
+            f"Result path: {result_path}",
+            f"Receipt path: {receipt_path}",
+            "Write a tau.scillm_worker_result.v1 JSON artifact at Result path.",
+            "Use a top-level key named schema; do not use $schema.",
+            "The result artifact must include status, goal_hash, changed_files, "
+            "artifacts, tests_run, findings, and next_recommended_route.",
             "Return structured evidence for Tau validation; do not claim closure from prose.",
         ]
     )

@@ -948,6 +948,9 @@ SciLLM endpoint, captured its response, and found the named worker result
 artifact. It does not prove the OpenCode worker result is truthful or
 sufficient for closure, the worker result schema is valid, code changed, or
 code is correct. A worker result must still pass `scillm-worker-validate`.
+That validation requires the result JSON to use a top-level `schema` key with
+value `tau.scillm_worker_result.v1`; `$schema` is treated as a misspelled schema
+claim and blocks as `result_schema_key_misspelled`.
 
 Copyable examples:
 
