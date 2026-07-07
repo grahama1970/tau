@@ -11,7 +11,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+from tau_coding.policy_profile import (
+    DATA_BOUNDARY_SCHEMA,
+    POLICY_PROFILE_SCHEMA,
+    validate_data_boundary,
+    validate_policy_profile,
+)
 
 GITHUB_READ_RECEIPT_SCHEMA = "tau.github_read_receipt.v1"
 
@@ -230,7 +235,7 @@ def _execute_read_command(
 def _empty_execution(
     *,
     execute_requested: bool,
-    alerts: list[dict[str, str]] | None = None,
+    alerts: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     return {
         "execute_requested": execute_requested,
@@ -356,8 +361,8 @@ def _coding_policy_alerts(
     data_boundary: dict[str, Any] | None,
     goal_hash: str | None,
     parsed: dict[str, Any] | None,
-) -> list[dict[str, str]]:
-    alerts: list[dict[str, str]] = []
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
     if zero_trust and not goal_hash:
         alerts.append(_alert("missing_goal_hash", "zero-trust GitHub read requires goal_hash"))
     if zero_trust and policy_profile is None:
@@ -370,8 +375,27 @@ def _coding_policy_alerts(
         )
     if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
         alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
+    elif policy_profile is not None:
+        errors = validate_policy_profile(policy_profile)
+        if errors:
+            alerts.append(
+                _alert("invalid_policy_profile", "policy_profile is invalid", errors=errors)
+            )
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    elif data_boundary is not None:
+        errors = validate_data_boundary(data_boundary)
+        if errors:
+            alerts.append(
+                _alert("invalid_data_boundary", "data_boundary is invalid", errors=errors)
+            )
+        if data_boundary.get("classification") == "classified-not-allowed":
+            alerts.append(
+                _alert(
+                    "classified_not_allowed",
+                    "classified-not-allowed data may not be routed to GitHub reads",
+                )
+            )
     if (
         zero_trust
         and parsed is not None
@@ -418,8 +442,11 @@ def _policy_repo_allowlist_alerts(
     return []
 
 
-def _alert(code: str, message: str) -> dict[str, str]:
-    return {"severity": "BLOCK", "code": code, "message": message}
+def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": "BLOCK", "code": code, "message": message}
+    if errors:
+        alert["errors"] = errors
+    return alert
 
 
 def _utc_stamp() -> str:

@@ -155,8 +155,8 @@ def test_github_read_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
         output_path=tmp_path / "github-read-receipt.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
     )
 
     assert receipt["status"] == "PASS"
@@ -166,16 +166,40 @@ def test_github_read_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     assert receipt["data_boundary"]["classification"] == "public"
 
 
+def test_github_read_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> None:
+    boundary = _data_boundary()
+    boundary["classification"] = "classified-not-allowed"
+    boundary.pop("foreign_person_access")
+
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=boundary,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_data_boundary" in receipt["alert_codes"]
+    assert "classified_not_allowed" in receipt["alert_codes"]
+    assert "foreign_person_access must be one of" in receipt["alerts"][0]["errors"][0]
+
+
 def test_github_read_zero_trust_blocks_public_repo_denied_boundary(tmp_path: Path) -> None:
     receipt = write_github_read_receipt(
         uri="issue://grahama1970/tau/67",
         output_path=tmp_path / "github-read-receipt.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        policy_profile=_policy_profile(),
         data_boundary={
-            "schema": "tau.data_boundary.v1",
+            **_data_boundary(),
             "classification": "ITAR",
+            "export_controlled": True,
+            "itar": True,
+            "technical_data": True,
+            "foreign_person_access": "prohibited",
             "public_repo_allowed": False,
         },
     )
@@ -195,10 +219,14 @@ def test_github_read_zero_trust_public_repo_denied_skips_execute(tmp_path: Path)
         output_path=tmp_path / "github-read-receipt.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        policy_profile=_policy_profile(),
         data_boundary={
-            "schema": "tau.data_boundary.v1",
+            **_data_boundary(),
             "classification": "ITAR",
+            "export_controlled": True,
+            "itar": True,
+            "technical_data": True,
+            "foreign_person_access": "prohibited",
             "public_repo_allowed": False,
         },
         execute=True,
@@ -223,12 +251,8 @@ def test_github_read_zero_trust_blocks_repo_outside_policy_allowlist(
         output_path=tmp_path / "github-read-receipt.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "github": {"allowed_repos": ["grahama1970/other"]},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(allowed_repos=["grahama1970/other"]),
+        data_boundary=_data_boundary(),
         execute=True,
         gh_bin=str(gh_bin),
     )
@@ -248,12 +272,8 @@ def test_github_read_zero_trust_blocks_invalid_policy_repo_allowlist(
         output_path=tmp_path / "github-read-receipt.json",
         goal_hash="sha256:goal",
         zero_trust=True,
-        policy_profile={
-            "schema": "tau.policy_profile.v1",
-            "profile_id": "test",
-            "github": {"allowed_repos": "grahama1970/tau"},
-        },
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(allowed_repos="grahama1970/tau"),
+        data_boundary=_data_boundary(),
     )
 
     assert receipt["status"] == "BLOCKED"
@@ -508,6 +528,42 @@ def _write_policy_fixture(tmp_path: Path) -> dict[str, Path]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _policy_profile(*, allowed_repos: object | None = None) -> dict:
+    github = {"public_mutation": "deny", "dry_run_projection": "allow"}
+    if allowed_repos is not None:
+        github["allowed_repos"] = allowed_repos
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": github,
+        "filesystem": {"write_allowlist": [], "read_denylist": []},
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": True,
+        "notes": [],
+    }
 
 
 def _write_fake_gh(tmp_path: Path) -> Path:

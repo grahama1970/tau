@@ -427,8 +427,11 @@ uv run tau github-read \
 Use `--zero-trust --goal-hash sha256:... --policy-profile policy.json
 --data-boundary boundary.json` when GitHub read projections are part of a
 high-stakes coding route. In zero-trust mode, Tau blocks read receipts that
-omit the active goal hash, policy metadata, or boundary metadata. If the active
-data boundary sets `public_repo_allowed:false`, Tau blocks the read with
+omit the active goal hash, policy metadata, or boundary metadata. It validates
+the full `tau.policy_profile.v1` and `tau.data_boundary.v1` objects, blocks
+malformed metadata with `invalid_policy_profile` or `invalid_data_boundary`,
+and refuses `classified-not-allowed` boundaries before any `gh` command can
+run. If the active data boundary sets `public_repo_allowed:false`, Tau blocks the read with
 `public_repo_denied` and does not execute `gh`; the projection remains a local
 review artifact and does not authorize external GitHub access. When the active
 policy profile declares `github.allowed_repos`, Tau also blocks reads outside

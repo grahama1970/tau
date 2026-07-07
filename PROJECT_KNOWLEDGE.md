@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 GitHub read policy/data-boundary validity fail-closed rung:
+  `src/tau_coding/github_read_schemes.py` now validates full
+  `tau.policy_profile.v1` and `tau.data_boundary.v1` objects in zero-trust
+  mode before accepting read-only GitHub evidence receipts. It blocks malformed
+  policy/boundary metadata with `invalid_policy_profile` or
+  `invalid_data_boundary` and refuses
+  `data_boundary.classification:"classified-not-allowed"` with
+  `classified_not_allowed` before execute mode can run `gh`. The GitHub
+  allowlist and public-repo boundary gates remain fail-closed. Focused proof:
+  `uv run ruff check --select I,F,E501 src/tau_coding/github_read_schemes.py
+  tests/test_github_read_schemes.py` -> `All checks passed!`; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `21 passed in 0.52s`. Aggregate
+  proof: `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-read-boundary-proof-20260707T074818Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-github-read-boundary-proof-20260707T074818Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, and `provider_live:false`. This proves deterministic local
+  GitHub read receipts fail closed on invalid zero-trust policy/boundary
+  metadata before GitHub read evidence can support coding work and still
+  compose with the current coding capability sanity suite; it does not prove
+  GitHub content truth, live GitHub auth, content freshness unless execute mode
+  captured `gh` output, mutation authorization, provider/model quality, legal
+  compliance, or full goal completion.
+
 - 2026-07-07 worker adapter policy/data-boundary validity fail-closed rung:
   `src/tau_coding/coding_worker_adapters.py` now validates full
   `tau.policy_profile.v1` and `tau.data_boundary.v1` objects on high-stakes
