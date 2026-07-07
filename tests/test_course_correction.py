@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -90,6 +91,32 @@ def test_course_correction_created_for_stale_patch() -> None:
     assert payload["required_next_action"] == "retry_node"
     assert "fresh_code_patch_receipt" in payload["required_evidence_before_retry"]
     assert "apply_unvalidated_patch" in payload["forbidden_next_routes"]
+
+
+def test_course_correction_records_observed_artifact_descriptor(tmp_path: Path) -> None:
+    observed = tmp_path / "stale-code-patch-receipt.json"
+    observed.write_text(
+        json.dumps({"schema": "tau.code_patch_receipt.v1", "status": "BLOCKED"}) + "\n",
+        encoding="utf-8",
+    )
+
+    payload = build_course_correction_receipt(
+        trigger="patch_stale",
+        dag_id="dag-1",
+        goal_hash="sha256:goal",
+        node_id="coder",
+        agent="coder",
+        attempt=1,
+        observed_artifact_path=observed,
+    )
+
+    assert payload["observed_artifact"] == {
+        "label": "observed_evidence",
+        "path": str(observed.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256_file(observed)}",
+        "bytes": observed.stat().st_size,
+    }
 
 
 def test_course_correction_missing_goal_hash_is_invalid_input() -> None:
@@ -212,6 +239,8 @@ def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> N
             "1",
             "--observed-state-json",
             '{"herdr_state":"auth_required"}',
+            "--observed-artifact",
+            str(receipt_path),
             "--error",
             "provider requested auth",
             "--live",
@@ -228,5 +257,11 @@ def test_cli_course_correction_writes_project_agent_receipt(tmp_path: Path) -> N
     assert payload["required_next_action"] == "route_human"
     assert payload["allowed_next_routes"] == ["human"]
     assert payload["observed_state"] == {"herdr_state": "auth_required"}
+    assert payload["observed_artifact"]["path"] == str(receipt_path.resolve())
+    assert payload["observed_artifact"]["exists"] is False
     assert payload["live"] is True
     assert payload["provider_live"] is True
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

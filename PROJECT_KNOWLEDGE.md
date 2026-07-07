@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:30 EDT by agent
+**Last updated:** 2026-07-06 23:42 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 course-correction observed artifact rung:
+  `src/tau_coding/course_correction.py` now accepts an optional observed
+  evidence artifact for `tau.course_correction.v1` and records it as
+  `observed_artifact` with label, resolved path, existence, SHA-256, and byte
+  count. `tau course-correction` exposes this through `--observed-artifact`,
+  allowing correction decisions for stale patches, failed tests, worker
+  failures, and timeouts to remain tied to the concrete receipt or log that
+  triggered the correction. Focused proof: `git diff --check
+  PROJECT_KNOWLEDGE.md docs/coding-workers.md
+  src/tau_coding/course_correction.py src/tau_coding/cli.py
+  tests/test_course_correction.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/course_correction.py src/tau_coding/cli.py
+  tests/test_course_correction.py` -> `All checks passed!`; `uv run pytest
+  tests/test_course_correction.py -q` -> `11 passed in 0.37s`. Aggregate
+  coding sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-course-correction-artifact-proof` wrote
+  `/tmp/tau-coding-capability-sanity-course-correction-artifact-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `201 passed in
+  6.63s`. This proves the local receipt schema/CLI artifact-binding path and
+  current deterministic coding capability sanity suite; it does not prove the
+  required course-correction action was executed, agent truthfulness, live
+  provider/model quality, GitHub mutation, human acceptance, or full goal
+  completion.
 
 - 2026-07-06 review-findings artifact descriptor rung:
   `src/tau_coding/review_findings.py` now records `findings_artifact` on

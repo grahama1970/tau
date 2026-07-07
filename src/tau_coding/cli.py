@@ -1636,6 +1636,11 @@ def main(
                     options.get("observed_state"),
                     label="--observed-state-json",
                 ),
+                observed_artifact_path=(
+                    Path(str(options["observed_artifact"]))
+                    if _optional_str(options.get("observed_artifact"))
+                    else None
+                ),
                 errors=[str(item) for item in options["error"]],
                 reason=_optional_str(options.get("reason")),
                 stop_reason=_optional_str(options.get("stop_reason")),
@@ -4283,6 +4288,7 @@ def _parse_course_correction_cli_args(args: list[str]) -> dict[str, object]:
         "agent": None,
         "attempt": None,
         "observed_state": None,
+        "observed_artifact": None,
         "reason": None,
         "stop_reason": None,
         "error": [],
@@ -4304,6 +4310,7 @@ def _parse_course_correction_cli_args(args: list[str]) -> dict[str, object]:
             "--agent",
             "--attempt",
             "--observed-state-json",
+            "--observed-artifact",
             "--reason",
             "--stop-reason",
             "--error",
@@ -4332,6 +4339,8 @@ def _parse_course_correction_cli_args(args: list[str]) -> dict[str, object]:
             options["attempt"] = int(arg.partition("=")[2])
         elif arg.startswith("--observed-state-json="):
             options["observed_state"] = arg.partition("=")[2]
+        elif arg.startswith("--observed-artifact="):
+            options["observed_artifact"] = arg.partition("=")[2]
         elif arg.startswith("--reason="):
             options["reason"] = arg.partition("=")[2]
         elif arg.startswith("--stop-reason="):
@@ -5066,6 +5075,8 @@ def _set_course_correction_option(
         key = "target"
     elif arg == "--observed-state-json":
         key = "observed_state"
+    elif arg == "--observed-artifact":
+        key = "observed_artifact"
     elif arg == "--error":
         _append_option(options, "error", value)
         return

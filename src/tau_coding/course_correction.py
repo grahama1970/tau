@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,6 +22,7 @@ def build_course_correction_receipt(
     agent: str | None = None,
     attempt: int | None = None,
     observed_state: dict[str, Any] | None = None,
+    observed_artifact_path: Path | None = None,
     errors: list[str] | None = None,
     reason: str | None = None,
     stop_reason: str | None = None,
@@ -65,6 +67,12 @@ def build_course_correction_receipt(
         "stop_reason": stop_reason or normalized_trigger,
         "reason": reason or policy["reason"],
         "observed_state": observed_state or {},
+        "observed_artifact": _artifact_descriptor(
+            "observed_evidence",
+            observed_artifact_path.expanduser().resolve()
+            if observed_artifact_path is not None
+            else None,
+        ),
         "why_normal_retry_is_unsafe": policy["why_normal_retry_is_unsafe"],
         "required_next_action": policy["required_next_action"],
         "allowed_next_routes": list(policy["allowed_next_routes"]),
@@ -107,6 +115,7 @@ def write_course_correction_receipt(
     agent: str | None = None,
     attempt: int | None = None,
     observed_state: dict[str, Any] | None = None,
+    observed_artifact_path: Path | None = None,
     errors: list[str] | None = None,
     reason: str | None = None,
     stop_reason: str | None = None,
@@ -126,6 +135,7 @@ def write_course_correction_receipt(
         agent=agent,
         attempt=attempt,
         observed_state=observed_state,
+        observed_artifact_path=observed_artifact_path,
         errors=errors,
         reason=reason,
         stop_reason=stop_reason,
@@ -335,6 +345,36 @@ def _input_alerts_for_trigger(
             }
         )
     return alerts
+
+
+def _artifact_descriptor(label: str, path: Path | None) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    return {
+        "label": label,
+        "path": str(path),
+        "exists": path.exists(),
+        "sha256": _artifact_sha256_uri(path),
+        "bytes": _artifact_size(path),
+    }
+
+
+def _artifact_sha256_uri(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+    except OSError:
+        return None
+
+
+def _artifact_size(path: Path | None) -> int | None:
+    if path is None:
+        return None
+    try:
+        return path.stat().st_size
+    except OSError:
+        return None
 
 
 def _utc_stamp() -> str:
