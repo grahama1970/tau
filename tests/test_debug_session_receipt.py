@@ -345,6 +345,25 @@ def test_debug_receipt_zero_trust_honors_log_read_denylist(tmp_path: Path) -> No
     ]
 
 
+def test_debug_receipt_blocks_malformed_policy_read_denylist(tmp_path: Path) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile={
+            "schema": "tau.policy_profile.v1",
+            "profile_id": "test",
+            "filesystem": {"read_denylist": "debug-stdout.txt"},
+        },
+        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_policy_read_denylist" in receipt["alert_codes"]
+
+
 def test_debug_receipt_blocks_evidence_outside_allowed_paths(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
     payload = json.loads(session.read_text(encoding="utf-8"))
