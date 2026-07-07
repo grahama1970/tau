@@ -133,6 +133,41 @@ def test_lsp_diagnostics_blocks_baseline_goal_hash_mismatch(tmp_path: Path) -> N
     assert payload["diagnostic_delta"] is None
 
 
+def test_lsp_diagnostics_blocks_baseline_receipt_outside_workspace(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    source = workspace / "example.py"
+    source.write_text("value = 1\n", encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    baseline = write_lsp_diagnostics_receipt(
+        workspace=workspace,
+        output_path=outside / "baseline-diagnostics.json",
+        goal_hash="sha256:goal",
+    )
+
+    payload = write_lsp_diagnostics_receipt(
+        workspace=workspace,
+        output_path=workspace / "after-diagnostics.json",
+        goal_hash="sha256:goal",
+        baseline_receipt_path=Path(baseline["receipt_path"]),
+    )
+
+    baseline_path = Path(baseline["receipt_path"])
+    assert payload["status"] == "BLOCKED"
+    assert "baseline_receipt_outside_workspace" in payload["alert_codes"]
+    assert payload["baseline_severity_counts"] is None
+    assert payload["diagnostic_delta"] is None
+    assert payload["diagnostics_increased"] == "NOT_EVALUATED"
+    assert payload["baseline_receipt_path"] == str(baseline_path.resolve())
+    assert payload["baseline_receipt_artifact"] == {
+        "path": str(baseline_path.resolve()),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(baseline_path)}",
+        "bytes": baseline_path.stat().st_size,
+    }
+
+
 def test_lsp_diagnostics_blocks_when_server_unavailable_if_required(tmp_path: Path) -> None:
     payload = write_lsp_diagnostics_receipt(
         workspace=tmp_path / "missing",
@@ -724,6 +759,45 @@ def test_cli_lsp_diagnostics_accepts_baseline_receipt(tmp_path: Path) -> None:
     assert payload["diagnostics_increased"] is True
     assert "lsp_diagnostics_regressed" in payload["alert_codes"]
     assert payload["baseline_receipt_path"] == str(Path(baseline["receipt_path"]))
+
+
+def test_cli_lsp_diagnostics_blocks_baseline_receipt_outside_workspace(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    source = workspace / "example.py"
+    source.write_text("value = 1\n", encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    baseline = write_lsp_diagnostics_receipt(
+        workspace=workspace,
+        output_path=outside / "baseline.json",
+        goal_hash="sha256:goal",
+    )
+    out = workspace / "after.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "lsp-diagnostics",
+            "--workspace",
+            str(workspace),
+            "--out",
+            str(out),
+            "--goal-hash",
+            "sha256:goal",
+            "--baseline-receipt",
+            str(baseline["receipt_path"]),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "baseline_receipt_outside_workspace" in payload["alert_codes"]
+    assert payload["diagnostics_increased"] == "NOT_EVALUATED"
 
 
 def _sha256(path: Path) -> str:

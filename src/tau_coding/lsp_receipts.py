@@ -84,6 +84,7 @@ def write_lsp_diagnostics_receipt(
     baseline = _read_baseline_receipt(
         baseline_receipt_path,
         alerts,
+        workspace=resolved_workspace,
         expected_goal_hash=goal_hash,
     )
     baseline_counts = (
@@ -529,11 +530,22 @@ def _read_baseline_receipt(
     baseline_receipt_path: Path | None,
     alerts: list[dict[str, Any]],
     *,
+    workspace: Path,
     expected_goal_hash: str | None,
 ) -> dict[str, Any] | None:
     if baseline_receipt_path is None:
         return None
     resolved = baseline_receipt_path.expanduser().resolve()
+    try:
+        resolved.relative_to(workspace.expanduser().resolve())
+    except ValueError:
+        alerts.append(
+            _alert(
+                "baseline_receipt_outside_workspace",
+                "baseline diagnostics receipt must stay under the LSP workspace",
+            )
+        )
+        return None
     try:
         payload = json.loads(resolved.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:

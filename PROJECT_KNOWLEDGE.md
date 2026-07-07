@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 LSP baseline workspace-scope rung:
+  `src/tau_coding/lsp_receipts.py` now requires
+  `--baseline-receipt` diagnostics receipts to resolve under the active LSP
+  `--workspace` before Tau reads them for before/after comparison. Workspace-
+  external baselines block with `baseline_receipt_outside_workspace`, keep
+  `baseline_severity_counts:null`, `diagnostic_delta:null`, and
+  `diagnostics_increased:"NOT_EVALUATED"`, while still recording
+  `baseline_receipt_artifact` path/hash/bytes for audit. `tests/test_lsp_receipts.py`
+  covers direct API and CLI rejection of outside-workspace baselines.
+  `docs/coding-workers.md` documents the workspace-scoped baseline rule.
+  Focused proof: `git diff --check -- src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py docs/coding-workers.md PROJECT_KNOWLEDGE.md` ->
+  pass; `uv run python -m py_compile src/tau_coding/lsp_receipts.py` -> pass;
+  `uv run ruff check --select I,F,E501 src/tau_coding/lsp_receipts.py
+  tests/test_lsp_receipts.py` -> `All checks passed!`; `uv run pytest
+  tests/test_lsp_receipts.py -q` -> `34 passed in 0.87s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-lsp-baseline-workspace-scope-20260707T190000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `388 passed in 10.21s`. This proves LSP
+  diagnostics regression comparisons cannot silently reuse external baseline
+  evidence; it does not prove semantic code correctness, full IDE/LSP parity,
+  live worker execution, provider/model quality, legal compliance, ITAR
+  compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 worker substrate receipt repo-scope rung:
   `src/tau_coding/coding_worker_adapters.py` now requires high-stakes
   `sandbox_receipt_path` and `herdr_receipt_path` values to resolve inside the

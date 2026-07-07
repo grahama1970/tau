@@ -264,7 +264,9 @@ receipt with `lsp_diagnostics_regressed`; this is a course-correction signal,
 not proof that the code is semantically correct. Baseline receipts must be
 `status:"PASS"` with `ok:true`; BLOCKED or failed baseline diagnostics receipts
 are recorded as `baseline_receipt_not_pass` and do not produce a before/after
-delta.
+delta. Baseline receipts must also resolve under the same `--workspace`;
+workspace-external baselines are blocked as `baseline_receipt_outside_workspace`
+and cannot influence regression comparison.
 When a diagnostics receipt carries `goal_hash`, the baseline diagnostics receipt
 must carry the same `goal_hash`; missing or mismatched baseline goal hashes
 block before/after comparison.
