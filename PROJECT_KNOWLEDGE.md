@@ -1,9 +1,31 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 01:00 EDT by agent
+**Last updated:** 2026-07-07 01:05 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 code-patch dry-run receipt rung:
+  `src/tau_coding/code_patch.py` now records `apply_requested` and `dry_run` in
+  `tau.code_patch_receipt.v1`, making staged-but-not-applied hash-bound patch
+  plans inspectable. Dry-run receipts preserve `applied:false`, record
+  `staged_sha256` for the proposed post-patch content, and leave `after_sha256`
+  bound to the unchanged target file. Focused proof: `git diff --check
+  docs/coding-workers.md src/tau_coding/code_patch.py tests/test_code_patch.py`
+  -> pass; `uv run ruff check --select I,F,E501 src/tau_coding/code_patch.py
+  tests/test_code_patch.py` -> `All checks passed!`; `uv run pytest
+  tests/test_code_patch.py -q` -> `20 passed in 0.46s`. Aggregate coding sanity
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-dry-run-proof` wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-dry-run-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `223 passed in
+  6.68s`. This proves deterministic local code-patch receipts distinguish
+  staging from application and that CLI `--dry-run` does not mutate the target
+  file; it does not prove semantic code correctness, full test-suite safety,
+  legal compliance, live worker execution, GitHub mutation safety, full sandbox
+  isolation, or full goal completion.
 
 - 2026-07-07 LSP rename write-allowlist rung:
   `src/tau_coding/lsp_receipts.py` now treats `tau.lsp_rename_receipt.v1`

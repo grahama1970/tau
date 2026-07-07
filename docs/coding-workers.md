@@ -92,7 +92,9 @@ uv run tau code-patch \
 
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when the patch is part of a zero-trust or high-stakes DAG. Use `--dry-run` to
-write the receipt without applying the staged content.
+write the receipt without applying the staged content. Dry-run receipts record
+`apply_requested:false`, `dry_run:true`, `applied:false`, and the staged
+post-patch hash while leaving `after_sha256` bound to the unchanged target file.
 
 ### Structured Review Findings
 

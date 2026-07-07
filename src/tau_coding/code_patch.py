@@ -182,6 +182,8 @@ def apply_code_patch_receipt(
         "allowed_paths": allowed_paths,
         "forbidden_paths": forbidden_paths,
         "generated_path_patterns": list(GENERATED_PATH_PATTERNS),
+        "apply_requested": apply,
+        "dry_run": not apply,
         "applied": applied,
         "operation_count": len(operations),
         "before_sha256": before_sha,

@@ -36,6 +36,8 @@ def test_code_patch_passes_when_base_hash_and_post_hash_match(tmp_path: Path) ->
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["applied"] is True
+    assert receipt["apply_requested"] is True
+    assert receipt["dry_run"] is False
     assert receipt["patch_sha256"] == f"sha256:{_sha256_file(patch_path)}"
     assert receipt["patch_bytes"] == patch_path.stat().st_size
     assert receipt["patch_artifact"] == {
@@ -62,6 +64,37 @@ def test_code_patch_passes_when_base_hash_and_post_hash_match(tmp_path: Path) ->
         "bytes": len(after.encode("utf-8")),
     }
     assert target.read_text(encoding="utf-8") == after
+
+
+def test_code_patch_dry_run_records_staged_hash_without_applying(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "def answer():\n    return 41\n"
+    after = "def answer():\n    return 42\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "return 41", "new": "return 42"}]),
+    )
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        expected_goal_hash="sha256:goal",
+        apply=False,
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["apply_requested"] is False
+    assert receipt["dry_run"] is True
+    assert receipt["applied"] is False
+    assert receipt["before_sha256"] == f"sha256:{_sha256_text(before)}"
+    assert receipt["staged_sha256"] == f"sha256:{_sha256_text(after)}"
+    assert receipt["after_sha256"] == f"sha256:{_sha256_text(before)}"
+    assert target.read_text(encoding="utf-8") == before
 
 
 def test_code_patch_blocks_stale_base_hash(tmp_path: Path) -> None:
@@ -479,6 +512,48 @@ def test_cli_code_patch_writes_receipt(tmp_path: Path) -> None:
     assert payload["schema"] == CODE_PATCH_RECEIPT_SCHEMA
     assert payload["applied"] is True
     assert target.read_text(encoding="utf-8") == after
+
+
+def test_cli_code_patch_dry_run_writes_receipt_without_applying(tmp_path: Path) -> None:
+    target = tmp_path / "src" / "example.py"
+    target.parent.mkdir()
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="src/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+    receipt_path = tmp_path / "receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "code-patch",
+            "--patch",
+            str(patch_path),
+            "--repo",
+            str(tmp_path),
+            "--out",
+            str(receipt_path),
+            "--goal-hash",
+            "sha256:goal",
+            "--dry-run",
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 0
+    assert payload == json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["status"] == "PASS"
+    assert payload["apply_requested"] is False
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["staged_sha256"] == f"sha256:{_sha256_text(after)}"
+    assert target.read_text(encoding="utf-8") == before
 
 
 def test_cli_code_patch_unreadable_patch_writes_blocked_receipt(tmp_path: Path) -> None:
