@@ -223,6 +223,7 @@ def _zero_trust_dag_template(profile: str) -> dict[str, Any]:
             "zero-trust-preflight-receipt.json",
             "tau.code_patch_receipt.v1 before applying code changes",
             "tau.lsp_diagnostics_receipt.v1 before and after patch application",
+            "tau.test_run_receipt.v1 for focused local test evidence",
             "tau.review_findings.v1 before PASS routing",
             "tau.commit_plan_receipt.v1 before commit approval",
             "tau.course_correction.v1 for BLOCKED or repeated-failure routes",
@@ -232,6 +233,7 @@ def _zero_trust_dag_template(profile: str) -> dict[str, Any]:
             "patch_receipts_required": True,
             "review_findings_required": True,
             "diagnostics_required": True,
+            "test_run_required": True,
             "commit_plan_dry_run_required": True,
             "course_correction_required_for_blocked_routes": True,
             "agent_truthfulness": "NOT_CLAIMED",
@@ -252,8 +254,8 @@ Files:
 - `command-policy.json`: default-deny command policy starter with local `git`
   available for read-only coding evidence collection.
 - `dag-template.json`: coding evidence DAG template that requires hash-bound
-  patch receipts, LSP diagnostics, structured review findings, dry-run commit
-  planning, and course-correction receipts.
+  patch receipts, LSP diagnostics, focused test-run receipts, structured review
+  findings, dry-run commit planning, and course-correction receipts.
 
 Agents remain untrusted. The template treats code patches, reviewer output, and
 worker results as claims until Tau binds them to policy, hashes, receipts, and

@@ -62,12 +62,15 @@ def test_init_coding_zero_trust_creates_coding_evidence_template(tmp_path: Path)
         "patch_receipts_required": True,
         "review_findings_required": True,
         "diagnostics_required": True,
+        "test_run_required": True,
         "commit_plan_dry_run_required": True,
         "course_correction_required_for_blocked_routes": True,
         "agent_truthfulness": "NOT_CLAIMED",
     }
     assert "tau.code_patch_receipt.v1 before applying code changes" in dag["required_evidence"]
+    assert "tau.test_run_receipt.v1 for focused local test evidence" in dag["required_evidence"]
     assert "tau.review_findings.v1 before PASS routing" in dag["required_evidence"]
+    assert "focused test-run receipts" in readme
     assert "semantic code correctness" in readme
 
 

@@ -1,9 +1,34 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 06:27 EDT by agent
+**Last updated:** 2026-07-07 06:31 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 coding starter test-run contract rung:
+  `src/tau_coding/init_project.py` now includes `tau.test_run_receipt.v1 for
+  focused local test evidence` in the `coding-zero-trust` DAG template's
+  `required_evidence`, adds `test_run_required:true` to
+  `tau.coding_contract.v1`, and names focused test-run receipts in the generated
+  `.tau/README.md`. This keeps new Tau coding projects aligned with the
+  `tau.test_run_receipt.v1` receipt lane instead of initializing a stale
+  LSP/review/commit-only contract. Focused proof: `git diff --check --
+  src/tau_coding/init_project.py tests/test_init_project.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/init_project.py
+  tests/test_init_project.py` -> `All checks passed!`; `uv run pytest
+  tests/test_init_project.py -q` -> `5 passed in 0.45s`; live init
+  `uv run tau init --profile coding-zero-trust --out
+  /tmp/tau-init-coding-test-run-20260707T133000Z` -> `status:PASS`, generated
+  `.tau/dag-template.json` with `test_run_required:true`, required evidence
+  `tau.test_run_receipt.v1 for focused local test evidence`, and README text
+  `focused test-run receipts`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-init-test-run-contract-20260707T133500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `338 passed in 9.35s`. This proves the starter
+  contract carries the focused test-run requirement and still composes with the
+  maintained coding-capability sanity suite; it does not prove semantic code
+  correctness, full-suite health, provider/model quality, ITAR compliance,
+  legal compliance, or full goal completion.
 
 - 2026-07-07 focused test-run receipt rung:
   `src/tau_coding/test_run_receipt.py` adds `tau.test_run_receipt.v1`, a
