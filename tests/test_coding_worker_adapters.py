@@ -69,6 +69,49 @@ def test_omp_worker_blocks_disallowed_changed_file(tmp_path: Path) -> None:
     assert "disallowed_changed_file" in payload["alert_codes"]
 
 
+def test_worker_accepts_absolute_changed_file_inside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    repo = Path(work_order_payload["repo"])
+    changed = repo / "src" / "example.py"
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        changed_files=[str(changed)],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["changed_files"] == [str(changed)]
+    assert payload["normalized_changed_files"] == ["src/example.py"]
+
+
+def test_worker_blocks_absolute_changed_file_outside_repo(tmp_path: Path) -> None:
+    work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
+    outside = tmp_path / "outside" / "src" / "example.py"
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        changed_files=[str(outside)],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "changed_file_outside_repo" in payload["alert_codes"]
+    assert "disallowed_changed_file" in payload["alert_codes"]
+    assert payload["normalized_changed_files"] == [str(outside)]
+
+
 def test_omp_worker_accepts_schema_valid_result_and_routes_reviewer(tmp_path: Path) -> None:
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))

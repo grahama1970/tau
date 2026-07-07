@@ -517,6 +517,11 @@ receipt content. Each substrate receipt descriptor records the referenced path,
 existence, SHA-256, byte count, schema, status, `ok`, `mocked`, `live`, and
 `provider_live` fields when the receipt can be read.
 
+Worker `changed_files` are checked against the declared work-order repo before
+allowed/forbidden path policy is applied. Absolute paths inside the repo are
+normalized to repo-relative POSIX paths in `normalized_changed_files`; absolute
+paths outside the repo block with `changed_file_outside_repo`.
+
 Required artifacts are not satisfied by strings alone. When a work order names a
 required artifact, the worker result must list that artifact and the referenced
 file must exist under the work-order repo before Tau accepts the worker receipt.

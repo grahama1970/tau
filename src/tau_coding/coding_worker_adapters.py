@@ -344,11 +344,20 @@ def _write_worker_receipt(
     allowed_paths = _string_list(work_order.get("allowed_paths"))
     forbidden_paths = _string_list(work_order.get("forbidden_paths"))
     changed_files = _string_list(result.get("changed_files"))
+    normalized_changed_files = _repo_relative_worker_paths(changed_files, repo)
+    outside_changed_files = _paths_outside_repo(changed_files, repo)
     disallowed = [
         path
-        for path in changed_files
+        for path in normalized_changed_files
         if not _path_allowed(path, allowed_paths) or _path_forbidden(path, forbidden_paths)
     ]
+    if outside_changed_files:
+        alerts.append(
+            _alert(
+                "changed_file_outside_repo",
+                f"worker changed files must stay under repo: {outside_changed_files}",
+            )
+        )
     if disallowed:
         alerts.append(
             _alert(
@@ -449,6 +458,7 @@ def _write_worker_receipt(
         **_substrate_metadata(work_order),
         "model_provider_route": _model_provider_route(work_order, result),
         "changed_files": changed_files,
+        "normalized_changed_files": normalized_changed_files,
         "required_artifacts": required_artifacts,
         "result_artifacts": result_artifacts,
         "required_artifact_descriptors": _required_artifact_descriptors(
@@ -1156,6 +1166,26 @@ def _path_exists(path: str, repo: Path | None) -> bool:
     if candidate is None:
         return False
     return candidate.exists()
+
+
+def _repo_relative_worker_paths(paths: list[str], repo: Path | None) -> list[str]:
+    return [_repo_relative_worker_path(path, repo) for path in paths]
+
+
+def _repo_relative_worker_path(path: str, repo: Path | None) -> str:
+    if repo is None:
+        return path
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        return path
+    try:
+        return candidate.resolve().relative_to(repo.resolve()).as_posix()
+    except ValueError:
+        return path
+
+
+def _paths_outside_repo(paths: list[str], repo: Path | None) -> list[str]:
+    return [path for path in paths if _path_outside_repo(path, repo)]
 
 
 def _artifacts_outside_repo(artifacts: list[str], repo: Path | None) -> list[str]:

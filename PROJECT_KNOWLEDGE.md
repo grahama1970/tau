@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:51 EDT by agent
+**Last updated:** 2026-07-07 00:55 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 worker changed-files repo-boundary rung:
+  `src/tau_coding/coding_worker_adapters.py` now normalizes absolute
+  `changed_files` paths that resolve inside the work-order repo to repo-relative
+  POSIX paths before applying allowed/forbidden path policy, and blocks absolute
+  changed-file paths outside the repo with `changed_file_outside_repo`.
+  Receipts preserve the worker's original `changed_files` claim and add
+  `normalized_changed_files` for the policy decision surface. Focused proof:
+  `git diff --check docs/coding-workers.md
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `45 passed in 3.66s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-changed-files-repo-boundary-proof`
+  wrote
+  `/tmp/tau-coding-capability-sanity-worker-changed-files-repo-boundary-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `219 passed in
+  6.70s`. This proves deterministic local worker receipts check changed-file
+  path claims against the declared repo boundary before route acceptance; it
+  does not prove live OMP/SciLLM semantic worker execution, provider/model
+  quality, semantic code correctness, legal compliance, GitHub mutation safety,
+  full sandbox isolation, or full goal completion.
 
 - 2026-07-07 worker artifact repo-boundary rung:
   `src/tau_coding/coding_worker_adapters.py` now rejects worker evidence
