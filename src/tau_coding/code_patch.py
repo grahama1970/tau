@@ -157,6 +157,8 @@ def apply_code_patch_receipt(
         "policy_profile": dict(policy_profile) if policy_profile is not None else None,
         "data_boundary": dict(data_boundary) if data_boundary is not None else None,
         "patch_path": str(resolved_patch),
+        "patch_sha256": _artifact_sha256_uri(resolved_patch),
+        "patch_bytes": _artifact_size(resolved_patch),
         "repo_root": str(resolved_repo),
         "goal_hash": goal_hash,
         "target_file": relative_target,
@@ -366,6 +368,24 @@ def _string_list(value: object) -> list[str]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _artifact_sha256_uri(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        return f"sha256:{_sha256(path)}"
+    except OSError:
+        return None
+
+
+def _artifact_size(path: Path | None) -> int | None:
+    if path is None:
+        return None
+    try:
+        return path.stat().st_size
+    except OSError:
+        return None
 
 
 def _sha256_text(text: str) -> str:

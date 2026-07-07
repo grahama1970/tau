@@ -1,9 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 22:12 EDT by agent
+**Last updated:** 2026-07-06 22:17 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 code-patch artifact hash binding rung:
+  `src/tau_coding/code_patch.py` now records `patch_sha256` and `patch_bytes`
+  on every `tau.code_patch_receipt.v1` so the receipt is bound to the exact
+  patch artifact Tau inspected, not only the target file before/staged/after
+  hashes. Missing patch artifacts record both fields as `null`; unreadable or
+  non-object patch artifacts still record the artifact hash and byte count
+  when the file exists. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/code_patch.py tests/test_code_patch.py` -> pass; `uv run
+  pytest tests/test_code_patch.py -q` -> `16 passed in 0.44s`. Aggregate
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-artifact-hash-proof` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-artifact-hash-proof/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, and embedded focused coding tests `192 passed in
+  6.63s`. This proves deterministic local code-patch receipts now bind the
+  inspected patch artifact itself and the coding capability aggregate still
+  composes; it does not prove patch semantic correctness, test success,
+  production safety, agent truthfulness, legal compliance, or full sandbox
+  isolation.
 
 - 2026-07-06 SciLLM OpenCode-serve response admissibility rung:
   `src/tau_coding/coding_worker_adapters.py` now blocks

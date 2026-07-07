@@ -41,15 +41,18 @@ is a JSON array string of exact replacement operations:
 disallowed, explicitly forbidden, or generated paths, goal-hash mismatches,
 malformed patch operations, and post-hash mismatches. The receipt records the
 active `policy_profile`, `data_boundary`, `allowed_paths`, `forbidden_paths`,
-and built-in generated-path patterns. Passing the receipt proves only that the
-deterministic patch gate ran and the before/after hashes matched. It does not
-prove semantic correctness, test success, production safety, or agent
-truthfulness.
+built-in generated-path patterns, and the inspected patch artifact's
+`patch_sha256` plus `patch_bytes`. Passing the receipt proves only that the
+deterministic patch gate ran against that exact patch artifact and the
+before/after hashes matched. It does not prove semantic correctness, test
+success, production safety, or agent truthfulness.
 
 Unreadable, missing, or non-object patch artifacts also produce BLOCKED
 `tau.code_patch_receipt.v1` receipts. Tau records alert codes such as
 `code_patch_missing`, `code_patch_unreadable`, or `code_patch_not_object`
-instead of failing before a receipt can be inspected.
+instead of failing before a receipt can be inspected. When the patch artifact
+exists, even unreadable/non-object patch receipts include `patch_sha256` and
+`patch_bytes`; missing artifacts record those fields as `null`.
 
 CLI:
 

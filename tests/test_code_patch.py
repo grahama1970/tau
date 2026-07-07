@@ -36,6 +36,8 @@ def test_code_patch_passes_when_base_hash_and_post_hash_match(tmp_path: Path) ->
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["applied"] is True
+    assert receipt["patch_sha256"] == f"sha256:{_sha256_file(patch_path)}"
+    assert receipt["patch_bytes"] == patch_path.stat().st_size
     assert receipt["before_sha256"] == f"sha256:{_sha256_text(before)}"
     assert receipt["after_sha256"] == f"sha256:{_sha256_text(after)}"
     assert target.read_text(encoding="utf-8") == after
@@ -232,6 +234,28 @@ def test_code_patch_writes_blocked_receipt_for_unreadable_patch(tmp_path: Path) 
 
     assert receipt["status"] == "BLOCKED"
     assert "code_patch_unreadable" in receipt["alert_codes"]
+    assert receipt["patch_sha256"] == f"sha256:{_sha256_file(patch_path)}"
+    assert receipt["patch_bytes"] == patch_path.stat().st_size
+    assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
+
+
+def test_code_patch_writes_blocked_receipt_for_missing_patch_artifact(
+    tmp_path: Path,
+) -> None:
+    patch_path = tmp_path / "missing-patch.json"
+    receipt_path = tmp_path / "receipt.json"
+
+    receipt = apply_code_patch_receipt(
+        patch_path=patch_path,
+        repo_root=tmp_path,
+        receipt_path=receipt_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "code_patch_missing" in receipt["alert_codes"]
+    assert receipt["patch_path"] == str(patch_path.resolve())
+    assert receipt["patch_sha256"] is None
+    assert receipt["patch_bytes"] is None
     assert receipt == json.loads(receipt_path.read_text(encoding="utf-8"))
 
 
@@ -398,3 +422,7 @@ def _write_patch(
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
