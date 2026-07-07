@@ -390,7 +390,6 @@ uv run tau scillm-worker-launch \
   --out scillm-worker-launch-receipt.json \
   --scillm-base-url http://localhost:4001 \
   --apply \
-  --auth-token "$SCILLM_MASTER_KEY" \
   --request-timeout-s 650
 ```
 
@@ -423,12 +422,22 @@ configured SciLLM OpenCode-serve endpoint, writes the response JSON beside the
 receipt, and records `http_executed`, `http_status`, `response_path`,
 `response_sha256`, response byte count, `run_id`, `session_id`,
 `scillm_run_status`, response artifacts, and `http_artifacts`. HTTP error
-artifacts are also hash-bound when present. Apply mode requires
-`--auth-token`; the token is never written to the receipt. This proves only
-that Tau sent the bounded request to the configured SciLLM endpoint and
-captured its response. It does not prove OpenCode served the request
-correctly, a worker result artifact is valid, code changed, or code is correct.
-A worker result must still pass `scillm-worker-validate`.
+artifacts are also hash-bound when present. Apply mode requires bearer auth
+from one of these sources:
+
+- explicit `--auth-token`
+- local `SCILLM_MASTER_KEY`, `SCILLM_API_KEY`, or `SCILLM_AUTH_TOKEN`
+- a local env file selected by `SCILLM_ENV_PATH`
+- the local Scillm project `.env` when the base URL is localhost
+
+Tau records only `headers.authorization: REDACTED` plus
+`headers.authorization_source`; it never writes the bearer token to the receipt.
+If no auth source is available, Tau fails closed before issuing the HTTP
+request. This proves only that Tau sent the bounded request to the configured
+SciLLM endpoint and captured its response. It does not prove the OpenCode worker
+result is truthful or sufficient for closure, a worker result artifact is valid,
+code changed, or code is correct. A worker result must still pass
+`scillm-worker-validate`.
 
 Copyable examples:
 

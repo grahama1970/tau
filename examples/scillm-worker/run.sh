@@ -260,8 +260,8 @@ payload = {
         ],
         "does_not_prove": [
             "Tau called a live SciLLM service.",
-            "OpenCode serve accepted or ran the request.",
-            "OpenCode serve performed live coding work.",
+            "The OpenCode worker result is truthful or sufficient for closure.",
+            "OpenCode serve performed live coding work against a real SciLLM service.",
             "The code is semantically correct.",
             "Provider/model semantic quality."
         ],
