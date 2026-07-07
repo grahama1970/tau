@@ -325,7 +325,10 @@ hash, policy metadata, or boundary metadata.
 The command is dry-run by default. `--apply` is intentionally blocked unless a
 future approval lane authorizes commit application. High-risk paths such as
 `.github/`, `secrets/`, `.env`, `pyproject.toml`, `uv.lock`, and
-`package-lock.json` are flagged for approval.
+`package-lock.json` are flagged for approval. Untracked sensitive paths such as
+`.env`, `.env.*`, private-key files, and `secrets/**` also block with
+`untracked_sensitive_files` so a commit plan cannot quietly normalize
+accidental secret material into a proposed commit group.
 
 ### Debugger Evidence
 

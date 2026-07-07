@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-07 commit-plan untracked-sensitive gate rung:
+  `src/tau_coding/commit_plan.py` now records
+  `sensitive_untracked_files` and blocks commit planning with
+  `untracked_sensitive_files` when untracked sensitive paths such as `.env`,
+  `.env.*`, private-key files, or `secrets/**` appear in the working tree.
+  `tests/test_commit_plan.py` covers untracked `.env` and `secrets/token.txt`
+  cases, and `docs/coding-workers.md` documents the separate untracked
+  sensitive-file gate in addition to high-risk path approval. Focused proof:
+  `uv run python -m py_compile src/tau_coding/commit_plan.py` -> pass; `uv run
+  ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> `All checks passed!`; `uv run pytest
+  tests/test_commit_plan.py -q` -> `24 passed in 0.86s`. Aggregate sanity
+  proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-sensitive-proof-20260707T055943Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-sensitive-proof-20260707T055943Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `245 passed in
+  6.79s`. This proves deterministic local commit planning now distinguishes
+  accidental untracked sensitive material from ordinary high-risk path changes
+  and blocks the plan; it does not prove semantic code correctness, live
+  provider/model quality, legal compliance, GitHub mutation safety, full
+  sandbox isolation, or full goal completion.
+
 - 2026-07-07 course-correction provider/Herdr trigger coverage rung:
   `tests/test_course_correction.py` now explicitly covers
   `provider_crashed` and `herdr_stale` course-correction triggers, and

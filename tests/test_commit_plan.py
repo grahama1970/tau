@@ -79,6 +79,33 @@ def test_commit_plan_flags_high_risk_paths(tmp_path: Path) -> None:
     assert payload["approval_required"] is True
 
 
+def test_commit_plan_blocks_untracked_sensitive_files(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / ".env").write_text("TOKEN=secret\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(repo=repo, output_path=repo / "commit-plan.json")
+
+    assert payload["status"] == "BLOCKED"
+    assert "untracked_sensitive_files" in payload["alert_codes"]
+    assert payload["sensitive_untracked_files"][0]["path"] == ".env"
+    assert payload["sensitive_untracked_files"][0]["status"] == "??"
+
+
+def test_commit_plan_blocks_untracked_sensitive_file_under_secret_dir(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path)
+    secret = repo / "secrets" / "token.txt"
+    secret.parent.mkdir()
+    secret.write_text("secret\n", encoding="utf-8")
+
+    payload = write_commit_plan_receipt(repo=repo, output_path=repo / "commit-plan.json")
+
+    assert payload["status"] == "BLOCKED"
+    assert "untracked_sensitive_files" in payload["alert_codes"]
+    assert payload["sensitive_untracked_files"][0]["path"] == "secrets/token.txt"
+
+
 def test_commit_plan_is_dry_run_by_default(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path)
     (repo / "src.py").write_text("value = 1\n", encoding="utf-8")

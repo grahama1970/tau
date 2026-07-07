@@ -37,6 +37,15 @@ HIGH_RISK_PATTERNS = (
     "uv.lock",
     "package-lock.json",
 )
+SENSITIVE_UNTRACKED_PATTERNS = (
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.key",
+    "id_rsa",
+    "id_ed25519",
+    "secrets/**",
+)
 
 
 def write_commit_plan_receipt(
@@ -71,6 +80,9 @@ def write_commit_plan_receipt(
         expected_goal_hash=goal_hash,
     )
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
+    sensitive_untracked = [
+        item for item in changed if _is_untracked_sensitive_file(item)
+    ]
     warnings = _mixed_group_warnings(groups)
     if changed and not groups:
         alerts.append(_alert("empty_plan_with_dirty_tree", "dirty tree produced no commit groups"))
@@ -79,6 +91,13 @@ def write_commit_plan_receipt(
             alerts.append(_alert("commit_group_missing_rationale", "commit group has no rationale"))
     if high_risk:
         alerts.append(_alert("high_risk_paths_touched", "high-risk paths require approval"))
+    if sensitive_untracked:
+        alerts.append(
+            _alert(
+                "untracked_sensitive_files",
+                "untracked sensitive files must be removed, ignored, or explicitly handled",
+            )
+        )
     if _has_group(groups, "source") and not _has_group(groups, "tests"):
         if not evidence_receipts:
             alerts.append(
@@ -122,6 +141,7 @@ def write_commit_plan_receipt(
         "group_count": len(groups),
         "dependency_order": [group["group_id"] for group in groups],
         "high_risk_paths": high_risk,
+        "sensitive_untracked_files": sensitive_untracked,
         "approval_required": bool(high_risk or apply),
         "lockfile_handling": "group_with_owner_changes_or_review_separately",
         "warnings": warnings,
@@ -488,6 +508,16 @@ def _required_evidence(group_id: str) -> list[str]:
 
 def _is_high_risk(path: str) -> bool:
     return any(path == pattern or path.startswith(pattern) for pattern in HIGH_RISK_PATTERNS)
+
+
+def _is_untracked_sensitive_file(item: dict[str, Any]) -> bool:
+    if item.get("status") != "??":
+        return False
+    path = str(item.get("path") or "")
+    return any(
+        fnmatch.fnmatch(path, pattern.removeprefix("./"))
+        for pattern in SENSITIVE_UNTRACKED_PATTERNS
+    )
 
 
 def _policy_read_denylist(policy_profile: dict[str, Any] | None) -> list[str] | None:
