@@ -262,6 +262,24 @@ def test_debug_receipt_zero_trust_blocks_missing_goal_hash(tmp_path: Path) -> No
     assert "missing_goal_hash" in receipt["alert_codes"]
 
 
+def test_debug_receipt_zero_trust_blocks_invalid_policy_boundary_schema(
+    tmp_path: Path,
+) -> None:
+    session = _write_debug_session(tmp_path)
+
+    receipt = write_debug_session_receipt(
+        session_path=session,
+        output_path=tmp_path / "debug-session-receipt.json",
+        zero_trust=True,
+        policy_profile={"schema": "not.tau.policy", "profile_id": "test"},
+        data_boundary={"schema": "not.tau.boundary", "classification": "public"},
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_policy_profile_schema" in receipt["alert_codes"]
+    assert "invalid_data_boundary_schema" in receipt["alert_codes"]
+
+
 def test_debug_receipt_blocks_expected_goal_hash_mismatch(tmp_path: Path) -> None:
     session = _write_debug_session(tmp_path)
 

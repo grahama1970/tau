@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 debug zero-trust policy schema gate rung:
+  `tests/test_debug_session_receipt.py` now directly pins R5/R11
+  policy/data-boundary enforcement for debugger evidence. A zero-trust
+  `tau.debug_session_receipt.v1` fed an invalid `policy_profile.schema` and
+  invalid `data_boundary.schema` must return `status:"BLOCKED"` with
+  `invalid_policy_profile_schema` and `invalid_data_boundary_schema`; debugger
+  evidence cannot become admissible under malformed zero-trust metadata.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/debug_session_receipt.py tests/test_debug_session_receipt.py`
+  -> `All checks passed!`; `uv run pytest tests/test_debug_session_receipt.py
+  -q` -> `23 passed in 0.47s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-debug-policy-schema-proof-20260707T064000Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-debug-policy-schema-proof-20260707T064000Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `256 passed in
+  7.88s`. This proves deterministic local debug receipts fail closed on
+  malformed zero-trust policy/data-boundary schemas; it does not prove live
+  debugger adapter execution, debugger conclusion correctness, semantic code
+  correctness, provider/model quality, full sandbox isolation, or full goal
+  completion.
+
 - 2026-07-07 SciLLM invalid-timeout launch gate rung:
   After reading the current `agent-skills/skills/scillm/SKILL.md`, Tau's
   SciLLM worker adapter remains aligned with the Scillm contract: product code
