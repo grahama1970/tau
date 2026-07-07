@@ -130,6 +130,52 @@ def test_github_read_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
     assert receipt["data_boundary"]["classification"] == "public"
 
 
+def test_github_read_zero_trust_blocks_public_repo_denied_boundary(tmp_path: Path) -> None:
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={
+            "schema": "tau.data_boundary.v1",
+            "classification": "ITAR",
+            "public_repo_allowed": False,
+        },
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "public_repo_denied" in receipt["alert_codes"]
+    assert receipt["execution"]["command_executed"] is False
+    assert receipt["mutation_allowed"] is False
+
+
+def test_github_read_zero_trust_public_repo_denied_skips_execute(tmp_path: Path) -> None:
+    gh_bin = _write_fake_gh(tmp_path)
+    marker = tmp_path / "fake-gh-called.json"
+
+    receipt = write_github_read_receipt(
+        uri="issue://grahama1970/tau/67",
+        output_path=tmp_path / "github-read-receipt.json",
+        goal_hash="sha256:goal",
+        zero_trust=True,
+        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
+        data_boundary={
+            "schema": "tau.data_boundary.v1",
+            "classification": "ITAR",
+            "public_repo_allowed": False,
+        },
+        execute=True,
+        gh_bin=str(gh_bin),
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "public_repo_denied" in receipt["alert_codes"]
+    assert receipt["execution"]["execute_requested"] is True
+    assert receipt["execution"]["command_executed"] is False
+    assert not marker.exists()
+
+
 def test_github_read_execute_runs_read_only_command_and_records_logs(tmp_path: Path) -> None:
     gh_bin = _write_fake_gh(tmp_path)
     out = tmp_path / "github-read-receipt.json"

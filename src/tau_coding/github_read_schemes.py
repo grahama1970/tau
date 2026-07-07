@@ -34,13 +34,14 @@ def write_github_read_receipt(
     gh_bin: str = "gh",
     timeout_s: int = 30,
 ) -> dict[str, Any]:
+    parsed = _parse_github_uri(uri)
     alerts = _coding_policy_alerts(
         zero_trust=zero_trust,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
         goal_hash=goal_hash,
+        parsed=parsed,
     )
-    parsed = _parse_github_uri(uri)
     if parsed is None:
         if _COMMIT_PREFIX_RE.match(uri):
             alerts.append(
@@ -354,6 +355,7 @@ def _coding_policy_alerts(
     policy_profile: dict[str, Any] | None,
     data_boundary: dict[str, Any] | None,
     goal_hash: str | None,
+    parsed: dict[str, Any] | None,
 ) -> list[dict[str, str]]:
     alerts: list[dict[str, str]] = []
     if zero_trust and not goal_hash:
@@ -370,6 +372,18 @@ def _coding_policy_alerts(
         alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    if (
+        zero_trust
+        and parsed is not None
+        and data_boundary is not None
+        and data_boundary.get("public_repo_allowed") is False
+    ):
+        alerts.append(
+            _alert(
+                "public_repo_denied",
+                "zero-trust data_boundary does not allow public GitHub repository reads",
+            )
+        )
     return alerts
 
 

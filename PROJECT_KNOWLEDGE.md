@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 00:33 EDT by agent
+**Last updated:** 2026-07-07 00:37 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 GitHub read public-repo boundary rung:
+  `src/tau_coding/github_read_schemes.py` now honors
+  `data_boundary.public_repo_allowed:false` in zero-trust GitHub read receipts.
+  Matching `tau.github_read_receipt.v1` payloads block with
+  `public_repo_denied` and skip execute-mode `gh` invocation while retaining the
+  local projection artifact for review. Focused proof: `git diff --check
+  docs/coding-workers.md src/tau_coding/github_read_schemes.py
+  tests/test_github_read_schemes.py` -> pass; `uv run ruff check --select
+  I,F,E501 src/tau_coding/github_read_schemes.py
+  tests/test_github_read_schemes.py` -> `All checks passed!`; `uv run pytest
+  tests/test_github_read_schemes.py -q` -> `16 passed in 0.50s`. Aggregate
+  coding sanity proof: `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-github-public-repo-deny-proof` wrote
+  `/tmp/tau-coding-capability-sanity-github-public-repo-deny-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `212 passed in
+  6.71s`. This proves deterministic local GitHub read receipts block external
+  public-repo reads when the active boundary denies them; it does not prove live
+  GitHub auth, GitHub object truth or freshness, legal compliance, GitHub
+  mutation safety, semantic code correctness, live worker execution, or full
+  goal completion.
 
 - 2026-07-07 debug log policy read denylist rung:
   `src/tau_coding/debug_session_receipt.py` now honors
