@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 review findings policy/data-boundary validity fail-closed rung:
+  `src/tau_coding/review_findings.py` now validates full
+  `tau.policy_profile.v1` and `tau.data_boundary.v1` objects in zero-trust
+  mode before accepting structured reviewer findings. It blocks malformed
+  policy/boundary metadata with `invalid_policy_profile` or
+  `invalid_data_boundary` and refuses
+  `data_boundary.classification:"classified-not-allowed"` with
+  `classified_not_allowed`. `tests/test_review_findings.py` pins this with
+  `test_review_findings_zero_trust_blocks_invalid_data_boundary` and valid
+  zero-trust fixtures. Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/review_findings.py tests/test_review_findings.py` -> `All
+  checks passed!`; `uv run pytest tests/test_review_findings.py -q` -> `19
+  passed in 0.51s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-review-boundary-proof-20260707T072724Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-review-boundary-proof-20260707T072724Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `273 passed in 7.85s`. This proves deterministic local review-finding receipts
+  fail closed on invalid zero-trust policy/boundary metadata before reviewer
+  output can route coding work; it does not prove reviewer correctness,
+  semantic code correctness, legal compliance, full sandbox isolation, live
+  OMP/SciLLM semantic worker execution, or full goal completion.
+
 - 2026-07-07 code patch policy/data-boundary validity fail-closed rung:
   `src/tau_coding/code_patch.py` now validates full `tau.policy_profile.v1`
   and `tau.data_boundary.v1` objects in zero-trust mode before applying a

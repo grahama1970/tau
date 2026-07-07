@@ -10,7 +10,12 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
+from tau_coding.policy_profile import (
+    DATA_BOUNDARY_SCHEMA,
+    POLICY_PROFILE_SCHEMA,
+    validate_data_boundary,
+    validate_policy_profile,
+)
 
 REVIEW_FINDINGS_SCHEMA = "tau.review_findings.v1"
 
@@ -315,8 +320,11 @@ def _read_json_object(path: Path, alerts: list[dict[str, Any]]) -> dict[str, Any
     return payload
 
 
-def _alert(code: str, message: str) -> dict[str, str]:
-    return {"severity": "BLOCK", "code": code, "message": message}
+def _alert(code: str, message: str, *, errors: list[str] | None = None) -> dict[str, Any]:
+    alert: dict[str, Any] = {"severity": "BLOCK", "code": code, "message": message}
+    if errors:
+        alert["errors"] = errors
+    return alert
 
 
 def _coding_policy_alerts(
@@ -324,8 +332,8 @@ def _coding_policy_alerts(
     zero_trust: bool,
     policy_profile: dict[str, Any] | None,
     data_boundary: dict[str, Any] | None,
-) -> list[dict[str, str]]:
-    alerts: list[dict[str, str]] = []
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
     if zero_trust and policy_profile is None:
         alerts.append(
             _alert("missing_policy_profile", "zero-trust review findings require policy_profile")
@@ -336,8 +344,27 @@ def _coding_policy_alerts(
         )
     if policy_profile is not None and policy_profile.get("schema") != POLICY_PROFILE_SCHEMA:
         alerts.append(_alert("invalid_policy_profile_schema", "policy_profile schema is invalid"))
+    elif policy_profile is not None:
+        errors = validate_policy_profile(policy_profile)
+        if errors:
+            alerts.append(
+                _alert("invalid_policy_profile", "policy_profile is invalid", errors=errors)
+            )
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
+    elif data_boundary is not None:
+        errors = validate_data_boundary(data_boundary)
+        if errors:
+            alerts.append(
+                _alert("invalid_data_boundary", "data_boundary is invalid", errors=errors)
+            )
+        if data_boundary.get("classification") == "classified-not-allowed":
+            alerts.append(
+                _alert(
+                    "classified_not_allowed",
+                    "classified-not-allowed data may not be routed to review findings",
+                )
+            )
     return alerts
 
 

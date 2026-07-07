@@ -320,14 +320,32 @@ def test_review_findings_zero_trust_accepts_policy_boundary() -> None:
     receipt = validate_review_findings(
         _payload(verdict="PASS", findings=[]),
         zero_trust=True,
-        policy_profile={"schema": "tau.policy_profile.v1", "profile_id": "test"},
-        data_boundary={"schema": "tau.data_boundary.v1", "classification": "public"},
+        policy_profile=_policy_profile(),
+        data_boundary=_data_boundary(),
     )
 
     assert receipt["status"] == "PASS"
     assert receipt["zero_trust"] is True
     assert receipt["policy_profile"]["profile_id"] == "test"
     assert receipt["data_boundary"]["classification"] == "public"
+
+
+def test_review_findings_zero_trust_blocks_invalid_data_boundary() -> None:
+    boundary = _data_boundary()
+    boundary["classification"] = "classified-not-allowed"
+    boundary.pop("foreign_person_access")
+
+    receipt = validate_review_findings(
+        _payload(verdict="PASS", findings=[]),
+        zero_trust=True,
+        policy_profile=_policy_profile(),
+        data_boundary=boundary,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert "invalid_data_boundary" in receipt["alert_codes"]
+    assert "classified_not_allowed" in receipt["alert_codes"]
+    assert "foreign_person_access must be one of" in receipt["alerts"][0]["errors"][0]
 
 
 def test_cli_review_findings_writes_receipt(tmp_path: Path) -> None:
@@ -419,3 +437,36 @@ def _payload(*, verdict: str, findings: list[dict]) -> dict:
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _policy_profile() -> dict:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "test",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": ["src/**", "tests/**"], "read_denylist": []},
+    }
+
+
+def _data_boundary() -> dict:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }
