@@ -5,8 +5,10 @@ from __future__ import annotations
 import fnmatch
 import hashlib
 import json
+import os
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Mapping
 from datetime import UTC, datetime
@@ -206,7 +208,11 @@ def write_scillm_worker_launch_receipt(
         alerts.append(
             _alert("chat_model_used_as_agent", "OpenCode serve agent must be an agent profile")
         )
-    if apply and not auth_token:
+    auth_source = "explicit" if auth_token else "missing"
+    effective_auth_token = auth_token
+    if not effective_auth_token and _is_local_scillm_url(scillm_base_url):
+        effective_auth_token, auth_source = _local_scillm_auth_token()
+    if apply and not effective_auth_token:
         alerts.append(
             _alert("missing_scillm_auth_token", "apply requires a SciLLM bearer auth token")
         )
@@ -219,7 +225,7 @@ def write_scillm_worker_launch_receipt(
         request_payload=request_payload,
         output_path=resolved_output,
         caller_skill=caller_skill,
-        auth_token=auth_token,
+        auth_token=effective_auth_token,
         alerts=alerts,
         request_timeout_s=request_timeout_s,
     )
@@ -251,7 +257,10 @@ def write_scillm_worker_launch_receipt(
         "endpoint": SCILLM_OPENCODE_SERVE_ENDPOINT,
         "url": url,
         "headers": {
-            "authorization": "REDACTED_REQUIRED",
+            "authorization": (
+                "REDACTED" if effective_auth_token else "REDACTED_REQUIRED"
+            ),
+            "authorization_source": auth_source,
             "x_caller_skill": caller_skill,
             "content_type": "application/json",
         },
@@ -282,7 +291,7 @@ def write_scillm_worker_launch_receipt(
                 "SciLLM OpenCode-serve endpoint and captured the response artifact.",
             ],
             "does_not_prove": [
-                "OpenCode serve accepted or ran the request.",
+                "The OpenCode worker result is truthful or sufficient for closure.",
                 "The worker result artifact is valid without scillm-worker-validate.",
                 "The worker is trustworthy.",
                 "The code is semantically correct.",
@@ -587,14 +596,16 @@ def _maybe_post_scillm_opencode_run(
         return result
 
     body = json.dumps(request_payload, sort_keys=True).encode("utf-8")
+    headers = {
+        "X-Caller-Skill": caller_skill,
+        "Content-Type": "application/json",
+    }
+    if auth_token:
+        headers["Authorization"] = f"Bearer {auth_token}"
     request = urllib.request.Request(
         url,
         data=body,
-        headers={
-            "Authorization": f"Bearer {auth_token}",
-            "X-Caller-Skill": caller_skill,
-            "Content-Type": "application/json",
-        },
+        headers=headers,
         method="POST",
     )
     try:
@@ -672,6 +683,51 @@ def _maybe_post_scillm_opencode_run(
 def _repo_root(work_order: Mapping[str, Any]) -> Path | None:
     repo = _string(work_order.get("repo"))
     return Path(repo).expanduser().resolve() if repo else None
+
+
+def _is_local_scillm_url(base_url: str) -> bool:
+    parsed = urllib.parse.urlparse(base_url)
+    return parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+
+
+def _local_scillm_auth_token() -> tuple[str | None, str]:
+    for key in ("SCILLM_MASTER_KEY", "SCILLM_API_KEY", "SCILLM_AUTH_TOKEN"):
+        value = os.environ.get(key)
+        if value:
+            return value, f"env:{key}"
+    env_path_override = os.environ.get("SCILLM_ENV_PATH")
+    if env_path_override:
+        env_paths = tuple(Path(item) for item in env_path_override.split(os.pathsep) if item)
+    else:
+        cwd = Path.cwd()
+        env_paths = (
+            cwd / ".env",
+            cwd.parent / "scillm" / ".env",
+            Path.home() / "workspace" / "experiments" / "scillm" / ".env",
+        )
+    for path in env_paths:
+        value = _read_env_token(path)
+        if value:
+            return value, f"env_file:{path}"
+    return None, "missing"
+
+
+def _read_env_token(path: Path) -> str | None:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, _, value = stripped.partition("=")
+        if key.strip() not in {"SCILLM_MASTER_KEY", "SCILLM_API_KEY", "SCILLM_AUTH_TOKEN"}:
+            continue
+        token = value.strip().strip("'\"")
+        if token:
+            return token
+    return None
 
 
 def _append_work_order_gate_alerts(

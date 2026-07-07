@@ -598,7 +598,81 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert "test-token" not in json.dumps(payload)
 
 
-def test_scillm_worker_launch_apply_requires_auth_token(tmp_path: Path) -> None:
+def test_scillm_worker_launch_apply_uses_local_env_auth_token(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("SCILLM_MASTER_KEY", "local-test-token")
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "PASS"
+    assert payload["http_executed"] is True
+    assert payload["headers"]["authorization"] == "REDACTED"
+    assert payload["headers"]["authorization_source"] == "env:SCILLM_MASTER_KEY"
+    assert requests[0]["authorization"] == "Bearer local-test-token"
+    assert "local-test-token" not in json.dumps(payload)
+
+
+def test_scillm_worker_launch_local_apply_blocks_without_auth_token(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("SCILLM_MASTER_KEY", raising=False)
+    monkeypatch.delenv("SCILLM_API_KEY", raising=False)
+    monkeypatch.delenv("SCILLM_AUTH_TOKEN", raising=False)
+    monkeypatch.setenv("SCILLM_ENV_PATH", str(tmp_path / "missing.env"))
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert requests == []
+    assert payload["headers"]["authorization"] == "REDACTED_REQUIRED"
+    assert payload["headers"]["authorization_source"] == "missing"
+    assert "missing_scillm_auth_token" in payload["alert_codes"]
+
+
+def test_scillm_worker_launch_remote_apply_requires_auth_token(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
         schema="tau.executor.scillm_worker.v1",
@@ -613,6 +687,7 @@ def test_scillm_worker_launch_apply_requires_auth_token(tmp_path: Path) -> None:
     payload = write_scillm_worker_launch_receipt(
         work_order_path=work_order,
         output_path=tmp_path / "launch-receipt.json",
+        scillm_base_url="https://scillm.example.invalid",
         apply=True,
     )
 
