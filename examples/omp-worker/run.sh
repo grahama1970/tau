@@ -12,9 +12,9 @@ DEMO_RECEIPT="${OUT_DIR}/demo-receipt.json"
 SANDBOX_RECEIPT="${OUT_DIR}/sandbox-run-receipt.json"
 FAKE_OMP="${OUT_DIR}/fake-omp"
 
-mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${OUT_DIR}/logs"
+mkdir -p "${REPO_DIR}/src" "${REPO_DIR}/tests" "${REPO_DIR}/logs"
 printf 'def answer():\n    return 42\n' > "${REPO_DIR}/src/example.py"
-printf 'fixture pytest log\n' > "${OUT_DIR}/logs/pytest.log"
+printf 'fixture pytest log\n' > "${REPO_DIR}/logs/pytest.log"
 cat > "${FAKE_OMP}" <<'PY'
 #!/usr/bin/env python3
 import json
@@ -96,7 +96,7 @@ else
     {
       "name": "pytest",
       "status": "PASS",
-      "log_path": "${OUT_DIR}/logs/pytest.log"
+      "log_path": "${REPO_DIR}/logs/pytest.log"
     }
   ],
   "findings": [],

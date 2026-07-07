@@ -418,6 +418,11 @@ for the exact JSON artifacts Tau inspected. Launch receipts also carry
 `herdr_receipt_path`, `high_stakes`, `policy_profile`, and `data_boundary` so
 the launch request remains tied to the same containment metadata.
 
+Required artifacts are not satisfied by strings alone. When a work order names a
+required artifact, the worker result must list that artifact and the referenced
+file must exist under the repo or at its absolute path before Tau accepts the
+worker receipt.
+
 CLI:
 
 ```bash

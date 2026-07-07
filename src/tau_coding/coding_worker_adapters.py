@@ -981,12 +981,7 @@ def _missing_required_artifacts(
     missing: list[str] = []
     result_names = set(result_artifacts)
     for artifact in required_artifacts:
-        if artifact in result_names:
-            continue
-        candidate = Path(artifact).expanduser()
-        if not candidate.is_absolute() and repo is not None:
-            candidate = repo / candidate
-        if not candidate.exists():
+        if artifact not in result_names or not _path_exists(artifact, repo):
             missing.append(artifact)
     return missing
 

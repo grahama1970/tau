@@ -120,6 +120,28 @@ def test_worker_blocks_tests_passed_without_logs(tmp_path: Path) -> None:
     assert "tests_passed_without_logs" in payload["alert_codes"]
 
 
+def test_worker_blocks_claimed_required_artifact_that_does_not_exist(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        required_artifacts=["receipts/debug-session-receipt.json"],
+    )
+    result = _write_result(
+        tmp_path,
+        schema="tau.omp_worker_result.v1",
+        artifacts=["receipts/debug-session-receipt.json"],
+    )
+
+    payload = write_omp_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "missing_required_artifact" in payload["alert_codes"]
+
+
 def test_high_stakes_worker_requires_substrate(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -999,6 +1021,7 @@ def _write_work_order(
     herdr_binding: dict | None = {"workspace_id": "w1", "pane_id": "w1:p1"},
     herdr_receipt_path: str | None = None,
     model_provider_route: dict | None = None,
+    required_artifacts: list[str] | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir(exist_ok=True)
@@ -1034,7 +1057,7 @@ def _write_work_order(
         "allowed_paths": ["src/**", "tests/**"],
         "forbidden_paths": ["secrets/**"],
         "task": "Make a bounded coding change.",
-        "required_artifacts": [],
+        "required_artifacts": required_artifacts if required_artifacts is not None else [],
         "result_path": "worker-result.json",
         "receipt_path": "worker-receipt.json",
         "high_stakes": high_stakes,
@@ -1133,6 +1156,7 @@ def _write_result(
     schema: str,
     goal_hash: str = "sha256:goal",
     changed_files: list[str] | None = None,
+    artifacts: list[str] | None = None,
     tests_run: list[dict] | None = None,
 ) -> Path:
     payload = {
@@ -1140,7 +1164,7 @@ def _write_result(
         "status": "NEEDS_REVIEW",
         "goal_hash": goal_hash,
         "changed_files": changed_files if changed_files is not None else ["src/example.py"],
-        "artifacts": [],
+        "artifacts": artifacts if artifacts is not None else [],
         "tests_run": tests_run if tests_run is not None else [],
         "findings": [],
         "next_recommended_route": "reviewer",

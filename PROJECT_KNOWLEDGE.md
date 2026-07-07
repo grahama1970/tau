@@ -1,9 +1,45 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 21:42 EDT by agent
+**Last updated:** 2026-07-06 21:48 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 worker required-artifact existence rung:
+  `src/tau_coding/coding_worker_adapters.py` now treats a worker required
+  artifact as missing unless it is both listed in `result.artifacts` and
+  exists under the work-order repo or as an absolute path. This prevents
+  OMP/SciLLM worker results from satisfying required evidence with
+  string-only artifact claims. `examples/omp-worker/run.sh` and
+  `examples/scillm-worker/run.sh` now write fixture pytest logs under their
+  declared repo so `logs/pytest.log` is a real required artifact. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> pass; `uv run pytest
+  tests/test_coding_worker_adapters.py -q` -> `37 passed in 3.06s`;
+  `bash -n examples/omp-worker/run.sh examples/scillm-worker/run.sh &&
+  examples/omp-worker/run.sh
+  /tmp/tau-omp-worker-artifact-exists-example &&
+  examples/scillm-worker/run.sh
+  /tmp/tau-scillm-worker-artifact-exists-example` -> exit 0, with PASS demo
+  receipts at
+  `/tmp/tau-omp-worker-artifact-exists-example/demo-receipt.json` and
+  `/tmp/tau-scillm-worker-artifact-exists-example/demo-receipt.json`.
+  Aggregate proof: the first run
+  `/tmp/tau-coding-capability-sanity-worker-artifact-exists-proof` blocked
+  `omp_worker_example_run` and `scillm_worker_example_run`, exposing stale
+  example artifact placement; after moving the example logs under the declared
+  repo, `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-worker-artifact-exists-proof-2` exited 0
+  and wrote
+  `/tmp/tau-coding-capability-sanity-worker-artifact-exists-proof-2/coding-capability-sanity-receipt.json`
+  with `status:"PASS"`, `ok:true`, `check_count:12`,
+  `failed_check_count:0`, coverage entry `OMP/SciLLM worker validation
+  receipts`, and embedded focused coding tests `184 passed in 6.02s`. This
+  proves deterministic local worker validation no longer accepts missing
+  required artifacts by name alone; it does not prove live OMP/SciLLM semantic
+  worker execution, provider/model quality, semantic code correctness, legal
+  compliance, GitHub mutation, or full sandbox isolation.
 
 - 2026-07-06 debug-session goal-hash binding rung:
   `src/tau_coding/debug_session_receipt.py` now records `goal_hash` from
