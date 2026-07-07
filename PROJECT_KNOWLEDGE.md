@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 SciLLM invalid-timeout launch gate rung:
+  After reading the current `agent-skills/skills/scillm/SKILL.md`, Tau's
+  SciLLM worker adapter remains aligned with the Scillm contract: product code
+  targets the Scillm proxy at `http://localhost:4001`, uses
+  `/v1/scillm/opencode/runs` for OpenCode serve delegates, treats `agent` as
+  an OpenCode profile rather than a chat model, and uses a default
+  `request_timeout_s` of `600`. `tests/test_coding_worker_adapters.py` now
+  directly pins the fail-closed timeout preflight: when `apply=True` and
+  `request_timeout_s=0`, Tau writes a BLOCKED
+  `tau.scillm_worker_launch_receipt.v1`, records `invalid_timeout`, leaves
+  `http_executed:false`, leaves `launch_skipped:true`, and the local
+  SciLLM-compatible fixture server receives no request. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/coding_worker_adapters.py
+  tests/test_coding_worker_adapters.py` -> `All checks passed!`; `uv run
+  pytest tests/test_coding_worker_adapters.py -q` -> `57 passed in 4.67s`.
+  Aggregate proof: `uv run python scripts/run-coding-capability-sanity.py
+  --run-dir
+  /tmp/tau-coding-capability-sanity-scillm-timeout-proof-20260707T063710Z`
+  wrote
+  `/tmp/tau-coding-capability-sanity-scillm-timeout-proof-20260707T063710Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `255 passed in
+  7.82s`. This proves deterministic local SciLLM launch preflight blocks
+  invalid timeout values before HTTP dispatch; it does not prove live Scillm
+  service health, live OpenCode semantic worker execution, provider/model
+  quality, semantic code correctness, full sandbox isolation, or full goal
+  completion.
+
 - 2026-07-07 GitHub PR read-scheme coverage rung:
   `tests/test_github_read_schemes.py` now directly pins
   `pr://grahama1970/tau/456` as a read-only GitHub inspection scheme. The

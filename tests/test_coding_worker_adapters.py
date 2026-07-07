@@ -1447,6 +1447,41 @@ def test_scillm_worker_launch_apply_skips_http_when_substrate_blocks(
     assert requests == []
 
 
+def test_scillm_worker_launch_apply_blocks_invalid_timeout_before_http(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=0,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["request_timeout_s"] == 0
+    assert payload["http_executed"] is False
+    assert payload["launch_skipped"] is True
+    assert payload["timed_out"] is False
+    assert "invalid_timeout" in payload["alert_codes"]
+    assert requests == []
+
+
 def test_cli_scillm_worker_launch_apply_records_http_receipt(tmp_path: Path) -> None:
     server, base_url, requests = _start_fake_scillm_server()
     work_order = _write_work_order(
