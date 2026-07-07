@@ -415,7 +415,9 @@ def _write_worker_receipt(
         )
 
     required_artifacts = _string_list(work_order.get("required_artifacts"))
-    result_artifacts = _string_list(result.get("artifacts"))
+    result_artifacts = _artifact_name_list(
+        result.get("artifacts") or result.get("result_artifacts")
+    )
     normalized_result_artifacts = _repo_relative_worker_paths(result_artifacts, repo)
     missing_result_artifacts = [
         artifact for artifact in result_artifacts if not _path_exists(artifact, repo)
@@ -912,6 +914,12 @@ def _maybe_post_scillm_opencode_run(
     response_result_path = _string(response_payload.get("result_path"))
     if response_result_path and response_result_path not in artifacts:
         artifacts.append(response_result_path)
+    metadata = response_payload.get("scillm_metadata")
+    metadata_result_path = (
+        _string(metadata.get("result_path")) if isinstance(metadata, Mapping) else None
+    )
+    if metadata_result_path and metadata_result_path not in artifacts:
+        artifacts.append(metadata_result_path)
     result.update(
         {
             "http_executed": True,
@@ -1597,19 +1605,29 @@ def _result_artifact_descriptors(
 
 
 def _worker_result_is_prose_only(result: Mapping[str, Any]) -> bool:
-    evidence_fields = ("changed_files", "artifacts", "tests_run", "findings")
+    evidence_fields = (
+        "changed_files",
+        "artifacts",
+        "result_artifacts",
+        "tests_run",
+        "test_results",
+        "findings",
+    )
     has_evidence = any(bool(result.get(field)) for field in evidence_fields)
     return bool(result.get("assistant_text")) and not has_evidence
 
 
 def _tests_claim_pass_without_logs(result: Mapping[str, Any], repo: Path | None) -> bool:
-    tests = result.get("tests_run")
+    tests = _test_entries(result)
     if not isinstance(tests, list):
         return False
     for item in tests:
-        if not isinstance(item, Mapping) or item.get("status") != "PASS":
+        if not isinstance(item, Mapping):
             continue
-        log_path = _string(item.get("log_path") or item.get("stdout_path"))
+        status = _test_status(item)
+        if status != "PASS":
+            continue
+        log_path = _test_log_path(item)
         if not log_path:
             return True
         candidate = _resolve_repo_artifact_path(log_path, repo)
@@ -1624,25 +1642,44 @@ def _test_log_artifact_descriptors(
     result: Mapping[str, Any],
     repo: Path | None,
 ) -> list[dict[str, Any]]:
-    tests = result.get("tests_run")
+    tests = _test_entries(result)
     if not isinstance(tests, list):
         return []
     descriptors: list[dict[str, Any]] = []
     for index, item in enumerate(tests):
         if not isinstance(item, Mapping):
             continue
-        log_path = _string(item.get("log_path") or item.get("stdout_path"))
+        log_path = _test_log_path(item)
         if not log_path:
             continue
         descriptor = _referenced_receipt_artifact("test_log", log_path, repo)
         if descriptor is None:
             continue
         descriptor["test_index"] = index
-        descriptor["test_name"] = _string(item.get("name"))
-        descriptor["test_status"] = _string(item.get("status"))
+        descriptor["test_name"] = _test_name(item)
+        descriptor["test_status"] = _test_status(item)
         descriptor["artifact"] = log_path
         descriptors.append(descriptor)
     return descriptors
+
+
+def _test_entries(result: Mapping[str, Any]) -> object:
+    tests = result.get("tests_run")
+    if isinstance(tests, list) and tests:
+        return tests
+    return result.get("test_results")
+
+
+def _test_name(item: Mapping[str, Any]) -> str | None:
+    return _string(item.get("name") or item.get("test_name"))
+
+
+def _test_status(item: Mapping[str, Any]) -> str | None:
+    return _string(item.get("status") or item.get("test_status"))
+
+
+def _test_log_path(item: Mapping[str, Any]) -> str | None:
+    return _string(item.get("log_path") or item.get("stdout_path") or item.get("artifact"))
 
 
 def _path_exists(path: str, repo: Path | None) -> bool:
@@ -1998,6 +2035,20 @@ def _string_list(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, str) and item]
+
+
+def _artifact_name_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    names: list[str] = []
+    for item in value:
+        if isinstance(item, str) and item:
+            names.append(item)
+        elif isinstance(item, Mapping):
+            name = _string(item.get("artifact") or item.get("path"))
+            if name:
+                names.append(name)
+    return names
 
 
 def _is_string_list(value: object) -> bool:

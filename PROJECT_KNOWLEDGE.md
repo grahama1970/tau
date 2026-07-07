@@ -1,9 +1,50 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:35 EDT by agent
+**Last updated:** 2026-07-07 12:55 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 live SciLLM worker result artifact compatibility:
+  `src/tau_coding/coding_worker_adapters.py` now accepts the real
+  SciLLM/OpenCode serve worker result shape observed from the local Docker
+  service on `http://localhost:4001`. The launch adapter treats
+  `scillm_metadata.result_path` in the live `scillm.opencode_run.result.v1`
+  response as a candidate worker result artifact when `artifacts` is empty, and
+  the worker validator accepts descriptor-style `result_artifacts` plus
+  `test_results` entries using `artifact`, `test_name`, and `test_status`.
+  `tests/test_coding_worker_adapters.py` pins both the round-tripped metadata
+  result path and the descriptor-style result/test artifact shape. Focused
+  proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/coding_worker_adapters.py tests/test_coding_worker_adapters.py`
+  -> `All checks passed!`; `uv run pytest tests/test_coding_worker_adapters.py
+  -q` -> `95 passed in 6.75s`. Live SciLLM proof:
+  `.tmp/tau-scillm-worker-live-metadata-20260707T164649Z/scillm-worker-launch-live-receipt.json`
+  -> `schema:"tau.scillm_worker_launch_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `mocked:false`, `live:true`, `http_status:200`,
+  `scillm_run_status:"completed"`, `run_id:"oc-310f27b55c8e"`,
+  `session_id:"ses_0c28652fdffeCbWtfYSJaYHNeb"`, `alert_codes:[]`, and
+  `response_result_path` pointing to
+  `.tmp/tau-scillm-worker-live-metadata-20260707T164649Z/repo/.tau/receipts/scillm-result.json`.
+  The worker result at that path reports
+  `schema:"tau.scillm_worker_result.v1"`, `status:"PASS"`, `ok:true`,
+  `mocked:false`, `live:true`, changed files `src/example.py`,
+  `tests/test_example.py`, and `logs/pytest.log`, plus `test_results` with
+  `passed:5`, `failed:0`. Revalidation receipt:
+  `.tmp/tau-scillm-worker-live-metadata-20260707T164649Z/repo/.tau/receipts/scillm-worker-live-validate-receipt.json`
+  -> `schema:"tau.scillm_worker_receipt.v1"`, `status:"PASS"`, `ok:true`,
+  `mocked:false`, `live:true`, `alert_codes:[]`,
+  `normalized_result_artifacts:["logs/pytest.log"]`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-live-scillm-20260707T165043Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`,
+  `failed_check_count:0`, `live:"mixed"`, `mocked:"mixed"`,
+  `provider_live:false`. This proves Tau can launch the local SciLLM Docker
+  OpenCode worker endpoint, find the real worker result artifact through
+  response metadata, and validate descriptor-style result/test artifacts on
+  this machine; it does not prove worker trustworthiness, semantic code
+  correctness, provider/model semantic quality, arbitrary host Docker path
+  visibility, GitHub mutation, ITAR compliance, legal compliance, or full
+  sandbox isolation.
 
 - 2026-07-07 Herdr-visible provider expected-receipt opt-in gate:
   `examples/herdr-visible-provider/run.sh` now accepts an optional output

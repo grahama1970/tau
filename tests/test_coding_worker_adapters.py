@@ -783,6 +783,76 @@ def test_worker_records_test_log_artifact_descriptors(tmp_path: Path) -> None:
     ]
 
 
+def test_worker_accepts_live_descriptor_artifacts_and_test_results(tmp_path: Path) -> None:
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        required_artifacts=["logs/pytest.log"],
+    )
+    work_order_payload = json.loads(work_order.read_text(encoding="utf-8"))
+    work_order_payload["allowed_paths"] = ["src/**", "tests/**", "logs/**"]
+    work_order.write_text(
+        json.dumps(work_order_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    repo = Path(work_order_payload["repo"])
+    test_log = repo / "logs" / "pytest.log"
+    test_log.parent.mkdir(parents=True, exist_ok=True)
+    test_log.write_text("5 passed\n", encoding="utf-8")
+    result = _write_result(tmp_path, schema="tau.scillm_worker_result.v1")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["result_artifacts"] = [
+        {
+            "artifact": "logs/pytest.log",
+            "sha256": f"sha256:{_sha256(test_log)}",
+            "bytes": test_log.stat().st_size,
+            "path": str(test_log.resolve()),
+        }
+    ]
+    payload["test_results"] = [
+        {
+            "test_name": "pytest",
+            "test_status": "PASS",
+            "artifact": "logs/pytest.log",
+            "passed": 5,
+            "failed": 0,
+        }
+    ]
+    result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    receipt = write_scillm_worker_receipt(
+        work_order_path=work_order,
+        result_path=result,
+        output_path=tmp_path / "receipt.json",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["result_artifacts"] == ["logs/pytest.log"]
+    assert receipt["required_artifact_descriptors"] == [
+        {
+            "label": "required_artifact",
+            "path": str(test_log.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(test_log)}",
+            "bytes": test_log.stat().st_size,
+            "artifact": "logs/pytest.log",
+        }
+    ]
+    assert receipt["test_log_artifacts"] == [
+        {
+            "label": "test_log",
+            "path": str(test_log.resolve()),
+            "exists": True,
+            "sha256": f"sha256:{_sha256(test_log)}",
+            "bytes": test_log.stat().st_size,
+            "test_index": 0,
+            "test_name": "pytest",
+            "test_status": "PASS",
+            "artifact": "logs/pytest.log",
+        }
+    ]
+
+
 def test_worker_blocks_claimed_required_artifact_that_does_not_exist(tmp_path: Path) -> None:
     work_order = _write_work_order(
         tmp_path,
@@ -2346,6 +2416,58 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert "test-token" not in json.dumps(payload)
 
 
+def test_scillm_worker_launch_accepts_round_tripped_metadata_result_path(
+    tmp_path: Path,
+) -> None:
+    server, base_url, requests = _start_fake_scillm_server(
+        response={
+            "schema": "scillm.opencode_run.result.v1",
+            "run_id": "run-123",
+            "session_id": "sess-123",
+            "status": "completed",
+            "assistant_text": "worker wrote result artifact",
+            "artifacts": [],
+            "scillm_metadata": {"result_path": "worker-result.json"},
+        }
+    )
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-receipt.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    assert payload["status"] == "PASS"
+    assert payload["http_executed"] is True
+    assert payload["http_status"] == 200
+    assert payload["response_artifacts"] == ["worker-result.json"]
+    result_artifact = Path(payload["response_result_path"])
+    assert payload["response_result_artifact"] == {
+        "label": "scillm_worker_result",
+        "path": str(result_artifact),
+        "exists": True,
+        "sha256": f"sha256:{_sha256(result_artifact)}",
+        "bytes": result_artifact.stat().st_size,
+        "artifact": "worker-result.json",
+    }
+    assert requests[0]["payload"]["scillm_metadata"]["result_path"] == "worker-result.json"
+
+
 def test_scillm_worker_launch_apply_blocks_incomplete_success_response(
     tmp_path: Path,
 ) -> None:
@@ -3149,10 +3271,25 @@ def _start_fake_scillm_server(
                 "result_path": "worker-result.json",
                 }
             )
-            if response is None:
+            metadata = requests[-1]["payload"].get("scillm_metadata")
+            result_path = (
+                response_payload.get("result_path")
+                if isinstance(response_payload, dict)
+                else None
+            )
+            if not result_path and isinstance(response_payload, dict):
+                response_metadata = response_payload.get("scillm_metadata")
+                if isinstance(response_metadata, dict):
+                    result_path = response_metadata.get("result_path")
+            if not result_path and isinstance(metadata, dict):
+                result_path = metadata.get("result_path")
+            if result_path:
                 repo = Path(str(requests[-1]["payload"].get("cwd")))
-                repo.mkdir(parents=True, exist_ok=True)
-                (repo / "worker-result.json").write_text(
+                result = Path(str(result_path))
+                if not result.is_absolute():
+                    result = repo / result
+                result.parent.mkdir(parents=True, exist_ok=True)
+                result.write_text(
                     json.dumps(
                         {
                             "schema": "tau.scillm_worker_result.v1",
