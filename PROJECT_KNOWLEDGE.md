@@ -5,6 +5,30 @@
 
 ## Current Understanding
 
+- 2026-07-07 run-status/report LSP evidence fields:
+  `src/tau_coding/run_status.py` now preserves LSP receipt fields in coding
+  evidence summaries: `lsp_language_server`, `file_count`,
+  `diagnostic_count`, `diagnostics_increased`, `reference_count`,
+  `rename_symbol`, `rename_new_name`, `rename_applied`,
+  `planned_edit_count`, `policy_read_denied_count`, and
+  `policy_write_denied_count`. `tests/test_run_status.py` pins both
+  `tau.lsp_diagnostics_receipt.v1` and `tau.lsp_rename_receipt.v1`; the static
+  report test asserts diagnostics regression fields and rename-plan fields
+  render in HTML. This makes R2 LSP diagnostics/symbol/rename planning
+  evidence inspectable in `tau run-status` / `tau report`; it does not prove
+  semantic code correctness, full IDE/LSP parity, or that a rename is safe to
+  apply. Proof for the implementation commit: `uv run ruff check --select
+  I,F,E501 src/tau_coding/run_status.py src/tau_coding/run_report.py
+  tests/test_run_status.py tests/test_run_report.py tests/test_lsp_receipts.py
+  docs/run-report.md` -> `All checks passed!`; `uv run pytest
+  tests/test_run_status.py tests/test_run_report.py tests/test_lsp_receipts.py
+  -q` -> `70 passed in 1.02s`; `git diff --check --
+  src/tau_coding/run_status.py tests/test_run_status.py tests/test_run_report.py
+  docs/run-report.md PROJECT_KNOWLEDGE.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-lsp-report-20260707T142804Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `468 passed in 10.82s`.
+
 - 2026-07-07 run-status/report commit-plan review fields:
   `src/tau_coding/run_status.py` now preserves commit-plan receipt fields in
   coding evidence summaries: `dry_run`, `apply_requested`, `apply_eligible`,

@@ -1767,6 +1767,17 @@ def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
             "evidence_receipt_count": None,
             "approval_required": None,
             "high_risk_path_count": None,
+            "lsp_language_server": None,
+            "file_count": None,
+            "diagnostic_count": None,
+            "diagnostics_increased": None,
+            "reference_count": None,
+            "rename_symbol": None,
+            "rename_new_name": None,
+            "rename_applied": None,
+            "planned_edit_count": None,
+            "policy_read_denied_count": None,
+            "policy_write_denied_count": None,
         }
     ]
     assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
@@ -1827,6 +1838,17 @@ def test_run_status_summarizes_skill_composition_redteam_receipt(tmp_path: Path)
         "evidence_receipt_count": None,
         "approval_required": None,
         "high_risk_path_count": None,
+        "lsp_language_server": None,
+        "file_count": None,
+        "diagnostic_count": None,
+        "diagnostics_increased": None,
+        "reference_count": None,
+        "rename_symbol": None,
+        "rename_new_name": None,
+        "rename_applied": None,
+        "planned_edit_count": None,
+        "policy_read_denied_count": None,
+        "policy_write_denied_count": None,
     }
     assert (
         "tau.skill_composition_redteam_receipt.v1"
@@ -1892,6 +1914,17 @@ def test_run_status_summarizes_course_correction_routing_fields(tmp_path: Path) 
         "evidence_receipt_count": None,
         "approval_required": None,
         "high_risk_path_count": None,
+        "lsp_language_server": None,
+        "file_count": None,
+        "diagnostic_count": None,
+        "diagnostics_increased": None,
+        "reference_count": None,
+        "rename_symbol": None,
+        "rename_new_name": None,
+        "rename_applied": None,
+        "planned_edit_count": None,
+        "policy_read_denied_count": None,
+        "policy_write_denied_count": None,
     }
 
 
@@ -1957,6 +1990,17 @@ def test_run_status_summarizes_github_read_boundaries(tmp_path: Path) -> None:
         "evidence_receipt_count": None,
         "approval_required": None,
         "high_risk_path_count": None,
+        "lsp_language_server": None,
+        "file_count": None,
+        "diagnostic_count": None,
+        "diagnostics_increased": None,
+        "reference_count": None,
+        "rename_symbol": None,
+        "rename_new_name": None,
+        "rename_applied": None,
+        "planned_edit_count": None,
+        "policy_read_denied_count": None,
+        "policy_write_denied_count": None,
     }
 
 
@@ -2026,6 +2070,17 @@ def test_run_status_summarizes_debug_session_evidence_fields(tmp_path: Path) -> 
         "evidence_receipt_count": None,
         "approval_required": None,
         "high_risk_path_count": None,
+        "lsp_language_server": None,
+        "file_count": None,
+        "diagnostic_count": None,
+        "diagnostics_increased": None,
+        "reference_count": None,
+        "rename_symbol": None,
+        "rename_new_name": None,
+        "rename_applied": None,
+        "planned_edit_count": None,
+        "policy_read_denied_count": None,
+        "policy_write_denied_count": None,
     }
 
 
@@ -2090,6 +2145,163 @@ def test_run_status_summarizes_commit_plan_review_fields(tmp_path: Path) -> None
         "evidence_receipt_count": 1,
         "approval_required": True,
         "high_risk_path_count": 1,
+        "lsp_language_server": None,
+        "file_count": None,
+        "diagnostic_count": None,
+        "diagnostics_increased": None,
+        "reference_count": None,
+        "rename_symbol": None,
+        "rename_new_name": None,
+        "rename_applied": None,
+        "planned_edit_count": None,
+        "policy_read_denied_count": None,
+        "policy_write_denied_count": None,
+    }
+
+
+def test_run_status_summarizes_lsp_diagnostics_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "lsp-diagnostics-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.lsp_diagnostics_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "language_server_used": "ruff_json_adapter",
+            "file_count": 4,
+            "diagnostic_count": 2,
+            "diagnostics_increased": True,
+            "policy_read_denied_paths": ["secrets/app.py"],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert status["coding_evidence"]["receipts"][0] == {
+        "relative_path": "receipts/lsp-diagnostics-receipt.json",
+        "schema": "tau.lsp_diagnostics_receipt.v1",
+        "status": "BLOCKED",
+        "ok": False,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "sha256": f"sha256:{_sha256(receipt_path)}",
+        "goal_hash": "sha256:goal",
+        "policy_profile_sha256": None,
+        "data_boundary_sha256": None,
+        "attempt_count": None,
+        "passed_attempt_count": None,
+        "trigger": None,
+        "node_id": None,
+        "agent": None,
+        "required_next_action": None,
+        "uri": None,
+        "github_read_kind": None,
+        "read_only": None,
+        "mutation_allowed": None,
+        "debug_adapter": None,
+        "debug_target": None,
+        "adapter_available": None,
+        "log_artifact_count": None,
+        "variable_redaction_count": None,
+        "dry_run": None,
+        "apply_requested": None,
+        "apply_eligible": None,
+        "changed_file_count": None,
+        "group_count": None,
+        "evidence_receipt_count": None,
+        "approval_required": None,
+        "high_risk_path_count": None,
+        "lsp_language_server": "ruff_json_adapter",
+        "file_count": 4,
+        "diagnostic_count": 2,
+        "diagnostics_increased": True,
+        "reference_count": None,
+        "rename_symbol": None,
+        "rename_new_name": None,
+        "rename_applied": None,
+        "planned_edit_count": None,
+        "policy_read_denied_count": 1,
+        "policy_write_denied_count": None,
+    }
+
+
+def test_run_status_summarizes_lsp_rename_plan_fields(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "lsp-rename-plan-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.lsp_rename_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "language_server_used": "python_ast_symbol_adapter",
+            "reference_count": 3,
+            "symbol": "target",
+            "new_name": "renamed",
+            "applied": False,
+            "planned_edits": [{"file": "src/app.py"}, {"file": "tests/test_app.py"}],
+            "policy_write_denied_paths": [],
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert status["coding_evidence"]["receipts"][0] == {
+        "relative_path": "receipts/lsp-rename-plan-receipt.json",
+        "schema": "tau.lsp_rename_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "sha256": f"sha256:{_sha256(receipt_path)}",
+        "goal_hash": "sha256:goal",
+        "policy_profile_sha256": None,
+        "data_boundary_sha256": None,
+        "attempt_count": None,
+        "passed_attempt_count": None,
+        "trigger": None,
+        "node_id": None,
+        "agent": None,
+        "required_next_action": None,
+        "uri": None,
+        "github_read_kind": None,
+        "read_only": None,
+        "mutation_allowed": None,
+        "debug_adapter": None,
+        "debug_target": None,
+        "adapter_available": None,
+        "log_artifact_count": None,
+        "variable_redaction_count": None,
+        "dry_run": None,
+        "apply_requested": None,
+        "apply_eligible": None,
+        "changed_file_count": None,
+        "group_count": None,
+        "evidence_receipt_count": None,
+        "approval_required": None,
+        "high_risk_path_count": None,
+        "lsp_language_server": "python_ast_symbol_adapter",
+        "file_count": None,
+        "diagnostic_count": None,
+        "diagnostics_increased": None,
+        "reference_count": 3,
+        "rename_symbol": "target",
+        "rename_new_name": "renamed",
+        "rename_applied": False,
+        "planned_edit_count": 2,
+        "policy_read_denied_count": None,
+        "policy_write_denied_count": 0,
     }
 
 

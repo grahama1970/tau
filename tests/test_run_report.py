@@ -71,6 +71,12 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.commit_plan_receipt.v1" in html
     assert "changed_file_count" in html
     assert "high_risk_path_count" in html
+    assert "tau.lsp_diagnostics_receipt.v1" in html
+    assert "diagnostics_increased" in html
+    assert "ruff_json_adapter" in html
+    assert "tau.lsp_rename_receipt.v1" in html
+    assert "planned_edit_count" in html
+    assert "renamed" in html
     assert "policy_profile_sha256" in html
     assert "data_boundary_sha256" in html
     assert 'id="receipts"' in html
@@ -242,6 +248,42 @@ def _write_report_run(tmp_path: Path) -> Path:
             "evidence_receipt_count": 1,
             "approval_required": True,
             "high_risk_paths": [{"path": "pyproject.toml"}],
+        },
+    )
+    _write_json(
+        receipts_dir / "lsp-diagnostics-receipt.json",
+        {
+            "schema": "tau.lsp_diagnostics_receipt.v1",
+            "ok": False,
+            "status": "BLOCKED",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "language_server_used": "ruff_json_adapter",
+            "file_count": 4,
+            "diagnostic_count": 2,
+            "diagnostics_increased": True,
+            "policy_read_denied_paths": ["secrets/app.py"],
+        },
+    )
+    _write_json(
+        receipts_dir / "lsp-rename-plan-receipt.json",
+        {
+            "schema": "tau.lsp_rename_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "goal_hash": "sha256:report-test",
+            "language_server_used": "python_ast_symbol_adapter",
+            "reference_count": 3,
+            "symbol": "target",
+            "new_name": "renamed",
+            "applied": False,
+            "planned_edits": [{"file": "src/app.py"}, {"file": "tests/test_app.py"}],
+            "policy_write_denied_paths": [],
         },
     )
     return run_dir

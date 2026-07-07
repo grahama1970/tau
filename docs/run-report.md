@@ -66,6 +66,11 @@ For commit-plan receipts it surfaces `dry_run`, `apply_requested`,
 `apply_eligible`, `changed_file_count`, `group_count`,
 `evidence_receipt_count`, `approval_required`, and `high_risk_path_count` so
 reviewers can see whether a plan is only a dry-run proposal or apply-eligible.
+For LSP receipts it surfaces `lsp_language_server`, `file_count`,
+`diagnostic_count`, `diagnostics_increased`, `reference_count`,
+`rename_symbol`, `rename_new_name`, `rename_applied`, `planned_edit_count`,
+`policy_read_denied_count`, and `policy_write_denied_count` so diagnostics and
+rename plans are visible without claiming semantic correctness.
 
 Missing source artifacts render as `null` or empty objects. The report must not
 invent live status, metrics, approvals, or proof.

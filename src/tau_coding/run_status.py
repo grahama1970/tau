@@ -1808,6 +1808,17 @@ def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
                 "evidence_receipt_count": payload.get("evidence_receipt_count"),
                 "approval_required": payload.get("approval_required"),
                 "high_risk_path_count": _count_list(payload.get("high_risk_paths")),
+                "lsp_language_server": payload.get("language_server_used"),
+                "file_count": payload.get("file_count"),
+                "diagnostic_count": payload.get("diagnostic_count"),
+                "diagnostics_increased": payload.get("diagnostics_increased"),
+                "reference_count": payload.get("reference_count"),
+                "rename_symbol": payload.get("symbol"),
+                "rename_new_name": payload.get("new_name"),
+                "rename_applied": payload.get("applied"),
+                "planned_edit_count": _count_list(payload.get("planned_edits")),
+                "policy_read_denied_count": _count_list(payload.get("policy_read_denied_paths")),
+                "policy_write_denied_count": _count_list(payload.get("policy_write_denied_paths")),
             }
         )
     return {
