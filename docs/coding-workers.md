@@ -878,11 +878,20 @@ code changed, or code is correct. A worker result must still pass
 Copyable examples:
 
 ```bash
+examples/memory-evidence-case/run.sh /tmp/tau-memory-evidence-case
 examples/coding-reliability-basic/run.sh /tmp/tau-coding-reliability-basic
 examples/omp-worker/run.sh /tmp/tau-omp-worker-example
 examples/scillm-worker/run.sh /tmp/tau-scillm-worker-example
 examples/itar-grade-containment/run.sh /tmp/tau-itar-grade-containment-demo
 ```
+
+`examples/memory-evidence-case` writes Graph Memory `/intent` and
+`/create-evidence-case` shaped local artifacts, then emits
+`tau.memory_intent_gate_receipt.v1` and `tau.evidence_case_gate_receipt.v1`.
+It proves only that Tau can evaluate separate memory intent and evidence-case
+gate inputs and write parseable receipts; it does not prove Memory truth,
+evidence-case sufficiency, ITAR compliance, legal sufficiency, provider/model
+quality, or semantic code correctness.
 
 `examples/omp-worker` validates a bounded OMP-shaped worker result. By default
 it uses a fixture result and marks the demo `mocked:true`, `live:false`; it

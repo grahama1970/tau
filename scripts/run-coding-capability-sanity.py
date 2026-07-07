@@ -70,6 +70,21 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             timeout_seconds=30,
         ),
         Check(
+            check_id="memory_evidence_case_example_syntax",
+            command=["bash", "-n", str(examples / "memory-evidence-case" / "run.sh")],
+            purpose="Check memory/evidence-case example shell syntax.",
+            timeout_seconds=30,
+        ),
+        Check(
+            check_id="memory_evidence_case_example_run",
+            command=[
+                str(examples / "memory-evidence-case" / "run.sh"),
+                str(run_dir / "memory-evidence-case"),
+            ],
+            purpose="Run memory intent and evidence-case gate example.",
+            output_artifact=run_dir / "memory-evidence-case" / "demo-receipt.json",
+        ),
+        Check(
             check_id="coding_reliability_example_run",
             command=[
                 str(examples / "coding-reliability-basic" / "run.sh"),
@@ -319,7 +334,8 @@ def build_receipt(*, repo: Path, run_dir: Path, records: list[dict[str, Any]]) -
             "proves": [
                 "Tau's focused coding receipt tests pass in this checkout.",
                 "Tau's copyable zero-trust example produces a parseable preflight receipt.",
-                "Tau's copyable coding and worker examples produce parseable receipts.",
+                "Tau's copyable memory/evidence, coding, and worker examples produce "
+                "parseable receipts.",
                 "Tau can initialize a coding zero-trust starter with explicit "
                 "coding evidence requirements.",
                 "Tau records worker launch requests without trusting worker execution.",

@@ -1,0 +1,12 @@
+{
+  "schema": "tau.memory_evidence_case_example_receipt.v1",
+  "status": "PASS",
+  "ok": true,
+  "mocked": false,
+  "live": false,
+  "provider_live": false,
+  "required_receipt_schemas": [
+    "tau.memory_intent_gate_receipt.v1",
+    "tau.evidence_case_gate_receipt.v1"
+  ]
+}

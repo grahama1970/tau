@@ -5,6 +5,35 @@
 
 ## Current Understanding
 
+- 2026-07-07 memory/evidence-case copyable example rung:
+  `examples/memory-evidence-case/run.sh` now creates local
+  `policy-profile.json`, `data-boundary.json`, Graph Memory `/intent` shaped
+  `memory-intent.json`, and `/create-evidence-case` shaped
+  `evidence-case.json`, then writes `tau.memory_intent_gate_receipt.v1`,
+  `tau.evidence_case_gate_receipt.v1`, and
+  `tau.memory_evidence_case_example_receipt.v1`. `examples/README.md`,
+  `docs/coding-workers.md`, and `scripts/run-coding-capability-sanity.py` now
+  include this copyable memory-first gate example. Focused proof: `git diff
+  --check -- examples/memory-evidence-case/README.md
+  examples/memory-evidence-case/expected-receipt.json
+  examples/memory-evidence-case/run.sh examples/README.md
+  docs/coding-workers.md scripts/run-coding-capability-sanity.py` -> pass;
+  `uv run ruff check --select I,F,E501 scripts/run-coding-capability-sanity.py`
+  -> `All checks passed!`; `bash -n examples/memory-evidence-case/run.sh &&
+  examples/memory-evidence-case/run.sh
+  /tmp/tau-memory-evidence-case-example-proof-v2` -> `status:PASS`,
+  `schema:tau.memory_evidence_case_example_receipt.v1`, `mocked:false`,
+  `live:false`, `provider_live:false`; `uv run pytest
+  tests/test_memory_evidence_gate.py tests/test_server.py -q` -> `9 passed in
+  0.39s`. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-memory-evidence-example-20260707T211500Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:15`, `failed_check_count:0`,
+  embedded coding receipt tests `395 passed in 10.47s`. This proves Tau has a
+  copyable local example for memory intent plus separate evidence-case gate
+  receipts; it does not prove Memory facts are true, evidence-case sufficiency,
+  semantic code correctness, provider/model quality, legal compliance, ITAR
+  compliance, or full sandbox isolation on every host.
+
 - 2026-07-07 zero-trust test-run receipt repo-scope rung:
   `src/tau_coding/test_run_receipt.py` now blocks zero-trust focused test
   execution when `--out` resolves outside the active `--repo`. The receipt
