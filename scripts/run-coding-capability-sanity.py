@@ -567,11 +567,14 @@ def _check_apply_launch_result_artifact(actual: dict[str, Any]) -> list[str]:
 def _check_apply_launch_log_artifacts(actual: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     stdout_path = actual.get("apply_launch_stdout_path")
+    stderr_path = actual.get("apply_launch_stderr_path")
     stdout_sha = actual.get("apply_launch_stdout_sha256")
     stderr_sha = actual.get("apply_launch_stderr_sha256")
     artifacts = actual.get("apply_launch_log_artifacts")
     if not isinstance(stdout_path, str) or not stdout_path:
         errors.append("apply_launch_stdout_path missing")
+    if not isinstance(stderr_path, str) or not stderr_path:
+        errors.append("apply_launch_stderr_path missing")
     if not isinstance(stdout_sha, str) or not stdout_sha.startswith("sha256:"):
         errors.append("apply_launch_stdout_sha256 missing or invalid")
     if not isinstance(stderr_sha, str) or not stderr_sha.startswith("sha256:"):
@@ -592,12 +595,16 @@ def _check_apply_launch_log_artifacts(actual: dict[str, Any]) -> list[str]:
         errors.append("apply_launch_log_artifacts stdout descriptor does not exist")
     elif stdout_descriptor.get("sha256") != stdout_sha:
         errors.append("apply_launch_log_artifacts stdout sha256 mismatch")
+    elif stdout_descriptor.get("path") != stdout_path:
+        errors.append("apply_launch_log_artifacts stdout path mismatch")
     if not isinstance(stderr_descriptor, dict):
         errors.append("apply_launch_log_artifacts missing stderr descriptor")
     elif stderr_descriptor.get("exists") is not True:
         errors.append("apply_launch_log_artifacts stderr descriptor does not exist")
     elif stderr_descriptor.get("sha256") != stderr_sha:
         errors.append("apply_launch_log_artifacts stderr sha256 mismatch")
+    elif stderr_descriptor.get("path") != stderr_path:
+        errors.append("apply_launch_log_artifacts stderr path mismatch")
     return errors
 
 

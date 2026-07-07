@@ -1,9 +1,40 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 12:11 EDT by agent
+**Last updated:** 2026-07-07 12:16 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 OMP worker log-artifact checker hardening:
+  The coding-capability sanity runner now tests and enforces the full OMP
+  apply-launch stdout/stderr artifact contract. `scripts/run-coding-capability-sanity.py`
+  requires both top-level `apply_launch_stdout_path` and
+  `apply_launch_stderr_path`, verifies both `sha256:` values, and checks that
+  the stdout/stderr descriptors in `apply_launch_log_artifacts` match the
+  top-level paths and hashes. `tests/test_coding_capability_sanity_runner.py`
+  now has explicit missing/accepted cases for `expected_apply_launch_log_artifacts`.
+  The first aggregate rerun correctly blocked because
+  `examples/omp-worker/run.sh` projected `apply_launch_stderr_sha256` but not
+  `apply_launch_stderr_path`; the example now emits that field. Focused proof:
+  `git diff --check -- scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run python -m
+  py_compile scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run ruff check
+  --select I,F,E501 scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> `All checks passed!`; `uv
+  run pytest tests/test_coding_capability_sanity_runner.py -q` -> `4 passed in
+  0.04s`; direct example
+  `examples/omp-worker/run.sh /tmp/tau-omp-worker-log-artifact-example` -> PASS
+  with both stdout/stderr paths, hashes, and `log_artifact_count:2`. Aggregate
+  proof:
+  `/tmp/tau-coding-capability-sanity-omp-log-artifact-tests-20260707T162100Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `check_count:17`, `failed_check_count:0`, embedded coding
+  receipt tests `496 passed in 11.90s`. This proves the maintained aggregate
+  sanity surface now fails if the OMP apply-launch log descriptors are missing,
+  path-mismatched, or hash-mismatched; it does not prove live OMP semantic
+  worker execution, a real `oh-my-pi` binary, semantic code correctness,
+  provider/model quality, legal compliance, human acceptance, or full sandbox
+  isolation.
 
 - 2026-07-07 OMP worker apply-launch expected-artifact gate:
   The OMP worker copyable example and aggregate coding sanity suite now
