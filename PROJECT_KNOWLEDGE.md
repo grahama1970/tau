@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 09:27 EDT by agent
+**Last updated:** 2026-07-07 09:32 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 commit-plan approval target binding:
+  `src/tau_coding/commit_plan.py` now requires
+  `tau.approval_gate_receipt.v1` packets used for commit-plan apply or
+  high-risk path approval to bind `packet_summary.target_id` to the exact
+  planned repository as `repo:<absolute repo path>`. Approval receipts for a
+  different repo block with `approval_receipt_target_mismatch`, leave
+  `approval_receipt:null`, and keep `apply_eligible:false` when apply is
+  requested. `tests/test_commit_plan.py` pins this with
+  `test_commit_plan_apply_blocks_approval_for_different_repo`, and
+  `docs/coding-workers.md` documents the target binding. Focused proof: `uv run
+  ruff check --select I,F,E501 src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py docs/coding-workers.md` -> `All checks passed!`;
+  `uv run pytest tests/test_commit_plan.py -q` -> `36 passed in 1.14s`; `uv
+  run python -m py_compile src/tau_coding/commit_plan.py` -> pass; `git diff
+  --check -- src/tau_coding/commit_plan.py tests/test_commit_plan.py
+  docs/coding-workers.md` -> pass. Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-commit-plan-approval-target-20260707T133301Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:17`, `failed_check_count:0`,
+  embedded coding receipt tests `459 passed in 10.58s`. This proves
+  deterministic local commit-plan receipts cannot reuse a working-tree approval
+  from a different repository; it does not prove human identity, legal
+  sufficiency, semantic grouping correctness, or that commits were created.
 
 - 2026-07-07 review-findings zero-trust path boundary:
   `src/tau_coding/review_findings.py` now blocks zero-trust

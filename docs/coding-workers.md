@@ -447,9 +447,12 @@ coding continuation.
 The command is dry-run by default. `--apply` requires a valid
 `tau.approval_gate_receipt.v1` with `requested_action:"working_tree_mutation"`
 passed through `--approval-receipt`; mocked approval receipts do not make a
-plan apply-eligible. The receipt can then mark the plan `apply_eligible:true`,
-but this commit-plan lane still does not run `git commit`. High-risk paths such
-as `.github/`, `secrets/`, `.env`,
+plan apply-eligible. The approval receipt must also bind
+`packet_summary.target_id` to the planned repository as `repo:<absolute repo
+path>`; approvals for a different repo block with
+`approval_receipt_target_mismatch`. The receipt can then mark the plan
+`apply_eligible:true`, but this commit-plan lane still does not run
+`git commit`. High-risk paths such as `.github/`, `secrets/`, `.env`,
 `pyproject.toml`, `uv.lock`, and `package-lock.json` are flagged for approval
 unless a valid working-tree mutation approval receipt is supplied. Untracked
 sensitive paths such as `.env`, `.env.*`, private-key files, and `secrets/**`

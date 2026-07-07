@@ -101,6 +101,7 @@ def write_commit_plan_receipt(
     approval_receipt = _approval_receipt(
         approval_receipt_path,
         alerts,
+        repo=resolved_repo,
         required=apply,
     )
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
@@ -459,6 +460,7 @@ def _approval_receipt(
     path: Path | None,
     alerts: list[dict[str, Any]],
     *,
+    repo: Path,
     required: bool,
 ) -> dict[str, Any] | None:
     if path is None:
@@ -522,6 +524,15 @@ def _approval_receipt(
             _alert(
                 "approval_receipt_wrong_action",
                 "commit-plan apply requires working_tree_mutation approval",
+            )
+        )
+        valid = False
+    expected_target_id = f"repo:{repo}"
+    if item["target_id"] != expected_target_id:
+        alerts.append(
+            _alert(
+                "approval_receipt_target_mismatch",
+                "commit-plan approval receipt target_id must match the planned repo",
             )
         )
         valid = False
