@@ -36,6 +36,18 @@ tau.signed_receipt_verification.v1
 }
 ```
 
+Actors may include an `eligibility` object. Tau validates that object when it is
+present:
+
+```json
+{
+  "us_person": "verified|not_verified|unknown",
+  "foreign_person": false,
+  "export_control_training_current": true,
+  "approved_for_boundary": ["ITAR"]
+}
+```
+
 `tau.environment_manifest.v1` records declared environment controls:
 
 ```json

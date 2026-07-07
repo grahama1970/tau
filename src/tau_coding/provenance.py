@@ -17,6 +17,7 @@ ENVIRONMENT_MANIFEST_SCHEMA = "tau.environment_manifest.v1"
 ACTOR_TYPES = {"agent", "human", "harness", "validator"}
 NETWORK_POLICIES = {"deny", "allowlisted", "allow", "unknown"}
 PROVIDER_ACCESS = {"denied", "allowed", "unknown"}
+US_PERSON_VALUES = {"verified", "not_verified", "unknown"}
 
 
 def build_actor_manifest(
@@ -216,6 +217,32 @@ def _validate_actor(actor: Mapping[str, Any], *, prefix: str) -> list[str]:
         errors.append(f"{prefix}.trusted must be a boolean")
     if not isinstance(actor.get("verified"), bool):
         errors.append(f"{prefix}.verified must be a boolean")
+    if "eligibility" in actor:
+        errors.extend(_validate_actor_eligibility(actor.get("eligibility"), prefix=prefix))
+    return errors
+
+
+def _validate_actor_eligibility(value: Any, *, prefix: str) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(value, Mapping):
+        return [f"{prefix}.eligibility must be an object"]
+    if value.get("us_person") not in US_PERSON_VALUES:
+        errors.append(
+            f"{prefix}.eligibility.us_person must be one of {sorted(US_PERSON_VALUES)}"
+        )
+    if not isinstance(value.get("foreign_person"), bool):
+        errors.append(f"{prefix}.eligibility.foreign_person must be a boolean")
+    if not isinstance(value.get("export_control_training_current"), bool):
+        errors.append(
+            f"{prefix}.eligibility.export_control_training_current must be a boolean"
+        )
+    approved = value.get("approved_for_boundary")
+    if not isinstance(approved, list) or not all(
+        isinstance(item, str) and item.strip() for item in approved
+    ):
+        errors.append(
+            f"{prefix}.eligibility.approved_for_boundary must be a list of non-empty strings"
+        )
     return errors
 
 

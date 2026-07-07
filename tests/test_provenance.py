@@ -63,6 +63,62 @@ def test_actor_manifest_blocks_invalid_actor_type() -> None:
     assert "actors[0].actor_type" in manifest["errors"][0]
 
 
+def test_actor_manifest_accepts_closed_eligibility_shape() -> None:
+    manifest = build_actor_manifest(
+        run_id="run-1",
+        actors=[
+            {
+                "actor_id": "human:approver",
+                "actor_type": "human",
+                "roles": ["approver"],
+                "trusted": True,
+                "verified": True,
+                "eligibility": {
+                    "us_person": "verified",
+                    "foreign_person": False,
+                    "export_control_training_current": True,
+                    "approved_for_boundary": ["ITAR"],
+                },
+            }
+        ],
+    )
+
+    assert manifest["ok"] is True
+    assert manifest["status"] == "PASS"
+    assert manifest["actors"][0]["eligibility"]["approved_for_boundary"] == ["ITAR"]
+
+
+def test_actor_manifest_blocks_invalid_eligibility_shape() -> None:
+    manifest = build_actor_manifest(
+        run_id="run-1",
+        actors=[
+            {
+                "actor_id": "human:approver",
+                "actor_type": "human",
+                "roles": ["approver"],
+                "trusted": True,
+                "verified": True,
+                "eligibility": {
+                    "us_person": "maybe",
+                    "foreign_person": "no",
+                    "export_control_training_current": "yes",
+                    "approved_for_boundary": ["ITAR", ""],
+                },
+            }
+        ],
+    )
+
+    assert manifest["ok"] is False
+    assert manifest["status"] == "BLOCKED"
+    assert any("eligibility.us_person" in error for error in manifest["errors"])
+    assert any("eligibility.foreign_person" in error for error in manifest["errors"])
+    assert any(
+        "eligibility.export_control_training_current" in error
+        for error in manifest["errors"]
+    )
+    assert any("eligibility.approved_for_boundary" in error for error in manifest["errors"])
+
+
 def test_parse_actor_spec_uses_agent_untrusted_default() -> None:
     actor = parse_actor_spec("coder:agent:worker,reviewer")
 

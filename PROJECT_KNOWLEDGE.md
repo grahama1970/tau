@@ -5,6 +5,33 @@
 
 ## Current Understanding
 
+- 2026-07-07 actor provenance eligibility shape fail-closed rung:
+  `src/tau_coding/provenance.py` now validates optional actor
+  `eligibility` metadata on `tau.actor_manifest.v1` entries. When present,
+  eligibility must declare closed fields for `us_person`, `foreign_person`,
+  `export_control_training_current`, and `approved_for_boundary`; malformed
+  values block the actor manifest instead of allowing arbitrary high-stakes
+  eligibility claims into later signed receipts or review packages.
+  `docs/provenance-and-signing.md` documents the accepted eligibility shape.
+  Focused proof: `uv run ruff check --select I,F,E501
+  src/tau_coding/provenance.py tests/test_provenance.py` -> `All checks
+  passed!`; `uv run pytest tests/test_provenance.py tests/test_receipt_signing.py
+  -q` -> `12 passed in 0.42s`. Aggregate proof: `uv run python
+  scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-provenance-eligibility-proof-20260707T080200Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-provenance-eligibility-proof-20260707T080200Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded coding receipt tests
+  `282 passed in 7.97s`. This proves deterministic local actor manifests fail
+  closed on malformed eligibility metadata, remain compatible with
+  signed-receipt provenance validation, and still compose with the current
+  coding capability sanity suite; it does not prove human legal identity,
+  US-person or export-control eligibility truth, ITAR compliance, runtime
+  sandbox enforcement, provider/model quality, live worker semantic execution,
+  or full goal completion.
+
 - 2026-07-07 signed receipt provenance validity fail-closed rung:
   `src/tau_coding/receipt_signing.py` now validates supplied
   `tau.actor_manifest.v1` and `tau.environment_manifest.v1` files before
