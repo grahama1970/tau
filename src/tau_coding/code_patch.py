@@ -21,11 +21,17 @@ CODE_PATCH_SCHEMA = "tau.code_patch.v1"
 CODE_PATCH_RECEIPT_SCHEMA = "tau.code_patch_receipt.v1"
 
 GENERATED_PATH_PATTERNS = (
+    "generated/**",
     "**/generated/**",
+    "__generated__/**",
     "**/__generated__/**",
+    "node_modules/**",
     "**/node_modules/**",
+    ".venv/**",
     "**/.venv/**",
+    "dist/**",
     "**/dist/**",
+    "build/**",
     "**/build/**",
 )
 

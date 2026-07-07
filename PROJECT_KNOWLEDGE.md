@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 code patch root-generated path fail-closed rung:
+  `src/tau_coding/code_patch.py` now treats repo-root generated/vendor
+  directories as built-in forbidden code patch targets, not only nested
+  generated paths. The built-in `generated_path_patterns` now include
+  `generated/**`, `__generated__/**`, `node_modules/**`, `.venv/**`,
+  `dist/**`, and `build/**` alongside their nested forms, so
+  `generated/example.py` blocks with `forbidden_path` before any patch is
+  applied. Focused proof: `git diff --check -- src/tau_coding/code_patch.py
+  tests/test_code_patch.py docs/coding-workers.md PROJECT_KNOWLEDGE.md` ->
+  pass; `uv run ruff check --select I,F,E501 src/tau_coding/code_patch.py
+  tests/test_code_patch.py` -> `All checks passed!`; `uv run pytest
+  tests/test_code_patch.py -q` -> `27 passed in 0.50s`. Aggregate proof:
+  `uv run python scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-code-patch-root-generated-20260707T095000Z`
+  exited `0` and wrote
+  `/tmp/tau-coding-capability-sanity-code-patch-root-generated-20260707T095000Z/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`, `live:"mixed"`,
+  `mocked:"mixed"`, `provider_live:false`, and embedded `coding_receipt_tests`
+  `312 passed in 8.17s`. This proves deterministic local code patch receipts
+  fail closed on root generated/vendor paths before hash-bound patches can
+  mutate generated artifacts and still compose with the current
+  coding-capability sanity suite; it does not prove semantic code correctness,
+  full test coverage, production safety, provider/model quality, legal
+  compliance, or full goal completion.
+
 - 2026-07-07 worker substrate goal-hash binding rung:
   `src/tau_coding/coding_worker_adapters.py` now rejects high-stakes sandbox
   or Herdr substrate receipts that declare a `goal_hash` different from the

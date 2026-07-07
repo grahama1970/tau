@@ -66,7 +66,11 @@ and `tau.data_boundary.v1` shapes and blocks `classified-not-allowed` data with
 `classified_not_allowed` before applying any patch. The receipt records the
 active `policy_profile`, `data_boundary`, `allowed_paths`,
 `forbidden_paths`, built-in generated-path patterns, and the inspected patch
-artifact's `patch_sha256` plus `patch_bytes`. Patch-local `allowed_paths` and
+artifact's `patch_sha256` plus `patch_bytes`.
+The built-in generated-path patterns cover both nested and repo-root generated
+or vendor directories, including `generated/**`, `__generated__/**`,
+`node_modules/**`, `.venv/**`, `dist/**`, and `build/**`.
+Patch-local `allowed_paths` and
 `forbidden_paths` must be lists of non-empty strings; malformed path-scope
 fields block with `invalid_allowed_paths` or `invalid_forbidden_paths` instead
 of becoming implicit empty scopes. The same patch input is exposed as

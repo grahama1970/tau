@@ -317,6 +317,28 @@ def test_code_patch_blocks_generated_path_pattern(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == before
 
 
+def test_code_patch_blocks_root_generated_path_pattern(tmp_path: Path) -> None:
+    target = tmp_path / "generated" / "example.py"
+    target.parent.mkdir(parents=True)
+    before = "value = 1\n"
+    after = "value = 2\n"
+    target.write_text(before, encoding="utf-8")
+    patch_path = _write_patch(
+        tmp_path,
+        target_file="generated/example.py",
+        before=before,
+        after=after,
+        patch=json.dumps([{"op": "replace", "old": "value = 1", "new": "value = 2"}]),
+    )
+
+    receipt = apply_code_patch_receipt(patch_path=patch_path, repo_root=tmp_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "forbidden_path" in receipt["alert_codes"]
+    assert "generated/**" in receipt["generated_path_patterns"]
+    assert target.read_text(encoding="utf-8") == before
+
+
 def test_code_patch_blocks_goal_hash_mismatch(tmp_path: Path) -> None:
     target = tmp_path / "src" / "example.py"
     target.parent.mkdir()
