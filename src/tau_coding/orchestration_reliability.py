@@ -357,6 +357,7 @@ def _course_correction_artifact_report(
     scope_root: Path | None,
 ) -> dict[str, Any]:
     active_goal_hash = dag_receipt.get("active_goal_hash") or dag_receipt.get("goal_hash")
+    expected_dag_id = dag_receipt.get("dag_id")
     resolved_scope = scope_root.expanduser().resolve() if scope_root is not None else None
     report: dict[str, Any] = {
         "declared": list(course_correction_paths),
@@ -377,7 +378,11 @@ def _course_correction_artifact_report(
                 report["invalid"].append({"path": resolved, "reason": "outside_run_scope"})
                 continue
         payload = _read_json(path)
-        reason = _course_correction_invalid_reason(payload, active_goal_hash)
+        reason = _course_correction_invalid_reason(
+            payload,
+            active_goal_hash,
+            expected_dag_id,
+        )
         if reason:
             report["invalid"].append({"path": resolved, "reason": reason})
             continue
@@ -388,6 +393,7 @@ def _course_correction_artifact_report(
 def _course_correction_invalid_reason(
     payload: Mapping[str, Any],
     active_goal_hash: object,
+    expected_dag_id: object,
 ) -> str | None:
     if payload.get("schema") != COURSE_CORRECTION_SCHEMA:
         return "schema_mismatch"
@@ -401,6 +407,10 @@ def _course_correction_invalid_reason(
         return "missing_goal_hash"
     if active_goal_hash and payload.get("goal_hash") != active_goal_hash:
         return "goal_hash_mismatch"
+    if expected_dag_id and not payload.get("dag_id"):
+        return "missing_dag_id"
+    if expected_dag_id and payload.get("dag_id") != expected_dag_id:
+        return "dag_id_mismatch"
     if not payload.get("required_next_action"):
         return "missing_required_next_action"
     return None

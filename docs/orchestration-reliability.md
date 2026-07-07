@@ -32,12 +32,19 @@ A `BLOCKED` DAG run can also be reliable orchestration when Tau stopped safely
 and produced a `tau.dag_error.v1` or `tau.course_correction.v1` artifact that
 names the next safe route.
 
+Course-correction artifacts must bind back to the inspected run. When the DAG
+receipt has an active goal hash or DAG id, Tau rejects correction artifacts that
+omit those fields or cite different values. A correction from another DAG is not
+accepted as proof that this run followed its course-correction path.
+
 The receipt blocks when:
 
 - no DAG or run receipt is found;
 - goal hash drift is reported;
 - unexpected DAG routes are reported;
 - an explicitly required receipt artifact is missing;
+- a course-correction artifact is missing goal/DAG binding or cites the wrong
+  goal/DAG;
 - retry budget is exceeded without handled correction;
 - a Herdr observation gate blocks without an embedded course-correction payload;
 - a run is blocked without a DAG error or course-correction artifact.
