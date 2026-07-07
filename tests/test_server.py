@@ -100,10 +100,12 @@ def test_server_run_status_receipts_and_package_routes(tmp_path: Path) -> None:
 
     assert summary_status == 200
     assert summary["route"] == "/runs/{id}"
+    assert summary["coding_evidence_count"] == 1
     assert status_status == 200
     assert status_payload["schema"] == "tau.run_status.v1"
+    assert status_payload["coding_evidence"]["receipt_count"] == 1
     assert receipts_status == 200
-    assert receipts["receipt_count"] == 1
+    assert receipts["receipt_count"] == 2
     assert package_status == 200
     assert package["schema"] == "tau.compliance_evidence_package.v1"
     assert (tmp_path / "package" / "package-manifest.json").exists()
@@ -130,6 +132,20 @@ def _write_run_dir(tmp_path: Path) -> Path:
             "ok": True,
             "status": "PASS",
             "contract_path": str(contract),
+        },
+    )
+    coding_receipts = run_dir / "receipts" / "coding"
+    coding_receipts.mkdir(parents=True)
+    _write_json(
+        coding_receipts / "test-run-receipt.json",
+        {
+            "schema": "tau.test_run_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "goal_hash": "sha256:server-test",
         },
     )
     return run_dir

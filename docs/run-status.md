@@ -67,6 +67,9 @@ The command prints `tau.run_status.v1` JSON with:
 - browser/CDP proof summaries when `browser-cdp-proof/browser-cdp-proof-receipt.json`
   is present, including screenshot path, SHA-256, dimensions, transport metadata,
   and visible assertion counts
+- coding evidence receipt summaries when Tau-native coding receipts are present,
+  including receipt count, relative paths, schemas, status, mocked/live flags,
+  SHA-256 fingerprints, goal hashes, and policy/data-boundary hashes
 
 The command exits non-zero for `BLOCKED`, `FAIL`, `FAILED`, or `MISSING` status.
 

@@ -13,6 +13,21 @@ from urllib.parse import quote
 RUN_STATUS_SCHEMA = "tau.run_status.v1"
 DAG_VIEWER_LINK_SCHEMA = "tau.dag_viewer_link.v1"
 DEFAULT_TAU_DAG_VIEWER_BASE_URL = "http://localhost:3002/#tau/dag"
+CODING_EVIDENCE_SCHEMAS = {
+    "tau.code_patch_receipt.v1",
+    "tau.lsp_diagnostics_receipt.v1",
+    "tau.lsp_symbol_receipt.v1",
+    "tau.lsp_rename_receipt.v1",
+    "tau.test_run_receipt.v1",
+    "tau.review_findings.v1",
+    "tau.commit_plan_receipt.v1",
+    "tau.debug_session_receipt.v1",
+    "tau.github_read_receipt.v1",
+    "tau.omp_worker_receipt.v1",
+    "tau.scillm_worker_receipt.v1",
+    "tau.course_correction.v1",
+    "tau.orchestration_reliability_receipt.v1",
+}
 
 
 def build_run_status(run_dir: Path) -> dict[str, Any]:
@@ -62,6 +77,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         contract_path=artifacts["project_dag_contract"],
         receipt_path=artifacts["project_dag_receipt"],
     )
+    coding_evidence = _coding_evidence_summary(resolved)
     detected_type = _detected_type(
         run_receipt,
         project_dag_receipt,
@@ -195,6 +211,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         "github_apply_policy": _github_apply_policy_summary(github_apply_policy),
         "github_handoff_transport": _github_handoff_transport_summary(github_handoff_transport),
         "research_source": _research_source_summary(research_source),
+        "coding_evidence": coding_evidence,
         "proof_scope": {
             "proves": [
                 "Tau can summarize known run artifacts from one run directory",
@@ -206,6 +223,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
                     "Tau can expose project DAG dag-receipt.json failures without requiring "
                     "provider runtime manifests"
                 ),
+                "Tau can summarize Tau coding evidence receipts without re-running coding work",
             ],
             "does_not_prove": [
                 "new provider execution",
@@ -1742,6 +1760,42 @@ def _research_source_summary(payload: dict[str, Any]) -> dict[str, Any] | None:
         "arxiv_source_count": payload.get("arxiv_source_count"),
         "review_required": payload.get("review_required"),
         "errors": payload.get("errors"),
+    }
+
+
+def _coding_evidence_summary(run_dir: Path) -> dict[str, Any]:
+    receipts: list[dict[str, Any]] = []
+    for path in sorted(run_dir.rglob("*.json")):
+        payload = _read_optional_json(path)
+        schema = payload.get("schema")
+        if schema not in CODING_EVIDENCE_SCHEMAS:
+            continue
+        file_sha256 = _file_sha256(path)
+        receipts.append(
+            {
+                "relative_path": path.relative_to(run_dir).as_posix(),
+                "schema": schema,
+                "status": payload.get("status"),
+                "ok": payload.get("ok"),
+                "mocked": payload.get("mocked"),
+                "live": payload.get("live"),
+                "provider_live": payload.get("provider_live"),
+                "sha256": f"sha256:{file_sha256}" if file_sha256 else None,
+                "goal_hash": payload.get("goal_hash") or payload.get("active_goal_hash"),
+                "policy_profile_sha256": payload.get("policy_profile_sha256"),
+                "data_boundary_sha256": payload.get("data_boundary_sha256"),
+            }
+        )
+    return {
+        "receipt_count": len(receipts),
+        "receipts": receipts,
+        "supported_schemas": sorted(CODING_EVIDENCE_SCHEMAS),
+        "does_not_prove": [
+            "Code correctness.",
+            "Worker truthfulness.",
+            "Live provider execution.",
+            "Closure.",
+        ],
     }
 
 

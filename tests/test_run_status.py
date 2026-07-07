@@ -1711,6 +1711,45 @@ def test_run_status_summarizes_project_dag_blocking_alerts(
     ]
 
 
+def test_run_status_summarizes_coding_evidence_receipts(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "coding" / "test-run-receipt.json"
+    _write_json(
+        receipt_path,
+        {
+            "schema": "tau.test_run_receipt.v1",
+            "ok": True,
+            "status": "PASS",
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "goal_hash": "sha256:goal",
+            "policy_profile_sha256": "sha256:policy",
+            "data_boundary_sha256": "sha256:boundary",
+        },
+    )
+
+    status = build_run_status(tmp_path)
+
+    assert status["coding_evidence"]["receipt_count"] == 1
+    assert status["coding_evidence"]["receipts"] == [
+        {
+            "relative_path": "receipts/coding/test-run-receipt.json",
+            "schema": "tau.test_run_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "live": False,
+            "provider_live": False,
+            "sha256": f"sha256:{_sha256(receipt_path)}",
+            "goal_hash": "sha256:goal",
+            "policy_profile_sha256": "sha256:policy",
+            "data_boundary_sha256": "sha256:boundary",
+        }
+    ]
+    assert "tau.test_run_receipt.v1" in status["coding_evidence"]["supported_schemas"]
+    assert "Code correctness." in status["coding_evidence"]["does_not_prove"]
+
+
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

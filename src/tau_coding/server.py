@@ -180,6 +180,7 @@ def _run_summary(run_dir: Path) -> tuple[int, dict[str, Any]]:
         "run_dir": str(run_dir.expanduser().resolve()),
         "detected_type": status.get("detected_type"),
         "artifact_count": len(status.get("artifacts", {})),
+        "coding_evidence_count": status.get("coding_evidence", {}).get("receipt_count", 0),
         "missing_required_artifacts": status.get("missing_required_artifacts", []),
         "proof_scope": {
             "proves": ["Tau summarized one local run directory through the local API."],
