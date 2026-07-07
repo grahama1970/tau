@@ -115,7 +115,10 @@ def write_orchestration_reliability_receipt(
         course_corrections_followed=course_corrections_followed,
         declared_course_corrections=bool(course_correction_artifact_report["declared"]),
     )
-    required_receipt_report = _required_receipt_report(required_receipts)
+    required_receipt_report = _required_receipt_report(
+        required_receipts,
+        scope_root=search_root,
+    )
     reliable = (
         bool(dag_receipt)
         and dag_receipt_schema_valid
@@ -419,18 +422,27 @@ def _terminal_condition_valid(
     )
 
 
-def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, Any]:
+def _required_receipt_report(
+    required_receipts: Iterable[Path],
+    *,
+    scope_root: Path | None,
+) -> dict[str, Any]:
     present: list[str] = []
     missing: list[str] = []
     present_artifacts: list[dict[str, Any]] = []
     invalid: list[dict[str, str]] = []
+    resolved_scope = scope_root.expanduser().resolve() if scope_root is not None else None
     for receipt in required_receipts:
         resolved = receipt.expanduser().resolve()
         if resolved.exists():
             present.append(str(resolved))
             descriptor = _receipt_artifact_descriptor(resolved)
             present_artifacts.append(descriptor)
-            reason = _required_receipt_invalid_reason(descriptor)
+            reason = _required_receipt_invalid_reason(
+                descriptor,
+                path=resolved,
+                scope_root=resolved_scope,
+            )
             if reason:
                 invalid.append({"path": str(resolved), "reason": reason})
         else:
@@ -443,7 +455,17 @@ def _required_receipt_report(required_receipts: Iterable[Path]) -> dict[str, Any
     }
 
 
-def _required_receipt_invalid_reason(descriptor: Mapping[str, Any]) -> str | None:
+def _required_receipt_invalid_reason(
+    descriptor: Mapping[str, Any],
+    *,
+    path: Path,
+    scope_root: Path | None,
+) -> str | None:
+    if scope_root is not None:
+        try:
+            path.relative_to(scope_root)
+        except ValueError:
+            return "outside_run_scope"
     if descriptor.get("schema") is None:
         return "unreadable_or_missing_schema"
     if descriptor.get("ok") is not True or descriptor.get("status") != "PASS":

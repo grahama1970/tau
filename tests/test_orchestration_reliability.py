@@ -151,6 +151,31 @@ def test_orchestration_reliability_blocks_non_live_required_receipt(tmp_path: Pa
     ]
 
 
+def test_orchestration_reliability_blocks_required_receipt_outside_run_scope(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    artifact = _write_required_receipt(outside / "worker-receipt.json")
+    dag_receipt = _write_dag_receipt(run_dir)
+
+    payload = write_orchestration_reliability_receipt(
+        run_dir=run_dir,
+        dag_receipt_path=dag_receipt,
+        output_path=run_dir / "orchestration-reliability.json",
+        required_receipts=[artifact],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["required_receipts_present"] is True
+    assert "required_receipt_invalid" in payload["alert_codes"]
+    assert payload["required_receipts"]["invalid"] == [
+        {"path": str(artifact.resolve()), "reason": "outside_run_scope"}
+    ]
+
+
 def test_orchestration_reliability_blocks_ignored_course_correction(tmp_path: Path) -> None:
     correction = tmp_path / "course-correction.json"
     correction.write_text("{}", encoding="utf-8")
@@ -297,6 +322,42 @@ def test_cli_orchestration_reliability_writes_receipt(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert payload == json.loads(out.read_text(encoding="utf-8"))
     assert payload["schema"] == ORCHESTRATION_RELIABILITY_RECEIPT_SCHEMA
+
+
+def test_cli_orchestration_reliability_blocks_required_receipt_outside_run_scope(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    artifact = _write_required_receipt(outside / "worker-receipt.json")
+    dag_receipt = _write_dag_receipt(run_dir)
+    out = run_dir / "orchestration-reliability.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "orchestration-reliability",
+            "--run-dir",
+            str(run_dir),
+            "--dag-receipt",
+            str(dag_receipt),
+            "--required-receipt",
+            str(artifact),
+            "--out",
+            str(out),
+        ],
+    )
+
+    payload = json.loads(result.output)
+    assert result.exit_code == 1
+    assert payload == json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] == "BLOCKED"
+    assert "required_receipt_invalid" in payload["alert_codes"]
+    assert payload["required_receipts"]["invalid"] == [
+        {"path": str(artifact.resolve()), "reason": "outside_run_scope"}
+    ]
 
 
 def _write_dag_receipt(

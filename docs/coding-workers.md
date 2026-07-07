@@ -588,6 +588,9 @@ the harness rules separately from whether the code is correct. It reports:
 - existence plus SHA-256/byte-count binding for the DAG receipt and required receipts
 - required receipt validity: required receipts must be `status:"PASS"`,
   `ok:true`, `mocked:false`, and `live:true`
+- required receipt scope: required receipts must resolve under the active
+  `--run-dir` or DAG receipt directory; external receipts are marked
+  `outside_run_scope` and cannot support orchestration reliability
 - course-correction emission and handling
 - retry budget discipline
 - terminal condition validity

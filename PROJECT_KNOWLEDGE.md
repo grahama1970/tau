@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-07 orchestration reliability required-receipt run-scope rung:
+  `src/tau_coding/orchestration_reliability.py` now requires explicitly
+  supplied `--required-receipt` paths to resolve under the active `--run-dir`
+  or DAG receipt directory before they can support
+  `tau.orchestration_reliability_receipt.v1`. External required receipts are
+  still reported as present artifacts with path/hash/bytes but are marked
+  invalid with reason `outside_run_scope`, causing `required_receipt_invalid`
+  and a BLOCKED reliability receipt. `tests/test_orchestration_reliability.py`
+  covers direct API and CLI rejection of outside-run required receipts.
+  `docs/coding-workers.md` documents the run-scoped required receipt rule.
+  Focused proof: `git diff --check -- src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py docs/coding-workers.md
+  PROJECT_KNOWLEDGE.md` -> pass; `uv run python -m py_compile
+  src/tau_coding/orchestration_reliability.py` -> pass; `uv run ruff check
+  --select I,F,E501 src/tau_coding/orchestration_reliability.py
+  tests/test_orchestration_reliability.py` -> `All checks passed!`; `uv run
+  pytest tests/test_orchestration_reliability.py -q` -> `14 passed in 0.44s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-orchestration-required-scope-20260707T193000Z/coding-capability-sanity-receipt.json`
+  -> `status:PASS`, `ok:true`, `check_count:13`, `failed_check_count:0`,
+  embedded coding receipt tests `390 passed in 10.07s`. This proves
+  orchestration reliability cannot silently borrow external PASS receipts; it
+  does not prove semantic code correctness, agent truthfulness, provider/model
+  quality, legal compliance, ITAR compliance, GitHub mutation, or full sandbox
+  isolation on every host.
+
 - 2026-07-07 LSP baseline workspace-scope rung:
   `src/tau_coding/lsp_receipts.py` now requires
   `--baseline-receipt` diagnostics receipts to resolve under the active LSP
