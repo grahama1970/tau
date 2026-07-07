@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
@@ -56,9 +57,16 @@ def validate_review_findings(
         alerts.append(_alert("invalid_findings", "findings must be a list"))
         findings_raw = []
 
+    allowed_paths = _string_list(payload.get("allowed_paths"))
+    forbidden_paths = _string_list(payload.get("forbidden_paths"))
     normalized_findings: list[dict[str, Any]] = []
     for index, item in enumerate(findings_raw):
-        normalized, item_alerts = _validate_finding(index, item)
+        normalized, item_alerts = _validate_finding(
+            index,
+            item,
+            allowed_paths=allowed_paths,
+            forbidden_paths=forbidden_paths,
+        )
         normalized_findings.append(normalized)
         alerts.extend(item_alerts)
 
@@ -93,6 +101,8 @@ def validate_review_findings(
         "reviewer": payload.get("reviewer"),
         "declared_verdict": declared_verdict,
         "derived_verdict": route if ok else "BLOCKED",
+        "allowed_paths": allowed_paths,
+        "forbidden_paths": forbidden_paths,
         "finding_count": len(normalized_findings),
         "blocking_finding_count": sum(
             1 for finding in normalized_findings if finding.get("required_action") == "block"
@@ -165,7 +175,13 @@ def write_review_findings_receipt(
     return receipt
 
 
-def _validate_finding(index: int, item: object) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+def _validate_finding(
+    index: int,
+    item: object,
+    *,
+    allowed_paths: list[str],
+    forbidden_paths: list[str],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     alerts: list[dict[str, Any]] = []
     normalized: dict[str, Any] = {
         "index": index,
@@ -186,6 +202,14 @@ def _validate_finding(index: int, item: object) -> tuple[dict[str, Any], list[di
             normalized[key] = value
         else:
             alerts.append(_alert("invalid_finding", f"findings[{index}].{key} is required"))
+    normalized_file, file_alerts = _normalize_finding_file(
+        index=index,
+        value=normalized["file"],
+        allowed_paths=allowed_paths,
+        forbidden_paths=forbidden_paths,
+    )
+    normalized["file"] = normalized_file
+    alerts.extend(file_alerts)
     severity = item.get("severity")
     if severity in SEVERITIES:
         normalized["severity"] = severity
@@ -308,6 +332,63 @@ def _coding_policy_alerts(
     if data_boundary is not None and data_boundary.get("schema") != DATA_BOUNDARY_SCHEMA:
         alerts.append(_alert("invalid_data_boundary_schema", "data_boundary schema is invalid"))
     return alerts
+
+
+def _normalize_finding_file(
+    *,
+    index: int,
+    value: object,
+    allowed_paths: list[str],
+    forbidden_paths: list[str],
+) -> tuple[str | None, list[dict[str, str]]]:
+    if not isinstance(value, str) or not value:
+        return None, []
+    normalized = value.replace("\\", "/")
+    path = PurePosixPath(normalized)
+    alerts: list[dict[str, str]] = []
+    if path.is_absolute() or normalized.startswith("~"):
+        alerts.append(
+            _alert("finding_path_escape", f"findings[{index}].file must be repo-relative")
+        )
+        return normalized, alerts
+    if any(part in {"", ".", ".."} for part in path.parts):
+        alerts.append(
+            _alert("finding_path_escape", f"findings[{index}].file must not escape its boundary")
+        )
+        return normalized, alerts
+    normalized = path.as_posix()
+    if allowed_paths and not _path_allowed(normalized, allowed_paths):
+        alerts.append(
+            _alert(
+                "finding_path_disallowed",
+                f"findings[{index}].file is outside allowed_paths",
+            )
+        )
+    if _path_forbidden(normalized, forbidden_paths):
+        alerts.append(
+            _alert("finding_path_forbidden", f"findings[{index}].file matches forbidden_paths")
+        )
+    return normalized, alerts
+
+
+def _string_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str) and item]
+
+
+def _path_allowed(path: str, patterns: list[str]) -> bool:
+    return bool(patterns) and any(
+        fnmatch.fnmatch(path, _normalize_policy_glob(pattern)) for pattern in patterns
+    )
+
+
+def _path_forbidden(path: str, patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(path, _normalize_policy_glob(pattern)) for pattern in patterns)
+
+
+def _normalize_policy_glob(pattern: str) -> str:
+    return pattern.removeprefix("./")
 
 
 def _utc_stamp() -> str:

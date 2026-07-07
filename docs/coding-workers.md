@@ -143,6 +143,11 @@ uv run tau review-findings \
 Use `--zero-trust --policy-profile policy.json --data-boundary boundary.json`
 when reviewer findings are part of a high-stakes coding route. In zero-trust
 mode, Tau blocks review finding receipts that omit policy or boundary metadata.
+Review finding payloads may also declare `allowed_paths` and `forbidden_paths`;
+Tau normalizes each `findings[].file` to a repo-relative path and blocks
+absolute paths, `..` escapes, files outside `allowed_paths`, or files matching
+`forbidden_paths`. This keeps reviewer claims inside the same coding boundary
+as patch receipts and worker results.
 
 ### Coding Course Correction
 

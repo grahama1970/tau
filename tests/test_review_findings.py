@@ -182,6 +182,105 @@ def test_review_findings_requires_evidence_for_p0_p1() -> None:
     assert "missing_finding_evidence" in receipt["alert_codes"]
 
 
+def test_review_findings_accepts_files_inside_allowed_paths() -> None:
+    payload = _payload(
+        verdict="REVISE",
+        findings=[
+            {
+                "id": "finding-001",
+                "severity": "P2",
+                "confidence": 0.7,
+                "file": "./src/example.py",
+                "line": 3,
+                "claim": "Needs a narrower helper.",
+                "evidence": ["src/example.py:3"],
+                "required_action": "revise",
+            }
+        ],
+    )
+    payload["allowed_paths"] = ["src/**", "tests/**"]
+    payload["forbidden_paths"] = ["secrets/**"]
+
+    receipt = validate_review_findings(payload)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["allowed_paths"] == ["src/**", "tests/**"]
+    assert receipt["forbidden_paths"] == ["secrets/**"]
+    assert receipt["findings"][0]["file"] == "src/example.py"
+
+
+def test_review_findings_blocks_file_outside_allowed_paths() -> None:
+    payload = _payload(
+        verdict="REVISE",
+        findings=[
+            {
+                "id": "finding-001",
+                "severity": "P2",
+                "confidence": 0.7,
+                "file": "docs/plan.md",
+                "line": 3,
+                "claim": "Reviewer drifted outside coding boundary.",
+                "evidence": ["docs/plan.md:3"],
+                "required_action": "revise",
+            }
+        ],
+    )
+    payload["allowed_paths"] = ["src/**", "tests/**"]
+
+    receipt = validate_review_findings(payload)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "finding_path_disallowed" in receipt["alert_codes"]
+
+
+def test_review_findings_blocks_file_matching_forbidden_paths() -> None:
+    payload = _payload(
+        verdict="REVISE",
+        findings=[
+            {
+                "id": "finding-001",
+                "severity": "P2",
+                "confidence": 0.7,
+                "file": "secrets/token.txt",
+                "line": 1,
+                "claim": "Reviewer touched forbidden material.",
+                "evidence": ["secrets/token.txt:1"],
+                "required_action": "revise",
+            }
+        ],
+    )
+    payload["allowed_paths"] = ["src/**", "tests/**", "secrets/**"]
+    payload["forbidden_paths"] = ["secrets/**"]
+
+    receipt = validate_review_findings(payload)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "finding_path_forbidden" in receipt["alert_codes"]
+
+
+def test_review_findings_blocks_absolute_or_escaping_file_path() -> None:
+    payload = _payload(
+        verdict="REVISE",
+        findings=[
+            {
+                "id": "finding-001",
+                "severity": "P2",
+                "confidence": 0.7,
+                "file": "../outside.py",
+                "line": 1,
+                "claim": "Reviewer path escaped the repo boundary.",
+                "evidence": ["../outside.py:1"],
+                "required_action": "revise",
+            }
+        ],
+    )
+
+    receipt = validate_review_findings(payload)
+
+    assert receipt["status"] == "BLOCKED"
+    assert "finding_path_escape" in receipt["alert_codes"]
+
+
 def test_review_findings_zero_trust_blocks_missing_policy_boundary() -> None:
     receipt = validate_review_findings(
         _payload(verdict="PASS", findings=[]),
