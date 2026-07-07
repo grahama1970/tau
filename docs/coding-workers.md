@@ -920,7 +920,9 @@ with `omp_metadata_mismatch`.
 Blocked OMP launch receipts also write a `tau.course_correction.v1` artifact
 under `course-corrections/` and record `course_correction_path`,
 `course_correction_artifacts`, and `course_correction` so the orchestrator can
-route repair instead of retrying blindly.
+route repair instead of retrying blindly. The correction's `observed_artifact`
+points at captured stdout/stderr when available, otherwise the blocked work
+order.
 This proves only that Tau sent a bounded request to a local process and captured
 parseable OMP-shaped process output. It does not prove OMP accepted the request
 semantically, a real `oh-my-pi` binary was used, the worker result artifact is
@@ -968,7 +970,9 @@ Blocked SciLLM launch receipts use the same `tau.course_correction.v1` artifact
 contract as OMP launch receipts. Missing local auth maps to
 `provider_auth_required`, unavailable or failed providers map to
 `provider_crashed`, stale Herdr gates map to `herdr_stale`, and missing worker
-result artifacts map to `worker_result_missing`.
+result artifacts map to `worker_result_missing`. The correction's
+`observed_artifact` points at the captured response or error artifact when
+available, otherwise the blocked work order.
 When the response names the result but the artifact is absent or unreadable,
 Tau blocks with `scillm_worker_result_artifact_missing`. Socket-level request
 timeouts, including `urllib` errors whose reason is a timeout, are recorded as

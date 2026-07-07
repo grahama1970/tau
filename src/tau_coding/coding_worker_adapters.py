@@ -787,6 +787,10 @@ def _worker_launch_course_correction_artifact(
     executed = bool(
         launch_result.get("process_executed") or launch_result.get("http_executed")
     )
+    observed_artifact_path = _worker_launch_observed_artifact_path(
+        work_order=work_order,
+        launch_result=launch_result,
+    )
     payload = build_course_correction_receipt(
         trigger=trigger,
         dag_id=_string(work_order.get("dag_id")),
@@ -816,7 +820,7 @@ def _worker_launch_course_correction_artifact(
             else None,
             "launch_receipt_path": str(output_path.expanduser().resolve()),
         },
-        observed_artifact_path=output_path,
+        observed_artifact_path=observed_artifact_path,
         errors=alert_codes,
         stop_reason=trigger,
         mocked=False,
@@ -825,6 +829,24 @@ def _worker_launch_course_correction_artifact(
     )
     _write_json(path, payload)
     return path, payload
+
+
+def _worker_launch_observed_artifact_path(
+    *,
+    work_order: Mapping[str, Any],
+    launch_result: Mapping[str, Any],
+) -> Path | None:
+    for key in (
+        "response_path",
+        "error_path",
+        "stdout_path",
+        "stderr_path",
+    ):
+        value = _string(launch_result.get(key))
+        if value:
+            return Path(value)
+    work_order_path = _string(work_order.get("work_order_path"))
+    return Path(work_order_path) if work_order_path else None
 
 
 def _worker_course_correction_trigger(alert_codes: list[str]) -> str | None:

@@ -2593,6 +2593,10 @@ def test_omp_worker_launch_apply_skips_process_when_substrate_blocks(
     assert payload["course_correction"]["trigger"] == "receipt_timeout"
     assert payload["course_correction"]["observed_state"]["phase"] == "worker_launch"
     assert payload["course_correction"]["observed_state"]["worker_kind"] == "omp"
+    assert payload["course_correction"]["observed_artifact"]["path"] == str(
+        work_order.resolve()
+    )
+    assert payload["course_correction"]["observed_artifact"]["exists"] is True
     assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
     assert Path(payload["course_correction_path"]).exists()
     assert not marker.exists()
@@ -3060,6 +3064,12 @@ def test_scillm_worker_launch_apply_blocks_incomplete_success_response(
     assert requests[0]["path"] == "/v1/scillm/opencode/runs"
     assert "missing_scillm_run_status" in payload["alert_codes"]
     assert "missing_scillm_run_identifier" in payload["alert_codes"]
+    assert payload["course_correction"]["schema"] == "tau.course_correction.v1"
+    assert payload["course_correction"]["trigger"] == "worker_result_missing"
+    assert payload["course_correction"]["observed_artifact"]["path"] == payload[
+        "response_path"
+    ]
+    assert payload["course_correction"]["observed_artifact"]["exists"] is True
 
 
 def test_scillm_worker_launch_apply_blocks_missing_result_artifact(
@@ -3242,6 +3252,10 @@ def test_scillm_worker_launch_local_apply_blocks_without_auth_token(
         "http_status": None,
         "timed_out": False,
     }
+    assert payload["course_correction"]["observed_artifact"]["path"] == str(
+        work_order.resolve()
+    )
+    assert payload["course_correction"]["observed_artifact"]["exists"] is True
     assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
     assert Path(payload["course_correction_path"]).exists()
 
