@@ -305,6 +305,26 @@ def test_compliance_package_validate_accepts_packaged_coding_evidence(
             "goal_hash": "sha256:g",
         },
     )
+    _write_json(
+        evidence_dir / "memory-intent-acquisition-receipt.json",
+        {
+            "schema": "tau.memory_intent_acquisition_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "goal_hash": "sha256:g",
+        },
+    )
+    _write_json(
+        evidence_dir / "evidence-case-acquisition-receipt.json",
+        {
+            "schema": "tau.evidence_case_acquisition_receipt.v1",
+            "status": "PASS",
+            "ok": True,
+            "mocked": False,
+            "goal_hash": "sha256:g",
+        },
+    )
 
     receipt = write_compliance_package_validation_receipt(
         package_dir=package_dir,
@@ -312,7 +332,7 @@ def test_compliance_package_validate_accepts_packaged_coding_evidence(
     )
 
     assert receipt["ok"] is True
-    assert receipt["artifacts"]["coding_evidence_receipts"]["receipt_count"] == 4
+    assert receipt["artifacts"]["coding_evidence_receipts"]["receipt_count"] == 6
     assert receipt["artifacts"][
         "coding_evidence:coding-evidence-receipts/test-run-receipt.json"
     ]["schema"] == "tau.test_run_receipt.v1"
@@ -322,6 +342,12 @@ def test_compliance_package_validate_accepts_packaged_coding_evidence(
     assert receipt["artifacts"][
         "coding_evidence:coding-evidence-receipts/omp-worker-doctor-receipt.json"
     ]["schema"] == "tau.omp_worker_doctor_receipt.v1"
+    assert receipt["artifacts"][
+        "coding_evidence:coding-evidence-receipts/memory-intent-acquisition-receipt.json"
+    ]["schema"] == "tau.memory_intent_acquisition_receipt.v1"
+    assert receipt["artifacts"][
+        "coding_evidence:coding-evidence-receipts/evidence-case-acquisition-receipt.json"
+    ]["schema"] == "tau.evidence_case_acquisition_receipt.v1"
 
 
 def test_compliance_package_validate_blocks_bad_coding_evidence(

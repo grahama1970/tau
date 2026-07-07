@@ -58,7 +58,9 @@ def test_run_report_renders_static_html_sections(tmp_path: Path) -> None:
     assert "tau.test_run_receipt.v1" in html
     assert "tau.code_runner_worker_receipt.v1" in html
     assert "tau.debugger_skill_adapter_receipt.v1" in html
+    assert "tau.memory_intent_acquisition_receipt.v1" in html
     assert "tau.evidence_case_skill_adapter_receipt.v1" in html
+    assert "tau.evidence_case_acquisition_receipt.v1" in html
     assert "tau.omp_worker_doctor_receipt.v1" in html
     assert "tau.review_code_skill_adapter_receipt.v1" in html
     assert "tau.research_skill_adapter_receipt.v1" in html
@@ -195,10 +197,12 @@ def _write_report_run(tmp_path: Path) -> Path:
     for file_name, schema in [
         ("code-runner-worker-receipt.json", "tau.code_runner_worker_receipt.v1"),
         ("debugger-skill-adapter-receipt.json", "tau.debugger_skill_adapter_receipt.v1"),
+        ("memory-intent-acquisition-receipt.json", "tau.memory_intent_acquisition_receipt.v1"),
         (
             "evidence-case-skill-adapter-receipt.json",
             "tau.evidence_case_skill_adapter_receipt.v1",
         ),
+        ("evidence-case-acquisition-receipt.json", "tau.evidence_case_acquisition_receipt.v1"),
         ("omp-worker-doctor-receipt.json", "tau.omp_worker_doctor_receipt.v1"),
         ("review-code-skill-adapter-receipt.json", "tau.review_code_skill_adapter_receipt.v1"),
         ("research-skill-adapter-receipt.json", "tau.research_skill_adapter_receipt.v1"),

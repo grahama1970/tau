@@ -55,6 +55,11 @@ review findings, commit-plan, debug, GitHub read, OMP/SciLLM worker,
 course-correction, and orchestration reliability receipts. It records relative path, schema, status, `ok`,
 `mocked`, `live`, `provider_live`, receipt SHA-256, goal hash, and any
 policy/data-boundary hashes present on the receipt.
+Graph Memory acquisition receipts such as
+`tau.memory_intent_acquisition_receipt.v1` and
+`tau.evidence_case_acquisition_receipt.v1` are surfaced as live Memory call
+evidence; they do not prove Memory facts are true or that dispatch may bypass
+the memory/evidence gate.
 OMP readiness receipts such as `tau.omp_worker_doctor_receipt.v1` are surfaced
 as identity/readiness preflight evidence; they do not prove that a worker was
 launched or that OMP performed coding work.

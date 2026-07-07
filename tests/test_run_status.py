@@ -1817,7 +1817,9 @@ def test_run_status_summarizes_skill_adapter_coding_evidence(tmp_path: Path) -> 
     schemas = [
         "tau.code_runner_worker_receipt.v1",
         "tau.debugger_skill_adapter_receipt.v1",
+        "tau.memory_intent_acquisition_receipt.v1",
         "tau.evidence_case_skill_adapter_receipt.v1",
+        "tau.evidence_case_acquisition_receipt.v1",
         "tau.omp_worker_doctor_receipt.v1",
         "tau.review_code_skill_adapter_receipt.v1",
         "tau.research_skill_adapter_receipt.v1",
