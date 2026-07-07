@@ -131,11 +131,27 @@ debugger evidence before retry.
 This still does not prove the bug is fixed or that the debugger conclusion is
 semantically complete.
 
+## Code-Runner Adapter
+
+The code-runner adapter ingests `code_runner.result.v1` and requires three
+artifact classes before Tau accepts the worker result:
+
+- a patch artifact;
+- a deterministic definition-of-done artifact;
+- a test or log artifact.
+
+The adapter then dry-run validates the patch through `tau.code_patch_receipt.v1`.
+It rejects patches outside the worker allowlist and emits a course-correction
+payload when evidence is missing or the worker reports a blocked result.
+
+This still does not apply the patch, prove semantic correctness, or make the
+worker model truthful.
+
 ## Next Layers
 
 The next composition layers should be implemented as separate slices:
 
-1. Code-runner, review-code, evidence-case, research, and model-worker adapters.
+1. Review-code, evidence-case, research, and model-worker adapters.
 2. Project-profile capability provider requirements.
 3. Course-correction routing through validated capability providers.
 4. A skill-composition red-team suite that proves Tau does not blindly trust
