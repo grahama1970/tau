@@ -2462,6 +2462,38 @@ def test_omp_worker_launch_apply_blocks_response_metadata_mismatch(
     assert "metadata.goal_hash expected" in mismatch_alert["errors"][1]
 
 
+def test_omp_worker_launch_accepts_real_response_id_binding(tmp_path: Path) -> None:
+    fake_omp = _write_fake_omp(tmp_path, stdout_mode="real-response-id")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "PASS"
+    assert payload["process_executed"] is True
+    assert payload["stdout_jsonl_valid"] is True
+    assert payload["response_frame_count"] == 3
+    assert payload["response_metadata"] == [
+        {
+            "binding": "response_id",
+            "id": "tau-coding-dag-coder",
+            "command": "prompt",
+            "success": True,
+        }
+    ]
+    assert "omp_response_metadata_missing" not in payload["alert_codes"]
+
+
 def test_omp_worker_launch_apply_blocks_empty_stdout_rpc_response(
     tmp_path: Path,
 ) -> None:
@@ -2487,6 +2519,32 @@ def test_omp_worker_launch_apply_blocks_empty_stdout_rpc_response(
     assert payload["stdout_jsonl_valid"] is False
     assert payload["response_frame_count"] == 0
     assert payload["response_frames"] == []
+    assert "omp_stdout_jsonl_empty" in payload["alert_codes"]
+
+
+def test_omp_worker_launch_classifies_missing_native_addon(tmp_path: Path) -> None:
+    fake_omp = _write_fake_omp(tmp_path, stdout_mode="missing-native-addon")
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.omp.v1",
+        high_stakes=True,
+        model_provider_route={"surface": "omp_rpc"},
+    )
+
+    payload = write_omp_worker_launch_receipt(
+        work_order_path=work_order,
+        output_path=tmp_path / "omp-launch-receipt.json",
+        apply=True,
+        omp_bin=str(fake_omp),
+        timeout_s=5,
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["process_executed"] is True
+    assert payload["exit_code"] == 1
+    assert payload["stdout_jsonl_valid"] is False
+    assert "omp_native_addon_missing" in payload["alert_codes"]
+    assert "omp_launch_nonzero_exit" in payload["alert_codes"]
     assert "omp_stdout_jsonl_empty" in payload["alert_codes"]
 
 
@@ -3897,6 +3955,12 @@ def _write_fake_omp(
             "payload = json.loads(sys.stdin.readline())",
             "print('not-json')",
         ]
+    elif stdout_mode == "missing-native-addon":
+        output_lines = [
+            "payload = json.loads(sys.stdin.readline())",
+            "sys.stderr.write('error: Failed to load pi_natives native addon for linux-x64\\n')",
+            "raise SystemExit(1)",
+        ]
     elif stdout_mode == "no-metadata":
         output_lines = [
             "payload = json.loads(sys.stdin.readline())",
@@ -3915,6 +3979,21 @@ def _write_fake_omp(
             "    'schema': 'fake.omp.rpc.response',",
             "    'received_type': payload.get('type'),",
             "    'metadata': metadata,",
+            "}, sort_keys=True))",
+        ]
+    elif stdout_mode == "real-response-id":
+        output_lines = [
+            "payload = json.loads(sys.stdin.readline())",
+            "print(json.dumps({'type': 'ready'}, sort_keys=True))",
+            "print(json.dumps({",
+            "    'type': 'available_commands_update',",
+            "    'commands': [],",
+            "}, sort_keys=True))",
+            "print(json.dumps({",
+            "    'type': 'response',",
+            "    'id': payload.get('id'),",
+            "    'command': 'prompt',",
+            "    'success': True,",
             "}, sort_keys=True))",
         ]
     else:

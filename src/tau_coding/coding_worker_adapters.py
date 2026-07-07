@@ -1104,6 +1104,7 @@ def _maybe_run_omp_rpc_launch(
     stdout_path.write_text(completed.stdout, encoding="utf-8")
     stderr_path.write_text(completed.stderr, encoding="utf-8")
     if completed.returncode != 0:
+        _append_omp_launch_diagnostic_alerts(completed.stderr, alerts)
         alerts.append(
             _alert("omp_launch_nonzero_exit", f"OMP launch exited {completed.returncode}")
         )
@@ -1112,7 +1113,7 @@ def _maybe_run_omp_rpc_launch(
         alerts.append(error)
     response_metadata = _omp_response_metadata(
         response_frames=response_frames,
-        expected_metadata=stdin_payload.get("metadata", {}),
+        expected_request=stdin_payload,
         alerts=alerts,
     )
     response_schemas = sorted(
@@ -1140,14 +1141,36 @@ def _maybe_run_omp_rpc_launch(
     return result
 
 
+def _append_omp_launch_diagnostic_alerts(
+    stderr: str,
+    alerts: list[dict[str, Any]],
+) -> None:
+    if "Failed to load pi_natives native addon" in stderr:
+        alerts.append(
+            _alert(
+                "omp_native_addon_missing",
+                "OMP launch failed because the pi_natives native addon is missing",
+            )
+        )
+    elif "Cannot find module" in stderr:
+        alerts.append(
+            _alert(
+                "omp_dependency_missing",
+                "OMP launch failed because a required runtime module is missing",
+            )
+        )
+
+
 def _omp_response_metadata(
     *,
     response_frames: list[dict[str, Any]],
-    expected_metadata: object,
+    expected_request: Mapping[str, Any],
     alerts: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     if not response_frames:
         return []
+    expected_metadata = expected_request.get("metadata", {})
+    expected_id = _string(expected_request.get("id"))
     if not isinstance(expected_metadata, Mapping):
         alerts.append(_alert("omp_request_metadata_missing", "OMP request metadata is missing"))
         return []
@@ -1155,12 +1178,27 @@ def _omp_response_metadata(
     for index, frame in enumerate(response_frames, start=1):
         metadata = frame.get("metadata")
         if not isinstance(metadata, Mapping):
-            alerts.append(
-                _alert(
-                    "omp_response_metadata_missing",
-                    f"OMP RPC stdout frame {index} must echo request metadata",
+            frame_type = _string(frame.get("type"))
+            frame_id = _string(frame.get("id"))
+            if frame_type == "response" and frame_id and frame_id == expected_id:
+                metadata_records.append(
+                    {
+                        "binding": "response_id",
+                        "id": frame_id,
+                        "command": frame.get("command"),
+                        "success": frame.get("success"),
+                    }
                 )
-            )
+            elif not _is_omp_control_frame_without_metadata(frame_type=frame_type, frame=frame):
+                alerts.append(
+                    _alert(
+                        "omp_response_metadata_missing",
+                        (
+                            f"OMP RPC stdout frame {index} must echo request metadata "
+                            "or match the prompt response id"
+                        ),
+                    )
+                )
             continue
         metadata_record = dict(metadata)
         metadata_records.append(metadata_record)
@@ -1177,6 +1215,16 @@ def _omp_response_metadata(
                 )
             )
     return metadata_records
+
+
+def _is_omp_control_frame_without_metadata(
+    *,
+    frame_type: str | None,
+    frame: Mapping[str, Any],
+) -> bool:
+    if frame_type in {"ready", "extension_ui_request", "commands", "available_commands_update"}:
+        return True
+    return frame_type is None and isinstance(frame.get("commands"), list)
 
 
 def _parse_jsonl_response_frames(stdout: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:

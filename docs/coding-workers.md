@@ -910,13 +910,15 @@ metadata before any external process launch.
 
 With `--apply`, `omp-worker-launch` invokes the configured command, writes
 captured stdout and stderr artifacts next to the receipt, requires stdout to
-contain parseable JSONL response frames, requires each frame to echo the request
-metadata, and records `process_executed`, `exit_code`, `timed_out`,
+contain parseable JSONL response frames, allows OMP startup/control frames
+(`ready`, extension UI requests, and command catalogs), requires substantive
+response frames to echo the request metadata or match the prompt response id,
+and records `process_executed`, `exit_code`, `timed_out`,
 `stdout_path`, `stderr_path`, `stdout_sha256`, `stderr_sha256`, byte counts,
 `stdout_jsonl_valid`, `response_frame_count`, `response_schemas`,
 `response_frames`, `response_metadata`, and `log_artifacts`.
-Missing metadata blocks with `omp_response_metadata_missing`; mismatches block
-with `omp_metadata_mismatch`.
+Missing response binding blocks with `omp_response_metadata_missing`; mismatches
+block with `omp_metadata_mismatch`.
 Blocked OMP launch receipts also write a `tau.course_correction.v1` artifact
 under `course-corrections/` and record `course_correction_path`,
 `course_correction_artifacts`, and `course_correction` so the orchestrator can
@@ -941,6 +943,12 @@ When the configured command starts but stderr contains a Bun/Node-style
 For a local `oh-my-pi` checkout this normally means the wrapper exists but the
 checkout has not been prepared with its setup/install path, so Tau must stop at
 readiness instead of treating the worker as launchable.
+
+If the doctor passes but the apply launch stderr says `Failed to load
+pi_natives native addon`, Tau records `omp_native_addon_missing` on the launch
+receipt. For a local `oh-my-pi` checkout, build the native package with
+`bun --cwd=packages/natives run build` before treating the OMP RPC path as
+available.
 
 For SciLLM coding delegates, Tau uses the SciLLM proxy service, normally
 `http://localhost:4001`, and the OpenCode serve surface

@@ -18,6 +18,6 @@
   "expected_apply_launch_process_executed": true,
   "expected_apply_launch_exit_code": 0,
   "expected_apply_launch_stdout_jsonl_valid": true,
-  "expected_apply_launch_response_frame_count": 1,
+  "expected_apply_launch_response_frame_count": 4,
   "expected_apply_launch_log_artifacts": true
 }
