@@ -20,6 +20,14 @@ from tau_coding.policy_profile import (
 )
 
 TEST_RUN_RECEIPT_SCHEMA = "tau.test_run_receipt.v1"
+PYTEST_PATH_VALUE_OPTIONS = {
+    "--basetemp",
+    "--cache-dir",
+    "--confcutdir",
+    "--ignore",
+    "--junitxml",
+    "--rootdir",
+}
 
 
 def write_test_run_receipt(
@@ -196,12 +204,12 @@ def _pytest_command_path_errors(command: Sequence[str], repo: Path) -> list[str]
             skip_next_path_value = False
             errors.extend(_path_arg_errors(arg, repo))
             continue
-        if arg == "--rootdir":
+        if arg in PYTEST_PATH_VALUE_OPTIONS:
             skip_next_path_value = True
             continue
-        if arg.startswith("--rootdir="):
-            _, _, value = arg.partition("=")
-            errors.extend(_path_arg_errors(value, repo))
+        option_name, separator, _ = arg.partition("=")
+        if separator and option_name in PYTEST_PATH_VALUE_OPTIONS:
+            errors.extend(_path_arg_errors(arg.partition("=")[2], repo))
             continue
         if arg.startswith("-"):
             continue

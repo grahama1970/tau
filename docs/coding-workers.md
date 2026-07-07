@@ -365,8 +365,10 @@ semantic coverage from a passing command. Tested paths must be non-empty
 relative paths inside the repo; absolute paths or `..` escapes block with
 `invalid_tested_path` before the test command can run. Pytest path arguments in
 the command itself must also stay inside the repo; absolute external paths,
-`..` escapes, and external `--rootdir` values block with
-`test_command_path_escape` before execution. In zero-trust mode, Tau
+`..` escapes, external positional targets, and external values for path-valued
+pytest options such as `--rootdir`, `--basetemp`, `--confcutdir`, `--ignore`,
+`--cache-dir`, or `--junitxml` block with `test_command_path_escape` before
+execution. In zero-trust mode, Tau
 requires the active goal hash, `tau.policy_profile.v1`, and
 `tau.data_boundary.v1` before running the command. The zero-trust receipt path
 must also resolve under `--repo`; external receipt paths block with

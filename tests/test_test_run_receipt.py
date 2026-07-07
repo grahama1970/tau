@@ -124,6 +124,50 @@ def test_test_run_receipt_blocks_external_pytest_rootdir_without_execution(
     assert "test_command_path_escape" in payload["alert_codes"]
 
 
+def test_test_run_receipt_blocks_external_pytest_basetemp_without_execution(
+    tmp_path: Path,
+) -> None:
+    _write_passing_test(tmp_path)
+    outside = tmp_path.parent / "outside-basetemp"
+
+    payload = write_test_run_receipt(
+        repo=tmp_path,
+        output_path=tmp_path / "test-run.json",
+        command=[sys.executable, "-m", "pytest", "-q", f"--basetemp={outside}"],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_result"] is None
+    assert payload["live"] is False
+    assert "test_command_path_escape" in payload["alert_codes"]
+
+
+def test_test_run_receipt_blocks_external_pytest_confcutdir_without_execution(
+    tmp_path: Path,
+) -> None:
+    _write_passing_test(tmp_path)
+    outside = tmp_path.parent / "outside-confcutdir"
+    outside.mkdir()
+
+    payload = write_test_run_receipt(
+        repo=tmp_path,
+        output_path=tmp_path / "test-run.json",
+        command=[
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "--confcutdir",
+            str(outside),
+        ],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_result"] is None
+    assert payload["live"] is False
+    assert "test_command_path_escape" in payload["alert_codes"]
+
+
 def test_test_run_zero_trust_blocks_missing_policy_boundary(tmp_path: Path) -> None:
     _write_passing_test(tmp_path)
 
