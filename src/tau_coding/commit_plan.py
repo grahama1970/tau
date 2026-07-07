@@ -61,6 +61,7 @@ def write_commit_plan_receipt(
     evidence_receipts = _evidence_receipts(
         evidence_receipt_paths or [],
         alerts,
+        repo=resolved_repo,
         expected_goal_hash=goal_hash,
     )
     high_risk = [item for item in changed if _is_high_risk(item["path"])]
@@ -72,13 +73,21 @@ def write_commit_plan_receipt(
             alerts.append(_alert("commit_group_missing_rationale", "commit group has no rationale"))
     if high_risk:
         alerts.append(_alert("high_risk_paths_touched", "high-risk paths require approval"))
-    if _has_group(groups, "source") and not _has_group(groups, "tests") and not evidence_receipts:
-        alerts.append(
-            _alert(
-                "source_changes_lack_tests_or_evidence",
-                "source changes require changed tests or explicit evidence receipts",
+    if _has_group(groups, "source") and not _has_group(groups, "tests"):
+        if not evidence_receipts:
+            alerts.append(
+                _alert(
+                    "source_changes_lack_tests_or_evidence",
+                    "source changes require changed tests or explicit evidence receipts",
+                )
             )
-        )
+        elif not _source_changes_have_relevant_evidence(groups, evidence_receipts):
+            alerts.append(
+                _alert(
+                    "source_changes_lack_relevant_evidence",
+                    "source changes require evidence receipts that cover the changed source paths",
+                )
+            )
     if apply:
         alerts.append(
             _alert("approval_required_to_apply", "commit-plan apply requires approval receipt")
@@ -222,6 +231,7 @@ def _evidence_receipts(
     paths: list[Path],
     alerts: list[dict[str, str]],
     *,
+    repo: Path,
     expected_goal_hash: str | None,
 ) -> list[dict[str, Any]]:
     receipts: list[dict[str, Any]] = []
@@ -291,9 +301,80 @@ def _evidence_receipts(
                     if expected_goal_hash is None
                     else receipt_goal_hash == expected_goal_hash
                 ),
+                "covered_paths": _covered_paths_from_receipt(payload, repo),
             }
         )
     return receipts
+
+
+def _source_changes_have_relevant_evidence(
+    groups: list[dict[str, Any]],
+    evidence_receipts: list[dict[str, Any]],
+) -> bool:
+    source_paths = {
+        str(item.get("path"))
+        for group in groups
+        if group.get("group_id") == "source"
+        for item in group.get("files", [])
+        if item.get("path")
+    }
+    covered_paths = {
+        path
+        for receipt in evidence_receipts
+        for path in receipt.get("covered_paths", [])
+        if isinstance(path, str)
+    }
+    return bool(source_paths & covered_paths)
+
+
+def _covered_paths_from_receipt(payload: dict[str, Any], repo: Path) -> list[str]:
+    paths: set[str] = set()
+    _append_covered_path(paths, payload.get("target_file"), repo)
+    for field in ("changed_files", "result_artifacts", "required_artifacts"):
+        value = payload.get(field)
+        if isinstance(value, list):
+            for item in value:
+                _append_covered_path(paths, item, repo)
+    for field in (
+        "inspected_artifacts",
+        "changed_file_artifacts",
+        "required_artifact_descriptors",
+        "test_log_artifacts",
+        "validated_artifacts",
+    ):
+        value = payload.get(field)
+        if isinstance(value, list):
+            for item in value:
+                if not isinstance(item, dict):
+                    continue
+                _append_covered_path(paths, item.get("artifact"), repo)
+                _append_covered_path(paths, item.get("path"), repo)
+    findings = payload.get("findings")
+    if isinstance(findings, list):
+        for item in findings:
+            if isinstance(item, dict):
+                _append_covered_path(paths, item.get("file"), repo)
+    return sorted(paths)
+
+
+def _append_covered_path(paths: set[str], raw_path: object, repo: Path) -> None:
+    if not isinstance(raw_path, str) or not raw_path:
+        return
+    normalized = _relative_path_for_receipt(raw_path, repo)
+    if normalized:
+        paths.add(normalized)
+
+
+def _relative_path_for_receipt(raw_path: str, repo: Path) -> str | None:
+    candidate = Path(raw_path).expanduser()
+    if candidate.is_absolute():
+        try:
+            return candidate.resolve().relative_to(repo).as_posix()
+        except ValueError:
+            return None
+    if raw_path.startswith("../"):
+        return None
+    return candidate.as_posix()
 
 
 def _has_group(groups: list[dict[str, Any]], group_id: str) -> bool:

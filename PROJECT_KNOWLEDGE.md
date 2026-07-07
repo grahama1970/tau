@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-06 23:41 EDT by agent
+**Last updated:** 2026-07-06 23:45 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-06 commit-plan evidence relevance rung:
+  `src/tau_coding/commit_plan.py` now derives `covered_paths` for each
+  supported evidence receipt from receipt fields such as `target_file`,
+  `changed_files`, `inspected_artifacts`, `findings[].file`, and artifact
+  descriptors. Source-only commit plans now block with
+  `source_changes_lack_relevant_evidence` when PASS evidence receipts do not
+  overlap any changed source path, preventing unrelated PASS receipts from
+  justifying a source commit group. Focused proof: `git diff --check
+  PROJECT_KNOWLEDGE.md docs/coding-workers.md src/tau_coding/commit_plan.py
+  tests/test_commit_plan.py` -> pass; `uv run ruff check --select I,F,E501
+  src/tau_coding/commit_plan.py tests/test_commit_plan.py` -> `All checks
+  passed!`; `uv run pytest tests/test_commit_plan.py -q` -> `18 passed in
+  0.81s`. Aggregate coding sanity proof:
+  `scripts/run-coding-capability-sanity.py --run-dir
+  /tmp/tau-coding-capability-sanity-commit-plan-relevant-evidence-proof` wrote
+  `/tmp/tau-coding-capability-sanity-commit-plan-relevant-evidence-proof/coding-capability-sanity-receipt.json`
+  with `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `ok:true`, `check_count:13`, `failed_check_count:0`,
+  `provider_live:false`, and embedded coding receipt tests `203 passed in
+  6.70s`. This proves deterministic local commit-plan receipts block unrelated
+  PASS evidence for source-only changes and compose with the current coding
+  capability sanity suite; it does not prove semantic grouping optimality, live
+  OMP or SciLLM semantic worker execution, provider/model quality, semantic
+  code correctness, GitHub mutation, human acceptance, legal compliance, or full
+  sandbox isolation on every host.
 
 - 2026-07-06 worker test-log artifact rung:
   `src/tau_coding/coding_worker_adapters.py` now records accepted worker test

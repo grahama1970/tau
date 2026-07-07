@@ -103,6 +103,7 @@ def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path)
                 "mocked": False,
                 "live": True,
                 "provider_live": False,
+                "inspected_artifacts": [{"path": str(repo / "src.py")}],
             }
         )
         + "\n",
@@ -122,8 +123,39 @@ def test_commit_plan_accepts_source_change_with_evidence_receipt(tmp_path: Path)
     assert payload["evidence_receipts"][0]["mocked"] is False
     assert payload["evidence_receipts"][0]["live"] is True
     assert payload["evidence_receipts"][0]["provider_live"] is False
+    assert payload["evidence_receipts"][0]["covered_paths"] == ["src.py"]
     assert payload["evidence_receipts"][0]["sha256"].startswith("sha256:")
     assert payload["evidence_receipts"][0]["bytes"] == evidence.stat().st_size
+
+
+def test_commit_plan_blocks_source_change_with_unrelated_evidence_receipt(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path)
+    (repo / "src.py").write_text("value = 1\n", encoding="utf-8")
+    evidence = repo / "other-diagnostics.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "inspected_artifacts": [{"path": str(repo / "other.py")}],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = write_commit_plan_receipt(
+        repo=repo,
+        output_path=repo / "commit-plan.json",
+        evidence_receipt_paths=[evidence],
+    )
+
+    assert payload["status"] == "BLOCKED"
+    assert "source_changes_lack_relevant_evidence" in payload["alert_codes"]
+    assert payload["evidence_receipts"][0]["covered_paths"] == ["other.py"]
 
 
 def test_commit_plan_blocks_source_change_with_unsupported_evidence_schema(
@@ -191,7 +223,14 @@ def test_commit_plan_warns_when_docs_mix_with_runtime_changes(tmp_path: Path) ->
     (repo / "docs" / "example.md").write_text("# Example\n", encoding="utf-8")
     evidence = repo / "evidence.json"
     evidence.write_text(
-        json.dumps({"schema": "tau.lsp_diagnostics_receipt.v1", "ok": True, "status": "PASS"})
+        json.dumps(
+            {
+                "schema": "tau.lsp_diagnostics_receipt.v1",
+                "ok": True,
+                "status": "PASS",
+                "inspected_artifacts": [{"path": str(repo / "src" / "example.py")}],
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
@@ -260,6 +299,7 @@ def test_commit_plan_zero_trust_accepts_policy_boundary(tmp_path: Path) -> None:
                 "ok": True,
                 "status": "PASS",
                 "goal_hash": "sha256:goal",
+                "inspected_artifacts": [{"path": str(repo / "src.py")}],
             }
         )
         + "\n",
@@ -350,6 +390,7 @@ def test_cli_commit_plan_writes_receipt(tmp_path: Path) -> None:
                 "ok": True,
                 "status": "PASS",
                 "goal_hash": "sha256:goal",
+                "findings": [{"file": "src.py"}],
             }
         )
         + "\n",
