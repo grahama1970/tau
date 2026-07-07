@@ -1541,6 +1541,14 @@ def main(
                 timeout_seconds=float(options["timeout_seconds"]),
                 backend=str(options["backend"]),
                 image=_optional_str(options.get("image")),
+                stdin_text=(
+                    Path(str(options["stdin_file"])).read_text(encoding="utf-8")
+                    if options.get("stdin_file") is not None
+                    else None
+                ),
+                work_dir=(
+                    Path(str(options["work_dir"])) if options.get("work_dir") is not None else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -4079,6 +4087,8 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
         "timeout_seconds": 30.0,
         "backend": "bwrap",
         "image": None,
+        "stdin_file": None,
+        "work_dir": None,
         "command": [],
     }
     index = 0
@@ -4129,6 +4139,20 @@ def _parse_sandbox_run_cli_args(args: list[str]) -> dict[str, object]:
             options["image"] = args[index]
         elif arg.startswith("--image="):
             options["image"] = arg.partition("=")[2]
+        elif arg == "--stdin-file":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--stdin-file requires a value")
+            options["stdin_file"] = Path(args[index])
+        elif arg.startswith("--stdin-file="):
+            options["stdin_file"] = Path(arg.partition("=")[2])
+        elif arg == "--work-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--work-dir requires a value")
+            options["work_dir"] = Path(args[index])
+        elif arg.startswith("--work-dir="):
+            options["work_dir"] = Path(arg.partition("=")[2])
         else:
             raise RuntimeError(f"unknown sandbox-run option: {arg}")
         index += 1

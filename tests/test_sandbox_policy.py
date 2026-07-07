@@ -1,9 +1,11 @@
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from typer.testing import CliRunner
 
+import tau_coding.sandbox_run as sandbox_run
 from tau_coding.cli import app
 from tau_coding.sandbox_policy import sandbox_policy_alerts
 from tau_coding.sandbox_run import run_sandboxed_command
@@ -93,6 +95,79 @@ def test_sandbox_run_docker_backend_uses_strict_docker_policy(tmp_path: Path) ->
     assert receipt["data_boundary"]["schema"] == "tau.data_boundary.v1"
 
 
+def test_sandbox_run_passes_stdin_and_work_dir_to_bwrap(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+    work_dir = tmp_path / "worker"
+    work_dir.mkdir()
+    observed: dict[str, Any] = {}
+
+    def fake_probe(backend_path: str | None, *, work_dir: Path | None = None) -> dict:
+        observed["probe_backend_path"] = backend_path
+        observed["probe_work_dir"] = work_dir
+        return {"ok": True, "command": ["bwrap", "probe"], "stdout": "ok\n", "stderr": ""}
+
+    def fake_run(
+        command: list[str],
+        *,
+        backend_path: Path,
+        timeout_seconds: float,
+        stdin_text: str | None,
+        work_dir: Path | None,
+    ) -> dict:
+        observed["command"] = command
+        observed["backend_path"] = backend_path
+        observed["timeout_seconds"] = timeout_seconds
+        observed["stdin_text"] = stdin_text
+        observed["work_dir"] = work_dir
+        return {
+            "command": ["bwrap", "--bind", str(work_dir), "/work", *command],
+            "returncode": 0,
+            "stdout": "worker-ok\n",
+            "stderr": "",
+            "timed_out": False,
+        }
+
+    monkeypatch.setattr(sandbox_run, "_probe_bwrap", fake_probe)
+    monkeypatch.setattr(sandbox_run, "_run_bwrap_command", fake_run)
+
+    receipt = run_sandboxed_command(
+        command=["/work/fake-omp", "--mode", "rpc", "--no-session"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        stdin_text='{"type":"prompt"}\n',
+        work_dir=work_dir,
+        backend="bwrap",
+        timeout_seconds=12,
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["command_executed"] is True
+    assert receipt["work_dir"] == str(work_dir.resolve())
+    assert receipt["stdin_bytes"] == len('{"type":"prompt"}\n'.encode("utf-8"))
+    assert receipt["stdin_sha256"].startswith("sha256:")
+    assert observed["probe_work_dir"] == work_dir.resolve()
+    assert observed["stdin_text"] == '{"type":"prompt"}\n'
+    assert observed["work_dir"] == work_dir.resolve()
+
+
+def test_sandbox_run_blocks_missing_work_dir(tmp_path: Path) -> None:
+    policy_path, boundary_path = _write_policy_inputs(tmp_path)
+
+    receipt = run_sandboxed_command(
+        command=[sys.executable, "-c", "print('should-not-run')"],
+        policy_profile_path=policy_path,
+        data_boundary_path=boundary_path,
+        work_dir=tmp_path / "missing",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["command_executed"] is False
+    assert "invalid_work_dir" in receipt["alert_codes"]
+
+
 def test_cli_sandbox_run_writes_blocked_receipt_for_policy_rejection(tmp_path: Path) -> None:
     policy = _policy_profile()
     policy["network"]["default"] = "allow"
@@ -156,6 +231,45 @@ def test_cli_sandbox_run_docker_backend_writes_blocked_receipt(tmp_path: Path) -
     assert payload["command_executed"] is False
     assert "unpinned_image" in payload["alert_codes"]
     assert json.loads(receipt_path.read_text(encoding="utf-8")) == payload
+
+
+def test_cli_sandbox_run_accepts_stdin_file_and_work_dir(tmp_path: Path) -> None:
+    policy = _policy_profile()
+    policy["network"]["default"] = "allow"
+    policy_path, boundary_path = _write_policy_inputs(tmp_path, policy=policy)
+    stdin_path = tmp_path / "request.jsonl"
+    stdin_path.write_text('{"type":"prompt"}\n', encoding="utf-8")
+    work_dir = tmp_path / "worker"
+    work_dir.mkdir()
+    receipt_path = tmp_path / "sandbox-receipt.json"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "sandbox-run",
+            "--policy-profile",
+            str(policy_path),
+            "--data-boundary",
+            str(boundary_path),
+            "--stdin-file",
+            str(stdin_path),
+            "--work-dir",
+            str(work_dir),
+            "--out",
+            str(receipt_path),
+            "--",
+            "/work/fake-omp",
+        ],
+    )
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert payload["status"] == "BLOCKED"
+    assert payload["command_executed"] is False
+    assert payload["stdin_bytes"] == stdin_path.stat().st_size
+    assert payload["stdin_sha256"].startswith("sha256:")
+    assert payload["work_dir"] == str(work_dir.resolve())
+    assert "network_not_default_deny" in payload["alert_codes"]
 
 
 def _write_policy_inputs(

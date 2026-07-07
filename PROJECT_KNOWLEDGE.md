@@ -348,6 +348,32 @@
   Tau-launched workers, live OMP/SciLLM coding work, provider/model quality, or
   legal compliance.
 
+- 2026-07-06 sandbox stdin/workdir worker execution support rung:
+  `src/tau_coding/sandbox_run.py` now accepts bounded `stdin_text` and an
+  optional `work_dir` for Bubblewrap-backed commands; `src/tau_coding/cli.py`
+  exposes this through `uv run tau sandbox-run --stdin-file <request.jsonl>
+  --work-dir <dir> -- <command...>`. Receipts record `stdin_sha256`,
+  `stdin_bytes`, and `work_dir`, and Bubblewrap command construction mounts the
+  provided directory at `/work`. This is the missing substrate primitive for
+  RPC-style coding workers such as OMP, which require NDJSON prompt frames on
+  stdin and a deliberate working directory instead of ambient filesystem
+  inheritance. Focused proof: pending in the active slice. This does not prove
+  `uv run ruff check --select I,F,E501 src/tau_coding/sandbox_run.py
+  src/tau_coding/cli.py tests/test_sandbox_policy.py docs/sandbox-run.md` ->
+  pass; `uv run pytest tests/test_sandbox_policy.py -q` -> `11 passed in
+  0.41s`. Direct CLI proof wrote
+  `/tmp/tau-sandbox-stdin-workdir-proof/sandbox-receipt.json` with
+  `schema:"tau.sandbox_run_receipt.v1"`, `status:"BLOCKED"`,
+  `alert_codes:["sandbox_backend_unavailable"]`, `command_executed:false`,
+  `stdin_bytes:57`, `stdin_sha256:"sha256:..."`, and
+  `work_dir:"/tmp/tau-sandbox-stdin-workdir-proof/worker"` because this host's
+  Bubblewrap probe failed with the known network-namespace error. This proves
+  Tau accepts and receipts bounded stdin/workdir inputs and still fail-closes
+  before execution when the sandbox boundary cannot be established; it does not
+  prove a real `omp` binary exists on this host, live OMP/SciLLM semantic
+  worker execution, legal compliance, provider/model quality, or
+  kernel/container isolation strength.
+
 - 2026-07-06 worker substrate metadata hardening rung:
   `src/tau_coding/coding_worker_adapters.py` now blocks high-stakes Herdr
   worker work orders that name `herdr_receipt_path` without an existing

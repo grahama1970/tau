@@ -36,6 +36,23 @@ uv run tau sandbox-run \
   -- python --version
 ```
 
+RPC-style worker command with bounded stdin and a mounted working directory:
+
+```bash
+uv run tau sandbox-run \
+  --policy-profile experiments/goal-locked-subagents/fixtures/zero-trust-policy.json \
+  --data-boundary experiments/goal-locked-subagents/fixtures/itar-data-boundary.json \
+  --stdin-file /tmp/tau-worker/request.jsonl \
+  --work-dir /tmp/tau-worker \
+  --out /tmp/tau-worker/sandbox-receipt.json \
+  -- /work/fake-omp --mode rpc --no-session
+```
+
+`--stdin-file` lets Tau pass a bounded request frame into stdin without exposing
+ambient shell input. `--work-dir` mounts that host directory at `/work` for the
+Bubblewrap backend, so local worker binaries and requested artifacts can be
+bound deliberately instead of inheriting the caller's full filesystem.
+
 ## Required Policy Shape
 
 `sandbox-run` requires a zero-trust local-only posture:
@@ -83,6 +100,9 @@ Important fields:
   "schema": "tau.sandbox_run_receipt.v1",
   "status": "BLOCKED",
   "command_executed": false,
+  "stdin_sha256": "sha256:...",
+  "stdin_bytes": 18,
+  "work_dir": "/tmp/tau-worker",
   "backend": {
     "name": "bwrap",
     "available": true,

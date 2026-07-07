@@ -27,6 +27,8 @@ def run_sandboxed_command(
     timeout_seconds: float = 30.0,
     backend: str = "bwrap",
     image: str | None = None,
+    stdin_text: str | None = None,
+    work_dir: Path | None = None,
 ) -> dict[str, Any]:
     """Run a command only when Tau can establish the requested sandbox boundary."""
 
@@ -36,6 +38,7 @@ def run_sandboxed_command(
     data_boundary = _read_json_object(resolved_boundary)
     alerts = sandbox_policy_alerts(policy_profile=policy_profile, data_boundary=data_boundary)
     backend_info = _backend_info(backend)
+    resolved_work_dir = work_dir.expanduser().resolve() if work_dir is not None else None
     command_result: dict[str, Any] | None = None
 
     if not command:
@@ -45,9 +48,11 @@ def run_sandboxed_command(
 
     if backend in {"docker", "docker-sbx"} and not image:
         alerts.append(_alert("missing_docker_image", "Docker sandbox backend requires --image."))
+    if resolved_work_dir is not None and not resolved_work_dir.is_dir():
+        alerts.append(_alert("invalid_work_dir", "sandbox work_dir must exist and be a directory."))
 
     if not alerts and backend == "bwrap":
-        probe = _probe_bwrap(backend_info["path"])
+        probe = _probe_bwrap(backend_info["path"], work_dir=resolved_work_dir)
         backend_info["probe"] = probe
         if probe["ok"] is not True:
             alerts.append(
@@ -63,6 +68,8 @@ def run_sandboxed_command(
             list(command),
             backend_path=Path(str(backend_info["path"])),
             timeout_seconds=timeout_seconds,
+            stdin_text=stdin_text,
+            work_dir=resolved_work_dir,
         )
         if command_result["returncode"] != 0:
             alerts.append(
@@ -131,6 +138,9 @@ def run_sandboxed_command(
         "external_research": "denied",
         "public_github_mutation": "denied",
         "command": list(command),
+        "stdin_sha256": f"sha256:{_sha256_text(stdin_text)}" if stdin_text is not None else None,
+        "stdin_bytes": len(stdin_text.encode("utf-8")) if stdin_text is not None else None,
+        "work_dir": str(resolved_work_dir) if resolved_work_dir is not None else None,
         "command_executed": command_result is not None,
         "command_result": command_result,
         "alerts": alerts,
@@ -165,12 +175,13 @@ def _backend_info(backend: str) -> dict[str, Any]:
     }
 
 
-def _probe_bwrap(backend_path: str | None) -> dict[str, Any]:
+def _probe_bwrap(backend_path: str | None, *, work_dir: Path | None = None) -> dict[str, Any]:
     if backend_path is None:
         return {"ok": False, "error": "bwrap executable not found"}
     probe_command = _bwrap_command(
         ["/usr/bin/python3", "-c", "print('tau-sandbox-probe')"],
         backend_path=Path(backend_path),
+        work_dir=work_dir,
     )
     try:
         result = subprocess.run(
@@ -200,14 +211,17 @@ def _run_bwrap_command(
     *,
     backend_path: Path,
     timeout_seconds: float,
+    stdin_text: str | None,
+    work_dir: Path | None,
 ) -> dict[str, Any]:
-    sandbox_command = _bwrap_command(command, backend_path=backend_path)
+    sandbox_command = _bwrap_command(command, backend_path=backend_path, work_dir=work_dir)
     try:
         result = subprocess.run(
             sandbox_command,
             check=False,
             capture_output=True,
             text=True,
+            input=stdin_text,
             timeout=timeout_seconds,
         )
     except subprocess.TimeoutExpired as exc:
@@ -227,12 +241,15 @@ def _run_bwrap_command(
     }
 
 
-def _bwrap_command(command: list[str], *, backend_path: Path) -> list[str]:
+def _bwrap_command(command: list[str], *, backend_path: Path, work_dir: Path | None) -> list[str]:
     binds: list[str] = []
     for path in ("/usr", "/bin", "/lib", "/lib64"):
         host_path = Path(path)
         if host_path.exists():
             binds.extend(["--ro-bind", path, path])
+    work_mount = (
+        ["--bind", str(work_dir), "/work"] if work_dir is not None else ["--dir", "/work"]
+    )
     return [
         str(backend_path),
         "--unshare-net",
@@ -244,8 +261,7 @@ def _bwrap_command(command: list[str], *, backend_path: Path) -> list[str]:
         "/proc",
         "--tmpfs",
         "/tmp",
-        "--dir",
-        "/work",
+        *work_mount,
         "--chdir",
         "/work",
         "/usr/bin/env",
@@ -275,6 +291,10 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _alert(code: str, message: str, errors: list[str] | None = None) -> dict[str, Any]:
