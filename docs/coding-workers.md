@@ -75,10 +75,13 @@ artifact's `patch_sha256` plus `patch_bytes`.
 The built-in generated-path patterns cover both nested and repo-root generated
 or vendor directories, including `generated/**`, `__generated__/**`,
 `node_modules/**`, `.venv/**`, `dist/**`, and `build/**`.
-Patch-local `allowed_paths` and
-`forbidden_paths` must be lists of non-empty strings; malformed path-scope
-fields block with `invalid_allowed_paths` or `invalid_forbidden_paths` instead
-of becoming implicit empty scopes. The same patch input is exposed as
+Patch-local `allowed_paths` is mandatory and must contain at least one
+non-empty string pattern; missing or empty scopes block with
+`missing_allowed_paths` instead of becoming implicit broad write permission.
+Patch-local `allowed_paths` and `forbidden_paths` must be lists of non-empty
+strings; malformed path-scope fields block with `invalid_allowed_paths` or
+`invalid_forbidden_paths` instead of becoming implicit empty scopes. The same
+patch input is exposed as
 `patch_artifact` with label, resolved path, existence, SHA-256, and byte count.
 When the target file exists, the receipt also records `target_artifact_before`
 and `target_artifact_after` descriptors with label, resolved path, existence,
