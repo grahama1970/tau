@@ -113,6 +113,7 @@ from tau_coding.herdr_observation_gate import write_herdr_observation_gate_recei
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.init_project import initialize_tau_project
 from tau_coding.itar_boundary import write_itar_access_preflight_receipt
+from tau_coding.itar_contract import write_itar_contract_receipt
 from tau_coding.local_provider_readiness import write_local_provider_readiness_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
@@ -2283,6 +2284,17 @@ def main(
             options = _parse_itar_access_preflight_args(positional_args[1:])
             payload = write_itar_access_preflight_receipt(**options)
         except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "itar-contract-review":
+        try:
+            options = _parse_itar_contract_review_args(positional_args[1:])
+            payload = write_itar_contract_receipt(**options)
+        except (RuntimeError, ValueError) as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is not True:
@@ -6596,6 +6608,64 @@ def _parse_itar_access_preflight_args(args: list[str]) -> dict[str, object]:
         or not options["required_boundary"].strip()
     ):
         raise RuntimeError("--required-boundary requires a non-empty value")
+    return options
+
+
+def _parse_itar_contract_review_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "clause": None,
+        "policy_profile": None,
+        "data_boundary": None,
+        "out": None,
+        "contract_clause_id": None,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--clause",
+            "--policy-profile",
+            "--data-boundary",
+            "--out",
+            "--contract-clause-id",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--clause":
+                options["clause"] = Path(value)
+            elif arg == "--policy-profile":
+                options["policy_profile"] = Path(value)
+            elif arg == "--data-boundary":
+                options["data_boundary"] = Path(value)
+            elif arg == "--out":
+                options["out"] = Path(value)
+            elif arg == "--contract-clause-id":
+                options["contract_clause_id"] = value
+        elif arg.startswith("--clause="):
+            options["clause"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--policy-profile="):
+            options["policy_profile"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--data-boundary="):
+            options["data_boundary"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--contract-clause-id="):
+            options["contract_clause_id"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"Unknown itar-contract-review option: {arg}")
+        index += 1
+    missing = [
+        name
+        for name in ("clause", "policy_profile", "data_boundary", "out")
+        if options[name] is None
+    ]
+    if missing:
+        raise RuntimeError(
+            "Usage: tau itar-contract-review --clause <clause.txt> "
+            "--policy-profile <policy.json> --data-boundary <boundary.json> --out <receipt>"
+        )
     return options
 
 

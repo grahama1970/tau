@@ -1,0 +1,8 @@
+Synthetic Clause SC-001:
+Supplier shall restrict access to controlled engineering package files,
+including design drawings, test procedures, and manufacturing process notes,
+to approved project personnel. Any external release, foreign-person access,
+or transfer outside the approved local environment requires written export
+control review and approval.
+This clause is synthetic demo text and is not copied from any real contract.
+
