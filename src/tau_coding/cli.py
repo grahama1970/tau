@@ -236,6 +236,7 @@ from tau_coding.skill_capability_registry import (
 )
 from tau_coding.skill_composition_redteam import run_skill_composition_redteam
 from tau_coding.skill_invocation import write_skill_invocation_receipt
+from tau_coding.sparta_posture import write_sparta_posture_contract
 from tau_coding.test_run_receipt import write_test_run_receipt
 from tau_coding.thinking import DEFAULT_THINKING_LEVEL
 from tau_coding.traycer.cli import parse_traycer_validate_cli_args, traycer_validate_command
@@ -2298,6 +2299,17 @@ def main(
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "sparta-posture-export":
+        try:
+            options = _parse_sparta_posture_export_args(positional_args[1:])
+            payload = write_sparta_posture_contract(**options)
+        except (RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("readiness", {}).get("status") != "SIGNOFF_REVIEW_READY":
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -6666,6 +6678,48 @@ def _parse_itar_contract_review_args(args: list[str]) -> dict[str, object]:
             "Usage: tau itar-contract-review --clause <clause.txt> "
             "--policy-profile <policy.json> --data-boundary <boundary.json> --out <receipt>"
         )
+    return options
+
+
+def _parse_sparta_posture_export_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_dir": None,
+        "out": None,
+        "program": "synthetic-f36",
+        "system": "sparta-explorer",
+        "demo": True,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--run-dir", "--out", "--program", "--system"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--run-dir":
+                options["run_dir"] = Path(value)
+            elif arg == "--out":
+                options["out"] = Path(value)
+            elif arg == "--program":
+                options["program"] = value
+            elif arg == "--system":
+                options["system"] = value
+        elif arg.startswith("--run-dir="):
+            options["run_dir"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--program="):
+            options["program"] = arg.partition("=")[2]
+        elif arg.startswith("--system="):
+            options["system"] = arg.partition("=")[2]
+        elif arg == "--not-demo":
+            options["demo"] = False
+        else:
+            raise RuntimeError(f"Unknown sparta-posture-export option: {arg}")
+        index += 1
+    if options["run_dir"] is None or options["out"] is None:
+        raise RuntimeError("Usage: tau sparta-posture-export --run-dir <dir> --out <json>")
     return options
 
 
