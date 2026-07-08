@@ -1,0 +1,70 @@
+name: "tau-embry-sparta-airgap-review-v0"
+components:
+  - id: embry-os
+    label: "Embry-OS local services"
+    tech: "memory, scillm, local APIs, monitors"
+    latency: "local only"
+    color: blue
+    files:
+      - docs/briefs/tau-for-airgapped-agentic-compliance.md
+
+  - id: synthetic-boundary
+    label: "Synthetic data boundary"
+    tech: "demo data policy; no real controlled data"
+    latency: "preflight"
+    color: green
+    files:
+      - docs/demo-data-policy.md
+
+  - id: tau-control-plane
+    label: "Tau gates and DAG harness"
+    tech: "policy, data boundary, receipts, validators"
+    latency: "bounded ticks"
+    color: green
+    files:
+      - README.md
+      - docs/non-claims.md
+
+  - id: local-provider-evidence
+    label: "Local provider evidence"
+    tech: "readiness receipt; no model approval claim"
+    latency: "planned PR"
+    color: amber
+
+  - id: no-egress-evidence
+    label: "Airgap/no-egress evidence"
+    tech: "bounded probes; not certification"
+    latency: "planned PR"
+    color: red
+
+  - id: sparta-explorer
+    label: "Sparta Explorer posture UI"
+    tech: "posture contract, proof chain, blockers"
+    latency: "human workbench"
+    color: purple
+    files:
+      - docs/briefs/lockheed-angle.md
+
+  - id: human-approval
+    label: "Human export-control approval"
+    tech: "required final authority"
+    latency: "manual"
+    color: red
+    files:
+      - docs/github-review-access.md
+
+connections:
+  - from: embry-os
+    to: synthetic-boundary
+  - from: synthetic-boundary
+    to: tau-control-plane
+  - from: tau-control-plane
+    to: local-provider-evidence
+  - from: tau-control-plane
+    to: no-egress-evidence
+  - from: local-provider-evidence
+    to: sparta-explorer
+  - from: no-egress-evidence
+    to: sparta-explorer
+  - from: sparta-explorer
+    to: human-approval

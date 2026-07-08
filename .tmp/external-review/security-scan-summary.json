@@ -1,0 +1,84 @@
+{
+  "branch": "external-review/airgap-sparta-v0",
+  "findings": [
+    {
+      "code": "gitleaks_findings_present",
+      "finding_count": 66,
+      "message": "gitleaks reported redacted findings in repository history; human review or remediation is required before external sharing.",
+      "sample_files": [
+        "experiments/goal-locked-subagents/proofs/dag-route-memory-apply-20260704T1610Z/dag-route-memory-apply-receipt.json",
+        "experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-sync-receipt.json",
+        "experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/memory-list-response.json",
+        "experiments/goal-locked-subagents/proofs/dag-route-memory-production-apply-20260704T1620Z/dag-route-memory-production-apply-receipt.json",
+        "experiments/goal-locked-subagents/proofs/dag-route-memory-sync-20260704T1645Z/dag-route-memory-sync-receipt.json",
+        "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-harness-receipt.json",
+        "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/clarify-harness-receipt.json",
+        "experiments/goal-locked-subagents/proofs/p2-github-redaction-20260705T132206Z/projection.json",
+        "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dry-run-sync-receipt.json",
+        "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_dry_run_projects_documents.stdout.txt"
+      ],
+      "severity": "BLOCK",
+      "tool": "gitleaks",
+      "unique_file_count": 43
+    }
+  ],
+  "manual_review_paths": [
+    "README.md",
+    "PROJECT_KNOWLEDGE.md",
+    "docs/",
+    "examples/",
+    "experiments/",
+    "ui/"
+  ],
+  "non_claims": [
+    "This scan does not prove absence of sensitive material.",
+    "Manual human review is still required before external sharing.",
+    "Unavailable tools reduce scan coverage.",
+    "Redacted scanner output is not a substitute for remediation review."
+  ],
+  "ok": false,
+  "scanned_at": "2026-07-08T12:14:53Z",
+  "schema": "tau.external_review_security_scan_summary.v1",
+  "status": "BLOCKED",
+  "tools": [
+    {
+      "available": true,
+      "command": "gitleaks detect --source . --verbose --redact --report-format json --report-path .tmp/external-review/gitleaks-report.json",
+      "exit_code": 1,
+      "finding_count": 66,
+      "name": "gitleaks",
+      "notes": [
+        "Secrets are redacted in the local gitleaks report."
+      ],
+      "report_path": ".tmp/external-review/gitleaks-report.json",
+      "status": "BLOCKED",
+      "unique_file_count": 43
+    },
+    {
+      "available": false,
+      "name": "trufflehog",
+      "notes": [
+        "trufflehog was not found on PATH."
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "available": true,
+      "command": "git log --all --stat --max-count=20",
+      "name": "git-log-stat",
+      "notes": [
+        "Best-effort recent history stat scan completed."
+      ],
+      "status": "PASS"
+    },
+    {
+      "available": true,
+      "command": "git log --all -p --max-count=20 -- '*.env' '*secret*' '*token*' '*key*'",
+      "name": "git-log-sensitive-paths",
+      "notes": [
+        "Best-effort recent sensitive-name path scan completed."
+      ],
+      "status": "PASS"
+    }
+  ]
+}

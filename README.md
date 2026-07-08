@@ -1,4 +1,4 @@
-# T’au - Memory-First Zero-Trust Agent Harness
+# Tau
 
 <p align="center">
   <img
@@ -10,11 +10,18 @@
 
 > Agents hallucinate. Tau contains them.
 
-T’au is an experimental, memory-first, zero-trust containment harness for
-untrusted agent work. It treats every agent output as a claim, not a fact.
-Before high-stakes work can continue, Tau expects explicit policy, data-boundary
-checks, DAG contracts, receipts, evidence artifacts, validators, and human-gated
-side effects.
+Tau is the agentic harness for Embry-OS and Sparta Explorer.
+
+Embry-OS provides the local or air-gapped operating environment: memory, scillm,
+local model providers, APIs, monitors, evidence services, and operator
+infrastructure.
+
+Sparta Explorer provides the human evidence workbench: posture, QRA state,
+evidence cases, blockers, monitor health, proof chains, and signoff readiness.
+
+Tau provides the zero-trust control plane: policy/data-boundary gates, DAG
+contracts, typed receipts, evidence validators, bounded subagent dispatch,
+local provider checks, and human approval gates.
 
 The idea is simple:
 
@@ -24,10 +31,25 @@ T’au decides what counts
 humans own goals and high-risk approvals
 ```
 
-T’au does not hide orchestration inside model reasoning. Every handoff produces
+Tau is an experimental, memory-first, zero-trust containment harness for
+untrusted agent work. It treats every agent output as a claim, not a fact.
+Before high-stakes work can continue, Tau expects explicit policy, data-boundary
+checks, DAG contracts, receipts, evidence artifacts, validators, and human-gated
+side effects.
+
+Tau does not hide orchestration inside model reasoning. Every handoff produces
 a local receipt, a schema-valid JSON block, a Herdr-visible work surface, or a
 GitHub-shaped projection that another agent or human can inspect, replay, or
 reject.
+
+External-review materials for the synthetic Embry-OS / Sparta Explorer airgap
+demo start here:
+
+- [Tau Non-Claims](docs/non-claims.md)
+- [Demo Data Policy](docs/demo-data-policy.md)
+- [GitHub Review Access](docs/github-review-access.md)
+- [Tau for Air-Gapped Agentic Compliance](docs/briefs/tau-for-airgapped-agentic-compliance.md)
+- [External Review Backlog](docs/external-review-backlog.md)
 
 ## Why Tau exists
 
