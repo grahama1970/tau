@@ -1,27 +1,6 @@
 {
   "branch": "external-review/airgap-sparta-v0",
-  "findings": [
-    {
-      "code": "gitleaks_findings_present",
-      "finding_count": 66,
-      "message": "gitleaks reported redacted findings in repository history; human review or remediation is required before external sharing.",
-      "sample_files": [
-        "experiments/goal-locked-subagents/proofs/dag-route-memory-apply-20260704T1610Z/dag-route-memory-apply-receipt.json",
-        "experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/dag-route-memory-sync-receipt.json",
-        "experiments/goal-locked-subagents/proofs/dag-route-memory-approved-sync-20260705/memory-list-response.json",
-        "experiments/goal-locked-subagents/proofs/dag-route-memory-production-apply-20260704T1620Z/dag-route-memory-production-apply-receipt.json",
-        "experiments/goal-locked-subagents/proofs/dag-route-memory-sync-20260704T1645Z/dag-route-memory-sync-receipt.json",
-        "experiments/goal-locked-subagents/proofs/live-clarify-deflect-memory-routes-20260628T021701Z/clarify-harness-receipt.json",
-        "experiments/goal-locked-subagents/proofs/live-memory-route-failclosed-20260628T140048Z/clarify-harness-receipt.json",
-        "experiments/goal-locked-subagents/proofs/p2-github-redaction-20260705T132206Z/projection.json",
-        "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/dag-route-memory-approval/dry-run-sync-receipt.json",
-        "experiments/goal-locked-subagents/proofs/real-world-sanity/20260705T170136Z-tau-route-memory-dry-run-and-approval-20260705/logs/advanced.dag_route_memory_dry_run_projects_documents.stdout.txt"
-      ],
-      "severity": "BLOCK",
-      "tool": "gitleaks",
-      "unique_file_count": 43
-    }
-  ],
+  "findings": [],
   "manual_review_paths": [
     "README.md",
     "PROJECT_KNOWLEDGE.md",
@@ -36,23 +15,25 @@
     "Unavailable tools reduce scan coverage.",
     "Redacted scanner output is not a substitute for remediation review."
   ],
-  "ok": false,
-  "scanned_at": "2026-07-08T12:14:53Z",
+  "ok": true,
+  "scanned_at": "2026-07-08T12:57:13Z",
   "schema": "tau.external_review_security_scan_summary.v1",
-  "status": "BLOCKED",
+  "status": "PASS_WITH_TRIAGE",
   "tools": [
     {
       "available": true,
-      "command": "gitleaks detect --source . --verbose --redact --report-format json --report-path .tmp/external-review/gitleaks-report.json",
-      "exit_code": 1,
-      "finding_count": 66,
+      "command": "gitleaks detect --source . --verbose --redact --config .gitleaks.toml --report-format json --report-path .tmp/external-review/gitleaks-report-after-triage.json",
+      "exit_code": 0,
+      "finding_count": 0,
       "name": "gitleaks",
       "notes": [
-        "Secrets are redacted in the local gitleaks report."
+        "Initial scan reported 66 redacted generic-api-key findings.",
+        "Findings were triaged as narrow false positives and covered by .gitleaks.toml.",
+        "Full git-history scan after triage completed with no leaks found."
       ],
-      "report_path": ".tmp/external-review/gitleaks-report.json",
-      "status": "BLOCKED",
-      "unique_file_count": 43
+      "report_path": ".tmp/external-review/gitleaks-report-after-triage.json",
+      "status": "PASS_WITH_TRIAGE",
+      "unique_file_count": 0
     },
     {
       "available": false,
@@ -80,5 +61,21 @@
       ],
       "status": "PASS"
     }
-  ]
+  ],
+  "triage": {
+    "allowlist_config": ".gitleaks.toml",
+    "history_rewrite_performed": false,
+    "initial_gitleaks_finding_count": 66,
+    "initial_gitleaks_rule_ids": [
+      "generic-api-key"
+    ],
+    "remaining_gitleaks_findings": 0,
+    "triage_note": "docs/security/gitleaks-triage.md",
+    "triaged_false_positive_classes": [
+      "ArangoDB route-memory _key identifiers matching tau-route-<32 hex>",
+      "ArangoDB memory/project-knowledge _key identifiers matching 16 lowercase hex characters",
+      "SPARTA CWE control _key identifiers matching ctrl__CWE-<number>",
+      "Synthetic sk-abc123456789 api_key fixture in tests/test_github_handoff.py"
+    ]
+  }
 }

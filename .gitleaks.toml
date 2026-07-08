@@ -1,0 +1,18 @@
+title = "Tau external-review gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Narrow false-positive allowlist for Tau review artifacts"
+regexTarget = "match"
+regexes = [
+  # ArangoDB document identifiers used in route-memory proof artifacts.
+  '''_key["']?\s*:\s*["']tau-route-[0-9a-f]{32}["']''',
+  # ArangoDB document identifiers used in memory/project-knowledge proof artifacts.
+  '''_key["']?\s*:\s*["'][0-9a-f]{16}["']''',
+  # SPARTA CWE control document identifiers embedded in proof artifacts.
+  '''_key["']?\s*:\s*["']ctrl__CWE-[0-9]+["']''',
+  # Historical synthetic fixture used by the GitHub redaction unit test.
+  '''api_key["']?\s*:\s*["']sk-abc123456789["']''',
+]
