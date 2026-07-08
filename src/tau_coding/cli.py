@@ -74,6 +74,7 @@ from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.demo_airgap_itar import run_demo_airgap_itar_basic
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
+from tau_coding.embry_sparta_demo import run_demo_embry_sparta_airgap
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.generated_ticket import (
@@ -734,9 +735,12 @@ def main(
         try:
             options = _parse_demo_cli_args(positional_args[1:])
             name = str(options.pop("name"))
-            if name != "airgap-itar-basic":
+            if name == "airgap-itar-basic":
+                payload = run_demo_airgap_itar_basic(**options)
+            elif name == "embry-sparta-airgap":
+                payload = run_demo_embry_sparta_airgap(**options)
+            else:
                 raise RuntimeError(f"unsupported demo: {name}")
-            payload = run_demo_airgap_itar_basic(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3406,7 +3410,7 @@ def _parse_init_cli_args(args: list[str]) -> dict[str, object]:
 
 def _parse_demo_cli_args(args: list[str]) -> dict[str, object]:
     if not args:
-        raise RuntimeError("Usage: tau demo airgap-itar-basic --out <dir>")
+        raise RuntimeError("Usage: tau demo airgap-itar-basic|embry-sparta-airgap --out <dir>")
     options: dict[str, object] = {
         "name": args[0],
         "out": None,
@@ -3414,11 +3418,23 @@ def _parse_demo_cli_args(args: list[str]) -> dict[str, object]:
         "model": "local-kimi-k2.6",
         "live_provider": False,
         "live_airgap_probe": False,
+        "memory_url": "http://127.0.0.1:8601",
+        "scillm_url": "http://127.0.0.1:4001",
+        "sparta_contract_out": None,
+        "timeout_s": 5.0,
     }
     index = 1
     while index < len(args):
         arg = args[index]
-        if arg in {"--out", "--provider-url", "--model"}:
+        if arg in {
+            "--out",
+            "--provider-url",
+            "--model",
+            "--memory-url",
+            "--scillm-url",
+            "--sparta-contract-out",
+            "--timeout-s",
+        }:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -3429,12 +3445,28 @@ def _parse_demo_cli_args(args: list[str]) -> dict[str, object]:
                 options["provider_url"] = value
             elif arg == "--model":
                 options["model"] = value
+            elif arg == "--memory-url":
+                options["memory_url"] = value
+            elif arg == "--scillm-url":
+                options["scillm_url"] = value
+            elif arg == "--sparta-contract-out":
+                options["sparta_contract_out"] = Path(value)
+            elif arg == "--timeout-s":
+                options["timeout_s"] = float(value)
         elif arg.startswith("--out="):
             options["out"] = Path(arg.partition("=")[2])
         elif arg.startswith("--provider-url="):
             options["provider_url"] = arg.partition("=")[2]
         elif arg.startswith("--model="):
             options["model"] = arg.partition("=")[2]
+        elif arg.startswith("--memory-url="):
+            options["memory_url"] = arg.partition("=")[2]
+        elif arg.startswith("--scillm-url="):
+            options["scillm_url"] = arg.partition("=")[2]
+        elif arg.startswith("--sparta-contract-out="):
+            options["sparta_contract_out"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = float(arg.partition("=")[2])
         elif arg == "--live-provider":
             options["live_provider"] = True
         elif arg == "--live-airgap-probe":
@@ -3443,7 +3475,18 @@ def _parse_demo_cli_args(args: list[str]) -> dict[str, object]:
             raise RuntimeError(f"unknown demo option: {arg}")
         index += 1
     if options["out"] is None:
-        raise RuntimeError("Usage: tau demo airgap-itar-basic --out <dir>")
+        raise RuntimeError("Usage: tau demo airgap-itar-basic|embry-sparta-airgap --out <dir>")
+    if float(options["timeout_s"]) <= 0:
+        raise RuntimeError("--timeout-s must be positive")
+    if options["name"] == "airgap-itar-basic":
+        options.pop("memory_url")
+        options.pop("scillm_url")
+        options.pop("sparta_contract_out")
+        options.pop("timeout_s")
+    elif options["name"] == "embry-sparta-airgap":
+        options.pop("provider_url")
+        options.pop("live_provider")
+        options.pop("live_airgap_probe")
     return options
 
 
