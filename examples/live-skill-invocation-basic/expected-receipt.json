@@ -1,0 +1,14 @@
+{
+  "schema": "tau.live_skill_invocation_basic_example_receipt.v1",
+  "status": "PASS",
+  "ok": true,
+  "mocked": false,
+  "live": true,
+  "provider_live": false,
+  "skill": "clean-text",
+  "capability": "clean-text",
+  "invocation_schema": "tau.skill_invocation_receipt.v1",
+  "invocation_status": "PASS",
+  "artifact_count": 1,
+  "output_contains": "Hello'world - fi"
+}

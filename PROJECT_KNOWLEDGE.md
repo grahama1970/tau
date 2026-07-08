@@ -1,9 +1,42 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 13:09 EDT by agent
+**Last updated:** 2026-07-07 22:52 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-07 live local skill invocation proof:
+  `src/tau_coding/skill_invocation.py` now hashes declared artifacts after an
+  `execute` mode skill command returns, so Tau can bind files produced by the
+  real skill process instead of requiring those artifacts to exist before
+  launch. `examples/live-skill-invocation-basic/` executes the real local
+  `/home/graham/workspace/experiments/agent-skills/skills/clean-text/run.sh`
+  entrypoint through `tau.skill_invocation_receipt.v1`, generates
+  `clean-output.txt`, and records `mocked:false`, `live:true`,
+  `provider_live:false`. `scripts/run-coding-capability-sanity.py` now includes
+  this example as `live_skill_invocation_basic_example_run`. Focused proof:
+  `bash -n examples/live-skill-invocation-basic/run.sh` -> pass;
+  `examples/live-skill-invocation-basic/run.sh
+  /tmp/tau-live-skill-invocation-basic-proof-20260708T0250` ->
+  `status:"PASS"`, `artifact_count:1`, output contains `Hello'world - fi`;
+  `python3 -m py_compile src/tau_coding/skill_invocation.py
+  tests/test_skill_invocation.py scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py` -> pass; `uv run ruff check
+  src/tau_coding/skill_invocation.py tests/test_skill_invocation.py
+  scripts/run-coding-capability-sanity.py
+  tests/test_coding_capability_sanity_runner.py examples/README.md` -> `All
+  checks passed!`; `uv run pytest tests/test_skill_invocation.py
+  tests/test_coding_capability_sanity_runner.py -q` -> `30 passed in 0.43s`.
+  Aggregate proof:
+  `/tmp/tau-coding-capability-sanity-live-skill-invocation-20260708T0300/coding-capability-sanity-receipt.json`
+  -> `schema:"tau.coding_capability_sanity_receipt.v1"`, `status:"PASS"`,
+  `check_count:19`, `failed_check_count:0`, `mocked:"mixed"`, `live:"mixed"`,
+  `provider_live:false`, embedded coding tests `547 passed in 14.04s`. This
+  proves one bounded local agent-skills `run.sh` can execute under Tau and have
+  its generated artifact hash-bound in the invocation receipt; it does not
+  prove OMP real-binary execution, a broader controlled-data worker demo, full
+  course-correction execution follow-through, provider/model semantic quality,
+  arbitrary skill semantic correctness, or future route correctness.
 
 - 2026-07-07 Herdr waiting-on-input timeout correction:
   `src/tau_coding/herdr_observation_gate.py` now treats Herdr

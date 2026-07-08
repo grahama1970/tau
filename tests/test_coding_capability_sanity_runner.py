@@ -609,6 +609,22 @@ def test_build_checks_wires_itar_expected_receipt(tmp_path: Path) -> None:
     )
 
 
+def test_build_checks_wires_live_skill_invocation_expected_receipt(tmp_path: Path) -> None:
+    runner = _load_runner()
+    repo = Path(__file__).resolve().parents[1]
+
+    checks = runner.build_checks(repo=repo, run_dir=tmp_path, uv_bin="uv")
+
+    live_skill_check = next(
+        check
+        for check in checks
+        if check.check_id == "live_skill_invocation_basic_example_run"
+    )
+    assert live_skill_check.expected_artifact == (
+        repo / "examples" / "live-skill-invocation-basic" / "expected-receipt.json"
+    )
+
+
 def test_build_checks_excludes_live_herdr_by_default(
     tmp_path: Path, monkeypatch
 ) -> None:

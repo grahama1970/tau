@@ -106,6 +106,20 @@ Supported modes:
 Artifact bindings use `tau.skill_artifact_binding.v1` and fail closed if an
 artifact path escapes the configured repo root.
 
+Execute-mode artifact hashing happens after the skill command returns. That
+allows Tau to bind artifacts created by the real skill process instead of only
+pre-existing files.
+
+The copyable local proof is:
+
+```bash
+examples/live-skill-invocation-basic/run.sh /tmp/tau-live-skill-invocation-basic
+```
+
+That example executes the real local
+`agent-skills/skills/clean-text/run.sh` entrypoint, writes a generated
+`clean-output.txt`, and records it in `tau.skill_invocation_receipt.v1`.
+
 The invocation receipt still does not make a native skill artifact admissible by
 itself. Skill-specific adapters must validate debugger, code-runner, review,
 evidence-case, research, or model-worker artifacts before a DAG can treat those

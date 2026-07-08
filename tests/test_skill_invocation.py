@@ -57,6 +57,46 @@ def test_skill_invocation_execute_records_stdout_stderr(tmp_path: Path) -> None:
     assert receipt["execution"]["stderr"] == "skill-err\n"
 
 
+def test_skill_invocation_execute_hashes_artifact_created_by_command(tmp_path: Path) -> None:
+    request_path = _write_request(
+        tmp_path,
+        {
+            "mode": "execute",
+            "live": True,
+            "command": [
+                "python3",
+                "-c",
+                "from pathlib import Path; Path('skill-output.txt').write_text('created\\n')",
+            ],
+            "artifacts": [
+                {
+                    "path": "skill-output.txt",
+                    "schema": "example.skill_output.v1",
+                }
+            ],
+        },
+    )
+
+    receipt = write_skill_invocation_receipt(
+        request_path=request_path,
+        output_path=tmp_path / "receipt.json",
+        repo_root=tmp_path,
+    )
+
+    artifact = tmp_path / "skill-output.txt"
+    assert receipt["status"] == "PASS"
+    assert receipt["execution"]["exit_code"] == 0
+    assert receipt["artifacts"] == [
+        {
+            "schema": SKILL_ARTIFACT_BINDING_SCHEMA,
+            "path": str(artifact.resolve()),
+            "declared_schema": "example.skill_output.v1",
+            "sha256": f"sha256:{_sha256_file(artifact)}",
+            "bytes": artifact.stat().st_size,
+        }
+    ]
+
+
 def test_skill_invocation_ingest_existing_hashes_artifact(tmp_path: Path) -> None:
     artifact = tmp_path / "debugger-proof.json"
     artifact.write_text('{"schema":"debugger.proof.v1"}\n', encoding="utf-8")
@@ -152,6 +192,16 @@ def test_skill_invocation_blocks_artifact_outside_repo(tmp_path: Path) -> None:
     assert receipt["status"] == "BLOCKED"
     assert receipt["ok"] is False
     assert any("escapes repo root" in error for error in receipt["errors"])
+
+
+def _sha256_file(path: Path) -> str:
+    import hashlib
+
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _write_request(tmp_path: Path, updates: dict) -> Path:

@@ -133,6 +133,26 @@ def build_checks(*, repo: Path, run_dir: Path, uv_bin: str) -> list[Check]:
             expected_artifact=examples / "skill-composition-basic" / "expected-receipt.json",
         ),
         Check(
+            check_id="live_skill_invocation_basic_example_syntax",
+            command=["bash", "-n", str(examples / "live-skill-invocation-basic" / "run.sh")],
+            purpose="Check live skill invocation example shell syntax.",
+            timeout_seconds=30,
+        ),
+        Check(
+            check_id="live_skill_invocation_basic_example_run",
+            command=[
+                str(examples / "live-skill-invocation-basic" / "run.sh"),
+                str(run_dir / "live-skill-invocation-basic"),
+            ],
+            purpose=(
+                "Run real local clean-text skill through Tau skill invocation receipt."
+            ),
+            output_artifact=run_dir / "live-skill-invocation-basic" / "demo-receipt.json",
+            expected_artifact=(
+                examples / "live-skill-invocation-basic" / "expected-receipt.json"
+            ),
+        ),
+        Check(
             check_id="omp_worker_example_syntax",
             command=["bash", "-n", str(examples / "omp-worker" / "run.sh")],
             purpose="Check OMP worker example shell syntax.",

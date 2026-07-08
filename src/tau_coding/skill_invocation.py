@@ -54,12 +54,12 @@ def _build_receipt(
         _validate_request_shape(request, errors=errors)
     mode = request.get("mode") if isinstance(request.get("mode"), str) else None
     command = _command_list(request.get("command"))
-    artifacts = _artifact_bindings(request.get("artifacts"), repo_root=repo_root, errors=errors)
     execution: dict[str, Any] | None = None
     if not errors and mode == "execute":
         execution = _execute_command(command, repo_root=repo_root)
         if execution["exit_code"] != 0:
             errors.append(f"skill command exited non-zero: {execution['exit_code']}")
+    artifacts = _artifact_bindings(request.get("artifacts"), repo_root=repo_root, errors=errors)
     status = "PASS" if not errors else "BLOCKED"
     return {
         "schema": SKILL_INVOCATION_RECEIPT_SCHEMA,
