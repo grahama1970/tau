@@ -98,6 +98,7 @@ from tau_coding.github_handoff import (
     transport_handoff_projection_to_github,
 )
 from tau_coding.github_read_schemes import write_github_read_receipt
+from tau_coding.goal_run import run_goal_until_complete
 from tau_coding.handoff_dispatch import (
     TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA,
     load_agent_dispatch_command_spec,
@@ -2523,6 +2524,17 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         if not ok:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "goal":
+        try:
+            options = _parse_goal_cli_args(positional_args[1:])
+            payload = run_goal_until_complete(**options)
+        except (RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
             raise typer.Exit(1)
         raise typer.Exit()
 
@@ -7178,6 +7190,143 @@ def _parse_handoff_command_loop_cli_args(
     )
 
 
+def _parse_goal_cli_args(args: list[str]) -> dict[str, object]:
+    if not args or args[0] != "run":
+        raise RuntimeError("Usage: tau goal run --start <handoff.json> --timeout-s <seconds>")
+    return _parse_goal_run_cli_args(args[1:])
+
+
+def _parse_goal_run_cli_args(args: list[str]) -> dict[str, object]:
+    start_path: Path | None = None
+    goal_helper_path: Path | None = None
+    active_goal_hash: str | None = None
+    receipt_dir: Path | None = None
+    agents_root: Path | None = None
+    command_spec_root: Path | None = None
+    command_policy_path: Path | None = None
+    timeout_s: float | None = None
+    max_steps_per_tick = 1
+    max_ticks: int | None = None
+    poll_interval_s = 0.0
+    until_complete = False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--until-complete":
+            until_complete = True
+        elif arg == "--start":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--start requires a value")
+            start_path = Path(args[index])
+        elif arg.startswith("--start="):
+            start_path = Path(arg.partition("=")[2])
+        elif arg == "--goal-helper":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--goal-helper requires a value")
+            goal_helper_path = Path(args[index])
+        elif arg.startswith("--goal-helper="):
+            goal_helper_path = Path(arg.partition("=")[2])
+        elif arg == "--active-goal-hash":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--active-goal-hash requires a value")
+            active_goal_hash = args[index]
+        elif arg.startswith("--active-goal-hash="):
+            active_goal_hash = arg.partition("=")[2]
+        elif arg == "--receipt-dir":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--receipt-dir requires a value")
+            receipt_dir = Path(args[index])
+        elif arg.startswith("--receipt-dir="):
+            receipt_dir = Path(arg.partition("=")[2])
+        elif arg == "--agents-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--agents-root requires a value")
+            agents_root = Path(args[index])
+        elif arg.startswith("--agents-root="):
+            agents_root = Path(arg.partition("=")[2])
+        elif arg == "--command-spec-root":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-spec-root requires a value")
+            command_spec_root = Path(args[index])
+        elif arg.startswith("--command-spec-root="):
+            command_spec_root = Path(arg.partition("=")[2])
+        elif arg == "--command-policy":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--command-policy requires a value")
+            command_policy_path = Path(args[index])
+        elif arg.startswith("--command-policy="):
+            command_policy_path = Path(arg.partition("=")[2])
+        elif arg == "--timeout-s":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--timeout-s requires a value")
+            timeout_s = _parse_positive_float(args[index], "--timeout-s")
+        elif arg.startswith("--timeout-s="):
+            timeout_s = _parse_positive_float(arg.partition("=")[2], "--timeout-s")
+        elif arg in {"--tick-max-steps", "--max-steps-per-tick"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            max_steps_per_tick = _parse_positive_int(args[index], arg)
+        elif arg.startswith("--tick-max-steps="):
+            max_steps_per_tick = _parse_positive_int(
+                arg.partition("=")[2], "--tick-max-steps"
+            )
+        elif arg.startswith("--max-steps-per-tick="):
+            max_steps_per_tick = _parse_positive_int(
+                arg.partition("=")[2], "--max-steps-per-tick"
+            )
+        elif arg == "--max-ticks":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--max-ticks requires a value")
+            max_ticks = _parse_positive_int(args[index], "--max-ticks")
+        elif arg.startswith("--max-ticks="):
+            max_ticks = _parse_positive_int(arg.partition("=")[2], "--max-ticks")
+        elif arg == "--poll-interval-s":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--poll-interval-s requires a value")
+            poll_interval_s = _parse_non_negative_float(args[index], "--poll-interval-s")
+        elif arg.startswith("--poll-interval-s="):
+            poll_interval_s = _parse_non_negative_float(
+                arg.partition("=")[2], "--poll-interval-s"
+            )
+        else:
+            raise RuntimeError(f"Unknown goal run option: {arg}")
+        index += 1
+    if not until_complete:
+        raise RuntimeError("goal run requires --until-complete")
+    if start_path is None:
+        raise RuntimeError("goal run requires --start <handoff.json>")
+    if receipt_dir is None:
+        raise RuntimeError("goal run requires --receipt-dir <dir>")
+    if agents_root is None:
+        raise RuntimeError("goal run requires --agents-root <dir>")
+    if timeout_s is None:
+        raise RuntimeError("goal run requires --timeout-s <seconds>")
+    return {
+        "start_path": start_path,
+        "goal_helper_path": goal_helper_path,
+        "active_goal_hash": active_goal_hash,
+        "receipt_dir": receipt_dir,
+        "agent_registry_root": agents_root,
+        "command_spec_root": command_spec_root,
+        "command_policy_path": command_policy_path,
+        "timeout_s": timeout_s,
+        "max_steps_per_tick": max_steps_per_tick,
+        "max_ticks": max_ticks,
+        "poll_interval_s": poll_interval_s,
+    }
+
+
 def _parse_handoff_agent_adapter_cli_args(args: list[str]) -> dict[str, str | None]:
     options: dict[str, str | None] = {
         "result_status": "COMPLETED",
@@ -7993,6 +8142,26 @@ def _parse_positive_int(value: str, option: str) -> int:
         raise RuntimeError(f"{option} must be an integer") from exc
     if parsed < 1:
         raise RuntimeError(f"{option} must be at least 1")
+    return parsed
+
+
+def _parse_positive_float(value: str, option: str) -> float:
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{option} must be a number") from exc
+    if parsed <= 0:
+        raise RuntimeError(f"{option} must be positive")
+    return parsed
+
+
+def _parse_non_negative_float(value: str, option: str) -> float:
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{option} must be a number") from exc
+    if parsed < 0:
+        raise RuntimeError(f"{option} must be non-negative")
     return parsed
 
 

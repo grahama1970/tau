@@ -269,6 +269,30 @@ validate the emitted handoff, write receipts, and stop at `human` or a
 fail-closed condition. Cron or GitHub ticket polling can repeat those bounded
 ticks, but no subagent owns an unbounded while-loop.
 
+For cases that need repeated bounded ticks under one deadline, Tau also exposes
+a goal-run controller:
+
+```bash
+uv run tau goal run \
+  --until-complete \
+  --start start-handoff.json \
+  --goal-helper goal-helper.json \
+  --active-goal-hash sha256:... \
+  --receipt-dir /tmp/tau-goal-run \
+  --agents-root agents \
+  --command-spec-root command-specs \
+  --timeout-s 1800 \
+  --tick-max-steps 1
+```
+
+`tau goal run` writes `tau.goal_run_receipt.v1`. It repeatedly invokes bounded
+handoff command-loop ticks until the latest handoff routes to `human` with a
+PASS/COMPLETE result, evidence, and any explicit `goal-helper` completion
+criteria listed in `result.completed_criteria`. If the wall-clock deadline
+expires first, the receipt is `TIMEOUT`; dispatched command timeouts are capped
+by the remaining goal-run deadline. This is a deterministic completion gate,
+not a claim that Tau can infer true semantic task success from prose.
+
 The current loop/harness direction is:
 
 ```text

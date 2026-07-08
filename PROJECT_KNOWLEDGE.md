@@ -1,9 +1,32 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-07 22:52 EDT by agent
+**Last updated:** 2026-07-08 06:53 EDT by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-08 bounded goal-run controller:
+  `src/tau_coding/goal_run.py` adds `tau.goal_run_receipt.v1` for
+  `uv run tau goal run --until-complete`. The controller repeatedly invokes
+  existing bounded handoff command-loop ticks with `--tick-max-steps`, enforces
+  one wall-clock `--timeout-s` across repeated ticks, caps each dispatched
+  command timeout by the remaining deadline through `handoff_dispatch.py`, and
+  evaluates completion from the latest handoff content rather than from a loop
+  receipt alone. The deterministic evaluator requires a terminal `human` route,
+  PASS/COMPLETE result status, non-empty result evidence, and any `goal-helper`
+  completion criteria to appear in `result.completed_criteria` or
+  `context.completed_criteria`. Focused proof: `python3 -m py_compile
+  src/tau_coding/goal_run.py src/tau_coding/handoff_dispatch.py
+  src/tau_coding/cli.py tests/test_goal_run.py` -> pass; `uv run ruff check
+  src/tau_coding/goal_run.py src/tau_coding/handoff_dispatch.py
+  src/tau_coding/cli.py tests/test_goal_run.py` -> `All checks passed!`;
+  `uv run pytest tests/test_goal_run.py -q` -> `5 passed in 0.60s`;
+  `uv run pytest tests/test_handoff_dispatch.py tests/test_goal_run.py -q` ->
+  `37 passed in 2.34s`. This proves a local
+  receipt-backed controller can retry bounded ticks until explicit completion
+  criteria pass or the deadline expires; it does not prove provider/model
+  semantic quality, true task success outside the declared criteria, human
+  acceptance, or unbounded autonomous operation.
 
 - 2026-07-07 live local skill invocation proof:
   `src/tau_coding/skill_invocation.py` now hashes declared artifacts after an

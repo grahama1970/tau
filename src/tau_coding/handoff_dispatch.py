@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import subprocess
+import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -562,6 +563,7 @@ def run_agent_handoff_command_loop(
     artifact_root: Path | None = None,
     command_policy_path: Path | None = None,
     progress_callback: Callable[[dict[str, Any]], None] | None = None,
+    deadline_monotonic: float | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Run selected agent commands until the route reaches human or fails closed."""
 
@@ -580,6 +582,16 @@ def run_agent_handoff_command_loop(
     current_payload = start_payload
     dispatches: list[dict[str, Any]] = []
     for step in range(1, max_steps + 1):
+        if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+            return AgentHandoffCommandLoopResult(
+                ok=False,
+                status="BLOCKED",
+                step_count=step - 1,
+                terminal_agent=None,
+                stop_reason="deadline_expired",
+                dispatches=tuple(dispatches),
+                errors=("command handoff loop deadline expired",),
+            )
         current_projection = project_agent_handoff(
             current_payload,
             active_goal_hash=active_goal_hash,
@@ -669,6 +681,28 @@ def run_agent_handoff_command_loop(
                 "command_spec_path": spec.get("command_spec_path"),
             }
         )
+        timeout_s = spec["timeout_s"]
+        command_spec_metadata = spec
+        if deadline_monotonic is not None:
+            remaining_s = deadline_monotonic - time.monotonic()
+            if remaining_s <= 0:
+                return AgentHandoffCommandLoopResult(
+                    ok=False,
+                    status="BLOCKED",
+                    step_count=step - 1,
+                    terminal_agent=selected_agent,
+                    stop_reason="deadline_expired",
+                    dispatches=tuple(dispatches),
+                    errors=("command handoff loop deadline expired before dispatch",),
+                )
+            if remaining_s < timeout_s:
+                timeout_s = remaining_s
+                command_spec_metadata = {
+                    **spec,
+                    "timeout_s": timeout_s,
+                    "timeout_s_source": "goal_run_deadline_remaining",
+                    "original_timeout_s": spec["timeout_s"],
+                }
         dispatch = dispatch_agent_handoff_command_once(
             current_payload,
             _command_with_goal_guardian_ticket_source(
@@ -676,7 +710,7 @@ def run_agent_handoff_command_loop(
                 selected_agent=selected_agent,
                 ticket_source=goal_guardian_ticket_source,
             ),
-            timeout_s=spec["timeout_s"],
+            timeout_s=timeout_s,
             cwd=spec["cwd"],
             active_goal_hash=active_goal_hash,
             agent_registry_root=agent_registry_root,
@@ -685,7 +719,7 @@ def run_agent_handoff_command_loop(
                 if artifact_root is not None
                 else None
             ),
-            command_spec_metadata=spec,
+            command_spec_metadata=command_spec_metadata,
         )
         dispatch_payload = dispatch.as_dict()
         dispatch_payload["loop_step"] = step
@@ -855,6 +889,7 @@ def write_agent_handoff_command_loop_receipt(
     max_steps: int = 5,
     command_policy_path: Path | None = None,
     progress_callback: Callable[[dict[str, Any]], None] | None = None,
+    deadline_monotonic: float | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Write one command-backed loop receipt plus per-step dispatch artifacts."""
 
@@ -869,6 +904,7 @@ def write_agent_handoff_command_loop_receipt(
         artifact_root=receipt_dir / "command-artifacts",
         command_policy_path=command_policy_path,
         progress_callback=progress_callback,
+        deadline_monotonic=deadline_monotonic,
     )
     artifacts: list[str] = []
     for dispatch in loop.dispatches:
