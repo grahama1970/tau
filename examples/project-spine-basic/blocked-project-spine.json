@@ -1,0 +1,57 @@
+{
+  "schema": "tau.project_spine.v1",
+  "project_id": "tau-persona-dream-transfer",
+  "run_id": "run-002",
+  "dag_id": "dag-002",
+  "goal": {
+    "goal_id": "goal-001",
+    "active_revision_id": "rev-002",
+    "goal_hash": "sha256:goal"
+  },
+  "change_events": [
+    {
+      "event_id": "change-001",
+      "status": "open"
+    }
+  ],
+  "artifact_lineage_index": [
+    {
+      "artifact_id": "storyboard-panel-001",
+      "revision_id": "rev-001",
+      "depends_on_change_events": [
+        "change-001"
+      ]
+    }
+  ],
+  "active_work_queue": [
+    {
+      "work_id": "panel-review-001",
+      "revision_id": "rev-001",
+      "status": "done",
+      "artifact_id": "storyboard-panel-001"
+    }
+  ],
+  "work_lease_index": [],
+  "accepted_evidence_index": [
+    {
+      "artifact_id": "storyboard-panel-001",
+      "revision_id": "rev-001",
+      "receipt_sha256": "sha256:panel"
+    }
+  ],
+  "local_progress": {
+    "reported_percent": 100,
+    "derived_percent": 50,
+    "source": "owner_state"
+  },
+  "side_effects": [
+    {
+      "side_effect_id": "provider-call-001",
+      "kind": "paid_provider_call",
+      "status": "requested",
+      "final_gate": {
+        "status": "DRY_RUN_NOT_LIVE_SUBMITTABLE"
+      }
+    }
+  ]
+}

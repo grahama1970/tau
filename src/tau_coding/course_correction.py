@@ -29,6 +29,8 @@ KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
     {
         *CODING_COURSE_CORRECTION_TRIGGERS,
         "brave_search_required_after_two_attempts",
+        "false_progress",
+        "forbidden_side_effect",
         "goal_hash_mismatch",
         "herdr_binding_mismatch",
         "human_required",
@@ -40,6 +42,7 @@ KNOWN_COURSE_CORRECTION_TRIGGERS = frozenset(
         "receipt_timeout_after_visible_dispatch",
         "research_required_before_retry",
         "reviewer_revise",
+        "stale_lineage",
         "test_churn_without_progress",
         "two_failed_attempts",
         "unexpected_edge",
@@ -508,6 +511,30 @@ def _policy_for_trigger(trigger: str) -> dict[str, Any]:
             ["human", "goal-guardian"],
             ["retry_same_context"],
             ["human_or_goal_guardian_decision"],
+        )
+    if trigger == "stale_lineage":
+        return _policy(
+            "recompute_replan_plan",
+            "Accepted or active work is not bound to the active goal revision.",
+            ["planner", "goal-guardian", "human"],
+            ["promote_stale_artifact", "continue_from_stale_work_queue"],
+            ["goal_revision_receipt", "artifact_lineage_index", "replan_plan_receipt"],
+        )
+    if trigger == "false_progress":
+        return _policy(
+            "derive_progress_from_receipts",
+            "Reported progress exceeds receipt-derived accepted evidence.",
+            ["reviewer", "goal-guardian", "human"],
+            ["claim_ready_from_owner_state", "advance_side_effect_gate"],
+            ["accepted_evidence_index", "derived_progress_receipt"],
+        )
+    if trigger == "forbidden_side_effect":
+        return _policy(
+            "block_side_effect_route_human",
+            "A side effect or mutating work item lacks a passing final gate or lease.",
+            ["goal-guardian", "human"],
+            ["execute_side_effect", "accept_unleased_mutation"],
+            ["side_effect_final_gate_receipt", "work_lease_receipt"],
         )
     return _policy(
         "block_run",

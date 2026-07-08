@@ -171,6 +171,7 @@ from tau_coding.project_dag import (
     write_fail_closed_registry_receipt,
 )
 from tau_coding.project_profile import write_project_profile_validation_receipt
+from tau_coding.project_spine import write_project_spine_check_receipt
 from tau_coding.proof_index import build_proof_index
 from tau_coding.provenance import (
     build_actor_manifest,
@@ -725,6 +726,23 @@ def main(
                 force=bool(options["force"]),
             )
         except (RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "project":
+        try:
+            options = _parse_project_cli_args(positional_args[1:])
+            if options["subcommand"] == "check-spine":
+                payload = write_project_spine_check_receipt(
+                    spine_path=Path(str(options["spine"])),
+                    out=Path(str(options["out"])),
+                )
+            else:
+                raise RuntimeError(f"unsupported project subcommand: {options['subcommand']}")
+        except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is not True:
@@ -3487,6 +3505,35 @@ def _parse_demo_cli_args(args: list[str]) -> dict[str, object]:
         options.pop("provider_url")
         options.pop("live_provider")
         options.pop("live_airgap_probe")
+    return options
+
+
+def _parse_project_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau project check-spine --spine <json> --out <receipt>")
+    subcommand = args[0]
+    if subcommand != "check-spine":
+        raise RuntimeError(f"unsupported project subcommand: {subcommand}")
+    options: dict[str, object] = {"subcommand": subcommand, "spine": None, "out": None}
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--spine", "--out"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            options[arg.removeprefix("--")] = args[index]
+        elif arg.startswith("--spine="):
+            options["spine"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = arg.partition("=")[2]
+        else:
+            raise RuntimeError(f"unknown project check-spine option: {arg}")
+        index += 1
+    if not _optional_str(options.get("spine")):
+        raise RuntimeError("Usage: tau project check-spine --spine <json> --out <receipt>")
+    if not _optional_str(options.get("out")):
+        raise RuntimeError("Usage: tau project check-spine --spine <json> --out <receipt>")
     return options
 
 
