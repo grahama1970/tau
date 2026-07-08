@@ -72,6 +72,7 @@ from tau_coding.dag_stress_poc import (
 )
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
+from tau_coding.demo_airgap_itar import run_demo_airgap_itar_basic
 from tau_coding.docker_sandbox import write_docker_sandbox_receipt
 from tau_coding.evidence_case_skill_adapter import write_evidence_case_skill_adapter_receipt
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
@@ -723,6 +724,20 @@ def main(
                 force=bool(options["force"]),
             )
         except (RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "demo":
+        try:
+            options = _parse_demo_cli_args(positional_args[1:])
+            name = str(options.pop("name"))
+            if name != "airgap-itar-basic":
+                raise RuntimeError(f"unsupported demo: {name}")
+            payload = run_demo_airgap_itar_basic(**options)
+        except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is not True:
@@ -3386,6 +3401,49 @@ def _parse_init_cli_args(args: list[str]) -> dict[str, object]:
             "Usage: tau init --profile zero-trust|coding-zero-trust|itar-airgap "
             "[--out <dir>] [--force]"
         )
+    return options
+
+
+def _parse_demo_cli_args(args: list[str]) -> dict[str, object]:
+    if not args:
+        raise RuntimeError("Usage: tau demo airgap-itar-basic --out <dir>")
+    options: dict[str, object] = {
+        "name": args[0],
+        "out": None,
+        "provider_url": "http://127.0.0.1:4001",
+        "model": "local-kimi-k2.6",
+        "live_provider": False,
+        "live_airgap_probe": False,
+    }
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg in {"--out", "--provider-url", "--model"}:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--out":
+                options["out"] = Path(value)
+            elif arg == "--provider-url":
+                options["provider_url"] = value
+            elif arg == "--model":
+                options["model"] = value
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--provider-url="):
+            options["provider_url"] = arg.partition("=")[2]
+        elif arg.startswith("--model="):
+            options["model"] = arg.partition("=")[2]
+        elif arg == "--live-provider":
+            options["live_provider"] = True
+        elif arg == "--live-airgap-probe":
+            options["live_airgap_probe"] = True
+        else:
+            raise RuntimeError(f"unknown demo option: {arg}")
+        index += 1
+    if options["out"] is None:
+        raise RuntimeError("Usage: tau demo airgap-itar-basic --out <dir>")
     return options
 
 
