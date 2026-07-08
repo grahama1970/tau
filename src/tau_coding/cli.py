@@ -112,6 +112,7 @@ from tau_coding.herdr_observation_gate import write_herdr_observation_gate_recei
 from tau_coding.human_goal_change import write_human_goal_change_bridge_receipt
 from tau_coding.init_project import initialize_tau_project
 from tau_coding.itar_boundary import write_itar_access_preflight_receipt
+from tau_coding.local_provider_readiness import write_local_provider_readiness_receipt
 from tau_coding.loop_monitor import (
     check_loop_receipt_monitor_contract,
     create_loop_receipt_monitor_server,
@@ -1018,6 +1019,17 @@ def main(
         try:
             run_dir = _parse_provider_readiness_inspect_cli_args(positional_args[1:])
             payload = inspect_provider_readiness_run(run_dir)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "local-provider-readiness":
+        try:
+            options = _parse_local_provider_readiness_cli_args(positional_args[1:])
+            payload = write_local_provider_readiness_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -2947,6 +2959,79 @@ def _parse_provider_readiness_inspect_cli_args(args: list[str]) -> Path:
     if len(args) != 1:
         raise RuntimeError("Usage: tau provider-readiness-inspect <run-dir>")
     return Path(args[0])
+
+
+def _parse_local_provider_readiness_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "provider_url": None,
+        "model": None,
+        "out": None,
+        "model_weight_sha256": None,
+        "tokenizer_sha256": None,
+        "inference_engine": None,
+        "timeout_s": 5.0,
+        "airgap_mode": False,
+        "allow_unavailable_demo": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--provider-url",
+            "--model",
+            "--out",
+            "--model-weight-sha256",
+            "--tokenizer-sha256",
+            "--inference-engine",
+            "--timeout-s",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--provider-url":
+                options["provider_url"] = value
+            elif arg == "--model":
+                options["model"] = value
+            elif arg == "--out":
+                options["out"] = Path(value)
+            elif arg == "--model-weight-sha256":
+                options["model_weight_sha256"] = value
+            elif arg == "--tokenizer-sha256":
+                options["tokenizer_sha256"] = value
+            elif arg == "--inference-engine":
+                options["inference_engine"] = value
+            elif arg == "--timeout-s":
+                options["timeout_s"] = float(value)
+        elif arg.startswith("--provider-url="):
+            options["provider_url"] = arg.partition("=")[2]
+        elif arg.startswith("--model="):
+            options["model"] = arg.partition("=")[2]
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--model-weight-sha256="):
+            options["model_weight_sha256"] = arg.partition("=")[2]
+        elif arg.startswith("--tokenizer-sha256="):
+            options["tokenizer_sha256"] = arg.partition("=")[2]
+        elif arg.startswith("--inference-engine="):
+            options["inference_engine"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = float(arg.partition("=")[2])
+        elif arg == "--airgap-mode":
+            options["airgap_mode"] = True
+        elif arg == "--allow-unavailable-demo":
+            options["allow_unavailable_demo"] = True
+        else:
+            raise RuntimeError(f"unknown local-provider-readiness option: {arg}")
+        index += 1
+    if not options["provider_url"] or not options["model"]:
+        raise RuntimeError(
+            "Usage: tau local-provider-readiness --provider-url <url> --model <id> "
+            "[--out <receipt>] [--airgap-mode] [--timeout-s <seconds>]"
+        )
+    if float(options["timeout_s"]) <= 0:
+        raise RuntimeError("--timeout-s must be positive")
+    return options
 
 
 def _parse_provider_dag_poc_cli_args(args: list[str]) -> dict[str, object]:
