@@ -74,6 +74,75 @@ def test_init_coding_zero_trust_creates_coding_evidence_template(tmp_path: Path)
     assert "semantic code correctness" in readme
 
 
+def test_init_itar_airgap_profile_writes_policy_and_boundary(tmp_path: Path) -> None:
+    receipt = initialize_tau_project(out_dir=tmp_path, profile="itar-airgap")
+
+    assert receipt["schema"] == INIT_RECEIPT_SCHEMA
+    assert receipt["ok"] is True
+    assert receipt["status"] == "PASS"
+    assert receipt["profile"] == "itar-airgap"
+    assert len(receipt["created_files"]) == 5
+
+    tau_dir = tmp_path / ".tau"
+    policy = json.loads((tau_dir / "policy-profile.json").read_text(encoding="utf-8"))
+    boundary = json.loads((tau_dir / "data-boundary.json").read_text(encoding="utf-8"))
+    command_policy = json.loads((tau_dir / "command-policy.json").read_text(encoding="utf-8"))
+    dag = json.loads((tau_dir / "dag-template.json").read_text(encoding="utf-8"))
+    readme = (tau_dir / "README.md").read_text(encoding="utf-8")
+
+    assert policy["schema"] == POLICY_PROFILE_SCHEMA
+    assert policy["profile_id"] == "itar-airgap"
+    assert policy["requires_data_boundary"] is True
+    assert policy["providers"]["local_model"] == "allow_with_review"
+    assert boundary["schema"] == DATA_BOUNDARY_SCHEMA
+    assert boundary["classification"] == "ITAR"
+    assert boundary["itar"] is True
+    assert boundary["technical_data"] is True
+    assert command_policy["allows_network"] is False
+    assert command_policy["allows_mutation"] is False
+    assert dag["dag_id"] == "itar-airgap"
+    assert "tau.airgap_no_egress_receipt.v1" in dag["required_evidence"]
+    assert "tau.itar_contract_receipt.v1" in dag["required_evidence"]
+    assert "not signoff-ready" in readme
+    assert "does not prove ITAR compliance" in readme
+
+
+def test_itar_airgap_policy_denies_cloud_provider_external_search_and_public_mutation(
+    tmp_path: Path,
+) -> None:
+    initialize_tau_project(out_dir=tmp_path, profile="itar-airgap")
+
+    policy = json.loads(
+        (tmp_path / ".tau" / "policy-profile.json").read_text(encoding="utf-8")
+    )
+
+    assert policy["default_decision"] == "deny"
+    assert policy["network"]["default"] == "deny"
+    assert policy["providers"]["cloud_llm"] == "deny"
+    assert policy["research"]["external_search"] == "deny"
+    assert policy["github"]["public_mutation"] == "deny"
+    assert policy["memory"]["write"] == "approval_required"
+    assert "signoff_claim" in policy["human_approval"]["required_for"]
+
+
+def test_itar_airgap_boundary_marks_synthetic_itar_without_authorization(
+    tmp_path: Path,
+) -> None:
+    initialize_tau_project(out_dir=tmp_path, profile="itar-airgap")
+
+    boundary = json.loads(
+        (tmp_path / ".tau" / "data-boundary.json").read_text(encoding="utf-8")
+    )
+
+    assert boundary["export_controlled"] is True
+    assert boundary["foreign_person_access"] == "prohibited"
+    assert boundary["external_provider_allowed"] is False
+    assert boundary["external_research_allowed"] is False
+    assert boundary["public_repo_allowed"] is False
+    assert "Synthetic demo profile only." in boundary["notes"]
+    assert "Does not authorize controlled technical data." in boundary["notes"]
+
+
 def test_init_zero_trust_blocks_existing_files_without_force(tmp_path: Path) -> None:
     first = initialize_tau_project(out_dir=tmp_path, profile="zero-trust")
     second = initialize_tau_project(out_dir=tmp_path, profile="zero-trust")

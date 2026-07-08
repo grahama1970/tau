@@ -1,0 +1,62 @@
+{
+  "default_decision": "deny",
+  "filesystem": {
+    "read_denylist": [
+      ".env",
+      "**/*secret*",
+      "**/*token*",
+      "**/*key*"
+    ],
+    "write_allowlist": [
+      ".tau/**",
+      "receipts/**",
+      "artifacts/**",
+      "examples/**"
+    ]
+  },
+  "github": {
+    "dry_run_projection": "allow_with_review",
+    "public_mutation": "deny"
+  },
+  "human_approval": {
+    "final_authority": "human_export_control_review",
+    "required_for": [
+      "memory_write",
+      "signoff_claim",
+      "export_control_decision",
+      "external_release"
+    ]
+  },
+  "memory": {
+    "clarify_blocks_dispatch": true,
+    "deflect_blocks_dispatch": true,
+    "evidence_case_required_for": [
+      "ANSWER",
+      "RESEARCH",
+      "COMPLIANCE"
+    ],
+    "intent_required": true,
+    "min_intent_confidence": 0.5,
+    "read": "allow_with_review",
+    "write": "approval_required"
+  },
+  "network": {
+    "allowed_domains": [],
+    "allowed_local_endpoints": [
+      "127.0.0.1:4001",
+      "127.0.0.1:8601"
+    ],
+    "default": "deny"
+  },
+  "profile_id": "itar-airgap",
+  "providers": {
+    "cloud_llm": "deny",
+    "local_model": "allow_with_review"
+  },
+  "requires_data_boundary": true,
+  "research": {
+    "external_search": "deny",
+    "manual_sanitized_receipt": "allow_with_review"
+  },
+  "schema": "tau.policy_profile.v1"
+}

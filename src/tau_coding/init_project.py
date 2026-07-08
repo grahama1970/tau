@@ -12,7 +12,7 @@ from tau_coding.handoff_dispatch import TAU_COMMAND_SPEC_POLICY_SCHEMA
 from tau_coding.policy_profile import DATA_BOUNDARY_SCHEMA, POLICY_PROFILE_SCHEMA
 
 INIT_RECEIPT_SCHEMA = "tau.init_receipt.v1"
-SUPPORTED_PROFILES = {"zero-trust", "coding-zero-trust"}
+SUPPORTED_PROFILES = {"zero-trust", "coding-zero-trust", "itar-airgap"}
 
 
 def initialize_tau_project(
@@ -89,6 +89,14 @@ def initialize_tau_project(
 
 
 def _starter_files(profile: str) -> dict[str, dict[str, Any] | str]:
+    if profile == "itar-airgap":
+        return {
+            "policy-profile.json": _itar_airgap_policy_profile(),
+            "data-boundary.json": _itar_airgap_data_boundary(),
+            "command-policy.json": _itar_airgap_command_policy(),
+            "dag-template.json": _itar_airgap_dag_template(),
+            "README.md": _itar_airgap_readme(),
+        }
     return {
         "policy-profile.json": _zero_trust_policy_profile(),
         "data-boundary.json": _zero_trust_data_boundary(),
@@ -146,6 +154,177 @@ def _zero_trust_data_boundary() -> dict[str, Any]:
             "Starter boundary for local zero-trust Tau demos.",
             "Replace with an authorized project-specific classification before high-stakes use.",
             "Not a legal or export-control determination.",
+        ],
+    }
+
+
+def _itar_airgap_policy_profile() -> dict[str, Any]:
+    return {
+        "schema": POLICY_PROFILE_SCHEMA,
+        "profile_id": "itar-airgap",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {
+            "default": "deny",
+            "allowed_domains": [],
+            "allowed_local_endpoints": [
+                "127.0.0.1:4001",
+                "127.0.0.1:8601",
+            ],
+        },
+        "providers": {
+            "cloud_llm": "deny",
+            "local_model": "allow_with_review",
+        },
+        "research": {
+            "external_search": "deny",
+            "manual_sanitized_receipt": "allow_with_review",
+        },
+        "memory": {
+            "read": "allow_with_review",
+            "write": "approval_required",
+            "intent_required": True,
+            "min_intent_confidence": 0.5,
+            "clarify_blocks_dispatch": True,
+            "deflect_blocks_dispatch": True,
+            "evidence_case_required_for": [
+                "ANSWER",
+                "RESEARCH",
+                "COMPLIANCE",
+            ],
+        },
+        "github": {
+            "public_mutation": "deny",
+            "dry_run_projection": "allow_with_review",
+        },
+        "human_approval": {
+            "required_for": [
+                "memory_write",
+                "signoff_claim",
+                "export_control_decision",
+                "external_release",
+            ],
+            "final_authority": "human_export_control_review",
+        },
+        "filesystem": {
+            "write_allowlist": [
+                ".tau/**",
+                "receipts/**",
+                "artifacts/**",
+                "examples/**",
+            ],
+            "read_denylist": [
+                ".env",
+                "**/*secret*",
+                "**/*token*",
+                "**/*key*",
+            ],
+        },
+    }
+
+
+def _itar_airgap_data_boundary() -> dict[str, Any]:
+    return {
+        "schema": DATA_BOUNDARY_SCHEMA,
+        "classification": "ITAR",
+        "export_controlled": True,
+        "itar": True,
+        "technical_data": True,
+        "foreign_person_access": "prohibited",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [
+            "Synthetic demo profile only.",
+            "Does not prove ITAR compliance.",
+            "Does not authorize controlled technical data.",
+            "Use invented demo data only until human export-control review approves otherwise.",
+        ],
+    }
+
+
+def _itar_airgap_command_policy() -> dict[str, Any]:
+    return {
+        "schema": TAU_COMMAND_SPEC_POLICY_SCHEMA,
+        "allowed_command_roots": ["python", "python3", "uv", "tau"],
+        "denied_commands": [
+            "curl",
+            "wget",
+            "ssh",
+            "scp",
+            "gh",
+            "git push",
+        ],
+        "allowed_cwd_roots": ["."],
+        "allows_network": False,
+        "allows_mutation": False,
+        "requires_clean_worktree": False,
+    }
+
+
+def _itar_airgap_dag_template() -> dict[str, Any]:
+    return {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "itar-airgap",
+        "goal": {
+            "goal_id": "itar-airgap-synthetic-review",
+            "goal_version": 1,
+            "goal_hash": "sha256:replace-with-goal-hash",
+        },
+        "target": {
+            "repo": "local",
+            "target": "synthetic-airgap-review",
+            "allowed_paths": [
+                ".tau/**",
+                "receipts/**",
+                "artifacts/**",
+                "examples/**",
+            ],
+            "forbidden_paths": [
+                ".env",
+                ".env.*",
+                "**/*secret*",
+                "**/*token*",
+                "**/*key*",
+            ],
+        },
+        "policy_profile": ".tau/policy-profile.json",
+        "data_boundary": ".tau/data-boundary.json",
+        "command_policy": ".tau/command-policy.json",
+        "entry_node": "human",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": False,
+            "default_timeout_seconds": 120,
+            "max_total_attempts": 1,
+        },
+        "nodes": [
+            {
+                "id": "human",
+                "agent": "human",
+                "executor": "human",
+            }
+        ],
+        "edges": [],
+        "required_evidence": [
+            "tau.zero_trust_preflight_receipt.v1",
+            "tau.local_provider_readiness_receipt.v1",
+            "tau.airgap_no_egress_receipt.v1",
+            "tau.itar_contract_receipt.v1",
+            "tau.sparta_posture_contract.v1",
+            "human export-control approval before any signoff claim",
+        ],
+        "fail_closed_on": [
+            "goal_hash_mismatch",
+            "target_changed",
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+            "malformed_handoff",
+            "external_provider_requested",
+            "external_research_requested",
+            "public_mutation_requested",
+            "missing_human_export_control_review",
         ],
     }
 
@@ -280,6 +459,31 @@ Files:
 This starter does not prove ITAR compliance, export-control legal sufficiency,
 sandbox isolation, signed provenance, human identity verification,
 provider/model semantic safety, or compliance package completeness.
+"""
+
+
+def _itar_airgap_readme() -> str:
+    return """# Tau ITAR-Airgap Starter
+
+This directory was created by `tau init --profile itar-airgap`.
+
+Files:
+
+- `policy-profile.json`: default-deny synthetic ITAR-airgap policy.
+- `data-boundary.json`: synthetic ITAR-style data boundary. It does not
+  authorize real controlled technical data.
+- `command-policy.json`: local-only command policy that denies network-capable
+  shell tools and public GitHub mutation.
+- `dag-template.json`: human-terminal DAG template for a synthetic
+  air-gapped compliance review.
+
+Expected posture for the first demo is intentionally not signoff-ready:
+Tau should route final export-control or compliance authority to a human role.
+
+This starter does not prove ITAR compliance, export-control legal sufficiency,
+SCIF readiness, ATO readiness, airgap certification, model approval,
+provider/model semantic safety, human identity truth, or authorization to
+process real controlled technical data.
 """
 
 

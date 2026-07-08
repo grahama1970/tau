@@ -1,0 +1,17 @@
+{
+  "classification": "ITAR",
+  "export_controlled": true,
+  "external_provider_allowed": false,
+  "external_research_allowed": false,
+  "foreign_person_access": "prohibited",
+  "itar": true,
+  "notes": [
+    "Synthetic demo profile only.",
+    "Does not prove ITAR compliance.",
+    "Does not authorize controlled technical data.",
+    "Use invented demo data only until human export-control review approves otherwise."
+  ],
+  "public_repo_allowed": false,
+  "schema": "tau.data_boundary.v1",
+  "technical_data": true
+}

@@ -3205,7 +3205,7 @@ def _parse_init_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if options["profile"] is None:
         raise RuntimeError(
-            "Usage: tau init --profile zero-trust|coding-zero-trust "
+            "Usage: tau init --profile zero-trust|coding-zero-trust|itar-airgap "
             "[--out <dir>] [--force]"
         )
     return options
