@@ -32,6 +32,7 @@ from tau_ai import (
 )
 from tau_ai.env import DEFAULT_OPENAI_COMPATIBLE_BASE_URL
 from tau_coding import __version__
+from tau_coding.airgap_no_egress import write_airgap_no_egress_receipt
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.browser_cdp_proof import (
     DEFAULT_BROWSER_PROOF_RUN_ID,
@@ -1030,6 +1031,17 @@ def main(
         try:
             options = _parse_local_provider_readiness_cli_args(positional_args[1:])
             payload = write_local_provider_readiness_receipt(**options)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        if payload.get("ok") is not True:
+            raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "airgap-no-egress":
+        try:
+            options = _parse_airgap_no_egress_cli_args(positional_args[1:])
+            payload = write_airgap_no_egress_receipt(**options)
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3029,6 +3041,63 @@ def _parse_local_provider_readiness_cli_args(args: list[str]) -> dict[str, objec
             "Usage: tau local-provider-readiness --provider-url <url> --model <id> "
             "[--out <receipt>] [--airgap-mode] [--timeout-s <seconds>]"
         )
+    if float(options["timeout_s"]) <= 0:
+        raise RuntimeError("--timeout-s must be positive")
+    return options
+
+
+def _parse_airgap_no_egress_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "out": None,
+        "allowed_local_endpoints": [],
+        "dns_probe_host": "example.com",
+        "http_probe_url": "http://example.com/",
+        "timeout_s": 3.0,
+        "assume_no_egress_demo": False,
+    }
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg in {
+            "--out",
+            "--allow-local-endpoint",
+            "--dns-probe-host",
+            "--http-probe-url",
+            "--timeout-s",
+        }:
+            index += 1
+            if index >= len(args):
+                raise RuntimeError(f"{arg} requires a value")
+            value = args[index]
+            if arg == "--out":
+                options["out"] = Path(value)
+            elif arg == "--allow-local-endpoint":
+                endpoints = list(options["allowed_local_endpoints"])
+                endpoints.append(value)
+                options["allowed_local_endpoints"] = endpoints
+            elif arg == "--dns-probe-host":
+                options["dns_probe_host"] = value
+            elif arg == "--http-probe-url":
+                options["http_probe_url"] = value
+            elif arg == "--timeout-s":
+                options["timeout_s"] = float(value)
+        elif arg.startswith("--out="):
+            options["out"] = Path(arg.partition("=")[2])
+        elif arg.startswith("--allow-local-endpoint="):
+            endpoints = list(options["allowed_local_endpoints"])
+            endpoints.append(arg.partition("=")[2])
+            options["allowed_local_endpoints"] = endpoints
+        elif arg.startswith("--dns-probe-host="):
+            options["dns_probe_host"] = arg.partition("=")[2]
+        elif arg.startswith("--http-probe-url="):
+            options["http_probe_url"] = arg.partition("=")[2]
+        elif arg.startswith("--timeout-s="):
+            options["timeout_s"] = float(arg.partition("=")[2])
+        elif arg == "--assume-no-egress-demo":
+            options["assume_no_egress_demo"] = True
+        else:
+            raise RuntimeError(f"unknown airgap-no-egress option: {arg}")
+        index += 1
     if float(options["timeout_s"]) <= 0:
         raise RuntimeError("--timeout-s must be positive")
     return options
