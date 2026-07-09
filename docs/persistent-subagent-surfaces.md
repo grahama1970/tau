@@ -105,6 +105,12 @@ For that node, require:
 The first rung should not require the browser route to be reachable unless the
 task is specifically the Chat UX/orb/replay proof rung.
 
+`persistent_subagent.required_receipts` names receipts proving the persistent
+surface contract. Node `required_evidence` names every receipt Tau must see for
+the bounded node verdict. These lists may overlap, but when they differ the
+command wrapper must emit both receipts or map them explicitly inside
+`persistent_subagent_receipt`.
+
 ## Non-Claims
 
 This contract does not prove that the UI route is reachable, that audio works,
