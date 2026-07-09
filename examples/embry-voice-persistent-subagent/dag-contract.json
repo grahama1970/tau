@@ -1,0 +1,72 @@
+{
+  "schema": "tau.dag_contract.v1",
+  "dag_id": "embry-voice-persistent-subagent-example",
+  "goal": {
+    "goal_id": "embry-voice-persistent-subagent-example",
+    "goal_version": 1,
+    "goal_hash": "sha256:embry-voice-persistent-subagent-example"
+  },
+  "target": {
+    "repo": "grahama1970/tau",
+    "target": "examples/embry-voice-persistent-subagent"
+  },
+  "entry_node": "embry-chatterbox",
+  "terminal_nodes": [
+    "human"
+  ],
+  "limits": {
+    "resume": true,
+    "default_timeout_seconds": 60,
+    "max_total_attempts": 2
+  },
+  "nodes": [
+    {
+      "id": "embry-chatterbox",
+      "agent": "embry-chatterbox-voice",
+      "executor": "local",
+      "max_attempts": 1,
+      "required_evidence": [
+        "persistent_subagent_receipt",
+        "embry_voice_turn_receipt"
+      ],
+      "persistent_subagent": {
+        "schema": "tau.persistent_subagent.v1",
+        "surface_id": "embry-voice",
+        "surface_url": "http://localhost:3002/#embry-voice",
+        "session_mode": "persistent",
+        "tau_control": "bounded_receipt_gated_ticks",
+        "dag_parameter": "embry_voice_surface",
+        "required_receipts": [
+          "embry.chatterbox_voice_receipt.v1"
+        ],
+        "unbounded_autonomy_allowed": false,
+        "memory_write_requires_receipt": true,
+        "notes": [
+          "The UX route may remain open across Tau DAG ticks.",
+          "Tau accepts only receipt-backed bounded outputs."
+        ]
+      }
+    },
+    {
+      "id": "human",
+      "agent": "human",
+      "executor": "human"
+    }
+  ],
+  "edges": [
+    {
+      "from": "embry-chatterbox",
+      "to": "human"
+    }
+  ],
+  "required_evidence": [
+    "persistent_subagent_receipt",
+    "embry_voice_turn_receipt"
+  ],
+  "fail_closed_on": [
+    "goal_hash_mismatch",
+    "target_changed",
+    "missing_required_evidence",
+    "malformed_handoff"
+  ]
+}

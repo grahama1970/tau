@@ -41,6 +41,7 @@ DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
 DAG_ERROR_SCHEMA = "tau.dag_error.v1"
 DAG_PROGRESS_SCHEMA = "tau.dag_progress.v1"
 FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
+PERSISTENT_SUBAGENT_SCHEMA = "tau.persistent_subagent.v1"
 PROVIDER_COMMAND_TIMEOUT_SECONDS = 900.0
 
 FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
@@ -1767,7 +1768,13 @@ def _node_dispatch_metadata(
         "target": contract.target,
         "required_evidence": list(node.required_evidence),
     }
-    for key in ("provider", "model_policy", "prompt_contract", "provider_route"):
+    for key in (
+        "provider",
+        "model_policy",
+        "prompt_contract",
+        "provider_route",
+        "persistent_subagent",
+    ):
         value = node_payload.get(key)
         if value is not None:
             metadata[key] = value
@@ -1790,7 +1797,13 @@ def _attach_node_dispatch_context(
     context["dag_node_id"] = node.node_id
     context["dag_agent_role"] = node.agent
     context["tau_dag_node"] = metadata
-    for key in ("provider", "model_policy", "prompt_contract", "provider_route"):
+    for key in (
+        "provider",
+        "model_policy",
+        "prompt_contract",
+        "provider_route",
+        "persistent_subagent",
+    ):
         if key in metadata:
             context[key] = metadata[key]
     if metadata.get("requires_provider_route") is True:
@@ -2116,6 +2129,12 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             f"nodes[{index}].context",
             errors,
         )
+        _validate_persistent_subagent_declaration(
+            item.get("persistent_subagent"),
+            node_label=f"nodes[{index}]",
+            required_evidence=required_evidence,
+            errors=errors,
+        )
         if node_id in nodes:
             errors.append(f"duplicate node id: {node_id}")
             continue
@@ -2130,6 +2149,68 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             context=context,
         )
     return nodes
+
+
+def _validate_persistent_subagent_declaration(
+    value: object,
+    *,
+    node_label: str,
+    required_evidence: list[str],
+    errors: list[str],
+) -> None:
+    if value is None:
+        return
+    label = f"{node_label}.persistent_subagent"
+    if not isinstance(value, dict):
+        errors.append(f"{label} must be an object")
+        return
+    if value.get("schema") != PERSISTENT_SUBAGENT_SCHEMA:
+        errors.append(f"{label}.schema must be {PERSISTENT_SUBAGENT_SCHEMA}")
+    for key in (
+        "surface_id",
+        "surface_url",
+        "session_mode",
+        "tau_control",
+        "dag_parameter",
+    ):
+        if not isinstance(value.get(key), str) or not value.get(key):
+            errors.append(f"{label}.{key} must be a non-empty string")
+    surface_url = value.get("surface_url")
+    if (
+        isinstance(surface_url, str)
+        and surface_url
+        and not (
+            surface_url.startswith("http://localhost:")
+            or surface_url.startswith("http://127.0.0.1:")
+        )
+    ):
+        errors.append(
+            f"{label}.surface_url must use a local UX route "
+            "(http://localhost:<port>/... or http://127.0.0.1:<port>/...)"
+        )
+    if value.get("session_mode") != "persistent":
+        errors.append(
+            f"{label}.session_mode must be persistent for a declared persistent subagent"
+        )
+    if value.get("tau_control") != "bounded_receipt_gated_ticks":
+        errors.append(
+            f"{label}.tau_control must be bounded_receipt_gated_ticks so Tau remains "
+            "the DAG authority"
+        )
+    if value.get("unbounded_autonomy_allowed") is not False:
+        errors.append(f"{label}.unbounded_autonomy_allowed must be false")
+    required_receipts = _string_list(
+        value.get("required_receipts"),
+        f"{label}.required_receipts",
+        errors,
+    )
+    if not required_receipts:
+        errors.append(f"{label}.required_receipts must name at least one receipt schema")
+    if "persistent_subagent_receipt" not in required_evidence:
+        errors.append(
+            f"{node_label}.required_evidence must include persistent_subagent_receipt "
+            "when persistent_subagent is declared"
+        )
 
 
 def _parse_edges(value: object, errors: list[str]) -> list[ProjectDagEdge]:

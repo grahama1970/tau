@@ -74,7 +74,7 @@ validated, and reviewed.
 | Evidence | Evidence is separate from model prose. Typed manifests, receipts, and artifacts are validated independently. |
 | Coding work | Code changes count only when patch, diagnostics, tests, review, debug, worker, and commit-plan receipts make the evidence inspectable. |
 | Agent DAGs | DAGs are containment maps, not proof. |
-| Subagents | Subagent communication is untrusted until receipt-backed and validated. |
+| Subagents | Subagent communication is untrusted until receipt-backed and validated. Persistent subagent surfaces must be declared in the DAG and remain bounded by Tau ticks. |
 | Herdr | Provider/subagent work can be monitored through visible panes, lifecycle records, and cleanup receipts. |
 | DAG visualization | Browser graph views render DAG contracts and receipts for inspection; the artifacts remain authoritative. |
 | Policy | Policy profiles and data boundaries are checked before zero-trust DAG dispatch. |
@@ -105,6 +105,8 @@ Implemented local gates and receipt surfaces in this checkout include:
 - `tau.herdr_workspace_lease.v1`
 - Herdr cleanup and GC receipts
 - provider readiness, lifecycle, work-order, and node receipts
+- `tau.persistent_subagent.v1` declarations on DAG nodes for persistent local
+  subagent surfaces such as Embry voice
 - DAG signal and route-memory candidate receipts
 - adaptive DAG expansion validation, policy, and apply receipts
 - browser/CDP proof receipts
@@ -164,6 +166,30 @@ Visible panes are evidence, not truth. Tau still treats pane output as an
 untrusted signal until a receipt validates the expected goal, node, attempt,
 work-order hash, and evidence artifacts.
 
+## Persistent subagent surfaces
+
+Some subagents should remain visible across bounded Tau DAG ticks. The first
+concrete pattern is the Embry Chatterbox voice surface:
+
+```text
+http://localhost:3002/#embry-voice
+```
+
+DAG authors can declare this directly on a node with
+`persistent_subagent.schema = tau.persistent_subagent.v1`. Tau requires the
+surface to be a local route, `session_mode: persistent`,
+`tau_control: bounded_receipt_gated_ticks`, and
+`unbounded_autonomy_allowed: false`. The node must also require
+`persistent_subagent_receipt` evidence.
+
+Tau propagates the declaration into the compiled node command spec and the
+start handoff context so the project agent receives the persistent surface as a
+DAG parameter. The persistent surface can stay open; Tau still accepts only
+bounded, receipt-backed outputs. See
+[Persistent Subagent Surfaces](docs/persistent-subagent-surfaces.md) and the
+copyable Embry example in
+[`examples/embry-voice-persistent-subagent/`](examples/embry-voice-persistent-subagent/).
+
 ## Status snapshot
 
 | Area | Status | Boundary |
@@ -177,6 +203,7 @@ work-order hash, and evidence artifacts.
 | Command-spec trust policy | Implemented | Local command policy gate; not a sandbox. |
 | Herdr-visible provider lanes | Implemented in proof lanes | Visible pane state is evidence, not truth. |
 | Herdr cleanup/GC | Implemented with leases/approval gates | Does not prove arbitrary non-Tau cleanup. |
+| Persistent subagent DAG surfaces | Implemented as DAG node validation and dispatch metadata | Does not prove the local UI route, audio path, Memory writes, or subagent semantic quality. |
 | GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
 | Tau DAG React Flow viewer | Implemented as UX Lab integration surface | Static fixtures prove renderability only; not live DAG execution. |

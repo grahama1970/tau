@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 import tau_coding.project_dag as project_dag
@@ -1006,6 +1007,88 @@ def test_project_dag_allows_provider_sensitive_contract_with_policy_prompt_and_e
     assert request["context"]["prompt_contract"] == prompt_contract
     assert request["context"]["tau_dag_node"]["model_policy"] == model_policy
     assert request["context"]["tau_dag_node"]["prompt_contract"] == prompt_contract
+
+
+def test_project_dag_propagates_persistent_subagent_surface_to_node(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    embry_surface = _embry_voice_persistent_subagent()
+    contract["nodes"][0]["persistent_subagent"] = embry_surface
+    contract["nodes"][0]["required_evidence"].append("persistent_subagent_receipt")
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    _write_stdin_capture_response_spec(
+        tmp_path,
+        "coder",
+        _handoff(
+            "coder",
+            "reviewer",
+            [
+                {"kind": "creator_artifact"},
+                {"kind": "persistent_subagent_receipt"},
+            ],
+        ),
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["ok"] is True
+    compiled_coder_spec = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "compiled-command-specs"
+            / "coder"
+            / "tau-dispatch-command.json"
+        ).read_text(encoding="utf-8")
+    )
+    request = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "command-loop"
+            / "command-artifacts"
+            / "command-loop-step-001"
+            / "request.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert compiled_coder_spec["tau_dag_node"]["persistent_subagent"] == embry_surface
+    assert request["context"]["persistent_subagent"] == embry_surface
+    assert request["context"]["tau_dag_node"]["persistent_subagent"] == embry_surface
+
+
+def test_project_dag_rejects_under_specified_persistent_subagent(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["nodes"][0]["persistent_subagent"] = {
+        "schema": "tau.persistent_subagent.v1",
+        "surface_id": "embry-voice",
+        "surface_url": "https://example.invalid/#embry-voice",
+        "session_mode": "ephemeral",
+        "tau_control": "autonomous_loop",
+        "dag_parameter": "embry_voice_surface",
+        "required_receipts": [],
+        "unbounded_autonomy_allowed": True,
+    }
+
+    with pytest.raises(RuntimeError) as excinfo:
+        project_dag.validate_dag_contract(contract)
+
+    error = str(excinfo.value)
+    assert "surface_url must use a local UX route" in error
+    assert "session_mode must be persistent" in error
+    assert "tau_control must be bounded_receipt_gated_ticks" in error
+    assert "unbounded_autonomy_allowed must be false" in error
+    assert "required_receipts must name at least one receipt schema" in error
+    assert "required_evidence must include persistent_subagent_receipt" in error
 
 
 def test_project_dag_provider_sensitive_command_without_spec_timeout_uses_tau_policy(
@@ -2036,6 +2119,24 @@ def _write_contract(tmp_path: Path) -> Path:
     path = tmp_path / "dag-contract.json"
     path.write_text(json.dumps(contract), encoding="utf-8")
     return path
+
+
+def _embry_voice_persistent_subagent() -> dict[str, object]:
+    return {
+        "schema": "tau.persistent_subagent.v1",
+        "surface_id": "embry-voice",
+        "surface_url": "http://localhost:3002/#embry-voice",
+        "session_mode": "persistent",
+        "tau_control": "bounded_receipt_gated_ticks",
+        "dag_parameter": "embry_voice_surface",
+        "required_receipts": ["embry.chatterbox_voice_receipt.v1"],
+        "unbounded_autonomy_allowed": False,
+        "memory_write_requires_receipt": True,
+        "notes": [
+            "The Embry voice UI can stay open across DAG ticks.",
+            "Tau still dispatches bounded work and accepts only receipt-backed outputs.",
+        ],
+    }
 
 
 def _write_gate_receipt(
