@@ -168,8 +168,9 @@ work-order hash, and evidence artifacts.
 
 ## Persistent subagent surfaces
 
-Some subagents should remain visible across bounded Tau DAG ticks. The first
-concrete pattern is the Embry Chatterbox voice surface:
+Some subagents should remain visible across bounded Tau DAG ticks. Project
+agents declare these as generic persistent subagent surfaces. One concrete
+example is the Embry Chatterbox voice surface:
 
 ```text
 http://localhost:3002/#embry-voice
@@ -187,7 +188,7 @@ start handoff context so the project agent receives the persistent surface as a
 DAG parameter. The persistent surface can stay open; Tau still accepts only
 bounded, receipt-backed outputs. See
 [Persistent Subagent Surfaces](docs/persistent-subagent-surfaces.md) and the
-copyable Embry example in
+copyable example in
 [`examples/embry-voice-persistent-subagent/`](examples/embry-voice-persistent-subagent/).
 
 ## Status snapshot
