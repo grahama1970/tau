@@ -2995,6 +2995,18 @@ def _artifact_descriptors(*items: tuple[str, object]) -> list[dict[str, Any]]:
         path = _artifact_path(raw_path)
         if path is None:
             continue
+        if path.is_dir():
+            artifacts.append(
+                {
+                    "label": label,
+                    "path": str(path),
+                    "exists": True,
+                    "kind": "directory",
+                    "sha256": None,
+                    "bytes": None,
+                }
+            )
+            continue
         artifacts.append(
             {
                 "label": label,
@@ -3009,14 +3021,14 @@ def _artifact_descriptors(*items: tuple[str, object]) -> list[dict[str, Any]]:
 
 def _artifact_sha256_uri(raw_path: object) -> str | None:
     path = _artifact_path(raw_path)
-    if path is None:
+    if path is None or not path.is_file():
         return None
     return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
 
 
 def _artifact_size(raw_path: object) -> int | None:
     path = _artifact_path(raw_path)
-    return path.stat().st_size if path is not None else None
+    return path.stat().st_size if path is not None and path.is_file() else None
 
 
 def _artifact_path(raw_path: object) -> Path | None:

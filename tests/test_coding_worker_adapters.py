@@ -3059,6 +3059,8 @@ def test_scillm_worker_validation_blocks_tampered_launch_result_binding(
 
 
 def test_scillm_worker_launch_hashes_named_scillm_artifact_map(tmp_path: Path) -> None:
+    run_dir = tmp_path / "scillm-run"
+    run_dir.mkdir()
     run_artifact = tmp_path / "scillm-run-events.jsonl"
     run_artifact.write_text('{"event":"completed"}\n', encoding="utf-8")
     server, base_url, _requests = _start_fake_scillm_server(
@@ -3071,7 +3073,10 @@ def test_scillm_worker_launch_hashes_named_scillm_artifact_map(tmp_path: Path) -
                 "model": "opencode-go/kimi-k2.5-free",
                 "status": "completed",
             },
-            "artifacts": {"events_jsonl": str(run_artifact)},
+            "artifacts": {
+                "run_dir": str(run_dir),
+                "events_jsonl": str(run_artifact),
+            },
             "result_path": "worker-result.json",
         }
     )
@@ -3104,6 +3109,21 @@ def test_scillm_worker_launch_hashes_named_scillm_artifact_map(tmp_path: Path) -
     )
     assert descriptor["path"] == str(run_artifact)
     assert descriptor["sha256"] == f"sha256:{_sha256(run_artifact)}"
+    directory_descriptor = next(
+        item
+        for item in payload["authored_artifact_descriptors"]
+        if item["label"] == "run_dir"
+    )
+    assert directory_descriptor == {
+        "label": "run_dir",
+        "path": str(run_dir),
+        "exists": True,
+        "kind": "directory",
+        "sha256": None,
+        "bytes": None,
+    }
+    assert payload["provider_live"] is True
+    assert payload["provider_execution_attestation"]["result_sha256"]
     assert payload["request_payload"]["model"] == "opencode-go/kimi-k2.5-free"
 
 
