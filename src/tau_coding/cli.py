@@ -3320,6 +3320,11 @@ def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, obj
                 agents_root=Path(str(options["agents_root"])),
                 command_spec_root=options.get("command_spec_root"),
                 scheduler=str(options["scheduler"]),
+                security_mode=(
+                    str(options["security_mode"])
+                    if options.get("security_mode") is not None
+                    else None
+                ),
             )
         except RuntimeError as exc:
             return dag_contract_error_payload(
@@ -3343,7 +3348,7 @@ def _parse_generic_dag_run_cli_args(
         raise RuntimeError(
             f"Usage: tau {command_name} <dag-spec> [--no-resume] "
             "[--receipt-dir <dir>] [--agents-root <dir>] [--command-spec-root <dir>] "
-            "[--scheduler <handoff-loop|bounded-ready-queue>]"
+            "[--scheduler <handoff-loop|bounded-ready-queue>] [--mode <development|secure>]"
         )
     spec_path = Path(args[0])
     resume = True
@@ -3356,6 +3361,7 @@ def _parse_generic_dag_run_cli_args(
     )
     command_spec_root: Path | None = None
     scheduler = "handoff-loop"
+    security_mode: str | None = None
     index = 1
     while index < len(args):
         arg = args[index]
@@ -3381,6 +3387,13 @@ def _parse_generic_dag_run_cli_args(
             if index >= len(args):
                 raise RuntimeError("--scheduler requires a value")
             scheduler = args[index]
+        elif arg == "--mode":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--mode requires a value")
+            security_mode = args[index]
+            if security_mode not in {"development", "secure"}:
+                raise RuntimeError("--mode must be development or secure")
         else:
             raise RuntimeError(f"unknown {command_name} option: {arg}")
         index += 1
@@ -3391,6 +3404,7 @@ def _parse_generic_dag_run_cli_args(
         "agents_root": agents_root,
         "command_spec_root": command_spec_root,
         "scheduler": scheduler,
+        "security_mode": security_mode,
     }
 
 

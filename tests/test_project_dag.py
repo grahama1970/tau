@@ -717,7 +717,7 @@ def test_project_dag_zero_trust_blocks_invalid_data_boundary(tmp_path: Path) -> 
     )
 
     assert receipt["ok"] is False
-    assert receipt["alerts"][0]["code"] == "missing_classification"
+    assert receipt["alerts"][0]["code"] == "invalid_data_boundary"
     assert "classification must be one of" in receipt["errors"][0]
 
 
@@ -1282,16 +1282,21 @@ def test_project_dag_legacy_contract_still_runs_without_policy_profile(tmp_path:
     assert receipt.get("zero_trust_preflight_receipt") is None
 
 
-def test_project_dag_controlled_boundary_requires_itar_access_gate(tmp_path: Path) -> None:
+def test_project_dag_controlled_boundary_requires_explicit_secure_mode(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     payload = json.loads(contract_path.read_text(encoding="utf-8"))
     payload["data_boundary"] = {
         "schema": "tau.data_boundary.v1",
         "classification": "ITAR",
+        "export_controlled": True,
+        "itar": True,
+        "technical_data": True,
+        "foreign_person_access": "prohibited",
         "goal_hash": "sha256:active-goal",
         "external_provider_allowed": False,
         "external_research_allowed": False,
         "public_repo_allowed": False,
+        "notes": [],
     }
     contract_path.write_text(json.dumps(payload), encoding="utf-8")
 
@@ -1303,14 +1308,60 @@ def test_project_dag_controlled_boundary_requires_itar_access_gate(tmp_path: Pat
 
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
-    assert receipt["verdict"] == "MISSING_ITAR_ACCESS_PREFLIGHT"
+    assert receipt["verdict"] == "CONTROLLED_BOUNDARY_REQUIRES_SECURE_MODE"
     assert receipt["selected_agents"] == []
-    assert receipt["alerts"][0]["code"] == "missing_itar_access_preflight"
-    assert receipt["dag_error"]["recommended_action"] == {
-        "type": "repair_actor_access_gate",
-        "next_agent": "goal-guardian",
-        "reason": "Run or repair the ITAR actor/access preflight receipt before DAG dispatch.",
-    }
+    assert receipt["command_executed"] is False
+    assert receipt["provider_invoked"] is False
+    assert receipt["filesystem_mutation_performed"] is False
+    assert receipt["alerts"][0]["code"] == "controlled_boundary_requires_secure_mode"
+    assert receipt["security_context_receipt"].endswith("security-context-receipt.json")
+
+
+def test_project_dag_secure_relative_itar_boundary_blocks_before_dispatch_without_actor(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    boundary_path = _write_data_boundary(
+        tmp_path,
+        {
+            "classification": "ITAR",
+            "export_controlled": True,
+            "itar": True,
+            "technical_data": True,
+            "foreign_person_access": "prohibited",
+        },
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["data_boundary"] = boundary_path.name
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["command_policy"] = str(
+        _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
+    )
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    run_dir = tmp_path / "run"
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        security_mode="secure",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_ACTOR_ACCESS_MANIFEST"
+    assert receipt["selected_agents"] == []
+    assert receipt["command_executed"] is False
+    assert receipt["provider_live"] is False
+    assert receipt["provider_invoked"] is False
+    assert receipt["filesystem_mutation_performed"] is False
+    assert receipt["dag_error"]["failure_code"] == "missing_actor_access_manifest"
+    assert (run_dir / "security-context-receipt.json").exists()
+    assert (run_dir / "dag-receipt.json").exists()
+    assert (run_dir / "environment-manifest.json").exists()
+    assert not (run_dir / "command-loop").exists()
+    assert not (run_dir / "compiled-command-specs").exists()
+    assert not list(run_dir.rglob("*provider*receipt*.json"))
 
 
 def test_project_dag_dispatches_when_containment_gate_receipts_pass(
@@ -1339,14 +1390,25 @@ def test_project_dag_dispatches_when_containment_gate_receipts_pass(
         extra={"review_ready": True, "compliant": "NOT_CLAIMED"},
     )
     payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    actor_manifest = _write_actor_access_manifest(tmp_path)
+    command_policy = _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
     payload["data_boundary"] = {
         "schema": "tau.data_boundary.v1",
         "classification": "ITAR",
+        "export_controlled": True,
+        "itar": True,
+        "technical_data": True,
+        "foreign_person_access": "prohibited",
         "goal_hash": "sha256:active-goal",
         "external_provider_allowed": False,
         "external_research_allowed": False,
         "public_repo_allowed": False,
+        "notes": [],
     }
+    payload["security_mode"] = "secure"
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["actor_access_manifest"] = str(actor_manifest)
+    payload["command_policy"] = str(command_policy)
     payload["requires_external_research"] = True
     payload["requires_sandbox"] = True
     payload["requires_compliance_package_validation"] = True
@@ -2420,6 +2482,30 @@ def _write_data_boundary(tmp_path: Path, overrides: dict[str, object] | None = N
     if overrides:
         payload.update(overrides)
     path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _write_actor_access_manifest(tmp_path: Path) -> Path:
+    path = tmp_path / "actor-access-manifest.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.actor_access_manifest.v1",
+                "actor_id": "human:tester",
+                "actor_type": "human",
+                "roles": ["approver"],
+                "trusted": True,
+                "verified": True,
+                "eligibility": {
+                    "us_person": "verified",
+                    "foreign_person": False,
+                    "export_control_training_current": True,
+                    "approved_for_boundary": ["ITAR"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     return path
 
 

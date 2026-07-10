@@ -29,6 +29,7 @@ from tau_coding.memory_evidence_gate import (
     write_memory_intent_gate_receipt,
 )
 from tau_coding.policy_profile import zero_trust_preflight_receipt
+from tau_coding.security_context import resolve_security_context
 
 try:  # YAML is available in the project lock through docs tooling, but keep JSON first.
     import yaml
@@ -197,6 +198,9 @@ class ProjectDagContract:
     command_policy: str | None
     policy_profile: str | dict[str, Any] | None
     data_boundary: str | dict[str, Any] | None
+    security_mode: str | None
+    actor_access_manifest: str | dict[str, Any] | None
+    environment_manifest: str | dict[str, Any] | None
     memory_intent: str | dict[str, Any] | None
     evidence_case: str | dict[str, Any] | None
     research_query_safety_receipt: str | None
@@ -212,6 +216,7 @@ def run_project_dag_contract(
     agents_root: Path,
     command_spec_root: Path | None = None,
     scheduler: str = "handoff-loop",
+    security_mode: str | None = None,
 ) -> dict[str, Any]:
     """Run a project-agent DAG contract through the existing handoff command loop."""
 
@@ -227,6 +232,28 @@ def run_project_dag_contract(
 
     if scheduler not in {"handoff-loop", "bounded-ready-queue"}:
         raise RuntimeError(f"unknown project DAG scheduler: {scheduler}")
+    security_context_result = resolve_security_context(
+        dag_contract=contract.payload,
+        contract_path=resolved_contract_path,
+        receipt_dir=resolved_receipt_dir,
+        requested_mode=security_mode or contract.security_mode,
+    )
+    if security_context_result.alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(security_context_result.alerts[0]["code"]).upper(),
+            alerts=security_context_result.alerts,
+            memory_intent_gate_receipt=None,
+            evidence_case_gate_receipt=None,
+            evidence_validation_receipt=None,
+            zero_trust_preflight_receipt=None,
+            security_context_receipt=security_context_result.receipt,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     provider_policy_alerts = _provider_policy_preflight(contract)
     if provider_policy_alerts:
         receipt = _pre_dispatch_blocked_receipt(
@@ -240,6 +267,7 @@ def run_project_dag_contract(
             evidence_case_gate_receipt=None,
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=None,
+            security_context_receipt=security_context_result.receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -260,6 +288,7 @@ def run_project_dag_contract(
             evidence_case_gate_receipt=None,
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=zero_trust_receipt,
+            security_context_receipt=security_context_result.receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -280,6 +309,7 @@ def run_project_dag_contract(
             zero_trust_preflight_receipt=zero_trust_receipt,
             memory_intent_gate_receipt=memory_intent_receipt,
             evidence_case_gate_receipt=evidence_case_receipt,
+            security_context_receipt=security_context_result.receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -300,6 +330,7 @@ def run_project_dag_contract(
             evidence_validation_receipt=None,
             zero_trust_preflight_receipt=zero_trust_receipt,
             containment_gate_receipts=containment_receipts,
+            security_context_receipt=security_context_result.receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -321,6 +352,7 @@ def run_project_dag_contract(
             memory_intent_gate_receipt=memory_intent_receipt,
             evidence_case_gate_receipt=evidence_case_receipt,
             containment_gate_receipts=containment_receipts,
+            security_context_receipt=security_context_result.receipt,
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
@@ -393,6 +425,7 @@ def run_project_dag_contract(
         "live": True,
         "provider_live": False,
         "scheduler": scheduler,
+        "security_mode": security_context_result.receipt.get("security_mode"),
         "execution": "project_agent_dag_via_handoff_command_loop",
         "dag_id": contract.dag_id,
         "contract_path": str(resolved_contract_path),
@@ -406,6 +439,10 @@ def run_project_dag_contract(
         "edge_count": len(contract.edges),
         "max_steps": max_steps,
         "command_loop_receipt": str(loop_receipt_path),
+        "security_context_receipt": security_context_result.receipt.get("receipt_path"),
+        "security_context_sha256": security_context_result.receipt.get(
+            "security_context_sha256"
+        ),
         "selected_agents": [
             dispatch.get("selected_agent")
             for dispatch in _dispatches(loop_payload)
@@ -439,6 +476,7 @@ def run_project_dag_contract(
             if isinstance(gate_receipt, dict)
         },
         "artifacts": [
+            str(security_context_result.receipt_path),
             str(start_path),
             str(loop_receipt_path),
             *(
@@ -1163,6 +1201,18 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     if data_boundary is not None and not isinstance(data_boundary, (str, dict)):
         errors.append("data_boundary must be a string path or object when provided")
         data_boundary = None
+    security_mode = payload.get("security_mode")
+    if security_mode is not None and security_mode not in {"development", "secure"}:
+        errors.append("security_mode must be development or secure when provided")
+        security_mode = None
+    actor_access_manifest = payload.get("actor_access_manifest")
+    if actor_access_manifest is not None and not isinstance(actor_access_manifest, (str, dict)):
+        errors.append("actor_access_manifest must be a string path or object when provided")
+        actor_access_manifest = None
+    environment_manifest = payload.get("environment_manifest")
+    if environment_manifest is not None and not isinstance(environment_manifest, (str, dict)):
+        errors.append("environment_manifest must be a string path or object when provided")
+        environment_manifest = None
     memory_intent = payload.get("memory_intent")
     if memory_intent is not None and not isinstance(memory_intent, (str, dict)):
         errors.append("memory_intent must be a string path or object when provided")
@@ -1224,6 +1274,9 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         command_policy=command_policy,
         policy_profile=policy_profile,
         data_boundary=data_boundary,
+        security_mode=security_mode,
+        actor_access_manifest=actor_access_manifest,
+        environment_manifest=environment_manifest,
         memory_intent=memory_intent,
         evidence_case=evidence_case,
         research_query_safety_receipt=research_query_safety_receipt,
@@ -1982,9 +2035,15 @@ def _pre_dispatch_blocked_receipt(
     evidence_validation_receipt: dict[str, Any] | None,
     zero_trust_preflight_receipt: dict[str, Any] | None = None,
     containment_gate_receipts: dict[str, dict[str, Any]] | None = None,
+    security_context_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
     containment_gate_receipts = containment_gate_receipts or {}
+    if isinstance(security_context_receipt, dict) and isinstance(
+        security_context_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(security_context_receipt["receipt_path"]))
     if isinstance(zero_trust_preflight_receipt, dict) and isinstance(
         zero_trust_preflight_receipt.get("receipt_path"),
         str,
@@ -2033,6 +2092,24 @@ def _pre_dispatch_blocked_receipt(
         "node_attempts": {},
         "reviewer_verdicts": [],
         "alerts": alerts,
+        "security_mode": (
+            security_context_receipt.get("security_mode")
+            if isinstance(security_context_receipt, dict)
+            else contract.security_mode or "development"
+        ),
+        "security_context_receipt": (
+            security_context_receipt.get("receipt_path")
+            if isinstance(security_context_receipt, dict)
+            else None
+        ),
+        "security_context_sha256": (
+            security_context_receipt.get("security_context_sha256")
+            if isinstance(security_context_receipt, dict)
+            else None
+        ),
+        "command_executed": False,
+        "provider_invoked": False,
+        "filesystem_mutation_performed": False,
         "evidence_validation_receipt": (
             evidence_validation_receipt.get("receipt_path")
             if isinstance(evidence_validation_receipt, dict)
