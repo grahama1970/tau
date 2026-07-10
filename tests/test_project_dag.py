@@ -63,6 +63,33 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     assert Path(str(receipt["command_loop_receipt"])).exists()
 
 
+def test_project_dag_preserves_semantic_node_block_verdict(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    blocked = _handoff("coder", "reviewer", [])
+    blocked["result"] = {
+        "status": "BLOCKED",
+        "summary": "Provider output is missing.",
+        "evidence": ["provider-authorship-receipt.json"],
+    }
+    _write_response_spec(tmp_path, "coder", blocked, exit_code=1)
+    _write_response_spec(
+        tmp_path,
+        "reviewer",
+        _reviewer_handoff(goal_hash="sha256:active-goal"),
+    )
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "NODE_BLOCKED"
+    loop = json.loads(Path(receipt["command_loop_receipt"]).read_text(encoding="utf-8"))
+    assert loop["stop_reason"] == "node_blocked"
+
+
 def test_project_dag_writes_live_subagent_progress_for_handoff_loop(
     tmp_path: Path,
 ) -> None:
@@ -2879,13 +2906,14 @@ def _write_response_spec(
     sleep_seconds: float = 0.0,
     timeout_s: float = 5,
     include_cwd: bool = True,
+    exit_code: int = 0,
 ) -> None:
     spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
     code = ""
     if sleep_seconds:
         code += f"import time; time.sleep({sleep_seconds!r}); "
-    code += f"print({json.dumps(json.dumps(response))})"
+    code += f"print({json.dumps(json.dumps(response))}); raise SystemExit({exit_code})"
     payload: dict[str, object] = {
         "command": [
             sys.executable,

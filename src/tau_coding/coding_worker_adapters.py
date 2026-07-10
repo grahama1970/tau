@@ -75,6 +75,7 @@ def write_scillm_worker_receipt(
     work_order_path: Path,
     result_path: Path,
     output_path: Path,
+    launch_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     return _write_worker_receipt(
         work_order_path=work_order_path,
@@ -84,6 +85,7 @@ def write_scillm_worker_receipt(
         expected_result_schema=SCILLM_WORKER_RESULT_SCHEMA,
         receipt_schema=SCILLM_WORKER_RECEIPT_SCHEMA,
         worker_kind="scillm",
+        launch_receipt_path=launch_receipt_path,
     )
 
 
@@ -365,6 +367,11 @@ def write_scillm_worker_launch_receipt(
         launch_result=launch_result,
         alerts=alerts,
     )
+    provider_attestation = _scillm_provider_execution_attestation(
+        work_order=work_order,
+        launch_result=launch_result,
+        response_result_artifact=response_result_artifact,
+    )
     work_order_artifacts = _artifact_descriptors(("work_order", resolved_work_order))
     ok = not alerts
     course_correction_path, course_correction = _worker_launch_course_correction_artifact(
@@ -380,7 +387,7 @@ def write_scillm_worker_launch_receipt(
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
         "live": launch_result["http_executed"],
-        "provider_live": False,
+        "provider_live": bool(provider_attestation),
         "dry_run": not apply,
         "apply_requested": apply,
         "http_executed": launch_result["http_executed"],
@@ -404,9 +411,7 @@ def write_scillm_worker_launch_receipt(
         "endpoint": SCILLM_OPENCODE_SERVE_ENDPOINT,
         "url": url,
         "headers": {
-            "authorization": (
-                "REDACTED" if effective_auth_token else "REDACTED_REQUIRED"
-            ),
+            "authorization": ("REDACTED" if effective_auth_token else "REDACTED_REQUIRED"),
             "authorization_source": auth_source,
             "x_caller_skill": caller_skill,
             "content_type": "application/json",
@@ -427,8 +432,12 @@ def write_scillm_worker_launch_receipt(
         "run_id": launch_result["run_id"],
         "session_id": launch_result["session_id"],
         "scillm_run_status": launch_result["scillm_run_status"],
+        "observed_provider": launch_result["observed_provider"],
+        "observed_model": launch_result["observed_model"],
+        "provider_execution_attestation": provider_attestation,
         "response_scillm_metadata": launch_result["response_scillm_metadata"],
         "response_artifacts": launch_result["response_artifacts"],
+        "authored_artifact_descriptors": launch_result["authored_artifact_descriptors"],
         "expected_worker_result_path": work_order.get("result_path"),
         "response_result_artifact": response_result_artifact,
         "response_result_path": (
@@ -453,6 +462,8 @@ def write_scillm_worker_launch_receipt(
                 "Tau checked route metadata before any external SciLLM call.",
                 "When apply=true and gates pass, Tau posted the request to the configured "
                 "SciLLM OpenCode-serve endpoint and captured the response artifact.",
+                "When provider_live is true, Tau hash-bound observed provider/model/run "
+                "identity to the work order and materialized result artifact.",
             ],
             "does_not_prove": [
                 "The OpenCode worker result is truthful or sufficient for closure.",
@@ -478,6 +489,7 @@ def _write_worker_receipt(
     expected_result_schema: str,
     receipt_schema: str,
     worker_kind: str,
+    launch_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     resolved_work_order = work_order_path.expanduser().resolve()
     resolved_result = result_path.expanduser().resolve()
@@ -496,18 +508,20 @@ def _write_worker_receipt(
         if result_path_admissible
         else {}
     )
-    result_artifact_descriptors = _artifact_descriptors(
-        ("worker_result", resolved_result)
-    ) if result_path_admissible else [
-        {
-            "label": "worker_result",
-            "path": str(resolved_result),
-            "exists": resolved_result.exists(),
-            "sha256": None,
-            "bytes": None,
-            "admissible": False,
-        }
-    ]
+    result_artifact_descriptors = (
+        _artifact_descriptors(("worker_result", resolved_result))
+        if result_path_admissible
+        else [
+            {
+                "label": "worker_result",
+                "path": str(resolved_result),
+                "exists": resolved_result.exists(),
+                "sha256": None,
+                "bytes": None,
+                "admissible": False,
+            }
+        ]
+    )
     if work_order.get("schema") != expected_work_order_schema:
         alerts.append(
             _alert("invalid_work_order_schema", f"schema must be {expected_work_order_schema}")
@@ -568,8 +582,7 @@ def _write_worker_receipt(
     disallowed_result_artifacts = [
         artifact
         for artifact in normalized_result_artifacts
-        if not _path_allowed(artifact, allowed_paths)
-        or _path_forbidden(artifact, forbidden_paths)
+        if not _path_allowed(artifact, allowed_paths) or _path_forbidden(artifact, forbidden_paths)
     ]
     missing_required_artifacts = _missing_required_artifacts(
         required_artifacts,
@@ -638,6 +651,17 @@ def _write_worker_receipt(
         work_order=work_order,
     )
 
+    provider_attestation = (
+        _validated_scillm_provider_attestation(
+            launch_receipt_path=launch_receipt_path,
+            work_order=work_order,
+            result_path=resolved_result,
+            alerts=alerts,
+        )
+        if worker_kind == "scillm" and launch_receipt_path is not None
+        else None
+    )
+
     ok = not alerts
     course_correction_path, course_correction = _worker_course_correction_artifact(
         output_path=output_path,
@@ -652,7 +676,7 @@ def _write_worker_receipt(
         "status": "PASS" if ok else "BLOCKED",
         "mocked": False,
         "live": True,
-        "provider_live": False,
+        "provider_live": bool(provider_attestation),
         "worker_kind": worker_kind,
         "work_order_path": str(resolved_work_order),
         "work_order_sha256": _artifact_sha256_uri(resolved_work_order),
@@ -662,7 +686,8 @@ def _write_worker_receipt(
         "result_bytes": _artifact_size(resolved_result) if result_path_admissible else None,
         "validated_artifacts": _artifact_descriptors(
             ("work_order", resolved_work_order),
-        ) + result_artifact_descriptors,
+        )
+        + result_artifact_descriptors,
         "work_order_schema": work_order.get("schema"),
         "result_schema": result.get("schema"),
         "dag_id": work_order.get("dag_id"),
@@ -672,6 +697,13 @@ def _write_worker_receipt(
         "goal_hash": goal_hash,
         **_substrate_metadata(work_order),
         "model_provider_route": _model_provider_route(work_order, result),
+        "observed_provider": (
+            provider_attestation.get("observed_provider") if provider_attestation else None
+        ),
+        "observed_model": (
+            provider_attestation.get("observed_model") if provider_attestation else None
+        ),
+        "provider_execution_attestation": provider_attestation,
         "changed_files": changed_files,
         "normalized_changed_files": normalized_changed_files,
         "required_artifacts": required_artifacts,
@@ -700,15 +732,17 @@ def _write_worker_receipt(
                 "Tau recorded hashes for the validated work order and worker result.",
                 "Tau checked goal hash, changed paths, required artifacts, test logs, "
                 "mutation claims, and research claims.",
-                "Tau emitted a bounded course-correction receipt when worker output "
-                "was blocked.",
+                "Tau emitted a bounded course-correction receipt when worker output was blocked.",
+                "When a SciLLM launch receipt is supplied, Tau checked its provider "
+                "execution and work-order/result bindings.",
             ],
             "does_not_prove": [
                 "The worker is trustworthy.",
                 "The code is semantically correct.",
                 "Tests passed unless durable logs are present.",
                 "Provider/model semantic quality.",
-                "The worker was launched by Tau.",
+                "The worker was launched by Tau unless provider_live is true and a "
+                "provider_execution_attestation is present.",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -784,9 +818,7 @@ def _worker_launch_course_correction_artifact(
         / "course-corrections"
         / f"{_safe_file_stem(node_id)}-attempt-{attempt_number:03d}-{trigger}.json"
     )
-    executed = bool(
-        launch_result.get("process_executed") or launch_result.get("http_executed")
-    )
+    executed = bool(launch_result.get("process_executed") or launch_result.get("http_executed"))
     observed_artifact_path = _worker_launch_observed_artifact_path(
         work_order=work_order,
         launch_result=launch_result,
@@ -1360,6 +1392,9 @@ def _maybe_post_scillm_opencode_run(
         "scillm_run_status": None,
         "response_scillm_metadata": None,
         "response_artifacts": [],
+        "authored_artifact_descriptors": [],
+        "observed_provider": None,
+        "observed_model": None,
     }
     if not apply:
         return result
@@ -1388,7 +1423,7 @@ def _maybe_post_scillm_opencode_run(
         with urllib.request.urlopen(request, timeout=request_timeout_s) as response:
             response_body = response.read().decode("utf-8", errors="replace")
             http_status = response.status
-    except (TimeoutError, socket.timeout):
+    except TimeoutError, socket.timeout:
         alerts.append(
             _alert(
                 "scillm_launch_timeout",
@@ -1419,9 +1454,7 @@ def _maybe_post_scillm_opencode_run(
                     f"SciLLM OpenCode serve request timed out after {request_timeout_s}s",
                 )
             )
-            result.update(
-                {"http_executed": True, "launch_skipped": False, "timed_out": True}
-            )
+            result.update({"http_executed": True, "launch_skipped": False, "timed_out": True})
             return result
         error_path.parent.mkdir(parents=True, exist_ok=True)
         error_path.write_text(str(exc), encoding="utf-8")
@@ -1460,7 +1493,9 @@ def _maybe_post_scillm_opencode_run(
                 "SciLLM response requires run_id or session_id",
             )
         )
-    artifacts = _string_list(response_payload.get("artifacts"))
+    artifacts, authored_artifact_descriptors = _scillm_response_artifacts(
+        response_payload.get("artifacts")
+    )
     response_result_path = _string(response_payload.get("result_path"))
     if response_result_path and response_result_path not in artifacts:
         artifacts.append(response_result_path)
@@ -1480,6 +1515,7 @@ def _maybe_post_scillm_opencode_run(
     )
     if metadata_result_path and metadata_result_path not in artifacts:
         artifacts.append(metadata_result_path)
+    observed_provider, observed_model = _observed_scillm_route(response_payload)
     result.update(
         {
             "http_executed": True,
@@ -1493,6 +1529,9 @@ def _maybe_post_scillm_opencode_run(
             "scillm_run_status": run_status or None,
             "response_scillm_metadata": dict(metadata) if isinstance(metadata, Mapping) else None,
             "response_artifacts": artifacts,
+            "authored_artifact_descriptors": authored_artifact_descriptors,
+            "observed_provider": observed_provider,
+            "observed_model": observed_model,
         }
     )
     return result
@@ -1595,6 +1634,142 @@ def _scillm_response_result_artifact(
     return descriptor
 
 
+def _scillm_response_artifacts(raw: object) -> tuple[list[str], list[dict[str, Any]]]:
+    if isinstance(raw, Mapping):
+        names: list[str] = []
+        descriptors: list[dict[str, Any]] = []
+        for label, value in raw.items():
+            path = _string(value)
+            if path is None:
+                continue
+            names.append(path)
+            descriptor = _artifact_descriptors((str(label), path))
+            if descriptor:
+                descriptors.append(descriptor[0])
+        return names, descriptors
+    names = _string_list(raw)
+    descriptors = []
+    for path in names:
+        descriptor = _artifact_descriptors(("scillm_response_artifact", path))
+        if descriptor:
+            descriptors.append(descriptor[0])
+    return names, descriptors
+
+
+def _observed_scillm_route(response: Mapping[str, Any]) -> tuple[str | None, str | None]:
+    collaboration = response.get("collaboration_item")
+    collaboration_model = (
+        _string(collaboration.get("model")) if isinstance(collaboration, Mapping) else None
+    )
+    model = _string(response.get("model") or response.get("model_id")) or collaboration_model
+    provider = _string(response.get("provider") or response.get("provider_id"))
+    if provider is None and model and "/" in model:
+        provider = model.split("/", 1)[0]
+    return provider, model
+
+
+def _scillm_provider_execution_attestation(
+    *,
+    work_order: Mapping[str, Any],
+    launch_result: Mapping[str, Any],
+    response_result_artifact: Mapping[str, Any] | None,
+) -> dict[str, Any] | None:
+    if (
+        not launch_result.get("http_executed")
+        or launch_result.get("scillm_run_status") != "completed"
+    ):
+        return None
+    provider = _string(launch_result.get("observed_provider"))
+    model = _string(launch_result.get("observed_model"))
+    run_id = _string(launch_result.get("run_id"))
+    session_id = _string(launch_result.get("session_id"))
+    if not provider or not model:
+        return None
+    if not (run_id or session_id) or response_result_artifact is None:
+        return None
+    authored = list(launch_result.get("authored_artifact_descriptors") or [])
+    result_descriptor = dict(response_result_artifact)
+    if not any(item.get("path") == result_descriptor.get("path") for item in authored):
+        authored.append(result_descriptor)
+    return {
+        "schema": "tau.provider_execution_attestation.v1",
+        "observed_provider": provider,
+        "observed_model": model,
+        "run_id": run_id,
+        "session_id": session_id,
+        "completion_status": "completed",
+        "work_order_sha256": _artifact_sha256_uri(work_order.get("work_order_path")),
+        "result_path": result_descriptor.get("path"),
+        "result_sha256": result_descriptor.get("sha256"),
+        "result_bytes": result_descriptor.get("bytes"),
+        "authored_artifacts": authored,
+    }
+
+
+def _validated_scillm_provider_attestation(
+    *,
+    launch_receipt_path: Path,
+    work_order: Mapping[str, Any],
+    result_path: Path,
+    alerts: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    launch = _read_json_object(launch_receipt_path.expanduser().resolve(), alerts, "launch_receipt")
+    if launch.get("schema") != SCILLM_WORKER_LAUNCH_RECEIPT_SCHEMA:
+        alerts.append(
+            _alert("invalid_launch_receipt_schema", "SciLLM launch receipt schema is invalid")
+        )
+        return None
+    attestation = launch.get("provider_execution_attestation")
+    if (
+        launch.get("status") != "PASS"
+        or launch.get("provider_live") is not True
+        or not isinstance(attestation, Mapping)
+    ):
+        alerts.append(
+            _alert(
+                "provider_execution_attestation_missing",
+                "SciLLM launch receipt lacks provider execution attestation",
+            )
+        )
+        return None
+    required_attestation_fields = (
+        "observed_provider",
+        "observed_model",
+        "completion_status",
+        "work_order_sha256",
+        "result_path",
+        "result_sha256",
+    )
+    if attestation.get("schema") != "tau.provider_execution_attestation.v1" or any(
+        not _string(attestation.get(field)) for field in required_attestation_fields
+    ):
+        alerts.append(
+            _alert(
+                "invalid_provider_execution_attestation",
+                "provider execution attestation is incomplete",
+            )
+        )
+        return None
+    expected_work_order_sha = _artifact_sha256_uri(work_order.get("work_order_path"))
+    expected_result_sha = _artifact_sha256_uri(result_path)
+    mismatches: list[str] = []
+    if attestation.get("work_order_sha256") != expected_work_order_sha:
+        mismatches.append("work_order_sha256")
+    if attestation.get("result_sha256") != expected_result_sha:
+        mismatches.append("result_sha256")
+    if attestation.get("result_path") != str(result_path):
+        mismatches.append("result_path")
+    if mismatches:
+        alerts.append(
+            _alert(
+                "provider_execution_attestation_mismatch",
+                f"provider attestation mismatches: {mismatches}",
+            )
+        )
+        return None
+    return dict(attestation)
+
+
 def _resolve_worker_result_path(path: str, repo: Path | None) -> Path:
     candidate = Path(path).expanduser()
     if not candidate.is_absolute() and repo is not None:
@@ -1619,9 +1794,7 @@ def _append_scillm_base_url_alerts(base_url: str, alerts: list[dict[str, Any]]) 
             _alert("invalid_scillm_base_url_scheme", "SciLLM base URL must use http or https")
         )
     if not parsed.hostname:
-        alerts.append(
-            _alert("invalid_scillm_base_url_host", "SciLLM base URL must include a host")
-        )
+        alerts.append(_alert("invalid_scillm_base_url_host", "SciLLM base URL must include a host"))
     if _is_raw_opencode_local_url(base_url):
         alerts.append(
             _alert(
@@ -1682,7 +1855,7 @@ def _docker_scillm_auth_token() -> tuple[str | None, str]:
             timeout=5,
             check=False,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError, subprocess.TimeoutExpired:
         return None, "missing"
     if result.returncode != 0:
         return None, "missing"
@@ -1751,9 +1924,7 @@ def _append_work_order_gate_alerts(
                 outside_repo_code="sandbox_receipt_outside_repo",
                 unreadable_code="sandbox_receipt_unreadable",
                 not_object_code="sandbox_receipt_not_object",
-                missing_message=(
-                    "high-stakes sandbox worker sandbox_receipt_path does not exist"
-                ),
+                missing_message=("high-stakes sandbox worker sandbox_receipt_path does not exist"),
             )
             _append_referenced_receipt_status_alerts(
                 sandbox_receipt,
@@ -1997,7 +2168,7 @@ def _referenced_substrate_receipt_artifact(
         return None
     try:
         payload = json.loads(Path(str(descriptor["path"])).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return descriptor
     if not isinstance(payload, Mapping):
         return descriptor
@@ -2140,6 +2311,9 @@ def _scillm_opencode_request_payload(
             "receipt_path": work_order.get("receipt_path"),
         },
     }
+    model = _string(route.get("model"))
+    if model:
+        payload["model"] = model
     timeout_s = work_order.get("timeout_s")
     if isinstance(timeout_s, int) and not isinstance(timeout_s, bool) and timeout_s > 0:
         payload["timeout_s"] = timeout_s
@@ -2476,9 +2650,10 @@ def _validate_external_research_receipts(
                     "worker policy_profile denies external research",
                 )
             )
-        if isinstance(data_boundary, Mapping) and data_boundary.get(
-            "external_research_allowed"
-        ) is False:
+        if (
+            isinstance(data_boundary, Mapping)
+            and data_boundary.get("external_research_allowed") is False
+        ):
             alerts.append(
                 _alert(
                     "external_research_denied_by_data_boundary",
@@ -2566,9 +2741,7 @@ def _append_research_query_boundary_match_alerts(
     if isinstance(policy, Mapping):
         expected_policy_sha = _inline_json_sha256_uri(policy)
         receipt_policy_sha = (
-            _string(receipt_policy.get("sha256"))
-            if isinstance(receipt_policy, Mapping)
-            else None
+            _string(receipt_policy.get("sha256")) if isinstance(receipt_policy, Mapping) else None
         )
         if not receipt_policy_sha:
             alerts.append(

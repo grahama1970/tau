@@ -1858,9 +1858,7 @@ def main(
                 zero_trust=bool(options["zero_trust"]),
                 policy_profile=_read_optional_json_object(options.get("policy_profile")),
                 data_boundary=_read_optional_json_object(options.get("data_boundary")),
-                evidence_receipt_paths=[
-                    Path(str(path)) for path in options["evidence_receipts"]
-                ],
+                evidence_receipt_paths=[Path(str(path)) for path in options["evidence_receipts"]],
                 approval_receipt_path=(
                     Path(str(options["approval_receipt"]))
                     if options.get("approval_receipt")
@@ -1918,6 +1916,11 @@ def main(
                 work_order_path=Path(str(options["work_order"])),
                 result_path=Path(str(options["result"])),
                 output_path=Path(str(options["out"])),
+                launch_receipt_path=(
+                    Path(str(options["launch_receipt"]))
+                    if options.get("launch_receipt") is not None
+                    else None
+                ),
             )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -2048,9 +2051,7 @@ def main(
                 profile_path=Path(str(options["profile"])),
                 output_path=Path(str(options["out"])),
                 capability_registry_path=(
-                    Path(str(options["registry"]))
-                    if options.get("registry") is not None
-                    else None
+                    Path(str(options["registry"])) if options.get("registry") is not None else None
                 ),
             )
         except RuntimeError as exc:
@@ -3596,7 +3597,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except (OSError, json.JSONDecodeError, RuntimeError):
+    except OSError, json.JSONDecodeError, RuntimeError:
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -5371,9 +5372,7 @@ def _parse_orchestration_reliability_cli_args(args: list[str]) -> dict[str, obje
         else:
             raise RuntimeError(f"unknown orchestration-reliability option: {arg}")
         index += 1
-    if not _optional_str(options.get("run_dir")) and not _optional_str(
-        options.get("dag_receipt")
-    ):
+    if not _optional_str(options.get("run_dir")) and not _optional_str(options.get("dag_receipt")):
         raise RuntimeError(
             "Usage: tau orchestration-reliability "
             "(--run-dir <dir> | --dag-receipt <receipt>) --out <receipt>"
@@ -5387,11 +5386,16 @@ def _parse_orchestration_reliability_cli_args(args: list[str]) -> dict[str, obje
 
 
 def _parse_worker_validate_cli_args(args: list[str], *, command: str) -> dict[str, object]:
-    options: dict[str, object] = {"work_order": None, "result": None, "out": None}
+    options: dict[str, object] = {
+        "work_order": None,
+        "result": None,
+        "out": None,
+        "launch_receipt": None,
+    }
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg in {"--work-order", "--result", "--out"}:
+        if arg in {"--work-order", "--result", "--out", "--launch-receipt"}:
             index += 1
             if index >= len(args):
                 raise RuntimeError(f"{arg} requires a value")
@@ -5402,6 +5406,8 @@ def _parse_worker_validate_cli_args(args: list[str], *, command: str) -> dict[st
             options["result"] = arg.partition("=")[2]
         elif arg.startswith("--out="):
             options["out"] = arg.partition("=")[2]
+        elif arg.startswith("--launch-receipt="):
+            options["launch_receipt"] = arg.partition("=")[2]
         else:
             raise RuntimeError(f"unknown {command} option: {arg}")
         index += 1
@@ -5830,13 +5836,11 @@ def _parse_skill_invocation_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if not _optional_str(options.get("request")):
         raise RuntimeError(
-            "Usage: tau skill-invocation --request <json> --out <receipt> "
-            "[--repo-root <dir>]"
+            "Usage: tau skill-invocation --request <json> --out <receipt> [--repo-root <dir>]"
         )
     if not _optional_str(options.get("out")):
         raise RuntimeError(
-            "Usage: tau skill-invocation --request <json> --out <receipt> "
-            "[--repo-root <dir>]"
+            "Usage: tau skill-invocation --request <json> --out <receipt> [--repo-root <dir>]"
         )
     return options
 
@@ -5933,18 +5937,15 @@ def _parse_code_runner_skill_adapter_cli_args(args: list[str]) -> dict[str, obje
         index += 1
     if not _optional_str(options.get("result")):
         raise RuntimeError(
-            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> --repo-root <dir>"
         )
     if not _optional_str(options.get("out")):
         raise RuntimeError(
-            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> --repo-root <dir>"
         )
     if not _optional_str(options.get("repo_root")):
         raise RuntimeError(
-            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau code-runner-skill-adapter --result <json> --out <receipt> --repo-root <dir>"
         )
     return options
 
@@ -5977,18 +5978,15 @@ def _parse_review_code_skill_adapter_cli_args(args: list[str]) -> dict[str, obje
         index += 1
     if not _optional_str(options.get("review")):
         raise RuntimeError(
-            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> --repo-root <dir>"
         )
     if not _optional_str(options.get("out")):
         raise RuntimeError(
-            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> --repo-root <dir>"
         )
     if not _optional_str(options.get("repo_root")):
         raise RuntimeError(
-            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau review-code-skill-adapter --review <json> --out <receipt> --repo-root <dir>"
         )
     return options
 
@@ -6036,18 +6034,15 @@ def _parse_evidence_case_skill_adapter_cli_args(args: list[str]) -> dict[str, ob
         index += 1
     if not _optional_str(options.get("case")):
         raise RuntimeError(
-            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> --repo-root <dir>"
         )
     if not _optional_str(options.get("out")):
         raise RuntimeError(
-            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> --repo-root <dir>"
         )
     if not _optional_str(options.get("repo_root")):
         raise RuntimeError(
-            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> "
-            "--repo-root <dir>"
+            "Usage: tau evidence-case-skill-adapter --case <json> --out <receipt> --repo-root <dir>"
         )
     return options
 
@@ -7716,13 +7711,9 @@ def _parse_goal_run_cli_args(args: list[str]) -> dict[str, object]:
                 raise RuntimeError(f"{arg} requires a value")
             max_steps_per_tick = _parse_positive_int(args[index], arg)
         elif arg.startswith("--tick-max-steps="):
-            max_steps_per_tick = _parse_positive_int(
-                arg.partition("=")[2], "--tick-max-steps"
-            )
+            max_steps_per_tick = _parse_positive_int(arg.partition("=")[2], "--tick-max-steps")
         elif arg.startswith("--max-steps-per-tick="):
-            max_steps_per_tick = _parse_positive_int(
-                arg.partition("=")[2], "--max-steps-per-tick"
-            )
+            max_steps_per_tick = _parse_positive_int(arg.partition("=")[2], "--max-steps-per-tick")
         elif arg == "--max-ticks":
             index += 1
             if index >= len(args):
@@ -7736,9 +7727,7 @@ def _parse_goal_run_cli_args(args: list[str]) -> dict[str, object]:
                 raise RuntimeError("--poll-interval-s requires a value")
             poll_interval_s = _parse_non_negative_float(args[index], "--poll-interval-s")
         elif arg.startswith("--poll-interval-s="):
-            poll_interval_s = _parse_non_negative_float(
-                arg.partition("=")[2], "--poll-interval-s"
-            )
+            poll_interval_s = _parse_non_negative_float(arg.partition("=")[2], "--poll-interval-s")
         else:
             raise RuntimeError(f"Unknown goal run option: {arg}")
         index += 1
@@ -9149,7 +9138,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return
     if not isinstance(final_receipt, dict):
         return
@@ -9172,7 +9161,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -9201,7 +9190,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         if not isinstance(payload, dict):
             continue
@@ -9386,7 +9375,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 

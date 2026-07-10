@@ -304,20 +304,14 @@ def dispatch_agent_handoff_command_once(
             else str(selected_agent)
         )
         grants_by_node = secure_execution.get("grants_by_node")
-        grants = (
-            grants_by_node.get(node_id, [])
-            if isinstance(grants_by_node, Mapping)
-            else []
-        )
+        grants = grants_by_node.get(node_id, []) if isinstance(grants_by_node, Mapping) else []
         secure_result = execute_secure_command(
             command=command,
             stdin_text=stdin,
             timeout_seconds=timeout_s,
             backend=str(secure_execution.get("backend") or "bwrap"),
             receipt_dir=(
-                Path(str(secure_execution["receipt_root"]))
-                / node_id
-                / f"attempt-{attempt:03d}"
+                Path(str(secure_execution["receipt_root"])) / node_id / f"attempt-{attempt:03d}"
             ),
             policy_profile_path=Path(str(secure_execution["policy_profile_path"])),
             data_boundary_path=Path(str(secure_execution["data_boundary_path"])),
@@ -364,9 +358,7 @@ def dispatch_agent_handoff_command_once(
         if active_goal_hash:
             env["TAU_HANDOFF_ACTIVE_GOAL_HASH"] = active_goal_hash
         if agent_registry_root is not None:
-            env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(
-                agent_registry_root.expanduser().resolve()
-            )
+            env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(agent_registry_root.expanduser().resolve())
         if resolved_artifact_dir is not None:
             env["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"] = str(resolved_artifact_dir)
         try:
@@ -438,21 +430,20 @@ def dispatch_agent_handoff_command_once(
         timeout_policy = command_spec_metadata.get("timeout_policy")
         if isinstance(timeout_policy, Mapping):
             command_result["timeout_policy"] = dict(timeout_policy)
-    if command_result["exit_code"] != 0:
-        return AgentHandoffDispatchResult(
-            ok=False,
-            status="BLOCKED",
-            selected_agent=str(selected_agent),
-            stop_reason="command_failed",
-            runner="secure-command" if secure_execution is not None else "command",
-            start_projection=start_projection,
-            command_results=(command_result,),
-            errors=(f"command exited {command_result['exit_code']}",),
-        )
-
     try:
         response_payload = json.loads(str(command_result["stdout"]))
     except json.JSONDecodeError as exc:
+        if command_result["exit_code"] != 0:
+            return AgentHandoffDispatchResult(
+                ok=False,
+                status="BLOCKED",
+                selected_agent=str(selected_agent),
+                stop_reason="command_failed",
+                runner="secure-command" if secure_execution is not None else "command",
+                start_projection=start_projection,
+                command_results=(command_result,),
+                errors=(f"command exited {command_result['exit_code']}",),
+            )
         return AgentHandoffDispatchResult(
             ok=False,
             status="BLOCKED",
@@ -481,14 +472,33 @@ def dispatch_agent_handoff_command_once(
         active_goal_hash=active_goal_hash,
         agent_registry_root=agent_registry_root,
     )
+    result_payload = response_payload.get("result")
+    semantic_blocked = (
+        command_result["exit_code"] != 0
+        and isinstance(result_payload, Mapping)
+        and result_payload.get("status") == "BLOCKED"
+        and dispatch.ok
+    )
+    if command_result["exit_code"] != 0 and not semantic_blocked:
+        return AgentHandoffDispatchResult(
+            ok=False,
+            status="BLOCKED",
+            selected_agent=str(selected_agent),
+            stop_reason="command_failed",
+            runner="secure-command" if secure_execution is not None else "command",
+            start_projection=start_projection,
+            response_projection=dispatch.response_projection,
+            command_results=(command_result,),
+            errors=(f"command exited {command_result['exit_code']}", *dispatch.errors),
+        )
     artifacts = _artifact_paths(resolved_artifact_dir)
     if secure_execution is not None:
         artifacts.extend(_artifact_paths(Path(str(secure_execution["receipt_root"]))))
     return AgentHandoffDispatchResult(
-        ok=dispatch.ok,
-        status=dispatch.status,
+        ok=False if semantic_blocked else dispatch.ok,
+        status="BLOCKED" if semantic_blocked else dispatch.status,
         selected_agent=dispatch.selected_agent,
-        stop_reason=dispatch.stop_reason,
+        stop_reason="node_blocked" if semantic_blocked else dispatch.stop_reason,
         mocked=False,
         live=True,
         runner="secure-command" if secure_execution is not None else "command",
@@ -496,7 +506,11 @@ def dispatch_agent_handoff_command_once(
         response_projection=dispatch.response_projection,
         command_results=(command_result,),
         artifacts=tuple(artifacts),
-        errors=dispatch.errors,
+        errors=(
+            (f"node command exited {command_result['exit_code']} after a valid BLOCKED handoff",)
+            if semantic_blocked
+            else dispatch.errors
+        ),
     )
 
 
@@ -1049,9 +1063,7 @@ def load_agent_dispatch_command_spec(
         if not (agent_dir / "AGENTS.md").is_file():
             raise ValueError(f"agent registry entry lacks AGENTS.md: {agent_dir}")
     spec_dir = (
-        command_spec_root.expanduser().resolve() / agent_id
-        if command_spec_root
-        else agent_dir
+        command_spec_root.expanduser().resolve() / agent_id if command_spec_root else agent_dir
     )
     spec_path = spec_dir / TAU_AGENT_DISPATCH_COMMAND_FILENAME
     if not spec_path.is_file():
@@ -1165,9 +1177,7 @@ def validate_command_dispatch_spec_policy(
     command_line = " ".join(command)
     allowed_roots = _string_list(policy.get("allowed_command_roots"))
     if allowed_roots and command[0] not in allowed_roots and command_root not in allowed_roots:
-        raise ValueError(
-            f"{label} command root {command[0]!r} is not allowed by command policy"
-        )
+        raise ValueError(f"{label} command root {command[0]!r} is not allowed by command policy")
     for denied in _string_list(policy.get("denied_commands")):
         if (
             command_root == denied
@@ -1313,8 +1323,7 @@ def _response_continuity_errors(
     response_goal = _goal_key(response_payload.get("goal"))
     if response_goal != start_goal:
         errors.append(
-            f"response.goal must match start handoff goal {start_goal!r}; "
-            f"got {response_goal!r}"
+            f"response.goal must match start handoff goal {start_goal!r}; got {response_goal!r}"
         )
     return errors
 

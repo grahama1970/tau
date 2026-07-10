@@ -224,6 +224,34 @@ def test_command_handoff_dispatch_blocks_nonzero_exit() -> None:
     assert result.command_results[0]["exit_code"] == 7
 
 
+def test_command_handoff_dispatch_preserves_valid_semantic_node_block(tmp_path: Path) -> None:
+    response = _valid_handoff()
+    response["previous_subagent"] = "reviewer"
+    response["result"] = {
+        "status": "BLOCKED",
+        "summary": "Provider output is missing.",
+        "evidence": ["provider-authorship-receipt.json"],
+    }
+    response_path = tmp_path / "blocked-response.json"
+    response_path.write_text(json.dumps(response), encoding="utf-8")
+
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [
+            sys.executable,
+            "-c",
+            f"import sys; print(open({str(response_path)!r}).read()); sys.exit(1)",
+        ],
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert result.ok is False
+    assert result.status == "BLOCKED"
+    assert result.stop_reason == "node_blocked"
+    assert result.command_results[0]["exit_code"] == 1
+    assert result.response_projection is not None
+
+
 def test_command_handoff_dispatch_blocks_malformed_json() -> None:
     result = dispatch_agent_handoff_command_once(
         _valid_handoff(),
@@ -1147,9 +1175,7 @@ def test_run_agent_handoff_command_loop_blocks_stale_start_goal_before_dispatch(
     assert result.terminal_agent is None
     assert result.stop_reason == "invalid_handoff"
     assert result.dispatches == ()
-    assert "step[1]: agent handoff may not change goal.goal_hash" in "\n".join(
-        result.errors
-    )
+    assert "step[1]: agent handoff may not change goal.goal_hash" in "\n".join(result.errors)
 
 
 def test_write_agent_handoff_command_loop_receipt_blocks_stale_start_without_artifacts(
@@ -1182,9 +1208,7 @@ def test_write_agent_handoff_command_loop_receipt_blocks_stale_start_without_art
     assert receipt["status"] == "BLOCKED"
     assert receipt["dispatches"] == []
     assert receipt["artifacts"] == []
-    assert "step[1]: agent handoff may not change goal.goal_hash" in "\n".join(
-        receipt["errors"]
-    )
+    assert "step[1]: agent handoff may not change goal.goal_hash" in "\n".join(receipt["errors"])
 
 
 def _valid_handoff() -> dict:

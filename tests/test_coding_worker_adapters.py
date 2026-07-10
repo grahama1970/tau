@@ -413,9 +413,7 @@ def test_worker_blocks_public_github_mutation_without_policy_receipt(tmp_path: P
     work_order = _write_work_order(tmp_path, schema="tau.executor.omp.v1")
     result = _write_result(tmp_path, schema="tau.omp_worker_result.v1")
     payload = json.loads(result.read_text(encoding="utf-8"))
-    payload["requested_mutations"] = [
-        {"target": "github:grahama1970/tau#67", "action": "comment"}
-    ]
+    payload["requested_mutations"] = [{"target": "github:grahama1970/tau#67", "action": "comment"}]
     result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     receipt = write_omp_worker_receipt(
@@ -698,10 +696,7 @@ def test_worker_blocks_public_github_comment_policy_without_redaction_requiremen
     )
 
     assert receipt["status"] == "BLOCKED"
-    assert (
-        "github_apply_policy_receipt_missing_redaction_requirement"
-        in receipt["alert_codes"]
-    )
+    assert "github_apply_policy_receipt_missing_redaction_requirement" in receipt["alert_codes"]
 
 
 def test_worker_blocks_public_github_mutation_policy_without_approval_or_preflight(
@@ -746,14 +741,8 @@ def test_worker_blocks_public_github_mutation_policy_without_approval_or_preflig
     )
 
     assert receipt["status"] == "BLOCKED"
-    assert (
-        "github_apply_policy_receipt_missing_approval_requirement"
-        in receipt["alert_codes"]
-    )
-    assert (
-        "github_apply_policy_receipt_missing_preflight_requirement"
-        in receipt["alert_codes"]
-    )
+    assert "github_apply_policy_receipt_missing_approval_requirement" in receipt["alert_codes"]
+    assert "github_apply_policy_receipt_missing_preflight_requirement" in receipt["alert_codes"]
 
 
 def test_worker_blocks_external_research_without_receipt(tmp_path: Path) -> None:
@@ -1713,9 +1702,7 @@ def test_high_stakes_herdr_worker_requires_binding(tmp_path: Path) -> None:
     assert payload["status"] == "BLOCKED"
     assert "herdr_binding_required" in payload["alert_codes"]
     assert payload["course_correction"]["trigger"] == "herdr_stale"
-    assert payload["course_correction"]["required_next_action"] == (
-        "send_reminder_or_route_human"
-    )
+    assert payload["course_correction"]["required_next_action"] == ("send_reminder_or_route_human")
 
 
 def test_high_stakes_herdr_worker_requires_receipt_path(tmp_path: Path) -> None:
@@ -1738,9 +1725,9 @@ def test_high_stakes_herdr_worker_requires_receipt_path(tmp_path: Path) -> None:
     assert payload["status"] == "BLOCKED"
     assert "herdr_receipt_required" in payload["alert_codes"]
     assert payload["course_correction"]["trigger"] == "herdr_stale"
-    assert "herdr_monitor_snapshot" in payload["course_correction"][
-        "required_evidence_before_retry"
-    ]
+    assert (
+        "herdr_monitor_snapshot" in payload["course_correction"]["required_evidence_before_retry"]
+    )
 
 
 def test_high_stakes_herdr_worker_blocks_non_pass_receipt(tmp_path: Path) -> None:
@@ -1974,16 +1961,16 @@ def test_high_stakes_herdr_worker_records_receipt_descriptor(tmp_path: Path) -> 
     herdr_receipt = Path(work_order_payload["repo"]) / "herdr-observation-gate.json"
     herdr_receipt.write_text(
         json.dumps(
-                {
-                    "schema": "tau.herdr_observation_gate_receipt.v1",
-                    "status": "PASS",
-                    "ok": True,
-                    "mocked": False,
-                    "live": True,
-                    "provider_live": False,
-                    "goal_hash": "sha256:goal",
-                    "work_order_sha256": f"sha256:{_sha256(work_order)}",
-                },
+            {
+                "schema": "tau.herdr_observation_gate_receipt.v1",
+                "status": "PASS",
+                "ok": True,
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "goal_hash": "sha256:goal",
+                "work_order_sha256": f"sha256:{_sha256(work_order)}",
+            },
             indent=2,
             sort_keys=True,
         )
@@ -2678,9 +2665,7 @@ def test_omp_worker_launch_apply_skips_process_when_substrate_blocks(
     assert payload["course_correction"]["trigger"] == "receipt_timeout"
     assert payload["course_correction"]["observed_state"]["phase"] == "worker_launch"
     assert payload["course_correction"]["observed_state"]["worker_kind"] == "omp"
-    assert payload["course_correction"]["observed_artifact"]["path"] == str(
-        work_order.resolve()
-    )
+    assert payload["course_correction"]["observed_artifact"]["path"] == str(work_order.resolve())
     assert payload["course_correction"]["observed_artifact"]["exists"] is True
     assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
     assert Path(payload["course_correction_path"]).exists()
@@ -2962,13 +2947,20 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert payload["status"] == "PASS"
     assert payload["dry_run"] is False
     assert payload["live"] is True
-    assert payload["provider_live"] is False
+    assert payload["provider_live"] is True
     assert payload["http_executed"] is True
     assert payload["http_status"] == 200
     assert payload["response_schema"] == "scillm.opencode_serve.run.v1"
     assert payload["run_id"] == "run-123"
     assert payload["session_id"] == "sess-123"
     assert payload["scillm_run_status"] == "completed"
+    assert payload["observed_provider"] == "opencode-go"
+    assert payload["observed_model"] == "opencode-go/kimi-k2.5-free"
+    assert payload["provider_execution_attestation"]["run_id"] == "run-123"
+    assert (
+        payload["provider_execution_attestation"]["work_order_sha256"]
+        == payload["work_order_sha256"]
+    )
     assert payload["response_artifacts"] == ["events.jsonl", "worker-result.json"]
     assert payload["response_path"]
     response_path = Path(payload["response_path"])
@@ -2997,6 +2989,10 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     }
     assert payload["response_result_sha256"] == f"sha256:{_sha256(result_artifact)}"
     assert payload["response_result_bytes"] == result_artifact.stat().st_size
+    assert (
+        payload["provider_execution_attestation"]["result_sha256"]
+        == payload["response_result_sha256"]
+    )
     response_payload = json.loads(response_path.read_text(encoding="utf-8"))
     assert response_payload["run_id"] == "run-123"
     assert response_payload["result_path"] == "worker-result.json"
@@ -3006,6 +3002,109 @@ def test_scillm_worker_launch_apply_posts_request_and_records_response(tmp_path:
     assert requests[0]["payload"]["agent"] == "build"
     assert requests[0]["payload"]["skills"] == ["memory", "debugger", "scillm"]
     assert "test-token" not in json.dumps(payload)
+
+    validation = write_scillm_worker_receipt(
+        work_order_path=work_order,
+        result_path=result_artifact,
+        output_path=tmp_path / "worker-validation-receipt.json",
+        launch_receipt_path=tmp_path / "launch-receipt.json",
+    )
+    assert validation["status"] == "PASS"
+    assert validation["provider_live"] is True
+    assert validation["observed_provider"] == "opencode-go"
+
+
+def test_scillm_worker_validation_blocks_tampered_launch_result_binding(
+    tmp_path: Path,
+) -> None:
+    server, base_url, _requests = _start_fake_scillm_server()
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        high_stakes=True,
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+            "model": "opencode-go/kimi-k2.5-free",
+        },
+    )
+    launch_path = tmp_path / "launch-receipt.json"
+    try:
+        launch = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=launch_path,
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    result_path = Path(launch["response_result_path"])
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result["findings"].append({"id": "tampered-after-launch"})
+    result_path.write_text(json.dumps(result), encoding="utf-8")
+    validation = write_scillm_worker_receipt(
+        work_order_path=work_order,
+        result_path=result_path,
+        output_path=tmp_path / "validation-receipt.json",
+        launch_receipt_path=launch_path,
+    )
+
+    assert validation["status"] == "BLOCKED"
+    assert validation["provider_live"] is False
+    assert "provider_execution_attestation_mismatch" in validation["alert_codes"]
+
+
+def test_scillm_worker_launch_hashes_named_scillm_artifact_map(tmp_path: Path) -> None:
+    run_artifact = tmp_path / "scillm-run-events.jsonl"
+    run_artifact.write_text('{"event":"completed"}\n', encoding="utf-8")
+    server, base_url, _requests = _start_fake_scillm_server(
+        response={
+            "schema": "scillm.opencode_run.result.v1",
+            "run_id": "run-map",
+            "session_id": "sess-map",
+            "status": "completed",
+            "collaboration_item": {
+                "model": "opencode-go/kimi-k2.5-free",
+                "status": "completed",
+            },
+            "artifacts": {"events_jsonl": str(run_artifact)},
+            "result_path": "worker-result.json",
+        }
+    )
+    work_order = _write_work_order(
+        tmp_path,
+        schema="tau.executor.scillm_worker.v1",
+        model_provider_route={
+            "surface": "opencode_serve",
+            "endpoint": "/v1/scillm/opencode/runs",
+            "agent": "build",
+            "model": "opencode-go/kimi-k2.5-free",
+        },
+    )
+    try:
+        payload = write_scillm_worker_launch_receipt(
+            work_order_path=work_order,
+            output_path=tmp_path / "launch-map.json",
+            scillm_base_url=base_url,
+            apply=True,
+            auth_token="test-token",
+            request_timeout_s=5,
+        )
+    finally:
+        server.shutdown()
+
+    descriptor = next(
+        item
+        for item in payload["authored_artifact_descriptors"]
+        if item["label"] == "events_jsonl"
+    )
+    assert descriptor["path"] == str(run_artifact)
+    assert descriptor["sha256"] == f"sha256:{_sha256(run_artifact)}"
+    assert payload["request_payload"]["model"] == "opencode-go/kimi-k2.5-free"
 
 
 def test_scillm_worker_launch_accepts_round_tripped_metadata_result_path(
@@ -3151,9 +3250,7 @@ def test_scillm_worker_launch_apply_blocks_incomplete_success_response(
     assert "missing_scillm_run_identifier" in payload["alert_codes"]
     assert payload["course_correction"]["schema"] == "tau.course_correction.v1"
     assert payload["course_correction"]["trigger"] == "worker_result_missing"
-    assert payload["course_correction"]["observed_artifact"]["path"] == payload[
-        "response_path"
-    ]
+    assert payload["course_correction"]["observed_artifact"]["path"] == payload["response_path"]
     assert payload["course_correction"]["observed_artifact"]["exists"] is True
 
 
@@ -3337,9 +3434,7 @@ def test_scillm_worker_launch_local_apply_blocks_without_auth_token(
         "http_status": None,
         "timed_out": False,
     }
-    assert payload["course_correction"]["observed_artifact"]["path"] == str(
-        work_order.resolve()
-    )
+    assert payload["course_correction"]["observed_artifact"]["path"] == str(work_order.resolve())
     assert payload["course_correction"]["observed_artifact"]["exists"] is True
     assert payload["course_correction_artifacts"] == [payload["course_correction_path"]]
     assert Path(payload["course_correction_path"]).exists()
@@ -4047,20 +4142,22 @@ def _start_fake_scillm_server(
                 response
                 if response is not None
                 else {
-                "schema": "scillm.opencode_serve.run.v1",
-                "run_id": "run-123",
-                "session_id": "sess-123",
-                "status": "completed",
-                "assistant_text": "fixture response",
-                "artifacts": ["events.jsonl", "worker-result.json"],
-                "result_path": "worker-result.json",
+                    "schema": "scillm.opencode_serve.run.v1",
+                    "run_id": "run-123",
+                    "session_id": "sess-123",
+                    "status": "completed",
+                    "assistant_text": "fixture response",
+                    "collaboration_item": {
+                        "model": "opencode-go/kimi-k2.5-free",
+                        "status": "completed",
+                    },
+                    "artifacts": ["events.jsonl", "worker-result.json"],
+                    "result_path": "worker-result.json",
                 }
             )
             metadata = requests[-1]["payload"].get("scillm_metadata")
             result_path = (
-                response_payload.get("result_path")
-                if isinstance(response_payload, dict)
-                else None
+                response_payload.get("result_path") if isinstance(response_payload, dict) else None
             )
             if not result_path and isinstance(response_payload, dict):
                 response_metadata = response_payload.get("scillm_metadata")
@@ -4156,8 +4253,7 @@ def _write_reference_receipt(
     if extra:
         payload.update(extra)
     path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True)
-        + "\n",
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
 
