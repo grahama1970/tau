@@ -11,9 +11,10 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
+from tau_coding.secure_executor import execute_secure_command
 
 TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.v1"
 TAU_AGENT_HANDOFF_COMMAND_LOOP_RECEIPT_SCHEMA = "tau.agent_handoff_command_loop_receipt.v1"
@@ -241,6 +242,8 @@ def dispatch_agent_handoff_command_once(
     agent_registry_root: Path | None = None,
     artifact_dir: Path | None = None,
     command_spec_metadata: Mapping[str, Any] | None = None,
+    secure_execution: Mapping[str, Any] | None = None,
+    attempt: int = 1,
 ) -> AgentHandoffDispatchResult:
     """Run one bounded local command and validate its stdout handoff response."""
 
@@ -285,66 +288,135 @@ def dispatch_agent_handoff_command_once(
         command_spec_metadata=command_spec_metadata,
     )
     stdin = json.dumps(command_start_payload, sort_keys=True) + "\n"
-    env = os.environ.copy()
-    env["TAU_HANDOFF_SELECTED_AGENT"] = str(selected_agent)
-    if active_goal_hash:
-        env["TAU_HANDOFF_ACTIVE_GOAL_HASH"] = active_goal_hash
-    if agent_registry_root is not None:
-        env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(agent_registry_root.expanduser().resolve())
     resolved_artifact_dir: Path | None = None
     if artifact_dir is not None:
         resolved_artifact_dir = artifact_dir.expanduser().resolve()
         resolved_artifact_dir.mkdir(parents=True, exist_ok=True)
-        env["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"] = str(resolved_artifact_dir)
-    try:
-        completed = subprocess.run(
-            command,
-            input=stdin,
-            cwd=str(cwd) if cwd else None,
-            env=env,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_s,
+    if secure_execution is not None:
+        node_metadata = (
+            command_spec_metadata.get("tau_dag_node")
+            if isinstance(command_spec_metadata, Mapping)
+            else None
         )
-    except subprocess.TimeoutExpired as exc:
-        timeout_metadata: dict[str, object] = {}
-        if command_spec_metadata is not None:
-            timeout_source = command_spec_metadata.get("timeout_s_source")
-            if isinstance(timeout_source, str):
-                timeout_metadata["timeout_s_source"] = timeout_source
-            timeout_policy = command_spec_metadata.get("timeout_policy")
-            if isinstance(timeout_policy, Mapping):
-                timeout_metadata["timeout_policy"] = dict(timeout_policy)
-        return AgentHandoffDispatchResult(
-            ok=False,
-            status="BLOCKED",
-            selected_agent=str(selected_agent),
-            stop_reason="command_timeout",
-            runner="command",
-            start_projection=start_projection,
-            command_results=(
-                {
-                    "command": command,
-                    "exit_code": None,
-                    "timeout_s": timeout_s,
-                    "timed_out": True,
-                    "stdout": exc.stdout or "",
-                    "stderr": exc.stderr or "",
-                    **timeout_metadata,
-                },
+        node_id = (
+            str(node_metadata.get("node_id"))
+            if isinstance(node_metadata, Mapping) and node_metadata.get("node_id")
+            else str(selected_agent)
+        )
+        grants_by_node = secure_execution.get("grants_by_node")
+        grants = (
+            grants_by_node.get(node_id, [])
+            if isinstance(grants_by_node, Mapping)
+            else []
+        )
+        secure_result = execute_secure_command(
+            command=command,
+            stdin_text=stdin,
+            timeout_seconds=timeout_s,
+            backend=str(secure_execution.get("backend") or "bwrap"),
+            receipt_dir=(
+                Path(str(secure_execution["receipt_root"]))
+                / node_id
+                / f"attempt-{attempt:03d}"
             ),
-            errors=(f"command timed out after {timeout_s:g}s",),
+            policy_profile_path=Path(str(secure_execution["policy_profile_path"])),
+            data_boundary_path=Path(str(secure_execution["data_boundary_path"])),
+            grants=grants if isinstance(grants, list) else [],
+            run_id=str(secure_execution["run_id"]),
+            dag_id=str(secure_execution["dag_id"]),
+            node_id=node_id,
+            attempt=attempt,
+            goal_hash=str(secure_execution["goal_hash"]),
+            security_context_sha256=str(secure_execution["security_context_sha256"]),
+            policy_profile_sha256=str(secure_execution["policy_profile_sha256"]),
+            data_boundary_sha256=str(secure_execution["data_boundary_sha256"]),
+            child_environment={"TAU_HANDOFF_SELECTED_AGENT": str(selected_agent)},
         )
-
-    command_result = {
-        "command": command,
-        "exit_code": completed.returncode,
-        "timeout_s": timeout_s,
-        "timed_out": False,
-        "stdout": completed.stdout,
-        "stderr": completed.stderr,
-    }
+        command_result = {
+            "command": command,
+            "exit_code": secure_result.returncode,
+            "timeout_s": timeout_s,
+            "timed_out": secure_result.receipt.get("timed_out") is True,
+            "stdout": secure_result.stdout,
+            "stderr": secure_result.stderr,
+            "secure_execution_receipt": secure_result.receipt.get("receipt_path"),
+            "secure_execution_status": secure_result.receipt.get("status"),
+        }
+        if secure_result.receipt.get("status") != "PASS":
+            return AgentHandoffDispatchResult(
+                ok=False,
+                status="BLOCKED",
+                selected_agent=str(selected_agent),
+                stop_reason="secure_execution_blocked",
+                runner="secure-command",
+                start_projection=start_projection,
+                command_results=(command_result,),
+                artifacts=tuple(_artifact_paths(Path(str(secure_execution["receipt_root"])))),
+                errors=tuple(
+                    str(alert.get("message") or alert.get("code"))
+                    for alert in secure_result.receipt.get("alerts", [])
+                    if isinstance(alert, Mapping)
+                ),
+            )
+    else:
+        env = os.environ.copy()
+        env["TAU_HANDOFF_SELECTED_AGENT"] = str(selected_agent)
+        if active_goal_hash:
+            env["TAU_HANDOFF_ACTIVE_GOAL_HASH"] = active_goal_hash
+        if agent_registry_root is not None:
+            env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(
+                agent_registry_root.expanduser().resolve()
+            )
+        if resolved_artifact_dir is not None:
+            env["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"] = str(resolved_artifact_dir)
+        try:
+            completed = subprocess.run(
+                command,
+                input=stdin,
+                cwd=str(cwd) if cwd else None,
+                env=env,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+            )
+        except subprocess.TimeoutExpired as exc:
+            timeout_metadata: dict[str, object] = {}
+            if command_spec_metadata is not None:
+                timeout_source = command_spec_metadata.get("timeout_s_source")
+                if isinstance(timeout_source, str):
+                    timeout_metadata["timeout_s_source"] = timeout_source
+                timeout_policy = command_spec_metadata.get("timeout_policy")
+                if isinstance(timeout_policy, Mapping):
+                    timeout_metadata["timeout_policy"] = dict(timeout_policy)
+            return AgentHandoffDispatchResult(
+                ok=False,
+                status="BLOCKED",
+                selected_agent=str(selected_agent),
+                stop_reason="command_timeout",
+                runner="command",
+                start_projection=start_projection,
+                command_results=(
+                    {
+                        "command": command,
+                        "exit_code": None,
+                        "timeout_s": timeout_s,
+                        "timed_out": True,
+                        "stdout": exc.stdout or "",
+                        "stderr": exc.stderr or "",
+                        **timeout_metadata,
+                    },
+                ),
+                errors=(f"command timed out after {timeout_s:g}s",),
+            )
+        command_result = {
+            "command": command,
+            "exit_code": completed.returncode,
+            "timeout_s": timeout_s,
+            "timed_out": False,
+            "stdout": completed.stdout,
+            "stderr": completed.stderr,
+        }
     if command_spec_metadata is not None:
         command_result.update(
             {
@@ -366,20 +438,20 @@ def dispatch_agent_handoff_command_once(
         timeout_policy = command_spec_metadata.get("timeout_policy")
         if isinstance(timeout_policy, Mapping):
             command_result["timeout_policy"] = dict(timeout_policy)
-    if completed.returncode != 0:
+    if command_result["exit_code"] != 0:
         return AgentHandoffDispatchResult(
             ok=False,
             status="BLOCKED",
             selected_agent=str(selected_agent),
             stop_reason="command_failed",
-            runner="command",
+            runner="secure-command" if secure_execution is not None else "command",
             start_projection=start_projection,
             command_results=(command_result,),
-            errors=(f"command exited {completed.returncode}",),
+            errors=(f"command exited {command_result['exit_code']}",),
         )
 
     try:
-        response_payload = json.loads(completed.stdout)
+        response_payload = json.loads(str(command_result["stdout"]))
     except json.JSONDecodeError as exc:
         return AgentHandoffDispatchResult(
             ok=False,
@@ -410,6 +482,8 @@ def dispatch_agent_handoff_command_once(
         agent_registry_root=agent_registry_root,
     )
     artifacts = _artifact_paths(resolved_artifact_dir)
+    if secure_execution is not None:
+        artifacts.extend(_artifact_paths(Path(str(secure_execution["receipt_root"]))))
     return AgentHandoffDispatchResult(
         ok=dispatch.ok,
         status=dispatch.status,
@@ -417,7 +491,7 @@ def dispatch_agent_handoff_command_once(
         stop_reason=dispatch.stop_reason,
         mocked=False,
         live=True,
-        runner="command",
+        runner="secure-command" if secure_execution is not None else "command",
         start_projection=dispatch.start_projection,
         response_projection=dispatch.response_projection,
         command_results=(command_result,),
@@ -437,7 +511,7 @@ def _payload_with_command_spec_dispatch_metadata(
     if not isinstance(tau_dag_node, Mapping):
         return start_payload
 
-    payload = json.loads(json.dumps(start_payload))
+    payload = cast(dict[str, Any], json.loads(json.dumps(start_payload)))
     context = payload.get("context")
     if not isinstance(context, dict):
         context = {}
@@ -486,7 +560,7 @@ def _payload_with_durable_handoff_context(
     ):
         return response_payload
 
-    payload = json.loads(json.dumps(response_payload))
+    payload = cast(dict[str, Any], json.loads(json.dumps(response_payload)))
     context = payload.get("context")
     if not isinstance(context, dict):
         context = {}
@@ -496,6 +570,18 @@ def _payload_with_durable_handoff_context(
         context.setdefault(key, value)
 
     return payload
+
+
+def _command_spec_node_id(
+    command_spec_metadata: Mapping[str, Any],
+    selected_agent: str,
+) -> str:
+    node_metadata = command_spec_metadata.get("tau_dag_node")
+    if isinstance(node_metadata, Mapping):
+        node_id = node_metadata.get("node_id")
+        if isinstance(node_id, str) and node_id:
+            return node_id
+    return selected_agent
 
 
 def write_agent_handoff_command_dispatch_receipt(
@@ -564,6 +650,7 @@ def run_agent_handoff_command_loop(
     command_policy_path: Path | None = None,
     progress_callback: Callable[[dict[str, Any]], None] | None = None,
     deadline_monotonic: float | None = None,
+    secure_execution: Mapping[str, Any] | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Run selected agent commands until the route reaches human or fails closed."""
 
@@ -581,6 +668,7 @@ def run_agent_handoff_command_loop(
 
     current_payload = start_payload
     dispatches: list[dict[str, Any]] = []
+    node_attempts: dict[str, int] = {}
     for step in range(1, max_steps + 1):
         if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
             return AgentHandoffCommandLoopResult(
@@ -703,6 +791,8 @@ def run_agent_handoff_command_loop(
                     "timeout_s_source": "goal_run_deadline_remaining",
                     "original_timeout_s": spec["timeout_s"],
                 }
+        node_key = _command_spec_node_id(command_spec_metadata, selected_agent)
+        attempt = node_attempts.get(node_key, 0) + 1
         dispatch = dispatch_agent_handoff_command_once(
             current_payload,
             _command_with_goal_guardian_ticket_source(
@@ -720,7 +810,10 @@ def run_agent_handoff_command_loop(
                 else None
             ),
             command_spec_metadata=command_spec_metadata,
+            secure_execution=secure_execution,
+            attempt=attempt,
         )
+        node_attempts[node_key] = attempt
         dispatch_payload = dispatch.as_dict()
         dispatch_payload["loop_step"] = step
         dispatches.append(dispatch_payload)
@@ -890,6 +983,7 @@ def write_agent_handoff_command_loop_receipt(
     command_policy_path: Path | None = None,
     progress_callback: Callable[[dict[str, Any]], None] | None = None,
     deadline_monotonic: float | None = None,
+    secure_execution: Mapping[str, Any] | None = None,
 ) -> AgentHandoffCommandLoopResult:
     """Write one command-backed loop receipt plus per-step dispatch artifacts."""
 
@@ -905,6 +999,7 @@ def write_agent_handoff_command_loop_receipt(
         command_policy_path=command_policy_path,
         progress_callback=progress_callback,
         deadline_monotonic=deadline_monotonic,
+        secure_execution=secure_execution,
     )
     artifacts: list[str] = []
     for dispatch in loop.dispatches:
@@ -942,7 +1037,7 @@ def load_agent_dispatch_command_spec(
     *,
     command_spec_root: Path | None = None,
     command_policy_path: Path | None = None,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Load an opt-in Tau command dispatch spec for one validated registry entry."""
 
     if not agent_id or "/" in agent_id or agent_id in {".", ".."}:

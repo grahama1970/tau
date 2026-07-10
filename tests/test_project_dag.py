@@ -1425,7 +1425,7 @@ def test_project_dag_secure_mode_blocks_missing_node_capability_before_compilati
     assert not (run_dir / "command-loop").exists()
 
 
-def test_project_dag_dispatches_when_containment_gate_receipts_pass(
+def test_project_dag_routes_secure_containment_run_through_bwrap(
     tmp_path: Path,
 ) -> None:
     contract_path = _write_contract(tmp_path)
@@ -1502,14 +1502,32 @@ def test_project_dag_dispatches_when_containment_gate_receipts_pass(
         agents_root=tmp_path / "agents",
     )
 
-    assert receipt["ok"] is True
-    assert receipt["selected_agents"] == ["coder", "reviewer"]
     assert receipt["containment_gate_receipts"] == {
         "itar_access_preflight": str(itar_receipt.resolve()),
         "research_query_safety": str(research_receipt.resolve()),
         "sandbox_run": str(sandbox_receipt.resolve()),
         "compliance_package_validation": str(package_receipt.resolve()),
     }
+    secure_receipt_path = (
+        tmp_path
+        / "run"
+        / "secure-execution"
+        / "coder"
+        / "attempt-001"
+        / "secure-execution-receipt.json"
+    )
+    secure_receipt = json.loads(secure_receipt_path.read_text(encoding="utf-8"))
+    assert secure_receipt["mocked"] is False
+    assert secure_receipt["live"] is True
+    assert secure_receipt["host_environment_inherited"] is False
+    if secure_receipt["status"] == "PASS":
+        assert receipt["ok"] is True
+        assert receipt["selected_agents"] == ["coder", "reviewer"]
+    else:
+        assert receipt["status"] == "BLOCKED"
+        assert receipt["verdict"] == "SECURE_EXECUTION_BLOCKED"
+        assert secure_receipt["command_executed"] is False
+        assert "sandbox_backend_unavailable" in secure_receipt["alert_codes"]
 
 
 def test_cli_dag_run_bad_project_contract_returns_course_correction_json(tmp_path: Path) -> None:

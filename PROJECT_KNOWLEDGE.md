@@ -6318,4 +6318,22 @@
 
 ## Infrastructure State
 
+### 2026-07-10: Phase 2.2 Bubblewrap Secure Executor
+
+- Secure handoff-loop nodes consume attempt-bound `process.execute` grants and
+  write `tau.secure_execution_receipt.v1`; secure execution has no direct
+  subprocess fallback.
+- Embedded policy/boundary objects are materialized and re-hashed before launch.
+- Secure bounded-ready-queue execution blocks until it shares the same executor.
+- Focused deterministic suite: `117 passed` across secure executor, security
+  capability/context, sandbox, handoff, and project DAG tests.
+- Live local result on this workstation: Bubblewrap probe blocked with
+  `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`; receipt recorded
+  `mocked:false`, `live:true`, `command_executed:false`, and
+  `sandbox_backend_unavailable`. This proves fail-closed behavior, not a
+  successful isolated command.
+- Remaining: host-compatible Bubblewrap positive execution, grant-scoped mounts,
+  explicit secrets, network allow grants, secure retry grant renewal, Docker,
+  providers, signing, and audit ledger.
+
 <!-- Auto-populated from /project-state --quick -->

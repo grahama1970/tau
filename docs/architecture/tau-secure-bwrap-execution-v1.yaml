@@ -1,0 +1,76 @@
+name: "Tau Secure Bubblewrap Execution v1"
+components:
+  - id: dag_preflight
+    label: Secure DAG Preflight
+    tech: "security context + existing gates"
+    color: green
+    files:
+      - src/tau_coding/project_dag.py
+      - src/tau_coding/security_context.py
+
+  - id: capability_decision
+    label: Capability Decision
+    tech: "tau.capability_decision_receipt.v1"
+    color: green
+    files:
+      - src/tau_coding/security_capability.py
+
+  - id: command_spec
+    label: Validated Command Spec
+    tech: "command + cwd + timeout"
+    color: blue
+    files:
+      - src/tau_coding/handoff_dispatch.py
+
+  - id: grant_validator
+    label: Grant Binding Validator
+    tech: "goal + DAG + node + attempt + context + command"
+    color: green
+    files:
+      - src/tau_coding/secure_executor.py
+
+  - id: fail_closed
+    label: Fail Closed
+    tech: "no Bubblewrap launch; no direct fallback"
+    color: red
+    files:
+      - src/tau_coding/secure_executor.py
+
+  - id: bwrap
+    label: Bubblewrap Executor
+    tech: "unshare-net + env -i + read-only runtime"
+    color: green
+    files:
+      - src/tau_coding/secure_executor.py
+      - src/tau_coding/sandbox_run.py
+
+  - id: execution_receipt
+    label: Secure Execution Receipt
+    tech: "tau.secure_execution_receipt.v1"
+    color: green
+    files:
+      - src/tau_coding/secure_executor.py
+
+  - id: handoff_validation
+    label: Handoff Response Validation
+    tech: "existing Tau DAG route and evidence checks"
+    color: blue
+    files:
+      - src/tau_coding/handoff_dispatch.py
+      - src/tau_coding/project_dag.py
+
+connections:
+  - from: dag_preflight
+    to: capability_decision
+  - from: capability_decision
+    to: command_spec
+  - from: command_spec
+    to: grant_validator
+  - from: grant_validator
+    to: fail_closed
+  - from: grant_validator
+    to: bwrap
+  - from: bwrap
+    to: execution_receipt
+  - from: execution_receipt
+    to: handoff_validation

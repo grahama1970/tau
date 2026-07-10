@@ -106,6 +106,11 @@ def resolve_security_context(
         boundary_source=boundary_source,
     )
     alerts.extend(env_source.alerts)
+    policy_source = _materialize_embedded_source(policy_source, receipt_dir=resolved_receipt_dir)
+    boundary_source = _materialize_embedded_source(
+        boundary_source,
+        receipt_dir=resolved_receipt_dir,
+    )
 
     goal = dag_contract.get("goal")
     goal_map = goal if isinstance(goal, Mapping) else {}
@@ -316,6 +321,26 @@ def _resolve_or_generate_environment_manifest(
         sha256=f"sha256:{_sha256_file(generated_path)}",
         alerts=alerts,
         generated=True,
+    )
+
+
+def _materialize_embedded_source(
+    source: _ResolvedSource,
+    *,
+    receipt_dir: Path,
+) -> _ResolvedSource:
+    if source.payload is None or source.path is not None:
+        return source
+    path = receipt_dir / "resolved-security-inputs" / f"{source.field_name}.json"
+    _write_json(path, source.payload)
+    return _ResolvedSource(
+        field_name=source.field_name,
+        payload=source.payload,
+        path=path.resolve(),
+        source_kind=source.source_kind,
+        sha256=f"sha256:{_sha256_file(path)}",
+        alerts=source.alerts,
+        generated=source.generated,
     )
 
 

@@ -40,11 +40,22 @@ those declarations against the resolved command policy after all existing
 pre-dispatch gates pass and before command specs are compiled. See
 `docs/security-capabilities.md`.
 
+## Secure Executor
+
+Embedded policy profiles and data boundaries are materialized under
+`resolved-security-inputs/` so the executor can re-hash the exact resolved
+objects before launch. A changed policy or boundary blocks execution.
+
+Secure handoff-loop commands use the grant-bound Bubblewrap executor described
+in `docs/secure-executor.md`. Secure ready-queue scheduling remains blocked until
+it is routed through the same executor.
+
 ## Current Boundary
 
-Secure enforcement currently covers `tau run` and `tau dag-run`. Direct lower
-level handoff/provider commands remain development surfaces until Phase 2.2
-moves execution behind the unified secure executor.
+Secure enforcement currently covers the handoff-loop path used by `tau run` and
+`tau dag-run`. Direct lower-level handoff/provider commands remain development
+surfaces, and the bounded-ready-queue scheduler is not yet a secure execution
+surface.
 
 ## Non-Claims
 

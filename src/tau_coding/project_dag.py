@@ -402,6 +402,31 @@ def run_project_dag_contract(
             _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
             return receipt
     if scheduler == "bounded-ready-queue":
+        if security_context_result.context.get("security_mode") == "secure":
+            alert = _alert(
+                "BLOCK",
+                "secure_mode_requires_handoff_loop",
+                "Secure execution is currently authoritative only through the "
+                "handoff-loop scheduler.",
+                {"requested_scheduler": scheduler, "supported_scheduler": "handoff-loop"},
+            )
+            receipt = _pre_dispatch_blocked_receipt(
+                contract=contract,
+                contract_path=resolved_contract_path,
+                receipt_dir=resolved_receipt_dir,
+                scheduler=scheduler,
+                verdict="SECURE_MODE_REQUIRES_HANDOFF_LOOP",
+                alerts=[alert],
+                memory_intent_gate_receipt=memory_intent_receipt,
+                evidence_case_gate_receipt=evidence_case_receipt,
+                evidence_validation_receipt=evidence_validation_receipt,
+                zero_trust_preflight_receipt=zero_trust_receipt,
+                containment_gate_receipts=containment_receipts,
+                security_context_receipt=security_context_result.receipt,
+                capability_decision_receipt=capability_decision_receipt,
+            )
+            _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+            return receipt
         return _run_bounded_ready_queue_project_dag(
             contract=contract,
             contract_path=resolved_contract_path,
@@ -452,6 +477,16 @@ def run_project_dag_contract(
             resolved_contract_path,
         ),
         progress_callback=record_progress,
+        secure_execution=(
+            _secure_execution_configuration(
+                contract=contract,
+                receipt_dir=resolved_receipt_dir,
+                security_context=security_context_result.context,
+                capability_decision_receipt=capability_decision_receipt,
+            )
+            if security_context_result.context.get("security_mode") == "secure"
+            else None
+        ),
     )
     loop_payload = loop.as_dict()
     loop_receipt_path = loop_dir / "command-loop-receipt.json"
@@ -535,6 +570,7 @@ def run_project_dag_contract(
             ),
             str(start_path),
             str(loop_receipt_path),
+            *loop.artifacts,
             *(
                 [str(zero_trust_receipt["receipt_path"])]
                 if isinstance(zero_trust_receipt, dict)
@@ -577,7 +613,11 @@ def run_project_dag_contract(
             "proves": [
                 "DAG contract parsed and validated.",
                 "Entry node was compiled into a tau.agent_handoff.v1 start handoff.",
-                "Node routing was executed by the real local command-loop subprocess runner.",
+                (
+                    "Secure node routing used the grant-bound Bubblewrap executor."
+                    if security_context_result.context.get("security_mode") == "secure"
+                    else "Node routing used the development command-loop subprocess runner."
+                ),
                 "Observed edges and retry counts were checked against the DAG contract.",
                 "Reviewer verdict evidence was checked against the immutable goal hash.",
             ],
@@ -586,6 +626,7 @@ def run_project_dag_contract(
                 "Parallel DAG scheduling.",
                 "GitHub mutation or ticket closure.",
                 "Unbounded autonomous operation.",
+                "Successful secure execution when the selected sandbox backend is unavailable.",
             ],
         },
         "errors": list(loop_payload.get("errors", [])) if isinstance(loop_payload, dict) else [],
@@ -683,6 +724,56 @@ def dag_contract_error_payload(
         },
     }
     return payload
+
+
+def _secure_execution_configuration(
+    *,
+    contract: ProjectDagContract,
+    receipt_dir: Path,
+    security_context: dict[str, Any],
+    capability_decision_receipt: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Build the immutable inputs consumed by the secure handoff executor."""
+
+    if not isinstance(capability_decision_receipt, dict):
+        raise RuntimeError("secure execution requires a capability decision receipt")
+    policy_ref = security_context.get("policy_profile")
+    boundary_ref = security_context.get("data_boundary")
+    if not isinstance(policy_ref, dict) or not isinstance(boundary_ref, dict):
+        raise RuntimeError("secure execution requires resolved policy and boundary references")
+    policy_path = policy_ref.get("path")
+    boundary_path = boundary_ref.get("path")
+    policy_sha256 = policy_ref.get("sha256")
+    boundary_sha256 = boundary_ref.get("sha256")
+    if not all(
+        isinstance(value, str) and value
+        for value in (policy_path, boundary_path, policy_sha256, boundary_sha256)
+    ):
+        raise RuntimeError("secure execution references must be path- and hash-bound")
+
+    grants_by_node: dict[str, list[dict[str, Any]]] = {
+        node_id: [] for node_id in contract.nodes
+    }
+    for grant in capability_decision_receipt.get("grants", []):
+        if not isinstance(grant, dict):
+            continue
+        node_id = grant.get("node_id")
+        if isinstance(node_id, str) and node_id in grants_by_node:
+            grants_by_node[node_id].append(grant)
+
+    return {
+        "backend": "bwrap",
+        "receipt_root": str(receipt_dir / "secure-execution"),
+        "run_id": str(contract.payload.get("run_id") or contract.dag_id),
+        "dag_id": contract.dag_id,
+        "goal_hash": str(contract.goal["goal_hash"]),
+        "security_context_sha256": str(security_context["security_context_sha256"]),
+        "policy_profile_path": policy_path,
+        "policy_profile_sha256": policy_sha256,
+        "data_boundary_path": boundary_path,
+        "data_boundary_sha256": boundary_sha256,
+        "grants_by_node": grants_by_node,
+    }
 
 
 def _run_bounded_ready_queue_project_dag(
