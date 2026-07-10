@@ -259,6 +259,8 @@ def _itar_airgap_command_policy() -> dict[str, Any]:
         "allows_network": False,
         "allows_mutation": False,
         "requires_clean_worktree": False,
+        "capability_grant_ttl_seconds": 300,
+        "capability_rules": [],
     }
 
 
@@ -341,6 +343,8 @@ def _zero_trust_command_policy(profile: str) -> dict[str, Any]:
         "allows_network": False,
         "allows_mutation": False,
         "requires_clean_worktree": False,
+        "capability_grant_ttl_seconds": 300,
+        "capability_rules": [],
     }
 
 

@@ -1364,6 +1364,67 @@ def test_project_dag_secure_relative_itar_boundary_blocks_before_dispatch_withou
     assert not list(run_dir.rglob("*provider*receipt*.json"))
 
 
+def test_project_dag_secure_mode_blocks_missing_node_capability_before_compilation(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    boundary_path = _write_data_boundary(
+        tmp_path,
+        {
+            "classification": "public",
+            "export_controlled": False,
+            "itar": False,
+            "technical_data": False,
+            "foreign_person_access": "allowed",
+        },
+    )
+    process_capability = _process_execute_capability(tmp_path)
+    command_policy = _write_command_policy(
+        tmp_path,
+        allowed_roots=[Path(sys.executable).name],
+        capability_rules=[
+            {
+                "capability": process_capability["capability"],
+                "targets": [process_capability["target"]],
+                "resource_scope": process_capability["resource_scope"],
+                "maximum_effect": process_capability["maximum_effect"],
+            }
+        ],
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["security_mode"] = "secure"
+    payload["data_boundary"] = boundary_path.name
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["actor_access_manifest"] = str(_write_actor_access_manifest(tmp_path))
+    payload["command_policy"] = str(command_policy)
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    run_dir = tmp_path / "run"
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "CAPABILITY_REQUEST_DENIED"
+    assert receipt["selected_agents"] == []
+    assert receipt["command_executed"] is False
+    assert receipt["provider_invoked"] is False
+    assert receipt["filesystem_mutation_performed"] is False
+    assert receipt["capability_decision_receipt"].endswith(
+        "capability-decision-receipt.json"
+    )
+    decision = json.loads(
+        (run_dir / "capability-decision-receipt.json").read_text(encoding="utf-8")
+    )
+    assert decision["status"] == "BLOCKED"
+    assert decision["grant_count"] == 0
+    assert not (run_dir / "capability-grants").exists()
+    assert not (run_dir / "compiled-command-specs").exists()
+    assert not (run_dir / "command-loop").exists()
+
+
 def test_project_dag_dispatches_when_containment_gate_receipts_pass(
     tmp_path: Path,
 ) -> None:
@@ -1391,7 +1452,19 @@ def test_project_dag_dispatches_when_containment_gate_receipts_pass(
     )
     payload = json.loads(contract_path.read_text(encoding="utf-8"))
     actor_manifest = _write_actor_access_manifest(tmp_path)
-    command_policy = _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
+    process_capability = _process_execute_capability(tmp_path)
+    command_policy = _write_command_policy(
+        tmp_path,
+        allowed_roots=[Path(sys.executable).name],
+        capability_rules=[
+            {
+                "capability": process_capability["capability"],
+                "targets": [process_capability["target"]],
+                "resource_scope": process_capability["resource_scope"],
+                "maximum_effect": process_capability["maximum_effect"],
+            }
+        ],
+    )
     payload["data_boundary"] = {
         "schema": "tau.data_boundary.v1",
         "classification": "ITAR",
@@ -1409,6 +1482,9 @@ def test_project_dag_dispatches_when_containment_gate_receipts_pass(
     payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
     payload["actor_access_manifest"] = str(actor_manifest)
     payload["command_policy"] = str(command_policy)
+    for node in payload["nodes"]:
+        if node.get("executor") not in {"human", "scheduler", "virtual"}:
+            node["requested_capabilities"] = [process_capability]
     payload["requires_external_research"] = True
     payload["requires_sandbox"] = True
     payload["requires_compliance_package_validation"] = True
@@ -2749,6 +2825,7 @@ def _write_command_policy(
     *,
     allowed_roots: list[str],
     denied: list[str] | None = None,
+    capability_rules: list[dict[str, object]] | None = None,
 ) -> Path:
     policy_path = tmp_path / "command-policy.json"
     policy_path.write_text(
@@ -2758,11 +2835,22 @@ def _write_command_policy(
                 "allowed_command_roots": allowed_roots,
                 "denied_commands": denied or [],
                 "allowed_cwd_roots": [str(tmp_path)],
+                "capability_grant_ttl_seconds": 300,
+                "capability_rules": capability_rules or [],
             }
         ),
         encoding="utf-8",
     )
     return policy_path
+
+
+def _process_execute_capability(tmp_path: Path) -> dict[str, object]:
+    return {
+        "capability": "process.execute",
+        "target": Path(sys.executable).name,
+        "resource_scope": [str(tmp_path)],
+        "maximum_effect": {"max_processes": 1},
+    }
 
 
 def _write_response_spec(

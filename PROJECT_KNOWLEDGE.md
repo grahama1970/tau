@@ -5,6 +5,28 @@
 
 ## Current Understanding
 
+- 2026-07-10 secure capability compilation Phase 2.1:
+  `src/tau_coding/security_capability.py` adds
+  `tau.capability_request.v1`, `tau.capability_grant.v1`, and
+  `tau.capability_decision_receipt.v1`. Secure executable DAG nodes now declare
+  `requested_capabilities`; Tau compiles them against exact command-policy
+  targets, resource scopes, maximum effects, network/mutation flags, goal hash,
+  security-context hash, actor, boundary, node, and attempt. Compilation occurs
+  after existing pre-dispatch gates and before command-spec compilation. Any
+  denial blocks the whole DAG and writes no grant files. Focused proof:
+  `uv run pytest tests/test_security_capability.py tests/test_security_context.py
+  tests/test_project_dag.py tests/test_init_project.py -q` -> `71 passed`;
+  fresh positive/negative artifact run under
+  `/tmp/tau-phase2-capability-proof-20260710T1405Z/` -> negative
+  `status:BLOCKED`, `request_count:0`, `grant_count:0`,
+  `command_executed:false`; positive `status:PASS`, `request_count:2`,
+  `grant_count:2`, with coder/reviewer grant artifacts. New module/context mypy
+  check passes. This proves deterministic pre-dispatch capability compilation
+  and fail-closed omission/scope/network behavior. It does not prove runtime
+  grant enforcement, sandbox isolation, secret isolation, network isolation,
+  provider/model quality, or secure lower-level command surfaces; those remain
+  Phase 2.2.
+
 - 2026-07-08 bounded goal-run controller:
   `src/tau_coding/goal_run.py` adds `tau.goal_run_receipt.v1` for
   `uv run tau goal run --until-complete`. The controller repeatedly invokes

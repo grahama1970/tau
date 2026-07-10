@@ -33,11 +33,18 @@ Resolved inputs are hash-bound in `security-context-receipt.json`. The receipt
 records whether each input came from an embedded object, relative path, absolute
 path, or Tau-generated environment manifest.
 
-## Phase 1 Boundary
+## Phase 2.1 Capability Compilation
+
+Secure executable DAG nodes must declare `requested_capabilities`. Tau compiles
+those declarations against the resolved command policy after all existing
+pre-dispatch gates pass and before command specs are compiled. See
+`docs/security-capabilities.md`.
+
+## Current Boundary
 
 Secure enforcement currently covers `tau run` and `tau dag-run`. Direct lower
-level handoff/provider commands remain development surfaces until Phase 2 moves
-execution behind the unified secure executor.
+level handoff/provider commands remain development surfaces until Phase 2.2
+moves execution behind the unified secure executor.
 
 ## Non-Claims
 

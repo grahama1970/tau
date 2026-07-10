@@ -27,6 +27,7 @@ class SecurityContextResult:
     alerts: list[dict[str, Any]]
     receipt_path: Path
     environment_manifest_path: Path | None
+    resolved_artifacts: dict[str, dict[str, Any] | None]
 
 
 def resolve_security_context(
@@ -210,6 +211,13 @@ def resolve_security_context(
         alerts=alerts,
         receipt_path=receipt_path,
         environment_manifest_path=env_source.path,
+        resolved_artifacts={
+            "policy_profile": policy_source.payload,
+            "data_boundary": boundary_source.payload,
+            "actor_access_manifest": actor_source.payload,
+            "environment_manifest": env_source.payload,
+            "command_policy": command_policy_source.payload,
+        },
     )
 
 

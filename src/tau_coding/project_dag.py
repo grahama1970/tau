@@ -29,6 +29,10 @@ from tau_coding.memory_evidence_gate import (
     write_memory_intent_gate_receipt,
 )
 from tau_coding.policy_profile import zero_trust_preflight_receipt
+from tau_coding.security_capability import (
+    compile_capability_decision,
+    validate_capability_declaration,
+)
 from tau_coding.security_context import resolve_security_context
 
 try:  # YAML is available in the project lock through docs tooling, but keep JSON first.
@@ -171,6 +175,7 @@ class ProjectDagNode:
     required_evidence: tuple[str, ...]
     reviewer: dict[str, Any] | None
     context: dict[str, Any]
+    requested_capabilities: tuple[dict[str, Any], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -254,6 +259,7 @@ def run_project_dag_contract(
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
+    capability_decision_receipt: dict[str, Any] | None = None
     provider_policy_alerts = _provider_policy_preflight(contract)
     if provider_policy_alerts:
         receipt = _pre_dispatch_blocked_receipt(
@@ -356,6 +362,45 @@ def run_project_dag_contract(
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
+    if security_context_result.context.get("security_mode") == "secure":
+        command_policy = security_context_result.resolved_artifacts.get("command_policy")
+        if not isinstance(command_policy, dict):
+            raise RuntimeError("resolved secure command policy is unavailable")
+        capability_decision_receipt = compile_capability_decision(
+            dag_id=contract.dag_id,
+            run_id=str(contract.payload.get("run_id") or contract.dag_id),
+            goal_hash=str(contract.goal["goal_hash"]),
+            security_context=security_context_result.context,
+            command_policy=command_policy,
+            nodes=[
+                {
+                    "node_id": node.node_id,
+                    "executor": node.executor,
+                    "attempt": 1,
+                    "requested_capabilities": list(node.requested_capabilities),
+                }
+                for node in contract.nodes.values()
+            ],
+            receipt_dir=resolved_receipt_dir,
+        )
+        if capability_decision_receipt.get("status") != "PASS":
+            receipt = _pre_dispatch_blocked_receipt(
+                contract=contract,
+                contract_path=resolved_contract_path,
+                receipt_dir=resolved_receipt_dir,
+                scheduler=scheduler,
+                verdict="CAPABILITY_REQUEST_DENIED",
+                alerts=list(capability_decision_receipt.get("alerts", [])),
+                memory_intent_gate_receipt=memory_intent_receipt,
+                evidence_case_gate_receipt=evidence_case_receipt,
+                evidence_validation_receipt=evidence_validation_receipt,
+                zero_trust_preflight_receipt=zero_trust_receipt,
+                containment_gate_receipts=containment_receipts,
+                security_context_receipt=security_context_result.receipt,
+                capability_decision_receipt=capability_decision_receipt,
+            )
+            _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+            return receipt
     if scheduler == "bounded-ready-queue":
         return _run_bounded_ready_queue_project_dag(
             contract=contract,
@@ -443,6 +488,11 @@ def run_project_dag_contract(
         "security_context_sha256": security_context_result.receipt.get(
             "security_context_sha256"
         ),
+        "capability_decision_receipt": (
+            capability_decision_receipt.get("receipt_path")
+            if isinstance(capability_decision_receipt, dict)
+            else None
+        ),
         "selected_agents": [
             dispatch.get("selected_agent")
             for dispatch in _dispatches(loop_payload)
@@ -477,6 +527,12 @@ def run_project_dag_contract(
         },
         "artifacts": [
             str(security_context_result.receipt_path),
+            *(
+                [str(capability_decision_receipt["receipt_path"])]
+                if isinstance(capability_decision_receipt, dict)
+                and isinstance(capability_decision_receipt.get("receipt_path"), str)
+                else []
+            ),
             str(start_path),
             str(loop_receipt_path),
             *(
@@ -2036,6 +2092,7 @@ def _pre_dispatch_blocked_receipt(
     zero_trust_preflight_receipt: dict[str, Any] | None = None,
     containment_gate_receipts: dict[str, dict[str, Any]] | None = None,
     security_context_receipt: dict[str, Any] | None = None,
+    capability_decision_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     artifacts = [str(contract_path)]
     containment_gate_receipts = containment_gate_receipts or {}
@@ -2044,6 +2101,11 @@ def _pre_dispatch_blocked_receipt(
         str,
     ):
         artifacts.append(str(security_context_receipt["receipt_path"]))
+    if isinstance(capability_decision_receipt, dict) and isinstance(
+        capability_decision_receipt.get("receipt_path"),
+        str,
+    ):
+        artifacts.append(str(capability_decision_receipt["receipt_path"]))
     if isinstance(zero_trust_preflight_receipt, dict) and isinstance(
         zero_trust_preflight_receipt.get("receipt_path"),
         str,
@@ -2105,6 +2167,11 @@ def _pre_dispatch_blocked_receipt(
         "security_context_sha256": (
             security_context_receipt.get("security_context_sha256")
             if isinstance(security_context_receipt, dict)
+            else None
+        ),
+        "capability_decision_receipt": (
+            capability_decision_receipt.get("receipt_path")
+            if isinstance(capability_decision_receipt, dict)
             else None
         ),
         "command_executed": False,
@@ -2206,6 +2273,22 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             f"nodes[{index}].context",
             errors,
         )
+        requested_capabilities_value = item.get("requested_capabilities", [])
+        requested_capabilities: list[dict[str, Any]] = []
+        if not isinstance(requested_capabilities_value, list):
+            errors.append(f"nodes[{index}].requested_capabilities must be a list")
+        else:
+            for capability_index, declaration in enumerate(requested_capabilities_value):
+                errors.extend(
+                    validate_capability_declaration(
+                        declaration,
+                        label=(
+                            f"nodes[{index}].requested_capabilities[{capability_index}]"
+                        ),
+                    )
+                )
+                if isinstance(declaration, dict):
+                    requested_capabilities.append(dict(declaration))
         _validate_persistent_subagent_declaration(
             item.get("persistent_subagent"),
             node_label=f"nodes[{index}]",
@@ -2224,6 +2307,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             required_evidence=tuple(required_evidence),
             reviewer=reviewer,
             context=context,
+            requested_capabilities=tuple(requested_capabilities),
         )
     return nodes
 

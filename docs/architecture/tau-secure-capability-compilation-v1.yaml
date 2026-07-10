@@ -1,0 +1,55 @@
+name: "Tau Secure Capability Compilation v1"
+components:
+  - id: dag_request
+    label: DAG Node Capability Request
+    tech: "tau.capability_request.v1"
+    color: blue
+    files:
+      - src/tau_coding/project_dag.py
+
+  - id: security_context
+    label: Resolved Security Context
+    tech: "goal + policy + boundary + actor + environment hashes"
+    color: green
+    files:
+      - src/tau_coding/security_context.py
+
+  - id: command_policy
+    label: Command Policy
+    tech: "tau.command_spec_policy.v1"
+    color: green
+    files:
+      - src/tau_coding/handoff_dispatch.py
+
+  - id: capability_compiler
+    label: Capability Compiler
+    tech: "deterministic allow / deny intersection"
+    color: green
+    files:
+      - src/tau_coding/security_capability.py
+
+  - id: capability_decision
+    label: Capability Decision
+    tech: "grant or fail-closed receipt"
+    color: green
+    files:
+      - src/tau_coding/security_capability.py
+
+  - id: secure_executor
+    label: Secure Executor
+    tech: "Phase 2.2 - not implemented in this slice"
+    color: red
+    files:
+      - docs/security-context.md
+
+connections:
+  - from: dag_request
+    to: security_context
+  - from: security_context
+    to: command_policy
+  - from: command_policy
+    to: capability_compiler
+  - from: capability_compiler
+    to: capability_decision
+  - from: capability_decision
+    to: secure_executor
