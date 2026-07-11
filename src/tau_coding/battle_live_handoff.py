@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
-import py_compile
 import time
 from pathlib import Path
 from typing import Any
@@ -334,6 +334,7 @@ def _run_team(
     _write_json(scillm_call_path, scillm_call)
 
     materialized = _materialize_team_artifact(team_dir=team_dir, team=team, scillm_call=scillm_call)
+    materialized["scillm_call_receipt_sha256"] = _file_sha256(scillm_call_path)
     materialized_path = team_dir / "materialized-artifact-receipt.json"
     _write_json(materialized_path, materialized)
 
@@ -453,6 +454,7 @@ def _run_spawned_red_child(
     _write_json(scillm_call_path, scillm_call)
 
     materialized = _materialize_team_artifact(team_dir=team_dir, team="red", scillm_call=scillm_call)
+    materialized["scillm_call_receipt_sha256"] = _file_sha256(scillm_call_path)
     materialized_path = team_dir / "materialized-artifact-receipt.json"
     _write_json(materialized_path, materialized)
 
@@ -660,19 +662,14 @@ def _materialize_red(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, Any
 
     path = team_dir / "red_exploit_submission.py"
     path.write_text(script, encoding="utf-8")
-    compile_error = _compile_python(path)
-    if compile_error:
-        return {
-            **_blocked_materialization("red_exploit_py_compile_failed", parsed),
-            "diagnostic_path": str(path),
-            "compile_error": compile_error,
-        }
-
     return {
         "schema": "tau.battle_materialized_artifact_receipt.v1",
         "status": "PASS",
         "artifact_type": "red_exploit",
         "path": str(path),
+        "artifact_sha256": _file_sha256(path),
+        "artifact_bytes": path.stat().st_size,
+        "strategy_genome_sha256": _json_sha256(parsed.get("strategy_genome")),
         "parsed_keys": sorted(parsed),
         "rationale": parsed.get("rationale"),
     }
@@ -692,7 +689,7 @@ def _red_contract_error(script: str) -> str | None:
     try:
         tree = ast.parse(script)
     except SyntaxError:
-        return None
+        return "red_exploit_py_syntax_invalid"
 
     imports: set[str] = set()
     for node in ast.walk(tree):
@@ -721,12 +718,13 @@ def _materialize_blue(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, An
 
     path = team_dir / "app.py"
     path.write_text(app_py, encoding="utf-8")
-    compile_error = _compile_python(path)
-    if compile_error:
+    try:
+        ast.parse(app_py)
+    except SyntaxError as exc:
         return {
-            **_blocked_materialization("blue_app_py_compile_failed", parsed),
+            **_blocked_materialization("blue_app_py_syntax_invalid", parsed),
             "diagnostic_path": str(path),
-            "compile_error": compile_error,
+            "syntax_error": str(exc),
         }
 
     return {
@@ -734,6 +732,9 @@ def _materialize_blue(*, team_dir: Path, parsed: dict[str, Any]) -> dict[str, An
         "status": "PASS",
         "artifact_type": "blue_patch",
         "path": str(path),
+        "artifact_sha256": _file_sha256(path),
+        "artifact_bytes": path.stat().st_size,
+        "strategy_genome_sha256": _json_sha256(parsed.get("strategy_genome")),
         "parsed_keys": sorted(parsed),
         "rationale": parsed.get("rationale"),
     }
@@ -749,12 +750,13 @@ def _blocked_materialization(reason: str, parsed: dict[str, Any]) -> dict[str, A
     }
 
 
-def _compile_python(path: Path) -> str | None:
-    try:
-        py_compile.compile(str(path), doraise=True)
-        return None
-    except py_compile.PyCompileError as exc:
-        return str(exc)
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _json_sha256(value: Any) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _subagent_receipt(
