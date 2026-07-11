@@ -566,8 +566,13 @@ services:
 | `tau` | One-shot CLI/TUI/harness container for local commands and smoke checks. |
 | `tau-cron` | Long-running scheduler that invokes one bounded `handoff-command-loop` tick per interval. |
 | external `embry-memory` | Memory daemon expected at `MEMORY_DAEMON_URL`, usually `http://host.docker.internal:8601`. |
-| external `scillm` | Optional SciLLM proxy expected at `SCILLM_BASE_URL`, usually `http://host.docker.internal:4001`. |
+| external `scillm` | Default LLM engine boundary, expected at `SCILLM_BASE_URL`, usually `http://host.docker.internal:4001`. Tau keeps provider-neutral core interfaces and sends provider work through SciLLM adapters. |
 | external `ux-lab` | Browser integration viewer, usually `http://host.docker.internal:3002/#tau`. |
+
+Tau treats SciLLM surfaces as distinct contracts: one-shot model names use
+`/v1/chat/completions`, while Chutes model pools are reserved for batch
+endpoints. Tau must not pass a batch pool name to chat completions or bypass
+SciLLM with direct provider API calls.
 
 Start the cron-style orchestrator only after mounting a start handoff:
 
