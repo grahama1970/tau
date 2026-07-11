@@ -514,9 +514,13 @@ def _artifact_messages(team: str, persona: str, handoff: dict[str, Any]) -> list
                 "Return exactly one JSON object and nothing else. No markdown. "
                 "Use only team-public handoff content. Do not include chain-of-thought. "
                 "Red schema: {artifact_type:red_exploit, exploit_py:<complete python "
-                "script containing RED_EXPLOIT_CONFIRMED>, rationale:<brief>}. "
+                "script containing RED_EXPLOIT_CONFIRMED>, rationale:<brief>, "
+                "strategy_genome:{selected_methods:[], rejected_methods:[], parameters:{}, "
+                "mutation_origin:<string>, expected_observation:<string>}}. "
                 "Blue schema: {artifact_type:blue_patch, app_py:<complete replacement "
-                "app.py>, rationale:<brief>}."
+                "app.py>, rationale:<brief>, strategy_genome:{selected_methods:[], "
+                "rejected_methods:[], parameters:{}, mutation_origin:<string>, "
+                "expected_observation:<string>}}."
             ),
         },
         {
@@ -562,7 +566,7 @@ def _chat(
         "model": model,
         "messages": messages,
         "temperature": 0.1,
-        "max_tokens": 4096,
+        "max_tokens": 8192,
     }
     if response_format:
         body["response_format"] = {"type": "json_object"}

@@ -599,7 +599,8 @@ def _handoff(
         "public_context": context,
         "instructions": {
             "red": (
-                "Return a JSON object with artifact_type=red_exploit and exploit_py. "
+                "Return a JSON object with artifact_type=red_exploit, exploit_py, and strategy_genome. "
+                "strategy_genome must be an object with selected_methods, rejected_methods, parameters, mutation_origin, and expected_observation. "
                 "The exploit_py script is executed by Battle Judge as: "
                 "python red_exploit_submission.py --expect-vulnerable inside a local Docker workspace containing app.py. "
                 "Use Python standard library only. Do not import requests, httpx, flask, fastapi, urllib, socket, or any network/HTTP package. "
@@ -611,7 +612,8 @@ def _handoff(
                 "The script must contain RED_EXPLOIT_CONFIRMED."
             ),
             "blue": (
-                "Return a JSON object with artifact_type=blue_patch and app_py. "
+                "Return a JSON object with artifact_type=blue_patch, app_py, and strategy_genome. "
+                "strategy_genome must be an object with selected_methods, rejected_methods, parameters, mutation_origin, and expected_observation. "
                 "The app_py value must be a complete replacement application file."
             ),
         }[team],
