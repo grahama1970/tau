@@ -816,6 +816,9 @@ def _run_transaction_node(
             if review_feedback_path.exists()
             else None,
             "review_verdict": feedback.get("verdict"),
+            "review_live": feedback.get("live") is True,
+            "review_provider_live": feedback.get("provider_live") is True,
+            "review_model": feedback.get("model"),
         }
         attempts.append(attempt_record)
         if feedback_errors:
@@ -1084,6 +1087,8 @@ def _transaction_record(
 ) -> dict[str, Any]:
     spec = node.transaction
     assert spec is not None
+    provider_live = any(item.get("review_provider_live") is True for item in attempts)
+    live = provider_live or any(item.get("review_live") is True for item in attempts)
     return {
         "node_id": node.node_id,
         "role": node.role,
@@ -1091,6 +1096,9 @@ def _transaction_record(
         "verdict": verdict,
         "transaction_id": spec.transaction_id,
         "transaction_state": state,
+        "mocked": False,
+        "live": live,
+        "provider_live": provider_live,
         "transaction_receipt_path": str(transaction_receipt_path),
         "accepted_manifest_path": str(accepted_manifest_path)
         if accepted_manifest_path

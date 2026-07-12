@@ -129,6 +129,42 @@ source `run_dir`, metadata file used, and recovered `spec_path`. `tau
 dag-inspect`, `tau run-status`, and real-world sanity summaries expose these
 fields so recovery provenance is visible from the normal operator surfaces.
 
+## Hash-Bound Artifact Transactions
+
+A node may opt into `tau.generic_artifact_transaction.v1` with an immutable
+`work_order_path`, an artifact root, separate producer and reviewer identities,
+and an independent reviewer command. Tau writes attempt and review contexts and
+passes their paths and hashes through `TAU_GENERIC_DAG_CONTEXT` or
+`TAU_GENERIC_DAG_REVIEW_CONTEXT`.
+
+The producer writes `tau.media_artifact_manifest.v1`. Tau independently checks
+each file path, size, and SHA-256 before invoking the reviewer. A structured
+`REVISE` result is hash-bound into the next attempt context without changing the
+work order. Only a validated reviewer `PASS` causes Tau to write the authoritative
+`tau.accepted_artifact_manifest.v1` used by dependent nodes.
+
+Resume authority comes from the Tau transaction receipt and accepted manifest,
+not the producer's PASS claim. Missing or modified accepted artifacts block with
+`STALE_ACCEPTED_STATE`; Tau does not silently regenerate them. Optional
+continuations can require `generic_dag_transaction_continue` approval bound to
+the exact run, transaction, accepted-manifest hash, and command hash.
+
+Run the live two-stage acceptance canary against the local Scillm proxy:
+
+```bash
+uv run python scripts/run-generic-artifact-transaction-canary.py \
+  --out /tmp/tau-issue-71-live-canary \
+  --reference docs/assets/tau-header.webp \
+  --model gpt-5.5 \
+  --approve-synthetic-continuation
+```
+
+The approval flag authorizes only the canary's local marker write. Its declared
+manual signature is not cryptographic or legal authority. The expected first
+run is `BLOCKED/APPROVAL_REQUIRED`; the resumed run is PASS only after exact
+approval binding. `provider_live:true` proves real Scillm calls occurred, not
+reviewer truthfulness, model quality, or future route correctness.
+
 ## Proof Boundary
 
 `mocked:false` means the runner executed real local subprocesses and consumed
