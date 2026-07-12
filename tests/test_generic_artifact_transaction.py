@@ -2,7 +2,11 @@ import json
 import sys
 from pathlib import Path
 
-from tau_coding.generic_artifact_transaction import canonical_command_sha256
+from tau_coding.generic_artifact_transaction import (
+    canonical_command_sha256,
+    parse_transaction_spec,
+    revalidate_accepted_manifest,
+)
 from tau_coding.generic_dag import run_generic_dag
 
 
@@ -25,16 +29,9 @@ def test_transaction_revises_then_projects_only_accepted_artifact(tmp_path: Path
     assert "candidate-2.bin" in serialized
     assert "candidate-1.bin" not in serialized
     second_context_path = (
-        tmp_path
-        / "run"
-        / "transactions"
-        / "stage"
-        / "attempt-002"
-        / "attempt-context.json"
+        tmp_path / "run" / "transactions" / "stage" / "attempt-002" / "attempt-context.json"
     )
-    second_context = json.loads(
-        second_context_path.read_text()
-    )
+    second_context = json.loads(second_context_path.read_text())
     assert second_context["revision"]["source_attempt"] == 1
     assert second_context["revision"]["findings"][0]["revision_instruction"] == "revise bytes"
 
@@ -157,6 +154,164 @@ def test_transaction_accepts_hash_bound_nested_provider_execution(tmp_path: Path
     assert node["attempts"][-1]["producer_provider"] == "fixture-provider"
 
 
+def test_transaction_can_exclude_execution_dependency_from_accepted_context(
+    tmp_path: Path,
+) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(tmp_path, worker=worker, include_downstream=True)
+    spec = json.loads(spec_path.read_text())
+    spec["nodes"][1]["accepted_context_from"] = []
+    spec_path.write_text(json.dumps(spec, indent=2) + "\n")
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    downstream = json.loads((tmp_path / "downstream-context.json").read_text())
+    assert downstream["accepted_inputs"] == []
+
+
+def test_transaction_validator_blocks_before_reviewer(tmp_path: Path) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        validator=True,
+        validator_pass=False,
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "VALIDATOR_BLOCKED"
+    assert receipt["nodes"][0]["attempts"] == []
+
+
+def test_transaction_validator_passes_before_reviewer(tmp_path: Path) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(tmp_path, worker=worker, validator=True)
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    assert all(item["validation_receipt_path"] for item in receipt["nodes"][0]["attempts"])
+
+
+def test_accepted_manifest_rejects_changed_upstream_context(tmp_path: Path) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(tmp_path, worker=worker)
+    receipt = run_generic_dag(spec_path=spec_path)
+    raw = json.loads(spec_path.read_text())["nodes"][0]
+    transaction = parse_transaction_spec(
+        raw["transaction"], base_dir=spec_path.parent, node_id="stage"
+    )
+
+    _, errors = revalidate_accepted_manifest(
+        path=Path(receipt["nodes"][0]["accepted_manifest_path"]),
+        expected_sha256=receipt["nodes"][0]["accepted_manifest_sha256"],
+        spec=transaction,
+        node_id="stage",
+        work_order_sha256=receipt["nodes"][0]["work_order_sha256"],
+        accepted_inputs=[
+            {
+                "source_node_id": "changed-anchor",
+                "accepted_manifest_sha256": "0" * 64,
+                "artifacts": [],
+            }
+        ],
+    )
+
+    assert "stale_accepted_context" in errors
+
+
+def test_fourteen_transaction_selective_context_stress(tmp_path: Path) -> None:
+    states = [
+        "idle",
+        "walk",
+        "run",
+        "research",
+        "payload",
+        "mutate",
+        "handoff",
+        "spawn",
+        "hit",
+        "blocked",
+        "killed",
+        "fastest-crash",
+        "victory",
+        "promoted",
+    ]
+    worker = _write_worker(tmp_path)
+    nodes: list[dict[str, object]] = []
+    for index, state in enumerate(states):
+        work_order = tmp_path / f"{state}-work-order.json"
+        work_order.write_text(json.dumps({"task": state, "validator_pass": True}) + "\n")
+        dependencies = [] if index == 0 else [states[index - 1]]
+        if index > 1:
+            dependencies.append("idle")
+        nodes.append(
+            {
+                "node_id": state,
+                "role": "artifact-transaction",
+                "command": [
+                    sys.executable,
+                    str(worker),
+                    "produce",
+                    str(tmp_path / "artifacts" / state),
+                    str(tmp_path / f"{state}-receipt.json"),
+                    str(work_order),
+                    str(tmp_path / f"{state}-producer-count.txt"),
+                ],
+                "depends_on": dependencies,
+                "accepted_context_from": [] if index == 0 else ["idle"],
+                "receipt_path": str(tmp_path / f"{state}-receipt.json"),
+                "work_order_path": str(work_order),
+                "max_attempts": 2,
+                "transaction": {
+                    "schema": "tau.generic_artifact_transaction.v1",
+                    "transaction_id": f"tx-{state}",
+                    "artifact_root": str(tmp_path / "artifacts" / state),
+                    "producer_id": f"producer-{state}",
+                    "validator": {
+                        "validator_id": "deterministic-validator",
+                        "command": [sys.executable, str(worker), "validate", str(work_order)],
+                    },
+                    "reviewer": {
+                        "reviewer_id": f"reviewer-{state}",
+                        "command": [sys.executable, str(worker), "review"],
+                    },
+                    "acceptance": {"require_output_change_after_revise": True},
+                },
+            }
+        )
+    spec_path = tmp_path / "fourteen-state-dag.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_dag_spec.v1",
+                "run_id": "fourteen-transaction-stress",
+                "run_dir": str(tmp_path / "run"),
+                "nodes": nodes,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+    (tmp_path / "stress-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
+
+    assert receipt["status"] == "PASS"
+    assert receipt["completed_node_count"] == 14
+    assert all(node["attempt_count"] == 2 for node in receipt["nodes"])
+    for state in states[1:]:
+        context = json.loads(
+            (
+                tmp_path / "run" / "transactions" / state / "attempt-001" / "attempt-context.json"
+            ).read_text()
+        )
+        assert [item["source_node_id"] for item in context["accepted_inputs"]] == ["idle"]
+
+
 def _write_transaction_spec(
     root: Path,
     *,
@@ -167,6 +322,8 @@ def _write_transaction_spec(
     acceptance: dict[str, bool] | None = None,
     same_output_on_retry: bool = False,
     producer_provider_live: bool = False,
+    validator: bool = False,
+    validator_pass: bool = True,
 ) -> Path:
     run_dir = root / "run"
     artifacts = root / "artifacts"
@@ -178,6 +335,7 @@ def _write_transaction_spec(
                 "task": "produce deterministic candidate",
                 "same_output_on_retry": same_output_on_retry,
                 "producer_provider_live": producer_provider_live,
+                "validator_pass": validator_pass,
             }
         )
         + "\n"
@@ -194,6 +352,11 @@ def _write_transaction_spec(
     }
     if acceptance is not None:
         transaction["acceptance"] = acceptance
+    if validator:
+        transaction["validator"] = {
+            "validator_id": "deterministic-validator",
+            "command": [sys.executable, str(worker), "validate", str(work_order)],
+        }
     if continuation is not None:
         transaction["continuation"] = {
             "command": continuation,
@@ -255,7 +418,7 @@ def _write_worker(root: Path) -> Path:
     return path
 
 
-_WORKER_SOURCE = r'''
+_WORKER_SOURCE = r"""
 import hashlib
 import json
 import os
@@ -352,6 +515,25 @@ elif mode == "review":
         "summary": "revise first" if verdict == "REVISE" else "accepted",
         "findings": findings,
     }))
+elif mode == "validate":
+    context_path = Path(os.environ["TAU_GENERIC_DAG_VALIDATION_CONTEXT"])
+    context = json.loads(context_path.read_text())
+    work_order = json.loads(Path(sys.argv[2]).read_text())
+    output = Path(context["output_contract"]["validation_receipt_path"])
+    output.write_text(json.dumps({
+        "schema": "tau.generic_artifact_validation.v1",
+        "status": "PASS" if work_order.get("validator_pass") else "BLOCKED",
+        "node_id": context["node_id"],
+        "transaction_id": context["transaction_id"],
+        "attempt": context["attempt"],
+        "validator_id": context["validator_id"],
+        "validation_context_sha256": os.environ[
+            "TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256"
+        ],
+        "candidate_manifest_sha256": context["candidate_manifest_sha256"],
+    }))
+    if not work_order.get("validator_pass"):
+        raise SystemExit(1)
 elif mode == "downstream":
     output, receipt = map(Path, sys.argv[2:])
     context = Path(os.environ["TAU_GENERIC_DAG_CONTEXT"])
@@ -366,4 +548,4 @@ elif mode == "downstream":
     }))
 elif mode == "continue":
     Path(sys.argv[2]).write_text("continued")
-'''
+"""

@@ -17,6 +17,7 @@ from typing import Any
 TRANSACTION_SCHEMA = "tau.generic_artifact_transaction.v1"
 CANDIDATE_MANIFEST_SCHEMA = "tau.media_artifact_manifest.v1"
 REVIEW_SCHEMA = "tau.generic_artifact_review.v1"
+VALIDATION_SCHEMA = "tau.generic_artifact_validation.v1"
 ATTEMPT_CONTEXT_SCHEMA = "tau.generic_artifact_attempt_context.v1"
 REVIEW_CONTEXT_SCHEMA = "tau.generic_artifact_review_context.v1"
 ACCEPTED_MANIFEST_SCHEMA = "tau.accepted_artifact_manifest.v1"
@@ -29,6 +30,13 @@ _MEDIA_TYPE_RE = re.compile(r"^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$")
 @dataclass(frozen=True)
 class ReviewerSpec:
     reviewer_id: str
+    command: tuple[str, ...]
+    timeout_seconds: float
+
+
+@dataclass(frozen=True)
+class ValidatorSpec:
+    validator_id: str
     command: tuple[str, ...]
     timeout_seconds: float
 
@@ -59,6 +67,7 @@ class ArtifactTransactionSpec:
     transaction_id: str
     artifact_root: Path
     producer_id: str
+    validator: ValidatorSpec | None
     reviewer: ReviewerSpec
     acceptance: AcceptanceSpec
     continuation: ContinuationSpec | None
@@ -89,6 +98,21 @@ def parse_transaction_spec(raw: Any, *, base_dir: Path, node_id: str) -> Artifac
             reviewer_raw.get("timeout_seconds", 60), label=f"node {node_id} reviewer timeout"
         ),
     )
+    validator_raw = raw.get("validator")
+    validator = None
+    if validator_raw is not None:
+        if not isinstance(validator_raw, dict):
+            raise RuntimeError(f"node {node_id} transaction validator must be an object")
+        validator = ValidatorSpec(
+            validator_id=_required_string(validator_raw, "validator_id", node_id=node_id),
+            command=_command(
+                validator_raw.get("command"), label=f"node {node_id} validator command"
+            ),
+            timeout_seconds=_positive_float(
+                validator_raw.get("timeout_seconds", 60),
+                label=f"node {node_id} validator timeout",
+            ),
+        )
     acceptance_raw = raw.get("acceptance", {})
     if not isinstance(acceptance_raw, dict):
         raise RuntimeError(f"node {node_id} transaction acceptance must be an object")
@@ -145,6 +169,7 @@ def parse_transaction_spec(raw: Any, *, base_dir: Path, node_id: str) -> Artifac
         transaction_id=transaction_id,
         artifact_root=artifact_root,
         producer_id=producer_id,
+        validator=validator,
         reviewer=reviewer,
         acceptance=acceptance,
         continuation=continuation,
@@ -166,17 +191,14 @@ def validate_acceptance_policy(
     policy = spec.acceptance
     producer_execution = producer_receipt.get("provider_execution")
     producer_provider_live = producer_receipt.get("provider_live") is True or (
-        isinstance(producer_execution, dict)
-        and producer_execution.get("provider_live") is True
+        isinstance(producer_execution, dict) and producer_execution.get("provider_live") is True
     )
     if policy.require_provider_live_producer and not producer_provider_live:
         errors.append("producer_provider_live_required")
     if policy.require_provider_live_reviewer and review_feedback.get("provider_live") is not True:
         errors.append("reviewer_provider_live_required")
     artifact_hashes = {
-        str(item.get("sha256"))
-        for item in artifacts
-        if isinstance(item.get("sha256"), str)
+        str(item.get("sha256")) for item in artifacts if isinstance(item.get("sha256"), str)
     }
     if (
         policy.require_output_change_after_revise
@@ -355,9 +377,10 @@ def validate_review_feedback(
         if not isinstance(finding, dict):
             errors.append("review_finding_not_object")
             continue
-        if isinstance(finding.get("revision_instruction"), str) and finding[
-            "revision_instruction"
-        ].strip():
+        if (
+            isinstance(finding.get("revision_instruction"), str)
+            and finding["revision_instruction"].strip()
+        ):
             revision_instruction_found = True
         refs = finding.get("artifact_ids")
         if not isinstance(refs, list):
@@ -384,6 +407,8 @@ def write_accepted_manifest(
     candidate_manifest_path: Path,
     review_feedback_path: Path,
     artifacts: list[dict[str, Any]],
+    accepted_inputs: list[dict[str, Any]],
+    validation_receipt_path: Path | None = None,
 ) -> tuple[dict[str, Any], str]:
     payload = {
         "schema": ACCEPTED_MANIFEST_SCHEMA,
@@ -401,6 +426,15 @@ def write_accepted_manifest(
             "sha256": file_sha256(review_feedback_path),
             "reviewer_id": spec.reviewer.reviewer_id,
         },
+        "accepted_inputs": _accepted_input_bindings(accepted_inputs),
+        "validation_receipt": (
+            {
+                "path": str(validation_receipt_path),
+                "sha256": file_sha256(validation_receipt_path),
+            }
+            if validation_receipt_path is not None
+            else None
+        ),
         "artifacts": artifacts,
     }
     write_json(path, payload)
@@ -414,6 +448,7 @@ def revalidate_accepted_manifest(
     spec: ArtifactTransactionSpec,
     node_id: str,
     work_order_sha256: str,
+    accepted_inputs: list[dict[str, Any]],
 ) -> tuple[dict[str, Any], list[str]]:
     payload, errors = load_json(path, label="accepted manifest")
     if errors:
@@ -431,6 +466,19 @@ def revalidate_accepted_manifest(
             },
         )
     )
+    if payload.get("accepted_inputs") != _accepted_input_bindings(accepted_inputs):
+        errors.append("stale_accepted_context")
+    validation_receipt = payload.get("validation_receipt")
+    if validation_receipt is not None:
+        if not isinstance(validation_receipt, dict):
+            errors.append("validation_receipt_binding_invalid")
+        else:
+            validation_path = Path(str(validation_receipt.get("path") or ""))
+            expected_validation_sha = validation_receipt.get("sha256")
+            if not validation_path.is_file():
+                errors.append("validation_receipt_missing")
+            elif file_sha256(validation_path) != expected_validation_sha:
+                errors.append("validation_receipt_hash_mismatch")
     artifacts = payload.get("artifacts")
     if not isinstance(artifacts, list) or not artifacts:
         errors.append("accepted_manifest_artifacts_required")
@@ -445,9 +493,17 @@ def revalidate_accepted_manifest(
     return payload, errors
 
 
-def accepted_projection(
-    *, path: Path, sha256: str, payload: dict[str, Any]
-) -> dict[str, Any]:
+def _accepted_input_bindings(inputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "source_node_id": item.get("source_node_id"),
+            "accepted_manifest_sha256": item.get("accepted_manifest_sha256"),
+        }
+        for item in inputs
+    ]
+
+
+def accepted_projection(*, path: Path, sha256: str, payload: dict[str, Any]) -> dict[str, Any]:
     return {
         "source_node_id": payload["node_id"],
         "accepted_manifest_path": str(path),
@@ -511,9 +567,7 @@ def _validate_artifact(item: dict[str, Any], *, root: Path, artifact_id: Any) ->
 
 def _binding_errors(payload: dict[str, Any], expected: dict[str, Any]) -> list[str]:
     return [
-        f"binding_mismatch:{key}"
-        for key, value in expected.items()
-        if payload.get(key) != value
+        f"binding_mismatch:{key}" for key, value in expected.items() if payload.get(key) != value
     ]
 
 
@@ -532,8 +586,10 @@ def _optional_bool(payload: dict[str, Any], key: str, *, node_id: str) -> bool:
 
 
 def _command(value: Any, *, label: str) -> tuple[str, ...]:
-    if not isinstance(value, list) or not value or not all(
-        isinstance(part, str) and part for part in value
+    if (
+        not isinstance(value, list)
+        or not value
+        or not all(isinstance(part, str) and part for part in value)
     ):
         raise RuntimeError(f"{label} must be a non-empty string list")
     return tuple(value)

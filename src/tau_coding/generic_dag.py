@@ -30,6 +30,11 @@ from tau_coding.generic_artifact_transaction import (
     write_json,
     write_review_context,
 )
+from tau_coding.skill_dag_adapter import (
+    SkillDagSpec,
+    execute_skill_dag_node,
+    parse_skill_dag_spec,
+)
 
 GENERIC_DAG_SPEC_SCHEMA = "tau.generic_dag_spec.v1"
 GENERIC_DAG_RUN_RECEIPT_SCHEMA = "tau.generic_dag_run_receipt.v1"
@@ -44,11 +49,13 @@ class DagNode:
     role: str
     command: list[str]
     depends_on: tuple[str, ...]
+    accepted_context_from: tuple[str, ...]
     receipt_path: Path
     timeout_seconds: float
     max_attempts: int
     work_order_path: Path | None
     transaction: ArtifactTransactionSpec | None
+    skill: SkillDagSpec | None
 
 
 def run_generic_dag(
@@ -142,9 +149,10 @@ def run_generic_dag(
             resume=resume,
             accepted_inputs=[
                 accepted_outputs[dependency]
-                for dependency in node.depends_on
+                for dependency in node.accepted_context_from
                 if dependency in accepted_outputs
             ],
+            goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
         )
         node_results.append(result)
         if result["status"] == "PASS" and result["verdict"] == "PASS":
@@ -186,7 +194,8 @@ def run_generic_dag(
         active_node_id=None,
     )
     provider_live = any(result.get("provider_live") is True for result in node_results)
-    live = bool(provider_live)
+    skill_live = any(result.get("skill_live") is True for result in node_results)
+    live = provider_live or any(result.get("live") is True for result in node_results)
     receipt = {
         "schema": GENERIC_DAG_RUN_RECEIPT_SCHEMA,
         "ok": final_status == "PASS",
@@ -208,7 +217,7 @@ def run_generic_dag(
         "node_count": len(nodes),
         "completed_node_count": len(completed),
         "nodes": node_results,
-        "proof_scope": _proof_scope(provider_live=provider_live),
+        "proof_scope": _proof_scope(provider_live=provider_live, skill_live=skill_live),
         "timestamp": _utc_stamp(),
     }
     _write_json(run_dir / "run-receipt.json", receipt)
@@ -383,9 +392,7 @@ def _write_checkpoint(
         "resume": {
             "enabled_by_default": True,
             "will_reuse_valid_pass_receipts": True,
-            "receipt_paths": {
-                node_id: str(node.receipt_path) for node_id, node in nodes.items()
-            },
+            "receipt_paths": {node_id: str(node.receipt_path) for node_id, node in nodes.items()},
         },
         "timestamp": _utc_stamp(),
     }
@@ -415,7 +422,16 @@ def _run_node(
     events_path: Path,
     resume: bool,
     accepted_inputs: list[dict[str, Any]],
+    goal_hash: str | None,
 ) -> dict[str, Any]:
+    if node.skill is not None:
+        return _run_skill_node(
+            node,
+            run_id=run_id,
+            accepted_inputs=accepted_inputs,
+            goal_hash=goal_hash,
+            resume=resume,
+        )
     if node.transaction is not None:
         return _run_transaction_node(
             node,
@@ -440,6 +456,122 @@ def _run_node(
         context_path=context_path,
         context_sha256=context_sha256,
     )
+
+
+def _run_skill_node(
+    node: DagNode,
+    *,
+    run_id: str,
+    accepted_inputs: list[dict[str, Any]],
+    goal_hash: str | None,
+    resume: bool,
+) -> dict[str, Any]:
+    assert node.skill is not None
+    started_at = _utc_stamp()
+    started = time.monotonic()
+    if resume and node.receipt_path.is_file():
+        prior = _read_json_object(node.receipt_path, label=f"{node.node_id} skill receipt")
+        prior_artifacts = prior.get("artifacts")
+        artifacts: list[Any] = list(prior_artifacts) if isinstance(prior_artifacts, list) else []
+        artifact_errors = []
+        for artifact in artifacts:
+            if not isinstance(artifact, dict) or not isinstance(artifact.get("path"), str):
+                artifact_errors.append("skill_resume_artifact_invalid")
+                continue
+            path = Path(artifact["path"]).expanduser().resolve()
+            if not path.is_file():
+                artifact_errors.append(f"skill_resume_artifact_missing:{path}")
+            elif artifact.get("sha256") != hashlib.sha256(path.read_bytes()).hexdigest():
+                artifact_errors.append(f"skill_resume_artifact_hash_mismatch:{path}")
+        if (
+            prior.get("status") == "PASS"
+            and prior.get("verdict") == "PASS"
+            and prior.get("skill_provider") == node.skill.provider
+            and prior.get("capability") == node.skill.capability
+            and prior.get("goal_hash") == goal_hash
+            and prior.get("work_order_sha256") == _work_order_sha256(node)
+            and not artifact_errors
+        ):
+            return {
+                "node_id": node.node_id,
+                "role": node.role,
+                "status": "PASS",
+                "verdict": "PASS",
+                "mocked": False,
+                "live": prior.get("live") is True,
+                "provider_live": False,
+                "skill_live": prior.get("live") is True,
+                "skill_provider": node.skill.provider,
+                "capability": node.skill.capability,
+                "round_number": prior.get("round_number"),
+                "max_rounds": prior.get("max_rounds"),
+                "attempt_count": 0,
+                "started_at": started_at,
+                "finished_at": _utc_stamp(),
+                "duration_seconds": round(time.monotonic() - started, 3),
+                "receipt_path": str(node.receipt_path),
+                "work_order_path": str(node.work_order_path) if node.work_order_path else None,
+                "work_order_sha256": _work_order_sha256(node),
+                "resumed": True,
+                "command_results": [],
+                "artifacts": artifacts,
+                "accepted_output": {
+                    "source_node_id": node.node_id,
+                    "skill_provider": node.skill.provider,
+                    "capability": node.skill.capability,
+                    "artifacts": artifacts,
+                },
+                "errors": [],
+            }
+    receipt = execute_skill_dag_node(
+        spec=node.skill,
+        run_id=run_id,
+        node_id=node.node_id,
+        goal_hash=goal_hash,
+        work_order_sha256=_work_order_sha256(node),
+        accepted_inputs=accepted_inputs,
+    )
+    receipt["goal_hash"] = goal_hash
+    receipt["work_order_sha256"] = _work_order_sha256(node)
+    write_json(node.receipt_path, receipt)
+    receipt_artifacts = receipt.get("artifacts")
+    artifacts = list(receipt_artifacts) if isinstance(receipt_artifacts, list) else []
+    accepted_output = (
+        {
+            "source_node_id": node.node_id,
+            "skill_provider": node.skill.provider,
+            "capability": node.skill.capability,
+            "artifacts": artifacts,
+        }
+        if receipt.get("status") == "PASS"
+        else None
+    )
+    return {
+        "node_id": node.node_id,
+        "role": node.role,
+        "status": receipt.get("status"),
+        "verdict": receipt.get("verdict"),
+        "mocked": False,
+        "live": receipt.get("live") is True,
+        "provider_live": False,
+        "skill_live": receipt.get("live") is True,
+        "skill_provider": node.skill.provider,
+        "capability": node.skill.capability,
+        "round_number": receipt.get("round_number"),
+        "max_rounds": receipt.get("max_rounds"),
+        "attempt_count": 1,
+        "started_at": started_at,
+        "finished_at": _utc_stamp(),
+        "duration_seconds": round(time.monotonic() - started, 3),
+        "receipt_path": str(node.receipt_path),
+        "work_order_path": str(node.work_order_path) if node.work_order_path else None,
+        "work_order_sha256": _work_order_sha256(node),
+        "resumed": False,
+        "command_results": [],
+        "artifacts": artifacts,
+        "accepted_output": accepted_output,
+        "errors": receipt.get("errors", []),
+    }
 
 
 def _run_legacy_node(
@@ -608,9 +740,11 @@ def _run_transaction_node(
 
     if resume and transaction_receipt_path.exists():
         prior, prior_errors = load_json(transaction_receipt_path, label="transaction receipt")
-        if not prior_errors and prior.get("schema") == TRANSACTION_RECEIPT_SCHEMA and prior.get(
-            "state"
-        ) in {"ACCEPTED", "APPROVAL_REQUIRED", "CONTINUED"}:
+        if (
+            not prior_errors
+            and prior.get("schema") == TRANSACTION_RECEIPT_SCHEMA
+            and prior.get("state") in {"ACCEPTED", "APPROVAL_REQUIRED", "CONTINUED"}
+        ):
             expected_manifest_sha256 = prior.get("accepted_manifest_sha256")
             if not isinstance(expected_manifest_sha256, str):
                 prior_errors.append("accepted_manifest_sha256_missing")
@@ -621,6 +755,7 @@ def _run_transaction_node(
                     spec=spec,
                     node_id=node.node_id,
                     work_order_sha256=work_order_sha256,
+                    accepted_inputs=accepted_inputs,
                 )
                 prior_errors.extend(accepted_errors)
                 if not prior_errors:
@@ -683,6 +818,8 @@ def _run_transaction_node(
         candidate_manifest_path = attempt_dir / "candidate-manifest.json"
         review_context_path = attempt_dir / "review-context.json"
         review_feedback_path = attempt_dir / "review-feedback.json"
+        validation_context_path = attempt_dir / "validation-context.json"
+        validation_receipt_path = attempt_dir / "validation-receipt.json"
         for stale_path in (node.receipt_path, candidate_manifest_path, review_feedback_path):
             stale_path.unlink(missing_ok=True)
         _, attempt_context_sha256 = write_attempt_context(
@@ -759,6 +896,62 @@ def _run_transaction_node(
             )
         candidate_manifest_sha256 = file_sha256(candidate_manifest_path)
         artifacts = candidate["artifacts"]
+        if spec.validator is not None:
+            write_json(
+                validation_context_path,
+                {
+                    "schema": "tau.generic_artifact_validation_context.v1",
+                    "run_id": run_id,
+                    "node_id": node.node_id,
+                    "transaction_id": spec.transaction_id,
+                    "attempt": attempt,
+                    "validator_id": spec.validator.validator_id,
+                    "candidate_manifest_path": str(candidate_manifest_path),
+                    "candidate_manifest_sha256": candidate_manifest_sha256,
+                    "artifacts": artifacts,
+                    "output_contract": {"validation_receipt_path": str(validation_receipt_path)},
+                },
+            )
+            validation_context_sha256 = file_sha256(validation_context_path)
+            validator_result = _run_command(
+                list(spec.validator.command),
+                cwd=run_dir,
+                timeout_seconds=spec.validator.timeout_seconds,
+                env_overrides={
+                    "TAU_GENERIC_DAG_VALIDATION_CONTEXT": str(validation_context_path),
+                    "TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256": validation_context_sha256,
+                },
+            )
+            command_results.append(_command_result_dict(validator_result, elapsed_seconds=0.0))
+            validation, validation_errors = load_json(
+                validation_receipt_path, label="artifact validation receipt"
+            )
+            expected_validation = {
+                "schema": "tau.generic_artifact_validation.v1",
+                "status": "PASS",
+                "node_id": node.node_id,
+                "transaction_id": spec.transaction_id,
+                "attempt": attempt,
+                "validator_id": spec.validator.validator_id,
+                "validation_context_sha256": validation_context_sha256,
+                "candidate_manifest_sha256": candidate_manifest_sha256,
+            }
+            validation_errors.extend(
+                f"validation_binding_mismatch:{key}"
+                for key, value in expected_validation.items()
+                if validation.get(key) != value
+            )
+            if validator_result.returncode != 0 or validation_errors:
+                return _transaction_blocked(
+                    node=node,
+                    verdict="VALIDATOR_BLOCKED",
+                    errors=validation_errors or [_command_error(validator_result)],
+                    attempts=attempts,
+                    command_results=command_results,
+                    transaction_receipt_path=transaction_receipt_path,
+                    started_at=started_at,
+                    started_monotonic=started_monotonic,
+                )
         _, review_context_sha256 = write_review_context(
             path=review_context_path,
             run_id=run_id,
@@ -809,8 +1002,7 @@ def _run_transaction_node(
         )
         producer_execution = producer_receipt.get("provider_execution")
         producer_provider_live = producer_receipt.get("provider_live") is True or (
-            isinstance(producer_execution, dict)
-            and producer_execution.get("provider_live") is True
+            isinstance(producer_execution, dict) and producer_execution.get("provider_live") is True
         )
         attempt_record = {
             "attempt": attempt,
@@ -818,6 +1010,9 @@ def _run_transaction_node(
             "attempt_context_sha256": attempt_context_sha256,
             "candidate_manifest_path": str(candidate_manifest_path),
             "candidate_manifest_sha256": candidate_manifest_sha256,
+            "validation_receipt_path": (
+                str(validation_receipt_path) if spec.validator is not None else None
+            ),
             "review_feedback_path": str(review_feedback_path),
             "review_feedback_sha256": file_sha256(review_feedback_path)
             if review_feedback_path.exists()
@@ -865,9 +1060,7 @@ def _run_transaction_node(
             )
         if verdict == "REVISE":
             previous_artifact_sha256s = {
-                str(item["sha256"])
-                for item in artifacts
-                if isinstance(item.get("sha256"), str)
+                str(item["sha256"]) for item in artifacts if isinstance(item.get("sha256"), str)
             }
             revision = {
                 "source_attempt": attempt,
@@ -906,6 +1099,10 @@ def _run_transaction_node(
             candidate_manifest_path=candidate_manifest_path,
             review_feedback_path=review_feedback_path,
             artifacts=artifacts,
+            accepted_inputs=accepted_inputs,
+            validation_receipt_path=(
+                validation_receipt_path if spec.validator is not None else None
+            ),
         )
         projection = accepted_projection(
             path=accepted_manifest_path, sha256=accepted_sha256, payload=accepted
@@ -1130,16 +1327,11 @@ def _transaction_record(
 ) -> dict[str, Any]:
     spec = node.transaction
     assert spec is not None
-    producer_provider_live = any(
-        item.get("producer_provider_live") is True for item in attempts
-    )
-    reviewer_provider_live = any(
-        item.get("review_provider_live") is True for item in attempts
-    )
+    producer_provider_live = any(item.get("producer_provider_live") is True for item in attempts)
+    reviewer_provider_live = any(item.get("review_provider_live") is True for item in attempts)
     provider_live = producer_provider_live or reviewer_provider_live
     live = provider_live or any(
-        item.get("review_live") is True or item.get("producer_live") is True
-        for item in attempts
+        item.get("review_live") is True or item.get("producer_live") is True for item in attempts
     )
     return {
         "node_id": node.node_id,
@@ -1154,9 +1346,7 @@ def _transaction_record(
         "producer_provider_live": producer_provider_live,
         "reviewer_provider_live": reviewer_provider_live,
         "transaction_receipt_path": str(transaction_receipt_path),
-        "accepted_manifest_path": str(accepted_manifest_path)
-        if accepted_manifest_path
-        else None,
+        "accepted_manifest_path": str(accepted_manifest_path) if accepted_manifest_path else None,
         "accepted_manifest_sha256": accepted_manifest_sha256,
         "accepted_output": accepted_output,
         "artifacts": accepted_output.get("artifacts", []) if accepted_output else [],
@@ -1337,13 +1527,31 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
     node_id = _required_string(raw_node, "node_id")
     role = str(raw_node.get("role") or node_id)
     command = raw_node.get("command")
-    if not isinstance(command, list) or not command or not all(
-        isinstance(part, str) and part for part in command
+    skill_raw = raw_node.get("skill")
+    skill = (
+        parse_skill_dag_spec(skill_raw, base_dir=base_dir, node_id=node_id)
+        if skill_raw is not None
+        else None
+    )
+    if skill is None and (
+        not isinstance(command, list)
+        or not command
+        or not all(isinstance(part, str) and part for part in command)
     ):
         raise RuntimeError(f"node {node_id} command must be a non-empty string list")
+    if skill is not None and command is not None:
+        raise RuntimeError(f"node {node_id} cannot declare both command and skill")
+    command = command if isinstance(command, list) else []
     depends_on = raw_node.get("depends_on", [])
     if not isinstance(depends_on, list) or not all(isinstance(dep, str) for dep in depends_on):
         raise RuntimeError(f"node {node_id} depends_on must be a string list")
+    accepted_context_from = raw_node.get("accepted_context_from", depends_on)
+    if not isinstance(accepted_context_from, list) or not all(
+        isinstance(dep, str) for dep in accepted_context_from
+    ):
+        raise RuntimeError(f"node {node_id} accepted_context_from must be a string list")
+    if not set(accepted_context_from).issubset(set(depends_on)):
+        raise RuntimeError(f"node {node_id} accepted_context_from must be a subset of depends_on")
     timeout_seconds = float(raw_node.get("timeout_seconds", 60))
     if timeout_seconds <= 0:
         raise RuntimeError(f"node {node_id} timeout_seconds must be positive")
@@ -1365,16 +1573,22 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
     )
     if transaction is not None and work_order_path is None:
         raise RuntimeError(f"node {node_id} transaction requires work_order_path")
+    if skill is not None and work_order_path is None:
+        raise RuntimeError(f"node {node_id} skill requires work_order_path")
+    if transaction is not None and skill is not None:
+        raise RuntimeError(f"node {node_id} cannot declare both transaction and skill")
     return DagNode(
         node_id=node_id,
         role=role,
         command=command,
         depends_on=tuple(depends_on),
+        accepted_context_from=tuple(accepted_context_from),
         receipt_path=receipt_path,
         timeout_seconds=timeout_seconds,
         max_attempts=max_attempts,
         work_order_path=work_order_path,
         transaction=transaction,
+        skill=skill,
     )
 
 
@@ -1423,8 +1637,7 @@ def _validate_node_receipt(receipt: dict[str, Any], node: DagNode) -> list[str]:
         and receipt.get("work_order_sha256") != expected_work_order_hash
     ):
         errors.append(
-            "work_order_sha256 must match current work_order_path "
-            f"{node.work_order_path}"
+            f"work_order_sha256 must match current work_order_path {node.work_order_path}"
         )
     errors.extend(_validate_provider_live_receipt(receipt))
     return errors
@@ -1476,7 +1689,7 @@ def _work_order_sha256(node: DagNode) -> str | None:
     return hashlib.sha256(data).hexdigest()
 
 
-def _proof_scope(*, provider_live: bool) -> dict[str, list[str]]:
+def _proof_scope(*, provider_live: bool, skill_live: bool) -> dict[str, list[str]]:
     proves = [
         "Tau can validate a generic DAG spec",
         "Tau can execute local subprocess workers in dependency order",
@@ -1494,6 +1707,16 @@ def _proof_scope(*, provider_live: bool) -> dict[str, list[str]]:
     if provider_live:
         proves.append(
             "Tau can carry live provider-backed node evidence through the generic DAG receipt"
+        )
+    if skill_live:
+        proves.append(
+            "Tau can invoke a registered skill capability and hash-bind its returned artifacts"
+        )
+        does_not_prove.extend(
+            [
+                "skill output semantic correctness",
+                "future skill route correctness",
+            ]
         )
     else:
         does_not_prove.extend(
@@ -1519,8 +1742,7 @@ def _spec_path_from_run_metadata(run_dir: Path) -> tuple[Path, Path]:
                 resolved = run_dir / resolved
             return resolved.resolve(), path
     raise RuntimeError(
-        "generic DAG run metadata does not record spec_path; "
-        "rerun tau dag-run <dag-spec> directly"
+        "generic DAG run metadata does not record spec_path; rerun tau dag-run <dag-spec> directly"
     )
 
 
@@ -1624,7 +1846,7 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
 
