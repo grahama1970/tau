@@ -251,6 +251,13 @@ Set `allow_degraded_focus:true` only when policy explicitly accepts Surf's
 sentinel-proven `recovered_focus_changed` evidence; otherwise clean
 `response_proven` transport is required.
 
+If a submitted round times out but the exact controlled tab later shows the
+expected assistant response, set `configuration.recovery_sentinel` to that
+round's exact sentinel and rerun. Tau preflights the configured tab and URL,
+uses `webgpt.extract` instead of submitting a new prompt, validates the recovered
+assistant-DOM evidence, and keeps the same bounded round number. Never use a
+sentinel from another tab, request, or round.
+
 ## Proof Boundary
 
 `mocked:false` means the runner executed real local subprocesses and consumed

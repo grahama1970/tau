@@ -158,28 +158,78 @@ def _execute_webgpt(
         ),
         encoding="utf-8",
     )
-    command = [
-        str(SURF_RUN),
-        "webgpt.submit",
-        "--input",
-        str(request_path),
-        "--output",
-        str(response_path),
-        "--raw-output",
-        str(raw_path),
-        "--meta-output",
-        str(meta_path),
-        "--receipt-output",
-        str(transport_receipt_path),
-        "--tab-id",
-        str(spec.configuration["tab_id"]),
-        "--expect-url",
-        str(spec.configuration["expected_url"]),
-        "--no-activate",
-        "--no-remember",
-        "--timeout",
-        str(int(spec.configuration.get("timeout_seconds", 900))),
-    ]
+    recovery_sentinel = spec.configuration.get("recovery_sentinel")
+    if _non_empty(recovery_sentinel):
+        command = [
+            str(SURF_RUN),
+            "webgpt.extract",
+            "--tab-id",
+            str(spec.configuration["tab_id"]),
+            "--sentinel",
+            str(recovery_sentinel),
+            "--output",
+            str(response_path),
+            "--raw-output",
+            str(raw_path),
+            "--meta-output",
+            str(meta_path),
+            "--timeout",
+            str(int(spec.configuration.get("timeout_seconds", 300))),
+            "--wait",
+            "--stable-polls",
+            "3",
+        ]
+    else:
+        command = [
+            str(SURF_RUN),
+            "webgpt.submit",
+            "--input",
+            str(request_path),
+            "--output",
+            str(response_path),
+            "--raw-output",
+            str(raw_path),
+            "--meta-output",
+            str(meta_path),
+            "--receipt-output",
+            str(transport_receipt_path),
+            "--tab-id",
+            str(spec.configuration["tab_id"]),
+            "--expect-url",
+            str(spec.configuration["expected_url"]),
+            "--no-activate",
+            "--no-remember",
+            "--timeout",
+            str(int(spec.configuration.get("timeout_seconds", 900))),
+        ]
+    commands_run = [command]
+    if _non_empty(recovery_sentinel):
+        preflight_command = [
+            str(SURF_RUN),
+            "webgpt.preflight",
+            "--tab-id",
+            str(spec.configuration["tab_id"]),
+            "--expect-url",
+            str(spec.configuration["expected_url"]),
+            "--no-activate",
+            "--json",
+        ]
+        preflight = subprocess.run(
+            preflight_command, text=True, capture_output=True, check=False
+        )
+        commands_run.insert(0, preflight_command)
+        if preflight.returncode != 0:
+            return _node_receipt(
+                node_id=node_id,
+                capability=spec.capability,
+                provider=spec.provider,
+                status="BLOCKED",
+                verdict="BLOCKED",
+                errors=[f"webgpt_recovery_preflight_failed:{preflight.returncode}"],
+                round_number=round_number,
+                max_rounds=spec.max_rounds,
+                commands_run=commands_run,
+            )
     completed = subprocess.run(command, text=True, capture_output=True, check=False)
     if completed.returncode != 0:
         diagnostic_artifacts = _write_surf_doctor_request(
@@ -208,7 +258,7 @@ def _execute_webgpt(
             errors=[f"webgpt_transport_failed:{completed.returncode}"],
             round_number=round_number,
             max_rounds=spec.max_rounds,
-            commands_run=[command],
+            commands_run=commands_run,
             artifacts=diagnostic_artifacts,
             handoff_summary="WebGPT transport blocked; Surf Doctor incident request emitted",
         )
@@ -219,6 +269,7 @@ def _execute_webgpt(
         contract=contract,
         expected_tab_id=str(spec.configuration["tab_id"]),
         allow_degraded_focus=spec.configuration.get("allow_degraded_focus") is True,
+        recovery=bool(_non_empty(recovery_sentinel)),
     )
     action = str(contract.get("action") or "BLOCKED").upper()
     questions = contract.get("clarifying_questions", [])
@@ -291,7 +342,7 @@ def _execute_webgpt(
         errors=validation_errors or ([] if status == "PASS" else [f"skill_action:{action}"]),
         round_number=round_number,
         max_rounds=spec.max_rounds,
-        commands_run=[command],
+        commands_run=commands_run,
         artifacts=[
             _artifact(response_path, "webgpt.response.md"),
             _artifact(raw_path, "webgpt.response.raw.md"),
@@ -486,20 +537,25 @@ def _webgpt_proof_errors(
     contract: dict[str, Any],
     expected_tab_id: str,
     allow_degraded_focus: bool,
+    recovery: bool,
 ) -> list[str]:
     errors = []
-    allowed_proof_statuses = {"response_proven"}
-    if allow_degraded_focus:
-        allowed_proof_statuses.add("degraded_focus")
-    if meta.get("proof_status") not in allowed_proof_statuses:
-        errors.append("webgpt_response_not_proven")
+    if recovery:
+        if meta.get("status") != "completed" or meta.get("raw_contains_sentinel") is not True:
+            errors.append("webgpt_recovery_not_proven")
+    else:
+        allowed_proof_statuses = {"response_proven"}
+        if allow_degraded_focus:
+            allowed_proof_statuses.add("degraded_focus")
+        if meta.get("proof_status") not in allowed_proof_statuses:
+            errors.append("webgpt_response_not_proven")
     if str(meta.get("requested_tab_id")) != expected_tab_id:
         errors.append("webgpt_requested_tab_mismatch")
     if str(meta.get("controlled_tab_id")) != expected_tab_id:
         errors.append("webgpt_controlled_tab_mismatch")
-    if meta.get("controlled_tab_id_mismatch") is not False:
+    if not recovery and meta.get("controlled_tab_id_mismatch") is not False:
         errors.append("webgpt_controlled_tab_mismatch_flag")
-    if meta.get("tab_was_created") is not False:
+    if not recovery and meta.get("tab_was_created") is not False:
         errors.append("webgpt_unapproved_tab_created")
     if contract.get("schema") != "tau.skill_round_response.v1":
         errors.append("skill_round_response_contract_missing")

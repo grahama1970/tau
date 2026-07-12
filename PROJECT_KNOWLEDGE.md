@@ -17,6 +17,15 @@
   bounded local adapter path and one exact-tab/UX Lab invocation. It does not
   prove WebGPT advice correctness, architecture correctness, future skill-route
   correctness, or that rendered components are implemented.
+  Follow-up live recovery proved the work-order-bound path after the original
+  background submit timed out: exact sentinel
+  `<<<WEBGPT_DONE:20260712T133051Z:f0bff274>>>` was recovered from controlled tab
+  `837358072` after an exact URL preflight, then the same DAG produced PASS for
+  both `architecture-review` and `architecture-render`. Receipts are under
+  `/tmp/tau-skill-adapter-live/`; review work-order SHA-256 is
+  `b6f1e6067ee0b483715b881e89cff5263b6e65e475bb472a35a2a433c3eee1d0` and
+  render work-order SHA-256 is
+  `0c170f7bcc7ac11f37f2c6d683a442c4a315ea6ef09b698791cd6dd919622ebc`.
 
 - 2026-07-12 issue #71 artifact retry closure: generic artifact transactions
   now support role-specific acceptance requirements for live producer, live
