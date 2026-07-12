@@ -111,6 +111,59 @@ def call_battle_subagent(
     }
 
 
+def call_battle_json_task(
+    *,
+    task: dict[str, Any],
+    system_prompt: str,
+    team: str,
+    persona: str,
+    model: str,
+    scillm_base_url: str,
+    timeout_s: float | int,
+) -> dict[str, Any]:
+    """Run one bounded non-artifact Battle JSON task through Scillm."""
+    started = time.time()
+    api_key, api_key_source, api_key_errors = _resolve_api_key()
+    result = _chat(
+        base_url=scillm_base_url,
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": (
+                    f"TEAM: {team}\nPERSONA: {persona}\nTASK_JSON:\n"
+                    f"{json.dumps(task, indent=2, sort_keys=True)}"
+                ),
+            },
+        ],
+        timeout_s=float(timeout_s),
+        api_key=api_key,
+        response_format=True,
+    )
+    parsed = parse_json_object(str(result.get("response_content") or ""))
+    transport_ok = result.get("status") == "PASS" and int(result.get("http_status") or 0) < 400
+    return {
+        "schema": "tau.scillm_json_task_receipt.v1",
+        "surface": SURFACE,
+        "status": "PASS" if transport_ok and isinstance(parsed, dict) else "BLOCKED",
+        "team": team,
+        "persona": persona,
+        "model": model,
+        "mocked": False,
+        "live": True,
+        "duration_seconds": round(time.time() - started, 6),
+        "http_status": result.get("http_status"),
+        "error": result.get("error"),
+        "api_key_source": api_key_source,
+        "api_key_present": bool(api_key),
+        "api_key_resolution_errors": api_key_errors,
+        "caller_skill": CALLER_SKILL,
+        "response_content": result.get("response_content"),
+        "parsed_json": parsed if isinstance(parsed, dict) else None,
+    }
+
+
 def preflight_battle_scillm_auth(
     *,
     scillm_base_url: str,
