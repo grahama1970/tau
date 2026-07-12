@@ -91,6 +91,8 @@ def produce(
             "tau-generic-artifact-canary-producer",
             "--timeout-s",
             str(producer_timeout_seconds),
+            "--first-event-timeout-s",
+            str(min(producer_timeout_seconds, 120.0)),
             "--json",
         ]
         result = subprocess.run(command, text=True, capture_output=True, check=False)
@@ -164,22 +166,35 @@ def _producer_prompt(
     accepted_inputs: Any,
     revision: Any,
 ) -> str:
-    input_hashes = [
-        artifact.get("sha256")
-        for projection in accepted_inputs
-        if isinstance(projection, dict)
-        for artifact in projection.get("artifacts", [])
-        if isinstance(artifact, dict)
-    ] if isinstance(accepted_inputs, list) else []
+    input_hashes = (
+        [
+            artifact.get("sha256")
+            for projection in accepted_inputs
+            if isinstance(projection, dict)
+            for artifact in projection.get("artifacts", [])
+            if isinstance(artifact, dict)
+        ]
+        if isinstance(accepted_inputs, list)
+        else []
+    )
+    retry_research = contract.get("retry_research")
+    retry_guidance: Any = None
+    if isinstance(retry_research, dict) and isinstance(retry_research.get("path"), str):
+        retry_guidance = _read_json(Path(retry_research["path"]))
     return (
-        "Create a clearly visible original pixel-art animation sequence image.\n"
+        "Create a clearly visible original pixel-art animation contact sheet.\n"
         f"Stage: {stage}.\n"
         f"Immutable character reference path: {reference}.\n"
         f"Immutable character reference sha256: {_sha256(reference)}.\n"
         f"Sequence contract: {json.dumps(contract, sort_keys=True)}.\n"
         f"Accepted prior-sequence hashes (context only): {json.dumps(input_hashes)}.\n"
         f"Reviewer revision: {json.dumps(revision, sort_keys=True)}.\n"
-        "Use a transparent or plain background, crisp readable silhouettes, and no text. "
+        f"Retry research guidance: {json.dumps(retry_guidance, sort_keys=True)}.\n"
+        "Render exactly the requested frame_count as distinct consecutive motion phases in "
+        "the requested grid_columns by grid_rows layout, read left-to-right then top-to-bottom. "
+        "Every panel must contain the same right-facing character with consistent identity, "
+        "scale, baseline, palette, and crisp pixel-art edges. Use no labels, text, borders, or "
+        "decorative background. "
         "The new sequence must be visually distinct from prior accepted sequences while "
         "preserving the same character identity."
     )
@@ -194,11 +209,21 @@ def review(*, model: str, base_url: str, timeout_seconds: float) -> None:
     artifact = context["validated_artifacts"][0]
     image_path = Path(str(artifact["path"]))
     image_data = base64.b64encode(image_path.read_bytes()).decode("ascii")
+    attempt_context = _read_json(Path(context["attempt_context_path"]))
+    work_order = _read_json(Path(attempt_context["work_order"]["path"]))
+    sequence_contract = _read_json(Path(work_order["sequence_contract"]))
+    reference = Path(work_order["immutable_reference"])
+    reference_data = base64.b64encode(reference.read_bytes()).decode("ascii")
     prompt = (
-        "You are an independent image admissibility reviewer. Return JSON only. "
+        "You are an independent Battle sprite-sequence reviewer. Return JSON only. "
+        f"Sequence contract: {json.dumps(sequence_contract, sort_keys=True)}. "
         "If the image is entirely or effectively blank/solid black, verdict must be REVISE "
         "with one finding whose artifact_ids is ['primary'] and whose revision_instruction "
-        "requests a visible non-blank image. Otherwise verdict must be PASS with no BLOCK "
+        "requests a visible non-blank image. Otherwise inspect the candidate against the "
+        "immutable reference and require the requested number of visibly distinct motion "
+        "panels, consistent character identity, right-facing orientation, stable scale and "
+        "baseline, no text or panel labels, and state-appropriate motion. Return REVISE with "
+        "specific correction instructions for any material defect; otherwise PASS. "
         "finding. Required keys: verdict, summary, findings. Each finding requires "
         "finding_id, code, severity, message, artifact_ids, revision_instruction."
     )
@@ -221,6 +246,10 @@ def review(*, model: str, base_url: str, timeout_seconds: float) -> None:
                 "role": "user",
                 "content": [
                     {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{reference_data}"},
+                    },
                     {
                         "type": "image_url",
                         "image_url": {"url": f"data:image/png;base64,{image_data}"},

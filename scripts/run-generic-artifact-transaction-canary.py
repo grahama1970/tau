@@ -20,7 +20,9 @@ def run_canary(
     reference: Path,
     model: str,
     approve_synthetic_continuation: bool,
-    sequence_states: tuple[str, str] = ("visible-distinct-output", "visible-distinct-output"),
+    sequence_states: tuple[str, ...] = ("visible-distinct-output", "visible-distinct-output"),
+    sequence_frame_counts: tuple[int, ...] | None = None,
+    retry_research_receipt: Path | None = None,
 ) -> dict[str, Any]:
     output_dir = output_dir.expanduser().resolve()
     reference = reference.expanduser().resolve()
@@ -28,8 +30,7 @@ def run_canary(
     if not reference.is_file():
         raise RuntimeError(f"reference image not found: {reference}")
     worker = (
-        Path(__file__).resolve().parents[1]
-        / "src/tau_coding/generic_artifact_canary_worker.py"
+        Path(__file__).resolve().parents[1] / "src/tau_coding/generic_artifact_canary_worker.py"
     )
     approval_path = output_dir / "stage-2-approval.json"
     continuation_marker = output_dir / "continuation-marker.json"
@@ -48,12 +49,30 @@ def run_canary(
         approval_path=approval_path,
         continuation=continuation,
         sequence_states=sequence_states,
+        sequence_frame_counts=sequence_frame_counts,
+        retry_research_receipt=retry_research_receipt,
     )
     first = run_generic_dag(spec_path=spec_path, resume=True)
+    if first["status"] == "PASS":
+        prior_path = output_dir / "run-receipt-before-approval.json"
+        prior = _read_json(prior_path) if prior_path.is_file() else first
+        _write_json(output_dir / "run-receipt-after-approval.json", first)
+        summary = _summary(
+            output_dir=output_dir,
+            reference=reference,
+            first=prior,
+            final=first,
+            continuation_marker=continuation_marker,
+            approval_path=approval_path,
+            status="PASS",
+            verdict="PASS",
+        )
+        _write_json(output_dir / "canary-receipt.json", summary)
+        return summary
     _require_first_rung(first, continuation_marker=continuation_marker)
     first_receipt_path = output_dir / "run-receipt-before-approval.json"
     _write_json(first_receipt_path, first)
-    stage_2 = first["nodes"][1]
+    final_stage = first["nodes"][-1]
     if not approve_synthetic_continuation:
         return _summary(
             output_dir=output_dir,
@@ -66,11 +85,11 @@ def run_canary(
             verdict="APPROVAL_REQUIRED",
         )
     target = {
-        "id": "generic-dag-transaction:issue-71-live-canary:tx-stage-2",
+        "id": f"generic-dag-transaction:issue-71-live-canary:tx-stage-{len(sequence_states)}",
         "run_id": "issue-71-live-canary",
-        "node_id": "stage-2",
-        "transaction_id": "tx-stage-2",
-        "accepted_manifest_sha256": stage_2["accepted_manifest_sha256"],
+        "node_id": f"stage-{len(sequence_states)}",
+        "transaction_id": f"tx-stage-{len(sequence_states)}",
+        "accepted_manifest_sha256": final_stage["accepted_manifest_sha256"],
         "continuation_command_sha256": canonical_command_sha256(continuation),
     }
     _write_json(
@@ -89,7 +108,7 @@ def run_canary(
     )
     producer_counts_before = {
         stage: (output_dir / f"{stage}-producer-count.txt").read_text(encoding="utf-8")
-        for stage in ("stage-1", "stage-2")
+        for stage in (f"stage-{index}" for index in range(1, len(sequence_states) + 1))
     }
     final = run_generic_dag(spec_path=spec_path, resume=True)
     if final["status"] != "PASS" or final["provider_live"] is not True:
@@ -124,10 +143,18 @@ def _write_spec(
     model: str,
     approval_path: Path,
     continuation: list[str],
-    sequence_states: tuple[str, str],
+    sequence_states: tuple[str, ...],
+    sequence_frame_counts: tuple[int, ...] | None,
+    retry_research_receipt: Path | None,
 ) -> Path:
     nodes: list[dict[str, Any]] = []
-    for stage_number in (1, 2):
+    if sequence_frame_counts is None:
+        sequence_frame_counts = tuple(1 for _ in sequence_states)
+    if len(sequence_frame_counts) != len(sequence_states):
+        raise RuntimeError("sequence frame counts must match sequence states")
+    for stage_number, (sequence_state, frame_count) in enumerate(
+        zip(sequence_states, sequence_frame_counts, strict=True), start=1
+    ):
         stage = f"stage-{stage_number}"
         sequence_contract = output_dir / f"{stage}-sequence-contract.json"
         _write_json(
@@ -135,8 +162,19 @@ def _write_spec(
             {
                 "schema": "tau.generic_sequence_contract.v1",
                 "sequence_id": stage,
-                "required_state": sequence_states[stage_number - 1],
-                "must_differ_from_accepted_inputs": stage_number == 2,
+                "required_state": sequence_state,
+                "frame_count": frame_count,
+                "grid_columns": min(frame_count, 4),
+                "grid_rows": (frame_count + min(frame_count, 4) - 1) // min(frame_count, 4),
+                "must_differ_from_accepted_inputs": stage_number > 1,
+                "retry_research": (
+                    {
+                        "path": str(retry_research_receipt.resolve()),
+                        "sha256": _sha256(retry_research_receipt.resolve()),
+                    }
+                    if retry_research_receipt is not None
+                    else None
+                ),
             },
         )
         work_order = output_dir / f"{stage}-work-order.json"
@@ -160,7 +198,7 @@ def _write_spec(
                 "require_provider_live_producer": True,
                 "require_provider_live_reviewer": True,
                 "require_output_change_after_revise": True,
-                "require_distinct_from_accepted_inputs": stage_number == 2,
+                "require_distinct_from_accepted_inputs": stage_number > 1,
             },
             "reviewer": {
                 "reviewer_id": f"{stage}-scillm-vlm-reviewer",
@@ -174,7 +212,7 @@ def _write_spec(
                 "timeout_seconds": 240,
             },
         }
-        if stage_number == 2:
+        if stage_number == len(sequence_states):
             transaction["continuation"] = {
                 "command": continuation,
                 "timeout_seconds": 30,
@@ -206,11 +244,16 @@ def _write_spec(
                     "--sequence-contract",
                     str(sequence_contract),
                 ],
-                "depends_on": [] if stage_number == 1 else ["stage-1"],
+                "depends_on": (
+                    []
+                    if stage_number == 1
+                    else [f"stage-{stage_number - 1}"] + (["stage-1"] if stage_number > 2 else [])
+                ),
+                "accepted_context_from": [] if stage_number == 1 else ["stage-1"],
                 "receipt_path": str(output_dir / f"{stage}-producer-receipt.json"),
                 "work_order_path": str(work_order),
                 "timeout_seconds": 360,
-                "max_attempts": 2,
+                "max_attempts": 3 if stage_number == 1 else 2,
                 "transaction": transaction,
             }
         )
@@ -232,31 +275,32 @@ def _require_first_rung(receipt: dict[str, Any], *, continuation_marker: Path) -
         raise RuntimeError(f"first canary rung must stop for approval: {receipt['verdict']}")
     if receipt["provider_live"] is not True:
         raise RuntimeError("first canary rung must include live provider review")
-    stage_1, stage_2 = receipt["nodes"]
+    nodes = receipt["nodes"]
+    stage_1 = nodes[0]
+    final_stage = nodes[-1]
     verdicts = [attempt["review_verdict"] for attempt in stage_1["attempts"]]
     if verdicts != ["REVISE", "PASS"]:
         raise RuntimeError(f"stage-1 must revise then pass, got {verdicts}")
-    if stage_2["transaction_state"] != "APPROVAL_REQUIRED":
-        raise RuntimeError("stage-2 must retain accepted state while awaiting approval")
-    if stage_1["producer_provider_live"] is not True:
-        raise RuntimeError("stage-1 accepted output must come from a live provider producer")
-    if stage_2["producer_provider_live"] is not True:
-        raise RuntimeError("stage-2 accepted output must come from a live provider producer")
+    if final_stage["transaction_state"] != "APPROVAL_REQUIRED":
+        raise RuntimeError("final stage must retain accepted state while awaiting approval")
+    if any(node["producer_provider_live"] is not True for node in nodes):
+        raise RuntimeError("every accepted output must come from a live provider producer")
     stage_1_accepted = stage_1["artifacts"][0]
-    stage_2_accepted_manifest = _read_json(Path(stage_2["accepted_manifest_path"]))
-    stage_2_accepted = stage_2_accepted_manifest["artifacts"][0]
-    stage_2_attempt_context = _read_json(
-        Path(stage_2["attempts"][0]["attempt_context_path"])
-    )
-    serialized_context = json.dumps(stage_2_attempt_context, sort_keys=True)
-    if stage_1_accepted["path"] not in serialized_context:
-        raise RuntimeError("stage-2 did not receive stage-1 accepted artifact")
+    accepted_hashes = []
+    for node in nodes:
+        accepted_manifest = _read_json(Path(node["accepted_manifest_path"]))
+        accepted_hashes.append(accepted_manifest["artifacts"][0]["sha256"])
+    if len(set(accepted_hashes)) != len(accepted_hashes):
+        raise RuntimeError("accepted sequence outputs must all be distinct")
+    for node in nodes[1:]:
+        attempt_context = _read_json(Path(node["attempts"][0]["attempt_context_path"]))
+        serialized_context = json.dumps(attempt_context, sort_keys=True)
+        if stage_1_accepted["path"] not in serialized_context:
+            raise RuntimeError(f"{node['node_id']} did not receive stage-1 accepted artifact")
     rejected_manifest = _read_json(Path(stage_1["attempts"][0]["candidate_manifest_path"]))
     rejected_path = str(rejected_manifest["artifacts"][0]["path"])
     if rejected_path in serialized_context:
         raise RuntimeError("rejected stage-1 artifact leaked into stage-2 context")
-    if stage_1_accepted["sha256"] == stage_2_accepted["sha256"]:
-        raise RuntimeError("stage-2 output duplicates the accepted stage-1 output")
     if continuation_marker.exists():
         raise RuntimeError("continuation executed before approval")
 
@@ -301,12 +345,9 @@ def _summary(
         "stage_1_review_verdicts": [
             item["review_verdict"] for item in first["nodes"][0]["attempts"]
         ],
-        "stage_1_accepted_manifest_sha256": first["nodes"][0][
-            "accepted_manifest_sha256"
-        ],
-        "stage_2_accepted_manifest_sha256": first["nodes"][1][
-            "accepted_manifest_sha256"
-        ],
+        "stage_1_accepted_manifest_sha256": first["nodes"][0]["accepted_manifest_sha256"],
+        "stage_2_accepted_manifest_sha256": first["nodes"][1]["accepted_manifest_sha256"],
+        "accepted_manifest_sha256s": [node["accepted_manifest_sha256"] for node in first["nodes"]],
         "approval_packet": str(approval_path),
         "continuation_marker": str(continuation_marker),
         "claims": {
@@ -354,14 +395,29 @@ def main() -> None:
     parser.add_argument("--model", default="gpt-5.5")
     parser.add_argument("--sequence-state-1", default="visible-distinct-output")
     parser.add_argument("--sequence-state-2", default="visible-distinct-output")
+    parser.add_argument("--sequence-states")
+    parser.add_argument("--sequence-frame-counts")
+    parser.add_argument("--retry-research-receipt", type=Path)
     parser.add_argument("--approve-synthetic-continuation", action="store_true")
     args = parser.parse_args()
+    sequence_states = (
+        tuple(item.strip() for item in args.sequence_states.split(",") if item.strip())
+        if args.sequence_states
+        else (args.sequence_state_1, args.sequence_state_2)
+    )
+    frame_counts = (
+        tuple(int(item) for item in args.sequence_frame_counts.split(","))
+        if args.sequence_frame_counts
+        else None
+    )
     receipt = run_canary(
         output_dir=args.out,
         reference=args.reference,
         model=args.model,
         approve_synthetic_continuation=args.approve_synthetic_continuation,
-        sequence_states=(args.sequence_state_1, args.sequence_state_2),
+        sequence_states=sequence_states,
+        sequence_frame_counts=frame_counts,
+        retry_research_receipt=args.retry_research_receipt,
     )
     print(json.dumps(receipt, indent=2, sort_keys=True))
 
