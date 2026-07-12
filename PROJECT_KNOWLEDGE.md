@@ -1,6 +1,6 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-08 06:53 EDT by agent
+**Last updated:** 2026-07-12 07:34 by agent
 **Status:** Active development
 
 ## Current Understanding
@@ -6110,6 +6110,7 @@
 | 2026-06-27 | Add Tau-owned Docker Compose stack | The project needs a simple Docker entrypoint like Watch. Tau owns the CLI/cron containers; cross-project services remain external and explicit rather than silently vendored into this repo. |
 | 2026-06-27 | Merge Kimi README prose without dropping architecture sections | Kimi's prose improved the top-level explanation, but its draft omitted the newer ownership-boundary details, so only the clearer opening and phrasing were adopted. |
 | 2026-06-28 | Keep special orchestrated subagent mode explicit | The cron/GitHub-ticket loop is activated only by `--start` or `TAU_ORCHESTRATOR_START`; ordinary T’au chat/CLI turns must not be described as autonomous ticket loops. |
+| 2026-07-12 | Close Tau issue #71 after generic retry hardening and the live Battle blocked-to-killed acceptance canary | Commit c5c4619d enforces role-specific provider liveness, changed output after REVISE, distinct accepted-input output, approval-safe resume, and records non-mocked Scillm plus sprite-atlas evidence; provider/model semantic quality and future route correctness remain non-claims. |
 
 ## Open Questions
 
