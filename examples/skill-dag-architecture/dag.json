@@ -1,0 +1,44 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "tau-skill-dag-architecture-example",
+  "run_dir": "/tmp/tau-skill-dag-architecture/run",
+  "goal_hash": "sha256:replace-with-active-goal-hash",
+  "nodes": [
+    {
+      "node_id": "architecture-review",
+      "receipt_path": "/tmp/tau-skill-dag-architecture/review-receipt.json",
+      "work_order_path": "review-work-order.json",
+      "skill": {
+        "schema": "tau.skill_dag_node.v1",
+        "capability": "architecture_review",
+        "provider": "webgpt",
+        "input_path": "review-request.md",
+        "output_dir": "/tmp/tau-skill-dag-architecture/webgpt",
+        "configuration": {
+          "tab_id": "HUMAN_SUPPLIED_TAB_ID",
+          "expected_url": "HUMAN_SUPPLIED_CONVERSATION_URL",
+          "timeout_seconds": 900
+        },
+        "round_policy": {
+          "schema": "tau.bounded_skill_round_policy.v1",
+          "max_rounds": 3,
+          "clarification_allowed": true,
+          "clarification_answer_path": "/tmp/tau-skill-dag-architecture/answer.md"
+        }
+      }
+    },
+    {
+      "node_id": "architecture-render",
+      "depends_on": ["architecture-review"],
+      "receipt_path": "/tmp/tau-skill-dag-architecture/render-receipt.json",
+      "work_order_path": "render-work-order.json",
+      "skill": {
+        "schema": "tau.skill_dag_node.v1",
+        "capability": "architecture_render",
+        "provider": "create-architecture",
+        "input_path": "accepted-architecture.yaml",
+        "output_dir": "/tmp/tau-skill-dag-architecture/render"
+      }
+    }
+  ]
+}

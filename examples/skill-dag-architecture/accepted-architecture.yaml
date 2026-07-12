@@ -1,0 +1,21 @@
+name: "Tau Skill DAG Example"
+components:
+  - id: tau
+    label: Tau DAG
+    tech: "Capability authorization and receipts"
+    color: green
+  - id: webgpt
+    label: WebGPT Review
+    tech: "Browser-backed untrusted design advice"
+    color: amber
+  - id: architecture
+    label: UX Lab Architecture
+    tech: "Rendered review artifact"
+    color: purple
+connections:
+  - from: tau
+    to: webgpt
+  - from: webgpt
+    to: tau
+  - from: tau
+    to: architecture

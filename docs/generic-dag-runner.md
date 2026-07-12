@@ -188,6 +188,69 @@ unchanged retry output, projects only the accepted blocked sequence into the
 killed stage, proves approval/resume does not rerun producers, and requires
 sprite-atlas validation for all six blocked and eight killed frames.
 
+## Native Skill-Provider Nodes
+
+A generic DAG node may declare `skill` instead of a raw `command`. Tau currently
+registers `architecture_review/webgpt` and
+`architecture_render/create-architecture`. WebGPT uses Browser Oracle and Surf;
+it is not a SciLLM capability.
+
+```json
+{
+  "node_id": "architecture-review",
+  "receipt_path": "/tmp/tau-architecture/review-receipt.json",
+  "work_order_path": "review-work-order.json",
+  "skill": {
+    "schema": "tau.skill_dag_node.v1",
+    "capability": "architecture_review",
+    "provider": "webgpt",
+    "input_path": "review-request.md",
+    "output_dir": "/tmp/tau-architecture/webgpt",
+    "configuration": {
+      "tab_id": "837358072",
+      "expected_url": "https://chatgpt.com/c/EXPECTED",
+      "timeout_seconds": 900
+    },
+    "round_policy": {
+      "schema": "tau.bounded_skill_round_policy.v1",
+      "max_rounds": 3,
+      "clarification_allowed": true,
+      "clarification_answer_path": "/tmp/tau-architecture/answer.md"
+    }
+  }
+}
+```
+
+WebGPT must end each response with `tau.skill_round_response.v1` and one action:
+`PASS`, `CLARIFY`, `REVISE`, or `BLOCKED`. Tau owns the round number and maximum.
+`CLARIFY` writes `clarification-request.json` and blocks until the named human
+answer file exists. Identical clarification questions, missing answers, and
+attempts beyond `max_rounds` block. A skill cannot extend its own budget.
+
+The dependent renderer is similarly declarative:
+
+```json
+{
+  "node_id": "architecture-render",
+  "depends_on": ["architecture-review"],
+  "receipt_path": "/tmp/tau-architecture/render-receipt.json",
+  "work_order_path": "render-work-order.json",
+  "skill": {
+    "schema": "tau.skill_dag_node.v1",
+    "capability": "architecture_render",
+    "provider": "create-architecture",
+    "input_path": "accepted-architecture.yaml",
+    "output_dir": "/tmp/tau-architecture/render"
+  }
+}
+```
+
+Run with `uv run tau dag-run dag.json`. A valid PASS receipt is hash-checked and
+reused on resume, so a downstream rendering repair does not resubmit WebGPT.
+Set `allow_degraded_focus:true` only when policy explicitly accepts Surf's
+sentinel-proven `recovered_focus_changed` evidence; otherwise clean
+`response_proven` transport is required.
+
 ## Proof Boundary
 
 `mocked:false` means the runner executed real local subprocesses and consumed

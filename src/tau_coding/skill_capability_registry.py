@@ -7,7 +7,7 @@ import json
 import os
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from tau_coding.project_profile import COURSE_CORRECTION_ACTIONS
 
@@ -70,6 +70,17 @@ DEFAULT_SKILL_CAPABILITY_REGISTRY: dict[str, Any] = {
             "native_artifact_schema": "scillm.worker_result.v1",
             "tau_receipt_schema": "tau.scillm_worker_receipt.v1",
             "required_for_triggers": ["model_worker_required"],
+        },
+        "architecture_review": {
+            "skill": "webgpt",
+            "native_artifact_schema": "tau.skill_round_response.v1",
+            "tau_receipt_schema": "tau.skill_round_receipt.v1",
+            "transport_skill": "surf",
+        },
+        "architecture_render": {
+            "skill": "create-architecture",
+            "native_artifact_schema": "excalidraw.scene.v1",
+            "tau_receipt_schema": "tau.architecture_artifact_receipt.v1",
         },
     },
 }
@@ -187,7 +198,7 @@ def write_skill_capability_registry_validation_receipt(
 def write_default_skill_capability_registry(output_path: Path) -> dict[str, Any]:
     resolved_output = output_path.expanduser().resolve()
     resolved_output.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.loads(json.dumps(DEFAULT_SKILL_CAPABILITY_REGISTRY))
+    payload = cast(dict[str, Any], json.loads(json.dumps(DEFAULT_SKILL_CAPABILITY_REGISTRY)))
     resolved_output.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

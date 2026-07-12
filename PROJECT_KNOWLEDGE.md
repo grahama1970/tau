@@ -5,6 +5,19 @@
 
 ## Current Understanding
 
+- 2026-07-12 native DAG skill-provider slice: `tau.generic_dag_spec.v1` nodes
+  may now declare `tau.skill_dag_node.v1` instead of a raw command for
+  `architecture_review/webgpt` and `architecture_render/create-architecture`.
+  Tau owns `tau.bounded_skill_round_policy.v1`, exact-tab configuration checks,
+  Surf sentinel/meta validation, response/answer hash lineage, duplicate
+  clarification rejection, immutable `max_rounds`, accepted-artifact projection,
+  and hash-valid resume. Live proof under `/tmp/tau-skill-adapter-live/` reports
+  a PASS WebGPT review node followed by a PASS create-architecture node; the
+  WebGPT receipt was reused on resume rather than resubmitted. This proves the
+  bounded local adapter path and one exact-tab/UX Lab invocation. It does not
+  prove WebGPT advice correctness, architecture correctness, future skill-route
+  correctness, or that rendered components are implemented.
+
 - 2026-07-12 issue #71 artifact retry closure: generic artifact transactions
   now support role-specific acceptance requirements for live producer, live
   reviewer, changed output after `REVISE`, and output distinct from accepted
