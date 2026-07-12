@@ -109,6 +109,54 @@ def test_transaction_continuation_waits_for_exact_approval_binding(tmp_path: Pat
     assert (tmp_path / "producer-count.txt").read_text() == counter_before
 
 
+def test_transaction_blocks_non_provider_live_producer_when_required(tmp_path: Path) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        acceptance={"require_provider_live_producer": True},
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "ACCEPTANCE_POLICY_BLOCKED"
+    assert receipt["nodes"][0]["errors"] == ["producer_provider_live_required"]
+
+
+def test_transaction_blocks_unchanged_output_after_revise(tmp_path: Path) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        acceptance={"require_output_change_after_revise": True},
+        same_output_on_retry=True,
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "ACCEPTANCE_POLICY_BLOCKED"
+    assert receipt["nodes"][0]["errors"] == ["unchanged_output_after_revise"]
+
+
+def test_transaction_accepts_hash_bound_nested_provider_execution(tmp_path: Path) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        acceptance={"require_provider_live_producer": True},
+        producer_provider_live=True,
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    node = receipt["nodes"][0]
+    assert node["producer_provider_live"] is True
+    assert node["attempts"][-1]["producer_provider"] == "fixture-provider"
+
+
 def _write_transaction_spec(
     root: Path,
     *,
@@ -116,12 +164,24 @@ def _write_transaction_spec(
     include_downstream: bool = False,
     continuation: list[str] | None = None,
     approval_path: Path | None = None,
+    acceptance: dict[str, bool] | None = None,
+    same_output_on_retry: bool = False,
+    producer_provider_live: bool = False,
 ) -> Path:
     run_dir = root / "run"
     artifacts = root / "artifacts"
     receipt = root / "stage-receipt.json"
     work_order = root / "work-order.json"
-    work_order.write_text('{"task":"produce deterministic candidate"}\n')
+    work_order.write_text(
+        json.dumps(
+            {
+                "task": "produce deterministic candidate",
+                "same_output_on_retry": same_output_on_retry,
+                "producer_provider_live": producer_provider_live,
+            }
+        )
+        + "\n"
+    )
     transaction: dict[str, object] = {
         "schema": "tau.generic_artifact_transaction.v1",
         "transaction_id": "tx-stage",
@@ -132,6 +192,8 @@ def _write_transaction_spec(
             "command": [sys.executable, str(worker), "review"],
         },
     }
+    if acceptance is not None:
+        transaction["acceptance"] = acceptance
     if continuation is not None:
         transaction["continuation"] = {
             "command": continuation,
@@ -214,7 +276,9 @@ if mode == "produce":
         assert context["revision"]["source_attempt"] == 1
     artifact_root.mkdir(parents=True, exist_ok=True)
     artifact = artifact_root / f"candidate-{attempt}.bin"
-    artifact.write_bytes(f"candidate-{attempt}".encode())
+    work_order = json.loads(work_order_path.read_text())
+    output_attempt = 1 if work_order.get("same_output_on_retry") else attempt
+    artifact.write_bytes(f"candidate-{output_attempt}".encode())
     manifest_path = Path(context["output_contract"]["candidate_manifest_path"])
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps({
@@ -235,6 +299,13 @@ if mode == "produce":
         }],
     }))
     receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    provider_execution = ({
+        "provider_live": True,
+        "provider": "fixture-provider",
+        "model": "fixture-model",
+        "receipt_path": str(artifact),
+        "receipt_sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+    } if work_order.get("producer_provider_live") else None)
     receipt_path.write_text(json.dumps({
         "schema": "tau.generic_dag_node_receipt.v1",
         "node_id": context["node_id"],
@@ -246,6 +317,7 @@ if mode == "produce":
         "policy_exceptions": [],
         "handoff_summary": "candidate produced",
         "work_order_sha256": hashlib.sha256(work_order_path.read_bytes()).hexdigest(),
+        "provider_execution": provider_execution,
     }))
     count = int(counter_path.read_text()) if counter_path.exists() else 0
     counter_path.write_text(str(count + 1))

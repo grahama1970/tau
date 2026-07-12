@@ -47,11 +47,20 @@ class ContinuationSpec:
 
 
 @dataclass(frozen=True)
+class AcceptanceSpec:
+    require_provider_live_producer: bool
+    require_provider_live_reviewer: bool
+    require_output_change_after_revise: bool
+    require_distinct_from_accepted_inputs: bool
+
+
+@dataclass(frozen=True)
 class ArtifactTransactionSpec:
     transaction_id: str
     artifact_root: Path
     producer_id: str
     reviewer: ReviewerSpec
+    acceptance: AcceptanceSpec
     continuation: ContinuationSpec | None
 
 
@@ -78,6 +87,31 @@ def parse_transaction_spec(raw: Any, *, base_dir: Path, node_id: str) -> Artifac
         command=_command(reviewer_raw.get("command"), label=f"node {node_id} reviewer command"),
         timeout_seconds=_positive_float(
             reviewer_raw.get("timeout_seconds", 60), label=f"node {node_id} reviewer timeout"
+        ),
+    )
+    acceptance_raw = raw.get("acceptance", {})
+    if not isinstance(acceptance_raw, dict):
+        raise RuntimeError(f"node {node_id} transaction acceptance must be an object")
+    acceptance = AcceptanceSpec(
+        require_provider_live_producer=_optional_bool(
+            acceptance_raw,
+            "require_provider_live_producer",
+            node_id=node_id,
+        ),
+        require_provider_live_reviewer=_optional_bool(
+            acceptance_raw,
+            "require_provider_live_reviewer",
+            node_id=node_id,
+        ),
+        require_output_change_after_revise=_optional_bool(
+            acceptance_raw,
+            "require_output_change_after_revise",
+            node_id=node_id,
+        ),
+        require_distinct_from_accepted_inputs=_optional_bool(
+            acceptance_raw,
+            "require_distinct_from_accepted_inputs",
+            node_id=node_id,
         ),
     )
     continuation_raw = raw.get("continuation")
@@ -112,8 +146,57 @@ def parse_transaction_spec(raw: Any, *, base_dir: Path, node_id: str) -> Artifac
         artifact_root=artifact_root,
         producer_id=producer_id,
         reviewer=reviewer,
+        acceptance=acceptance,
         continuation=continuation,
     )
+
+
+def validate_acceptance_policy(
+    *,
+    spec: ArtifactTransactionSpec,
+    producer_receipt: dict[str, Any],
+    review_feedback: dict[str, Any],
+    artifacts: list[dict[str, Any]],
+    previous_artifact_sha256s: set[str],
+    accepted_inputs: list[dict[str, Any]],
+) -> list[str]:
+    """Validate role-specific liveness and output-change acceptance invariants."""
+
+    errors: list[str] = []
+    policy = spec.acceptance
+    producer_execution = producer_receipt.get("provider_execution")
+    producer_provider_live = producer_receipt.get("provider_live") is True or (
+        isinstance(producer_execution, dict)
+        and producer_execution.get("provider_live") is True
+    )
+    if policy.require_provider_live_producer and not producer_provider_live:
+        errors.append("producer_provider_live_required")
+    if policy.require_provider_live_reviewer and review_feedback.get("provider_live") is not True:
+        errors.append("reviewer_provider_live_required")
+    artifact_hashes = {
+        str(item.get("sha256"))
+        for item in artifacts
+        if isinstance(item.get("sha256"), str)
+    }
+    if (
+        policy.require_output_change_after_revise
+        and previous_artifact_sha256s
+        and artifact_hashes == previous_artifact_sha256s
+    ):
+        errors.append("unchanged_output_after_revise")
+    if policy.require_distinct_from_accepted_inputs:
+        input_hashes = {
+            str(artifact.get("sha256"))
+            for projection in accepted_inputs
+            for artifact in projection.get("artifacts", [])
+            if isinstance(projection, dict)
+            and isinstance(projection.get("artifacts"), list)
+            and isinstance(artifact, dict)
+            and isinstance(artifact.get("sha256"), str)
+        }
+        if artifact_hashes & input_hashes:
+            errors.append("output_duplicates_accepted_input")
+    return errors
 
 
 def write_attempt_context(
@@ -438,6 +521,13 @@ def _required_string(payload: dict[str, Any], key: str, *, node_id: str) -> str:
     value = payload.get(key)
     if not isinstance(value, str) or not value.strip():
         raise RuntimeError(f"node {node_id} transaction {key} must be a non-empty string")
+    return value
+
+
+def _optional_bool(payload: dict[str, Any], key: str, *, node_id: str) -> bool:
+    value = payload.get(key, False)
+    if not isinstance(value, bool):
+        raise RuntimeError(f"node {node_id} transaction acceptance {key} must be a boolean")
     return value
 
 

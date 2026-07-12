@@ -5,6 +5,23 @@
 
 ## Current Understanding
 
+- 2026-07-12 issue #71 artifact retry closure: generic artifact transactions
+  now support role-specific acceptance requirements for live producer, live
+  reviewer, changed output after `REVISE`, and output distinct from accepted
+  inputs. Direct Scillm producer calls are hash-bound under
+  `provider_execution` without falsely claiming Herdr workspace/pane evidence.
+  Live Battle canary receipt
+  `/tmp/tau-issue-71-battle-acceptance/battle-canary-receipt.json` reports
+  `status:PASS`, `mocked:false`, `live:true`, `provider_live:true`, distinct
+  blocked/killed source hashes, stage-1 `REVISE -> PASS`, and sprite-atlas PASS
+  for six blocked plus eight killed frames. Focused proof: `uv run ruff check`
+  on the touched transaction files and `uv run pytest
+  tests/test_generic_artifact_transaction.py -q` pass. This proves this bounded
+  local canary's provider execution, retry, accepted-input lineage, approval
+  resume, and deterministic frame validation. It does not prove future
+  provider/model semantic quality, ideal Battle animation quality, or arbitrary
+  future route correctness.
+
 - 2026-07-10 secure capability compilation Phase 2.1:
   `src/tau_coding/security_capability.py` adds
   `tau.capability_request.v1`, `tau.capability_grant.v1`, and

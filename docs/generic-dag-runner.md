@@ -143,6 +143,15 @@ each file path, size, and SHA-256 before invoking the reviewer. A structured
 work order. Only a validated reviewer `PASS` causes Tau to write the authoritative
 `tau.accepted_artifact_manifest.v1` used by dependent nodes.
 
+Acceptance-critical transactions may add an `acceptance` object with
+`require_provider_live_producer`, `require_provider_live_reviewer`,
+`require_output_change_after_revise`, and
+`require_distinct_from_accepted_inputs`. These checks are role-specific: a live
+reviewer cannot satisfy a live-producer requirement. A direct provider call is
+recorded under the producer receipt's hash-bound `provider_execution`; it does
+not claim the Herdr workspace/pane bindings required by a top-level
+`provider_live:true` node receipt.
+
 Resume authority comes from the Tau transaction receipt and accepted manifest,
 not the producer's PASS claim. Missing or modified accepted artifacts block with
 `STALE_ACCEPTED_STATE`; Tau does not silently regenerate them. Optional
@@ -164,6 +173,20 @@ manual signature is not cryptographic or legal authority. The expected first
 run is `BLOCKED/APPROVAL_REQUIRED`; the resumed run is PASS only after exact
 approval binding. `provider_live:true` proves real Scillm calls occurred, not
 reviewer truthfulness, model quality, or future route correctness.
+
+Run the Battle-specific acceptance canary to bind an immutable character
+reference and `blocked -> killed` sequence contracts, then validate both
+accepted sequence frame trees through the existing sprite-atlas skill:
+
+```bash
+uv run python scripts/run-battle-artifact-transaction-canary.py \
+  --out /tmp/tau-issue-71-battle-acceptance
+```
+
+The Battle canary requires distinct provider-produced accepted hashes, rejects
+unchanged retry output, projects only the accepted blocked sequence into the
+killed stage, proves approval/resume does not rerun producers, and requires
+sprite-atlas validation for all six blocked and eight killed frames.
 
 ## Proof Boundary
 

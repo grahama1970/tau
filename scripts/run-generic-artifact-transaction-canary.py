@@ -20,6 +20,7 @@ def run_canary(
     reference: Path,
     model: str,
     approve_synthetic_continuation: bool,
+    sequence_states: tuple[str, str] = ("visible-distinct-output", "visible-distinct-output"),
 ) -> dict[str, Any]:
     output_dir = output_dir.expanduser().resolve()
     reference = reference.expanduser().resolve()
@@ -46,6 +47,7 @@ def run_canary(
         model=model,
         approval_path=approval_path,
         continuation=continuation,
+        sequence_states=sequence_states,
     )
     first = run_generic_dag(spec_path=spec_path, resume=True)
     _require_first_rung(first, continuation_marker=continuation_marker)
@@ -122,10 +124,21 @@ def _write_spec(
     model: str,
     approval_path: Path,
     continuation: list[str],
+    sequence_states: tuple[str, str],
 ) -> Path:
     nodes: list[dict[str, Any]] = []
     for stage_number in (1, 2):
         stage = f"stage-{stage_number}"
+        sequence_contract = output_dir / f"{stage}-sequence-contract.json"
+        _write_json(
+            sequence_contract,
+            {
+                "schema": "tau.generic_sequence_contract.v1",
+                "sequence_id": stage,
+                "required_state": sequence_states[stage_number - 1],
+                "must_differ_from_accepted_inputs": stage_number == 2,
+            },
+        )
         work_order = output_dir / f"{stage}-work-order.json"
         _write_json(
             work_order,
@@ -134,13 +147,21 @@ def _write_spec(
                 "stage": stage,
                 "immutable_reference": str(reference),
                 "immutable_reference_sha256": _sha256(reference),
+                "sequence_contract": str(sequence_contract),
+                "sequence_contract_sha256": _sha256(sequence_contract),
             },
         )
         transaction: dict[str, Any] = {
             "schema": "tau.generic_artifact_transaction.v1",
             "transaction_id": f"tx-{stage}",
             "artifact_root": str(output_dir / "artifacts" / stage),
-            "producer_id": f"{stage}-local-producer",
+            "producer_id": f"{stage}-scillm-image-producer",
+            "acceptance": {
+                "require_provider_live_producer": True,
+                "require_provider_live_reviewer": True,
+                "require_output_change_after_revise": True,
+                "require_distinct_from_accepted_inputs": stage_number == 2,
+            },
             "reviewer": {
                 "reviewer_id": f"{stage}-scillm-vlm-reviewer",
                 "command": [
@@ -182,11 +203,13 @@ def _write_spec(
                     str(work_order),
                     "--counter",
                     str(output_dir / f"{stage}-producer-count.txt"),
+                    "--sequence-contract",
+                    str(sequence_contract),
                 ],
                 "depends_on": [] if stage_number == 1 else ["stage-1"],
                 "receipt_path": str(output_dir / f"{stage}-producer-receipt.json"),
                 "work_order_path": str(work_order),
-                "timeout_seconds": 60,
+                "timeout_seconds": 360,
                 "max_attempts": 2,
                 "transaction": transaction,
             }
@@ -215,7 +238,13 @@ def _require_first_rung(receipt: dict[str, Any], *, continuation_marker: Path) -
         raise RuntimeError(f"stage-1 must revise then pass, got {verdicts}")
     if stage_2["transaction_state"] != "APPROVAL_REQUIRED":
         raise RuntimeError("stage-2 must retain accepted state while awaiting approval")
+    if stage_1["producer_provider_live"] is not True:
+        raise RuntimeError("stage-1 accepted output must come from a live provider producer")
+    if stage_2["producer_provider_live"] is not True:
+        raise RuntimeError("stage-2 accepted output must come from a live provider producer")
     stage_1_accepted = stage_1["artifacts"][0]
+    stage_2_accepted_manifest = _read_json(Path(stage_2["accepted_manifest_path"]))
+    stage_2_accepted = stage_2_accepted_manifest["artifacts"][0]
     stage_2_attempt_context = _read_json(
         Path(stage_2["attempts"][0]["attempt_context_path"])
     )
@@ -226,6 +255,8 @@ def _require_first_rung(receipt: dict[str, Any], *, continuation_marker: Path) -
     rejected_path = str(rejected_manifest["artifacts"][0]["path"])
     if rejected_path in serialized_context:
         raise RuntimeError("rejected stage-1 artifact leaked into stage-2 context")
+    if stage_1_accepted["sha256"] == stage_2_accepted["sha256"]:
+        raise RuntimeError("stage-2 output duplicates the accepted stage-1 output")
     if continuation_marker.exists():
         raise RuntimeError("continuation executed before approval")
 
@@ -280,7 +311,7 @@ def _summary(
         "continuation_marker": str(continuation_marker),
         "claims": {
             "proves": [
-                "A real local producer and live Scillm VLM reviewer ran through Tau.",
+                "Live Scillm image producers and a live Scillm VLM reviewer ran through Tau.",
                 "Stage 1 revised then accepted a hash-bound image artifact.",
                 "Stage 2 consumed only Stage 1's accepted manifest projection.",
                 "The continuation did not execute before an exact approval binding.",
@@ -321,6 +352,8 @@ def main() -> None:
         default=Path("docs/assets/tau-header.webp"),
     )
     parser.add_argument("--model", default="gpt-5.5")
+    parser.add_argument("--sequence-state-1", default="visible-distinct-output")
+    parser.add_argument("--sequence-state-2", default="visible-distinct-output")
     parser.add_argument("--approve-synthetic-continuation", action="store_true")
     args = parser.parse_args()
     receipt = run_canary(
@@ -328,6 +361,7 @@ def main() -> None:
         reference=args.reference,
         model=args.model,
         approve_synthetic_continuation=args.approve_synthetic_continuation,
+        sequence_states=(args.sequence_state_1, args.sequence_state_2),
     )
     print(json.dumps(receipt, indent=2, sort_keys=True))
 

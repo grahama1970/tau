@@ -22,6 +22,7 @@ from tau_coding.generic_artifact_transaction import (
     load_json,
     parse_transaction_spec,
     revalidate_accepted_manifest,
+    validate_acceptance_policy,
     validate_candidate_manifest,
     validate_review_feedback,
     write_accepted_manifest,
@@ -675,6 +676,7 @@ def _run_transaction_node(
                 )
 
     revision: dict[str, Any] | None = None
+    previous_artifact_sha256s: set[str] = set()
     for attempt in range(1, node.max_attempts + 1):
         attempt_dir = transaction_dir / f"attempt-{attempt:03d}"
         attempt_context_path = attempt_dir / "attempt-context.json"
@@ -805,6 +807,11 @@ def _run_transaction_node(
             candidate_manifest_sha256=candidate_manifest_sha256,
             artifact_ids={str(item["artifact_id"]) for item in artifacts},
         )
+        producer_execution = producer_receipt.get("provider_execution")
+        producer_provider_live = producer_receipt.get("provider_live") is True or (
+            isinstance(producer_execution, dict)
+            and producer_execution.get("provider_live") is True
+        )
         attempt_record = {
             "attempt": attempt,
             "attempt_context_path": str(attempt_context_path),
@@ -819,6 +826,18 @@ def _run_transaction_node(
             "review_live": feedback.get("live") is True,
             "review_provider_live": feedback.get("provider_live") is True,
             "review_model": feedback.get("model"),
+            "producer_live": producer_receipt.get("live") is True,
+            "producer_provider_live": producer_provider_live,
+            "producer_provider": (
+                producer_execution.get("provider")
+                if isinstance(producer_execution, dict)
+                else producer_receipt.get("provider")
+            ),
+            "producer_model": (
+                producer_execution.get("model")
+                if isinstance(producer_execution, dict)
+                else producer_receipt.get("model")
+            ),
         }
         attempts.append(attempt_record)
         if feedback_errors:
@@ -845,6 +864,11 @@ def _run_transaction_node(
                 started_monotonic=started_monotonic,
             )
         if verdict == "REVISE":
+            previous_artifact_sha256s = {
+                str(item["sha256"])
+                for item in artifacts
+                if isinstance(item.get("sha256"), str)
+            }
             revision = {
                 "source_attempt": attempt,
                 "review_feedback_path": str(review_feedback_path),
@@ -853,6 +877,25 @@ def _run_transaction_node(
                 "findings": feedback["findings"],
             }
             continue
+        acceptance_errors = validate_acceptance_policy(
+            spec=spec,
+            producer_receipt=producer_receipt,
+            review_feedback=feedback,
+            artifacts=artifacts,
+            previous_artifact_sha256s=previous_artifact_sha256s,
+            accepted_inputs=accepted_inputs,
+        )
+        if acceptance_errors:
+            return _transaction_blocked(
+                node=node,
+                verdict="ACCEPTANCE_POLICY_BLOCKED",
+                errors=acceptance_errors,
+                attempts=attempts,
+                command_results=command_results,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+            )
         accepted, accepted_sha256 = write_accepted_manifest(
             path=accepted_manifest_path,
             run_id=run_id,
@@ -1087,8 +1130,17 @@ def _transaction_record(
 ) -> dict[str, Any]:
     spec = node.transaction
     assert spec is not None
-    provider_live = any(item.get("review_provider_live") is True for item in attempts)
-    live = provider_live or any(item.get("review_live") is True for item in attempts)
+    producer_provider_live = any(
+        item.get("producer_provider_live") is True for item in attempts
+    )
+    reviewer_provider_live = any(
+        item.get("review_provider_live") is True for item in attempts
+    )
+    provider_live = producer_provider_live or reviewer_provider_live
+    live = provider_live or any(
+        item.get("review_live") is True or item.get("producer_live") is True
+        for item in attempts
+    )
     return {
         "node_id": node.node_id,
         "role": node.role,
@@ -1099,6 +1151,8 @@ def _transaction_record(
         "mocked": False,
         "live": live,
         "provider_live": provider_live,
+        "producer_provider_live": producer_provider_live,
+        "reviewer_provider_live": reviewer_provider_live,
         "transaction_receipt_path": str(transaction_receipt_path),
         "accepted_manifest_path": str(accepted_manifest_path)
         if accepted_manifest_path

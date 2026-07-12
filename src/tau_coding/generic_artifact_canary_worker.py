@@ -13,6 +13,7 @@ import base64
 import hashlib
 import json
 import os
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,9 @@ def produce(
     receipt_path: Path,
     work_order_path: Path,
     counter_path: Path,
+    sequence_contract: Path | None,
+    producer_model: str,
+    producer_timeout_seconds: float,
 ) -> None:
     context_path = Path(os.environ["TAU_GENERIC_DAG_CONTEXT"])
     context = _read_json(context_path)
@@ -42,21 +46,60 @@ def produce(
     attempt = int(context["attempt"])
     artifact_root.mkdir(parents=True, exist_ok=True)
     output = artifact_root / f"{stage}-attempt-{attempt}.png"
+    provider_receipt: dict[str, Any] | None = None
     if stage == "stage-1" and attempt == 1:
         with Image.open(reference) as source:
             Image.new("RGB", source.size, color=(0, 0, 0)).save(output)
     else:
-        source_path = reference
-        if stage == "stage-2":
-            accepted_inputs = context.get("accepted_inputs")
-            if not isinstance(accepted_inputs, list) or len(accepted_inputs) != 1:
-                raise RuntimeError("stage-2 requires exactly one accepted input")
-            artifacts = accepted_inputs[0].get("artifacts")
-            if not isinstance(artifacts, list) or len(artifacts) != 1:
-                raise RuntimeError("stage-2 accepted input must contain one artifact")
-            source_path = Path(str(artifacts[0]["path"]))
-        with Image.open(source_path) as source:
-            source.convert("RGB").save(output)
+        accepted_inputs = context.get("accepted_inputs", [])
+        if stage == "stage-2" and (
+            not isinstance(accepted_inputs, list) or len(accepted_inputs) != 1
+        ):
+            raise RuntimeError("stage-2 requires exactly one accepted input")
+        contract = _read_json(sequence_contract) if sequence_contract else {}
+        prompt_path = artifact_root / f"{stage}-attempt-{attempt}.prompt.md"
+        provider_receipt_path = artifact_root / f"{stage}-attempt-{attempt}.provider.json"
+        provider_events_path = artifact_root / f"{stage}-attempt-{attempt}.events.jsonl"
+        prompt_path.write_text(
+            _producer_prompt(
+                stage=stage,
+                reference=reference,
+                contract=contract,
+                accepted_inputs=accepted_inputs,
+                revision=context.get("revision"),
+            ),
+            encoding="utf-8",
+        )
+        command = [
+            "/home/graham/workspace/experiments/agent-skills/skills/scillm/run.sh",
+            "generate-image",
+            "--auth",
+            "codex-oauth",
+            "--prompt-file",
+            str(prompt_path),
+            "--out",
+            str(output),
+            "--receipt",
+            str(provider_receipt_path),
+            "--events-out",
+            str(provider_events_path),
+            "--model",
+            producer_model,
+            "--quality",
+            "high",
+            "--caller-skill",
+            "tau-generic-artifact-canary-producer",
+            "--timeout-s",
+            str(producer_timeout_seconds),
+            "--json",
+        ]
+        result = subprocess.run(command, text=True, capture_output=True, check=False)
+        if result.returncode != 0 or not output.is_file():
+            raise RuntimeError(
+                f"Scillm image producer failed ({result.returncode}): "
+                f"{result.stderr[-1000:] or result.stdout[-1000:]}"
+            )
+        provider_receipt = _read_json(provider_receipt_path)
     manifest_path = Path(context["output_contract"]["candidate_manifest_path"])
     _write_json(
         manifest_path,
@@ -90,6 +133,17 @@ def produce(
             "mocked": False,
             "live": True,
             "provider_live": False,
+            "provider_execution": (
+                {
+                    "provider_live": True,
+                    "provider": "scillm",
+                    "model": producer_model,
+                    "receipt_path": str(provider_receipt_path),
+                    "receipt_sha256": _sha256(provider_receipt_path),
+                }
+                if provider_receipt is not None
+                else None
+            ),
             "artifacts": [],
             "commands_run": ["generic artifact canary producer"],
             "errors": [],
@@ -100,6 +154,35 @@ def produce(
     )
     count = int(counter_path.read_text()) if counter_path.exists() else 0
     counter_path.write_text(str(count + 1), encoding="utf-8")
+
+
+def _producer_prompt(
+    *,
+    stage: str,
+    reference: Path,
+    contract: dict[str, Any],
+    accepted_inputs: Any,
+    revision: Any,
+) -> str:
+    input_hashes = [
+        artifact.get("sha256")
+        for projection in accepted_inputs
+        if isinstance(projection, dict)
+        for artifact in projection.get("artifacts", [])
+        if isinstance(artifact, dict)
+    ] if isinstance(accepted_inputs, list) else []
+    return (
+        "Create a clearly visible original pixel-art animation sequence image.\n"
+        f"Stage: {stage}.\n"
+        f"Immutable character reference path: {reference}.\n"
+        f"Immutable character reference sha256: {_sha256(reference)}.\n"
+        f"Sequence contract: {json.dumps(contract, sort_keys=True)}.\n"
+        f"Accepted prior-sequence hashes (context only): {json.dumps(input_hashes)}.\n"
+        f"Reviewer revision: {json.dumps(revision, sort_keys=True)}.\n"
+        "Use a transparent or plain background, crisp readable silhouettes, and no text. "
+        "The new sequence must be visually distinct from prior accepted sequences while "
+        "preserving the same character identity."
+    )
 
 
 def review(*, model: str, base_url: str, timeout_seconds: float) -> None:
@@ -238,6 +321,9 @@ def main() -> None:
     producer.add_argument("--receipt", type=Path, required=True)
     producer.add_argument("--work-order", type=Path, required=True)
     producer.add_argument("--counter", type=Path, required=True)
+    producer.add_argument("--sequence-contract", type=Path)
+    producer.add_argument("--producer-model", default="gpt-2")
+    producer.add_argument("--producer-timeout-s", type=float, default=300)
     reviewer = subparsers.add_parser("review")
     reviewer.add_argument("--model", default="gpt-5.5")
     reviewer.add_argument("--base-url", default="http://127.0.0.1:4001")
@@ -253,6 +339,9 @@ def main() -> None:
             receipt_path=args.receipt,
             work_order_path=args.work_order,
             counter_path=args.counter,
+            sequence_contract=args.sequence_contract,
+            producer_model=args.producer_model,
+            producer_timeout_seconds=args.producer_timeout_s,
         )
     elif args.command == "review":
         review(model=args.model, base_url=args.base_url, timeout_seconds=args.timeout_s)
