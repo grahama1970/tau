@@ -4,12 +4,31 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.generic_artifact_transaction import (
+    TRANSACTION_RECEIPT_SCHEMA,
+    ArtifactTransactionSpec,
+    accepted_projection,
+    canonical_command_sha256,
+    file_sha256,
+    load_json,
+    parse_transaction_spec,
+    revalidate_accepted_manifest,
+    validate_candidate_manifest,
+    validate_review_feedback,
+    write_accepted_manifest,
+    write_attempt_context,
+    write_json,
+    write_review_context,
+)
 
 GENERIC_DAG_SPEC_SCHEMA = "tau.generic_dag_spec.v1"
 GENERIC_DAG_RUN_RECEIPT_SCHEMA = "tau.generic_dag_run_receipt.v1"
@@ -28,6 +47,7 @@ class DagNode:
     timeout_seconds: float
     max_attempts: int
     work_order_path: Path | None
+    transaction: ArtifactTransactionSpec | None
 
 
 def run_generic_dag(
@@ -65,6 +85,7 @@ def run_generic_dag(
         },
     )
     completed: set[str] = set()
+    accepted_outputs: dict[str, dict[str, Any]] = {}
     node_results: list[dict[str, Any]] = []
     final_status = "PASS"
     final_verdict = "PASS"
@@ -118,9 +139,17 @@ def run_generic_dag(
             run_dir=run_dir,
             events_path=events_path,
             resume=resume,
+            accepted_inputs=[
+                accepted_outputs[dependency]
+                for dependency in node.depends_on
+                if dependency in accepted_outputs
+            ],
         )
         node_results.append(result)
         if result["status"] == "PASS" and result["verdict"] == "PASS":
+            projection = result.get("accepted_output")
+            if isinstance(projection, dict):
+                accepted_outputs[node.node_id] = projection
             completed.add(node.node_id)
             _write_checkpoint(
                 path=checkpoint_path,
@@ -384,6 +413,43 @@ def _run_node(
     run_dir: Path,
     events_path: Path,
     resume: bool,
+    accepted_inputs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if node.transaction is not None:
+        return _run_transaction_node(
+            node,
+            run_id=run_id,
+            run_dir=run_dir,
+            events_path=events_path,
+            resume=resume,
+            accepted_inputs=accepted_inputs,
+        )
+    context_path, context_sha256 = _write_legacy_node_context(
+        node=node,
+        run_id=run_id,
+        run_dir=run_dir,
+        accepted_inputs=accepted_inputs,
+    )
+    return _run_legacy_node(
+        node,
+        run_id=run_id,
+        run_dir=run_dir,
+        events_path=events_path,
+        resume=resume,
+        context_path=context_path,
+        context_sha256=context_sha256,
+    )
+
+
+def _run_legacy_node(
+    node: DagNode,
+    *,
+    run_id: str,
+    run_dir: Path,
+    events_path: Path,
+    resume: bool,
+    context_path: Path,
+    context_sha256: str,
 ) -> dict[str, Any]:
     node_started_at = _utc_stamp()
     node_started_monotonic = time.monotonic()
@@ -422,7 +488,15 @@ def _run_node(
             },
         )
         started_at = time.monotonic()
-        result = _run_command(node.command, cwd=run_dir, timeout_seconds=node.timeout_seconds)
+        result = _run_command(
+            node.command,
+            cwd=run_dir,
+            timeout_seconds=node.timeout_seconds,
+            env_overrides={
+                "TAU_GENERIC_DAG_CONTEXT": str(context_path),
+                "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
+            },
+        )
         elapsed = time.monotonic() - started_at
         command_results.append(_command_result_dict(result, elapsed_seconds=elapsed))
         if result.returncode != 0:
@@ -500,6 +574,599 @@ def _run_node(
         finished_at=_utc_stamp(),
         duration_seconds=time.monotonic() - node_started_monotonic,
     )
+
+
+def _run_transaction_node(
+    node: DagNode,
+    *,
+    run_id: str,
+    run_dir: Path,
+    events_path: Path,
+    resume: bool,
+    accepted_inputs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Run one bounded producer/reviewer transaction owned by Tau."""
+
+    spec = node.transaction
+    assert spec is not None
+    assert node.work_order_path is not None
+    started_at = _utc_stamp()
+    started_monotonic = time.monotonic()
+    work_order_sha256 = _work_order_sha256(node)
+    if work_order_sha256 is None:
+        return _blocked_node_record(
+            node,
+            verdict="TRANSACTION_WORK_ORDER_MISSING",
+            errors=[f"transaction work order unreadable: {node.work_order_path}"],
+        )
+    transaction_dir = run_dir / "transactions" / node.node_id
+    transaction_receipt_path = transaction_dir / "transaction-receipt.json"
+    accepted_manifest_path = transaction_dir / "accepted-manifest.json"
+    command_results: list[dict[str, Any]] = []
+    attempts: list[dict[str, Any]] = []
+
+    if resume and transaction_receipt_path.exists():
+        prior, prior_errors = load_json(transaction_receipt_path, label="transaction receipt")
+        if not prior_errors and prior.get("schema") == TRANSACTION_RECEIPT_SCHEMA and prior.get(
+            "state"
+        ) in {"ACCEPTED", "APPROVAL_REQUIRED", "CONTINUED"}:
+            expected_manifest_sha256 = prior.get("accepted_manifest_sha256")
+            if not isinstance(expected_manifest_sha256, str):
+                prior_errors.append("accepted_manifest_sha256_missing")
+            else:
+                accepted, accepted_errors = revalidate_accepted_manifest(
+                    path=accepted_manifest_path,
+                    expected_sha256=expected_manifest_sha256,
+                    spec=spec,
+                    node_id=node.node_id,
+                    work_order_sha256=work_order_sha256,
+                )
+                prior_errors.extend(accepted_errors)
+                if not prior_errors:
+                    projection = accepted_projection(
+                        path=accepted_manifest_path,
+                        sha256=expected_manifest_sha256,
+                        payload=accepted,
+                    )
+                    if spec.continuation is None or prior.get("state") == "CONTINUED":
+                        return _transaction_record(
+                            node=node,
+                            state=str(prior["state"]),
+                            status="PASS",
+                            verdict="PASS",
+                            attempts=prior.get("attempts", []),
+                            command_results=[],
+                            transaction_receipt_path=transaction_receipt_path,
+                            accepted_manifest_path=accepted_manifest_path,
+                            accepted_manifest_sha256=expected_manifest_sha256,
+                            accepted_output=projection,
+                            resumed=True,
+                            started_at=started_at,
+                            duration_seconds=time.monotonic() - started_monotonic,
+                        )
+                    return _continue_transaction(
+                        node=node,
+                        run_id=run_id,
+                        run_dir=run_dir,
+                        spec=spec,
+                        accepted=accepted,
+                        accepted_manifest_path=accepted_manifest_path,
+                        accepted_manifest_sha256=expected_manifest_sha256,
+                        projection=projection,
+                        attempts=prior.get("attempts", []),
+                        transaction_receipt_path=transaction_receipt_path,
+                        started_at=started_at,
+                        started_monotonic=started_monotonic,
+                        resumed=True,
+                    )
+            if prior_errors:
+                return _transaction_record(
+                    node=node,
+                    state="BLOCKED",
+                    status="BLOCKED",
+                    verdict="STALE_ACCEPTED_STATE",
+                    attempts=prior.get("attempts", []),
+                    command_results=[],
+                    transaction_receipt_path=transaction_receipt_path,
+                    errors=prior_errors,
+                    resumed=False,
+                    started_at=started_at,
+                    duration_seconds=time.monotonic() - started_monotonic,
+                )
+
+    revision: dict[str, Any] | None = None
+    for attempt in range(1, node.max_attempts + 1):
+        attempt_dir = transaction_dir / f"attempt-{attempt:03d}"
+        attempt_context_path = attempt_dir / "attempt-context.json"
+        candidate_manifest_path = attempt_dir / "candidate-manifest.json"
+        review_context_path = attempt_dir / "review-context.json"
+        review_feedback_path = attempt_dir / "review-feedback.json"
+        for stale_path in (node.receipt_path, candidate_manifest_path, review_feedback_path):
+            stale_path.unlink(missing_ok=True)
+        _, attempt_context_sha256 = write_attempt_context(
+            path=attempt_context_path,
+            run_id=run_id,
+            node_id=node.node_id,
+            spec=spec,
+            attempt=attempt,
+            max_attempts=node.max_attempts,
+            work_order_path=node.work_order_path,
+            work_order_sha256=work_order_sha256,
+            accepted_inputs=accepted_inputs,
+            revision=revision,
+            candidate_manifest_path=candidate_manifest_path,
+            producer_receipt_path=node.receipt_path,
+        )
+        _append_event(
+            events_path,
+            "transaction_producer_dispatch",
+            {"run_id": run_id, "node_id": node.node_id, "attempt": attempt},
+        )
+        producer_started = time.monotonic()
+        producer_result = _run_command(
+            node.command,
+            cwd=run_dir,
+            timeout_seconds=node.timeout_seconds,
+            env_overrides={
+                "TAU_GENERIC_DAG_CONTEXT": str(attempt_context_path),
+                "TAU_GENERIC_DAG_CONTEXT_SHA256": attempt_context_sha256,
+            },
+        )
+        command_results.append(
+            _command_result_dict(
+                producer_result, elapsed_seconds=time.monotonic() - producer_started
+            )
+        )
+        if producer_result.returncode != 0:
+            return _transaction_blocked(
+                node=node,
+                verdict="PRODUCER_ERROR",
+                errors=[_command_error(producer_result)],
+                attempts=attempts,
+                command_results=command_results,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+            )
+        producer_receipt, receipt_errors = load_json(
+            node.receipt_path, label="transaction producer receipt"
+        )
+        if not receipt_errors:
+            receipt_errors.extend(_validate_node_receipt(producer_receipt, node))
+            if str(producer_receipt.get("status") or "").upper() != "PASS":
+                receipt_errors.append("producer_receipt_not_passed")
+        candidate, candidate_errors = validate_candidate_manifest(
+            path=candidate_manifest_path,
+            spec=spec,
+            node_id=node.node_id,
+            attempt=attempt,
+            work_order_sha256=work_order_sha256,
+            attempt_context_sha256=attempt_context_sha256,
+        )
+        errors = receipt_errors + candidate_errors
+        if errors:
+            return _transaction_blocked(
+                node=node,
+                verdict="INVALID_CANDIDATE",
+                errors=errors,
+                attempts=attempts,
+                command_results=command_results,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+            )
+        candidate_manifest_sha256 = file_sha256(candidate_manifest_path)
+        artifacts = candidate["artifacts"]
+        _, review_context_sha256 = write_review_context(
+            path=review_context_path,
+            run_id=run_id,
+            node_id=node.node_id,
+            spec=spec,
+            attempt=attempt,
+            attempt_context_path=attempt_context_path,
+            attempt_context_sha256=attempt_context_sha256,
+            candidate_manifest_path=candidate_manifest_path,
+            candidate_manifest_sha256=candidate_manifest_sha256,
+            artifacts=artifacts,
+            review_feedback_path=review_feedback_path,
+        )
+        reviewer_started = time.monotonic()
+        reviewer_result = _run_command(
+            list(spec.reviewer.command),
+            cwd=run_dir,
+            timeout_seconds=spec.reviewer.timeout_seconds,
+            env_overrides={
+                "TAU_GENERIC_DAG_REVIEW_CONTEXT": str(review_context_path),
+                "TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256": review_context_sha256,
+            },
+        )
+        command_results.append(
+            _command_result_dict(
+                reviewer_result, elapsed_seconds=time.monotonic() - reviewer_started
+            )
+        )
+        if reviewer_result.returncode != 0:
+            return _transaction_blocked(
+                node=node,
+                verdict="REVIEWER_ERROR",
+                errors=[_command_error(reviewer_result)],
+                attempts=attempts,
+                command_results=command_results,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+            )
+        feedback, feedback_errors = validate_review_feedback(
+            path=review_feedback_path,
+            spec=spec,
+            node_id=node.node_id,
+            attempt=attempt,
+            review_context_sha256=review_context_sha256,
+            candidate_manifest_sha256=candidate_manifest_sha256,
+            artifact_ids={str(item["artifact_id"]) for item in artifacts},
+        )
+        attempt_record = {
+            "attempt": attempt,
+            "attempt_context_path": str(attempt_context_path),
+            "attempt_context_sha256": attempt_context_sha256,
+            "candidate_manifest_path": str(candidate_manifest_path),
+            "candidate_manifest_sha256": candidate_manifest_sha256,
+            "review_feedback_path": str(review_feedback_path),
+            "review_feedback_sha256": file_sha256(review_feedback_path)
+            if review_feedback_path.exists()
+            else None,
+            "review_verdict": feedback.get("verdict"),
+        }
+        attempts.append(attempt_record)
+        if feedback_errors:
+            return _transaction_blocked(
+                node=node,
+                verdict="INVALID_REVIEW",
+                errors=feedback_errors,
+                attempts=attempts,
+                command_results=command_results,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+            )
+        verdict = str(feedback["verdict"]).upper()
+        if verdict == "BLOCKED":
+            return _transaction_blocked(
+                node=node,
+                verdict="REVIEW_BLOCKED",
+                errors=[str(feedback["summary"])],
+                attempts=attempts,
+                command_results=command_results,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+            )
+        if verdict == "REVISE":
+            revision = {
+                "source_attempt": attempt,
+                "review_feedback_path": str(review_feedback_path),
+                "review_feedback_sha256": file_sha256(review_feedback_path),
+                "summary": feedback["summary"],
+                "findings": feedback["findings"],
+            }
+            continue
+        accepted, accepted_sha256 = write_accepted_manifest(
+            path=accepted_manifest_path,
+            run_id=run_id,
+            node_id=node.node_id,
+            spec=spec,
+            attempt=attempt,
+            work_order_sha256=work_order_sha256,
+            candidate_manifest_path=candidate_manifest_path,
+            review_feedback_path=review_feedback_path,
+            artifacts=artifacts,
+        )
+        projection = accepted_projection(
+            path=accepted_manifest_path, sha256=accepted_sha256, payload=accepted
+        )
+        if spec.continuation is not None:
+            return _continue_transaction(
+                node=node,
+                run_id=run_id,
+                run_dir=run_dir,
+                spec=spec,
+                accepted=accepted,
+                accepted_manifest_path=accepted_manifest_path,
+                accepted_manifest_sha256=accepted_sha256,
+                projection=projection,
+                attempts=attempts,
+                transaction_receipt_path=transaction_receipt_path,
+                started_at=started_at,
+                started_monotonic=started_monotonic,
+                resumed=False,
+            )
+        _write_transaction_receipt(
+            path=transaction_receipt_path,
+            run_id=run_id,
+            node=node,
+            state="ACCEPTED",
+            attempts=attempts,
+            accepted_manifest_path=accepted_manifest_path,
+            accepted_manifest_sha256=accepted_sha256,
+        )
+        return _transaction_record(
+            node=node,
+            state="ACCEPTED",
+            status="PASS",
+            verdict="PASS",
+            attempts=attempts,
+            command_results=command_results,
+            transaction_receipt_path=transaction_receipt_path,
+            accepted_manifest_path=accepted_manifest_path,
+            accepted_manifest_sha256=accepted_sha256,
+            accepted_output=projection,
+            resumed=False,
+            started_at=started_at,
+            duration_seconds=time.monotonic() - started_monotonic,
+        )
+    return _transaction_blocked(
+        node=node,
+        verdict="MAX_ATTEMPTS_EXHAUSTED",
+        errors=["review requested revision after final bounded attempt"],
+        attempts=attempts,
+        command_results=command_results,
+        transaction_receipt_path=transaction_receipt_path,
+        started_at=started_at,
+        started_monotonic=started_monotonic,
+    )
+
+
+def _continue_transaction(
+    *,
+    node: DagNode,
+    run_id: str,
+    run_dir: Path,
+    spec: ArtifactTransactionSpec,
+    accepted: dict[str, Any],
+    accepted_manifest_path: Path,
+    accepted_manifest_sha256: str,
+    projection: dict[str, Any],
+    attempts: list[dict[str, Any]],
+    transaction_receipt_path: Path,
+    started_at: str,
+    started_monotonic: float,
+    resumed: bool,
+) -> dict[str, Any]:
+    continuation = spec.continuation
+    assert continuation is not None
+    command_sha256 = canonical_command_sha256(continuation.command)
+    approval_receipt_path = transaction_receipt_path.parent / "approval-gate-receipt.json"
+    if continuation.approval is not None:
+        expected_target = {
+            "id": f"generic-dag-transaction:{run_id}:{spec.transaction_id}",
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "transaction_id": spec.transaction_id,
+            "accepted_manifest_sha256": accepted_manifest_sha256,
+            "continuation_command_sha256": command_sha256,
+        }
+        approval = evaluate_approval_gate(
+            approval_packet=continuation.approval.packet_path,
+            requested_action=continuation.approval.action,
+            run_dir=transaction_receipt_path.parent,
+            output=approval_receipt_path,
+            expected_target=expected_target,
+        )
+        if approval["status"] != "PASS":
+            _write_transaction_receipt(
+                path=transaction_receipt_path,
+                run_id=run_id,
+                node=node,
+                state="APPROVAL_REQUIRED",
+                attempts=attempts,
+                accepted_manifest_path=accepted_manifest_path,
+                accepted_manifest_sha256=accepted_manifest_sha256,
+                approval_gate_receipt_path=approval_receipt_path,
+            )
+            return _transaction_record(
+                node=node,
+                state="APPROVAL_REQUIRED",
+                status="BLOCKED",
+                verdict="APPROVAL_REQUIRED",
+                attempts=attempts,
+                command_results=[],
+                transaction_receipt_path=transaction_receipt_path,
+                accepted_manifest_path=accepted_manifest_path,
+                accepted_manifest_sha256=accepted_manifest_sha256,
+                errors=approval["errors"],
+                resumed=resumed,
+                started_at=started_at,
+                duration_seconds=time.monotonic() - started_monotonic,
+            )
+    continuation_context = transaction_receipt_path.parent / "continuation-context.json"
+    write_json(
+        continuation_context,
+        {
+            "schema": "tau.generic_artifact_continuation_context.v1",
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "transaction_id": spec.transaction_id,
+            "accepted_manifest_path": str(accepted_manifest_path),
+            "accepted_manifest_sha256": accepted_manifest_sha256,
+            "artifacts": accepted["artifacts"],
+            "continuation_command_sha256": command_sha256,
+        },
+    )
+    result = _run_command(
+        list(continuation.command),
+        cwd=run_dir,
+        timeout_seconds=continuation.timeout_seconds,
+        env_overrides={"TAU_GENERIC_DAG_CONTEXT": str(continuation_context)},
+    )
+    if result.returncode != 0:
+        return _transaction_blocked(
+            node=node,
+            verdict="CONTINUATION_ERROR",
+            errors=[_command_error(result)],
+            attempts=attempts,
+            command_results=[_command_result_dict(result, elapsed_seconds=0.0)],
+            transaction_receipt_path=transaction_receipt_path,
+            started_at=started_at,
+            started_monotonic=started_monotonic,
+        )
+    _write_transaction_receipt(
+        path=transaction_receipt_path,
+        run_id=run_id,
+        node=node,
+        state="CONTINUED",
+        attempts=attempts,
+        accepted_manifest_path=accepted_manifest_path,
+        accepted_manifest_sha256=accepted_manifest_sha256,
+        approval_gate_receipt_path=approval_receipt_path
+        if continuation.approval is not None
+        else None,
+        continuation={"command_sha256": command_sha256, "returncode": result.returncode},
+    )
+    return _transaction_record(
+        node=node,
+        state="CONTINUED",
+        status="PASS",
+        verdict="PASS",
+        attempts=attempts,
+        command_results=[_command_result_dict(result, elapsed_seconds=0.0)],
+        transaction_receipt_path=transaction_receipt_path,
+        accepted_manifest_path=accepted_manifest_path,
+        accepted_manifest_sha256=accepted_manifest_sha256,
+        accepted_output=projection,
+        resumed=resumed,
+        started_at=started_at,
+        duration_seconds=time.monotonic() - started_monotonic,
+    )
+
+
+def _transaction_blocked(
+    *,
+    node: DagNode,
+    verdict: str,
+    errors: list[str],
+    attempts: list[dict[str, Any]],
+    command_results: list[dict[str, Any]],
+    transaction_receipt_path: Path,
+    started_at: str,
+    started_monotonic: float,
+) -> dict[str, Any]:
+    return _transaction_record(
+        node=node,
+        state="BLOCKED",
+        status="BLOCKED",
+        verdict=verdict,
+        attempts=attempts,
+        command_results=command_results,
+        transaction_receipt_path=transaction_receipt_path,
+        errors=errors,
+        resumed=False,
+        started_at=started_at,
+        duration_seconds=time.monotonic() - started_monotonic,
+    )
+
+
+def _transaction_record(
+    *,
+    node: DagNode,
+    state: str,
+    status: str,
+    verdict: str,
+    attempts: list[dict[str, Any]],
+    command_results: list[dict[str, Any]],
+    transaction_receipt_path: Path,
+    accepted_manifest_path: Path | None = None,
+    accepted_manifest_sha256: str | None = None,
+    accepted_output: dict[str, Any] | None = None,
+    errors: list[str] | None = None,
+    resumed: bool,
+    started_at: str,
+    duration_seconds: float,
+) -> dict[str, Any]:
+    spec = node.transaction
+    assert spec is not None
+    return {
+        "node_id": node.node_id,
+        "role": node.role,
+        "status": status,
+        "verdict": verdict,
+        "transaction_id": spec.transaction_id,
+        "transaction_state": state,
+        "transaction_receipt_path": str(transaction_receipt_path),
+        "accepted_manifest_path": str(accepted_manifest_path)
+        if accepted_manifest_path
+        else None,
+        "accepted_manifest_sha256": accepted_manifest_sha256,
+        "accepted_output": accepted_output,
+        "artifacts": accepted_output.get("artifacts", []) if accepted_output else [],
+        "attempt_count": len(attempts),
+        "attempts": attempts,
+        "command_results": command_results,
+        "receipt_path": str(node.receipt_path),
+        "work_order_path": str(node.work_order_path),
+        "work_order_sha256": _work_order_sha256(node),
+        "resumed": resumed,
+        "started_at": started_at,
+        "finished_at": _utc_stamp(),
+        "duration_seconds": round(duration_seconds, 3),
+        "errors": errors or [],
+    }
+
+
+def _write_transaction_receipt(
+    *,
+    path: Path,
+    run_id: str,
+    node: DagNode,
+    state: str,
+    attempts: list[dict[str, Any]],
+    accepted_manifest_path: Path,
+    accepted_manifest_sha256: str,
+    approval_gate_receipt_path: Path | None = None,
+    continuation: dict[str, Any] | None = None,
+) -> None:
+    spec = node.transaction
+    assert spec is not None
+    write_json(
+        path,
+        {
+            "schema": TRANSACTION_RECEIPT_SCHEMA,
+            "status": "PASS" if state in {"ACCEPTED", "CONTINUED"} else "BLOCKED",
+            "state": state,
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "transaction_id": spec.transaction_id,
+            "work_order_sha256": _work_order_sha256(node),
+            "attempt_count": len(attempts),
+            "attempts": attempts,
+            "accepted_manifest_path": str(accepted_manifest_path),
+            "accepted_manifest_sha256": accepted_manifest_sha256,
+            "approval_gate_receipt_path": str(approval_gate_receipt_path)
+            if approval_gate_receipt_path
+            else None,
+            "continuation": continuation,
+            "errors": [],
+        },
+    )
+
+
+def _write_legacy_node_context(
+    *,
+    node: DagNode,
+    run_id: str,
+    run_dir: Path,
+    accepted_inputs: list[dict[str, Any]],
+) -> tuple[Path, str]:
+    path = run_dir / "node-contexts" / f"{node.node_id}.json"
+    write_json(
+        path,
+        {
+            "schema": "tau.generic_dag_node_context.v1",
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "accepted_inputs": accepted_inputs,
+        },
+    )
+    return path, file_sha256(path)
 
 
 def _node_record(
@@ -628,6 +1295,14 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         if isinstance(work_order_raw, str) and work_order_raw
         else None
     )
+    transaction_raw = raw_node.get("transaction")
+    transaction = (
+        parse_transaction_spec(transaction_raw, base_dir=base_dir, node_id=node_id)
+        if transaction_raw is not None
+        else None
+    )
+    if transaction is not None and work_order_path is None:
+        raise RuntimeError(f"node {node_id} transaction requires work_order_path")
     return DagNode(
         node_id=node_id,
         role=role,
@@ -637,6 +1312,7 @@ def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
         timeout_seconds=timeout_seconds,
         max_attempts=max_attempts,
         work_order_path=work_order_path,
+        transaction=transaction,
     )
 
 
@@ -791,6 +1467,7 @@ def _run_command(
     *,
     cwd: Path,
     timeout_seconds: float,
+    env_overrides: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     try:
         return subprocess.run(
@@ -799,6 +1476,7 @@ def _run_command(
             text=True,
             capture_output=True,
             timeout=timeout_seconds,
+            env={**os.environ, **(env_overrides or {})},
         )
     except subprocess.TimeoutExpired as exc:
         stdout = exc.stdout if isinstance(exc.stdout, str) else ""

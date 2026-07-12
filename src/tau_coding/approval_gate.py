@@ -6,7 +6,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 APPROVAL_PACKET_SCHEMA = "tau.human_approval_packet.v1"
 APPROVAL_GATE_RECEIPT_SCHEMA = "tau.approval_gate_receipt.v1"
@@ -14,6 +14,7 @@ ALLOWED_ACTIONS = {
     "dag_expansion_apply",
     "github_apply",
     "github_ticket_closure",
+    "generic_dag_transaction_continue",
     "herdr_cleanup_apply",
     "herdr_gc_apply",
     "memory_upsert",
@@ -29,15 +30,28 @@ def evaluate_approval_gate(
     requested_action: str,
     run_dir: Path,
     output: Path | None = None,
+    expected_target: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Evaluate whether a gated action has explicit human approval."""
 
     resolved_run_dir = run_dir.expanduser().resolve()
     resolved_run_dir.mkdir(parents=True, exist_ok=True)
     resolved_packet = approval_packet.expanduser().resolve()
-    output_path = (output.expanduser().resolve() if output else resolved_run_dir / "approval-gate-receipt.json")
+    output_path = (
+        output.expanduser().resolve()
+        if output
+        else resolved_run_dir / "approval-gate-receipt.json"
+    )
     packet, load_errors = _load_packet(resolved_packet)
-    validation_errors = _validate_packet(packet, requested_action=requested_action) if packet else []
+    validation_errors = (
+        _validate_packet(
+            packet,
+            requested_action=requested_action,
+            expected_target=expected_target,
+        )
+        if packet
+        else []
+    )
     errors = load_errors + validation_errors
     approved = not errors
     receipt = {
@@ -53,9 +67,11 @@ def evaluate_approval_gate(
         "run_dir": str(resolved_run_dir),
         "errors": errors,
         "packet_summary": _packet_summary(packet),
+        "expected_target": expected_target,
         "proof_scope": {
             "proves": [
-                "Tau can fail closed before mutation or closure without a valid human approval packet",
+                "Tau can fail closed before mutation or closure without a valid "
+                "human approval packet",
                 "Tau can validate explicit human approval for a requested gated action",
                 "Tau writes a durable approval-gate receipt before any gated mutation command",
             ],
@@ -84,7 +100,12 @@ def _load_packet(path: Path) -> tuple[dict[str, Any], list[str]]:
     return payload, []
 
 
-def _validate_packet(packet: dict[str, Any], *, requested_action: str) -> list[str]:
+def _validate_packet(
+    packet: dict[str, Any],
+    *,
+    requested_action: str,
+    expected_target: dict[str, str] | None = None,
+) -> list[str]:
     errors = []
     if requested_action not in ALLOWED_ACTIONS:
         errors.append(f"requested_action must be one of {sorted(ALLOWED_ACTIONS)}")
@@ -108,6 +129,11 @@ def _validate_packet(packet: dict[str, Any], *, requested_action: str) -> list[s
     target = packet.get("target")
     if not isinstance(target, dict) or not str(target.get("id") or "").strip():
         errors.append("target.id must be a non-empty string")
+        target = {}
+    if expected_target is not None:
+        for key, value in expected_target.items():
+            if target.get(key) != value:
+                errors.append(f"target.{key} must match expected value")
     if not isinstance(packet.get("reason"), str) or not packet["reason"].strip():
         errors.append("reason must be a non-empty string")
     evidence = packet.get("evidence")
@@ -132,8 +158,11 @@ def _validate_packet(packet: dict[str, Any], *, requested_action: str) -> list[s
 def _packet_summary(packet: dict[str, Any]) -> dict[str, Any] | None:
     if not packet:
         return None
-    actor = packet.get("actor") if isinstance(packet.get("actor"), dict) else {}
-    target = packet.get("target") if isinstance(packet.get("target"), dict) else {}
+    actor_value = packet.get("actor")
+    actor = cast(dict[str, Any], actor_value) if isinstance(actor_value, dict) else {}
+    target_value = packet.get("target")
+    target = cast(dict[str, Any], target_value) if isinstance(target_value, dict) else {}
+    evidence = packet.get("evidence")
     return {
         "schema": packet.get("schema"),
         "approved": packet.get("approved"),
@@ -142,7 +171,9 @@ def _packet_summary(packet: dict[str, Any]) -> dict[str, Any] | None:
         "actor_auth_method": actor.get("auth_method"),
         "human_id": actor.get("id"),
         "target_id": target.get("id"),
-        "evidence_count": len(packet.get("evidence")) if isinstance(packet.get("evidence"), list) else 0,
+        "evidence_count": (
+            len(evidence) if isinstance(evidence, list) else 0
+        ),
         "nonce": packet.get("nonce"),
         "signature_present": bool(packet.get("signature")),
         "expires_at": packet.get("expires_at"),
