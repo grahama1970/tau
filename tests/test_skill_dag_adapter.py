@@ -37,6 +37,65 @@ def test_webgpt_skill_node_blocks_missing_exact_tab_configuration(tmp_path: Path
     assert receipt["errors"] == ["webgpt_tab_id_required", "webgpt_expected_url_required"]
 
 
+def test_webgpt_transport_failure_emits_surf_doctor_request(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = parse_skill_dag_spec(_webgpt_spec(tmp_path), base_dir=tmp_path, node_id="review")
+
+    def failed_run(command, **kwargs):
+        def value(flag: str) -> Path:
+            return Path(command[command.index(flag) + 1])
+
+        meta = value("--meta-output")
+        transport = value("--receipt-output")
+        raw = value("--raw-output")
+        meta.write_text(
+            json.dumps(
+                {
+                    "failure": "missing_sentinel",
+                    "proof_status": "submitted_no_response_proof",
+                    "requested_tab_id": "837358072",
+                    "controlled_tab_id": "837358072",
+                    "sentinel": "<<<WEBGPT_DONE:test>>>",
+                    "submitted_to_chatgpt": True,
+                }
+            ),
+            encoding="utf-8",
+        )
+        transport.write_text(
+            json.dumps(
+                {
+                    "status": "submitted_to_chatgpt",
+                    "submitted_to_chatgpt": True,
+                    "sentinel": "<<<WEBGPT_DONE:test>>>",
+                }
+            ),
+            encoding="utf-8",
+        )
+        raw.write_text("Pro thinking.\n", encoding="utf-8")
+        return SimpleNamespace(returncode=4, stdout="", stderr="missing sentinel\n")
+
+    monkeypatch.setattr("tau_coding.skill_dag_adapter.subprocess.run", failed_run)
+
+    receipt = _execute(spec)
+    incident_path = tmp_path / "out" / "surf-doctor-request.json"
+    incident = json.loads(incident_path.read_text(encoding="utf-8"))
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["errors"] == ["webgpt_transport_failed:4"]
+    assert incident["status"] == "PENDING_DIAGNOSIS"
+    assert incident["failure_class"] == "missing_sentinel"
+    assert incident["proof_status"] == "submitted_no_response_proof"
+    assert incident["requested_tab_id"] == incident["controlled_tab_id"] == "837358072"
+    assert incident["browser_mutation_authorized"] is False
+    assert "webgpt_resubmit" in incident["forbidden_actions"]
+    assert len(incident["source_artifacts"]) == 6
+    assert {artifact["schema"] for artifact in receipt["artifacts"]} == {
+        "surf.incident.source.v1",
+        "surf_doctor.incident_request.v1",
+    }
+
+
 def test_webgpt_clarification_requires_answer_before_next_round(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

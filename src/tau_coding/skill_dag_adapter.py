@@ -182,6 +182,23 @@ def _execute_webgpt(
     ]
     completed = subprocess.run(command, text=True, capture_output=True, check=False)
     if completed.returncode != 0:
+        diagnostic_artifacts = _write_surf_doctor_request(
+            spec=spec,
+            run_id=run_id,
+            node_id=node_id,
+            goal_hash=goal_hash,
+            work_order_sha256=work_order_sha256,
+            round_number=round_number,
+            command=command,
+            returncode=completed.returncode,
+            stdout=completed.stdout,
+            stderr=completed.stderr,
+            request_path=request_path,
+            response_path=response_path,
+            raw_path=raw_path,
+            meta_path=meta_path,
+            transport_receipt_path=transport_receipt_path,
+        )
         return _node_receipt(
             node_id=node_id,
             capability=spec.capability,
@@ -192,6 +209,8 @@ def _execute_webgpt(
             round_number=round_number,
             max_rounds=spec.max_rounds,
             commands_run=[command],
+            artifacts=diagnostic_artifacts,
+            handoff_summary="WebGPT transport blocked; Surf Doctor incident request emitted",
         )
     meta = _read_optional_json(meta_path)
     contract = _extract_round_contract(response_path.read_text(encoding="utf-8"))
@@ -357,6 +376,108 @@ def _webgpt_configuration_errors(spec: SkillDagSpec) -> list[str]:
     if not _non_empty(spec.configuration.get("expected_url")):
         errors.append("webgpt_expected_url_required")
     return errors
+
+
+def _write_surf_doctor_request(
+    *,
+    spec: SkillDagSpec,
+    run_id: str,
+    node_id: str,
+    goal_hash: str | None,
+    work_order_sha256: str | None,
+    round_number: int,
+    command: list[str],
+    returncode: int,
+    stdout: str,
+    stderr: str,
+    request_path: Path,
+    response_path: Path,
+    raw_path: Path,
+    meta_path: Path,
+    transport_receipt_path: Path,
+) -> list[dict[str, Any]]:
+    stdout_path = spec.output_dir / f"round-{round_number:03d}-transport.stdout.txt"
+    stderr_path = spec.output_dir / f"round-{round_number:03d}-transport.stderr.txt"
+    stdout_path.write_text(stdout, encoding="utf-8")
+    stderr_path.write_text(stderr, encoding="utf-8")
+
+    meta = _read_optional_json(meta_path)
+    transport = _read_optional_json(transport_receipt_path)
+    source_paths = [
+        request_path,
+        response_path,
+        raw_path,
+        meta_path,
+        transport_receipt_path,
+        stdout_path,
+        stderr_path,
+    ]
+    existing_sources = [path for path in source_paths if path.is_file()]
+    incident_path = spec.output_dir / "surf-doctor-request.json"
+    _write_json(
+        incident_path,
+        {
+            "schema": "surf_doctor.incident_request.v1",
+            "status": "PENDING_DIAGNOSIS",
+            "agent_id": "surf-doctor",
+            "run_id": run_id,
+            "node_id": node_id,
+            "round_number": round_number,
+            "goal_hash": goal_hash,
+            "work_order_sha256": work_order_sha256,
+            "failure_class": meta.get("failure") or f"webgpt_transport_exit_{returncode}",
+            "proof_status": meta.get("proof_status"),
+            "returncode": returncode,
+            "requested_tab_id": meta.get("requested_tab_id")
+            or str(spec.configuration.get("tab_id")),
+            "controlled_tab_id": meta.get("controlled_tab_id"),
+            "expected_url": str(spec.configuration.get("expected_url")),
+            "sentinel": meta.get("sentinel") or transport.get("sentinel"),
+            "submitted_to_chatgpt": meta.get("submitted_to_chatgpt")
+            if "submitted_to_chatgpt" in meta
+            else transport.get("submitted_to_chatgpt"),
+            "browser_mutation_authorized": False,
+            "allowed_actions": [
+                "preserve_incident",
+                "classify_failure",
+                "read_only_reproduction",
+                "prepare_repair_packet",
+            ],
+            "forbidden_actions": [
+                "webgpt_resubmit",
+                "tab_activate",
+                "tab_close",
+                "tab_navigate",
+                "page_refresh",
+                "extension_reload",
+            ],
+            "command": command,
+            "source_artifacts": [
+                _artifact(path, "surf.incident.source.v1") for path in existing_sources
+            ],
+            "dag_spec": {
+                "schema": "subagent_dag.v1",
+                "mode": "bounded_dag",
+                "nodes": [
+                    "preserve_incident",
+                    "classify_failure",
+                    "reproduce_or_bound",
+                    "prepare_repair",
+                ],
+                "max_attempts": 3,
+                "stop_conditions": [
+                    "diagnosis_and_repair_packet_written",
+                    "same_failure_repeated_twice",
+                    "architectural_change_required",
+                    "browser_mutation_required",
+                ],
+            },
+        },
+    )
+    return [
+        *[_artifact(path, "surf.incident.source.v1") for path in existing_sources],
+        _artifact(incident_path, "surf_doctor.incident_request.v1"),
+    ]
 
 
 def _webgpt_proof_errors(
