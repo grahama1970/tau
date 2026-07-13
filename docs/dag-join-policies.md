@@ -82,10 +82,12 @@ Skipped edges do not shrink the declared quorum basis.
 
 ## Timeout
 
-The scheduler starts a monotonic deadline when the first contribution reaches a
-join. At expiry it writes `timed_out` contributions for every unresolved edge
-and reevaluates the policy. The pure evaluator never reads a clock, and a final
-receipt never contains `wait`.
+The scheduler arms a monotonic deadline before the first direct incoming source
+is dispatched or virtually settled. A join therefore remains bounded even when
+no source produces a contribution. At expiry Tau signals each unresolved local
+source to terminate, writes the complete batch of `timed_out` contributions,
+and evaluates the policy once. The pure evaluator never reads a clock, and a
+final receipt never contains `wait`.
 
 ## Receipts
 

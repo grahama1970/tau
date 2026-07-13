@@ -12,6 +12,7 @@ import pytest
 
 from tau_coding.dag_join_decision import (
     JOIN_DECISION_SCHEMA,
+    JOIN_FAILURE_CODES,
     JoinDecisionError,
     build_terminal_contribution,
     evaluate_join_decision,
@@ -20,6 +21,7 @@ from tau_coding.dag_join_decision import (
     validate_terminal_contribution,
     write_immutable_json,
 )
+from tau_coding.project_dag import FAIL_CLOSED_REGISTRY
 
 DAG_ID = "join-policy-test"
 GOAL_HASH = "sha256:join-policy-goal"
@@ -233,6 +235,68 @@ def test_immutable_receipt_first_writer_wins_under_concurrency(
     assert len(winners) == 1
     assert json.loads(destination.read_text(encoding="utf-8")) == {"writer": winners[0]}
     assert [result for _, result in results].count("terminal_contribution_conflict") == 7
+
+
+def test_join_failure_vocabulary_is_registered_fail_closed() -> None:
+    expected = {
+        "join_required_successes_unexpected",
+        "join_quorum_fraction_unexpected",
+        "join_policy_hash_mismatch",
+        "terminal_contribution_reason_invalid",
+        "join_source_binding_mismatch",
+        "join_reviewer_not_allowed",
+        "join_capabilities_not_allowed",
+        "join_route_not_allowed",
+        "terminal_contribution_receipt_write_failed",
+        "join_decision_receipt_write_failed",
+    }
+
+    assert expected <= JOIN_FAILURE_CODES
+    assert FAIL_CLOSED_REGISTRY.keys() >= JOIN_FAILURE_CODES
+
+
+def test_collected_failures_include_stable_source_reason_and_attempt() -> None:
+    policy = _policy("collect_failures")
+    contributions = _contributions(["failed", "blocked", "success"], policy)
+
+    decision = evaluate_join_decision(
+        dag_id=DAG_ID,
+        goal_hash=GOAL_HASH,
+        join_node_id=JOIN_NODE,
+        join_policy=policy,
+        incoming_edges=_edges(),
+        contributions=contributions,
+    )
+
+    assert decision["collected_failures"] == [
+        {
+            "edge_index": 0,
+            "state": "failed",
+            "receipt_sha256": decision["contributions"][0]["receipt_sha256"],
+            "contribution_sha256": contributions[0]["contribution_sha256"],
+            "source_node_id": "branch-0",
+            "reason_code": "fixture_failed",
+            "attempt": 1,
+        },
+        {
+            "edge_index": 1,
+            "state": "blocked",
+            "receipt_sha256": decision["contributions"][1]["receipt_sha256"],
+            "contribution_sha256": contributions[1]["contribution_sha256"],
+            "source_node_id": "branch-1",
+            "reason_code": "fixture_blocked",
+            "attempt": 1,
+        },
+    ]
+    assert validate_join_decision(
+        decision,
+        dag_id=DAG_ID,
+        goal_hash=GOAL_HASH,
+        join_node_id=JOIN_NODE,
+        join_policy=policy,
+        incoming_edges=_edges(),
+        contributions=contributions,
+    ) == decision
 
 
 def test_partial_all_terminal_waits_without_authoritative_hash() -> None:

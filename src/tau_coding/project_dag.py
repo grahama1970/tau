@@ -960,6 +960,22 @@ def _run_bounded_ready_queue_project_dag(
             pending.extend(edge.target for edge in outgoing_edges.get(target, []))
         return False
 
+    def arm_direct_join_deadlines(node_id: str, *, origin: str) -> None:
+        armed_at = time.monotonic()
+        for edge in outgoing_edges.get(node_id, []):
+            if edge.target not in join_nodes or edge.target in join_wait_started:
+                continue
+            join_wait_started[edge.target] = armed_at
+            events.append(
+                {
+                    "event": "join_deadline_armed",
+                    "join_node_id": edge.target,
+                    "source_node_id": node_id,
+                    "origin": origin,
+                    "ts": _utc_stamp(),
+                }
+            )
+
     def branch_failure_is_join_consumable(node_id: str) -> bool:
         return not any(
             _edge_is_conditional(edge) for edge in outgoing_edges.get(node_id, [])
@@ -1065,9 +1081,10 @@ def _run_bounded_ready_queue_project_dag(
         if decision["status"] == "WAIT":
             return
         if decision["status"] == "TERMINAL_INTENT":
-            for edge in edges:
-                if edge.edge_index in edge_terminal_states:
-                    continue
+            pending_edges = [
+                edge for edge in edges if edge.edge_index not in edge_terminal_states
+            ]
+            for edge in pending_edges:
                 cancel_event = node_cancel_events.get(edge.source)
                 if cancel_event is not None:
                     cancel_event.set()
@@ -1080,6 +1097,7 @@ def _run_bounded_ready_queue_project_dag(
                         "join_node_id": join_id,
                         "terminal_intent": decision["decision"],
                     },
+                    evaluate_join_after=False,
                 )
             evaluate_join(join_id)
             return
@@ -1143,6 +1161,7 @@ def _run_bounded_ready_queue_project_dag(
         reason_code: str,
         basis: dict[str, Any],
         source_binding: dict[str, Any] | None = None,
+        evaluate_join_after: bool = True,
     ) -> None:
         nonlocal failed
         existing = edge_terminal_states.get(edge.edge_index)
@@ -1184,7 +1203,8 @@ def _run_bounded_ready_queue_project_dag(
                 basis=basis,
                 source_binding=source_binding,
             )
-            evaluate_join(edge.target)
+            if evaluate_join_after:
+                evaluate_join(edge.target)
             return
         resolve_normal_target(edge.target)
 
@@ -1248,6 +1268,7 @@ def _run_bounded_ready_queue_project_dag(
                     continue
                 if not node_ready(node_id):
                     continue
+                arm_direct_join_deadlines(node_id, origin="virtual_source_settlement")
                 settle_node(
                     node_id,
                     state="success",
@@ -1301,9 +1322,12 @@ def _run_bounded_ready_queue_project_dag(
             policy = join_policy(join_id)
             if now < started + float(policy["timeout_seconds"]):
                 continue
-            for edge in incoming_edges[join_id]:
-                if edge.edge_index in edge_terminal_states:
-                    continue
+            unresolved_edges = [
+                edge
+                for edge in incoming_edges[join_id]
+                if edge.edge_index not in edge_terminal_states
+            ]
+            for edge in unresolved_edges:
                 cancel_event = node_cancel_events.get(edge.source)
                 if cancel_event is not None:
                     cancel_event.set()
@@ -1316,7 +1340,9 @@ def _run_bounded_ready_queue_project_dag(
                         "join_node_id": join_id,
                         "timeout_seconds": policy["timeout_seconds"],
                     },
+                    evaluate_join_after=False,
                 )
+            evaluate_join(join_id)
             events.append(
                 {
                     "event": "join_timeout_expired",
@@ -1331,8 +1357,29 @@ def _run_bounded_ready_queue_project_dag(
     mark_virtual_ready_nodes()
     with ThreadPoolExecutor(max_workers=max_concurrency) as executor:
         futures: dict[Future[dict[str, Any]], str] = {}
+        scheduler_stop_signaled = False
+
+        def signal_scheduler_stop() -> None:
+            nonlocal scheduler_stop_signaled
+            if scheduler_stop_signaled:
+                return
+            scheduler_stop_signaled = True
+            running_nodes = sorted(set(futures.values()))
+            for node_id in running_nodes:
+                node_cancel_events.setdefault(node_id, threading.Event()).set()
+            for future in futures:
+                future.cancel()
+            events.append(
+                {
+                    "event": "scheduler_cancellation_signaled",
+                    "node_ids": running_nodes,
+                    "ts": _utc_stamp(),
+                }
+            )
+
         while True:
             if failed:
+                signal_scheduler_stop()
                 break
             running_node_ids = set(futures.values())
             for node_id in ready_nodes(running_node_ids):
@@ -1368,6 +1415,7 @@ def _run_bounded_ready_queue_project_dag(
                 artifact_dir = (
                     receipt_dir / "ready-queue" / node_id / f"attempt-{node_attempts[node_id]:03d}"
                 )
+                arm_direct_join_deadlines(node_id, origin="source_start")
                 future = executor.submit(
                     _dispatch_ready_node,
                     node=node,
@@ -1400,6 +1448,7 @@ def _run_bounded_ready_queue_project_dag(
                     status="RUNNING",
                 )
             if failed:
+                signal_scheduler_stop()
                 break
             if not futures:
                 deadline = pending_join_deadline()
@@ -1436,6 +1485,9 @@ def _run_bounded_ready_queue_project_dag(
                 mark_virtual_ready_nodes()
                 continue
             for future in done:
+                if failed:
+                    signal_scheduler_stop()
+                    break
                 node_id = futures.pop(future)
                 try:
                     result = future.result()

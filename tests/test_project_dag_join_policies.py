@@ -6,7 +6,11 @@ import json
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
+import pytest
+
+import tau_coding.project_dag as project_dag_module
 from tau_coding.dag_join_decision import validate_join_decision
 from tau_coding.project_dag import run_project_dag_contract
 
@@ -160,6 +164,160 @@ def test_join_timeout_terminates_running_branch_without_waiting_for_command_time
         if dispatch.get("selected_agent") == "branch-b"
     )
     assert branch_dispatch["stop_reason"] == "command_cancelled"
+
+
+def test_join_timeout_is_armed_before_any_branch_contributes(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="all_terminal",
+        route="ALL",
+        timeout_seconds=1,
+        branches=("branch-a", "branch-b"),
+    )
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="ALL"))
+    for branch in ("branch-a", "branch-b"):
+        _write_response_spec(
+            tmp_path,
+            branch,
+            _handoff(branch, "join"),
+            sleep_seconds=5,
+            command_timeout=10,
+        )
+
+    started = time.monotonic()
+    receipt = _run(tmp_path, contract_path)
+    elapsed = time.monotonic() - started
+
+    assert receipt["status"] == "PASS"
+    assert elapsed < 2.5
+    decision = _read_receipts(receipt["join_decision_receipts"])[0]
+    assert decision["counts"]["timed_out"] == 2
+    assert all(
+        contribution["reason_code"] == "join_timeout"
+        for contribution in _read_receipts(receipt["terminal_contribution_receipts"])
+    )
+    assert any(
+        event["event"] == "join_deadline_armed" and event["origin"] == "source_start"
+        for event in receipt["scheduler_events"]
+    )
+
+
+def test_fatal_join_block_cancels_unrelated_running_command(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="all_success",
+        route="ALL",
+        branches=("branch-a", "branch-b"),
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["limits"]["max_concurrency"] = 3
+    payload["nodes"].append(
+        {
+            "id": "unrelated",
+            "agent": "unrelated",
+            "executor": "local",
+            "max_attempts": 1,
+            "command_spec": str(
+                tmp_path / "specs" / "unrelated" / "tau-dispatch-command.json"
+            ),
+        }
+    )
+    payload["edges"].extend(
+        [
+            {
+                "from": "router",
+                "to": "unrelated",
+                "condition": {
+                    "schema": "tau.route_condition.v1",
+                    "op": "in",
+                    "field": "route",
+                    "value": ["ALL"],
+                },
+            },
+            {"from": "unrelated", "to": "human"},
+        ]
+    )
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    marker = tmp_path / "unrelated-finished"
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="ALL"))
+    _write_response_spec(
+        tmp_path,
+        "branch-a",
+        _handoff("branch-a", "join"),
+        exit_code=1,
+    )
+    _write_response_spec(
+        tmp_path,
+        "branch-b",
+        _handoff("branch-b", "join"),
+        sleep_seconds=5,
+        command_timeout=10,
+    )
+    _write_sleep_then_marker_spec(
+        tmp_path,
+        agent="unrelated",
+        response=_handoff("unrelated", "human"),
+        marker=marker,
+        sleep_seconds=5,
+    )
+
+    started = time.monotonic()
+    receipt = _run(tmp_path, contract_path)
+    elapsed = time.monotonic() - started
+
+    assert receipt["status"] == "BLOCKED"
+    assert elapsed < 2.5
+    assert not marker.exists()
+    started_nodes = {
+        event["node_id"]
+        for event in receipt["scheduler_events"]
+        if event["event"] == "node_started"
+    }
+    assert "unrelated" in started_nodes
+    cancellation = next(
+        event
+        for event in receipt["scheduler_events"]
+        if event["event"] == "scheduler_cancellation_signaled"
+    )
+    assert "unrelated" in cancellation["node_ids"]
+
+
+def test_short_circuit_batches_cancelled_contributions_before_final_evaluation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    branches = tuple(f"branch-{index}" for index in range(8))
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="any_success",
+        route="ALL",
+        branches=branches,
+    )
+    _write_response_spec(tmp_path, "router", _handoff("router", branches[0], route="ALL"))
+    _write_response_spec(tmp_path, branches[0], _handoff(branches[0], "join"))
+    for branch in branches[1:]:
+        _write_response_spec(
+            tmp_path,
+            branch,
+            _handoff(branch, "join"),
+            sleep_seconds=5,
+            command_timeout=10,
+        )
+    evaluations: list[str] = []
+    original = project_dag_module.evaluate_join_decision
+
+    def tracked_evaluation(**kwargs: Any) -> dict[str, Any]:
+        result = original(**kwargs)
+        evaluations.append(str(result["status"]))
+        return result
+
+    monkeypatch.setattr(project_dag_module, "evaluate_join_decision", tracked_evaluation)
+
+    receipt = _run(tmp_path, contract_path)
+
+    assert receipt["status"] == "PASS"
+    assert evaluations == ["TERMINAL_INTENT", "PASS"]
+    assert len(receipt["terminal_contribution_receipts"]) == len(branches)
+    assert len(set(receipt["terminal_contribution_receipts"])) == len(branches)
 
 
 def test_non_success_terminal_edge_does_not_count_as_activated_route(tmp_path: Path) -> None:
@@ -391,6 +549,33 @@ def _write_response_spec(
                 "command": [sys.executable, "-c", code],
                 "cwd": str(tmp_path),
                 "timeout_s": command_timeout,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_sleep_then_marker_spec(
+    tmp_path: Path,
+    *,
+    agent: str,
+    response: dict[str, object],
+    marker: Path,
+    sleep_seconds: float,
+) -> None:
+    spec_path = tmp_path / "specs" / agent / "tau-dispatch-command.json"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    code = (
+        f"import pathlib, time; time.sleep({sleep_seconds!r}); "
+        f"pathlib.Path({str(marker)!r}).write_text('finished'); "
+        f"print({json.dumps(json.dumps(response))})"
+    )
+    spec_path.write_text(
+        json.dumps(
+            {
+                "command": [sys.executable, "-c", code],
+                "cwd": str(tmp_path),
+                "timeout_s": 10,
             }
         ),
         encoding="utf-8",

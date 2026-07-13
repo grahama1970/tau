@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -47,20 +48,27 @@ JOIN_FAILURE_CODES = frozenset(
         "join_fail_fast_adverse_input",
         "join_minimum_success_count_impossible",
         "join_policy_requires_bounded_ready_queue",
+        "join_policy_hash_mismatch",
         "join_provider_not_allowed",
+        "join_quorum_fraction_unexpected",
         "join_quorum_fraction_invalid",
         "join_quorum_fraction_missing",
         "join_quorum_impossible",
         "join_required_successes_invalid",
         "join_required_successes_missing",
         "join_required_successes_out_of_range",
+        "join_required_successes_unexpected",
+        "join_reviewer_not_allowed",
+        "join_route_not_allowed",
         "join_requires_multiple_inputs",
+        "join_source_binding_mismatch",
         "join_timeout_invalid",
+        "join_capabilities_not_allowed",
         "terminal_contribution_conflict",
         "terminal_contribution_duplicate",
         "terminal_contribution_edge_mismatch",
         "terminal_contribution_hash_mismatch",
-        "terminal_contribution_policy_mismatch",
+        "terminal_contribution_reason_invalid",
         "terminal_contribution_receipt_write_failed",
         "terminal_contribution_state_invalid",
     }
@@ -254,7 +262,7 @@ def build_terminal_contribution(
         raise JoinDecisionError(
             "terminal_contribution_state_invalid", f"unsupported terminal state: {state}"
         )
-    if not isinstance(reason_code, str) or not reason_code:
+    if not isinstance(reason_code, str) or re.fullmatch(r"[a-z][a-z0-9_]*", reason_code) is None:
         raise JoinDecisionError(
             "terminal_contribution_reason_invalid", "reason_code is required"
         )
@@ -335,6 +343,43 @@ def validate_terminal_contribution(
         raise JoinDecisionError(
             "terminal_contribution_state_invalid", "terminal contribution state is invalid"
         )
+    reason_code = payload.get("reason_code")
+    if not isinstance(reason_code, str) or re.fullmatch(r"[a-z][a-z0-9_]*", reason_code) is None:
+        raise JoinDecisionError(
+            "terminal_contribution_reason_invalid", "terminal contribution reason is invalid"
+        )
+    source_binding = payload.get("source_binding")
+    if not isinstance(source_binding, Mapping):
+        raise JoinDecisionError(
+            "join_source_binding_mismatch", "terminal contribution source binding is invalid"
+        )
+    source_node_id = source_binding.get("source_node_id")
+    if source_node_id is not None and source_node_id != expected_edge["source_node_id"]:
+        raise JoinDecisionError(
+            "join_source_binding_mismatch", "terminal contribution source node mismatch"
+        )
+    attempt = source_binding.get("attempt")
+    if attempt is not None and (
+        isinstance(attempt, bool) or not isinstance(attempt, int) or attempt < 1
+    ):
+        raise JoinDecisionError(
+            "join_source_binding_mismatch", "terminal contribution attempt is invalid"
+        )
+    basis = payload.get("basis")
+    if not isinstance(basis, Mapping):
+        raise JoinDecisionError(
+            "join_source_binding_mismatch", "terminal contribution basis is invalid"
+        )
+    if basis.get("kind") == "source_terminal" and (
+        source_node_id != expected_edge["source_node_id"]
+        or isinstance(attempt, bool)
+        or not isinstance(attempt, int)
+        or attempt < 1
+    ):
+        raise JoinDecisionError(
+            "join_source_binding_mismatch",
+            "source-terminal contribution requires matching source and positive attempt",
+        )
     return dict(value)
 
 
@@ -412,6 +457,11 @@ def evaluate_join_decision(
             "state": contribution_by_index[edge_index]["state"],
             "receipt_sha256": sha256_json(contribution_by_index[edge_index]),
             "contribution_sha256": contribution_by_index[edge_index]["contribution_sha256"],
+            "source_node_id": contribution_by_index[edge_index]["edge_contract"][
+                "source_node_id"
+            ],
+            "reason_code": contribution_by_index[edge_index]["reason_code"],
+            "attempt": contribution_by_index[edge_index]["source_binding"].get("attempt"),
         }
         for edge_index in sorted(contribution_by_index)
     ]

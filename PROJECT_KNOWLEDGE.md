@@ -52,6 +52,18 @@
   3 failed`, with the same three unrelated clean-main fixture/artifact gaps
   documented under issue #75.
 
+- 2026-07-13 issue #76 second-review repair: a response-proven WebGPT bakeoff
+  selected adversarial-fixtures-first followed by a constrained state repair.
+  Join deadlines now arm before a direct source starts, including the
+  no-contribution hang case; terminal-intent and timeout contributions settle as
+  one batch before reevaluation; fatal scheduler state signals cancellation to
+  every running local command; contribution validation checks reason and source
+  bindings; and `collected_failures` carries stable source, reason, attempt, and
+  hash fields. Added acceptance covers two hung branches with no first
+  contribution, cancellation of unrelated running work after a join block,
+  complete fail-closed code registration, enriched replay, and eight-way batch
+  short-circuit settlement.
+
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed
   `tau.route_condition.v1` objects over direct typed `response.result` fields

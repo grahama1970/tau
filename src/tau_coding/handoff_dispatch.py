@@ -393,7 +393,7 @@ def dispatch_agent_handoff_command_once(
                         "stderr": exc.stderr,
                     },
                 ),
-                errors=("command cancelled by DAG join decision",),
+                errors=("command cancelled by DAG scheduler",),
             )
         except subprocess.TimeoutExpired as exc:
             timeout_metadata: dict[str, object] = {}
