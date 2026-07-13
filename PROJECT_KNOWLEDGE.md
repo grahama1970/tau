@@ -1,9 +1,101 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 12:32 by agent
+**Last updated:** 2026-07-13 14:05 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-13 issue #76 terminal-contribution/join-policy slice: the
+  `bounded-ready-queue` scheduler now accepts virtual
+  `tau.dag_join_policy.v1` nodes with `all_success`, `all_terminal`,
+  `exact_success_count`, `minimum_success_count`, rational `quorum`,
+  `any_success`, `fail_fast`, and `collect_failures`. Every declared incoming
+  edge produces one immutable `tau.dag_terminal_contribution.v1` using the
+  closed states `success`, `failed`, `blocked`, `skipped`, `cancelled`, or
+  `timed_out`; Tau persists a hash-bound, replayable
+  `tau.dag_join_decision.v1` before settling the virtual join. Unselected typed
+  routes propagate `skipped`, branch-local operational failures can be consumed
+  by a declared join, early decisions close unresolved inputs as `cancelled`,
+  and scheduler-owned deadlines close unresolved edges as `timed_out` while
+  ignoring late replacements. Invalid/implicit joins block before command
+  compilation. Focused deterministic proof:
+  `uv run pytest tests/test_dag_join_decision.py
+  tests/test_project_dag_join_policies.py tests/test_project_dag.py -q` ->
+  `119 passed`; stable non-mocked local subprocess acceptance under
+  `/tmp/tau-issue-76-acceptance/` -> `39 passed` and six inspectable DAG runs,
+  including a skipped branch, a blocking all-success join, a failed branch
+  accepted by all-terminal, timeout closure, deterministic replay, and malformed
+  quorum pre-dispatch blocking. `ruff`, focused `mypy`, schema JSON parsing,
+  `py_compile`, and `git diff --check` pass. Full repository proof ->
+  `1947 passed, 3 failed`; the three failures are unchanged clean-main baseline
+  gaps: one stale compliance-package fixture and two absent generated
+  proof/command-spec artifacts. Browser Oracle resolved the configured Tau tab;
+  WebGPT returned sentinel-proven architecture advice with degraded focus
+  transport, and create-architecture saved the advisory UX Lab diagram
+  `tau-dag-terminal-contributions-and-join-decisions---issue-76`. This slice
+  proves deterministic local join handling and receipts; it does not prove
+  source-result truth, provider/model quality, termination of external/provider
+  workloads, durable restart recovery, OS isolation, DagPlan convergence, or
+  arbitrary nested-workflow correctness.
+
+- 2026-07-13 issue #76 independent-review hardening: the live SciLLM-backed
+  `code-review-runner` found an overwrite race in immutable receipt creation,
+  ready-queue waits beyond finalized join deadlines, delayed `all_success`
+  failure, incomplete fail-closed registration, and false terminal activation.
+  Tau now creates immutable receipts with atomic no-overwrite links, terminates
+  cancellable local command process groups on join short-circuit or timeout,
+  emits irreversible `all_success` block intent immediately, registers the
+  closed join failure-code vocabulary, and counts only successful terminal
+  edges as activated routes. Deterministic focused proof is `123 passed`; the
+  timeout acceptance terminates a five-second branch at the one-second join
+  deadline and records `command_cancelled`. Full-suite proof is `1951 passed,
+  3 failed`, with the same three unrelated clean-main fixture/artifact gaps
+  documented under issue #75.
+
+- 2026-07-13 issue #76 second-review repair: a response-proven WebGPT bakeoff
+  selected adversarial-fixtures-first followed by a constrained state repair.
+  Join deadlines now arm before a direct source starts, including the
+  no-contribution hang case; terminal-intent and timeout contributions settle as
+  one batch before reevaluation; fatal scheduler state signals cancellation to
+  every running local command; contribution validation checks reason and source
+  bindings; and `collected_failures` carries stable source, reason, attempt, and
+  hash fields. Added acceptance covers two hung branches with no first
+  contribution, cancellation of unrelated running work after a join block,
+  complete fail-closed code registration, enriched replay, and eight-way batch
+  short-circuit settlement.
+
+- 2026-07-13 issue #76 queued-source hardening: round-three independent review
+  identified that an unstarted source could remain runnable after its join edge
+  was cancelled or timed out. Tau now terminalizes and suppresses such sources,
+  makes queued workers check cancellation before subprocess launch, and rejects
+  direct join sources with any non-join outgoing path. Branch failures are join
+  consumable only when every outgoing edge is an unconditional direct input to
+  one join. The quorum schema now caps both fraction fields and explicitly
+  records the runtime-only cross-field/reduced-fraction invariant. Focused proof
+  is `129 passed` before the final independent review rerun.
+
+- 2026-07-13 issue #76 contribution-identity hardening: Tau now rejects
+  duplicate incoming edges from one source before dispatch, records virtual
+  scheduler sources with `virtual_node_completed` rather than a command-attempt
+  basis, and names the join binding `contribution_payload_sha256` instead of
+  incorrectly implying a persisted-file byte hash. The bounded ready-queue still
+  uses only its cancellation-aware local command dispatch path; external and
+  non-cooperative provider workload cancellation remains explicitly unproven.
+
+- 2026-07-13 issue #76 terminal-skip settlement: final review identified that a
+  valid PASS/`skip` join decision, such as `collect_failures` with no failures,
+  was later contradicted by `missing_terminal_route`. Tau now records finalized
+  join skips as valid terminal settlements without calling the terminal
+  successfully activated. The focused suite is `165 passed` and includes the
+  live local no-op collection path.
+
+- 2026-07-13 issue #76 final review state: the fresh live SciLLM-backed semantic
+  review reports zero findings. Its runner status remains nonzero only for the
+  pre-existing file-size rules (`project_dag.py`: 4716 lines on main, 5352 on
+  this branch; `handoff_dispatch.py`: 1338 on main, 1443 on this branch), whose
+  architectural split belongs to the DagPlan/runtime convergence follow-up.
+  Final full-suite proof is `1960 passed, 3 failed`; the same three unrelated
+  clean-main fixture/artifact gaps remain and no issue #76 test failed.
 
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed

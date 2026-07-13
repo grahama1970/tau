@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import threading
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
@@ -18,6 +19,14 @@ from tau_coding.battle_scillm import (
     resolve_active_scillm_proxy_key,
 )
 from tau_coding.course_correction import build_course_correction_receipt
+from tau_coding.dag_join_decision import (
+    JOIN_FAILURE_CODES,
+    JoinDecisionError,
+    build_terminal_contribution,
+    evaluate_join_decision,
+    normalize_join_policy,
+    write_immutable_json,
+)
 from tau_coding.dag_route_decision import (
     ROUTE_CONDITION_SCHEMA,
     ROUTE_DECISION_VALIDATION_CODES,
@@ -208,6 +217,13 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
     "secure_mode_requires_handoff_loop": {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.secure_scheduler_boundary",
+    },
+    **{
+        code: {
+            "severity": "BLOCK",
+            "implemented_by": "tau.validators.dag.join_policy",
+        }
+        for code in JOIN_FAILURE_CODES
     },
 }
 
@@ -412,11 +428,18 @@ def run_project_dag_contract(
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
     scheduler_alert: dict[str, Any] | None = None
-    if scheduler != "bounded-ready-queue" and _has_typed_routes(contract):
+    if scheduler != "bounded-ready-queue" and (
+        _has_typed_routes(contract) or _has_join_policies(contract)
+    ):
+        code = (
+            "typed_route_requires_bounded_ready_queue"
+            if _has_typed_routes(contract)
+            else "join_policy_requires_bounded_ready_queue"
+        )
         scheduler_alert = _alert(
             "BLOCK",
-            "typed_route_requires_bounded_ready_queue",
-            "Typed route conditions require the bounded-ready-queue scheduler.",
+            code,
+            "Typed route and join contracts require the bounded-ready-queue scheduler.",
             {"requested_scheduler": scheduler},
         )
     elif (
@@ -885,10 +908,16 @@ def _run_bounded_ready_queue_project_dag(
     }
     incoming_edges = _incoming_edge_objects(contract)
     outgoing_edges = _outgoing_edge_objects(contract)
+    join_nodes = {
+        node_id
+        for node_id in contract.nodes
+        if isinstance(_node_payload(contract, node_id).get("join"), dict)
+    }
     completed: set[str] = set()
     resolved_sources: set[str] = set()
     activated_edges: set[int] = set()
     activated_terminals: set[str] = set()
+    terminal_join_skips: set[str] = set()
     active_nodes: set[str] = {
         node_id for node_id in runnable_nodes if not incoming_edges.get(node_id)
     }
@@ -902,21 +931,334 @@ def _run_bounded_ready_queue_project_dag(
     errors: list[str] = []
     course_correction_artifacts: list[str] = []
     route_decision_artifacts: list[str] = []
+    terminal_contribution_artifacts: list[str] = []
+    join_decision_artifacts: list[str] = []
+    node_terminal_states: dict[str, str] = {}
+    edge_terminal_states: dict[int, str] = {}
+    edge_contributions: dict[int, dict[str, Any]] = {}
+    join_wait_started: dict[str, float] = {}
+    finalized_joins: set[str] = set()
+    node_cancel_events: dict[str, threading.Event] = {}
     intervals: list[tuple[float, float]] = []
     started_at = time.monotonic()
 
-    def activate_edges(edges: list[ProjectDagEdge]) -> None:
-        for edge in edges:
-            activated_edges.add(edge.edge_index)
-            if edge.target in contract.terminal_nodes:
-                activated_terminals.add(edge.target)
-            elif edge.target in runnable_nodes:
-                active_nodes.add(edge.target)
+    def join_policy(node_id: str) -> dict[str, Any]:
+        return normalize_join_policy(
+            _node_payload(contract, node_id)["join"],
+            incoming_count=len(incoming_edges[node_id]),
+        )
 
-    def resolve_unconditional_source(node_id: str) -> None:
-        activate_edges(outgoing_edges.get(node_id, []))
+    def arm_direct_join_deadlines(node_id: str, *, origin: str) -> None:
+        armed_at = time.monotonic()
+        for edge in outgoing_edges.get(node_id, []):
+            if edge.target not in join_nodes or edge.target in join_wait_started:
+                continue
+            join_wait_started[edge.target] = armed_at
+            events.append(
+                {
+                    "event": "join_deadline_armed",
+                    "join_node_id": edge.target,
+                    "source_node_id": node_id,
+                    "origin": origin,
+                    "ts": _utc_stamp(),
+                }
+            )
+
+    def branch_failure_is_join_consumable(node_id: str) -> bool:
+        outgoing = outgoing_edges.get(node_id, [])
+        return bool(outgoing) and all(
+            not _edge_is_conditional(edge) and edge.target in join_nodes for edge in outgoing
+        ) and len({edge.target for edge in outgoing}) == 1
+
+    def suppress_unstarted_join_source(edge: ProjectDagEdge, *, state: str) -> None:
+        source = edge.source
+        if source in completed or source in node_cancel_events:
+            return
+        active_nodes.discard(source)
+        node_terminal_states[source] = state
+        resolved_sources.add(source)
+        completed.add(source)
+        events.append(
+            {
+                "event": "unstarted_join_source_suppressed",
+                "node_id": source,
+                "join_node_id": edge.target,
+                "state": state,
+                "ts": _utc_stamp(),
+            }
+        )
+
+    def edge_identity(edge: ProjectDagEdge) -> dict[str, Any]:
+        return {
+            "edge_index": edge.edge_index,
+            "source_node_id": edge.source,
+            "target_node_id": edge.target,
+            "condition": edge.condition,
+        }
+
+    def write_join_contribution(
+        edge: ProjectDagEdge,
+        *,
+        state: str,
+        reason_code: str,
+        basis: dict[str, Any],
+        source_binding: dict[str, Any] | None = None,
+    ) -> None:
+        nonlocal failed
+        join_id = edge.target
+        policy = join_policy(join_id)
+        contribution = build_terminal_contribution(
+            dag_id=contract.dag_id,
+            goal_hash=str(contract.goal["goal_hash"]),
+            join_node_id=join_id,
+            edge_contract=edge_identity(edge),
+            state=state,
+            reason_code=reason_code,
+            basis=basis,
+            join_policy=policy,
+            incoming_count=len(incoming_edges[join_id]),
+            source_binding=source_binding,
+        )
+        path = receipt_dir / "terminal-contributions" / join_id / f"edge-{edge.edge_index:04d}.json"
+        try:
+            write_immutable_json(
+                path,
+                contribution,
+                conflict_code="terminal_contribution_conflict",
+            )
+        except (OSError, JoinDecisionError) as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    getattr(exc, "code", "terminal_contribution_receipt_write_failed"),
+                    "Tau could not persist an immutable terminal contribution.",
+                    {"join_node_id": join_id, "edge_index": edge.edge_index, "errors": [str(exc)]},
+                )
+            )
+            errors.append(str(exc))
+            failed = True
+            return
+        edge_contributions[edge.edge_index] = contribution
+        terminal_contribution_artifacts.append(str(path))
+        join_wait_started.setdefault(join_id, time.monotonic())
+        events.append(
+            {
+                "event": "terminal_contribution_recorded",
+                "join_node_id": join_id,
+                "edge_index": edge.edge_index,
+                "source_node_id": edge.source,
+                "state": state,
+                "receipt": str(path),
+                "ts": _utc_stamp(),
+            }
+        )
+
+    def evaluate_join(join_id: str) -> None:
+        nonlocal failed
+        if failed or join_id in finalized_joins:
+            return
+        policy = join_policy(join_id)
+        edges = incoming_edges[join_id]
+        contributions = [
+            edge_contributions[edge.edge_index]
+            for edge in edges
+            if edge.edge_index in edge_contributions
+        ]
+        try:
+            decision = evaluate_join_decision(
+                dag_id=contract.dag_id,
+                goal_hash=str(contract.goal["goal_hash"]),
+                join_node_id=join_id,
+                join_policy=policy,
+                incoming_edges=[edge_identity(edge) for edge in edges],
+                contributions=contributions,
+            )
+        except JoinDecisionError as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    exc.code,
+                    "Tau rejected the terminal contribution set.",
+                    {"join_node_id": join_id, "errors": [str(exc)]},
+                )
+            )
+            errors.append(str(exc))
+            failed = True
+            return
+        if decision["status"] == "WAIT":
+            return
+        if decision["status"] == "TERMINAL_INTENT":
+            pending_edges = [
+                edge for edge in edges if edge.edge_index not in edge_terminal_states
+            ]
+            for edge in pending_edges:
+                suppress_unstarted_join_source(edge, state="cancelled")
+                cancel_event = node_cancel_events.get(edge.source)
+                if cancel_event is not None:
+                    cancel_event.set()
+                settle_edge(
+                    edge,
+                    state="cancelled",
+                    reason_code="join_short_circuit",
+                    basis={
+                        "kind": "join_short_circuit",
+                        "join_node_id": join_id,
+                        "terminal_intent": decision["decision"],
+                    },
+                    evaluate_join_after=False,
+                )
+            evaluate_join(join_id)
+            return
+        path = receipt_dir / "join-decisions" / f"{join_id}.json"
+        try:
+            write_immutable_json(
+                path,
+                decision,
+                conflict_code="join_decision_receipt_write_failed",
+            )
+        except (OSError, JoinDecisionError) as exc:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    getattr(exc, "code", "join_decision_receipt_write_failed"),
+                    "Tau could not persist the terminal join decision.",
+                    {"join_node_id": join_id, "errors": [str(exc)]},
+                )
+            )
+            errors.append(str(exc))
+            failed = True
+            return
+        finalized_joins.add(join_id)
+        join_decision_artifacts.append(str(path))
+        events.append(
+            {
+                "event": "join_decided",
+                "join_node_id": join_id,
+                "decision": decision["decision"],
+                "reason_code": decision["reason_code"],
+                "join_decision_receipt": str(path),
+                "ts": _utc_stamp(),
+            }
+        )
+        terminal_state = {
+            "release": "success",
+            "skip": "skipped",
+            "block": "blocked",
+        }[decision["decision"]]
+        settle_node(
+            join_id,
+            state=terminal_state,
+            reason_code=decision["reason_code"],
+            basis={"kind": "join_decision", "decision_sha256": decision["decision_sha256"]},
+        )
+        if decision["decision"] == "block":
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    decision["reason_code"],
+                    "Declared DAG join policy blocked continuation.",
+                    {"join_node_id": join_id, "join_decision_receipt": str(path)},
+                )
+            )
+            failed = True
+
+    def settle_edge(
+        edge: ProjectDagEdge,
+        *,
+        state: str,
+        reason_code: str,
+        basis: dict[str, Any],
+        source_binding: dict[str, Any] | None = None,
+        evaluate_join_after: bool = True,
+    ) -> None:
+        nonlocal failed
+        existing = edge_terminal_states.get(edge.edge_index)
+        if existing is not None:
+            if existing in {"cancelled", "timed_out"} and state != existing:
+                events.append(
+                    {
+                        "event": "late_terminal_contribution_ignored",
+                        "edge_index": edge.edge_index,
+                        "existing_state": existing,
+                        "late_state": state,
+                        "ts": _utc_stamp(),
+                    }
+                )
+                return
+            if existing != state:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "terminal_contribution_conflict",
+                        "An edge attempted to replace its terminal contribution.",
+                        {"edge_index": edge.edge_index, "existing": existing, "proposed": state},
+                    )
+                )
+                failed = True
+            return
+        edge_terminal_states[edge.edge_index] = state
+        if state == "success":
+            activated_edges.add(edge.edge_index)
+        if edge.target in contract.terminal_nodes:
+            if state == "success":
+                activated_terminals.add(edge.target)
+            elif state == "skipped" and edge.source in finalized_joins:
+                terminal_join_skips.add(edge.target)
+            return
+        if edge.target in join_nodes:
+            write_join_contribution(
+                edge,
+                state=state,
+                reason_code=reason_code,
+                basis=basis,
+                source_binding=source_binding,
+            )
+            if evaluate_join_after:
+                evaluate_join(edge.target)
+            return
+        resolve_normal_target(edge.target)
+
+    def settle_node(
+        node_id: str,
+        *,
+        state: str,
+        reason_code: str,
+        basis: dict[str, Any],
+        source_binding: dict[str, Any] | None = None,
+    ) -> None:
+        if node_id in node_terminal_states:
+            return
+        node_terminal_states[node_id] = state
         resolved_sources.add(node_id)
         completed.add(node_id)
+        for edge in outgoing_edges.get(node_id, []):
+            settle_edge(
+                edge,
+                state=state,
+                reason_code=reason_code,
+                basis=basis,
+                source_binding=source_binding,
+            )
+
+    def resolve_normal_target(node_id: str) -> None:
+        if node_id in completed or node_id in join_nodes:
+            return
+        incoming = incoming_edges.get(node_id, [])
+        if not incoming or any(edge.edge_index not in edge_terminal_states for edge in incoming):
+            return
+        states = [edge_terminal_states[edge.edge_index] for edge in incoming]
+        if all(state == "success" for state in states):
+            active_nodes.add(node_id)
+            return
+        state = "skipped" if all(item == "skipped" for item in states) else "blocked"
+        settle_node(
+            node_id,
+            state=state,
+            reason_code=(
+                "upstream_skipped" if state == "skipped" else "upstream_terminal_not_successful"
+            ),
+            basis={"kind": f"upstream_{state}"},
+        )
 
     def node_ready(node_id: str) -> bool:
         if node_id not in active_nodes:
@@ -924,16 +1266,7 @@ def _run_bounded_ready_queue_project_dag(
         incoming = incoming_edges.get(node_id, [])
         if not incoming:
             return True
-        if any(_edge_is_conditional(edge) for edge in incoming):
-            return (
-                len(incoming) == 1
-                and incoming[0].source in resolved_sources
-                and incoming[0].edge_index in activated_edges
-            )
-        return all(
-            edge.source in resolved_sources and edge.edge_index in activated_edges
-            for edge in incoming
-        )
+        return all(edge_terminal_states.get(edge.edge_index) == "success" for edge in incoming)
 
     def mark_virtual_ready_nodes() -> None:
         changed = True
@@ -941,11 +1274,17 @@ def _run_bounded_ready_queue_project_dag(
             changed = False
             for node_id in sorted(active_nodes - completed):
                 node = contract.nodes[node_id]
-                if node.command_spec:
+                if node.command_spec or node_id in join_nodes:
                     continue
                 if not node_ready(node_id):
                     continue
-                resolve_unconditional_source(node_id)
+                arm_direct_join_deadlines(node_id, origin="virtual_source_settlement")
+                settle_node(
+                    node_id,
+                    state="success",
+                    reason_code="virtual_node_completed",
+                    basis={"kind": "virtual_node_completed"},
+                )
                 events.append(
                     {
                         "event": "virtual_node_completed",
@@ -972,11 +1311,86 @@ def _run_bounded_ready_queue_project_dag(
             and node_ready(node_id)
         ]
 
+    def pending_join_deadline() -> float | None:
+        deadlines = [
+            started + float(join_policy(join_id)["timeout_seconds"])
+            for join_id, started in join_wait_started.items()
+            if join_id not in finalized_joins
+            and any(
+                edge.edge_index not in edge_terminal_states
+                for edge in incoming_edges[join_id]
+            )
+        ]
+        return min(deadlines) if deadlines else None
+
+    def expire_due_joins() -> bool:
+        now = time.monotonic()
+        expired = False
+        for join_id, started in sorted(join_wait_started.items()):
+            if join_id in finalized_joins:
+                continue
+            policy = join_policy(join_id)
+            if now < started + float(policy["timeout_seconds"]):
+                continue
+            unresolved_edges = [
+                edge
+                for edge in incoming_edges[join_id]
+                if edge.edge_index not in edge_terminal_states
+            ]
+            for edge in unresolved_edges:
+                suppress_unstarted_join_source(edge, state="timed_out")
+                cancel_event = node_cancel_events.get(edge.source)
+                if cancel_event is not None:
+                    cancel_event.set()
+                settle_edge(
+                    edge,
+                    state="timed_out",
+                    reason_code="join_timeout",
+                    basis={
+                        "kind": "join_timeout",
+                        "join_node_id": join_id,
+                        "timeout_seconds": policy["timeout_seconds"],
+                    },
+                    evaluate_join_after=False,
+                )
+            evaluate_join(join_id)
+            events.append(
+                {
+                    "event": "join_timeout_expired",
+                    "join_node_id": join_id,
+                    "timeout_seconds": policy["timeout_seconds"],
+                    "ts": _utc_stamp(),
+                }
+            )
+            expired = True
+        return expired
+
     mark_virtual_ready_nodes()
     with ThreadPoolExecutor(max_workers=max_concurrency) as executor:
         futures: dict[Future[dict[str, Any]], str] = {}
+        scheduler_stop_signaled = False
+
+        def signal_scheduler_stop() -> None:
+            nonlocal scheduler_stop_signaled
+            if scheduler_stop_signaled:
+                return
+            scheduler_stop_signaled = True
+            running_nodes = sorted(set(futures.values()))
+            for node_id in running_nodes:
+                node_cancel_events.setdefault(node_id, threading.Event()).set()
+            for future in futures:
+                future.cancel()
+            events.append(
+                {
+                    "event": "scheduler_cancellation_signaled",
+                    "node_ids": running_nodes,
+                    "ts": _utc_stamp(),
+                }
+            )
+
         while True:
             if failed:
+                signal_scheduler_stop()
                 break
             running_node_ids = set(futures.values())
             for node_id in ready_nodes(running_node_ids):
@@ -1012,6 +1426,7 @@ def _run_bounded_ready_queue_project_dag(
                 artifact_dir = (
                     receipt_dir / "ready-queue" / node_id / f"attempt-{node_attempts[node_id]:03d}"
                 )
+                arm_direct_join_deadlines(node_id, origin="source_start")
                 future = executor.submit(
                     _dispatch_ready_node,
                     node=node,
@@ -1023,6 +1438,7 @@ def _run_bounded_ready_queue_project_dag(
                         contract.command_policy,
                         contract_path,
                     ),
+                    cancel_event=node_cancel_events.setdefault(node_id, threading.Event()),
                 )
                 futures[future] = node_id
                 events.append(
@@ -1043,8 +1459,18 @@ def _run_bounded_ready_queue_project_dag(
                     status="RUNNING",
                 )
             if failed:
+                signal_scheduler_stop()
                 break
             if not futures:
+                deadline = pending_join_deadline()
+                if deadline is not None:
+                    remaining_seconds = deadline - time.monotonic()
+                    if remaining_seconds > 0:
+                        time.sleep(min(remaining_seconds, 0.05))
+                        continue
+                    if expire_due_joins():
+                        mark_virtual_ready_nodes()
+                        continue
                 remaining = sorted(active_nodes - completed)
                 if remaining:
                     alerts.append(
@@ -1056,8 +1482,23 @@ def _run_bounded_ready_queue_project_dag(
                         )
                     )
                 break
-            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            deadline = pending_join_deadline()
+            wait_timeout = None
+            if deadline is not None:
+                wait_timeout = max(0.0, deadline - time.monotonic())
+            done, _ = wait(
+                futures,
+                timeout=wait_timeout,
+                return_when=FIRST_COMPLETED,
+            )
+            if not done:
+                expire_due_joins()
+                mark_virtual_ready_nodes()
+                continue
             for future in done:
+                if failed:
+                    signal_scheduler_stop()
+                    break
                 node_id = futures.pop(future)
                 try:
                     result = future.result()
@@ -1114,6 +1555,8 @@ def _run_bounded_ready_queue_project_dag(
                     stop_reason = "node_dispatch_failed"
                     if isinstance(dispatch, dict):
                         stop_reason = str(dispatch.get("stop_reason") or stop_reason)
+                    elif isinstance(result.get("stop_reason"), str):
+                        stop_reason = str(result["stop_reason"])
                     elif result.get("errors"):
                         stop_reason = _command_spec_load_stop_reason(
                             "\n".join(str(item) for item in result.get("errors", []))
@@ -1201,6 +1644,31 @@ def _run_bounded_ready_queue_project_dag(
                             errors.extend(str(item) for item in result.get("errors", []))
                             failed = True
                             continue
+                        continue
+                    if branch_failure_is_join_consumable(node_id):
+                        terminal_state = {
+                            "command_cancelled": "cancelled",
+                            "command_timeout": "timed_out",
+                        }.get(stop_reason, "failed")
+                        settle_node(
+                            node_id,
+                            state=terminal_state,
+                            reason_code=stop_reason,
+                            basis={"kind": "source_terminal"},
+                            source_binding={
+                                "source_node_id": node_id,
+                                "attempt": node_attempts[node_id],
+                            },
+                        )
+                        events.append(
+                            {
+                                "event": "branch_failure_contributed_to_join",
+                                "node_id": node_id,
+                                "stop_reason": stop_reason,
+                                "ts": _utc_stamp(),
+                            }
+                        )
+                        mark_virtual_ready_nodes()
                         continue
                     alerts.append(
                         _alert(
@@ -1315,8 +1783,29 @@ def _run_bounded_ready_queue_project_dag(
                             auth_evidence["course_correction_receipt"] = str(artifact)
                             auth_alert["evidence"] = auth_evidence
                             errors.extend(auth_errors)
-                        alerts.extend(node_alerts)
-                        failed = True
+                        if auth_alert is None and branch_failure_is_join_consumable(node_id):
+                            settle_node(
+                                node_id,
+                                state="blocked",
+                                reason_code=str(node_alerts[0]["code"]),
+                                basis={"kind": "source_terminal"},
+                                source_binding={
+                                    "source_node_id": node_id,
+                                    "attempt": node_attempts[node_id],
+                                },
+                            )
+                            events.append(
+                                {
+                                    "event": "branch_block_contributed_to_join",
+                                    "node_id": node_id,
+                                    "alert_codes": [item["code"] for item in node_alerts],
+                                    "ts": _utc_stamp(),
+                                }
+                            )
+                            mark_virtual_ready_nodes()
+                        else:
+                            alerts.extend(node_alerts)
+                            failed = True
                     else:
                         source_edges = outgoing_edges.get(node_id, [])
                         conditional_edges = [
@@ -1418,31 +1907,66 @@ def _run_bounded_ready_queue_project_dag(
                                 failed = True
                                 continue
                             selected_targets = set(decision["selected_targets"])
-                            activate_edges(
-                                [
-                                    edge
-                                    for edge in conditional_edges
-                                    if edge.target in selected_targets
-                                ]
-                            )
+                            node_terminal_states[node_id] = "success"
                             resolved_sources.add(node_id)
                             completed.add(node_id)
+                            for edge in conditional_edges:
+                                selected = edge.target in selected_targets
+                                settle_edge(
+                                    edge,
+                                    state="success" if selected else "skipped",
+                                    reason_code=(
+                                        "route_selected" if selected else "route_unselected"
+                                    ),
+                                    basis={
+                                        "kind": (
+                                            "source_terminal" if selected else "route_unselected"
+                                        ),
+                                        "route_decision_sha256": decision["decision_sha256"],
+                                    },
+                                    source_binding={
+                                        "source_node_id": node_id,
+                                        "attempt": node_attempts[node_id],
+                                    },
+                                )
                         else:
-                            resolve_unconditional_source(node_id)
+                            settle_node(
+                                node_id,
+                                state="success",
+                                reason_code="source_terminal_success",
+                                basis={"kind": "source_terminal"},
+                                source_binding={
+                                    "source_node_id": node_id,
+                                    "attempt": node_attempts[node_id],
+                                },
+                            )
                         mark_virtual_ready_nodes()
                 else:
-                    alerts.append(
-                        _alert(
-                            "BLOCK",
-                            "missing_node_response",
-                            "Ready-queue node did not return a JSON handoff response.",
-                            {"node_id": node_id},
+                    if branch_failure_is_join_consumable(node_id):
+                        settle_node(
+                            node_id,
+                            state="failed",
+                            reason_code="missing_node_response",
+                            basis={"kind": "source_terminal"},
+                            source_binding={
+                                "source_node_id": node_id,
+                                "attempt": node_attempts[node_id],
+                            },
                         )
-                    )
-                    failed = True
+                        mark_virtual_ready_nodes()
+                    else:
+                        alerts.append(
+                            _alert(
+                                "BLOCK",
+                                "missing_node_response",
+                                "Ready-queue node did not return a JSON handoff response.",
+                                {"node_id": node_id},
+                            )
+                        )
+                        failed = True
 
     execution_seconds = round(time.monotonic() - started_at, 6)
-    if not alerts and not activated_terminals:
+    if not alerts and not activated_terminals and not terminal_join_skips:
         alerts.append(
             _alert(
                 "BLOCK",
@@ -1482,6 +2006,10 @@ def _run_bounded_ready_queue_project_dag(
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
         route_decision_artifacts=route_decision_artifacts,
+        terminal_contribution_artifacts=terminal_contribution_artifacts,
+        join_decision_artifacts=join_decision_artifacts,
+        node_terminal_states=node_terminal_states,
+        edge_terminal_states=edge_terminal_states,
         resolved_sources=resolved_sources,
         activated_edges=activated_edges,
         activated_terminals=activated_terminals,
@@ -3093,6 +3621,65 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
     alerts: list[dict[str, Any]] = []
     outgoing = _outgoing_edge_objects(contract)
     incoming = _incoming_edge_objects(contract)
+    valid_join_nodes: set[str] = set()
+    for node_id, node in contract.nodes.items():
+        node_payload = _node_payload(contract, node_id)
+        join = node_payload.get("join")
+        if join is None:
+            continue
+        node_errors: list[tuple[str, str]] = []
+        try:
+            normalize_join_policy(join, incoming_count=len(incoming.get(node_id, [])))
+        except JoinDecisionError as exc:
+            node_errors.append((exc.code, str(exc)))
+        if node.command_spec:
+            node_errors.append(("join_command_not_allowed", "Join nodes must be virtual."))
+        if node.reviewer is not None:
+            node_errors.append(("join_reviewer_not_allowed", "Join nodes cannot review."))
+        if node.requested_capabilities:
+            node_errors.append(
+                ("join_capabilities_not_allowed", "Join nodes cannot request capabilities.")
+            )
+        if node.route_mode is not None:
+            node_errors.append(("join_route_not_allowed", "Join nodes cannot declare routes."))
+        if isinstance(node_payload.get("provider"), dict) or node.executor == "provider":
+            node_errors.append(("join_provider_not_allowed", "Join nodes cannot use providers."))
+        if any(_edge_is_conditional(edge) for edge in outgoing.get(node_id, [])):
+            node_errors.append(
+                ("join_route_not_allowed", "Join outgoing edges must be unconditional.")
+            )
+        if node_errors:
+            alerts.extend(
+                _alert(
+                    "BLOCK",
+                    code,
+                    message,
+                    {"node_id": node_id, "join": _json_safe_alert_value(join)},
+                )
+                for code, message in node_errors
+            )
+        else:
+            valid_join_nodes.add(node_id)
+    for join_id in sorted(valid_join_nodes):
+        for incoming_edge in incoming.get(join_id, []):
+            source_targets = {
+                edge.target for edge in outgoing.get(incoming_edge.source, [])
+            }
+            if source_targets - {join_id}:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "join_source_outgoing_not_exclusive",
+                        "A direct join source may not also target another node or terminal.",
+                        {
+                            "join_node_id": join_id,
+                            "source_node_id": incoming_edge.source,
+                            "outgoing_targets": sorted(source_targets),
+                        },
+                    )
+                )
+                valid_join_nodes.discard(join_id)
+                break
     for source, edges in outgoing.items():
         conditional = [edge for edge in edges if _edge_is_conditional(edge)]
         unconditional = [edge for edge in edges if not _edge_is_conditional(edge)]
@@ -3171,7 +3758,11 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
                 )
             )
     for target, edges in incoming.items():
-        if len(edges) > 1 and any(_edge_is_conditional(edge) for edge in edges):
+        if (
+            len(edges) > 1
+            and any(_edge_is_conditional(edge) for edge in edges)
+            and target not in valid_join_nodes
+        ):
             alerts.append(
                 _alert(
                     "BLOCK",
@@ -3237,6 +3828,13 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
             )
         )
     return alerts
+
+
+def _has_join_policies(contract: ProjectDagContract) -> bool:
+    return any(
+        _node_payload(contract, node_id).get("join") is not None
+        for node_id in contract.nodes
+    )
 
 
 def _edge_is_conditional(edge: ProjectDagEdge) -> bool:
@@ -3424,8 +4022,19 @@ def _dispatch_ready_node(
     command_spec_root: Path | None,
     artifact_dir: Path,
     command_policy_path: Path | None = None,
+    cancel_event: threading.Event | None = None,
 ) -> dict[str, Any]:
     started = time.monotonic()
+    if cancel_event is not None and cancel_event.is_set():
+        return {
+            "ok": False,
+            "dispatch": None,
+            "response": None,
+            "stop_reason": "command_cancelled",
+            "started_monotonic": started,
+            "completed_monotonic": time.monotonic(),
+            "errors": ["command cancelled by DAG scheduler before launch"],
+        }
     try:
         spec = load_agent_dispatch_command_spec(
             agents_root,
@@ -3443,6 +4052,7 @@ def _dispatch_ready_node(
             agent_registry_root=agents_root,
             artifact_dir=artifact_dir,
             command_spec_metadata=spec,
+            cancel_event=cancel_event,
         )
         dispatch_payload = dispatch.as_dict()
         response = _response_payload(dispatch_payload)
@@ -3530,6 +4140,10 @@ def _ready_queue_receipt(
     node_artifacts: dict[str, list[str]] | None = None,
     course_correction_artifacts: list[str] | None = None,
     route_decision_artifacts: list[str] | None = None,
+    terminal_contribution_artifacts: list[str] | None = None,
+    join_decision_artifacts: list[str] | None = None,
+    node_terminal_states: dict[str, str] | None = None,
+    edge_terminal_states: dict[int, str] | None = None,
     resolved_sources: set[str] | None = None,
     activated_edges: set[int] | None = None,
     activated_terminals: set[str] | None = None,
@@ -3546,6 +4160,14 @@ def _ready_queue_receipt(
                 "Independent ready nodes can run concurrently when dependencies are satisfied.",
                 "Each dispatched node used the real local command subprocess runner.",
                 "Node evidence and reviewer verdicts were checked against the immutable goal hash.",
+            ]
+        )
+    if join_decision_artifacts:
+        proves.extend(
+            [
+                "Every declared join input produced an immutable terminal contribution.",
+                "Declared join policies were evaluated before successor activation.",
+                "Persisted terminal join decisions are hash-bound and replayable.",
             ]
         )
     receipt = {
@@ -3593,6 +4215,12 @@ def _ready_queue_receipt(
         "node_artifacts": node_artifacts or {},
         "course_correction_artifacts": course_correction_artifacts or [],
         "route_decision_receipts": route_decision_artifacts or [],
+        "terminal_contribution_receipts": terminal_contribution_artifacts or [],
+        "join_decision_receipts": join_decision_artifacts or [],
+        "node_terminal_states": dict(sorted((node_terminal_states or {}).items())),
+        "edge_terminal_states": {
+            str(key): value for key, value in sorted((edge_terminal_states or {}).items())
+        },
         "resolved_sources": sorted(resolved_sources or set()),
         "activated_edges": sorted(activated_edges or set()),
         "activated_terminals": sorted(activated_terminals or set()),
@@ -3605,6 +4233,8 @@ def _ready_queue_receipt(
                 "GitHub mutation or ticket closure.",
                 "Mutating branch safety.",
                 "Unbounded autonomous operation.",
+                "Semantic truth of successful branch results.",
+                "Process termination for cancelled join contributions.",
             ],
         },
         "errors": errors,
@@ -3853,6 +4483,12 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
             "type": "repair_dag_route_contract",
             "next_agent": "goal-guardian",
             "reason": "Repair the typed route contract or source result before continuing.",
+        }
+    if normalized.startswith("join_") or normalized.startswith("terminal_contribution_"):
+        return {
+            "type": "repair_dag_join_contract",
+            "next_agent": "goal-guardian",
+            "reason": "Repair the join policy or terminal contribution set before continuing.",
         }
     if normalized in {
         "reviewer_goal_hash_mismatch",

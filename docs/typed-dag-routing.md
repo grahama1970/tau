@@ -64,8 +64,10 @@ The source result must expose the field directly:
 | `all_matching` | All edges, only when every condition matches | Any false condition |
 
 A conditional source without `route` defaults to `exclusive`. A source cannot
-mix conditional and unconditional edges. Conditional targets cannot have
-multiple predecessors until Tau has an explicit join policy.
+mix conditional and unconditional edges. A conditional branch may converge
+only through a valid virtual `tau.dag_join_policy.v1` node; an implicit
+conditional join still blocks before dispatch. See [DAG Terminal Contributions
+and Join Policies](dag-join-policies.md).
 
 ## Receipts
 
@@ -91,13 +93,14 @@ The JSON Schema caps route-condition depth at eight and each compound list at
 tree at 64 objects; that global bound cannot be expressed by standard JSON
 Schema alone and remains an authoritative pre-dispatch check.
 
-The receipt proves which typed branch Tau activated. It does not prove the
-source result is truthful, the branch will succeed, provider/model quality, or
-join and terminal-contribution semantics.
+The receipt proves which typed branch Tau activated. Join and terminal-state
+semantics require separate terminal-contribution and join-decision receipts. A
+route receipt does not prove source-result truth, branch success, or
+provider/model quality.
 
 ## Fail-Closed Boundaries
 
 Tau blocks before command compilation for arbitrary expressions, invalid
 condition objects, mixed edge kinds, conditional virtual sources, and implicit
-conditional joins. Typed routes also block under the legacy `handoff-loop`;
-they require `--scheduler bounded-ready-queue`.
+conditional joins. Typed routes and declared joins also block under the legacy
+`handoff-loop`; they require `--scheduler bounded-ready-queue`.

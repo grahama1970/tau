@@ -5,9 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import signal
 import subprocess
+import threading
 import time
 from collections.abc import Callable, Mapping
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -244,6 +247,7 @@ def dispatch_agent_handoff_command_once(
     command_spec_metadata: Mapping[str, Any] | None = None,
     secure_execution: Mapping[str, Any] | None = None,
     attempt: int = 1,
+    cancel_event: threading.Event | None = None,
 ) -> AgentHandoffDispatchResult:
     """Run one bounded local command and validate its stdout handoff response."""
 
@@ -362,15 +366,34 @@ def dispatch_agent_handoff_command_once(
         if resolved_artifact_dir is not None:
             env["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"] = str(resolved_artifact_dir)
         try:
-            completed = subprocess.run(
+            completed = _run_command_with_optional_cancellation(
                 command,
-                input=stdin,
-                cwd=str(cwd) if cwd else None,
+                stdin=stdin,
+                cwd=cwd,
                 env=env,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=timeout_s,
+                timeout_s=timeout_s,
+                cancel_event=cancel_event,
+            )
+        except _CommandCancelled as exc:
+            return AgentHandoffDispatchResult(
+                ok=False,
+                status="BLOCKED",
+                selected_agent=str(selected_agent),
+                stop_reason="command_cancelled",
+                runner="command",
+                start_projection=start_projection,
+                command_results=(
+                    {
+                        "command": command,
+                        "exit_code": exc.returncode,
+                        "timeout_s": timeout_s,
+                        "timed_out": False,
+                        "cancelled": True,
+                        "stdout": exc.stdout,
+                        "stderr": exc.stderr,
+                    },
+                ),
+                errors=("command cancelled by DAG scheduler",),
             )
         except subprocess.TimeoutExpired as exc:
             timeout_metadata: dict[str, object] = {}
@@ -1298,6 +1321,88 @@ def _artifact_paths(root: Path | None) -> list[str]:
     if root is None or not root.exists():
         return []
     return [str(path) for path in sorted(root.rglob("*")) if path.is_file()]
+
+
+class _CommandCancelled(RuntimeError):
+    def __init__(self, *, returncode: int | None, stdout: str, stderr: str) -> None:
+        super().__init__("command cancelled")
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+def _run_command_with_optional_cancellation(
+    command: list[str],
+    *,
+    stdin: str,
+    cwd: Path | None,
+    env: Mapping[str, str],
+    timeout_s: float,
+    cancel_event: threading.Event | None,
+) -> subprocess.CompletedProcess[str]:
+    if cancel_event is None:
+        return subprocess.run(
+            command,
+            input=stdin,
+            cwd=str(cwd) if cwd else None,
+            env=dict(env),
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_s,
+        )
+
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=str(cwd) if cwd else None,
+        env=dict(env),
+        text=True,
+        start_new_session=True,
+    )
+    deadline = time.monotonic() + timeout_s
+    pending_input: str | None = stdin
+    while True:
+        if cancel_event.is_set():
+            _terminate_process_group(process)
+            stdout, stderr = process.communicate()
+            raise _CommandCancelled(
+                returncode=process.returncode,
+                stdout=stdout or "",
+                stderr=stderr or "",
+            )
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            _terminate_process_group(process)
+            stdout, stderr = process.communicate()
+            raise subprocess.TimeoutExpired(
+                command,
+                timeout_s,
+                output=stdout or "",
+                stderr=stderr or "",
+            )
+        try:
+            stdout, stderr = process.communicate(
+                input=pending_input,
+                timeout=min(remaining, 0.05),
+            )
+            return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+        except subprocess.TimeoutExpired:
+            pending_input = None
+
+
+def _terminate_process_group(process: subprocess.Popen[str]) -> None:
+    if process.poll() is not None:
+        return
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+        process.wait(timeout=0.5)
+    except (ProcessLookupError, subprocess.TimeoutExpired):
+        if process.poll() is None:
+            with suppress(ProcessLookupError):
+                os.killpg(process.pid, signal.SIGKILL)
 
 
 def _response_continuity_errors(
