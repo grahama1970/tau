@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable, Mapping
 from concurrent.futures import FIRST_COMPLETED, CancelledError, Future, ThreadPoolExecutor, wait
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from threading import Event
 from typing import Any
 
@@ -121,10 +121,15 @@ def run_dag_plan(
                     "errors": [settle_block.message],
                     "transition_evidence": settle_block.evidence,
                 }
-                for pending_node_id in futures.values():
-                    cancel_events[pending_node_id].set()
-                for pending in futures:
-                    pending.cancel()
+                _cancel_and_collect_futures(
+                    futures=futures,
+                    cancel_events=cancel_events,
+                    results=results,
+                    result_order=result_order,
+                    node_states=node_states,
+                    resolved=resolved,
+                    event_sink=event_sink,
+                )
                 break
             ready = [
                 node_id
@@ -208,6 +213,15 @@ def run_dag_plan(
             max_observed_concurrency = max(max_observed_concurrency, len(futures))
 
             if blocked_result is not None:
+                _cancel_and_collect_futures(
+                    futures=futures,
+                    cancel_events=cancel_events,
+                    results=results,
+                    result_order=result_order,
+                    node_states=node_states,
+                    resolved=resolved,
+                    event_sink=event_sink,
+                )
                 break
             if not futures:
                 if len(resolved) == len(nodes):
@@ -321,10 +335,15 @@ def run_dag_plan(
                             "errors": [transition.block_run.message],
                         }
                 if blocked_result is not None:
-                    for pending_node_id in futures.values():
-                        cancel_events[pending_node_id].set()
-                    for pending in futures:
-                        pending.cancel()
+                    _cancel_and_collect_futures(
+                        futures=futures,
+                        cancel_events=cancel_events,
+                        results=results,
+                        result_order=result_order,
+                        node_states=node_states,
+                        resolved=resolved,
+                        event_sink=event_sink,
+                    )
                     break
                 continue
             completed_batch: list[tuple[str, dict[str, Any]]] = []
@@ -351,8 +370,13 @@ def run_dag_plan(
                 )
                 attempt_history[node_id].append(result)
                 retryable = result.get("retryable") is not False
+                scheduler_cancelled = cancel_events[node_id].is_set()
                 failed_attempt = result.get("status") != "PASS" or result.get("verdict") != "PASS"
-                will_retry = retryable and attempt < nodes[node_id].max_attempts
+                will_retry = (
+                    retryable
+                    and not scheduler_cancelled
+                    and attempt < nodes[node_id].max_attempts
+                )
                 if failed_attempt:
                     _emit(
                         event_sink,
@@ -408,6 +432,8 @@ def run_dag_plan(
                     ),
                     completion,
                 )
+                if scheduler_cancelled and transition.block_run is not None:
+                    transition = replace(transition, block_run=None)
                 _apply_transition_batch(
                     plan=plan,
                     batch=transition,
@@ -504,42 +530,15 @@ def run_dag_plan(
                     }
                 batch_blocked = True
             if batch_blocked:
-                _emit(
-                    event_sink,
-                    {
-                        "event": "scheduler_cancellation_signaled",
-                        "node_ids": sorted(futures.values()),
-                    },
+                _cancel_and_collect_futures(
+                    futures=futures,
+                    cancel_events=cancel_events,
+                    results=results,
+                    result_order=result_order,
+                    node_states=node_states,
+                    resolved=resolved,
+                    event_sink=event_sink,
                 )
-                for pending, pending_node_id in futures.items():
-                    cancel_events[pending_node_id].set()
-                    pending.cancel()
-                for pending, pending_node_id in futures.items():
-                    try:
-                        cancelled_result = pending.result()
-                    except CancelledError:
-                        cancelled_result = {
-                            "node_id": pending_node_id,
-                            "status": "BLOCKED",
-                            "verdict": "CANCELLED",
-                            "errors": ["cancelled before adapter execution"],
-                        }
-                    except Exception as exc:  # pragma: no cover - defensive boundary.
-                        cancelled_result = {
-                            "node_id": pending_node_id,
-                            "status": "BLOCKED",
-                            "verdict": "CANCELLED",
-                            "errors": [str(exc)],
-                        }
-                    results[pending_node_id] = cancelled_result
-                    result_order.append(pending_node_id)
-                    node_states[pending_node_id] = "cancelled"
-                    resolved.add(pending_node_id)
-                    _emit(
-                        event_sink,
-                        {"event": "node_cancelled", "node_id": pending_node_id},
-                    )
-                futures.clear()
                 break
 
     ordered_results = tuple(results[node_id] for node_id in result_order)
@@ -569,6 +568,53 @@ def run_dag_plan(
         node_states=tuple(sorted(node_states.items())),
         transition_receipt_paths=tuple(transition_receipt_paths),
     )
+
+
+def _cancel_and_collect_futures(
+    *,
+    futures: dict[Future[dict[str, Any]], str],
+    cancel_events: Mapping[str, Event],
+    results: dict[str, dict[str, Any]],
+    result_order: list[str],
+    node_states: dict[str, str],
+    resolved: set[str],
+    event_sink: EventSink | None,
+) -> None:
+    if not futures:
+        return
+    _emit(
+        event_sink,
+        {
+            "event": "scheduler_cancellation_signaled",
+            "node_ids": sorted(futures.values()),
+        },
+    )
+    for pending, pending_node_id in futures.items():
+        cancel_events[pending_node_id].set()
+        pending.cancel()
+    for pending, pending_node_id in futures.items():
+        try:
+            cancelled_result = pending.result()
+        except CancelledError:
+            cancelled_result = {
+                "node_id": pending_node_id,
+                "status": "BLOCKED",
+                "verdict": "CANCELLED",
+                "errors": ["cancelled before adapter execution"],
+            }
+        except Exception as exc:  # pragma: no cover - defensive boundary.
+            cancelled_result = {
+                "node_id": pending_node_id,
+                "status": "BLOCKED",
+                "verdict": "CANCELLED",
+                "errors": [str(exc)],
+            }
+        results[pending_node_id] = cancelled_result
+        result_order.append(pending_node_id)
+        node_states[pending_node_id] = "cancelled"
+        resolved.add(pending_node_id)
+        _emit(event_sink, {"event": "node_cancelled", "node_id": pending_node_id})
+    futures.clear()
 
 
 def _incoming_edges(plan: DagPlan, *, node_ids: set[str]) -> dict[str, tuple[str, ...]]:

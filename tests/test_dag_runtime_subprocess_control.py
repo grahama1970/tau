@@ -15,7 +15,8 @@ from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 def test_scheduler_cancellation_terminates_command_process_group(tmp_path: Path) -> None:
     marker = tmp_path / "child-finished"
     child = (
-        "import pathlib,time; time.sleep(0.8); "
+        "import pathlib,signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        "time.sleep(0.8); "
         f"pathlib.Path({str(marker)!r}).write_text('finished')"
     )
     parent = (
@@ -76,7 +77,7 @@ def test_windows_process_tree_uses_new_group_and_taskkill(
         lambda command, **kwargs: calls.append(command) or CompletedProcess(command, 0),
     )
 
-    assert subprocess_control._process_group_options() == (False, 0x00000200)
+    assert subprocess_control.process_group_options() == (False, 0x00000200)
     subprocess_control._terminate_windows_process_tree(Process())  # type: ignore[arg-type]
 
     assert calls == [["taskkill", "/PID", "4321", "/T", "/F"]]

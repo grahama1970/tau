@@ -7,6 +7,7 @@ import signal
 import subprocess
 import time
 from collections.abc import Mapping, Sequence
+from contextlib import suppress
 from pathlib import Path
 from threading import Event
 
@@ -22,7 +23,7 @@ def run_cancellable_subprocess(
     """Run one command and terminate its process group on cancellation or timeout."""
 
     argv = list(command)
-    start_new_session, creationflags = _process_group_options()
+    start_new_session, creationflags = process_group_options()
     process = subprocess.Popen(
         argv,
         cwd=str(cwd) if cwd is not None else None,
@@ -41,7 +42,7 @@ def run_cancellable_subprocess(
             and time.monotonic() - started >= timeout_seconds
         )
         if cancelled or timed_out:
-            _terminate_process_group(process)
+            terminate_process_tree(process)
             stdout, stderr = process.communicate()
             reason = (
                 "command cancelled by DAG scheduler"
@@ -67,26 +68,26 @@ def run_cancellable_subprocess(
         )
 
 
-def _terminate_process_group(process: subprocess.Popen[str]) -> None:
-    if process.poll() is not None:
-        return
+def terminate_process_tree(process: subprocess.Popen[str]) -> None:
+    """Terminate the command and all descendants within its isolated process group."""
+
     if os.name == "posix":
-        os.killpg(process.pid, signal.SIGTERM)
-    else:  # pragma: no cover - exercised through a platform-boundary unit test.
-        _terminate_windows_process_tree(process)
-    try:
-        process.wait(timeout=0.5)
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        time.sleep(0.5)
+        with suppress(ProcessLookupError):
+            os.killpg(process.pid, signal.SIGKILL)
+        if process.poll() is None:
+            process.wait(timeout=1)
         return
-    except subprocess.TimeoutExpired:
-        pass
-    if os.name == "posix":
-        os.killpg(process.pid, signal.SIGKILL)
-    else:  # pragma: no cover - exercised through a platform-boundary unit test.
+    if process.poll() is None:  # pragma: no cover - platform boundary.
         _terminate_windows_process_tree(process)
-    process.wait(timeout=1)
+        process.wait(timeout=1)
 
 
-def _process_group_options() -> tuple[bool, int]:
+def process_group_options() -> tuple[bool, int]:
     if os.name == "posix":
         return True, 0
     return False, getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
@@ -105,4 +106,4 @@ def _terminate_windows_process_tree(process: subprocess.Popen[str]) -> None:
         process.terminate()
 
 
-__all__ = ["run_cancellable_subprocess"]
+__all__ = ["process_group_options", "run_cancellable_subprocess", "terminate_process_tree"]

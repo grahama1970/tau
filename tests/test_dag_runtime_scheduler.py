@@ -349,6 +349,102 @@ def test_scheduler_applies_pre_start_node_settlement_before_dispatch(tmp_path: P
     assert dict(result.node_states) == {"already-satisfied": "success"}
 
 
+def test_scheduler_does_not_retry_cancelled_running_node(tmp_path: Path) -> None:
+    payload = _generic_spec(
+        tmp_path,
+        [_node(tmp_path, "fast"), _node(tmp_path, "slow")],
+    )
+    payload["nodes"][1]["max_attempts"] = 3  # type: ignore[index]
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    slow_started = threading.Event()
+    slow_calls = 0
+
+    class CancelSlowPolicy(AllSuccessTransitionPolicy):
+        def after_node_terminal(self, view, completion):  # type: ignore[no-untyped-def]
+            if completion.node_id == "fast":
+                return DagTransitionBatch(
+                    node_cancellations=(
+                        DagNodeCancellation(node_id="slow", reason_code="short_circuit"),
+                    )
+                )
+            return super().after_node_terminal(view, completion)
+
+    def execute(node, accepted_inputs, execution):  # type: ignore[no-untyped-def]
+        nonlocal slow_calls
+        del accepted_inputs
+        if node.node_id == "fast":
+            assert slow_started.wait(timeout=1)
+            return {"node_id": "fast", "status": "PASS", "verdict": "PASS"}
+        slow_calls += 1
+        slow_started.set()
+        assert execution.cancel_event.wait(timeout=1)
+        return {
+            "node_id": "slow",
+            "status": "BLOCKED",
+            "verdict": "CANCELLED",
+            "retryable": True,
+        }
+
+    result = run_dag_plan(
+        plan,
+        execute_node=execute,
+        transition_policy=CancelSlowPolicy(),
+        max_concurrency=2,
+    )
+
+    assert slow_calls == 1
+    assert result.status == "PASS"
+    assert dict(result.node_states)["slow"] == "cancelled"
+
+
+def test_pre_start_block_cancels_and_collects_already_running_root(tmp_path: Path) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(
+            tmp_path,
+            [_node(tmp_path, "a-running"), _node(tmp_path, "b-blocked")],
+        ),
+        source_path=tmp_path / "dag.json",
+    )
+    running_cancelled = threading.Event()
+    called: list[str] = []
+
+    class BlockSecondRootPolicy(AllSuccessTransitionPolicy):
+        def before_node_start(self, view, node_id, attempt):  # type: ignore[no-untyped-def]
+            del view, attempt
+            if node_id == "b-blocked":
+                return DagTransitionBatch(
+                    block_run=DagRunBlock(
+                        failure_code="POLICY_BLOCKED",
+                        message="Second root is not admissible.",
+                        evidence={"node_id": node_id},
+                    )
+                )
+            return DagTransitionBatch()
+
+    def execute(node, accepted_inputs, execution):  # type: ignore[no-untyped-def]
+        del accepted_inputs
+        called.append(node.node_id)
+        assert execution.cancel_event.wait(timeout=1)
+        running_cancelled.set()
+        return {"node_id": node.node_id, "status": "BLOCKED", "verdict": "CANCELLED"}
+
+    result = run_dag_plan(
+        plan,
+        execute_node=execute,
+        transition_policy=BlockSecondRootPolicy(),
+        max_concurrency=2,
+    )
+
+    assert called == ["a-running"]
+    assert running_cancelled.is_set()
+    assert result.status == "BLOCKED"
+    assert result.verdict == "POLICY_BLOCKED"
+    assert dict(result.node_states) == {
+        "a-running": "cancelled",
+        "b-blocked": "pending",
+    }
+
+
 def _generic_spec(
     tmp_path: Path, nodes: list[dict[str, object]]
 ) -> dict[str, object]:
