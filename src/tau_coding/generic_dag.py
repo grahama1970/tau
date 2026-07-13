@@ -139,7 +139,7 @@ def run_generic_dag(
             verdict="RUNNING",
             active_node_id=plan_node.node_id,
         )
-        return _run_node(
+        result = _run_node(
             node,
             run_id=run_id,
             run_dir=run_dir,
@@ -150,6 +150,24 @@ def run_generic_dag(
             scheduler_attempt=execution.attempt,
             cancel_event=execution.cancel_event,
         )
+        if result.get("status") == "PASS" and result.get("verdict") == "PASS":
+            node_results.append(result)
+            completed.add(plan_node.node_id)
+            _write_checkpoint(
+                path=checkpoint_path,
+                current_state_path=current_state_path,
+                run_id=run_id,
+                spec_path=resolved_spec_path,
+                run_dir=run_dir,
+                events_path=events_path,
+                nodes=nodes,
+                node_results=node_results,
+                completed=completed,
+                status="RUNNING",
+                verdict="RUNNING",
+                active_node_id=None,
+            )
+        return result
 
     scheduler_result = run_dag_plan(
         plan,

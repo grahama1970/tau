@@ -516,6 +516,8 @@ def run_dag_plan(
                         }
                     results[pending_node_id] = cancelled_result
                     result_order.append(pending_node_id)
+                    node_states[pending_node_id] = "cancelled"
+                    resolved.add(pending_node_id)
                     _emit(
                         event_sink,
                         {"event": "node_cancelled", "node_id": pending_node_id},

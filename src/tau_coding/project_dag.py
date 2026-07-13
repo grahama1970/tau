@@ -3381,13 +3381,30 @@ def _run_shared_project_dag_plan(
     activated_terminals = {
         terminal_id for terminal_id, state in result.terminal_states if state == "success"
     }
-    if result.status == "PASS" and not dict(result.terminal_states):
+    skipped_join_ids = {
+        str(event["join_node_id"])
+        for event in events
+        if event.get("event") == "join_decided"
+        and event.get("decision") == "skip"
+        and isinstance(event.get("join_node_id"), str)
+    }
+    accepted_join_skips = {
+        edge.target_id
+        for edge in plan.control_edges
+        if edge.target_kind == "terminal"
+        and edge.source_node_id in skipped_join_ids
+        and edge_states_by_id.get(edge.edge_id) == "skipped"
+    }
+    if result.status == "PASS" and not (activated_terminals or accepted_join_skips):
         alerts.append(
             _alert(
                 "BLOCK",
                 "missing_terminal_route",
                 "Completed DAG nodes do not reach a declared terminal node.",
-                {"completed_nodes": sorted(completed)},
+                {
+                    "completed_nodes": sorted(completed),
+                    "terminal_states": dict(result.terminal_states),
+                },
             )
         )
     status = "PASS" if result.status == "PASS" and not alerts else "BLOCKED"

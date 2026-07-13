@@ -114,6 +114,7 @@ def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path
 
     assert result.status == "BLOCKED"
     assert sibling_cancelled.is_set()
+    assert dict(result.node_states)["sibling"] == "cancelled"
 
 
 def test_dag_plan_scheduler_preserves_completed_sibling_after_failure(tmp_path: Path) -> None:

@@ -58,6 +58,53 @@ def test_generic_dag_runs_dependency_ordered_subprocess_workers(tmp_path: Path) 
     assert validated_order == ["planner", "coder", "reviewer"]
 
 
+def test_generic_dag_checkpoint_records_completed_node_before_next_dispatch(
+    tmp_path: Path,
+) -> None:
+    captured_checkpoint = tmp_path / "captured-checkpoint.json"
+    inspector_receipt = tmp_path / "receipts" / "inspector.json"
+    inspector_payload = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": "inspector",
+        "status": "PASS",
+        "verdict": "PASS",
+        "artifacts": [],
+        "commands_run": ["capture checkpoint"],
+        "handoff_summary": "captured progress",
+        "errors": [],
+        "policy_exceptions": [],
+    }
+    inspector_code = (
+        "import json; "
+        "from pathlib import Path; "
+        f"checkpoint = Path({str(tmp_path / 'checkpoint.json')!r}); "
+        f"captured = Path({str(captured_checkpoint)!r}); "
+        "captured.write_text(checkpoint.read_text(encoding='utf-8'), encoding='utf-8'); "
+        f"receipt = Path({str(inspector_receipt)!r}); "
+        "receipt.parent.mkdir(parents=True, exist_ok=True); "
+        f"receipt.write_text(json.dumps({inspector_payload!r}), encoding='utf-8')"
+    )
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(tmp_path, "planner"),
+            _node(
+                tmp_path,
+                "inspector",
+                depends_on=["planner"],
+                command=[sys.executable, "-c", inspector_code],
+            ),
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    captured = json.loads(captured_checkpoint.read_text(encoding="utf-8"))
+    assert captured["completed_nodes"] == ["planner"]
+    assert captured["node_statuses"]["planner"]["status"] == "PASS"
+
+
 def test_generic_dag_fails_closed_on_invalid_node_receipt(tmp_path: Path) -> None:
     bad_receipt = tmp_path / "receipts" / "bad.json"
     spec_path = _write_spec(

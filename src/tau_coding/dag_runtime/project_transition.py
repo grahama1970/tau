@@ -106,18 +106,21 @@ class ProjectDagTransitionPolicy:
             if edge_id in self._contributions:
                 continue
             edge = self._edge_by_id(view.plan, edge_id)
-            path = self._record_contribution(
-                view,
-                join,
-                edge_id=edge_id,
-                state="timed_out",
-                reason_code="join_timeout",
-                basis={
-                    "kind": "join_timeout",
-                    "join_node_id": deadline_id,
-                    "timeout_seconds": join["policy"]["timeout_seconds"],
-                },
-            )
+            try:
+                path = self._record_contribution(
+                    view,
+                    join,
+                    edge_id=edge_id,
+                    state="timed_out",
+                    reason_code="join_timeout",
+                    basis={
+                        "kind": "join_timeout",
+                        "join_node_id": deadline_id,
+                        "timeout_seconds": join["policy"]["timeout_seconds"],
+                    },
+                )
+            except (OSError, JoinDecisionError) as exc:
+                return self._contribution_write_block(exc, join_id=deadline_id)
             paths.append(path)
             settlements.append(DagEdgeSettlement(edge_id, "timed_out", "join_timeout"))
             cancellations.append(DagNodeCancellation(edge.source_node_id, "join_timeout"))
@@ -263,22 +266,31 @@ class ProjectDagTransitionPolicy:
                     basis_kind = "virtual_node_completed"
                 else:
                     basis_kind = "source_terminal"
-                path = self._record_contribution(
-                    view,
-                    join,
-                    edge_id=edge_id,
-                    state=state,
-                    reason_code=reason,
-                    basis={"kind": basis_kind},
-                    source_binding=(
-                        {
-                            "source_node_id": completion.node_id,
-                            "attempt": completion.attempt,
-                        }
-                        if basis_kind == "source_terminal"
-                        else {}
-                    ),
-                )
+                try:
+                    path = self._record_contribution(
+                        view,
+                        join,
+                        edge_id=edge_id,
+                        state=state,
+                        reason_code=reason,
+                        basis={"kind": basis_kind},
+                        source_binding=(
+                            {
+                                "source_node_id": completion.node_id,
+                                "attempt": completion.attempt,
+                            }
+                            if basis_kind == "source_terminal"
+                            else {}
+                        ),
+                    )
+                except (OSError, JoinDecisionError) as exc:
+                    batches.append(
+                        self._contribution_write_block(
+                            exc,
+                            join_id=str(join["join_node_id"]),
+                        )
+                    )
+                    return self._combine(*batches)
                 contribution_events = [self._contribution_event(join, edge, state, path)]
                 if state in {"failed", "blocked"}:
                     contribution_events.append(
@@ -340,18 +352,21 @@ class ProjectDagTransitionPolicy:
                     for edge in view.plan.control_edges
                     if edge.source_ordinal == edge_id and edge.target_id == join_id
                 )
-                path = self._record_contribution(
-                    view,
-                    join,
-                    edge_id=plan_edge.edge_id,
-                    state="cancelled",
-                    reason_code="join_short_circuit",
-                    basis={
-                        "kind": "join_short_circuit",
-                        "join_node_id": join_id,
-                        "terminal_intent": decision["decision"],
-                    },
-                )
+                try:
+                    path = self._record_contribution(
+                        view,
+                        join,
+                        edge_id=plan_edge.edge_id,
+                        state="cancelled",
+                        reason_code="join_short_circuit",
+                        basis={
+                            "kind": "join_short_circuit",
+                            "join_node_id": join_id,
+                            "terminal_intent": decision["decision"],
+                        },
+                    )
+                except (OSError, JoinDecisionError) as exc:
+                    return self._contribution_write_block(exc, join_id=join_id)
                 settlements.append(
                     DagEdgeSettlement(plan_edge.edge_id, "cancelled", "join_short_circuit")
                 )
@@ -450,6 +465,20 @@ class ProjectDagTransitionPolicy:
         write_immutable_json(path, payload, conflict_code="terminal_contribution_conflict")
         self._contributions[edge_id] = payload
         return str(path)
+
+    @staticmethod
+    def _contribution_write_block(
+        exc: OSError | JoinDecisionError,
+        *,
+        join_id: str,
+    ) -> DagTransitionBatch:
+        return DagTransitionBatch(
+            block_run=DagRunBlock(
+                getattr(exc, "code", "terminal_contribution_write_failed"),
+                "Tau could not persist an immutable terminal contribution.",
+                {"join_node_id": join_id, "error": str(exc)},
+            )
+        )
 
     @staticmethod
     def _combine(*batches: DagTransitionBatch) -> DagTransitionBatch:

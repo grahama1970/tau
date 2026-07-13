@@ -404,6 +404,24 @@ def test_persisted_join_decision_replays_from_contribution_receipts(tmp_path: Pa
     assert replay == decision
 
 
+def test_conflicting_terminal_contribution_blocks_instead_of_crashing(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(tmp_path, policy="all_terminal", route="ALL")
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="ALL"))
+    for branch in ("branch-a", "branch-b", "branch-c"):
+        _write_response_spec(tmp_path, branch, _handoff(branch, "join"))
+    first = _run(tmp_path, contract_path)
+    contribution_path = Path(first["terminal_contribution_receipts"][0])
+    conflicting = json.loads(contribution_path.read_text(encoding="utf-8"))
+    conflicting["reason_code"] = "tampered"
+    contribution_path.write_text(json.dumps(conflicting, indent=2, sort_keys=True) + "\n")
+
+    receipt = _run(tmp_path, contract_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "TERMINAL_CONTRIBUTION_CONFLICT"
+    assert receipt["dag_error"]["failure_code"] == "terminal_contribution_conflict"
+
+
 def test_invalid_join_blocks_before_command_compilation(tmp_path: Path) -> None:
     contract_path = _write_join_contract(
         tmp_path,
