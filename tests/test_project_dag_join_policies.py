@@ -427,6 +427,74 @@ def test_join_source_with_non_join_outgoing_path_blocks_before_dispatch(tmp_path
     assert not (tmp_path / "run" / "ready-queue").exists()
 
 
+def test_duplicate_source_join_edge_is_rejected_by_dag_contract(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(tmp_path, policy="all_terminal", route="ALL")
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"].append({"from": "branch-a", "to": "join"})
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="duplicate edge: branch-a->join"):
+        run_project_dag_contract(
+            contract_path=contract_path,
+            receipt_dir=tmp_path / "run",
+            agents_root=tmp_path / "agents",
+            scheduler="bounded-ready-queue",
+        )
+
+    assert not (tmp_path / "run" / "ready-queue").exists()
+
+
+def test_virtual_sources_contribute_without_command_attempt_binding(tmp_path: Path) -> None:
+    contract = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": "virtual-join-sources",
+        "goal": {
+            "goal_id": "virtual-join-sources",
+            "goal_version": 1,
+            "goal_hash": "sha256:virtual-join-sources",
+        },
+        "target": {"repo": "grahama1970/tau", "target": "virtual-join-sources"},
+        "entry_node": "start",
+        "terminal_nodes": ["human"],
+        "limits": {"resume": True, "default_timeout_seconds": 5, "max_total_attempts": 1},
+        "nodes": [
+            {"id": "start", "agent": "goal-guardian", "executor": "scheduler"},
+            {"id": "virtual-a", "agent": "virtual-a", "executor": "local"},
+            {"id": "virtual-b", "agent": "virtual-b", "executor": "local"},
+            {
+                "id": "join",
+                "agent": "join",
+                "executor": "local",
+                "join": {
+                    "schema": "tau.dag_join_policy.v1",
+                    "policy": "all_success",
+                    "timeout_seconds": 5,
+                },
+            },
+        ],
+        "edges": [
+            {"from": "start", "to": "virtual-a"},
+            {"from": "start", "to": "virtual-b"},
+            {"from": "virtual-a", "to": "join"},
+            {"from": "virtual-b", "to": "join"},
+            {"from": "join", "to": "human"},
+        ],
+        "required_evidence": [],
+        "fail_closed_on": ["unexpected_node", "unexpected_edge"],
+    }
+    contract_path = tmp_path / "virtual-contract.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+
+    receipt = _run(tmp_path, contract_path)
+
+    assert receipt["status"] == "PASS"
+    contributions = _read_receipts(receipt["terminal_contribution_receipts"])
+    assert {item["basis"]["kind"] for item in contributions} == {
+        "virtual_node_completed"
+    }
+    assert all(item["source_binding"] == {} for item in contributions)
+
+
 def _run(tmp_path: Path, contract_path: Path) -> dict[str, object]:
     return run_project_dag_contract(
         contract_path=contract_path,

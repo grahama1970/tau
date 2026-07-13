@@ -74,6 +74,14 @@
   records the runtime-only cross-field/reduced-fraction invariant. Focused proof
   is `129 passed` before the final independent review rerun.
 
+- 2026-07-13 issue #76 contribution-identity hardening: Tau now rejects
+  duplicate incoming edges from one source before dispatch, records virtual
+  scheduler sources with `virtual_node_completed` rather than a command-attempt
+  basis, and names the join binding `contribution_payload_sha256` instead of
+  incorrectly implying a persisted-file byte hash. The bounded ready-queue still
+  uses only its cancellation-aware local command dispatch path; external and
+  non-cooperative provider workload cancellation remains explicitly unproven.
+
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed
   `tau.route_condition.v1` objects over direct typed `response.result` fields

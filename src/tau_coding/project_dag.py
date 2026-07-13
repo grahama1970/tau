@@ -1280,7 +1280,7 @@ def _run_bounded_ready_queue_project_dag(
                     node_id,
                     state="success",
                     reason_code="virtual_node_completed",
-                    basis={"kind": "source_terminal"},
+                    basis={"kind": "virtual_node_completed"},
                 )
                 events.append(
                     {

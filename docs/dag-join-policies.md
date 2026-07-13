@@ -29,6 +29,8 @@ capability, or conditional outgoing edge. Put aggregation work in a separate
 command-backed node after the virtual join.
 Each direct join source must route exclusively to that join. This prevents one
 join from consuming or suppressing a failure that also controls another path.
+Tau's generic DAG validator rejects duplicate source-target edges before join
+preflight, so one source cannot inflate count or quorum policies.
 
 ## Terminal States
 
@@ -104,8 +106,8 @@ Receipts are written under:
 ```
 
 They bind the DAG ID, goal hash, ordered edge identities, normalized policy,
-contribution hashes, terminal counts, decision, and deterministic decision
-hash. The join decision is persisted before Tau settles the virtual join and
+contribution payload hashes, terminal counts, decision, and deterministic
+decision hash. The join decision is persisted before Tau settles the virtual join and
 activates its outgoing edges.
 
 ## Boundaries

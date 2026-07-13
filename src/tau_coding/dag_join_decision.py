@@ -456,7 +456,9 @@ def evaluate_join_decision(
         {
             "edge_index": edge_index,
             "state": contribution_by_index[edge_index]["state"],
-            "receipt_sha256": sha256_json(contribution_by_index[edge_index]),
+            "contribution_payload_sha256": sha256_json(
+                contribution_by_index[edge_index]
+            ),
             "contribution_sha256": contribution_by_index[edge_index]["contribution_sha256"],
             "source_node_id": contribution_by_index[edge_index]["edge_contract"][
                 "source_node_id"

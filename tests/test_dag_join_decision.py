@@ -272,7 +272,9 @@ def test_collected_failures_include_stable_source_reason_and_attempt() -> None:
         {
             "edge_index": 0,
             "state": "failed",
-            "receipt_sha256": decision["contributions"][0]["receipt_sha256"],
+            "contribution_payload_sha256": decision["contributions"][0][
+                "contribution_payload_sha256"
+            ],
             "contribution_sha256": contributions[0]["contribution_sha256"],
             "source_node_id": "branch-0",
             "reason_code": "fixture_failed",
@@ -281,7 +283,9 @@ def test_collected_failures_include_stable_source_reason_and_attempt() -> None:
         {
             "edge_index": 1,
             "state": "blocked",
-            "receipt_sha256": decision["contributions"][1]["receipt_sha256"],
+            "contribution_payload_sha256": decision["contributions"][1][
+                "contribution_payload_sha256"
+            ],
             "contribution_sha256": contributions[1]["contribution_sha256"],
             "source_node_id": "branch-1",
             "reason_code": "fixture_blocked",
