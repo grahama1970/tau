@@ -669,13 +669,15 @@ def _working_directory_binding(*, binding_id: str, declared_path: str) -> dict[s
 def _generic_events_binding(payload: Mapping[str, Any]) -> dict[str, Any]:
     explicit = payload.get("events_jsonl")
     if isinstance(explicit, str) and explicit:
-        binding = _working_directory_binding(
-            binding_id="generic:events-jsonl",
-            declared_path=explicit,
-        )
-        binding["kind"] = "event_log"
-        binding["origin"] = "explicit"
-        return binding
+        path = Path(explicit).expanduser()
+        return {
+            "binding_id": "generic:events-jsonl",
+            "kind": "event_log",
+            "declared_path": str(path),
+            "anchor": "filesystem_root" if path.is_absolute() else "generic_run_directory",
+            "portable": not path.is_absolute(),
+            "origin": "explicit",
+        }
     return {
         "binding_id": "generic:events-jsonl",
         "kind": "event_log",

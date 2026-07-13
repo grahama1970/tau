@@ -204,7 +204,7 @@ def test_generic_explicit_event_log_retains_invocation_cwd_anchor(tmp_path: Path
             "binding_id": "generic:events-jsonl",
             "kind": "event_log",
             "declared_path": "logs/custom-events.jsonl",
-            "anchor": "process_invocation_directory",
+            "anchor": "generic_run_directory",
             "portable": True,
             "origin": "explicit",
         }
