@@ -54,6 +54,17 @@ join contracts and persists immutable receipts before returning scheduler
 effects. Command, skill, and artifact-transaction subprocesses consume the
 scheduler cancellation event through a process-group runner.
 
+The local process runner terminates descendants as part of scheduler
+cancellation: POSIX uses a new session and process-group signals, while Windows
+uses a new process group and `taskkill /T /F`. Transition receipt classification
+accepts both POSIX and Windows path separators.
+
+The mixed-adapter acceptance fixture executes an artifact producer,
+deterministic validator, reviewer, and downstream command through this shared
+scheduler. Native skill adapter tests establish scheduler/adapter wiring only
+when their external transport is mocked; they do not claim live skill semantic
+quality.
+
 Unsupported provider/non-local nodes remain fail-closed during project DAG
 preflight; they do not select a legacy scheduler fallback.
 
