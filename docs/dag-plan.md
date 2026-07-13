@@ -25,6 +25,8 @@ Each plan records:
 - retries, timeouts, evidence requirements, and capability requests;
 - typed route contracts and deterministic join policies;
 - portable source-relative command, skill, transaction, provider, and receipt bindings;
+- project/node context layers and the project runtime merge policy;
+- generic working directories and project evidence manifests as explicit bindings;
 - declared security inputs without claiming those gates passed.
 
 Project command specs and generic command arrays intentionally remain distinct

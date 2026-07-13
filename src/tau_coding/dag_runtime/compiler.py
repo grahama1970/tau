@@ -126,7 +126,13 @@ def compile_project_dag_plan(
                     timeout_value, label=f"node {node_id} timeout_seconds"
                 ),
                 required_evidence=tuple(node.required_evidence),
-                static_context=FrozenJson.from_value(node.context),
+                static_context=FrozenJson.from_value(
+                    {
+                        "merge_policy": "project_handoff_context_v1",
+                        "contract": contract.context,
+                        "node": node.context,
+                    }
+                ),
                 requested_capabilities=tuple(
                     FrozenJson.from_value(item) for item in node.requested_capabilities
                 ),
@@ -285,6 +291,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
                     node_id=node_id,
                     raw=raw_nodes[node_id],
                     source_dir=source_dir,
+                    run_dir=str(payload["run_dir"]),
                 )
             ),
             source_extensions=FrozenJson.from_value(
@@ -506,9 +513,16 @@ def _project_source_bindings(
 
 
 def _generic_source_bindings(
-    *, node_id: str, raw: Mapping[str, Any], source_dir: Path
+    *, node_id: str, raw: Mapping[str, Any], source_dir: Path, run_dir: str
 ) -> list[dict[str, Any]]:
     bindings = [
+        _file_binding(
+            binding_id=f"node:{node_id}:working-directory",
+            kind="working_directory",
+            declared_path=run_dir,
+            source_dir=source_dir,
+            require_exists=False,
+        ),
         _file_binding(
             binding_id=f"node:{node_id}:receipt",
             kind="output_path",
@@ -533,6 +547,7 @@ def _generic_source_bindings(
 def _project_security_declarations(contract: Any, *, source_dir: Path) -> dict[str, Any]:
     declarations = []
     for field in (
+        "evidence_manifest",
         "command_policy",
         "policy_profile",
         "data_boundary",
@@ -556,6 +571,7 @@ def _project_security_declarations(contract: Any, *, source_dir: Path) -> dict[s
                         "input_file"
                         if field
                         in {
+                            "evidence_manifest",
                             "command_policy",
                             "policy_profile",
                             "data_boundary",
@@ -570,6 +586,7 @@ def _project_security_declarations(contract: Any, *, source_dir: Path) -> dict[s
                     source_dir=source_dir,
                     require_exists=field
                     in {
+                        "evidence_manifest",
                         "command_policy",
                         "policy_profile",
                         "data_boundary",

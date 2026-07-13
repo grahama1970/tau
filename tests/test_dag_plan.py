@@ -32,6 +32,30 @@ def test_project_contract_compiles_routes_joins_security_and_evidence(tmp_path: 
     assert plan.plan_sha256.startswith("sha256:")
 
 
+def test_project_contract_preserves_context_layers_and_evidence_manifest(
+    tmp_path: Path,
+) -> None:
+    payload = _project_payload(tmp_path)
+    payload["context"] = {"summary": "contract summary", "shared": "contract"}
+    payload["nodes"][0]["context"] = {"shared": "node", "node_only": True}
+    manifest = tmp_path / "evidence-manifest.json"
+    manifest.write_text('{"schema":"tau.evidence_manifest.v1"}\n', encoding="utf-8")
+    payload["evidence_manifest"] = "evidence-manifest.json"
+
+    plan = compile_project_dag_plan(payload, source_path=tmp_path / "dag.json")
+    router = next(node for node in plan.nodes if node.node_id == "router")
+    declarations = plan.to_payload()["security_declarations"]["declarations"]
+
+    assert router.static_context.to_value() == {
+        "merge_policy": "project_handoff_context_v1",
+        "contract": {"summary": "contract summary", "shared": "contract"},
+        "node": {"shared": "node", "node_only": True},
+    }
+    assert next(
+        item for item in declarations if item["binding_id"] == "project:evidence-manifest"
+    )["content_sha256"].startswith("sha256:")
+
+
 def test_project_contract_compilation_is_byte_and_hash_stable(tmp_path: Path) -> None:
     first = compile_project_dag_plan(
         _project_payload(tmp_path), source_path=tmp_path / "dag.json"
@@ -114,6 +138,13 @@ def test_generic_spec_compiles_control_and_context_edges(tmp_path: Path) -> None
     assert edges == {("coder", "reviewer"), ("planner", "coder"), ("planner", "reviewer")}
     bindings = {(item.source_node_id, item.target_node_id) for item in plan.context_bindings}
     assert bindings == {("coder", "reviewer"), ("planner", "coder")}
+    for node in plan.nodes:
+        working_directory = next(
+            item
+            for item in node.to_payload()["source_bindings"]
+            if item["kind"] == "working_directory"
+        )
+        assert working_directory["declared_path"] == "."
 
 
 def test_generic_spec_preserves_multiple_roots_and_leaves(tmp_path: Path) -> None:
