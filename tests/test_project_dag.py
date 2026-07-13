@@ -2,6 +2,8 @@ import hashlib
 import json
 import os
 import sys
+import threading
+import time
 from datetime import date
 from pathlib import Path
 
@@ -434,6 +436,87 @@ def test_project_dag_ready_queue_propagates_node_context_to_command_stdin(
         "run_root": "/tmp/persona-dream-ready-queue-run",
         "image_path": "/tmp/persona-dream-ready-queue-run/artifacts/panel.png",
     }
+
+
+def test_shared_project_scheduler_persists_running_progress(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    for agent, response in (
+        ("research-auditor", _handoff("research-auditor", "human", [{"kind": "source_summary"}])),
+        ("coder", _handoff("coder", "human", _creator_evidence())),
+        ("reviewer", _reviewer_handoff(goal_hash="sha256:active-goal")),
+    ):
+        _write_response_spec(tmp_path, agent, response, sleep_seconds=0.4)
+    run_dir = tmp_path / "run"
+    outcome: list[dict[str, object]] = []
+
+    worker = threading.Thread(
+        target=lambda: outcome.append(
+            run_project_dag_contract(
+                contract_path=contract_path,
+                receipt_dir=run_dir,
+                agents_root=tmp_path / "agents",
+                scheduler="bounded-ready-queue",
+            )
+        )
+    )
+    worker.start()
+    progress_path = run_dir / "dag-progress.json"
+    deadline = time.monotonic() + 2
+    progress: dict[str, object] = {}
+    while time.monotonic() < deadline:
+        if progress_path.is_file():
+            progress = json.loads(progress_path.read_text(encoding="utf-8"))
+            if progress.get("active_subagents"):
+                break
+        time.sleep(0.01)
+    worker.join(timeout=3)
+
+    assert progress.get("status") == "RUNNING"
+    assert progress.get("active_subagents")
+    assert outcome and outcome[0]["status"] == "PASS"
+
+
+def test_shared_project_scheduler_cancels_running_sibling_on_block(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", []),
+        exit_code=1,
+    )
+    marker = tmp_path / "coder-completed.txt"
+    coder_spec = tmp_path / "specs" / "coder" / "tau-dispatch-command.json"
+    coder_spec.parent.mkdir(parents=True, exist_ok=True)
+    coder_spec.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import time; from pathlib import Path; time.sleep(2); "
+                        f"Path({str(marker)!r}).write_text('unexpected')"
+                    ),
+                ],
+                "timeout_s": 5,
+                "cwd": str(tmp_path),
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+    progress = json.loads((tmp_path / "run" / "dag-progress.json").read_text(encoding="utf-8"))
+
+    assert receipt["status"] == "BLOCKED"
+    assert marker.exists() is False
+    assert any(item["status"] == "BLOCKED" for item in progress["node_progress"])
 
 
 def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(

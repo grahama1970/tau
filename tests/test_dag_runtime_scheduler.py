@@ -29,8 +29,11 @@ def test_dag_plan_scheduler_runs_independent_nodes_concurrently(tmp_path: Path) 
     observed_inputs: dict[str, tuple[str, ...]] = {}
 
     def execute(
-        node: DagPlanNode, accepted_inputs: tuple[dict[str, Any], ...]
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        cancel_event: threading.Event,
     ) -> dict[str, Any]:
+        del cancel_event
         if node.node_id in {"left", "right"}:
             barrier.wait(timeout=1)
             time.sleep(0.01)
@@ -66,9 +69,11 @@ def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Pa
     called: list[str] = []
 
     def execute(
-        node: DagPlanNode, accepted_inputs: tuple[dict[str, Any], ...]
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        cancel_event: threading.Event,
     ) -> dict[str, Any]:
-        del accepted_inputs
+        del accepted_inputs, cancel_event
         called.append(node.node_id)
         return {
             "node_id": node.node_id,
@@ -84,13 +89,40 @@ def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Pa
     assert called == ["producer"]
 
 
+def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "fail"), _node(tmp_path, "sibling")]),
+        source_path=tmp_path / "dag.json",
+    )
+    barrier = threading.Barrier(2)
+    sibling_cancelled = threading.Event()
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        cancel_event: threading.Event,
+    ) -> dict[str, Any]:
+        del accepted_inputs
+        barrier.wait(timeout=1)
+        if node.node_id == "fail":
+            return {"node_id": "fail", "status": "BLOCKED", "verdict": "FAILED"}
+        if cancel_event.wait(timeout=1):
+            sibling_cancelled.set()
+        return {"node_id": "sibling", "status": "BLOCKED", "verdict": "CANCELLED"}
+
+    result = run_dag_plan(plan, execute_node=execute, max_concurrency=2)
+
+    assert result.status == "BLOCKED"
+    assert sibling_cancelled.is_set()
+
+
 def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: Path) -> None:
     payload = _generic_spec(tmp_path, [_node(tmp_path, "producer")])
     plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
     plan = replace(plan, route_contracts=(plan.goal_binding,))
 
     with pytest.raises(RuntimeError, match="dag_plan_route_join_adapter_required"):
-        run_dag_plan(plan, execute_node=lambda node, inputs: {})
+        run_dag_plan(plan, execute_node=lambda node, inputs, cancel: {})
 
 
 def _generic_spec(

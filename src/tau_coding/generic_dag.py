@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import subprocess
+import threading
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -120,7 +121,9 @@ def run_generic_dag(
     def execute_plan_node(
         plan_node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
+        cancel_event: threading.Event,
     ) -> dict[str, Any]:
+        del cancel_event
         node = nodes_by_id[plan_node.node_id]
         _write_checkpoint(
             path=checkpoint_path,

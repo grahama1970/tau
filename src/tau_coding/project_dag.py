@@ -4178,6 +4178,7 @@ def _run_shared_project_dag_plan(
     def execute_node(
         plan_node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
+        cancel_event: threading.Event,
     ) -> dict[str, Any]:
         node = contract.nodes[plan_node.node_id]
         if plan_node.adapter_kind in {"project_virtual", "project_human"}:
@@ -4217,6 +4218,7 @@ def _run_shared_project_dag_plan(
             command_spec_root=command_spec_root,
             artifact_dir=artifact_dir,
             command_policy_path=_contract_relative_path(contract.command_policy, contract_path),
+            cancel_event=cancel_event,
         )
         dispatch = result.get("dispatch")
         response = result.get("response")
@@ -4346,7 +4348,22 @@ def _run_shared_project_dag_plan(
 
     def record_event(event: dict[str, Any]) -> None:
         with lock:
+            node_id = event.get("node_id")
+            if (
+                event.get("event") == "node_started"
+                and isinstance(node_id, str)
+                and contract.nodes[node_id].command_spec is not None
+            ):
+                node_attempts.setdefault(node_id, 1)
             events.append({**event, "ts": _utc_stamp()})
+            _write_project_dag_progress(
+                contract=contract,
+                receipt_dir=receipt_dir,
+                scheduler="bounded-ready-queue",
+                events=events,
+                node_attempts=node_attempts,
+                status="RUNNING",
+            )
 
     result = run_dag_plan(
         plan,
@@ -4705,7 +4722,7 @@ def _project_dag_node_progress(
             statuses[node_id] = "COMPLETED" if event.get("ok", True) is True else "BLOCKED"
         elif name == "step_completed":
             statuses[node_id] = "COMPLETED" if event.get("ok") is True else "BLOCKED"
-        elif name in {"node_attempt_failed", "step_blocked", "loop_blocked"}:
+        elif name in {"node_attempt_failed", "node_blocked", "step_blocked", "loop_blocked"}:
             statuses[node_id] = "BLOCKED"
     progress: list[dict[str, Any]] = []
     for node_id in sorted(statuses):

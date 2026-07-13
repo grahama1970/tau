@@ -5,11 +5,12 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
+from threading import Event
 from typing import Any
 
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
 
-NodeExecutor = Callable[[DagPlanNode, tuple[dict[str, Any], ...]], dict[str, Any]]
+NodeExecutor = Callable[[DagPlanNode, tuple[dict[str, Any], ...], Event], dict[str, Any]]
 EventSink = Callable[[dict[str, Any]], None]
 
 
@@ -47,6 +48,7 @@ def run_dag_plan(
     results: dict[str, dict[str, Any]] = {}
     result_order: list[str] = []
     scheduled: set[str] = set()
+    cancel_events = {node_id: Event() for node_id in nodes}
     max_observed_concurrency = 0
     blocked_result: dict[str, Any] | None = None
 
@@ -69,7 +71,12 @@ def run_dag_plan(
                     for source in context_sources.get(node_id, ())
                     if isinstance(results.get(source, {}).get("accepted_output"), dict)
                 )
-                future = pool.submit(execute_node, nodes[node_id], accepted_inputs)
+                future = pool.submit(
+                    execute_node,
+                    nodes[node_id],
+                    accepted_inputs,
+                    cancel_events[node_id],
+                )
                 futures[future] = node_id
                 scheduled.add(node_id)
                 _emit(event_sink, {"event": "node_started", "node_id": node_id})
@@ -108,7 +115,8 @@ def run_dag_plan(
                             "verdict": result.get("verdict"),
                         },
                     )
-                    for pending in futures:
+                    for pending, pending_node_id in futures.items():
+                        cancel_events[pending_node_id].set()
                         pending.cancel()
                     futures.clear()
                     break
