@@ -2214,6 +2214,58 @@ def test_project_dag_bounded_ready_queue_blocks_cycles(tmp_path: Path) -> None:
     assert receipt["dag_error"]["recommended_action"]["next_agent"] == "goal-guardian"
 
 
+def test_project_dag_bounded_ready_queue_blocks_unsupported_condition_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"][0]["condition"] = "reviewer_pass"
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    run_dir = tmp_path / "run"
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["ok"] is False
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "UNSUPPORTED_READY_QUEUE_CONDITION"
+    assert receipt["selected_agents"] == []
+    assert receipt["command_executed"] is False
+    assert receipt["alerts"] == [
+        {
+            "severity": "BLOCK",
+            "code": "unsupported_ready_queue_condition",
+            "message": (
+                "Bounded ready-queue does not evaluate edge conditions. Remove the "
+                "conditions or use a future typed route evaluator before dispatch."
+            ),
+            "evidence": {
+                "edges": [
+                    {
+                        "from": "start",
+                        "to": "research",
+                        "condition": "reviewer_pass",
+                    }
+                ]
+            },
+        }
+    ]
+    assert receipt["dag_error"]["schema"] == DAG_ERROR_SCHEMA
+    assert receipt["dag_error"]["failure_code"] == "unsupported_ready_queue_condition"
+    assert receipt["dag_error"]["recommended_action"] == {
+        "type": "repair_dag_route_contract",
+        "next_agent": "goal-guardian",
+        "reason": "Remove unsupported edge conditions until Tau has a typed route evaluator.",
+    }
+    assert not (run_dir / "compiled-command-specs").exists()
+    assert not (run_dir / "command-loop").exists()
+    assert not (run_dir / "ready-queue").exists()
+
+
 def test_project_dag_bounded_ready_queue_blocks_mutating_nodes(tmp_path: Path) -> None:
     contract_path = _write_parallel_contract(tmp_path)
     payload = json.loads(contract_path.read_text(encoding="utf-8"))

@@ -162,6 +162,10 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.monitor_alerts.unresolved_block",
     },
+    "unsupported_ready_queue_condition": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.ready_queue_conditions",
+    },
 }
 
 
@@ -2865,6 +2869,21 @@ def _collect_provider_auth_failures(value: Any, *, failures: list[str]) -> None:
 
 def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
+    conditional_edges = [
+        {"from": edge.source, "to": edge.target, "condition": edge.condition}
+        for edge in contract.edges
+        if edge.condition
+    ]
+    if conditional_edges:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "unsupported_ready_queue_condition",
+                "Bounded ready-queue does not evaluate edge conditions. Remove the "
+                "conditions or use a future typed route evaluator before dispatch.",
+                {"edges": conditional_edges},
+            )
+        )
     if _cycle_detected(contract):
         alerts.append(
             _alert(
@@ -3190,8 +3209,8 @@ def _ready_queue_receipt(
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
-        "Bounded ready-queue scheduler preflight checked acyclicity, local-only "
-        "execution, provider branches, and mutating branches.",
+        "Bounded ready-queue scheduler preflight checked unsupported edge conditions, "
+        "acyclicity, local-only execution, provider branches, and mutating branches.",
     ]
     if dispatches:
         proves.extend(
@@ -3232,6 +3251,7 @@ def _ready_queue_receipt(
             for dispatch in dispatches
             if dispatch.get("selected_agent")
         ],
+        "command_executed": bool(dispatches),
         "observed_edges": observed_edges,
         "node_attempts": node_attempts,
         "reviewer_verdicts": reviewer_verdicts,
@@ -3487,11 +3507,20 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         "unexpected_node",
         "entry_node_mismatch",
         "cycle_detected",
+        "unsupported_ready_queue_condition",
     }:
         return {
-            "type": "reroute",
+            "type": (
+                "repair_dag_route_contract"
+                if normalized == "unsupported_ready_queue_condition"
+                else "reroute"
+            ),
             "next_agent": "goal-guardian",
-            "reason": "Reconcile DAG route, goal, or target drift before continuing.",
+            "reason": (
+                "Remove unsupported edge conditions until Tau has a typed route evaluator."
+                if normalized == "unsupported_ready_queue_condition"
+                else "Reconcile DAG route, goal, or target drift before continuing."
+            ),
         }
     if normalized in {
         "evidence_manifest_invalid",

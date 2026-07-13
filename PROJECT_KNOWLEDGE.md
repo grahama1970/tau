@@ -1,9 +1,21 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 09:03 by agent
+**Last updated:** 2026-07-13 10:37 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-13 issue #74 ready-queue condition safety slice: bounded-ready-queue
+  now rejects every non-empty edge `condition` before command-spec compilation
+  with `failure_code:unsupported_ready_queue_condition`, zero selected agents,
+  and `command_executed:false`. The receipt identifies each unsupported edge
+  and directs the project agent to remove the condition until the typed route
+  evaluator tracked by #75 exists. Focused proof: `58 passed`; live local
+  acceptance under `/tmp/tau-issue-74-ready-queue-condition-20260713/` shows
+  the unconditional three-node DAG PASS with `command_executed:true` and the
+  conditional DAG BLOCKED with no compiled-command-specs, command-loop, or
+  ready-queue directories. This is `mocked:false`, `live:true`, and
+  `provider_live:false`; it does not implement or prove conditional routing.
 
 - 2026-07-13 live bounded WebGPT clarification acceptance: the native Tau
   `architecture_review/webgpt` skill node ran against Browser Oracle project
