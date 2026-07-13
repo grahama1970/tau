@@ -5,6 +5,32 @@
 
 ## Current Understanding
 
+- 2026-07-13 issue #78 scheduler-convergence branch: project and generic local
+  DAG contracts compile to `tau.dag_plan.v1` and execute through one canonical
+  bounded ready queue. The scheduler owns readiness, bounded retries, terminal
+  states, edge states, monotonic join deadlines, and cancellation. A project
+  transition policy writes immutable typed route, terminal-contribution, and
+  join-decision receipts before returning effects to the scheduler. Join
+  evaluation occurs after each atomic completion batch, and timeout or
+  short-circuit cancellation terminates local command process groups. Generic
+  command, artifact-transaction producer/validator/reviewer/continuation, and
+  native-skill subprocesses consume the same cancellation event. The old
+  project ready-queue implementation and runtime fallback were deleted. Focused
+  deterministic and live-local matrix:
+  `uv run pytest tests/test_dag_runtime_scheduler.py
+  tests/test_dag_runtime_subprocess_control.py tests/test_dag_plan.py
+  tests/test_generic_dag.py tests/test_generic_artifact_transaction.py
+  tests/test_skill_dag_adapter.py tests/test_project_dag.py
+  tests/test_project_dag_join_policies.py tests/test_dag_route_decision.py
+  tests/test_dag_join_decision.py -q` -> `259 passed`. The process-control test
+  launches a real local parent and child process and confirms scheduler
+  cancellation prevents the child artifact from appearing. `mypy` passed for
+  nine touched runtime sources. Mocked: no for command, transaction, join,
+  route, and process-group acceptance; native WebGPT skill semantic tests remain
+  transport-mocked. Live: yes for local subprocesses. Provider-live: no. This
+  does not prove provider/model semantic quality, live WebGPT skill execution,
+  durable restart, OS sandbox isolation, or future route correctness.
+
 - 2026-07-13 issue #76 terminal-contribution/join-policy slice: the
   `bounded-ready-queue` scheduler now accepts virtual
   `tau.dag_join_policy.v1` nodes with `all_success`, `all_terminal`,

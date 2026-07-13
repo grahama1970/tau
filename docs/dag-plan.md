@@ -2,7 +2,7 @@
 
 `tau.dag_plan.v1` is Tau's immutable internal representation of a validated DAG.
 It lets the project and generic public contract families converge on one plan
-without removing either public schema or changing their schedulers.
+and one bounded scheduler without removing either public schema.
 
 Compile a plan without dispatching any node:
 
@@ -44,10 +44,24 @@ relative. Absolute runtime working directories are represented as non-portable
 rather than silently re-anchored. The same rule applies to absolute input and
 output bindings.
 
+## Scheduler
+
+Project and generic local DAG runs compile to `DagPlan` before dispatch. The
+shared scheduler owns node readiness, bounded attempts, typed route effects,
+terminal join contributions, monotonic join deadlines, cancellation, and
+terminal settlement. Project-specific transition policy interprets route and
+join contracts and persists immutable receipts before returning scheduler
+effects. Command, skill, and artifact-transaction subprocesses consume the
+scheduler cancellation event through a process-group runner.
+
+Unsupported provider/non-local nodes remain fail-closed during project DAG
+preflight; they do not select a legacy scheduler fallback.
+
 ## Boundary
 
 DagPlan compilation proves that Tau accepted and normalized a supported DAG
-contract and produced deterministic hashes. It does not execute the DAG, prove
-worker correctness, satisfy security gates, converge the schedulers, or provide
-durable restart behavior. Scheduler convergence belongs to issue #78 and the
-durable event store belongs to issue #79.
+contract and produced deterministic hashes. Runtime receipts additionally prove
+which local adapters the shared scheduler dispatched and which transition
+effects it accepted. They do not prove worker semantic correctness, satisfy
+security gates by themselves, prove provider/model quality, or provide durable
+restart behavior. The durable event store belongs to issue #79.
