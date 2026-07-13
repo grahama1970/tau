@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import hashlib
 import json
 import time
@@ -314,7 +315,7 @@ def _run_team(
         scenario_id=scenario_id,
         team=team,
         persona=persona,
-        context=context,
+        context=_context_for_team(context, team),
         worker_id=worker_id,
         worker_index=worker_index,
         lane_id=lane_id,
@@ -387,6 +388,29 @@ def _run_team(
         "materialized": materialized,
         "materialized_artifact": materialized,
     }
+
+
+def _context_for_team(context: dict[str, Any], team: str) -> dict[str, Any]:
+    """Return common Battle context plus only the requested team's private projection."""
+    projected = copy.deepcopy(
+        {key: value for key, value in context.items() if key != "team_contexts"}
+    )
+    summary = projected.get("summary")
+    if isinstance(summary, dict) and isinstance(summary.get("teams"), dict):
+        own_summary = summary["teams"].get(team)
+        if not isinstance(own_summary, dict):
+            raise ValueError(f"summary.teams missing object for {team}")
+        summary["teams"] = {team: own_summary}
+    team_contexts = context.get("team_contexts")
+    if team_contexts is None:
+        return projected
+    if not isinstance(team_contexts, dict):
+        raise ValueError("team_contexts must be an object")
+    team_context = team_contexts.get(team)
+    if not isinstance(team_context, dict):
+        raise ValueError(f"team_contexts missing object for {team}")
+    projected["team_context"] = team_context
+    return projected
 
 
 
