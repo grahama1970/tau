@@ -116,6 +116,49 @@ def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path
     assert sibling_cancelled.is_set()
 
 
+def test_dag_plan_scheduler_preserves_completed_sibling_after_failure(tmp_path: Path) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "fail"), _node(tmp_path, "pass")]),
+        source_path=tmp_path / "dag.json",
+    )
+    barrier = threading.Barrier(2)
+    events: list[dict[str, Any]] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        cancel_event: threading.Event,
+    ) -> dict[str, Any]:
+        del accepted_inputs, cancel_event
+        barrier.wait(timeout=1)
+        if node.node_id == "fail":
+            return {"node_id": "fail", "status": "BLOCKED", "verdict": "FAILED"}
+        return {
+            "node_id": "pass",
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": "pass"},
+        }
+
+    result = run_dag_plan(
+        plan,
+        execute_node=execute,
+        max_concurrency=2,
+        event_sink=events.append,
+    )
+
+    assert result.status == "BLOCKED"
+    assert result.completed_node_ids == ("pass",)
+    assert {item["node_id"]: item["verdict"] for item in result.node_results} == {
+        "fail": "FAILED",
+        "pass": "PASS",
+    }
+    assert {item["event"] for item in events if item.get("node_id") == "pass"} == {
+        "node_started",
+        "node_completed",
+    }
+
+
 def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: Path) -> None:
     payload = _generic_spec(tmp_path, [_node(tmp_path, "producer")])
     plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")

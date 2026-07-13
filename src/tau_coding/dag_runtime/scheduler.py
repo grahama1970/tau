@@ -92,6 +92,7 @@ def run_dag_plan(
                 break
 
             done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            completed_batch: list[tuple[str, dict[str, Any]]] = []
             for future in done:
                 node_id = futures.pop(future)
                 try:
@@ -103,10 +104,15 @@ def run_dag_plan(
                         "verdict": "ADAPTER_EXECUTION_FAILED",
                         "errors": [str(exc)],
                     }
+                completed_batch.append((node_id, result))
+
+            batch_blocked = False
+            for node_id, result in sorted(completed_batch):
                 results[node_id] = result
                 result_order.append(node_id)
                 if result.get("status") != "PASS" or result.get("verdict") != "PASS":
-                    blocked_result = result
+                    if blocked_result is None:
+                        blocked_result = result
                     _emit(
                         event_sink,
                         {
@@ -115,37 +121,38 @@ def run_dag_plan(
                             "verdict": result.get("verdict"),
                         },
                     )
-                    for pending, pending_node_id in futures.items():
-                        cancel_events[pending_node_id].set()
-                        pending.cancel()
-                    for pending, pending_node_id in futures.items():
-                        try:
-                            cancelled_result = pending.result()
-                        except CancelledError:
-                            cancelled_result = {
-                                "node_id": pending_node_id,
-                                "status": "BLOCKED",
-                                "verdict": "CANCELLED",
-                                "errors": ["cancelled before adapter execution"],
-                            }
-                        except Exception as exc:  # pragma: no cover - defensive boundary.
-                            cancelled_result = {
-                                "node_id": pending_node_id,
-                                "status": "BLOCKED",
-                                "verdict": "CANCELLED",
-                                "errors": [str(exc)],
-                            }
-                        results[pending_node_id] = cancelled_result
-                        result_order.append(pending_node_id)
-                        _emit(
-                            event_sink,
-                            {"event": "node_cancelled", "node_id": pending_node_id},
-                        )
-                    futures.clear()
-                    break
+                    batch_blocked = True
+                    continue
                 completed.add(node_id)
                 _emit(event_sink, {"event": "node_completed", "node_id": node_id})
-            if blocked_result is not None:
+            if batch_blocked:
+                for pending, pending_node_id in futures.items():
+                    cancel_events[pending_node_id].set()
+                    pending.cancel()
+                for pending, pending_node_id in futures.items():
+                    try:
+                        cancelled_result = pending.result()
+                    except CancelledError:
+                        cancelled_result = {
+                            "node_id": pending_node_id,
+                            "status": "BLOCKED",
+                            "verdict": "CANCELLED",
+                            "errors": ["cancelled before adapter execution"],
+                        }
+                    except Exception as exc:  # pragma: no cover - defensive boundary.
+                        cancelled_result = {
+                            "node_id": pending_node_id,
+                            "status": "BLOCKED",
+                            "verdict": "CANCELLED",
+                            "errors": [str(exc)],
+                        }
+                    results[pending_node_id] = cancelled_result
+                    result_order.append(pending_node_id)
+                    _emit(
+                        event_sink,
+                        {"event": "node_cancelled", "node_id": pending_node_id},
+                    )
+                futures.clear()
                 break
 
     ordered_results = tuple(results[node_id] for node_id in result_order)
