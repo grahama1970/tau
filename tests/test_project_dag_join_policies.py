@@ -292,6 +292,9 @@ def test_short_circuit_batches_cancelled_contributions_before_final_evaluation(
         route="ALL",
         branches=branches,
     )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["limits"]["max_concurrency"] = 1
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
     _write_response_spec(tmp_path, "router", _handoff("router", branches[0], route="ALL"))
     _write_response_spec(tmp_path, branches[0], _handoff(branches[0], "join"))
     for branch in branches[1:]:
@@ -318,6 +321,11 @@ def test_short_circuit_batches_cancelled_contributions_before_final_evaluation(
     assert evaluations == ["TERMINAL_INTENT", "PASS"]
     assert len(receipt["terminal_contribution_receipts"]) == len(branches)
     assert len(set(receipt["terminal_contribution_receipts"])) == len(branches)
+    assert receipt["selected_agents"] == ["router", branches[0]]
+    assert sum(
+        event["event"] == "unstarted_join_source_suppressed"
+        for event in receipt["scheduler_events"]
+    ) == len(branches) - 1
 
 
 def test_non_success_terminal_edge_does_not_count_as_activated_route(tmp_path: Path) -> None:
@@ -398,6 +406,25 @@ def test_invalid_join_blocks_before_command_compilation(tmp_path: Path) -> None:
     assert receipt["selected_agents"] == []
     assert not (run_dir / "compiled-command-specs").exists()
     assert not (run_dir / "ready-queue").exists()
+
+
+def test_join_source_with_non_join_outgoing_path_blocks_before_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(tmp_path, policy="all_terminal", route="ALL")
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"].append({"from": "branch-a", "to": "human"})
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "JOIN_SOURCE_OUTGOING_NOT_EXCLUSIVE"
+    assert receipt["selected_agents"] == []
+    assert not (tmp_path / "run" / "ready-queue").exists()
 
 
 def _run(tmp_path: Path, contract_path: Path) -> dict[str, object]:

@@ -27,6 +27,8 @@ Declare the policy on a virtual node with at least two incoming edges:
 Join nodes cannot declare a command, provider, reviewer, route mode, requested
 capability, or conditional outgoing edge. Put aggregation work in a separate
 command-backed node after the virtual join.
+Each direct join source must route exclusively to that join. This prevents one
+join from consuming or suppressing a failure that also controls another path.
 
 ## Terminal States
 
@@ -88,6 +90,9 @@ no source produces a contribution. At expiry Tau signals each unresolved local
 source to terminate, writes the complete batch of `timed_out` contributions,
 and evaluates the policy once. The pure evaluator never reads a clock, and a
 final receipt never contains `wait`.
+Sources whose join edge is cancelled or timed out before dispatch are marked
+terminal and never launched. A queued worker that observes cancellation before
+launch also returns without creating a subprocess.
 
 ## Receipts
 

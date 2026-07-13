@@ -64,6 +64,16 @@
   complete fail-closed code registration, enriched replay, and eight-way batch
   short-circuit settlement.
 
+- 2026-07-13 issue #76 queued-source hardening: round-three independent review
+  identified that an unstarted source could remain runnable after its join edge
+  was cancelled or timed out. Tau now terminalizes and suppresses such sources,
+  makes queued workers check cancellation before subprocess launch, and rejects
+  direct join sources with any non-join outgoing path. Branch failures are join
+  consumable only when every outgoing edge is an unconditional direct input to
+  one join. The quorum schema now caps both fraction fields and explicitly
+  records the runtime-only cross-field/reduced-fraction invariant. Focused proof
+  is `129 passed` before the final independent review rerun.
+
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed
   `tau.route_condition.v1` objects over direct typed `response.result` fields

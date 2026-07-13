@@ -947,19 +947,6 @@ def _run_bounded_ready_queue_project_dag(
             incoming_count=len(incoming_edges[node_id]),
         )
 
-    def node_reaches_join(node_id: str) -> bool:
-        pending = [edge.target for edge in outgoing_edges.get(node_id, [])]
-        visited: set[str] = set()
-        while pending:
-            target = pending.pop()
-            if target in join_nodes:
-                return True
-            if target in visited or target in contract.terminal_nodes:
-                continue
-            visited.add(target)
-            pending.extend(edge.target for edge in outgoing_edges.get(target, []))
-        return False
-
     def arm_direct_join_deadlines(node_id: str, *, origin: str) -> None:
         armed_at = time.monotonic()
         for edge in outgoing_edges.get(node_id, []):
@@ -977,9 +964,28 @@ def _run_bounded_ready_queue_project_dag(
             )
 
     def branch_failure_is_join_consumable(node_id: str) -> bool:
-        return not any(
-            _edge_is_conditional(edge) for edge in outgoing_edges.get(node_id, [])
-        ) and node_reaches_join(node_id)
+        outgoing = outgoing_edges.get(node_id, [])
+        return bool(outgoing) and all(
+            not _edge_is_conditional(edge) and edge.target in join_nodes for edge in outgoing
+        ) and len({edge.target for edge in outgoing}) == 1
+
+    def suppress_unstarted_join_source(edge: ProjectDagEdge, *, state: str) -> None:
+        source = edge.source
+        if source in completed or source in node_cancel_events:
+            return
+        active_nodes.discard(source)
+        node_terminal_states[source] = state
+        resolved_sources.add(source)
+        completed.add(source)
+        events.append(
+            {
+                "event": "unstarted_join_source_suppressed",
+                "node_id": source,
+                "join_node_id": edge.target,
+                "state": state,
+                "ts": _utc_stamp(),
+            }
+        )
 
     def edge_identity(edge: ProjectDagEdge) -> dict[str, Any]:
         return {
@@ -1085,6 +1091,7 @@ def _run_bounded_ready_queue_project_dag(
                 edge for edge in edges if edge.edge_index not in edge_terminal_states
             ]
             for edge in pending_edges:
+                suppress_unstarted_join_source(edge, state="cancelled")
                 cancel_event = node_cancel_events.get(edge.source)
                 if cancel_event is not None:
                     cancel_event.set()
@@ -1328,6 +1335,7 @@ def _run_bounded_ready_queue_project_dag(
                 if edge.edge_index not in edge_terminal_states
             ]
             for edge in unresolved_edges:
+                suppress_unstarted_join_source(edge, state="timed_out")
                 cancel_event = node_cancel_events.get(edge.source)
                 if cancel_event is not None:
                     cancel_event.set()
@@ -1544,6 +1552,8 @@ def _run_bounded_ready_queue_project_dag(
                     stop_reason = "node_dispatch_failed"
                     if isinstance(dispatch, dict):
                         stop_reason = str(dispatch.get("stop_reason") or stop_reason)
+                    elif isinstance(result.get("stop_reason"), str):
+                        stop_reason = str(result["stop_reason"])
                     elif result.get("errors"):
                         stop_reason = _command_spec_load_stop_reason(
                             "\n".join(str(item) for item in result.get("errors", []))
@@ -3647,6 +3657,26 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
             )
         else:
             valid_join_nodes.add(node_id)
+    for join_id in sorted(valid_join_nodes):
+        for incoming_edge in incoming.get(join_id, []):
+            source_targets = {
+                edge.target for edge in outgoing.get(incoming_edge.source, [])
+            }
+            if source_targets - {join_id}:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "join_source_outgoing_not_exclusive",
+                        "A direct join source may not also target another node or terminal.",
+                        {
+                            "join_node_id": join_id,
+                            "source_node_id": incoming_edge.source,
+                            "outgoing_targets": sorted(source_targets),
+                        },
+                    )
+                )
+                valid_join_nodes.discard(join_id)
+                break
     for source, edges in outgoing.items():
         conditional = [edge for edge in edges if _edge_is_conditional(edge)]
         unconditional = [edge for edge in edges if not _edge_is_conditional(edge)]
@@ -3992,6 +4022,16 @@ def _dispatch_ready_node(
     cancel_event: threading.Event | None = None,
 ) -> dict[str, Any]:
     started = time.monotonic()
+    if cancel_event is not None and cancel_event.is_set():
+        return {
+            "ok": False,
+            "dispatch": None,
+            "response": None,
+            "stop_reason": "command_cancelled",
+            "started_monotonic": started,
+            "completed_monotonic": time.monotonic(),
+            "errors": ["command cancelled by DAG scheduler before launch"],
+        }
     try:
         spec = load_agent_dispatch_command_spec(
             agents_root,

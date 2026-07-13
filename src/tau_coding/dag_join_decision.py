@@ -62,6 +62,7 @@ JOIN_FAILURE_CODES = frozenset(
         "join_route_not_allowed",
         "join_requires_multiple_inputs",
         "join_source_binding_mismatch",
+        "join_source_outgoing_not_exclusive",
         "join_timeout_invalid",
         "join_capabilities_not_allowed",
         "terminal_contribution_conflict",
