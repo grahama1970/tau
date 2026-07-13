@@ -89,6 +89,14 @@
   successfully activated. The focused suite is `165 passed` and includes the
   live local no-op collection path.
 
+- 2026-07-13 issue #76 final review state: the fresh live SciLLM-backed semantic
+  review reports zero findings. Its runner status remains nonzero only for the
+  pre-existing file-size rules (`project_dag.py`: 4716 lines on main, 5352 on
+  this branch; `handoff_dispatch.py`: 1338 on main, 1443 on this branch), whose
+  architectural split belongs to the DagPlan/runtime convergence follow-up.
+  Final full-suite proof is `1960 passed, 3 failed`; the same three unrelated
+  clean-main fixture/artifact gaps remain and no issue #76 test failed.
+
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed
   `tau.route_condition.v1` objects over direct typed `response.result` fields
