@@ -186,7 +186,7 @@ class ProjectDagNode:
 class ProjectDagEdge:
     source: str
     target: str
-    condition: str | None = None
+    condition: object | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -2491,7 +2491,7 @@ def _parse_edges(value: object, errors: list[str]) -> list[ProjectDagEdge]:
             ProjectDagEdge(
                 source=source,
                 target=target,
-                condition=str(condition) if isinstance(condition, str) else None,
+                condition=condition,
             )
         )
     return edges
@@ -2870,9 +2870,13 @@ def _collect_provider_auth_failures(value: Any, *, failures: list[str]) -> None:
 def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     conditional_edges = [
-        {"from": edge.source, "to": edge.target, "condition": edge.condition}
+        {
+            "from": edge.source,
+            "to": edge.target,
+            "condition": _json_safe_alert_value(edge.condition),
+        }
         for edge in contract.edges
-        if edge.condition
+        if edge.condition is not None and edge.condition != ""
     ]
     if conditional_edges:
         alerts.append(
@@ -4276,6 +4280,14 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
     except (TypeError, ValueError) as exc:
         errors.append(f"{label} must be JSON-serializable: {exc}")
         return {}
+
+
+def _json_safe_alert_value(value: object) -> object:
+    try:
+        json.dumps(value)
+    except (TypeError, ValueError):
+        return {"type": type(value).__name__, "value": str(value)}
+    return value
 
 
 def _handoff_context(
