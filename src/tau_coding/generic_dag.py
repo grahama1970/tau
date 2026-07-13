@@ -13,6 +13,9 @@ from pathlib import Path
 from typing import Any
 
 from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.model import DagPlanNode
+from tau_coding.dag_runtime.scheduler import run_dag_plan
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -93,10 +96,7 @@ def run_generic_dag(
         },
     )
     completed: set[str] = set()
-    accepted_outputs: dict[str, dict[str, Any]] = {}
     node_results: list[dict[str, Any]] = []
-    final_status = "PASS"
-    final_verdict = "PASS"
     checkpoint_path = run_dir / "checkpoint.json"
     current_state_path = run_dir / "current-state.json"
     _write_checkpoint(
@@ -114,7 +114,14 @@ def run_generic_dag(
         active_node_id=None,
     )
 
-    for node in _topological_order(nodes):
+    nodes_by_id = nodes
+    plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
+
+    def execute_plan_node(
+        plan_node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+    ) -> dict[str, Any]:
+        node = nodes_by_id[plan_node.node_id]
         _write_checkpoint(
             path=checkpoint_path,
             current_state_path=current_state_path,
@@ -127,57 +134,27 @@ def run_generic_dag(
             completed=completed,
             status="RUNNING",
             verdict="RUNNING",
-            active_node_id=node.node_id,
+            active_node_id=plan_node.node_id,
         )
-        missing_dependencies = [dep for dep in node.depends_on if dep not in completed]
-        if missing_dependencies:
-            final_status = "BLOCKED"
-            final_verdict = "DEPENDENCY_NOT_SATISFIED"
-            node_results.append(
-                _blocked_node_record(
-                    node,
-                    verdict=final_verdict,
-                    errors=[f"missing passed dependencies: {', '.join(missing_dependencies)}"],
-                )
-            )
-            break
-        result = _run_node(
+        return _run_node(
             node,
             run_id=run_id,
             run_dir=run_dir,
             events_path=events_path,
             resume=resume,
-            accepted_inputs=[
-                accepted_outputs[dependency]
-                for dependency in node.accepted_context_from
-                if dependency in accepted_outputs
-            ],
+            accepted_inputs=list(accepted_inputs),
             goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
         )
-        node_results.append(result)
-        if result["status"] == "PASS" and result["verdict"] == "PASS":
-            projection = result.get("accepted_output")
-            if isinstance(projection, dict):
-                accepted_outputs[node.node_id] = projection
-            completed.add(node.node_id)
-            _write_checkpoint(
-                path=checkpoint_path,
-                current_state_path=current_state_path,
-                run_id=run_id,
-                spec_path=resolved_spec_path,
-                run_dir=run_dir,
-                events_path=events_path,
-                nodes=nodes,
-                node_results=node_results,
-                completed=completed,
-                status="RUNNING",
-                verdict="RUNNING",
-                active_node_id=None,
-            )
-            continue
-        final_status = "BLOCKED"
-        final_verdict = str(result.get("verdict") or "NODE_BLOCKED")
-        break
+
+    scheduler_result = run_dag_plan(
+        plan,
+        execute_node=execute_plan_node,
+        max_concurrency=1,
+    )
+    node_results = list(scheduler_result.node_results)
+    completed = set(scheduler_result.completed_node_ids)
+    final_status = scheduler_result.status
+    final_verdict = scheduler_result.verdict
 
     _write_checkpoint(
         path=checkpoint_path,
@@ -205,6 +182,9 @@ def run_generic_dag(
         "live": live,
         "provider_live": provider_live,
         "execution": "local_subprocess_receipt_gated_dag",
+        "scheduler": "dag_plan_ready_queue",
+        "dag_plan_sha256": plan.plan_sha256,
+        "max_observed_concurrency": scheduler_result.max_observed_concurrency,
         "run_id": run_id,
         "run_dir": str(run_dir),
         "spec_path": str(resolved_spec_path),
