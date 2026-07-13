@@ -6,15 +6,23 @@
 ## Current Understanding
 
 - 2026-07-13 issue #74 ready-queue condition safety slice: bounded-ready-queue
-  now rejects every non-empty edge `condition` before command-spec compilation
+  now rejects every supplied non-empty edge `condition`, including malformed
+  non-string and YAML date values, before command-spec compilation
   with `failure_code:unsupported_ready_queue_condition`, zero selected agents,
   and `command_executed:false`. The receipt identifies each unsupported edge
   and directs the project agent to remove the condition until the typed route
-  evaluator tracked by #75 exists. Focused proof: `58 passed`; live local
-  acceptance under `/tmp/tau-issue-74-ready-queue-condition-20260713/` shows
+  evaluator tracked by #75 exists. Focused proof: `64 passed`; live local
+  acceptance under `/tmp/tau-issue-74-ready-queue-condition-20260713-v3/` shows
   the unconditional three-node DAG PASS with `command_executed:true` and the
   conditional DAG BLOCKED with no compiled-command-specs, command-loop, or
-  ready-queue directories. This is `mocked:false`, `live:true`, and
+  ready-queue directories. Receipt hashes are
+  `0ccfdb6cdf7f38ab7bbac039848fac45dd95b784ac6219b4c79cb8544cd70489`
+  (positive) and
+  `968115683a9105718091e450f8da29d13b0c41d8ca04358a3f7210642802ef51`
+  (negative). A live authenticated `code-review-runner` review of the actual
+  diff returned zero findings at
+  `/tmp/tau-pr-80-review-artifacts-fixed/tau-pr-80-independent-review-fixed.review-result.json`.
+  This is `mocked:false`, `live:true`, and
   `provider_live:false`; it does not implement or prove conditional routing.
 
 - 2026-07-13 live bounded WebGPT clarification acceptance: the native Tau
