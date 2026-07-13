@@ -27,7 +27,7 @@
   tests/test_project_dag_join_policies.py tests/test_dag_route_decision.py
   tests/test_dag_join_decision.py
   tests/test_cli.py::test_cli_dag_run_and_run_alias_execute_generic_dag -q` ->
-  `271 passed in 18.95s`. The process-control test
+  `273 passed in 18.97s`. The process-control test
   launches a real local parent and child process and confirms scheduler
   cancellation prevents the child artifact from appearing. A mixed-DAG fixture
   runs a real artifact producer, deterministic validator, reviewer, and
@@ -37,7 +37,9 @@
   effects, Windows-only receipt path classification, parent-only Windows
   cancellation, retries after scheduler cancellation, pre-start policy blocks
   that left already-running roots alive, and POSIX descendants that ignored
-  `SIGTERM`. Scheduler-originated cancellation is terminal and non-retryable,
+  `SIGTERM`. A final full-branch review also found and repaired reordered
+  `accepted_context_from` inputs and duplicated command history across three or
+  more scheduler attempts. Scheduler-originated cancellation is terminal and non-retryable,
   while transition policies still emit join bookkeeping such as ignored late
   contributions. `mypy` passed for the shared DAG runtime package. Mocked: no for
   command, transaction, join, route, process-group, mixed-adapter, and CLI
