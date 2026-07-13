@@ -9,6 +9,13 @@ from threading import Event
 from typing import Any
 
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
+from tau_coding.dag_runtime.transition import (
+    AllSuccessTransitionPolicy,
+    DagNodeCompletion,
+    DagTransitionBatch,
+    DagTransitionPolicy,
+    DagTransitionView,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +45,7 @@ def run_dag_plan(
     plan: DagPlan,
     *,
     execute_node: NodeExecutor,
+    transition_policy: DagTransitionPolicy | None = None,
     max_concurrency: int = 1,
     event_sink: EventSink | None = None,
 ) -> DagSchedulerResult:
@@ -49,8 +57,8 @@ def run_dag_plan(
 
     if max_concurrency < 1:
         raise RuntimeError("max_concurrency must be at least 1")
-    if plan.route_contracts or plan.join_contracts:
-        raise RuntimeError("dag_plan_route_join_adapter_required")
+    policy = transition_policy or AllSuccessTransitionPolicy()
+    policy.validate_plan(plan)
 
     declared_terminal_nodes = {
         terminal.terminal_id
@@ -62,8 +70,11 @@ def run_dag_plan(
         for node in plan.nodes
         if node.node_id not in declared_terminal_nodes
     }
-    predecessors = _predecessors(plan, node_ids=set(nodes))
-    context_sources = _context_sources(plan)
+    incoming_edges = _incoming_edges(plan, node_ids=set(nodes))
+    context_edges = _context_edges(plan)
+    edge_states: dict[str, str] = {}
+    terminal_states: dict[str, str] = {}
+    node_states = {node_id: "pending" for node_id in nodes}
     completed: set[str] = set()
     results: dict[str, dict[str, Any]] = {}
     result_order: list[str] = []
@@ -83,7 +94,7 @@ def run_dag_plan(
                 for node_id in sorted(nodes)
                 if node_id not in completed
                 and node_id not in scheduled
-                and predecessors[node_id].issubset(completed)
+                and _node_is_ready(node_id, incoming_edges=incoming_edges, edge_states=edge_states)
             ]
             for node_id in ready:
                 if len(futures) >= max_concurrency:
@@ -92,8 +103,9 @@ def run_dag_plan(
                 attempt = attempt_counts[node_id]
                 accepted_inputs = tuple(
                     results[source]["accepted_output"]
-                    for source in context_sources.get(node_id, ())
-                    if isinstance(results.get(source, {}).get("accepted_output"), dict)
+                    for source, edge_id in context_edges.get(node_id, ())
+                    if edge_states.get(edge_id) == "success"
+                    and isinstance(results.get(source, {}).get("accepted_output"), dict)
                 )
                 future = pool.submit(
                     execute_node,
@@ -107,6 +119,7 @@ def run_dag_plan(
                 )
                 futures[future] = node_id
                 scheduled.add(node_id)
+                node_states[node_id] = "running"
                 _emit(
                     event_sink,
                     {"event": "node_started", "node_id": node_id, "attempt": attempt},
@@ -166,6 +179,7 @@ def run_dag_plan(
                     )
                 if failed_attempt and will_retry:
                     scheduled.remove(node_id)
+                    node_states[node_id] = "pending"
                     _emit(
                         event_sink,
                         {
@@ -179,9 +193,34 @@ def run_dag_plan(
                     continue
                 results[node_id] = result
                 result_order.append(node_id)
-                if result.get("status") != "PASS" or result.get("verdict") != "PASS":
+                completion = DagNodeCompletion(
+                    node_id=node_id,
+                    attempt=attempt,
+                    status=str(result.get("status") or "BLOCKED"),
+                    verdict=str(result.get("verdict") or "NODE_BLOCKED"),
+                    retryable=retryable,
+                    raw_result=result,
+                )
+                transition = policy.after_node_terminal(
+                    _transition_view(
+                        plan=plan,
+                        node_states=node_states,
+                        edge_states=edge_states,
+                        terminal_states=terminal_states,
+                        running_node_ids=set(futures.values()),
+                    ),
+                    completion,
+                )
+                _apply_transition_batch(
+                    plan=plan,
+                    batch=transition,
+                    edge_states=edge_states,
+                    terminal_states=terminal_states,
+                )
+                if transition.block_run is not None:
                     if blocked_result is None:
                         blocked_result = result
+                    node_states[node_id] = "blocked"
                     _emit(
                         event_sink,
                         {
@@ -194,6 +233,7 @@ def run_dag_plan(
                     batch_blocked = True
                     continue
                 completed.add(node_id)
+                node_states[node_id] = "success"
                 _emit(
                     event_sink,
                     {"event": "node_completed", "node_id": node_id, "attempt": attempt},
@@ -253,19 +293,69 @@ def run_dag_plan(
     )
 
 
-def _predecessors(plan: DagPlan, *, node_ids: set[str]) -> dict[str, set[str]]:
-    predecessors: dict[str, set[str]] = {node_id: set() for node_id in node_ids}
+def _incoming_edges(plan: DagPlan, *, node_ids: set[str]) -> dict[str, tuple[str, ...]]:
+    incoming: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
     for edge in plan.control_edges:
-        if edge.target_kind == "node" and edge.target_id in predecessors:
-            predecessors[edge.target_id].add(edge.source_node_id)
-    return predecessors
+        if edge.target_kind == "node" and edge.target_id in incoming:
+            incoming[edge.target_id].append(edge.edge_id)
+    return {node_id: tuple(sorted(edge_ids)) for node_id, edge_ids in incoming.items()}
 
 
-def _context_sources(plan: DagPlan) -> Mapping[str, tuple[str, ...]]:
-    values: dict[str, list[str]] = {}
+def _context_edges(plan: DagPlan) -> Mapping[str, tuple[tuple[str, str], ...]]:
+    values: dict[str, list[tuple[str, str]]] = {}
     for binding in plan.context_bindings:
-        values.setdefault(binding.target_node_id, []).append(binding.source_node_id)
+        values.setdefault(binding.target_node_id, []).append(
+            (binding.source_node_id, binding.control_edge_id)
+        )
     return {target: tuple(sorted(sources)) for target, sources in values.items()}
+
+
+def _node_is_ready(
+    node_id: str,
+    *,
+    incoming_edges: Mapping[str, tuple[str, ...]],
+    edge_states: Mapping[str, str],
+) -> bool:
+    edge_ids = incoming_edges[node_id]
+    return not edge_ids or all(edge_states.get(edge_id) == "success" for edge_id in edge_ids)
+
+
+def _transition_view(
+    *,
+    plan: DagPlan,
+    node_states: dict[str, str],
+    edge_states: dict[str, str],
+    terminal_states: dict[str, str],
+    running_node_ids: set[str],
+) -> DagTransitionView:
+    return DagTransitionView(
+        plan=plan,
+        node_states=dict(node_states),
+        edge_states=dict(edge_states),
+        terminal_states=dict(terminal_states),
+        running_node_ids=frozenset(running_node_ids),
+    )
+
+
+def _apply_transition_batch(
+    *,
+    plan: DagPlan,
+    batch: DagTransitionBatch,
+    edge_states: dict[str, str],
+    terminal_states: dict[str, str],
+) -> None:
+    edges = {edge.edge_id: edge for edge in plan.control_edges}
+    terminal_ids = {terminal.terminal_id for terminal in plan.terminal_endpoints}
+    for settlement in batch.edge_settlements:
+        if settlement.edge_id not in edges:
+            raise RuntimeError(f"dag_transition_unknown_edge:{settlement.edge_id}")
+        prior = edge_states.get(settlement.edge_id)
+        if prior is not None and prior != settlement.state:
+            raise RuntimeError(f"dag_transition_effect_conflict:{settlement.edge_id}")
+        edge_states[settlement.edge_id] = settlement.state
+        edge = edges[settlement.edge_id]
+        if edge.target_kind == "terminal" or edge.target_id in terminal_ids:
+            terminal_states[edge.target_id] = settlement.state
 
 
 def _emit(sink: EventSink | None, event: dict[str, Any]) -> None:

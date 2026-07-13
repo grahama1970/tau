@@ -271,7 +271,7 @@ def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: P
     plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
     plan = replace(plan, route_contracts=(plan.goal_binding,))
 
-    with pytest.raises(RuntimeError, match="dag_plan_route_join_adapter_required"):
+    with pytest.raises(RuntimeError, match="dag_transition_policy_required"):
         run_dag_plan(plan, execute_node=lambda node, inputs, execution: {})
 
 
