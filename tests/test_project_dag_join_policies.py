@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-import tau_coding.project_dag as project_dag_module
+import tau_coding.dag_runtime.project_transition as project_transition_module
 from tau_coding.dag_join_decision import validate_join_decision
 from tau_coding.project_dag import run_project_dag_contract
 
@@ -91,8 +91,7 @@ def test_failed_branch_is_collected_by_all_terminal_instead_of_global_abort(
     assert decision["decision"] == "release"
     assert decision["counts"]["failed"] == 1
     assert any(
-        event["event"] == "branch_failure_contributed_to_join"
-        and event["node_id"] == "branch-b"
+        event["event"] == "branch_failure_contributed_to_join" and event["node_id"] == "branch-b"
         for event in receipt["scheduler_events"]
     )
 
@@ -143,9 +142,7 @@ def test_join_timeout_writes_timed_out_contribution_and_ignores_late_success(
     assert receipt["status"] == "PASS"
     decision = _read_receipts(receipt["join_decision_receipts"])[0]
     assert decision["counts"]["timed_out"] == 1
-    assert any(
-        event["event"] == "join_timeout_expired" for event in receipt["scheduler_events"]
-    )
+    assert any(event["event"] == "join_timeout_expired" for event in receipt["scheduler_events"])
     assert any(
         event["event"] == "late_terminal_contribution_ignored"
         for event in receipt["scheduler_events"]
@@ -238,9 +235,7 @@ def test_fatal_join_block_cancels_unrelated_running_command(tmp_path: Path) -> N
             "agent": "unrelated",
             "executor": "local",
             "max_attempts": 1,
-            "command_spec": str(
-                tmp_path / "specs" / "unrelated" / "tau-dispatch-command.json"
-            ),
+            "command_spec": str(tmp_path / "specs" / "unrelated" / "tau-dispatch-command.json"),
         }
     )
     payload["edges"].extend(
@@ -327,14 +322,14 @@ def test_short_circuit_batches_cancelled_contributions_before_final_evaluation(
             command_timeout=10,
         )
     evaluations: list[str] = []
-    original = project_dag_module.evaluate_join_decision
+    original = project_transition_module.evaluate_join_decision
 
     def tracked_evaluation(**kwargs: Any) -> dict[str, Any]:
         result = original(**kwargs)
         evaluations.append(str(result["status"]))
         return result
 
-    monkeypatch.setattr(project_dag_module, "evaluate_join_decision", tracked_evaluation)
+    monkeypatch.setattr(project_transition_module, "evaluate_join_decision", tracked_evaluation)
 
     receipt = _run(tmp_path, contract_path)
 
@@ -343,10 +338,13 @@ def test_short_circuit_batches_cancelled_contributions_before_final_evaluation(
     assert len(receipt["terminal_contribution_receipts"]) == len(branches)
     assert len(set(receipt["terminal_contribution_receipts"])) == len(branches)
     assert receipt["selected_agents"] == ["router", branches[0]]
-    assert sum(
-        event["event"] == "unstarted_join_source_suppressed"
-        for event in receipt["scheduler_events"]
-    ) == len(branches) - 1
+    assert (
+        sum(
+            event["event"] == "unstarted_join_source_suppressed"
+            for event in receipt["scheduler_events"]
+        )
+        == len(branches) - 1
+    )
 
 
 def test_non_success_terminal_edge_does_not_count_as_activated_route(tmp_path: Path) -> None:
@@ -510,19 +508,19 @@ def test_virtual_sources_contribute_without_command_attempt_binding(tmp_path: Pa
 
     assert receipt["status"] == "PASS"
     contributions = _read_receipts(receipt["terminal_contribution_receipts"])
-    assert {item["basis"]["kind"] for item in contributions} == {
-        "virtual_node_completed"
-    }
+    assert {item["basis"]["kind"] for item in contributions} == {"virtual_node_completed"}
     assert all(item["source_binding"] == {} for item in contributions)
 
 
 def _run(tmp_path: Path, contract_path: Path) -> dict[str, object]:
-    return run_project_dag_contract(
+    receipt = run_project_dag_contract(
         contract_path=contract_path,
         receipt_dir=tmp_path / "run",
         agents_root=tmp_path / "agents",
         scheduler="bounded-ready-queue",
     )
+    assert receipt["execution"] == "project_agent_dag_plan_ready_queue"
+    return receipt
 
 
 def _write_join_contract(

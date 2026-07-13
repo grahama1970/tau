@@ -26,12 +26,34 @@ class DagTransitionView:
     edge_states: dict[str, str]
     terminal_states: dict[str, str]
     running_node_ids: frozenset[str]
+    deadline_monotonic: dict[str, float]
+    now_monotonic: float
 
 
 @dataclass(frozen=True, slots=True)
 class DagEdgeSettlement:
     edge_id: str
     state: str
+    reason_code: str
+
+
+@dataclass(frozen=True, slots=True)
+class DagNodeSettlement:
+    node_id: str
+    state: str
+    reason_code: str
+
+
+@dataclass(frozen=True, slots=True)
+class DagNodeCancellation:
+    node_id: str
+    reason_code: str
+
+
+@dataclass(frozen=True, slots=True)
+class DagDeadlineArm:
+    deadline_id: str
+    deadline_monotonic: float
     reason_code: str
 
 
@@ -45,6 +67,10 @@ class DagRunBlock:
 @dataclass(frozen=True, slots=True)
 class DagTransitionBatch:
     edge_settlements: tuple[DagEdgeSettlement, ...] = ()
+    node_settlements: tuple[DagNodeSettlement, ...] = ()
+    node_cancellations: tuple[DagNodeCancellation, ...] = ()
+    deadline_arms: tuple[DagDeadlineArm, ...] = ()
+    deadline_cancellations: tuple[str, ...] = ()
     receipt_paths: tuple[str, ...] = ()
     events: tuple[dict[str, Any], ...] = ()
     block_run: DagRunBlock | None = None
@@ -58,6 +84,21 @@ class DagTransitionPolicy(Protocol):
         view: DagTransitionView,
         completion: DagNodeCompletion,
     ) -> DagTransitionBatch: ...
+
+    def before_node_start(
+        self,
+        view: DagTransitionView,
+        node_id: str,
+        attempt: int,
+    ) -> DagTransitionBatch: ...
+
+    def on_deadline(
+        self,
+        view: DagTransitionView,
+        deadline_id: str,
+    ) -> DagTransitionBatch: ...
+
+    def after_completion_batch(self, view: DagTransitionView) -> DagTransitionBatch: ...
 
 
 class AllSuccessTransitionPolicy:
@@ -91,3 +132,21 @@ class AllSuccessTransitionPolicy:
                 if edge.source_node_id == completion.node_id
             )
         )
+
+    def before_node_start(
+        self,
+        view: DagTransitionView,
+        node_id: str,
+        attempt: int,
+    ) -> DagTransitionBatch:
+        return DagTransitionBatch()
+
+    def on_deadline(
+        self,
+        view: DagTransitionView,
+        deadline_id: str,
+    ) -> DagTransitionBatch:
+        raise RuntimeError(f"dag_transition_unknown_deadline:{deadline_id}")
+
+    def after_completion_batch(self, view: DagTransitionView) -> DagTransitionBatch:
+        return DagTransitionBatch()

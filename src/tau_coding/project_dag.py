@@ -4144,8 +4144,6 @@ def _shared_project_scheduler_supported(
 ) -> bool:
     """Return whether all declared nodes fit the first shared adapter set."""
 
-    if plan.join_contracts:
-        return False
     return not any(
         node.executor == "provider"
         or isinstance(_node_payload(contract, node.node_id).get("provider"), dict)
@@ -4514,18 +4512,25 @@ def _run_shared_project_dag_plan(
             )
         )
     completed = set(result.completed_node_ids)
+    node_terminal_states = dict(result.node_states)
+    edge_states_by_id = dict(result.edge_states)
+    edge_id_by_index = {
+        edge.source_ordinal: edge.edge_id
+        for edge in plan.control_edges
+        if edge.source_ordinal is not None
+    }
+    edge_terminal_states = {
+        int(edge_index): edge_states_by_id[edge_id]
+        for edge_index, edge_id in edge_id_by_index.items()
+        if edge_id in edge_states_by_id
+    }
     activated_edges = {
-        edge.edge_index
-        for edge in contract.edges
-        if edge.source in completed
-        and (edge.target in completed or edge.target in contract.terminal_nodes)
+        edge_index for edge_index, state in edge_terminal_states.items() if state == "success"
     }
     activated_terminals = {
-        edge.target
-        for edge in contract.edges
-        if edge.source in completed and edge.target in contract.terminal_nodes
+        terminal_id for terminal_id, state in result.terminal_states if state == "success"
     }
-    if result.status == "PASS" and not activated_terminals:
+    if result.status == "PASS" and not dict(result.terminal_states):
         alerts.append(
             _alert(
                 "BLOCK",
@@ -4559,8 +4564,19 @@ def _run_shared_project_dag_plan(
         errors=errors,
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
-        route_decision_artifacts=list(result.transition_receipt_paths),
-        node_terminal_states={node_id: "success" for node_id in completed},
+        route_decision_artifacts=[
+            path for path in result.transition_receipt_paths if "/route-decisions/" in path
+        ],
+        terminal_contribution_artifacts=[
+            path
+            for path in result.transition_receipt_paths
+            if "/terminal-contributions/" in path
+        ],
+        join_decision_artifacts=[
+            path for path in result.transition_receipt_paths if "/join-decisions/" in path
+        ],
+        node_terminal_states=node_terminal_states,
+        edge_terminal_states=edge_terminal_states,
         resolved_sources=completed,
         activated_edges=activated_edges,
         activated_terminals=activated_terminals,
