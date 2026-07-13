@@ -205,6 +205,7 @@ copyable example in
 | Herdr-visible provider lanes | Implemented in proof lanes | Visible pane state is evidence, not truth. |
 | Herdr cleanup/GC | Implemented with leases/approval gates | Does not prove arbitrary non-Tau cleanup. |
 | Persistent subagent DAG surfaces | Implemented as DAG node validation and dispatch metadata | Does not prove the local UI route, audio path, Memory writes, or subagent semantic quality. |
+| Typed DAG route decisions | Implemented for `bounded-ready-queue` | Closed typed result-field routing with replayable receipts; does not prove source-result truth or join semantics. |
 | GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
 | Tau DAG React Flow viewer | Implemented as UX Lab integration surface | Static fixtures prove renderability only; not live DAG execution. |
@@ -528,6 +529,10 @@ uv run tau proof-index build experiments/goal-locked-subagents/proofs/real-world
 
 Use `uv run tau dag-run <dag-spec.json>` when you want the explicit
 implementation command.
+
+Conditional project DAGs use source-node route modes and closed
+`tau.route_condition.v1` edge objects. See
+[Typed DAG Routing](docs/typed-dag-routing.md).
 
 For a quick non-mutating regression surface, run:
 

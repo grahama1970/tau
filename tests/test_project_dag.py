@@ -11,6 +11,7 @@ from typer.testing import CliRunner
 
 import tau_coding.project_dag as project_dag
 from tau_coding.cli import app
+from tau_coding.dag_route_decision import ROUTE_DECISION_VALIDATION_CODES
 from tau_coding.handoff_dispatch import TAU_COMMAND_SPEC_POLICY_SCHEMA
 from tau_coding.project_dag import (
     DAG_ERROR_SCHEMA,
@@ -1451,6 +1452,44 @@ def test_project_dag_secure_mode_blocks_missing_node_capability_before_compilati
     assert decision["grant_count"] == 0
     assert not (run_dir / "capability-grants").exists()
     assert not (run_dir / "compiled-command-specs").exists()
+
+
+def test_secure_ready_queue_blocks_before_capability_grant_artifacts(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    boundary_path = _write_data_boundary(
+        tmp_path,
+        {
+            "classification": "public",
+            "export_controlled": False,
+            "itar": False,
+            "technical_data": False,
+            "foreign_person_access": "allowed",
+        },
+    )
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["security_mode"] = "secure"
+    payload["data_boundary"] = boundary_path.name
+    payload["policy_profile"] = str(_write_zero_trust_policy(tmp_path))
+    payload["actor_access_manifest"] = str(_write_actor_access_manifest(tmp_path))
+    payload["command_policy"] = str(
+        _write_command_policy(tmp_path, allowed_roots=[Path(sys.executable).name])
+    )
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    run_dir = tmp_path / "run"
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "SECURE_MODE_REQUIRES_HANDOFF_LOOP"
+    assert receipt["selected_agents"] == []
+    assert receipt["capability_decision_receipt"] is None
+    assert not (run_dir / "capability-decision-receipt.json").exists()
+    assert not (run_dir / "capability-grants").exists()
     assert not (run_dir / "command-loop").exists()
 
 
@@ -1633,6 +1672,11 @@ def test_fail_closed_registry_payload_names_executable_invariants() -> None:
         "severity": "BLOCK",
         "implemented_by": "tau.validators.provider_work_order.sha256",
     }
+    for code in ROUTE_DECISION_VALIDATION_CODES:
+        assert payload["invariants"][code] == {
+            "severity": "BLOCK",
+            "implemented_by": "tau.validators.dag.typed_route_decision",
+        }
     assert "Unknown fail_closed_on codes fail closed" in payload["proof_scope"]["proves"][2]
 
 
@@ -1648,6 +1692,21 @@ def test_fail_closed_registry_receipt_can_be_written(tmp_path: Path) -> None:
     assert payload["invariants"]["target_changed"]["implemented_by"] == (
         "tau.validators.handoff.github_target"
     )
+
+
+@pytest.mark.parametrize("unsafe_node_id", ["../escape", "node/path", "node\\path", "."])
+def test_dag_contract_rejects_node_ids_that_are_unsafe_as_artifact_paths(
+    tmp_path: Path,
+    unsafe_node_id: str,
+) -> None:
+    contract_path = _write_contract(tmp_path)
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["nodes"][0]["id"] = unsafe_node_id
+    payload["entry_node"] = unsafe_node_id
+    payload["edges"][0]["from"] = unsafe_node_id
+
+    with pytest.raises(RuntimeError, match="must match"):
+        project_dag.validate_dag_contract(payload)
 
 
 def test_cli_dag_run_unknown_fail_closed_code_returns_course_correction_json(
@@ -2216,6 +2275,232 @@ def test_project_dag_bounded_ready_queue_blocks_cycles(tmp_path: Path) -> None:
     assert receipt["dag_error"]["recommended_action"]["next_agent"] == "goal-guardian"
 
 
+@pytest.mark.parametrize(
+    ("mode", "route_fields", "expected_agents"),
+    [
+        ("exclusive", {"route": "ACCEPT"}, ["router", "accept"]),
+        ("first_match", {"route": "BOTH"}, ["router", "accept"]),
+        ("fanout", {"route": "BOTH"}, ["router", "accept", "revise"]),
+        ("all_matching", {"route": "BOTH"}, ["router", "accept", "revise"]),
+    ],
+)
+def test_project_dag_typed_route_modes_dispatch_only_activated_branches(
+    tmp_path: Path,
+    mode: str,
+    route_fields: dict[str, str],
+    expected_agents: list[str],
+) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode=mode)
+    router_response = _handoff("router", "accept", _creator_evidence())
+    router_response["result"].update(route_fields)  # type: ignore[union-attr]
+    _write_response_spec(tmp_path, "router", router_response)
+    _write_response_spec(tmp_path, "accept", _handoff("accept", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "revise", _handoff("revise", "human", _creator_evidence()))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["selected_agents"][0] == expected_agents[0]
+    assert set(receipt["selected_agents"][1:]) == set(expected_agents[1:])
+    assert len(receipt["route_decision_receipts"]) == 1
+    decision_path = Path(receipt["route_decision_receipts"][0])
+    decision = json.loads(decision_path.read_text(encoding="utf-8"))
+    assert decision["schema"] == "tau.dag_route_decision.v1"
+    assert decision["status"] == "PASS"
+    assert decision["source_result_sha256"].startswith("sha256:")
+    assert decision["source_fields_sha256"].startswith("sha256:")
+    assert decision["route_contract_sha256"].startswith("sha256:")
+    assert decision["decision_sha256"].startswith("sha256:")
+    route_event_index = next(
+        index
+        for index, event in enumerate(receipt["scheduler_events"])
+        if event["event"] == "route_decided"
+    )
+    selected_start_indexes = [
+        index
+        for index, event in enumerate(receipt["scheduler_events"])
+        if event["event"] == "node_started" and event["node_id"] in {"accept", "revise"}
+    ]
+    assert selected_start_indexes
+    assert route_event_index < min(selected_start_indexes)
+
+
+def test_project_dag_ambiguous_exclusive_route_blocks_without_branch_dispatch(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="exclusive", both_match=True)
+    router_response = _handoff("router", "accept", _creator_evidence())
+    router_response["result"].update({"route": "BOTH"})  # type: ignore[union-attr]
+    _write_response_spec(tmp_path, "router", router_response)
+    _write_response_spec(tmp_path, "accept", _handoff("accept", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "revise", _handoff("revise", "human", _creator_evidence()))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "ROUTE_AMBIGUOUS_EXCLUSIVE"
+    assert receipt["selected_agents"] == ["router"]
+    assert not (tmp_path / "run" / "ready-queue" / "accept").exists()
+    assert not (tmp_path / "run" / "ready-queue" / "revise").exists()
+    decision = json.loads(
+        Path(receipt["route_decision_receipts"][0]).read_text(encoding="utf-8")
+    )
+    assert decision["status"] == "BLOCKED"
+    assert decision["failure_code"] == "route_ambiguous_exclusive"
+    assert decision["selected_targets"] == []
+
+
+def test_project_dag_fanout_activates_only_matching_subset(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="fanout")
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"][2]["condition"]["value"] = "REVISE"
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    router_response = _handoff("router", "accept", _creator_evidence())
+    router_response["result"].update({"route": "BOTH"})  # type: ignore[union-attr]
+    _write_response_spec(tmp_path, "router", router_response)
+    _write_response_spec(tmp_path, "accept", _handoff("accept", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "revise", _handoff("revise", "human", _creator_evidence()))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "PASS"
+    assert receipt["selected_agents"] == ["router", "accept"]
+    assert not (tmp_path / "run" / "ready-queue" / "revise").exists()
+
+
+def test_project_dag_route_no_match_does_not_stall_or_dispatch_branch(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="fanout")
+    router_response = _handoff("router", "accept", _creator_evidence())
+    router_response["result"].update({"route": "UNKNOWN"})  # type: ignore[union-attr]
+    _write_response_spec(tmp_path, "router", router_response)
+    _write_response_spec(tmp_path, "accept", _handoff("accept", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "revise", _handoff("revise", "human", _creator_evidence()))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "ROUTE_NO_MATCH"
+    assert receipt["selected_agents"] == ["router"]
+    assert "ready_queue_stalled" not in [alert["code"] for alert in receipt["alerts"]]
+
+
+def test_project_dag_typed_route_requires_ready_queue_before_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="exclusive")
+    run_dir = tmp_path / "run"
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="handoff-loop",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "TYPED_ROUTE_REQUIRES_BOUNDED_READY_QUEUE"
+    assert receipt["selected_agents"] == []
+    assert not (run_dir / "compiled-command-specs").exists()
+    assert not (run_dir / "command-loop").exists()
+
+
+def test_cli_dag_run_executes_typed_exclusive_route(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="exclusive")
+    router_response = _handoff("router", "accept", _creator_evidence())
+    router_response["result"].update({"route": "ACCEPT"})  # type: ignore[union-attr]
+    _write_response_spec(tmp_path, "router", router_response)
+    _write_response_spec(tmp_path, "accept", _handoff("accept", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "revise", _handoff("revise", "human", _creator_evidence()))
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(tmp_path / "run"),
+            "--agents-root",
+            str(tmp_path / "agents"),
+            "--scheduler",
+            "bounded-ready-queue",
+        ],
+    )
+    receipt = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert receipt["status"] == "PASS"
+    assert receipt["selected_agents"] == ["router", "accept"]
+    assert len(receipt["route_decision_receipts"]) == 1
+
+
+def test_cli_dag_run_rejects_expression_condition_before_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="exclusive")
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"][1]["condition"] = "result.route == 'ACCEPT'"
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    run_dir = tmp_path / "run"
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-run",
+            str(contract_path),
+            "--receipt-dir",
+            str(run_dir),
+            "--agents-root",
+            str(tmp_path / "agents"),
+            "--scheduler",
+            "bounded-ready-queue",
+        ],
+    )
+    receipt = json.loads(result.output)
+
+    assert result.exit_code == 1
+    assert receipt["verdict"] == "UNSUPPORTED_READY_QUEUE_CONDITION"
+    assert receipt["selected_agents"] == []
+    assert not (run_dir / "compiled-command-specs").exists()
+    assert not (run_dir / "ready-queue").exists()
+
+
+def test_project_dag_typed_route_rejects_implicit_join_before_dispatch(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="exclusive")
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"].append({"from": "start", "to": "accept"})
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    run_dir = tmp_path / "run"
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "CONDITIONAL_TARGET_MULTIPLE_PREDECESSORS"
+    assert receipt["selected_agents"] == []
+    assert not (run_dir / "compiled-command-specs").exists()
+    assert not (run_dir / "ready-queue").exists()
+
+
 def test_project_dag_bounded_ready_queue_blocks_unsupported_condition_before_dispatch(
     tmp_path: Path,
 ) -> None:
@@ -2241,10 +2526,10 @@ def test_project_dag_bounded_ready_queue_blocks_unsupported_condition_before_dis
         {
             "severity": "BLOCK",
             "code": "unsupported_ready_queue_condition",
-            "message": (
-                "Bounded ready-queue does not evaluate edge conditions. Remove the "
-                "conditions or use a future typed route evaluator before dispatch."
-            ),
+        "message": (
+            "Bounded ready-queue accepts only tau.route_condition.v1 objects. Replace the "
+            "legacy or untyped condition with a closed typed route condition before dispatch."
+        ),
             "evidence": {
                 "edges": [
                     {
@@ -2261,7 +2546,7 @@ def test_project_dag_bounded_ready_queue_blocks_unsupported_condition_before_dis
     assert receipt["dag_error"]["recommended_action"] == {
         "type": "repair_dag_route_contract",
         "next_agent": "goal-guardian",
-        "reason": "Remove unsupported edge conditions until Tau has a typed route evaluator.",
+        "reason": "Repair the typed route contract or source result before continuing.",
     }
     assert not (run_dir / "compiled-command-specs").exists()
     assert not (run_dir / "command-loop").exists()
@@ -2850,6 +3135,103 @@ def _memory_evidence_case() -> dict:
             "default_decision": "deny",
         },
     }
+
+
+def _write_routed_contract(
+    tmp_path: Path,
+    *,
+    mode: str,
+    both_match: bool = False,
+) -> Path:
+    (tmp_path / "agents").mkdir(exist_ok=True)
+    spec_root = tmp_path / "specs"
+    both_modes = {"first_match", "fanout", "all_matching"}
+    accept_value = "BOTH" if both_match or mode in both_modes else "ACCEPT"
+    revise_value = "BOTH" if both_match or mode in both_modes else "REVISE"
+
+    def condition(value: str) -> dict[str, object]:
+        return {
+            "schema": "tau.route_condition.v1",
+            "op": "eq",
+            "field": "route",
+            "value": value,
+        }
+    payload = {
+        "schema": "tau.dag_contract.v1",
+        "dag_id": f"typed-route-{mode}",
+        "goal": {
+            "goal_id": "creator-reviewer-test",
+            "goal_version": 1,
+            "goal_hash": "sha256:active-goal",
+        },
+        "target": {
+            "repo": "grahama1970/tau",
+            "target": "scratch-creator-reviewer",
+        },
+        "entry_node": "start",
+        "terminal_nodes": ["human"],
+        "limits": {
+            "resume": True,
+            "default_timeout_seconds": 30,
+            "max_total_attempts": 4,
+            "max_concurrency": 2,
+        },
+        "nodes": [
+            {
+                "id": "start",
+                "agent": "goal-guardian",
+                "executor": "scheduler",
+                "max_attempts": 1,
+                "required_evidence": [],
+            },
+            {
+                "id": "router",
+                "agent": "router",
+                "executor": "local",
+                "max_attempts": 1,
+                "command_spec": str(spec_root / "router" / "tau-dispatch-command.json"),
+                "required_evidence": ["creator_artifact"],
+                "route": {"mode": mode},
+            },
+            *[
+                {
+                    "id": node_id,
+                    "agent": node_id,
+                    "executor": "local",
+                    "max_attempts": 1,
+                    "command_spec": str(
+                        spec_root / node_id / "tau-dispatch-command.json"
+                    ),
+                    "required_evidence": ["creator_artifact"],
+                }
+                for node_id in ("accept", "revise")
+            ],
+        ],
+        "edges": [
+            {"from": "start", "to": "router"},
+            {
+                "from": "router",
+                "to": "accept",
+                "condition": condition(accept_value),
+            },
+            {
+                "from": "router",
+                "to": "revise",
+                "condition": condition(revise_value),
+            },
+            {"from": "accept", "to": "human"},
+            {"from": "revise", "to": "human"},
+        ],
+        "required_evidence": ["creator_artifact"],
+        "fail_closed_on": [
+            "unexpected_node",
+            "unexpected_edge",
+            "missing_required_evidence",
+        ],
+    }
+    path = tmp_path / f"typed-route-{mode}.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
 
 
 def _write_parallel_contract(tmp_path: Path) -> Path:
