@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 import subprocess
-import threading
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -16,7 +15,7 @@ from typing import Any
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode
-from tau_coding.dag_runtime.scheduler import run_dag_plan
+from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -121,9 +120,8 @@ def run_generic_dag(
     def execute_plan_node(
         plan_node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
-        cancel_event: threading.Event,
+        execution: DagNodeAttempt,
     ) -> dict[str, Any]:
-        del cancel_event
         node = nodes_by_id[plan_node.node_id]
         _write_checkpoint(
             path=checkpoint_path,
@@ -147,6 +145,7 @@ def run_generic_dag(
             resume=resume,
             accepted_inputs=list(accepted_inputs),
             goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
+            scheduler_attempt=execution.attempt,
         )
 
     scheduler_result = run_dag_plan(
@@ -406,6 +405,7 @@ def _run_node(
     resume: bool,
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
+    scheduler_attempt: int,
 ) -> dict[str, Any]:
     if node.skill is not None:
         return _run_skill_node(
@@ -438,6 +438,7 @@ def _run_node(
         resume=resume,
         context_path=context_path,
         context_sha256=context_sha256,
+        attempt=scheduler_attempt,
     )
 
 
@@ -566,6 +567,7 @@ def _run_legacy_node(
     resume: bool,
     context_path: Path,
     context_sha256: str,
+    attempt: int,
 ) -> dict[str, Any]:
     node_started_at = _utc_stamp()
     node_started_monotonic = time.monotonic()
@@ -589,102 +591,81 @@ def _run_legacy_node(
                 duration_seconds=time.monotonic() - node_started_monotonic,
             )
 
-    command_results: list[dict[str, Any]] = []
-    last_errors: list[str] = []
-    for attempt in range(1, node.max_attempts + 1):
-        _append_event(
-            events_path,
-            "node_dispatch",
-            {
-                "run_id": run_id,
-                "node_id": node.node_id,
-                "attempt": attempt,
-                "work_order_path": str(node.work_order_path) if node.work_order_path else None,
-                "receipt_path": str(node.receipt_path),
-            },
-        )
-        started_at = time.monotonic()
-        result = _run_command(
-            node.command,
-            cwd=run_dir,
-            timeout_seconds=node.timeout_seconds,
-            env_overrides={
-                "TAU_GENERIC_DAG_CONTEXT": str(context_path),
-                "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
-            },
-        )
-        elapsed = time.monotonic() - started_at
-        command_results.append(_command_result_dict(result, elapsed_seconds=elapsed))
-        if result.returncode != 0:
-            last_errors = [_command_error(result)]
-            verdict = "SUBAGENT_TIMEOUT" if result.returncode == 124 else "SUBAGENT_ERROR"
-            if attempt >= node.max_attempts:
-                return _blocked_node_record(
-                    node,
-                    verdict=verdict,
-                    errors=last_errors,
-                    attempt_count=attempt,
-                    command_results=command_results,
-                    started_at=node_started_at,
-                    finished_at=_utc_stamp(),
-                    duration_seconds=time.monotonic() - node_started_monotonic,
-                )
-            continue
-        if not node.receipt_path.exists():
-            last_errors = [f"node receipt did not appear: {node.receipt_path}"]
-            if attempt >= node.max_attempts:
-                return _blocked_node_record(
-                    node,
-                    verdict="RECEIPT_MISSING",
-                    errors=last_errors,
-                    attempt_count=attempt,
-                    command_results=command_results,
-                    started_at=node_started_at,
-                    finished_at=_utc_stamp(),
-                    duration_seconds=time.monotonic() - node_started_monotonic,
-                )
-            continue
-        receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
-        errors = _validate_node_receipt(receipt, node)
-        if errors:
-            last_errors = errors
-            if attempt >= node.max_attempts:
-                return _blocked_node_record(
-                    node,
-                    verdict="INVALID_RECEIPT",
-                    errors=last_errors,
-                    attempt_count=attempt,
-                    command_results=command_results,
-                    started_at=node_started_at,
-                    finished_at=_utc_stamp(),
-                    duration_seconds=time.monotonic() - node_started_monotonic,
-                )
-            continue
-        _append_event(
-            events_path,
-            "node_receipt_validated",
-            {
-                "run_id": run_id,
-                "node_id": node.node_id,
-                "attempt": attempt,
-                "receipt_path": str(node.receipt_path),
-            },
-        )
-        return _node_record(
+    _append_event(
+        events_path,
+        "node_dispatch",
+        {
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "attempt": attempt,
+            "work_order_path": str(node.work_order_path) if node.work_order_path else None,
+            "receipt_path": str(node.receipt_path),
+        },
+    )
+    started_at = time.monotonic()
+    result = _run_command(
+        node.command,
+        cwd=run_dir,
+        timeout_seconds=node.timeout_seconds,
+        env_overrides={
+            "TAU_GENERIC_DAG_CONTEXT": str(context_path),
+            "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
+        },
+    )
+    command_results = [
+        _command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)
+    ]
+    if result.returncode != 0:
+        verdict = "SUBAGENT_TIMEOUT" if result.returncode == 124 else "SUBAGENT_ERROR"
+        return _blocked_node_record(
             node,
-            receipt,
+            verdict=verdict,
+            errors=[_command_error(result)],
             attempt_count=attempt,
-            resumed=False,
             command_results=command_results,
             started_at=node_started_at,
             finished_at=_utc_stamp(),
             duration_seconds=time.monotonic() - node_started_monotonic,
         )
-    return _blocked_node_record(
+    if not node.receipt_path.exists():
+        return _blocked_node_record(
+            node,
+            verdict="RECEIPT_MISSING",
+            errors=[f"node receipt did not appear: {node.receipt_path}"],
+            attempt_count=attempt,
+            command_results=command_results,
+            started_at=node_started_at,
+            finished_at=_utc_stamp(),
+            duration_seconds=time.monotonic() - node_started_monotonic,
+        )
+    receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
+    errors = _validate_node_receipt(receipt, node)
+    if errors:
+        return _blocked_node_record(
+            node,
+            verdict="INVALID_RECEIPT",
+            errors=errors,
+            attempt_count=attempt,
+            command_results=command_results,
+            started_at=node_started_at,
+            finished_at=_utc_stamp(),
+            duration_seconds=time.monotonic() - node_started_monotonic,
+        )
+    _append_event(
+        events_path,
+        "node_receipt_validated",
+        {
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "attempt": attempt,
+            "receipt_path": str(node.receipt_path),
+        },
+    )
+    return _node_record(
         node,
-        verdict="MAX_ATTEMPTS_EXHAUSTED",
-        errors=last_errors or ["node did not complete"],
-        attempt_count=node.max_attempts,
+        receipt,
+        attempt_count=attempt,
+        resumed=False,
         command_results=command_results,
         started_at=node_started_at,
         finished_at=_utc_stamp(),

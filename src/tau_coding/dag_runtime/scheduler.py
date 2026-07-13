@@ -10,7 +10,18 @@ from typing import Any
 
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
 
-NodeExecutor = Callable[[DagPlanNode, tuple[dict[str, Any], ...], Event], dict[str, Any]]
+
+@dataclass(frozen=True, slots=True)
+class DagNodeAttempt:
+    attempt: int
+    max_attempts: int
+    cancel_event: Event
+
+
+NodeExecutor = Callable[
+    [DagPlanNode, tuple[dict[str, Any], ...], DagNodeAttempt],
+    dict[str, Any],
+]
 EventSink = Callable[[dict[str, Any]], None]
 
 
@@ -49,6 +60,8 @@ def run_dag_plan(
     result_order: list[str] = []
     scheduled: set[str] = set()
     cancel_events = {node_id: Event() for node_id in nodes}
+    attempt_counts = {node_id: 0 for node_id in nodes}
+    attempt_history: dict[str, list[dict[str, Any]]] = {node_id: [] for node_id in nodes}
     max_observed_concurrency = 0
     blocked_result: dict[str, Any] | None = None
 
@@ -66,6 +79,8 @@ def run_dag_plan(
             for node_id in ready:
                 if len(futures) >= max_concurrency:
                     break
+                attempt_counts[node_id] += 1
+                attempt = attempt_counts[node_id]
                 accepted_inputs = tuple(
                     results[source]["accepted_output"]
                     for source in context_sources.get(node_id, ())
@@ -75,11 +90,18 @@ def run_dag_plan(
                     execute_node,
                     nodes[node_id],
                     accepted_inputs,
-                    cancel_events[node_id],
+                    DagNodeAttempt(
+                        attempt=attempt,
+                        max_attempts=nodes[node_id].max_attempts,
+                        cancel_event=cancel_events[node_id],
+                    ),
                 )
                 futures[future] = node_id
                 scheduled.add(node_id)
-                _emit(event_sink, {"event": "node_started", "node_id": node_id})
+                _emit(
+                    event_sink,
+                    {"event": "node_started", "node_id": node_id, "attempt": attempt},
+                )
             max_observed_concurrency = max(max_observed_concurrency, len(futures))
 
             if not futures:
@@ -108,6 +130,44 @@ def run_dag_plan(
 
             batch_blocked = False
             for node_id, result in sorted(completed_batch):
+                attempt = attempt_counts[node_id]
+                result = _with_attempt_history(
+                    result,
+                    attempt=attempt,
+                    prior_results=attempt_history[node_id],
+                )
+                attempt_history[node_id].append(result)
+                retryable = result.get("retryable") is not False
+                failed_attempt = (
+                    result.get("status") != "PASS" or result.get("verdict") != "PASS"
+                )
+                will_retry = retryable and attempt < nodes[node_id].max_attempts
+                if failed_attempt:
+                    _emit(
+                        event_sink,
+                        {
+                            "event": "node_attempt_failed",
+                            "node_id": node_id,
+                            "attempt": attempt,
+                            "retrying": will_retry,
+                            "stop_reason": result.get("stop_reason")
+                            or str(result.get("verdict") or "node_blocked").lower(),
+                            "errors": result.get("errors", []),
+                        },
+                    )
+                if failed_attempt and will_retry:
+                    scheduled.remove(node_id)
+                    _emit(
+                        event_sink,
+                        {
+                            "event": "node_retry_scheduled",
+                            "node_id": node_id,
+                            "attempt": attempt,
+                            "next_attempt": attempt + 1,
+                            "verdict": result.get("verdict"),
+                        },
+                    )
+                    continue
                 results[node_id] = result
                 result_order.append(node_id)
                 if result.get("status") != "PASS" or result.get("verdict") != "PASS":
@@ -118,13 +178,17 @@ def run_dag_plan(
                         {
                             "event": "node_blocked",
                             "node_id": node_id,
+                            "attempt": attempt,
                             "verdict": result.get("verdict"),
                         },
                     )
                     batch_blocked = True
                     continue
                 completed.add(node_id)
-                _emit(event_sink, {"event": "node_completed", "node_id": node_id})
+                _emit(
+                    event_sink,
+                    {"event": "node_completed", "node_id": node_id, "attempt": attempt},
+                )
             if batch_blocked:
                 for pending, pending_node_id in futures.items():
                     cancel_events[pending_node_id].set()
@@ -198,3 +262,35 @@ def _context_sources(plan: DagPlan) -> Mapping[str, tuple[str, ...]]:
 def _emit(sink: EventSink | None, event: dict[str, Any]) -> None:
     if sink is not None:
         sink(event)
+
+
+def _with_attempt_history(
+    result: dict[str, Any],
+    *,
+    attempt: int,
+    prior_results: list[dict[str, Any]],
+) -> dict[str, Any]:
+    combined = dict(result)
+    adapter_attempt_count = result.get("attempt_count")
+    combined["attempt_count"] = (
+        adapter_attempt_count if isinstance(adapter_attempt_count, int) else attempt
+    )
+    command_results: list[Any] = []
+    for item in (*prior_results, result):
+        values = item.get("command_results")
+        if isinstance(values, list):
+            command_results.extend(values)
+    if command_results:
+        combined["command_results"] = command_results
+    combined["scheduler_attempts"] = [
+        {
+            "attempt": index,
+            "status": item.get("status"),
+            "verdict": item.get("verdict"),
+            "errors": list(item.get("errors", []))
+            if isinstance(item.get("errors"), list)
+            else [],
+        }
+        for index, item in enumerate((*prior_results, result), start=1)
+    ]
+    return combined

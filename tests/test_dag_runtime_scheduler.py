@@ -10,7 +10,7 @@ import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode
-from tau_coding.dag_runtime.scheduler import run_dag_plan
+from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 
 
 def test_dag_plan_scheduler_runs_independent_nodes_concurrently(tmp_path: Path) -> None:
@@ -31,9 +31,9 @@ def test_dag_plan_scheduler_runs_independent_nodes_concurrently(tmp_path: Path) 
     def execute(
         node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
-        cancel_event: threading.Event,
+        execution: DagNodeAttempt,
     ) -> dict[str, Any]:
-        del cancel_event
+        del execution
         if node.node_id in {"left", "right"}:
             barrier.wait(timeout=1)
             time.sleep(0.01)
@@ -71,9 +71,9 @@ def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Pa
     def execute(
         node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
-        cancel_event: threading.Event,
+        execution: DagNodeAttempt,
     ) -> dict[str, Any]:
-        del accepted_inputs, cancel_event
+        del accepted_inputs, execution
         called.append(node.node_id)
         return {
             "node_id": node.node_id,
@@ -100,13 +100,13 @@ def test_dag_plan_scheduler_signals_running_sibling_after_failure(tmp_path: Path
     def execute(
         node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
-        cancel_event: threading.Event,
+        execution: DagNodeAttempt,
     ) -> dict[str, Any]:
         del accepted_inputs
         barrier.wait(timeout=1)
         if node.node_id == "fail":
             return {"node_id": "fail", "status": "BLOCKED", "verdict": "FAILED"}
-        if cancel_event.wait(timeout=1):
+        if execution.cancel_event.wait(timeout=1):
             sibling_cancelled.set()
         return {"node_id": "sibling", "status": "BLOCKED", "verdict": "CANCELLED"}
 
@@ -127,9 +127,9 @@ def test_dag_plan_scheduler_preserves_completed_sibling_after_failure(tmp_path: 
     def execute(
         node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
-        cancel_event: threading.Event,
+        execution: DagNodeAttempt,
     ) -> dict[str, Any]:
-        del accepted_inputs, cancel_event
+        del accepted_inputs, execution
         barrier.wait(timeout=1)
         if node.node_id == "fail":
             return {"node_id": "fail", "status": "BLOCKED", "verdict": "FAILED"}
@@ -159,13 +159,80 @@ def test_dag_plan_scheduler_preserves_completed_sibling_after_failure(tmp_path: 
     }
 
 
+def test_dag_plan_scheduler_owns_bounded_retries(tmp_path: Path) -> None:
+    payload = _generic_spec(tmp_path, [_node(tmp_path, "flaky")])
+    payload["nodes"][0]["max_attempts"] = 2  # type: ignore[index]
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    observed_attempts: list[int] = []
+    events: list[dict[str, Any]] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del node, accepted_inputs
+        observed_attempts.append(execution.attempt)
+        if execution.attempt == 1:
+            return {
+                "node_id": "flaky",
+                "status": "BLOCKED",
+                "verdict": "TRANSIENT_FAILURE",
+                "errors": ["first attempt failed"],
+            }
+        return {
+            "node_id": "flaky",
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": "flaky"},
+        }
+
+    result = run_dag_plan(plan, execute_node=execute, event_sink=events.append)
+
+    assert result.status == "PASS"
+    assert observed_attempts == [1, 2]
+    assert result.node_results[0]["attempt_count"] == 2
+    assert [item["verdict"] for item in result.node_results[0]["scheduler_attempts"]] == [
+        "TRANSIENT_FAILURE",
+        "PASS",
+    ]
+    assert [item["event"] for item in events].count("node_retry_scheduled") == 1
+
+
+def test_dag_plan_scheduler_respects_non_retryable_adapter_result(tmp_path: Path) -> None:
+    payload = _generic_spec(tmp_path, [_node(tmp_path, "blocked")])
+    payload["nodes"][0]["max_attempts"] = 3  # type: ignore[index]
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    calls = 0
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        nonlocal calls
+        del node, accepted_inputs, execution
+        calls += 1
+        return {
+            "node_id": "blocked",
+            "status": "BLOCKED",
+            "verdict": "POLICY_DENIED",
+            "retryable": False,
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "BLOCKED"
+    assert calls == 1
+
+
 def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: Path) -> None:
     payload = _generic_spec(tmp_path, [_node(tmp_path, "producer")])
     plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
     plan = replace(plan, route_contracts=(plan.goal_binding,))
 
     with pytest.raises(RuntimeError, match="dag_plan_route_join_adapter_required"):
-        run_dag_plan(plan, execute_node=lambda node, inputs, cancel: {})
+        run_dag_plan(plan, execute_node=lambda node, inputs, execution: {})
 
 
 def _generic_spec(

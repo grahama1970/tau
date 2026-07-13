@@ -40,7 +40,7 @@ from tau_coding.dag_route_decision import (
 )
 from tau_coding.dag_runtime.compiler import compile_project_dag_plan
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
-from tau_coding.dag_runtime.scheduler import run_dag_plan
+from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
@@ -4145,8 +4145,6 @@ def _shared_project_scheduler_supported(
 
     if plan.route_contracts or plan.join_contracts:
         return False
-    if any(node.max_attempts != 1 for node in plan.nodes):
-        return False
     return not any(
         node.executor == "provider"
         or isinstance(_node_payload(contract, node.node_id).get("provider"), dict)
@@ -4179,7 +4177,7 @@ def _run_shared_project_dag_plan(
     def execute_node(
         plan_node: DagPlanNode,
         accepted_inputs: tuple[dict[str, Any], ...],
-        cancel_event: threading.Event,
+        execution: DagNodeAttempt,
     ) -> dict[str, Any]:
         node = contract.nodes[plan_node.node_id]
         if plan_node.adapter_kind in {"project_virtual", "project_human"}:
@@ -4204,8 +4202,8 @@ def _run_shared_project_dag_plan(
                 "errors": [],
             }
 
-        attempt = 1
-        artifact_dir = receipt_dir / "ready-queue" / node.node_id / "attempt-001"
+        attempt = execution.attempt
+        artifact_dir = receipt_dir / "ready-queue" / node.node_id / f"attempt-{attempt:03d}"
         start_payload = _node_start_handoff(
             contract,
             node,
@@ -4219,7 +4217,7 @@ def _run_shared_project_dag_plan(
             command_spec_root=command_spec_root,
             artifact_dir=artifact_dir,
             command_policy_path=_contract_relative_path(contract.command_policy, contract_path),
-            cancel_event=cancel_event,
+            cancel_event=execution.cancel_event,
         )
         dispatch = result.get("dispatch")
         response = result.get("response")
@@ -4243,7 +4241,7 @@ def _run_shared_project_dag_plan(
                 stop_reason = _command_spec_load_stop_reason("\n".join(result_errors))
             else:
                 stop_reason = "node_dispatch_failed"
-            return {
+            blocked = {
                 "node_id": node.node_id,
                 "status": "BLOCKED",
                 "verdict": stop_reason.upper(),
@@ -4253,8 +4251,75 @@ def _run_shared_project_dag_plan(
                 "attempt_count": attempt,
                 "dispatch": dispatch,
                 "accepted_output": None,
+                "stop_reason": stop_reason,
                 "errors": result_errors,
             }
+            drift_alert = _pointless_unit_test_drift_alert(
+                node_id=node.node_id,
+                node=node,
+                attempt=attempt,
+                stop_reason=stop_reason,
+                result=result,
+            )
+            if drift_alert is not None:
+                correction_path = _write_course_correction_receipt(
+                    contract=contract,
+                    receipt_dir=receipt_dir,
+                    node_id=node.node_id,
+                    node=node,
+                    attempt=attempt,
+                    code="pointless_unit_test_drift",
+                    reason=str(drift_alert["message"]),
+                    stop_reason=stop_reason,
+                    errors=result_errors,
+                )
+                with lock:
+                    course_correction_artifacts.append(str(correction_path))
+                blocked.update(
+                    {
+                        "verdict": "POINTLESS_UNIT_TEST_DRIFT",
+                        "retryable": False,
+                        "alerts": [drift_alert],
+                    }
+                )
+            elif attempt >= 2 and attempt < execution.max_attempts:
+                correction_path = _write_course_correction_receipt(
+                    contract=contract,
+                    receipt_dir=receipt_dir,
+                    node_id=node.node_id,
+                    node=node,
+                    attempt=attempt,
+                    code="brave_search_required_after_two_attempts",
+                    reason=(
+                        "Node has failed two attempts; require $brave-search research "
+                        "before another retry."
+                    ),
+                    stop_reason=stop_reason,
+                    errors=result_errors,
+                )
+                correction_alert = _alert(
+                    "BLOCK",
+                    "brave_search_required_after_two_attempts",
+                    "Node reached two failed attempts and must use $brave-search before retry.",
+                    {
+                        "node_id": node.node_id,
+                        "agent": node.agent,
+                        "attempts": attempt,
+                        "max_attempts": execution.max_attempts,
+                        "stop_reason": stop_reason,
+                        "course_correction_receipt": str(correction_path),
+                    },
+                )
+                with lock:
+                    course_correction_artifacts.append(str(correction_path))
+                blocked.update(
+                    {
+                        "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
+                        "retryable": False,
+                        "alerts": [correction_alert],
+                    }
+                )
+            return blocked
         if not isinstance(response, dict):
             return {
                 "node_id": node.node_id,
@@ -4283,6 +4348,7 @@ def _run_shared_project_dag_plan(
                     response=response,
                 )
                 repair_payload = json.loads(repair_path.read_text(encoding="utf-8"))
+                repair_ok = _provider_auth_repair_ready_for_retry(repair_payload)
                 auth_evidence = (
                     auth_alert.get("evidence")
                     if isinstance(auth_alert.get("evidence"), dict)
@@ -4298,27 +4364,43 @@ def _run_shared_project_dag_plan(
                     for item in repair_payload.get("errors", [])
                     if isinstance(item, str)
                 )
-                correction_path = _write_course_correction_receipt(
-                    contract=contract,
-                    receipt_dir=receipt_dir,
-                    node_id=node.node_id,
-                    node=node,
-                    attempt=attempt,
-                    code="provider_auth_required",
-                    reason=str(auth_alert["message"]),
-                    stop_reason="provider_auth_required",
-                    errors=auth_errors,
-                )
                 auth_evidence.update(
                     {
                         "provider_auth_repair_receipt": str(repair_path),
                         "provider_auth_repair_status": repair_payload.get("status"),
-                        "course_correction_receipt": str(correction_path),
+                        "provider_auth_repair_ok": repair_ok,
                     }
                 )
                 auth_alert["evidence"] = auth_evidence
                 with lock:
-                    course_correction_artifacts.append(str(correction_path))
+                    events.append(
+                        {
+                            "event": "provider_auth_repair_attempted",
+                            "node_id": node.node_id,
+                            "agent": node.agent,
+                            "attempt": attempt,
+                            "repair_status": repair_payload.get("status"),
+                            "repair_ok": repair_ok,
+                            "retrying": repair_ok and attempt < execution.max_attempts,
+                            "provider_auth_repair_receipt": str(repair_path),
+                            "ts": _utc_stamp(),
+                        }
+                    )
+                if not repair_ok or attempt >= execution.max_attempts:
+                    correction_path = _write_course_correction_receipt(
+                        contract=contract,
+                        receipt_dir=receipt_dir,
+                        node_id=node.node_id,
+                        node=node,
+                        attempt=attempt,
+                        code="provider_auth_required",
+                        reason=str(auth_alert["message"]),
+                        stop_reason="provider_auth_required",
+                        errors=auth_errors,
+                    )
+                    auth_evidence["course_correction_receipt"] = str(correction_path)
+                    with lock:
+                        course_correction_artifacts.append(str(correction_path))
             return {
                 "node_id": node.node_id,
                 "status": "BLOCKED",
@@ -4330,6 +4412,12 @@ def _run_shared_project_dag_plan(
                 "dispatch": dispatch,
                 "accepted_output": None,
                 "alerts": node_alerts,
+                "retryable": (
+                    repair_ok and attempt < execution.max_attempts
+                    if auth_alert is not None
+                    else True
+                ),
+                "stop_reason": str(node_alerts[0]["code"]),
                 "errors": [str(item["message"]) for item in node_alerts],
             }
         with lock:
@@ -4355,7 +4443,9 @@ def _run_shared_project_dag_plan(
                 and isinstance(node_id, str)
                 and contract.nodes[node_id].command_spec is not None
             ):
-                node_attempts.setdefault(node_id, 1)
+                attempt = event.get("attempt")
+                if isinstance(attempt, int):
+                    node_attempts[node_id] = attempt
             events.append({**event, "ts": _utc_stamp()})
             _write_project_dag_progress(
                 contract=contract,
@@ -4394,6 +4484,12 @@ def _run_shared_project_dag_plan(
                 {
                     "completed_node_ids": list(result.completed_node_ids),
                     "node_id": blocked_node.get("node_id"),
+                    "attempts": blocked_node.get("attempt_count", 0),
+                    "max_attempts": (
+                        contract.nodes[str(blocked_node.get("node_id"))].max_attempts
+                        if str(blocked_node.get("node_id")) in contract.nodes
+                        else None
+                    ),
                 },
             )
         )
