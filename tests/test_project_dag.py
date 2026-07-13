@@ -373,6 +373,7 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["scheduler"] == "bounded-ready-queue"
+    assert receipt["dag_plan_sha256"].startswith("sha256:")
     assert receipt["max_observed_concurrency"] >= 2
     assert set(receipt["selected_agents"]) == {"research-auditor", "coder", "reviewer"}
     assert receipt["node_attempts"] == {

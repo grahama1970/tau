@@ -37,6 +37,7 @@ from tau_coding.dag_route_decision import (
     normalize_route_condition,
     write_route_decision_receipt,
 )
+from tau_coding.dag_runtime.compiler import compile_project_dag_plan
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
@@ -899,6 +900,7 @@ def _run_bounded_ready_queue_project_dag(
         fallback_root=command_spec_root,
     )
     dag_agent_registry = _write_dag_agent_registry(contract=contract, receipt_dir=receipt_dir)
+    plan = compile_project_dag_plan(contract.payload, source_path=contract_path)
 
     max_concurrency = _max_concurrency(contract)
     runnable_nodes = {
@@ -2013,6 +2015,7 @@ def _run_bounded_ready_queue_project_dag(
         resolved_sources=resolved_sources,
         activated_edges=activated_edges,
         activated_terminals=activated_terminals,
+        dag_plan_sha256=plan.plan_sha256,
     )
     _write_project_dag_progress(
         contract=contract,
@@ -4169,6 +4172,7 @@ def _ready_queue_receipt(
     resolved_sources: set[str] | None = None,
     activated_edges: set[int] | None = None,
     activated_terminals: set[str] | None = None,
+    dag_plan_sha256: str | None = None,
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
@@ -4202,6 +4206,7 @@ def _ready_queue_receipt(
         "provider_live": False,
         "scheduler": "bounded-ready-queue",
         "execution": "project_agent_dag_bounded_ready_queue",
+        "dag_plan_sha256": dag_plan_sha256,
         "dag_id": contract.dag_id,
         "contract_path": str(contract_path),
         "contract_sha256": f"sha256:{_sha256(contract_path)}",
