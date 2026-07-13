@@ -1,9 +1,35 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-12 07:34 by agent
+**Last updated:** 2026-07-13 09:03 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-13 live bounded WebGPT clarification acceptance: the native Tau
+  `architecture_review/webgpt` skill node ran against Browser Oracle project
+  `tau`, exact tab `837358072`, and the bound ChatGPT conversation URL. Round 1
+  returned `CLARIFY` and wrote
+  `/tmp/tau-skill-clarification-live-20260713T1255Z/webgpt/clarification-request.json`;
+  the human selected `route_human`; Tau hash-bound that answer as
+  `b5c3a0231ce59f22f0598636ad1700a5b21877f48d482f4646ceaecd709571be`;
+  and round 2 returned `PASS` at the immutable `2/2` limit. A third invocation
+  reused the accepted round-2 receipt and left `round-state.json` at exactly two
+  rounds. Surf metadata records `proof_status:"response_proven"`, matching
+  requested/controlled tab ids, `raw_contains_sentinel:true`,
+  `focus_changed:false`, and `transport_degraded:false`. This was
+  `mocked:false`, `live:true`, and `provider_live:false`. It proves the bounded
+  `CLARIFY -> human answer -> PASS` transport/resume path for this work order;
+  it does not prove WebGPT semantic correctness, authorize a production policy
+  change, or prove arbitrary future skill routes.
+
+- 2026-07-13 current priority boundary: Tau still needs a host-compatible
+  positive secure-executor run, grant-scoped mounts, explicit secret and
+  network grants, retry grant renewal, Docker/Docker-Sandbox integration,
+  execution and verification of course-correction actions, mandatory
+  project-profile/capability-provider enforcement, a real OMP-binary worker
+  proof, a broader synthetic controlled-data worker demo, asymmetric signing,
+  an append-only audit ledger, and API authentication/RBAC. Provider/model
+  semantic quality remains an evaluation boundary rather than a receipt claim.
 
 - 2026-07-12 native DAG skill-provider slice: `tau.generic_dag_spec.v1` nodes
   may now declare `tau.skill_dag_node.v1` instead of a raw command for
