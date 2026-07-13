@@ -43,6 +43,8 @@ The closed contribution states are:
 
 Contributions are per edge and first-write-wins. A late source result cannot
 replace `cancelled` or `timed_out`; Tau records it as an ignored late event.
+Receipt creation uses an atomic no-overwrite filesystem operation, so concurrent
+writers cannot replace the first persisted contribution.
 
 ## Policies
 
@@ -60,7 +62,9 @@ replace `cancelled` or `timed_out`; Tau records it as an ignored late event.
 When every input is skipped, every policy returns `skip`. Count and quorum
 policies can decide early when success or failure becomes mathematically
 irreversible. Tau first writes `cancelled` contributions for unresolved inputs,
-then recomputes and persists the terminal decision.
+signals running local command process groups to terminate, then recomputes and
+persists the terminal decision. Join deadlines apply the same cancellation path
+before writing `timed_out` contributions.
 
 Quorum uses an explicit reduced fraction:
 
@@ -101,5 +105,6 @@ activates its outgoing edges.
 
 These receipts prove Tau applied the declared join contract to recorded
 terminal states. They do not prove branch-result truth, provider/model quality,
-subprocess termination for cancelled contributions, durable restart recovery,
-operating-system isolation, or arbitrary nested-workflow correctness.
+termination of external/provider workloads outside the local command runner,
+durable restart recovery, operating-system isolation, or arbitrary
+nested-workflow correctness.

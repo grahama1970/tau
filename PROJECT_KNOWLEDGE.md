@@ -34,9 +34,23 @@
   transport, and create-architecture saved the advisory UX Lab diagram
   `tau-dag-terminal-contributions-and-join-decisions---issue-76`. This slice
   proves deterministic local join handling and receipts; it does not prove
-  source-result truth, provider/model quality, process termination for
-  cancelled contributions, durable restart recovery, OS isolation, DagPlan
-  convergence, or arbitrary nested-workflow correctness.
+  source-result truth, provider/model quality, termination of external/provider
+  workloads, durable restart recovery, OS isolation, DagPlan convergence, or
+  arbitrary nested-workflow correctness.
+
+- 2026-07-13 issue #76 independent-review hardening: the live SciLLM-backed
+  `code-review-runner` found an overwrite race in immutable receipt creation,
+  ready-queue waits beyond finalized join deadlines, delayed `all_success`
+  failure, incomplete fail-closed registration, and false terminal activation.
+  Tau now creates immutable receipts with atomic no-overwrite links, terminates
+  cancellable local command process groups on join short-circuit or timeout,
+  emits irreversible `all_success` block intent immediately, registers the
+  closed join failure-code vocabulary, and counts only successful terminal
+  edges as activated routes. Deterministic focused proof is `123 passed`; the
+  timeout acceptance terminates a five-second branch at the one-second join
+  deadline and records `command_cancelled`. Full-suite proof is `1951 passed,
+  3 failed`, with the same three unrelated clean-main fixture/artifact gaps
+  documented under issue #75.
 
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed

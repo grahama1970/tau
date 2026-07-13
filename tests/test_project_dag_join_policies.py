@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from pathlib import Path
 
 from tau_coding.dag_join_decision import validate_join_decision
@@ -124,6 +125,58 @@ def test_join_timeout_writes_timed_out_contribution_and_ignores_late_success(
         event["event"] == "late_terminal_contribution_ignored"
         for event in receipt["scheduler_events"]
     )
+
+
+def test_join_timeout_terminates_running_branch_without_waiting_for_command_timeout(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="all_terminal",
+        route="ALL",
+        timeout_seconds=1,
+        branches=("branch-a", "branch-b"),
+    )
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="ALL"))
+    _write_response_spec(tmp_path, "branch-a", _handoff("branch-a", "join"))
+    _write_response_spec(
+        tmp_path,
+        "branch-b",
+        _handoff("branch-b", "join"),
+        sleep_seconds=5,
+        command_timeout=10,
+    )
+
+    started = time.monotonic()
+    receipt = _run(tmp_path, contract_path)
+    elapsed = time.monotonic() - started
+
+    assert receipt["status"] == "PASS"
+    assert elapsed < 2.5
+    assert receipt["node_terminal_states"]["branch-b"] == "cancelled"
+    branch_dispatch = next(
+        dispatch
+        for dispatch in receipt["dispatches"]
+        if dispatch.get("selected_agent") == "branch-b"
+    )
+    assert branch_dispatch["stop_reason"] == "command_cancelled"
+
+
+def test_non_success_terminal_edge_does_not_count_as_activated_route(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="all_success",
+        route="AB",
+    )
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="AB"))
+    _write_response_spec(tmp_path, "branch-a", _handoff("branch-a", "join"))
+    _write_response_spec(tmp_path, "branch-b", _handoff("branch-b", "join"))
+    _write_response_spec(tmp_path, "branch-c", _handoff("branch-c", "join"))
+
+    receipt = _run(tmp_path, contract_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["activated_terminals"] == []
 
 
 def test_persisted_join_decision_replays_from_contribution_receipts(tmp_path: Path) -> None:

@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -178,6 +181,58 @@ def test_early_release_returns_intent_until_pending_edges_are_cancelled() -> Non
     assert intent["status"] == "TERMINAL_INTENT"
     assert intent["decision"] == "release"
     assert intent["pending_edge_indexes"] == [2]
+
+
+def test_all_success_blocks_as_soon_as_an_adverse_input_is_terminal() -> None:
+    policy = _policy("all_success")
+    contributions = _contributions(["failed", "success", "success"], policy)[:1]
+
+    intent = evaluate_join_decision(
+        dag_id=DAG_ID,
+        goal_hash=GOAL_HASH,
+        join_node_id=JOIN_NODE,
+        join_policy=policy,
+        incoming_edges=_edges(),
+        contributions=contributions,
+    )
+
+    assert intent["status"] == "TERMINAL_INTENT"
+    assert intent["decision"] == "block"
+    assert intent["reason_code"] == "join_all_success_not_met"
+
+
+def test_immutable_receipt_first_writer_wins_under_concurrency(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    destination = tmp_path / "receipt.json"
+    writer_count = 8
+    barrier = threading.Barrier(writer_count)
+    real_link = os.link
+
+    def synchronized_link(source: str, target: str) -> None:
+        barrier.wait(timeout=5)
+        real_link(source, target)
+
+    monkeypatch.setattr(os, "link", synchronized_link)
+
+    def write(index: int) -> tuple[int, str]:
+        try:
+            write_immutable_json(
+                destination,
+                {"writer": index},
+                conflict_code="terminal_contribution_conflict",
+            )
+        except JoinDecisionError as exc:
+            return index, exc.code
+        return index, "written"
+
+    with ThreadPoolExecutor(max_workers=writer_count) as executor:
+        results = list(executor.map(write, range(writer_count)))
+
+    winners = [index for index, result in results if result == "written"]
+    assert len(winners) == 1
+    assert json.loads(destination.read_text(encoding="utf-8")) == {"writer": winners[0]}
+    assert [result for _, result in results].count("terminal_contribution_conflict") == 7
 
 
 def test_partial_all_terminal_waits_without_authoritative_hash() -> None:

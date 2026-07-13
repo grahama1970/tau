@@ -33,6 +33,38 @@ JOIN_POLICIES = frozenset(
     }
 )
 COUNT_POLICIES = frozenset({"exact_success_count", "minimum_success_count"})
+JOIN_FAILURE_CODES = frozenset(
+    {
+        "invalid_join_policy",
+        "join_all_success_not_met",
+        "join_any_success_not_met",
+        "join_command_not_allowed",
+        "join_decision_hash_mismatch",
+        "join_decision_receipt_write_failed",
+        "join_decision_replay_mismatch",
+        "join_exact_success_count_impossible",
+        "join_exact_success_count_not_met",
+        "join_fail_fast_adverse_input",
+        "join_minimum_success_count_impossible",
+        "join_policy_requires_bounded_ready_queue",
+        "join_provider_not_allowed",
+        "join_quorum_fraction_invalid",
+        "join_quorum_fraction_missing",
+        "join_quorum_impossible",
+        "join_required_successes_invalid",
+        "join_required_successes_missing",
+        "join_required_successes_out_of_range",
+        "join_requires_multiple_inputs",
+        "join_timeout_invalid",
+        "terminal_contribution_conflict",
+        "terminal_contribution_duplicate",
+        "terminal_contribution_edge_mismatch",
+        "terminal_contribution_hash_mismatch",
+        "terminal_contribution_policy_mismatch",
+        "terminal_contribution_receipt_write_failed",
+        "terminal_contribution_state_invalid",
+    }
+)
 MAX_JOIN_TIMEOUT_SECONDS = 86_400
 MAX_QUORUM_DENOMINATOR = 1_000
 
@@ -452,10 +484,6 @@ def write_immutable_json(path: Path, payload: Mapping[str, Any], *, conflict_cod
     """Atomically create an immutable JSON receipt or accept an identical replay."""
 
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
-    if path.exists():
-        if path.read_text(encoding="utf-8") == encoded:
-            return
-        raise JoinDecisionError(conflict_code, f"conflicting receipt already exists: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
@@ -463,7 +491,14 @@ def write_immutable_json(path: Path, payload: Mapping[str, Any], *, conflict_cod
             handle.write(encoded)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temporary, path)
+        try:
+            os.link(temporary, path)
+        except FileExistsError:
+            if path.read_text(encoding="utf-8") == encoded:
+                return
+            raise JoinDecisionError(
+                conflict_code, f"conflicting receipt already exists: {path}"
+            ) from None
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
@@ -515,6 +550,8 @@ def _evaluate_policy(
     name = policy["policy"]
     threshold: int | None = None
     if name == "all_success":
+        if adverse or skipped:
+            return "block", "join_all_success_not_met", total
         if pending:
             return "wait", "join_waiting_for_all_success", total
         if success == total:

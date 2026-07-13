@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import threading
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
@@ -19,6 +20,7 @@ from tau_coding.battle_scillm import (
 )
 from tau_coding.course_correction import build_course_correction_receipt
 from tau_coding.dag_join_decision import (
+    JOIN_FAILURE_CODES,
     JoinDecisionError,
     build_terminal_contribution,
     evaluate_join_decision,
@@ -216,13 +218,12 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.secure_scheduler_boundary",
     },
-    "join_decision_receipt_write_failed": {
-        "severity": "BLOCK",
-        "implemented_by": "tau.validators.dag.join_decision_receipt",
-    },
-    "terminal_contribution_conflict": {
-        "severity": "BLOCK",
-        "implemented_by": "tau.validators.dag.terminal_contribution",
+    **{
+        code: {
+            "severity": "BLOCK",
+            "implemented_by": "tau.validators.dag.join_policy",
+        }
+        for code in JOIN_FAILURE_CODES
     },
 }
 
@@ -936,6 +937,7 @@ def _run_bounded_ready_queue_project_dag(
     edge_contributions: dict[int, dict[str, Any]] = {}
     join_wait_started: dict[str, float] = {}
     finalized_joins: set[str] = set()
+    node_cancel_events: dict[str, threading.Event] = {}
     intervals: list[tuple[float, float]] = []
     started_at = time.monotonic()
 
@@ -1066,6 +1068,9 @@ def _run_bounded_ready_queue_project_dag(
             for edge in edges:
                 if edge.edge_index in edge_terminal_states:
                     continue
+                cancel_event = node_cancel_events.get(edge.source)
+                if cancel_event is not None:
+                    cancel_event.set()
                 settle_edge(
                     edge,
                     state="cancelled",
@@ -1168,7 +1173,8 @@ def _run_bounded_ready_queue_project_dag(
         if state == "success":
             activated_edges.add(edge.edge_index)
         if edge.target in contract.terminal_nodes:
-            activated_terminals.add(edge.target)
+            if state == "success":
+                activated_terminals.add(edge.target)
             return
         if edge.target in join_nodes:
             write_join_contribution(
@@ -1298,6 +1304,9 @@ def _run_bounded_ready_queue_project_dag(
             for edge in incoming_edges[join_id]:
                 if edge.edge_index in edge_terminal_states:
                     continue
+                cancel_event = node_cancel_events.get(edge.source)
+                if cancel_event is not None:
+                    cancel_event.set()
                 settle_edge(
                     edge,
                     state="timed_out",
@@ -1370,6 +1379,7 @@ def _run_bounded_ready_queue_project_dag(
                         contract.command_policy,
                         contract_path,
                     ),
+                    cancel_event=node_cancel_events.setdefault(node_id, threading.Event()),
                 )
                 futures[future] = node_id
                 events.append(
@@ -1571,9 +1581,13 @@ def _run_bounded_ready_queue_project_dag(
                             continue
                         continue
                     if branch_failure_is_join_consumable(node_id):
+                        terminal_state = {
+                            "command_cancelled": "cancelled",
+                            "command_timeout": "timed_out",
+                        }.get(stop_reason, "failed")
                         settle_node(
                             node_id,
-                            state=("timed_out" if stop_reason == "command_timeout" else "failed"),
+                            state=terminal_state,
                             reason_code=stop_reason,
                             basis={"kind": "source_terminal"},
                             source_binding={
@@ -3923,6 +3937,7 @@ def _dispatch_ready_node(
     command_spec_root: Path | None,
     artifact_dir: Path,
     command_policy_path: Path | None = None,
+    cancel_event: threading.Event | None = None,
 ) -> dict[str, Any]:
     started = time.monotonic()
     try:
@@ -3942,6 +3957,7 @@ def _dispatch_ready_node(
             agent_registry_root=agents_root,
             artifact_dir=artifact_dir,
             command_spec_metadata=spec,
+            cancel_event=cancel_event,
         )
         dispatch_payload = dispatch.as_dict()
         response = _response_payload(dispatch_payload)
