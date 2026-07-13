@@ -2526,10 +2526,10 @@ def test_project_dag_bounded_ready_queue_blocks_unsupported_condition_before_dis
         {
             "severity": "BLOCK",
             "code": "unsupported_ready_queue_condition",
-            "message": (
-                "Bounded ready-queue does not evaluate edge conditions. Remove the "
-                "conditions or use a future typed route evaluator before dispatch."
-            ),
+        "message": (
+            "Bounded ready-queue accepts only tau.route_condition.v1 objects. Replace the "
+            "legacy or untyped condition with a closed typed route condition before dispatch."
+        ),
             "evidence": {
                 "edges": [
                     {

@@ -3130,8 +3130,9 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
                 message = str(exc)
                 if exc.code == "unsupported_ready_queue_condition":
                     message = (
-                        "Bounded ready-queue does not evaluate edge conditions. Remove the "
-                        "conditions or use a future typed route evaluator before dispatch."
+                        "Bounded ready-queue accepts only tau.route_condition.v1 objects. "
+                        "Replace the legacy or untyped condition with a closed typed route "
+                        "condition before dispatch."
                     )
                 alerts.append(
                     _alert(
