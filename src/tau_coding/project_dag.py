@@ -38,6 +38,8 @@ from tau_coding.dag_route_decision import (
     write_route_decision_receipt,
 )
 from tau_coding.dag_runtime.compiler import compile_project_dag_plan
+from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
+from tau_coding.dag_runtime.scheduler import run_dag_plan
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
@@ -901,6 +903,15 @@ def _run_bounded_ready_queue_project_dag(
     )
     dag_agent_registry = _write_dag_agent_registry(contract=contract, receipt_dir=receipt_dir)
     plan = compile_project_dag_plan(contract.payload, source_path=contract_path)
+    if _shared_project_scheduler_supported(plan, contract):
+        return _run_shared_project_dag_plan(
+            plan=plan,
+            contract=contract,
+            contract_path=contract_path,
+            receipt_dir=receipt_dir,
+            command_spec_root=command_spec_root,
+            dag_agent_registry=dag_agent_registry,
+        )
 
     max_concurrency = _max_concurrency(contract)
     runnable_nodes = {
@@ -4123,6 +4134,316 @@ def _apply_provider_command_timeout_policy(
     )
     updated["timeout_policy"] = dict(timeout_policy)
     return updated
+
+
+def _shared_project_scheduler_supported(
+    plan: DagPlan,
+    contract: ProjectDagContract,
+) -> bool:
+    """Return whether all declared nodes fit the first shared adapter set."""
+
+    if plan.route_contracts or plan.join_contracts:
+        return False
+    if any(node.max_attempts != 1 for node in plan.nodes):
+        return False
+    return not any(
+        node.executor == "provider"
+        or isinstance(_node_payload(contract, node.node_id).get("provider"), dict)
+        for node in plan.nodes
+    )
+
+
+def _run_shared_project_dag_plan(
+    *,
+    plan: DagPlan,
+    contract: ProjectDagContract,
+    contract_path: Path,
+    receipt_dir: Path,
+    command_spec_root: Path | None,
+    dag_agent_registry: Path,
+) -> dict[str, Any]:
+    """Run project command and virtual nodes through the canonical scheduler."""
+
+    dispatches: list[dict[str, Any]] = []
+    responses: dict[str, dict[str, Any]] = {}
+    node_artifacts: dict[str, list[str]] = {}
+    node_attempts: dict[str, int] = {}
+    events: list[dict[str, Any]] = []
+    errors: list[str] = []
+    alerts: list[dict[str, Any]] = []
+    course_correction_artifacts: list[str] = []
+    lock = threading.Lock()
+    started_at = time.monotonic()
+
+    def execute_node(
+        plan_node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+    ) -> dict[str, Any]:
+        node = contract.nodes[plan_node.node_id]
+        if plan_node.adapter_kind in {"project_virtual", "project_human"}:
+            with lock:
+                events.append(
+                    {
+                        "event": "virtual_node_completed",
+                        "node_id": node.node_id,
+                        "agent": node.agent,
+                        "ts": _utc_stamp(),
+                    }
+                )
+            return {
+                "node_id": node.node_id,
+                "status": "PASS",
+                "verdict": "PASS",
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "attempt_count": 0,
+                "accepted_output": None,
+                "errors": [],
+            }
+
+        attempt = 1
+        artifact_dir = receipt_dir / "ready-queue" / node.node_id / "attempt-001"
+        start_payload = _node_start_handoff(
+            contract,
+            node,
+            contract_path=contract_path,
+            predecessor_responses=list(accepted_inputs),
+        )
+        result = _dispatch_ready_node(
+            node=node,
+            start_payload=start_payload,
+            agents_root=dag_agent_registry,
+            command_spec_root=command_spec_root,
+            artifact_dir=artifact_dir,
+            command_policy_path=_contract_relative_path(contract.command_policy, contract_path),
+        )
+        dispatch = result.get("dispatch")
+        response = result.get("response")
+        with lock:
+            node_attempts[node.node_id] = attempt
+            if isinstance(dispatch, dict):
+                dispatches.append(dispatch)
+                _write_json(artifact_dir / "dispatch-receipt.json", dispatch)
+            node_artifacts[node.node_id] = [
+                str(path)
+                for path in sorted((receipt_dir / "ready-queue" / node.node_id).rglob("*"))
+                if path.is_file()
+            ]
+        if result.get("ok") is not True:
+            result_errors = [str(item) for item in result.get("errors", [])]
+            if isinstance(dispatch, dict):
+                stop_reason = str(dispatch.get("stop_reason") or "node_dispatch_failed")
+            elif isinstance(result.get("stop_reason"), str):
+                stop_reason = str(result["stop_reason"])
+            elif result_errors:
+                stop_reason = _command_spec_load_stop_reason("\n".join(result_errors))
+            else:
+                stop_reason = "node_dispatch_failed"
+            return {
+                "node_id": node.node_id,
+                "status": "BLOCKED",
+                "verdict": stop_reason.upper(),
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "attempt_count": attempt,
+                "dispatch": dispatch,
+                "accepted_output": None,
+                "errors": result_errors,
+            }
+        if not isinstance(response, dict):
+            return {
+                "node_id": node.node_id,
+                "status": "BLOCKED",
+                "verdict": "MISSING_NODE_RESPONSE",
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "attempt_count": attempt,
+                "dispatch": dispatch,
+                "accepted_output": None,
+                "errors": ["ready-queue node did not return a JSON handoff response"],
+            }
+        node_alerts = _node_response_alerts(contract, node, response)
+        if node_alerts:
+            auth_alert = next(
+                (item for item in node_alerts if item.get("code") == "provider_auth_required"),
+                None,
+            )
+            if auth_alert is not None:
+                repair_path = _write_provider_auth_repair_receipt(
+                    receipt_dir=receipt_dir,
+                    node_id=node.node_id,
+                    node=node,
+                    attempt=attempt,
+                    response=response,
+                )
+                repair_payload = json.loads(repair_path.read_text(encoding="utf-8"))
+                auth_evidence = (
+                    auth_alert.get("evidence")
+                    if isinstance(auth_alert.get("evidence"), dict)
+                    else {}
+                )
+                auth_errors = [
+                    str(item)
+                    for item in auth_evidence.get("auth_errors", [])
+                    if isinstance(item, str)
+                ]
+                auth_errors.extend(
+                    str(item)
+                    for item in repair_payload.get("errors", [])
+                    if isinstance(item, str)
+                )
+                correction_path = _write_course_correction_receipt(
+                    contract=contract,
+                    receipt_dir=receipt_dir,
+                    node_id=node.node_id,
+                    node=node,
+                    attempt=attempt,
+                    code="provider_auth_required",
+                    reason=str(auth_alert["message"]),
+                    stop_reason="provider_auth_required",
+                    errors=auth_errors,
+                )
+                auth_evidence.update(
+                    {
+                        "provider_auth_repair_receipt": str(repair_path),
+                        "provider_auth_repair_status": repair_payload.get("status"),
+                        "course_correction_receipt": str(correction_path),
+                    }
+                )
+                auth_alert["evidence"] = auth_evidence
+                with lock:
+                    course_correction_artifacts.append(str(correction_path))
+            return {
+                "node_id": node.node_id,
+                "status": "BLOCKED",
+                "verdict": str(node_alerts[0]["code"]).upper(),
+                "mocked": False,
+                "live": True,
+                "provider_live": False,
+                "attempt_count": attempt,
+                "dispatch": dispatch,
+                "accepted_output": None,
+                "alerts": node_alerts,
+                "errors": [str(item["message"]) for item in node_alerts],
+            }
+        with lock:
+            responses[node.node_id] = response
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "mocked": False,
+            "live": True,
+            "provider_live": False,
+            "attempt_count": attempt,
+            "dispatch": dispatch,
+            "accepted_output": response,
+            "errors": [],
+        }
+
+    def record_event(event: dict[str, Any]) -> None:
+        with lock:
+            events.append({**event, "ts": _utc_stamp()})
+
+    result = run_dag_plan(
+        plan,
+        execute_node=execute_node,
+        max_concurrency=_max_concurrency(contract),
+        event_sink=record_event,
+    )
+    for node_result in result.node_results:
+        alerts.extend(
+            item for item in node_result.get("alerts", []) if isinstance(item, dict)
+        )
+        errors.extend(str(item) for item in node_result.get("errors", []))
+    if result.status != "PASS" and not alerts:
+        blocked_node = next(
+            (
+                item
+                for item in result.node_results
+                if item.get("status") != "PASS" or item.get("verdict") != "PASS"
+            ),
+            {},
+        )
+        alerts.append(
+            _alert(
+                "BLOCK",
+                str(result.verdict).lower(),
+                "Canonical DagPlan scheduler blocked project continuation.",
+                {
+                    "completed_node_ids": list(result.completed_node_ids),
+                    "node_id": blocked_node.get("node_id"),
+                },
+            )
+        )
+    completed = set(result.completed_node_ids)
+    activated_edges = {
+        edge.edge_index
+        for edge in contract.edges
+        if edge.source in completed
+        and (edge.target in completed or edge.target in contract.terminal_nodes)
+    }
+    activated_terminals = {
+        edge.target
+        for edge in contract.edges
+        if edge.source in completed and edge.target in contract.terminal_nodes
+    }
+    if result.status == "PASS" and not activated_terminals:
+        alerts.append(
+            _alert(
+                "BLOCK",
+                "missing_terminal_route",
+                "Completed DAG nodes do not reach a declared terminal node.",
+                {"completed_nodes": sorted(completed)},
+            )
+        )
+    status = "PASS" if result.status == "PASS" and not alerts else "BLOCKED"
+    verdict = "PASS" if status == "PASS" else str(alerts[0]["code"]).upper()
+    receipt = _ready_queue_receipt(
+        contract=contract,
+        contract_path=contract_path,
+        receipt_dir=receipt_dir,
+        command_spec_root=command_spec_root,
+        status=status,
+        verdict=verdict,
+        alerts=alerts,
+        dispatches=dispatches,
+        events=events,
+        node_attempts=node_attempts,
+        reviewer_verdicts=[
+            verdict_item
+            for node_id, response in responses.items()
+            if contract.nodes[node_id].reviewer is not None
+            for verdict_item in _reviewer_verdict_evidence(response)
+        ],
+        observed_edges=_ready_queue_observed_edges(contract, activated_edges),
+        execution_seconds=round(time.monotonic() - started_at, 6),
+        max_observed_concurrency=result.max_observed_concurrency,
+        errors=errors,
+        node_artifacts=node_artifacts,
+        course_correction_artifacts=course_correction_artifacts,
+        node_terminal_states={node_id: "success" for node_id in completed},
+        resolved_sources=completed,
+        activated_edges=activated_edges,
+        activated_terminals=activated_terminals,
+        dag_plan_sha256=plan.plan_sha256,
+    )
+    receipt["execution"] = "project_agent_dag_plan_ready_queue"
+    _write_project_dag_progress(
+        contract=contract,
+        receipt_dir=receipt_dir,
+        scheduler="bounded-ready-queue",
+        events=events,
+        node_attempts=node_attempts,
+        status=status,
+        verdict=verdict,
+    )
+    receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
+    _write_json(receipt_dir / "dag-receipt.json", receipt)
+    return receipt
 
 
 def _max_concurrency(contract: ProjectDagContract) -> int:
