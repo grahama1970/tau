@@ -363,12 +363,13 @@ def run_dag_plan(
             batch_blocked = False
             for node_id, result in sorted(completed_batch):
                 attempt = attempt_counts[node_id]
+                raw_attempt_result = result
                 result = _with_attempt_history(
                     result,
                     attempt=attempt,
                     prior_results=attempt_history[node_id],
                 )
-                attempt_history[node_id].append(result)
+                attempt_history[node_id].append(raw_attempt_result)
                 retryable = result.get("retryable") is not False
                 scheduler_cancelled = cancel_events[node_id].is_set()
                 failed_attempt = result.get("status") != "PASS" or result.get("verdict") != "PASS"
@@ -631,7 +632,7 @@ def _context_edges(plan: DagPlan) -> Mapping[str, tuple[tuple[str, str], ...]]:
         values.setdefault(binding.target_node_id, []).append(
             (binding.source_node_id, binding.control_edge_id)
         )
-    return {target: tuple(sorted(sources)) for target, sources in values.items()}
+    return {target: tuple(sources) for target, sources in values.items()}
 
 
 def _node_is_ready(

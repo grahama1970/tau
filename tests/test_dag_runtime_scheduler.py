@@ -62,6 +62,39 @@ def test_dag_plan_scheduler_runs_independent_nodes_concurrently(tmp_path: Path) 
     assert observed_inputs["join"] == ("left", "right")
 
 
+def test_scheduler_preserves_declared_accepted_input_order(tmp_path: Path) -> None:
+    payload = _generic_spec(
+        tmp_path,
+        [
+            _node(tmp_path, "z-source"),
+            _node(tmp_path, "a-source"),
+            _node(tmp_path, "consumer", depends_on=["z-source", "a-source"]),
+        ],
+    )
+    payload["nodes"][2]["accepted_context_from"] = [  # type: ignore[index]
+        "z-source",
+        "a-source",
+    ]
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    observed: list[str] = []
+
+    def execute(node, accepted_inputs, execution):  # type: ignore[no-untyped-def]
+        del execution
+        if node.node_id == "consumer":
+            observed.extend(str(item["source_node_id"]) for item in accepted_inputs)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": node.node_id},
+        }
+
+    result = run_dag_plan(plan, execute_node=execute, max_concurrency=2)
+
+    assert result.status == "PASS"
+    assert observed == ["z-source", "a-source"]
+
+
 def test_dag_plan_scheduler_blocks_downstream_after_adapter_failure(tmp_path: Path) -> None:
     plan = compile_generic_dag_plan(
         _generic_spec(
@@ -205,6 +238,31 @@ def test_dag_plan_scheduler_owns_bounded_retries(tmp_path: Path) -> None:
         "PASS",
     ]
     assert [item["event"] for item in events].count("node_retry_scheduled") == 1
+
+
+def test_scheduler_does_not_duplicate_command_history_across_retries(tmp_path: Path) -> None:
+    payload = _generic_spec(tmp_path, [_node(tmp_path, "flaky")])
+    payload["nodes"][0]["max_attempts"] = 3  # type: ignore[index]
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+
+    def execute(node, accepted_inputs, execution):  # type: ignore[no-untyped-def]
+        del node, accepted_inputs
+        passed = execution.attempt == 3
+        return {
+            "node_id": "flaky",
+            "status": "PASS" if passed else "BLOCKED",
+            "verdict": "PASS" if passed else "TRANSIENT_FAILURE",
+            "command_results": [{"attempt": execution.attempt}],
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "PASS"
+    assert result.node_results[0]["command_results"] == [
+        {"attempt": 1},
+        {"attempt": 2},
+        {"attempt": 3},
+    ]
 
 
 def test_dag_plan_scheduler_respects_non_retryable_adapter_result(tmp_path: Path) -> None:

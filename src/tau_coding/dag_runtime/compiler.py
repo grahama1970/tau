@@ -269,7 +269,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
             ),
         )
         for target in sorted(typed_nodes)
-        for source in sorted(typed_nodes[target].accepted_context_from)
+        for source in typed_nodes[target].accepted_context_from
     )
     nodes = tuple(
         DagPlanNode(
