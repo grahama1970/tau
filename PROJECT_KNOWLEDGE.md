@@ -1,9 +1,36 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 10:37 by agent
+**Last updated:** 2026-07-13 12:32 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-13 issue #75 typed route-decision slice: the project DAG
+  `bounded-ready-queue` scheduler now accepts closed
+  `tau.route_condition.v1` objects over direct typed `response.result` fields
+  and source-node modes `exclusive`, `first_match`, `fanout`, and atomic
+  `all_matching`. It persists a hash-bound, replayable
+  `tau.dag_route_decision.v1` before activating selected edges; unselected
+  branches neither dispatch nor stall. Arbitrary expressions, mixed
+  conditional/unconditional routes, conditional virtual sources, typed routes
+  under `handoff-loop`, ambiguous/no-match decisions, and conditional targets
+  with implicit join semantics fail closed. Focused non-mocked local proof:
+  `uv run pytest tests/test_dag_route_decision.py tests/test_project_dag.py -q`
+  -> `141 passed`; the scheduler tests execute real local command subprocesses
+  and assert route receipt persistence precedes selected successor start.
+  Schema proof validated the depth-8 DAG schema, rejected depth 9, and rejected
+  a Python expression condition. Full repository run reached
+  `1907 passed, 3 failed`;
+  all three failures reproduce on or derive from the clean main baseline: one
+  stale compliance-package test fixture lacks newly required policy/boundary
+  fields, and two tests reference generated proof/spec files absent from a clean
+  worktree. This proves deterministic typed routing and local branch dispatch;
+  it does not prove source-result truth, join policy, provider/model quality,
+  downstream branch success, or production security. The current authenticated
+  independent review reported zero semantic findings; its overall status
+  remains fail-only because the pre-existing `project_dag.py` and
+  `test_project_dag.py` modules exceed the reviewer's file-size policy and the
+  legacy test module has no module docstring.
 
 - 2026-07-13 issue #74 ready-queue condition safety slice: bounded-ready-queue
   now rejects every supplied non-empty edge `condition`, including malformed

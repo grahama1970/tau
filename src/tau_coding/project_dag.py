@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
@@ -17,6 +18,16 @@ from tau_coding.battle_scillm import (
     resolve_active_scillm_proxy_key,
 )
 from tau_coding.course_correction import build_course_correction_receipt
+from tau_coding.dag_route_decision import (
+    ROUTE_CONDITION_SCHEMA,
+    ROUTE_DECISION_VALIDATION_CODES,
+    ROUTE_MODES,
+    RouteDecisionError,
+    build_route_contract,
+    evaluate_route_decision,
+    normalize_route_condition,
+    write_route_decision_receipt,
+)
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
@@ -46,6 +57,7 @@ DAG_RECEIPT_SCHEMA = "tau.dag_receipt.v1"
 DAG_ERROR_SCHEMA = "tau.dag_error.v1"
 DAG_PROGRESS_SCHEMA = "tau.dag_progress.v1"
 FAIL_CLOSED_REGISTRY_SCHEMA = "tau.fail_closed_registry.v1"
+DAG_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 PERSISTENT_SUBAGENT_SCHEMA = "tau.persistent_subagent.v1"
 PROVIDER_COMMAND_TIMEOUT_SECONDS = 900.0
 
@@ -166,6 +178,37 @@ FAIL_CLOSED_REGISTRY: dict[str, dict[str, str]] = {
         "severity": "BLOCK",
         "implemented_by": "tau.validators.dag.ready_queue_conditions",
     },
+    **{
+        code: {
+            "severity": "BLOCK",
+            "implemented_by": "tau.validators.dag.typed_route_decision",
+        }
+        for code in (
+            "invalid_route_condition",
+            "invalid_route_mode",
+            "route_mode_without_conditional_edges",
+            "mixed_conditional_unconditional_routes",
+            "conditional_route_source_requires_response",
+            "conditional_target_multiple_predecessors",
+            "typed_route_requires_bounded_ready_queue",
+            "route_source_result_missing",
+            "route_field_missing",
+            "route_field_type_invalid",
+            "route_comparison_type_mismatch",
+            "route_no_match",
+            "route_ambiguous_exclusive",
+            "route_all_matching_incomplete",
+            "route_decision_receipt_write_failed",
+            "route_activation_invariant_violation",
+            "route_source_result_invalid",
+            "route_source_binding_mismatch",
+            *ROUTE_DECISION_VALIDATION_CODES,
+        )
+    },
+    "secure_mode_requires_handoff_loop": {
+        "severity": "BLOCK",
+        "implemented_by": "tau.validators.dag.secure_scheduler_boundary",
+    },
 }
 
 
@@ -180,10 +223,12 @@ class ProjectDagNode:
     reviewer: dict[str, Any] | None
     context: dict[str, Any]
     requested_capabilities: tuple[dict[str, Any], ...]
+    route_mode: str | None
 
 
 @dataclass(frozen=True, slots=True)
 class ProjectDagEdge:
+    edge_index: int
     source: str
     target: str
     condition: object | None = None
@@ -366,6 +411,43 @@ def run_project_dag_contract(
         )
         _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
         return receipt
+    scheduler_alert: dict[str, Any] | None = None
+    if scheduler != "bounded-ready-queue" and _has_typed_routes(contract):
+        scheduler_alert = _alert(
+            "BLOCK",
+            "typed_route_requires_bounded_ready_queue",
+            "Typed route conditions require the bounded-ready-queue scheduler.",
+            {"requested_scheduler": scheduler},
+        )
+    elif (
+        scheduler == "bounded-ready-queue"
+        and security_context_result.context.get("security_mode") == "secure"
+    ):
+        scheduler_alert = _alert(
+            "BLOCK",
+            "secure_mode_requires_handoff_loop",
+            "Secure execution is currently authoritative only through the "
+            "handoff-loop scheduler.",
+            {"requested_scheduler": scheduler, "supported_scheduler": "handoff-loop"},
+        )
+    if scheduler_alert is not None:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(scheduler_alert["code"]).upper(),
+            alerts=[scheduler_alert],
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
+            evidence_validation_receipt=evidence_validation_receipt,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+            containment_gate_receipts=containment_receipts,
+            security_context_receipt=security_context_result.receipt,
+            capability_decision_receipt=None,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
     if security_context_result.context.get("security_mode") == "secure":
         command_policy = security_context_result.resolved_artifacts.get("command_policy")
         if not isinstance(command_policy, dict):
@@ -406,31 +488,6 @@ def run_project_dag_contract(
             _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
             return receipt
     if scheduler == "bounded-ready-queue":
-        if security_context_result.context.get("security_mode") == "secure":
-            alert = _alert(
-                "BLOCK",
-                "secure_mode_requires_handoff_loop",
-                "Secure execution is currently authoritative only through the "
-                "handoff-loop scheduler.",
-                {"requested_scheduler": scheduler, "supported_scheduler": "handoff-loop"},
-            )
-            receipt = _pre_dispatch_blocked_receipt(
-                contract=contract,
-                contract_path=resolved_contract_path,
-                receipt_dir=resolved_receipt_dir,
-                scheduler=scheduler,
-                verdict="SECURE_MODE_REQUIRES_HANDOFF_LOOP",
-                alerts=[alert],
-                memory_intent_gate_receipt=memory_intent_receipt,
-                evidence_case_gate_receipt=evidence_case_receipt,
-                evidence_validation_receipt=evidence_validation_receipt,
-                zero_trust_preflight_receipt=zero_trust_receipt,
-                containment_gate_receipts=containment_receipts,
-                security_context_receipt=security_context_result.receipt,
-                capability_decision_receipt=capability_decision_receipt,
-            )
-            _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
-            return receipt
         return _run_bounded_ready_queue_project_dag(
             contract=contract,
             contract_path=resolved_contract_path,
@@ -826,9 +883,15 @@ def _run_bounded_ready_queue_project_dag(
         for node_id, node in contract.nodes.items()
         if node.executor != "human" and node_id not in contract.terminal_nodes
     }
-    predecessors = _predecessors(contract)
-    successors = _successors(contract)
+    incoming_edges = _incoming_edge_objects(contract)
+    outgoing_edges = _outgoing_edge_objects(contract)
     completed: set[str] = set()
+    resolved_sources: set[str] = set()
+    activated_edges: set[int] = set()
+    activated_terminals: set[str] = set()
+    active_nodes: set[str] = {
+        node_id for node_id in runnable_nodes if not incoming_edges.get(node_id)
+    }
     failed = False
     dispatches: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
@@ -838,20 +901,51 @@ def _run_bounded_ready_queue_project_dag(
     alerts: list[dict[str, Any]] = []
     errors: list[str] = []
     course_correction_artifacts: list[str] = []
+    route_decision_artifacts: list[str] = []
     intervals: list[tuple[float, float]] = []
     started_at = time.monotonic()
+
+    def activate_edges(edges: list[ProjectDagEdge]) -> None:
+        for edge in edges:
+            activated_edges.add(edge.edge_index)
+            if edge.target in contract.terminal_nodes:
+                activated_terminals.add(edge.target)
+            elif edge.target in runnable_nodes:
+                active_nodes.add(edge.target)
+
+    def resolve_unconditional_source(node_id: str) -> None:
+        activate_edges(outgoing_edges.get(node_id, []))
+        resolved_sources.add(node_id)
+        completed.add(node_id)
+
+    def node_ready(node_id: str) -> bool:
+        if node_id not in active_nodes:
+            return False
+        incoming = incoming_edges.get(node_id, [])
+        if not incoming:
+            return True
+        if any(_edge_is_conditional(edge) for edge in incoming):
+            return (
+                len(incoming) == 1
+                and incoming[0].source in resolved_sources
+                and incoming[0].edge_index in activated_edges
+            )
+        return all(
+            edge.source in resolved_sources and edge.edge_index in activated_edges
+            for edge in incoming
+        )
 
     def mark_virtual_ready_nodes() -> None:
         changed = True
         while changed:
             changed = False
-            for node_id in sorted(runnable_nodes - completed):
+            for node_id in sorted(active_nodes - completed):
                 node = contract.nodes[node_id]
                 if node.command_spec:
                     continue
-                if not _node_dependencies_satisfied(node_id, predecessors, completed):
+                if not node_ready(node_id):
                     continue
-                completed.add(node_id)
+                resolve_unconditional_source(node_id)
                 events.append(
                     {
                         "event": "virtual_node_completed",
@@ -873,15 +967,15 @@ def _run_bounded_ready_queue_project_dag(
     def ready_nodes(running: set[str]) -> list[str]:
         return [
             node_id
-            for node_id in sorted(runnable_nodes - completed - running)
+            for node_id in sorted(active_nodes - completed - running)
             if contract.nodes[node_id].command_spec
-            and _node_dependencies_satisfied(node_id, predecessors, completed)
+            and node_ready(node_id)
         ]
 
     mark_virtual_ready_nodes()
     with ThreadPoolExecutor(max_workers=max_concurrency) as executor:
         futures: dict[Future[dict[str, Any]], str] = {}
-        while len(completed) < len(runnable_nodes):
+        while True:
             if failed:
                 break
             running_node_ids = set(futures.values())
@@ -910,9 +1004,9 @@ def _run_bounded_ready_queue_project_dag(
                     node,
                     contract_path=contract_path,
                     predecessor_responses=[
-                        responses[item]
-                        for item in sorted(predecessors.get(node_id, set()))
-                        if item in responses
+                        responses[edge.source]
+                        for edge in incoming_edges.get(node_id, [])
+                        if edge.edge_index in activated_edges and edge.source in responses
                     ],
                 )
                 artifact_dir = (
@@ -951,15 +1045,16 @@ def _run_bounded_ready_queue_project_dag(
             if failed:
                 break
             if not futures:
-                remaining = sorted(runnable_nodes - completed)
-                alerts.append(
-                    _alert(
-                        "BLOCK",
-                        "ready_queue_stalled",
-                        "No runnable DAG node had satisfied dependencies.",
-                        {"remaining_nodes": remaining, "completed_nodes": sorted(completed)},
+                remaining = sorted(active_nodes - completed)
+                if remaining:
+                    alerts.append(
+                        _alert(
+                            "BLOCK",
+                            "ready_queue_stalled",
+                            "No active DAG node had satisfied dependencies.",
+                            {"remaining_nodes": remaining, "completed_nodes": sorted(completed)},
+                        )
                     )
-                )
                 break
             done, _ = wait(futures, return_when=FIRST_COMPLETED)
             for future in done:
@@ -1223,7 +1318,117 @@ def _run_bounded_ready_queue_project_dag(
                         alerts.extend(node_alerts)
                         failed = True
                     else:
-                        completed.add(node_id)
+                        source_edges = outgoing_edges.get(node_id, [])
+                        conditional_edges = [
+                            edge for edge in source_edges if _edge_is_conditional(edge)
+                        ]
+                        if conditional_edges:
+                            source_result = response.get("result")
+                            if not isinstance(source_result, dict):
+                                alerts.append(
+                                    _alert(
+                                        "BLOCK",
+                                        "route_source_result_missing",
+                                        "Conditional source response must contain an object "
+                                        "result.",
+                                        {"node_id": node_id},
+                                    )
+                                )
+                                failed = True
+                                continue
+                            try:
+                                route_contract = build_route_contract(
+                                    source_node_id=node_id,
+                                    mode=contract.nodes[node_id].route_mode,
+                                    edges=[
+                                        {
+                                            "edge_index": edge.edge_index,
+                                            "target": edge.target,
+                                            "condition": edge.condition,
+                                        }
+                                        for edge in conditional_edges
+                                    ],
+                                )
+                                decision = evaluate_route_decision(
+                                    dag_id=contract.dag_id,
+                                    goal_hash=str(contract.goal["goal_hash"]),
+                                    source_node_id=node_id,
+                                    attempt=node_attempts[node_id],
+                                    source_result=source_result,
+                                    route_contract=route_contract,
+                                )
+                            except RouteDecisionError as exc:
+                                alerts.append(
+                                    _alert(
+                                        "BLOCK",
+                                        exc.code,
+                                        "Typed route evaluation rejected the source result.",
+                                        {"node_id": node_id, "errors": [str(exc)]},
+                                    )
+                                )
+                                errors.append(str(exc))
+                                failed = True
+                                continue
+                            decision_path = (
+                                receipt_dir
+                                / "route-decisions"
+                                / node_id
+                                / f"attempt-{node_attempts[node_id]:03d}.json"
+                            )
+                            try:
+                                write_route_decision_receipt(decision_path, decision)
+                            except OSError as exc:
+                                alerts.append(
+                                    _alert(
+                                        "BLOCK",
+                                        "route_decision_receipt_write_failed",
+                                        "Tau could not persist the route decision receipt.",
+                                        {"node_id": node_id, "errors": [str(exc)]},
+                                    )
+                                )
+                                errors.append(str(exc))
+                                failed = True
+                                continue
+                            route_decision_artifacts.append(str(decision_path))
+                            events.append(
+                                {
+                                    "event": "route_decided",
+                                    "node_id": node_id,
+                                    "attempt": node_attempts[node_id],
+                                    "status": decision["status"],
+                                    "selected_targets": decision["selected_targets"],
+                                    "route_decision_receipt": str(decision_path),
+                                    "ts": _utc_stamp(),
+                                }
+                            )
+                            if decision["status"] != "PASS":
+                                failure_code = str(decision["failure_code"])
+                                alerts.append(
+                                    _alert(
+                                        "BLOCK",
+                                        failure_code,
+                                        "Typed route decision blocked successor activation.",
+                                        {
+                                            "node_id": node_id,
+                                            "route_decision_receipt": str(decision_path),
+                                            "selected_targets": [],
+                                        },
+                                    )
+                                )
+                                failed = True
+                                continue
+                            selected_targets = set(decision["selected_targets"])
+                            activate_edges(
+                                [
+                                    edge
+                                    for edge in conditional_edges
+                                    if edge.target in selected_targets
+                                ]
+                            )
+                            resolved_sources.add(node_id)
+                            completed.add(node_id)
+                        else:
+                            resolve_unconditional_source(node_id)
                         mark_virtual_ready_nodes()
                 else:
                     alerts.append(
@@ -1237,7 +1442,7 @@ def _run_bounded_ready_queue_project_dag(
                     failed = True
 
     execution_seconds = round(time.monotonic() - started_at, 6)
-    if not alerts and not _terminal_reachable_from_completed(contract, completed, successors):
+    if not alerts and not activated_terminals:
         alerts.append(
             _alert(
                 "BLOCK",
@@ -1249,7 +1454,7 @@ def _run_bounded_ready_queue_project_dag(
                 },
             )
         )
-    observed_edges = _ready_queue_observed_edges(contract, completed)
+    observed_edges = _ready_queue_observed_edges(contract, activated_edges)
     reviewer_verdicts = [
         verdict
         for node_id, response in responses.items()
@@ -1276,6 +1481,10 @@ def _run_bounded_ready_queue_project_dag(
         errors=errors,
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
+        route_decision_artifacts=route_decision_artifacts,
+        resolved_sources=resolved_sources,
+        activated_edges=activated_edges,
+        activated_terminals=activated_terminals,
     )
     _write_project_dag_progress(
         contract=contract,
@@ -1325,6 +1534,9 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
         _required_string(target, key, errors)
     entry_node = _required_string(payload, "entry_node", errors)
     terminal_nodes = _string_list(payload.get("terminal_nodes"), "terminal_nodes", errors)
+    _validate_dag_identifier(entry_node, "entry_node", errors)
+    for index, terminal_node in enumerate(terminal_nodes):
+        _validate_dag_identifier(terminal_node, f"terminal_nodes[{index}]", errors)
     limits = _required_mapping(payload, "limits", errors)
     context = _optional_context_mapping(payload.get("context"), "context", errors)
     if _int_value(limits.get("max_total_attempts"), "limits.max_total_attempts", errors) < 1:
@@ -2348,6 +2560,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             errors.append(f"nodes[{index}] must be an object")
             continue
         node_id = _required_string(item, "id", errors, prefix=f"nodes[{index}]")
+        _validate_dag_identifier(node_id, f"nodes[{index}].id", errors)
         agent = _required_string(item, "agent", errors, prefix=f"nodes[{index}]")
         executor = str(item.get("executor") or "local")
         max_attempts = int(item.get("max_attempts", 1))
@@ -2403,6 +2616,12 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             reviewer=reviewer,
             context=context,
             requested_capabilities=tuple(requested_capabilities),
+            route_mode=(
+                str(item["route"]["mode"])
+                if isinstance(item.get("route"), dict)
+                and isinstance(item["route"].get("mode"), str)
+                else None
+            ),
         )
     return nodes
 
@@ -2481,6 +2700,8 @@ def _parse_edges(value: object, errors: list[str]) -> list[ProjectDagEdge]:
             continue
         source = _required_string(item, "from", errors, prefix=f"edges[{index}]")
         target = _required_string(item, "to", errors, prefix=f"edges[{index}]")
+        _validate_dag_identifier(source, f"edges[{index}].from", errors)
+        _validate_dag_identifier(target, f"edges[{index}].to", errors)
         condition = item.get("condition")
         key = (source, target)
         if key in seen:
@@ -2489,6 +2710,7 @@ def _parse_edges(value: object, errors: list[str]) -> list[ProjectDagEdge]:
         seen.add(key)
         edges.append(
             ProjectDagEdge(
+                edge_index=index,
                 source=source,
                 target=target,
                 condition=condition,
@@ -2869,25 +3091,95 @@ def _collect_provider_auth_failures(value: Any, *, failures: list[str]) -> None:
 
 def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
-    conditional_edges = [
-        {
-            "from": edge.source,
-            "to": edge.target,
-            "condition": _json_safe_alert_value(edge.condition),
-        }
-        for edge in contract.edges
-        if edge.condition is not None and edge.condition != ""
-    ]
-    if conditional_edges:
-        alerts.append(
-            _alert(
-                "BLOCK",
-                "unsupported_ready_queue_condition",
-                "Bounded ready-queue does not evaluate edge conditions. Remove the "
-                "conditions or use a future typed route evaluator before dispatch.",
-                {"edges": conditional_edges},
+    outgoing = _outgoing_edge_objects(contract)
+    incoming = _incoming_edge_objects(contract)
+    for source, edges in outgoing.items():
+        conditional = [edge for edge in edges if _edge_is_conditional(edge)]
+        unconditional = [edge for edge in edges if not _edge_is_conditional(edge)]
+        node_payload = _node_payload(contract, source)
+        route = node_payload.get("route")
+        if route is not None:
+            if (
+                not isinstance(route, dict)
+                or set(route) != {"mode"}
+                or route.get("mode") not in ROUTE_MODES
+            ):
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "invalid_route_mode",
+                        "Node route must contain only a supported mode.",
+                        {"node_id": source, "route": _json_safe_alert_value(route)},
+                    )
+                )
+            elif not conditional:
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        "route_mode_without_conditional_edges",
+                        "A route mode requires conditional outgoing edges.",
+                        {"node_id": source, "mode": route["mode"]},
+                    )
+                )
+        invalid_condition = False
+        for edge in conditional:
+            try:
+                normalize_route_condition(edge.condition)
+            except RouteDecisionError as exc:
+                invalid_condition = True
+                message = str(exc)
+                if exc.code == "unsupported_ready_queue_condition":
+                    message = (
+                        "Bounded ready-queue does not evaluate edge conditions. Remove the "
+                        "conditions or use a future typed route evaluator before dispatch."
+                    )
+                alerts.append(
+                    _alert(
+                        "BLOCK",
+                        exc.code,
+                        message,
+                        {
+                            "edges": [
+                                {
+                                    "from": edge.source,
+                                    "to": edge.target,
+                                    "condition": _json_safe_alert_value(edge.condition),
+                                }
+                            ]
+                        },
+                    )
+                )
+        if invalid_condition:
+            continue
+        if conditional and unconditional:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "mixed_conditional_unconditional_routes",
+                    "A source may not mix conditional and unconditional outgoing edges.",
+                    {"node_id": source},
+                )
             )
-        )
+        if conditional and not contract.nodes[source].command_spec:
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "conditional_route_source_requires_response",
+                    "A conditional route source must produce a command response.",
+                    {"node_id": source},
+                )
+            )
+    for target, edges in incoming.items():
+        if len(edges) > 1 and any(_edge_is_conditional(edge) for edge in edges):
+            alerts.append(
+                _alert(
+                    "BLOCK",
+                    "conditional_target_multiple_predecessors",
+                    "A conditional target may not have multiple predecessors before "
+                    "join policy exists.",
+                    {"target": target, "edge_indexes": [edge.edge_index for edge in edges]},
+                )
+            )
     if _cycle_detected(contract):
         alerts.append(
             _alert(
@@ -2944,6 +3236,34 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
             )
         )
     return alerts
+
+
+def _edge_is_conditional(edge: ProjectDagEdge) -> bool:
+    return edge.condition is not None and edge.condition != ""
+
+
+def _outgoing_edge_objects(contract: ProjectDagContract) -> dict[str, list[ProjectDagEdge]]:
+    outgoing = {node_id: [] for node_id in contract.nodes}
+    for edge in contract.edges:
+        outgoing.setdefault(edge.source, []).append(edge)
+    return outgoing
+
+
+def _incoming_edge_objects(contract: ProjectDagContract) -> dict[str, list[ProjectDagEdge]]:
+    incoming = {node_id: [] for node_id in contract.nodes}
+    for terminal in contract.terminal_nodes:
+        incoming.setdefault(terminal, [])
+    for edge in contract.edges:
+        incoming.setdefault(edge.target, []).append(edge)
+    return incoming
+
+
+def _has_typed_routes(contract: ProjectDagContract) -> bool:
+    return any(
+        isinstance(edge.condition, dict)
+        and edge.condition.get("schema") == ROUTE_CONDITION_SCHEMA
+        for edge in contract.edges
+    )
 
 
 def _node_payload(contract: ProjectDagContract, node_id: str) -> dict[str, Any]:
@@ -3021,13 +3341,11 @@ def _terminal_reachable_from_completed(
 
 def _ready_queue_observed_edges(
     contract: ProjectDagContract,
-    completed: set[str],
+    activated_edges: set[int],
 ) -> list[dict[str, Any]]:
     edges: list[dict[str, Any]] = []
     for edge in contract.edges:
-        if edge.source not in completed:
-            continue
-        if edge.target not in completed and edge.target not in contract.terminal_nodes:
+        if edge.edge_index not in activated_edges:
             continue
         source_node = contract.nodes[edge.source]
         target_node = contract.nodes.get(edge.target)
@@ -3210,6 +3528,10 @@ def _ready_queue_receipt(
     errors: list[str],
     node_artifacts: dict[str, list[str]] | None = None,
     course_correction_artifacts: list[str] | None = None,
+    route_decision_artifacts: list[str] | None = None,
+    resolved_sources: set[str] | None = None,
+    activated_edges: set[int] | None = None,
+    activated_terminals: set[str] | None = None,
 ) -> dict[str, Any]:
     proves = [
         "DAG contract parsed and validated.",
@@ -3269,6 +3591,10 @@ def _ready_queue_receipt(
         ],
         "node_artifacts": node_artifacts or {},
         "course_correction_artifacts": course_correction_artifacts or [],
+        "route_decision_receipts": route_decision_artifacts or [],
+        "resolved_sources": sorted(resolved_sources or set()),
+        "activated_edges": sorted(activated_edges or set()),
+        "activated_terminals": sorted(activated_terminals or set()),
         "proof_scope": {
             "mocked": False,
             "live": True,
@@ -3502,6 +3828,31 @@ def _dag_error_node_id(contract: ProjectDagContract, evidence: dict[str, Any]) -
 
 def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
     normalized = failure_code.lower()
+    route_failures = {
+        "unsupported_ready_queue_condition",
+        "invalid_route_condition",
+        "invalid_route_mode",
+        "route_mode_without_conditional_edges",
+        "mixed_conditional_unconditional_routes",
+        "conditional_route_source_requires_response",
+        "conditional_target_multiple_predecessors",
+        "typed_route_requires_bounded_ready_queue",
+        "route_source_result_missing",
+        "route_field_missing",
+        "route_field_type_invalid",
+        "route_comparison_type_mismatch",
+        "route_no_match",
+        "route_ambiguous_exclusive",
+        "route_all_matching_incomplete",
+        "route_decision_receipt_write_failed",
+        "route_activation_invariant_violation",
+    }
+    if normalized in route_failures:
+        return {
+            "type": "repair_dag_route_contract",
+            "next_agent": "goal-guardian",
+            "reason": "Repair the typed route contract or source result before continuing.",
+        }
     if normalized in {
         "reviewer_goal_hash_mismatch",
         "target_changed",
@@ -3511,20 +3862,11 @@ def _dag_error_recommended_action(failure_code: str) -> dict[str, str]:
         "unexpected_node",
         "entry_node_mismatch",
         "cycle_detected",
-        "unsupported_ready_queue_condition",
     }:
         return {
-            "type": (
-                "repair_dag_route_contract"
-                if normalized == "unsupported_ready_queue_condition"
-                else "reroute"
-            ),
+            "type": "reroute",
             "next_agent": "goal-guardian",
-            "reason": (
-                "Remove unsupported edge conditions until Tau has a typed route evaluator."
-                if normalized == "unsupported_ready_queue_condition"
-                else "Reconcile DAG route, goal, or target drift before continuing."
-            ),
+            "reason": "Reconcile DAG route, goal, or target drift before continuing.",
         }
     if normalized in {
         "evidence_manifest_invalid",
@@ -4327,6 +4669,13 @@ def _required_string(
         errors.append(f"{label} must be a non-empty string")
         return ""
     return item
+
+
+def _validate_dag_identifier(value: str, label: str, errors: list[str]) -> None:
+    if value and not DAG_IDENTIFIER_PATTERN.fullmatch(value):
+        errors.append(
+            f"{label} must match ^[A-Za-z][A-Za-z0-9_-]{{0,63}}$"
+        )
 
 
 def _string_list(value: object, label: str, errors: list[str]) -> list[str]:
