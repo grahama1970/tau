@@ -451,6 +451,12 @@ def _project_join_contracts(
 def _project_adapter_kind(raw: Mapping[str, Any], *, executor: str) -> str:
     if raw.get("join") is not None:
         return "project_virtual"
+    if executor == "provider" or isinstance(raw.get("provider"), Mapping):
+        return (
+            "project_provider_handoff_command"
+            if raw.get("command_spec") is not None
+            else "project_provider"
+        )
     if raw.get("command_spec") is not None:
         return "project_handoff_command"
     if executor == "human" or raw.get("agent") == "human":
@@ -516,12 +522,9 @@ def _generic_source_bindings(
     *, node_id: str, raw: Mapping[str, Any], source_dir: Path, run_dir: str
 ) -> list[dict[str, Any]]:
     bindings = [
-        _file_binding(
+        _working_directory_binding(
             binding_id=f"node:{node_id}:working-directory",
-            kind="working_directory",
             declared_path=run_dir,
-            source_dir=source_dir,
-            require_exists=False,
         ),
         _file_binding(
             binding_id=f"node:{node_id}:receipt",
@@ -539,6 +542,17 @@ def _generic_source_bindings(
                 declared_path=str(raw["work_order_path"]),
                 source_dir=source_dir,
                 require_exists=True,
+            )
+        )
+    skill = raw.get("skill")
+    if isinstance(skill, Mapping) and isinstance(skill.get("output_dir"), str):
+        bindings.append(
+            _file_binding(
+                binding_id=f"node:{node_id}:skill-output-directory",
+                kind="output_directory",
+                declared_path=str(skill["output_dir"]),
+                source_dir=source_dir,
+                require_exists=False,
             )
         )
     return bindings
@@ -637,6 +651,17 @@ def _file_binding(
     return binding
 
 
+def _working_directory_binding(*, binding_id: str, declared_path: str) -> dict[str, Any]:
+    path = Path(declared_path).expanduser()
+    return {
+        "binding_id": binding_id,
+        "kind": "working_directory",
+        "declared_path": str(path),
+        "anchor": "filesystem_root" if path.is_absolute() else "process_invocation_directory",
+        "portable": not path.is_absolute(),
+    }
+
+
 def _portable_config(value: Any, *, source_dir: Path, key: str = "") -> Any:
     if isinstance(value, Mapping):
         return {
@@ -647,7 +672,9 @@ def _portable_config(value: Any, *, source_dir: Path, key: str = "") -> Any:
         }
     if isinstance(value, list):
         return [_portable_config(item, source_dir=source_dir, key=key) for item in value]
-    if isinstance(value, str) and (key.endswith("_path") or key.endswith("_root")):
+    if isinstance(value, str) and (
+        key.endswith("_path") or key.endswith("_root") or key == "output_dir"
+    ):
         path = Path(value).expanduser()
         resolved = path if path.is_absolute() else source_dir / path
         return os.path.relpath(resolved.resolve(), source_dir)

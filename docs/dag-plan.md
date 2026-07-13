@@ -37,6 +37,11 @@ Canonical plan payloads exclude resolved host paths, timestamps, and runtime
 metadata. Nested opaque configuration is stored as canonical JSON so callers
 cannot mutate the frozen plan after its hash is computed.
 
+Generic relative `run_dir` values retain the public runtime's
+`process_invocation_directory` anchor. Skill paths remain source-document
+relative. Absolute runtime working directories are represented as non-portable
+rather than silently re-anchored.
+
 ## Boundary
 
 DagPlan compilation proves that Tau accepted and normalized a supported DAG

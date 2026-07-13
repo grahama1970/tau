@@ -6533,8 +6533,8 @@
   join policies, control edges, separate context bindings, adapter kinds,
   portable source bindings, security declarations, source extensions, and a
   deterministic canonical hash.
-- Focused proof: `20 passed`; existing project/generic DAG compatibility matrix:
-  `244 passed`; Ruff, mypy, schema parsing, and `git diff --check` passed.
+- Focused proof: `23 passed`; existing project/generic DAG compatibility matrix:
+  `247 passed`; Ruff, mypy, schema parsing, and `git diff --check` passed.
 - Full repository suite: `1979 passed, 3 failed`. The three failures predate and
   do not exercise DagPlan: the compliance-package CLI fixture and two absent
   retained proof/command-spec artifact checks.

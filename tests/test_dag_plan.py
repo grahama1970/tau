@@ -144,7 +144,77 @@ def test_generic_spec_compiles_control_and_context_edges(tmp_path: Path) -> None
             for item in node.to_payload()["source_bindings"]
             if item["kind"] == "working_directory"
         )
-        assert working_directory["declared_path"] == "."
+        assert working_directory == {
+            "binding_id": f"node:{node.node_id}:working-directory",
+            "kind": "working_directory",
+            "declared_path": str(tmp_path),
+            "anchor": "filesystem_root",
+            "portable": False,
+        }
+
+
+def test_generic_relative_run_dir_retains_invocation_cwd_anchor(tmp_path: Path) -> None:
+    payload = _portable_generic_payload()
+
+    plan = compile_generic_dag_plan(
+        payload,
+        source_path=tmp_path / "elsewhere" / "dag.json",
+    )
+    binding = next(
+        item
+        for item in plan.nodes[0].to_payload()["source_bindings"]
+        if item["kind"] == "working_directory"
+    )
+
+    assert binding == {
+        "binding_id": "node:worker:working-directory",
+        "kind": "working_directory",
+        "declared_path": "run",
+        "anchor": "process_invocation_directory",
+        "portable": True,
+    }
+
+
+def test_project_provider_only_node_uses_provider_adapter(tmp_path: Path) -> None:
+    payload = _project_payload(tmp_path)
+    provider = payload["nodes"][1]
+    provider["executor"] = "provider"
+    provider["provider"] = {"adapter": "generic-provider-dag-node"}
+
+    plan = compile_project_dag_plan(payload, source_path=tmp_path / "dag.json")
+    node = next(item for item in plan.nodes if item.node_id == "branch-a")
+
+    assert node.adapter_kind == "project_provider"
+    assert node.adapter_config.to_value() == {
+        "provider": {"adapter": "generic-provider-dag-node"}
+    }
+
+
+def test_generic_skill_output_directory_is_source_anchored(tmp_path: Path) -> None:
+    work_order = tmp_path / "work-order.json"
+    work_order.write_text("{}\n", encoding="utf-8")
+    payload = _portable_generic_payload()
+    node = payload["nodes"][0]
+    node.pop("command")
+    node["work_order_path"] = "work-order.json"
+    node["skill"] = {
+        "schema": "tau.skill_dag_node.v1",
+        "provider": "webgpt",
+        "capability": "architecture_review",
+        "output_dir": "skill-output",
+    }
+
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    compiled = plan.nodes[0].to_payload()
+    output_binding = next(
+        item
+        for item in compiled["source_bindings"]
+        if item["kind"] == "output_directory"
+    )
+
+    assert compiled["adapter"]["config"]["output_dir"] == "skill-output"
+    assert output_binding["declared_path"] == "skill-output"
+    assert output_binding["anchor"] == "source_document_directory"
 
 
 def test_generic_spec_preserves_multiple_roots_and_leaves(tmp_path: Path) -> None:
