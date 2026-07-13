@@ -5,17 +5,19 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import signal
 import subprocess
 import threading
 import time
 from collections.abc import Callable, Mapping
-from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+from tau_coding.dag_runtime.subprocess_control import (
+    process_group_options,
+    terminate_process_tree,
+)
 from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
 from tau_coding.secure_executor import execute_secure_command
 
@@ -1352,6 +1354,7 @@ def _run_command_with_optional_cancellation(
             timeout=timeout_s,
         )
 
+    start_new_session, creationflags = process_group_options()
     process = subprocess.Popen(
         command,
         stdin=subprocess.PIPE,
@@ -1360,13 +1363,14 @@ def _run_command_with_optional_cancellation(
         cwd=str(cwd) if cwd else None,
         env=dict(env),
         text=True,
-        start_new_session=True,
+        start_new_session=start_new_session,
+        creationflags=creationflags,
     )
     deadline = time.monotonic() + timeout_s
     pending_input: str | None = stdin
     while True:
         if cancel_event.is_set():
-            _terminate_process_group(process)
+            terminate_process_tree(process)
             stdout, stderr = process.communicate()
             raise _CommandCancelled(
                 returncode=process.returncode,
@@ -1375,7 +1379,7 @@ def _run_command_with_optional_cancellation(
             )
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            _terminate_process_group(process)
+            terminate_process_tree(process)
             stdout, stderr = process.communicate()
             raise subprocess.TimeoutExpired(
                 command,
@@ -1391,18 +1395,6 @@ def _run_command_with_optional_cancellation(
             return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
         except subprocess.TimeoutExpired:
             pending_input = None
-
-
-def _terminate_process_group(process: subprocess.Popen[str]) -> None:
-    if process.poll() is not None:
-        return
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-        process.wait(timeout=0.5)
-    except (ProcessLookupError, subprocess.TimeoutExpired):
-        if process.poll() is None:
-            with suppress(ProcessLookupError):
-                os.killpg(process.pid, signal.SIGKILL)
 
 
 def _response_continuity_errors(

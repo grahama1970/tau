@@ -196,6 +196,50 @@ def test_transaction_validator_passes_before_reviewer(tmp_path: Path) -> None:
     assert all(item["validation_receipt_path"] for item in receipt["nodes"][0]["attempts"])
 
 
+def test_mixed_dag_runs_transaction_validator_and_command_on_shared_scheduler(
+    tmp_path: Path,
+) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(
+        tmp_path,
+        worker=worker,
+        include_downstream=True,
+        validator=True,
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path, resume=False)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["scheduler"] == "dag_plan_ready_queue"
+    assert receipt["mocked"] is False
+    assert receipt["live"] is True
+    assert receipt["provider_live"] is False
+    assert receipt["completed_node_count"] == 2
+    assert [node["node_id"] for node in receipt["nodes"]] == ["stage", "downstream"]
+    transaction, downstream = receipt["nodes"]
+    assert transaction["transaction_state"] == "ACCEPTED"
+    assert transaction["live"] is True
+    assert transaction["provider_live"] is False
+    assert all(
+        Path(attempt["validation_receipt_path"]).is_file()
+        for attempt in transaction["attempts"]
+    )
+    assert downstream["status"] == "PASS"
+    assert downstream["live"] is True
+    assert downstream["provider_live"] is False
+    assert all(
+        command_result["returncode"] == 0
+        for node in receipt["nodes"]
+        for command_result in node["command_results"]
+    )
+    downstream_context = json.loads((tmp_path / "downstream-context.json").read_text())
+    assert downstream_context["accepted_inputs"][0]["source_node_id"] == "stage"
+    assert (
+        downstream_context["accepted_inputs"][0]["accepted_manifest_sha256"]
+        == transaction["accepted_manifest_sha256"]
+    )
+
+
 def test_accepted_manifest_rejects_changed_upstream_context(tmp_path: Path) -> None:
     worker = _write_worker(tmp_path)
     spec_path = _write_transaction_spec(tmp_path, worker=worker)
@@ -474,6 +518,9 @@ if mode == "produce":
         "node_id": context["node_id"],
         "status": "PASS",
         "verdict": "PASS",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
         "artifacts": [],
         "commands_run": ["deterministic producer"],
         "errors": [],
@@ -512,6 +559,9 @@ elif mode == "review":
         "review_context_sha256": os.environ["TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256"],
         "candidate_manifest_sha256": context["candidate_manifest_sha256"],
         "verdict": verdict,
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
         "summary": "revise first" if verdict == "REVISE" else "accepted",
         "findings": findings,
     }))
@@ -543,6 +593,7 @@ elif mode == "downstream":
         "schema": "tau.generic_dag_node_receipt.v1",
         "node_id": payload["node_id"],
         "status": "PASS", "verdict": "PASS", "artifacts": [],
+        "mocked": False, "live": True, "provider_live": False,
         "commands_run": ["read accepted context"], "errors": [],
         "policy_exceptions": [], "handoff_summary": "accepted input consumed",
     }))

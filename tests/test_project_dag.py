@@ -2,6 +2,8 @@ import hashlib
 import json
 import os
 import sys
+import threading
+import time
 from datetime import date
 from pathlib import Path
 
@@ -22,6 +24,24 @@ from tau_coding.project_dag import (
     run_project_dag_contract,
     write_fail_closed_registry_receipt,
 )
+
+
+def test_transition_receipt_classification_accepts_windows_paths() -> None:
+    paths = (
+        r"C:\\run\\route-decisions\\route.json",
+        r"C:\\run\\terminal-contributions\\edge.json",
+        r"C:\\run\\join-decisions\\join.json",
+    )
+
+    assert project_dag._transition_receipts_in_directory(paths, "route-decisions") == [
+        paths[0]
+    ]
+    assert project_dag._transition_receipts_in_directory(
+        paths, "terminal-contributions"
+    ) == [paths[1]]
+    assert project_dag._transition_receipts_in_directory(paths, "join-decisions") == [
+        paths[2]
+    ]
 
 
 def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
@@ -373,6 +393,8 @@ def test_project_dag_bounded_ready_queue_runs_independent_nodes_concurrently(
     assert receipt["ok"] is True
     assert receipt["status"] == "PASS"
     assert receipt["scheduler"] == "bounded-ready-queue"
+    assert receipt["execution"] == "project_agent_dag_plan_ready_queue"
+    assert receipt["dag_plan_sha256"].startswith("sha256:")
     assert receipt["max_observed_concurrency"] >= 2
     assert set(receipt["selected_agents"]) == {"research-auditor", "coder", "reviewer"}
     assert receipt["node_attempts"] == {
@@ -432,6 +454,88 @@ def test_project_dag_ready_queue_propagates_node_context_to_command_stdin(
         "run_root": "/tmp/persona-dream-ready-queue-run",
         "image_path": "/tmp/persona-dream-ready-queue-run/artifacts/panel.png",
     }
+
+
+def test_shared_project_scheduler_persists_running_progress(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    for agent, response in (
+        ("research-auditor", _handoff("research-auditor", "human", [{"kind": "source_summary"}])),
+        ("coder", _handoff("coder", "human", _creator_evidence())),
+        ("reviewer", _reviewer_handoff(goal_hash="sha256:active-goal")),
+    ):
+        _write_response_spec(tmp_path, agent, response, sleep_seconds=0.4)
+    run_dir = tmp_path / "run"
+    outcome: list[dict[str, object]] = []
+
+    worker = threading.Thread(
+        target=lambda: outcome.append(
+            run_project_dag_contract(
+                contract_path=contract_path,
+                receipt_dir=run_dir,
+                agents_root=tmp_path / "agents",
+                scheduler="bounded-ready-queue",
+            )
+        )
+    )
+    worker.start()
+    progress_path = run_dir / "dag-progress.json"
+    deadline = time.monotonic() + 2
+    progress: dict[str, object] = {}
+    while time.monotonic() < deadline:
+        if progress_path.is_file():
+            progress = json.loads(progress_path.read_text(encoding="utf-8"))
+            if progress.get("active_subagents"):
+                break
+        time.sleep(0.01)
+    worker.join(timeout=3)
+
+    assert progress.get("status") == "RUNNING"
+    assert progress.get("active_subagents")
+    assert outcome and outcome[0]["status"] == "PASS"
+
+
+def test_shared_project_scheduler_cancels_running_sibling_on_block(tmp_path: Path) -> None:
+    contract_path = _write_parallel_contract(tmp_path)
+    _write_response_spec(
+        tmp_path,
+        "research-auditor",
+        _handoff("research-auditor", "human", []),
+        exit_code=1,
+    )
+    marker = tmp_path / "coder-completed.txt"
+    coder_spec = tmp_path / "specs" / "coder" / "tau-dispatch-command.json"
+    coder_spec.parent.mkdir(parents=True, exist_ok=True)
+    coder_spec.write_text(
+        json.dumps(
+            {
+                "command": [
+                    sys.executable,
+                    "-c",
+                    (
+                        "import time; from pathlib import Path; time.sleep(2); "
+                        f"Path({str(marker)!r}).write_text('unexpected')"
+                    ),
+                ],
+                "timeout_s": 5,
+                "cwd": str(tmp_path),
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+    progress = json.loads((tmp_path / "run" / "dag-progress.json").read_text(encoding="utf-8"))
+
+    assert receipt["status"] == "BLOCKED"
+    assert marker.exists() is False
+    assert any(item["status"] == "BLOCKED" for item in progress["node_progress"])
+    assert progress["active_subagents"] == []
 
 
 def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
@@ -2305,6 +2409,7 @@ def test_project_dag_typed_route_modes_dispatch_only_activated_branches(
     )
 
     assert receipt["status"] == "PASS"
+    assert receipt["execution"] == "project_agent_dag_plan_ready_queue"
     assert receipt["selected_agents"][0] == expected_agents[0]
     assert set(receipt["selected_agents"][1:]) == set(expected_agents[1:])
     assert len(receipt["route_decision_receipts"]) == 1
@@ -2401,6 +2506,35 @@ def test_project_dag_route_no_match_does_not_stall_or_dispatch_branch(tmp_path: 
     assert receipt["status"] == "BLOCKED"
     assert receipt["verdict"] == "ROUTE_NO_MATCH"
     assert receipt["selected_agents"] == ["router"]
+    assert "ready_queue_stalled" not in [alert["code"] for alert in receipt["alerts"]]
+
+
+def test_project_dag_skipped_only_terminal_route_blocks(tmp_path: Path) -> None:
+    contract_path = _write_routed_contract(tmp_path, mode="exclusive")
+    payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    payload["edges"] = [
+        edge
+        for edge in payload["edges"]
+        if not (edge["from"] == "accept" and edge["to"] == "human")
+    ]
+    contract_path.write_text(json.dumps(payload), encoding="utf-8")
+    router_response = _handoff("router", "accept", _creator_evidence())
+    router_response["result"]["route"] = "ACCEPT"  # type: ignore[index]
+    _write_response_spec(tmp_path, "router", router_response)
+    _write_response_spec(tmp_path, "accept", _handoff("accept", "human", _creator_evidence()))
+    _write_response_spec(tmp_path, "revise", _handoff("revise", "human", _creator_evidence()))
+
+    receipt = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "MISSING_TERMINAL_ROUTE"
+    assert receipt["activated_terminals"] == []
+    assert receipt["selected_agents"] == ["router", "accept"]
     assert "ready_queue_stalled" not in [alert["code"] for alert in receipt["alerts"]]
 
 

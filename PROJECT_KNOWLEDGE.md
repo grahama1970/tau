@@ -1,9 +1,58 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 14:05 by agent
+**Last updated:** 2026-07-13 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-13 issue #78 scheduler-convergence branch: project and generic local
+  DAG contracts compile to `tau.dag_plan.v1` and execute through one canonical
+  bounded ready queue. The scheduler owns readiness, bounded retries, terminal
+  states, edge states, monotonic join deadlines, and cancellation. A project
+  transition policy writes immutable typed route, terminal-contribution, and
+  join-decision receipts before returning effects to the scheduler. Join
+  evaluation occurs after each atomic completion batch, and timeout or
+  short-circuit cancellation terminates local command process groups. POSIX
+  execution starts a new session and terminates the process group; Windows
+  execution creates a new process group and uses `taskkill /T /F` to terminate
+  the process tree. Generic
+  command, artifact-transaction producer/validator/reviewer/continuation, and
+  native-skill subprocesses consume the same cancellation event. The old
+  project ready-queue implementation and runtime fallback were deleted. Focused
+  deterministic and live-local matrix:
+  `uv run pytest tests/test_dag_runtime_scheduler.py
+  tests/test_dag_runtime_subprocess_control.py tests/test_dag_plan.py
+  tests/test_generic_dag.py tests/test_generic_artifact_transaction.py
+  tests/test_skill_dag_adapter.py tests/test_project_dag.py
+  tests/test_project_dag_join_policies.py tests/test_dag_route_decision.py
+  tests/test_dag_join_decision.py
+  tests/test_cli.py::test_cli_dag_run_and_run_alias_execute_generic_dag -q` ->
+  `273 passed in 18.97s`. The process-control test
+  launches a real local parent and child process and confirms scheduler
+  cancellation prevents the child artifact from appearing. A mixed-DAG fixture
+  runs a real artifact producer, deterministic validator, reviewer, and
+  downstream command through the shared scheduler, and positive compatibility
+  tests execute that generic DAG through both `tau dag-run` and `tau run`.
+  Independent review found and the branch repaired ignored pre-start node
+  effects, Windows-only receipt path classification, parent-only Windows
+  cancellation, retries after scheduler cancellation, pre-start policy blocks
+  that left already-running roots alive, and POSIX descendants that ignored
+  `SIGTERM`. A final full-branch review also found and repaired reordered
+  `accepted_context_from` inputs and duplicated command history across three or
+  more scheduler attempts. Scheduler-originated cancellation is terminal and non-retryable,
+  while transition policies still emit join bookkeeping such as ignored late
+  contributions. `mypy` passed for the shared DAG runtime package. Mocked: no for
+  command, transaction, join, route, process-group, mixed-adapter, and CLI
+  acceptance; native WebGPT skill semantic tests remain transport-mocked. Live:
+  yes for local subprocesses. Provider-live: no. This
+  does not prove provider/model semantic quality, live WebGPT skill execution,
+  durable restart, OS sandbox isolation, or future route correctness.
+  Full-suite command `uv run pytest -q` reports `2008 passed, 3 failed in
+  100.38s`; the failures are the existing clean-main baseline cases
+  `test_cli_compliance_package_writes_review_bundle`,
+  `test_loop2_alignment_tool_map_indexes_live_proofs`, and
+  `test_tau_dag_command_specs_reference_agent_contracts`. No scheduler,
+  transition, mixed-adapter, or CLI compatibility test failed.
 
 - 2026-07-13 issue #76 terminal-contribution/join-policy slice: the
   `bounded-ready-queue` scheduler now accepts virtual

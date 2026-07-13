@@ -5,10 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from threading import Event
 from typing import Any
+
+from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 
 SKILL_DAG_NODE_SCHEMA = "tau.skill_dag_node.v1"
 SKILL_ROUND_POLICY_SCHEMA = "tau.bounded_skill_round_policy.v1"
@@ -88,6 +90,7 @@ def execute_skill_dag_node(
     goal_hash: str | None,
     work_order_sha256: str | None,
     accepted_inputs: list[dict[str, Any]],
+    cancel_event: Event | None = None,
 ) -> dict[str, Any]:
     spec.output_dir.mkdir(parents=True, exist_ok=True)
     if spec.provider == "webgpt":
@@ -97,6 +100,7 @@ def execute_skill_dag_node(
             node_id=node_id,
             goal_hash=goal_hash,
             work_order_sha256=work_order_sha256,
+            cancel_event=cancel_event,
         )
     return _execute_create_architecture(
         spec=spec,
@@ -105,6 +109,7 @@ def execute_skill_dag_node(
         goal_hash=goal_hash,
         work_order_sha256=work_order_sha256,
         accepted_inputs=accepted_inputs,
+        cancel_event=cancel_event,
     )
 
 
@@ -115,6 +120,7 @@ def _execute_webgpt(
     node_id: str,
     goal_hash: str | None,
     work_order_sha256: str | None,
+    cancel_event: Event | None,
 ) -> dict[str, Any]:
     errors = _webgpt_configuration_errors(spec)
     state_path = spec.output_dir / "round-state.json"
@@ -214,8 +220,10 @@ def _execute_webgpt(
             "--no-activate",
             "--json",
         ]
-        preflight = subprocess.run(
-            preflight_command, text=True, capture_output=True, check=False
+        preflight = run_cancellable_subprocess(
+            preflight_command,
+            timeout_seconds=30,
+            cancel_event=cancel_event,
         )
         commands_run.insert(0, preflight_command)
         if preflight.returncode != 0:
@@ -230,7 +238,11 @@ def _execute_webgpt(
                 max_rounds=spec.max_rounds,
                 commands_run=commands_run,
             )
-    completed = subprocess.run(command, text=True, capture_output=True, check=False)
+    completed = run_cancellable_subprocess(
+        command,
+        timeout_seconds=float(spec.configuration.get("timeout_seconds", 900)) + 30,
+        cancel_event=cancel_event,
+    )
     if completed.returncode != 0:
         diagnostic_artifacts = _write_surf_doctor_request(
             spec=spec,
@@ -365,6 +377,7 @@ def _execute_create_architecture(
     goal_hash: str | None,
     work_order_sha256: str | None,
     accepted_inputs: list[dict[str, Any]],
+    cancel_event: Event | None,
 ) -> dict[str, Any]:
     input_path = spec.input_path or _first_accepted_artifact(accepted_inputs)
     if input_path is None or not input_path.is_file():
@@ -377,7 +390,11 @@ def _execute_create_architecture(
             errors=["architecture_input_missing"],
         )
     command = [str(CREATE_ARCHITECTURE_RUN), "create", "--input", str(input_path)]
-    completed = subprocess.run(command, text=True, capture_output=True, check=False)
+    completed = run_cancellable_subprocess(
+        command,
+        timeout_seconds=float(spec.configuration.get("timeout_seconds", 900)),
+        cancel_event=cancel_event,
+    )
     match = re.search(r"select\s+([A-Za-z0-9_-]+)", completed.stdout, flags=re.DOTALL)
     if completed.returncode != 0 or match is None:
         return _node_receipt(

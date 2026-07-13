@@ -10,9 +10,14 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Event
 from typing import Any
 
 from tau_coding.approval_gate import evaluate_approval_gate
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.model import DagPlanNode
+from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -93,10 +98,7 @@ def run_generic_dag(
         },
     )
     completed: set[str] = set()
-    accepted_outputs: dict[str, dict[str, Any]] = {}
     node_results: list[dict[str, Any]] = []
-    final_status = "PASS"
-    final_verdict = "PASS"
     checkpoint_path = run_dir / "checkpoint.json"
     current_state_path = run_dir / "current-state.json"
     _write_checkpoint(
@@ -114,7 +116,15 @@ def run_generic_dag(
         active_node_id=None,
     )
 
-    for node in _topological_order(nodes):
+    nodes_by_id = nodes
+    plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
+
+    def execute_plan_node(
+        plan_node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        node = nodes_by_id[plan_node.node_id]
         _write_checkpoint(
             path=checkpoint_path,
             current_state_path=current_state_path,
@@ -127,39 +137,22 @@ def run_generic_dag(
             completed=completed,
             status="RUNNING",
             verdict="RUNNING",
-            active_node_id=node.node_id,
+            active_node_id=plan_node.node_id,
         )
-        missing_dependencies = [dep for dep in node.depends_on if dep not in completed]
-        if missing_dependencies:
-            final_status = "BLOCKED"
-            final_verdict = "DEPENDENCY_NOT_SATISFIED"
-            node_results.append(
-                _blocked_node_record(
-                    node,
-                    verdict=final_verdict,
-                    errors=[f"missing passed dependencies: {', '.join(missing_dependencies)}"],
-                )
-            )
-            break
         result = _run_node(
             node,
             run_id=run_id,
             run_dir=run_dir,
             events_path=events_path,
             resume=resume,
-            accepted_inputs=[
-                accepted_outputs[dependency]
-                for dependency in node.accepted_context_from
-                if dependency in accepted_outputs
-            ],
+            accepted_inputs=list(accepted_inputs),
             goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
+            scheduler_attempt=execution.attempt,
+            cancel_event=execution.cancel_event,
         )
-        node_results.append(result)
-        if result["status"] == "PASS" and result["verdict"] == "PASS":
-            projection = result.get("accepted_output")
-            if isinstance(projection, dict):
-                accepted_outputs[node.node_id] = projection
-            completed.add(node.node_id)
+        if result.get("status") == "PASS" and result.get("verdict") == "PASS":
+            node_results.append(result)
+            completed.add(plan_node.node_id)
             _write_checkpoint(
                 path=checkpoint_path,
                 current_state_path=current_state_path,
@@ -174,10 +167,17 @@ def run_generic_dag(
                 verdict="RUNNING",
                 active_node_id=None,
             )
-            continue
-        final_status = "BLOCKED"
-        final_verdict = str(result.get("verdict") or "NODE_BLOCKED")
-        break
+        return result
+
+    scheduler_result = run_dag_plan(
+        plan,
+        execute_node=execute_plan_node,
+        max_concurrency=1,
+    )
+    node_results = list(scheduler_result.node_results)
+    completed = set(scheduler_result.completed_node_ids)
+    final_status = scheduler_result.status
+    final_verdict = scheduler_result.verdict
 
     _write_checkpoint(
         path=checkpoint_path,
@@ -205,6 +205,9 @@ def run_generic_dag(
         "live": live,
         "provider_live": provider_live,
         "execution": "local_subprocess_receipt_gated_dag",
+        "scheduler": "dag_plan_ready_queue",
+        "dag_plan_sha256": plan.plan_sha256,
+        "max_observed_concurrency": scheduler_result.max_observed_concurrency,
         "run_id": run_id,
         "run_dir": str(run_dir),
         "spec_path": str(resolved_spec_path),
@@ -423,6 +426,8 @@ def _run_node(
     resume: bool,
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
+    scheduler_attempt: int,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     if node.skill is not None:
         return _run_skill_node(
@@ -431,6 +436,7 @@ def _run_node(
             accepted_inputs=accepted_inputs,
             goal_hash=goal_hash,
             resume=resume,
+            cancel_event=cancel_event,
         )
     if node.transaction is not None:
         return _run_transaction_node(
@@ -440,6 +446,7 @@ def _run_node(
             events_path=events_path,
             resume=resume,
             accepted_inputs=accepted_inputs,
+            cancel_event=cancel_event,
         )
     context_path, context_sha256 = _write_legacy_node_context(
         node=node,
@@ -455,6 +462,8 @@ def _run_node(
         resume=resume,
         context_path=context_path,
         context_sha256=context_sha256,
+        attempt=scheduler_attempt,
+        cancel_event=cancel_event,
     )
 
 
@@ -465,6 +474,7 @@ def _run_skill_node(
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
     resume: bool,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     assert node.skill is not None
     started_at = _utc_stamp()
@@ -530,6 +540,7 @@ def _run_skill_node(
         goal_hash=goal_hash,
         work_order_sha256=_work_order_sha256(node),
         accepted_inputs=accepted_inputs,
+        cancel_event=cancel_event,
     )
     receipt["goal_hash"] = goal_hash
     receipt["work_order_sha256"] = _work_order_sha256(node)
@@ -583,6 +594,8 @@ def _run_legacy_node(
     resume: bool,
     context_path: Path,
     context_sha256: str,
+    attempt: int,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     node_started_at = _utc_stamp()
     node_started_monotonic = time.monotonic()
@@ -606,102 +619,82 @@ def _run_legacy_node(
                 duration_seconds=time.monotonic() - node_started_monotonic,
             )
 
-    command_results: list[dict[str, Any]] = []
-    last_errors: list[str] = []
-    for attempt in range(1, node.max_attempts + 1):
-        _append_event(
-            events_path,
-            "node_dispatch",
-            {
-                "run_id": run_id,
-                "node_id": node.node_id,
-                "attempt": attempt,
-                "work_order_path": str(node.work_order_path) if node.work_order_path else None,
-                "receipt_path": str(node.receipt_path),
-            },
-        )
-        started_at = time.monotonic()
-        result = _run_command(
-            node.command,
-            cwd=run_dir,
-            timeout_seconds=node.timeout_seconds,
-            env_overrides={
-                "TAU_GENERIC_DAG_CONTEXT": str(context_path),
-                "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
-            },
-        )
-        elapsed = time.monotonic() - started_at
-        command_results.append(_command_result_dict(result, elapsed_seconds=elapsed))
-        if result.returncode != 0:
-            last_errors = [_command_error(result)]
-            verdict = "SUBAGENT_TIMEOUT" if result.returncode == 124 else "SUBAGENT_ERROR"
-            if attempt >= node.max_attempts:
-                return _blocked_node_record(
-                    node,
-                    verdict=verdict,
-                    errors=last_errors,
-                    attempt_count=attempt,
-                    command_results=command_results,
-                    started_at=node_started_at,
-                    finished_at=_utc_stamp(),
-                    duration_seconds=time.monotonic() - node_started_monotonic,
-                )
-            continue
-        if not node.receipt_path.exists():
-            last_errors = [f"node receipt did not appear: {node.receipt_path}"]
-            if attempt >= node.max_attempts:
-                return _blocked_node_record(
-                    node,
-                    verdict="RECEIPT_MISSING",
-                    errors=last_errors,
-                    attempt_count=attempt,
-                    command_results=command_results,
-                    started_at=node_started_at,
-                    finished_at=_utc_stamp(),
-                    duration_seconds=time.monotonic() - node_started_monotonic,
-                )
-            continue
-        receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
-        errors = _validate_node_receipt(receipt, node)
-        if errors:
-            last_errors = errors
-            if attempt >= node.max_attempts:
-                return _blocked_node_record(
-                    node,
-                    verdict="INVALID_RECEIPT",
-                    errors=last_errors,
-                    attempt_count=attempt,
-                    command_results=command_results,
-                    started_at=node_started_at,
-                    finished_at=_utc_stamp(),
-                    duration_seconds=time.monotonic() - node_started_monotonic,
-                )
-            continue
-        _append_event(
-            events_path,
-            "node_receipt_validated",
-            {
-                "run_id": run_id,
-                "node_id": node.node_id,
-                "attempt": attempt,
-                "receipt_path": str(node.receipt_path),
-            },
-        )
-        return _node_record(
+    _append_event(
+        events_path,
+        "node_dispatch",
+        {
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "attempt": attempt,
+            "work_order_path": str(node.work_order_path) if node.work_order_path else None,
+            "receipt_path": str(node.receipt_path),
+        },
+    )
+    started_at = time.monotonic()
+    result = _run_command(
+        node.command,
+        cwd=run_dir,
+        timeout_seconds=node.timeout_seconds,
+        env_overrides={
+            "TAU_GENERIC_DAG_CONTEXT": str(context_path),
+            "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
+        },
+        cancel_event=cancel_event,
+    )
+    command_results = [
+        _command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)
+    ]
+    if result.returncode != 0:
+        verdict = "SUBAGENT_TIMEOUT" if result.returncode == 124 else "SUBAGENT_ERROR"
+        return _blocked_node_record(
             node,
-            receipt,
+            verdict=verdict,
+            errors=[_command_error(result)],
             attempt_count=attempt,
-            resumed=False,
             command_results=command_results,
             started_at=node_started_at,
             finished_at=_utc_stamp(),
             duration_seconds=time.monotonic() - node_started_monotonic,
         )
-    return _blocked_node_record(
+    if not node.receipt_path.exists():
+        return _blocked_node_record(
+            node,
+            verdict="RECEIPT_MISSING",
+            errors=[f"node receipt did not appear: {node.receipt_path}"],
+            attempt_count=attempt,
+            command_results=command_results,
+            started_at=node_started_at,
+            finished_at=_utc_stamp(),
+            duration_seconds=time.monotonic() - node_started_monotonic,
+        )
+    receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
+    errors = _validate_node_receipt(receipt, node)
+    if errors:
+        return _blocked_node_record(
+            node,
+            verdict="INVALID_RECEIPT",
+            errors=errors,
+            attempt_count=attempt,
+            command_results=command_results,
+            started_at=node_started_at,
+            finished_at=_utc_stamp(),
+            duration_seconds=time.monotonic() - node_started_monotonic,
+        )
+    _append_event(
+        events_path,
+        "node_receipt_validated",
+        {
+            "run_id": run_id,
+            "node_id": node.node_id,
+            "attempt": attempt,
+            "receipt_path": str(node.receipt_path),
+        },
+    )
+    return _node_record(
         node,
-        verdict="MAX_ATTEMPTS_EXHAUSTED",
-        errors=last_errors or ["node did not complete"],
-        attempt_count=node.max_attempts,
+        receipt,
+        attempt_count=attempt,
+        resumed=False,
         command_results=command_results,
         started_at=node_started_at,
         finished_at=_utc_stamp(),
@@ -717,6 +710,7 @@ def _run_transaction_node(
     events_path: Path,
     resume: bool,
     accepted_inputs: list[dict[str, Any]],
+    cancel_event: Event,
 ) -> dict[str, Any]:
     """Run one bounded producer/reviewer transaction owned by Tau."""
 
@@ -794,6 +788,7 @@ def _run_transaction_node(
                         started_at=started_at,
                         started_monotonic=started_monotonic,
                         resumed=True,
+                        cancel_event=cancel_event,
                     )
             if prior_errors:
                 return _transaction_record(
@@ -850,6 +845,7 @@ def _run_transaction_node(
                 "TAU_GENERIC_DAG_CONTEXT": str(attempt_context_path),
                 "TAU_GENERIC_DAG_CONTEXT_SHA256": attempt_context_sha256,
             },
+            cancel_event=cancel_event,
         )
         command_results.append(
             _command_result_dict(
@@ -921,6 +917,7 @@ def _run_transaction_node(
                     "TAU_GENERIC_DAG_VALIDATION_CONTEXT": str(validation_context_path),
                     "TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256": validation_context_sha256,
                 },
+                cancel_event=cancel_event,
             )
             command_results.append(_command_result_dict(validator_result, elapsed_seconds=0.0))
             validation, validation_errors = load_json(
@@ -974,6 +971,7 @@ def _run_transaction_node(
                 "TAU_GENERIC_DAG_REVIEW_CONTEXT": str(review_context_path),
                 "TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256": review_context_sha256,
             },
+            cancel_event=cancel_event,
         )
         command_results.append(
             _command_result_dict(
@@ -1122,6 +1120,7 @@ def _run_transaction_node(
                 started_at=started_at,
                 started_monotonic=started_monotonic,
                 resumed=False,
+                cancel_event=cancel_event,
             )
         _write_transaction_receipt(
             path=transaction_receipt_path,
@@ -1174,6 +1173,7 @@ def _continue_transaction(
     started_at: str,
     started_monotonic: float,
     resumed: bool,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     continuation = spec.continuation
     assert continuation is not None
@@ -1240,6 +1240,7 @@ def _continue_transaction(
         cwd=run_dir,
         timeout_seconds=continuation.timeout_seconds,
         env_overrides={"TAU_GENERIC_DAG_CONTEXT": str(continuation_context)},
+        cancel_event=cancel_event,
     )
     if result.returncode != 0:
         return _transaction_blocked(
@@ -1766,23 +1767,15 @@ def _run_command(
     cwd: Path,
     timeout_seconds: float,
     env_overrides: dict[str, str] | None = None,
+    cancel_event: Event | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(
-            command,
-            cwd=str(cwd),
-            text=True,
-            capture_output=True,
-            timeout=timeout_seconds,
-            env={**os.environ, **(env_overrides or {})},
-        )
-    except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
-        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
-        if stderr:
-            stderr = f"{stderr}\n"
-        stderr += f"timed out after {timeout_seconds:.1f}s"
-        return subprocess.CompletedProcess(command, 124, stdout=stdout, stderr=stderr)
+    return run_cancellable_subprocess(
+        command,
+        cwd=cwd,
+        timeout_seconds=timeout_seconds,
+        env={**os.environ, **(env_overrides or {})},
+        cancel_event=cancel_event,
+    )
 
 
 def _command_result_dict(
@@ -1860,7 +1853,7 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
 

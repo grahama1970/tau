@@ -269,7 +269,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
             ),
         )
         for target in sorted(typed_nodes)
-        for source in sorted(typed_nodes[target].accepted_context_from)
+        for source in typed_nodes[target].accepted_context_from
     )
     nodes = tuple(
         DagPlanNode(
@@ -280,7 +280,11 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
             adapter_config=FrozenJson.from_value(
                 _generic_adapter_config(raw_nodes[node_id], source_dir=source_dir)
             ),
-            max_attempts=typed_nodes[node_id].max_attempts,
+            max_attempts=(
+                1
+                if typed_nodes[node_id].transaction is not None
+                else typed_nodes[node_id].max_attempts
+            ),
             timeout_kind="explicit",
             timeout_seconds=typed_nodes[node_id].timeout_seconds,
             required_evidence=("tau.generic_dag_node_receipt.v1",),

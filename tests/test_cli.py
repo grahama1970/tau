@@ -82,6 +82,62 @@ def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) 
     assert not (tmp_path / "worker.json").exists()
 
 
+@pytest.mark.parametrize("command_name", ["dag-run", "run"])
+def test_cli_dag_run_and_run_alias_execute_generic_dag(
+    tmp_path: Path, command_name: str
+) -> None:
+    receipt_path = tmp_path / command_name / "worker-receipt.json"
+    run_dir = tmp_path / command_name / "run"
+    payload = {
+        "schema": "tau.generic_dag_node_receipt.v1",
+        "node_id": "worker",
+        "status": "PASS",
+        "verdict": "PASS",
+        "mocked": False,
+        "live": True,
+        "provider_live": False,
+        "artifacts": [],
+        "commands_run": ["local deterministic worker"],
+        "errors": [],
+        "policy_exceptions": [],
+        "handoff_summary": "generic CLI worker passed",
+    }
+    worker_code = (
+        "import json; from pathlib import Path; "
+        f"path = Path({str(receipt_path)!r}); path.parent.mkdir(parents=True, exist_ok=True); "
+        f"path.write_text(json.dumps({payload!r}), encoding='utf-8')"
+    )
+    spec_path = tmp_path / f"{command_name}-dag.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_dag_spec.v1",
+                "run_id": f"cli-{command_name}",
+                "run_dir": str(run_dir),
+                "nodes": [
+                    {
+                        "node_id": "worker",
+                        "command": [sys.executable, "-c", worker_code],
+                        "receipt_path": str(receipt_path),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(app, [command_name, str(spec_path), "--no-resume"])
+
+    assert result.exit_code == 0
+    run_receipt = json.loads(result.output)
+    assert run_receipt["status"] == "PASS"
+    assert run_receipt["scheduler"] == "dag_plan_ready_queue"
+    assert run_receipt["mocked"] is False
+    assert run_receipt["live"] is True
+    assert run_receipt["provider_live"] is False
+    assert run_receipt["nodes"][0]["command_results"][0]["returncode"] == 0
+
+
 async def _passing_scillm_auth_preflight(
     contract: dict[str, object],
 ) -> dict[str, object]:
