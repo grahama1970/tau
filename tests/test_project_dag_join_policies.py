@@ -97,6 +97,27 @@ def test_failed_branch_is_collected_by_all_terminal_instead_of_global_abort(
     )
 
 
+def test_collect_failures_noop_skip_is_valid_terminal_settlement(tmp_path: Path) -> None:
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="collect_failures",
+        route="ALL",
+        branches=("branch-a", "branch-b"),
+    )
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="ALL"))
+    _write_response_spec(tmp_path, "branch-a", _handoff("branch-a", "join"))
+    _write_response_spec(tmp_path, "branch-b", _handoff("branch-b", "join"))
+
+    receipt = _run(tmp_path, contract_path)
+
+    assert receipt["status"] == "PASS"
+    assert "missing_terminal_route" not in [alert["code"] for alert in receipt["alerts"]]
+    decision = _read_receipts(receipt["join_decision_receipts"])[0]
+    assert decision["decision"] == "skip"
+    assert decision["reason_code"] == "join_no_failures_to_collect"
+    assert receipt["activated_terminals"] == []
+
+
 def test_join_timeout_writes_timed_out_contribution_and_ignores_late_success(
     tmp_path: Path,
 ) -> None:

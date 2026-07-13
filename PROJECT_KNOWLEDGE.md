@@ -82,6 +82,13 @@
   uses only its cancellation-aware local command dispatch path; external and
   non-cooperative provider workload cancellation remains explicitly unproven.
 
+- 2026-07-13 issue #76 terminal-skip settlement: final review identified that a
+  valid PASS/`skip` join decision, such as `collect_failures` with no failures,
+  was later contradicted by `missing_terminal_route`. Tau now records finalized
+  join skips as valid terminal settlements without calling the terminal
+  successfully activated. The focused suite is `165 passed` and includes the
+  live local no-op collection path.
+
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed
   `tau.route_condition.v1` objects over direct typed `response.result` fields

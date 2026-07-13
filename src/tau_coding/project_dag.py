@@ -917,6 +917,7 @@ def _run_bounded_ready_queue_project_dag(
     resolved_sources: set[str] = set()
     activated_edges: set[int] = set()
     activated_terminals: set[str] = set()
+    terminal_join_skips: set[str] = set()
     active_nodes: set[str] = {
         node_id for node_id in runnable_nodes if not incoming_edges.get(node_id)
     }
@@ -1201,6 +1202,8 @@ def _run_bounded_ready_queue_project_dag(
         if edge.target in contract.terminal_nodes:
             if state == "success":
                 activated_terminals.add(edge.target)
+            elif state == "skipped" and edge.source in finalized_joins:
+                terminal_join_skips.add(edge.target)
             return
         if edge.target in join_nodes:
             write_join_contribution(
@@ -1963,7 +1966,7 @@ def _run_bounded_ready_queue_project_dag(
                         failed = True
 
     execution_seconds = round(time.monotonic() - started_at, 6)
-    if not alerts and not activated_terminals:
+    if not alerts and not activated_terminals and not terminal_join_skips:
         alerts.append(
             _alert(
                 "BLOCK",

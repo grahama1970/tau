@@ -69,6 +69,8 @@ irreversible. Tau first writes `cancelled` contributions for unresolved inputs,
 signals running local command process groups to terminate, then recomputes and
 persists the terminal decision. Join deadlines apply the same cancellation path
 before writing `timed_out` contributions.
+A finalized join `skip` is a valid terminal settlement when no downstream work
+is required, but it does not mark the terminal as successfully activated.
 
 Quorum uses an explicit reduced fraction:
 
