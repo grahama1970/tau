@@ -138,6 +138,16 @@ def test_generic_spec_compiles_control_and_context_edges(tmp_path: Path) -> None
     assert edges == {("coder", "reviewer"), ("planner", "coder"), ("planner", "reviewer")}
     bindings = {(item.source_node_id, item.target_node_id) for item in plan.context_bindings}
     assert bindings == {("coder", "reviewer"), ("planner", "coder")}
+    assert [item.to_value() for item in plan.runtime_bindings] == [
+        {
+            "binding_id": "generic:events-jsonl",
+            "kind": "event_log",
+            "declared_path": "events.jsonl",
+            "anchor": "generic_run_directory",
+            "portable": True,
+            "origin": "derived_default",
+        }
+    ]
     for node in plan.nodes:
         working_directory = next(
             item
@@ -151,6 +161,14 @@ def test_generic_spec_compiles_control_and_context_edges(tmp_path: Path) -> None
             "anchor": "filesystem_root",
             "portable": False,
         }
+        receipt_binding = next(
+            item
+            for item in node.to_payload()["source_bindings"]
+            if item["kind"] == "output_path"
+        )
+        assert receipt_binding["anchor"] == "filesystem_root"
+        assert receipt_binding["portable"] is False
+        assert receipt_binding["declared_path"] == str(tmp_path / f"{node.node_id}.json")
 
 
 def test_generic_relative_run_dir_retains_invocation_cwd_anchor(tmp_path: Path) -> None:
@@ -173,6 +191,24 @@ def test_generic_relative_run_dir_retains_invocation_cwd_anchor(tmp_path: Path) 
         "anchor": "process_invocation_directory",
         "portable": True,
     }
+
+
+def test_generic_explicit_event_log_retains_invocation_cwd_anchor(tmp_path: Path) -> None:
+    payload = _portable_generic_payload()
+    payload["events_jsonl"] = "logs/custom-events.jsonl"
+
+    plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+
+    assert [item.to_value() for item in plan.runtime_bindings] == [
+        {
+            "binding_id": "generic:events-jsonl",
+            "kind": "event_log",
+            "declared_path": "logs/custom-events.jsonl",
+            "anchor": "process_invocation_directory",
+            "portable": True,
+            "origin": "explicit",
+        }
+    ]
 
 
 def test_project_provider_only_node_uses_provider_adapter(tmp_path: Path) -> None:

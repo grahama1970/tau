@@ -150,6 +150,7 @@ class DagPlan:
     nodes: tuple[DagPlanNode, ...]
     control_edges: tuple[DagPlanEdge, ...]
     context_bindings: tuple[DagPlanContextBinding, ...]
+    runtime_bindings: tuple[FrozenJson, ...]
     route_contracts: tuple[FrozenJson, ...]
     join_contracts: tuple[FrozenJson, ...]
     required_evidence: tuple[str, ...]
@@ -177,6 +178,7 @@ class DagPlan:
             "nodes": [item.to_payload() for item in self.nodes],
             "control_edges": [item.to_payload() for item in self.control_edges],
             "context_bindings": [item.to_payload() for item in self.context_bindings],
+            "runtime_bindings": [item.to_value() for item in self.runtime_bindings],
             "route_contracts": [item.to_value() for item in self.route_contracts],
             "join_contracts": [item.to_value() for item in self.join_contracts],
             "required_evidence": list(self.required_evidence),

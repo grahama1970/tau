@@ -208,6 +208,7 @@ def compile_project_dag_plan(
         nodes=tuple(nodes),
         control_edges=control_edges,
         context_bindings=context_bindings,
+        runtime_bindings=(),
         route_contracts=tuple(FrozenJson.from_value(item) for item in route_contracts),
         join_contracts=tuple(FrozenJson.from_value(item) for item in join_contracts),
         required_evidence=tuple(contract.required_evidence),
@@ -326,6 +327,7 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
         nodes=nodes,
         control_edges=control_edges,
         context_bindings=context_bindings,
+        runtime_bindings=(FrozenJson.from_value(_generic_events_binding(payload)),),
         route_contracts=(),
         join_contracts=(),
         required_evidence=("tau.generic_dag_node_receipt.v1",),
@@ -632,19 +634,21 @@ def _file_binding(
     directory_default: str | None = None,
 ) -> dict[str, Any]:
     raw_path = Path(declared_path).expanduser()
-    resolved = raw_path if raw_path.is_absolute() else source_dir / raw_path
+    is_absolute = raw_path.is_absolute()
+    resolved = raw_path if is_absolute else source_dir / raw_path
     resolved = resolved.resolve()
     content_path = resolved
     if content_path.is_dir() and directory_default is not None:
         content_path = content_path / directory_default
     if require_exists and not content_path.is_file():
         raise RuntimeError(f"required DAG plan input does not exist: {content_path}")
-    portable_path = os.path.relpath(resolved, source_dir)
+    portable_path = str(resolved) if is_absolute else os.path.relpath(resolved, source_dir)
     binding: dict[str, Any] = {
         "binding_id": binding_id,
         "kind": kind,
         "declared_path": portable_path,
-        "anchor": "source_document_directory",
+        "anchor": "filesystem_root" if is_absolute else "source_document_directory",
+        "portable": not is_absolute,
     }
     if kind == "input_file" and content_path.is_file():
         binding["content_sha256"] = _file_sha256(content_path)
@@ -659,6 +663,26 @@ def _working_directory_binding(*, binding_id: str, declared_path: str) -> dict[s
         "declared_path": str(path),
         "anchor": "filesystem_root" if path.is_absolute() else "process_invocation_directory",
         "portable": not path.is_absolute(),
+    }
+
+
+def _generic_events_binding(payload: Mapping[str, Any]) -> dict[str, Any]:
+    explicit = payload.get("events_jsonl")
+    if isinstance(explicit, str) and explicit:
+        binding = _working_directory_binding(
+            binding_id="generic:events-jsonl",
+            declared_path=explicit,
+        )
+        binding["kind"] = "event_log"
+        binding["origin"] = "explicit"
+        return binding
+    return {
+        "binding_id": "generic:events-jsonl",
+        "kind": "event_log",
+        "declared_path": "events.jsonl",
+        "anchor": "generic_run_directory",
+        "portable": True,
+        "origin": "derived_default",
     }
 
 

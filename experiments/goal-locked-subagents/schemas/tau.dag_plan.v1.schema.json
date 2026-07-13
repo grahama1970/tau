@@ -6,7 +6,7 @@
   "required": [
     "schema", "plan_id", "source", "goal_binding", "target_binding",
     "entry_node_ids", "terminal_endpoints", "completion_policy", "nodes",
-    "control_edges", "context_bindings", "route_contracts", "join_contracts",
+    "control_edges", "context_bindings", "runtime_bindings", "route_contracts", "join_contracts",
     "required_evidence", "fail_closed_on", "security_declarations",
     "execution_limits", "source_extensions", "plan_sha256"
   ],
@@ -32,6 +32,7 @@
     "nodes": {"type": "array", "items": {"type": "object"}, "minItems": 1},
     "control_edges": {"type": "array", "items": {"type": "object"}},
     "context_bindings": {"type": "array", "items": {"type": "object"}},
+    "runtime_bindings": {"type": "array", "items": {"type": "object"}},
     "route_contracts": {"type": "array", "items": {"type": "object"}},
     "join_contracts": {"type": "array", "items": {"type": "object"}},
     "required_evidence": {"type": "array", "items": {"type": "string"}},
