@@ -11,7 +11,7 @@ import threading
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from tau_coding.battle_scillm import (
@@ -3432,17 +3432,15 @@ def _run_shared_project_dag_plan(
         errors=errors,
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
-        route_decision_artifacts=[
-            path for path in result.transition_receipt_paths if "/route-decisions/" in path
-        ],
-        terminal_contribution_artifacts=[
-            path
-            for path in result.transition_receipt_paths
-            if "/terminal-contributions/" in path
-        ],
-        join_decision_artifacts=[
-            path for path in result.transition_receipt_paths if "/join-decisions/" in path
-        ],
+        route_decision_artifacts=_transition_receipts_in_directory(
+            result.transition_receipt_paths, "route-decisions"
+        ),
+        terminal_contribution_artifacts=_transition_receipts_in_directory(
+            result.transition_receipt_paths, "terminal-contributions"
+        ),
+        join_decision_artifacts=_transition_receipts_in_directory(
+            result.transition_receipt_paths, "join-decisions"
+        ),
         node_terminal_states=node_terminal_states,
         edge_terminal_states=edge_terminal_states,
         resolved_sources=completed,
@@ -3463,6 +3461,18 @@ def _run_shared_project_dag_plan(
     receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
     _write_json(receipt_dir / "dag-receipt.json", receipt)
     return receipt
+
+
+def _transition_receipts_in_directory(
+    receipt_paths: tuple[str, ...], directory_name: str
+) -> list[str]:
+    """Classify transition receipts emitted with POSIX or Windows separators."""
+
+    return [
+        path
+        for path in receipt_paths
+        if directory_name in Path(path).parts or directory_name in PureWindowsPath(path).parts
+    ]
 
 
 def _max_concurrency(contract: ProjectDagContract) -> int:

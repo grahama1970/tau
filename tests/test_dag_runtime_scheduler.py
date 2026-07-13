@@ -11,6 +11,13 @@ import pytest
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, DagPlanTerminal
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.dag_runtime.transition import (
+    AllSuccessTransitionPolicy,
+    DagNodeCancellation,
+    DagNodeSettlement,
+    DagRunBlock,
+    DagTransitionBatch,
+)
 
 
 def test_dag_plan_scheduler_runs_independent_nodes_concurrently(tmp_path: Path) -> None:
@@ -274,6 +281,72 @@ def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: P
 
     with pytest.raises(RuntimeError, match="dag_transition_policy_required"):
         run_dag_plan(plan, execute_node=lambda node, inputs, execution: {})
+
+
+def test_scheduler_applies_pre_start_node_cancellation_before_dispatch(tmp_path: Path) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "suppressed")]),
+        source_path=tmp_path / "dag.json",
+    )
+    called: list[str] = []
+
+    class CancelBeforeStartPolicy(AllSuccessTransitionPolicy):
+        def before_node_start(self, view, node_id, attempt):  # type: ignore[no-untyped-def]
+            del view, attempt
+            return DagTransitionBatch(
+                node_cancellations=(
+                    DagNodeCancellation(node_id=node_id, reason_code="policy_suppressed"),
+                ),
+                block_run=DagRunBlock(
+                    failure_code="POLICY_SUPPRESSED",
+                    message="Policy suppressed dispatch.",
+                    evidence={"node_id": node_id},
+                ),
+            )
+
+    result = run_dag_plan(
+        plan,
+        execute_node=lambda node, inputs, execution: called.append(node.node_id) or {},
+        transition_policy=CancelBeforeStartPolicy(),
+    )
+
+    assert called == []
+    assert result.status == "BLOCKED"
+    assert result.verdict == "POLICY_SUPPRESSED"
+    assert dict(result.node_states) == {"suppressed": "cancelled"}
+    assert result.node_results[0]["status"] == "CANCELLED"
+
+
+def test_scheduler_applies_pre_start_node_settlement_before_dispatch(tmp_path: Path) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(tmp_path, [_node(tmp_path, "already-satisfied")]),
+        source_path=tmp_path / "dag.json",
+    )
+    called: list[str] = []
+
+    class SettleBeforeStartPolicy(AllSuccessTransitionPolicy):
+        def before_node_start(self, view, node_id, attempt):  # type: ignore[no-untyped-def]
+            del view, attempt
+            return DagTransitionBatch(
+                node_settlements=(
+                    DagNodeSettlement(
+                        node_id=node_id,
+                        state="success",
+                        reason_code="accepted_existing_result",
+                    ),
+                )
+            )
+
+    result = run_dag_plan(
+        plan,
+        execute_node=lambda node, inputs, execution: called.append(node.node_id) or {},
+        transition_policy=SettleBeforeStartPolicy(),
+    )
+
+    assert called == []
+    assert result.status == "PASS"
+    assert result.completed_node_ids == ("already-satisfied",)
+    assert dict(result.node_states) == {"already-satisfied": "success"}
 
 
 def _generic_spec(

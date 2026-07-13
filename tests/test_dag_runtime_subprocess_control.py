@@ -6,7 +6,9 @@ import sys
 import threading
 import time
 from pathlib import Path
+from subprocess import CompletedProcess
 
+import tau_coding.dag_runtime.subprocess_control as subprocess_control
 from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 
 
@@ -51,3 +53,30 @@ def test_timeout_terminates_command_process_group() -> None:
     assert result.returncode == 124
     assert "timed out after 0.1s" in result.stderr
     assert time.monotonic() - started < 1
+
+
+def test_windows_process_tree_uses_new_group_and_taskkill(
+    monkeypatch,
+) -> None:
+    calls: list[list[str]] = []
+
+    class Process:
+        pid = 4321
+
+        def poll(self):
+            return 1
+
+        def terminate(self):
+            raise AssertionError("taskkill result should not fall back to parent-only termination")
+
+    monkeypatch.setattr(subprocess_control.os, "name", "nt")
+    monkeypatch.setattr(
+        subprocess_control.subprocess,
+        "run",
+        lambda command, **kwargs: calls.append(command) or CompletedProcess(command, 0),
+    )
+
+    assert subprocess_control._process_group_options() == (False, 0x00000200)
+    subprocess_control._terminate_windows_process_tree(Process())  # type: ignore[arg-type]
+
+    assert calls == [["taskkill", "/PID", "4321", "/T", "/F"]]

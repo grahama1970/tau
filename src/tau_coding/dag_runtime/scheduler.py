@@ -157,6 +157,19 @@ def run_dag_plan(
                     terminal_states=terminal_states,
                     deadlines=deadlines,
                 )
+                _apply_node_effects(
+                    batch=start_transition,
+                    nodes=nodes,
+                    node_states=node_states,
+                    resolved=resolved,
+                    completed=completed,
+                    results=results,
+                    result_order=result_order,
+                    scheduled=scheduled,
+                    cancel_events=cancel_events,
+                    futures=futures,
+                    event_sink=event_sink,
+                )
                 transition_receipt_paths.extend(start_transition.receipt_paths)
                 for transition_event in start_transition.events:
                     _emit(event_sink, transition_event)
@@ -167,6 +180,8 @@ def run_dag_plan(
                         "errors": [start_transition.block_run.message],
                     }
                     break
+                if node_id in resolved or node_id in scheduled:
+                    continue
                 accepted_inputs = tuple(
                     results[source]["accepted_output"]
                     for source, edge_id in context_edges.get(node_id, ())
@@ -195,6 +210,8 @@ def run_dag_plan(
             if blocked_result is not None:
                 break
             if not futures:
+                if len(resolved) == len(nodes):
+                    break
                 if deadlines:
                     next_deadline = min(deadlines.values())
                     remaining_seconds = next_deadline - time.monotonic()
@@ -844,7 +861,6 @@ def _settle_unrunnable_nodes(
                 {"event": f"node_{state}", "node_id": node_id, "attempt": 0},
             )
             changed = True
-    return None
     return None
 
 

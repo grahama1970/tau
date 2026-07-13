@@ -26,6 +26,24 @@ from tau_coding.project_dag import (
 )
 
 
+def test_transition_receipt_classification_accepts_windows_paths() -> None:
+    paths = (
+        r"C:\\run\\route-decisions\\route.json",
+        r"C:\\run\\terminal-contributions\\edge.json",
+        r"C:\\run\\join-decisions\\join.json",
+    )
+
+    assert project_dag._transition_receipts_in_directory(paths, "route-decisions") == [
+        paths[0]
+    ]
+    assert project_dag._transition_receipts_in_directory(
+        paths, "terminal-contributions"
+    ) == [paths[1]]
+    assert project_dag._transition_receipts_in_directory(paths, "join-decisions") == [
+        paths[2]
+    ]
+
+
 def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))

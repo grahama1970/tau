@@ -22,6 +22,7 @@ def run_cancellable_subprocess(
     """Run one command and terminate its process group on cancellation or timeout."""
 
     argv = list(command)
+    start_new_session, creationflags = _process_group_options()
     process = subprocess.Popen(
         argv,
         cwd=str(cwd) if cwd is not None else None,
@@ -29,7 +30,8 @@ def run_cancellable_subprocess(
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        start_new_session=os.name == "posix",
+        start_new_session=start_new_session,
+        creationflags=creationflags,
     )
     started = time.monotonic()
     while True:
@@ -70,8 +72,8 @@ def _terminate_process_group(process: subprocess.Popen[str]) -> None:
         return
     if os.name == "posix":
         os.killpg(process.pid, signal.SIGTERM)
-    else:  # pragma: no cover - Windows compatibility boundary.
-        process.terminate()
+    else:  # pragma: no cover - exercised through a platform-boundary unit test.
+        _terminate_windows_process_tree(process)
     try:
         process.wait(timeout=0.5)
         return
@@ -79,9 +81,28 @@ def _terminate_process_group(process: subprocess.Popen[str]) -> None:
         pass
     if os.name == "posix":
         os.killpg(process.pid, signal.SIGKILL)
-    else:  # pragma: no cover - Windows compatibility boundary.
-        process.kill()
+    else:  # pragma: no cover - exercised through a platform-boundary unit test.
+        _terminate_windows_process_tree(process)
     process.wait(timeout=1)
+
+
+def _process_group_options() -> tuple[bool, int]:
+    if os.name == "posix":
+        return True, 0
+    return False, getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+
+
+def _terminate_windows_process_tree(process: subprocess.Popen[str]) -> None:
+    """Terminate the Windows process tree rooted at the command process."""
+
+    subprocess.run(
+        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if process.poll() is None:
+        process.terminate()
 
 
 __all__ = ["run_cancellable_subprocess"]
