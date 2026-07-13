@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import hashlib
+import time
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any, Protocol
 
 from tau_coding.dag_runtime.model import DagPlan
@@ -76,8 +80,107 @@ class DagTransitionBatch:
     block_run: DagRunBlock | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class DagCommittedReceipt:
+    path: str
+    file_sha256: str
+
+
+@dataclass(frozen=True, slots=True)
+class DagPolicyReplayState:
+    committed_receipts: tuple[DagCommittedReceipt, ...]
+    node_states: dict[str, str]
+    edge_states: dict[str, str]
+    terminal_states: dict[str, str]
+
+
+def transition_batch_to_payload(batch: DagTransitionBatch) -> dict[str, Any]:
+    """Serialize a committed transition without persisting process-local clocks."""
+
+    now_monotonic = time.monotonic()
+    now_wall_ms = time.time_ns() // 1_000_000
+    receipt_refs: list[dict[str, str]] = []
+    for raw_path in batch.receipt_paths:
+        path = Path(raw_path)
+        if not path.is_file():
+            raise RuntimeError(f"dag_transition_receipt_missing:{path}")
+        receipt_refs.append(
+            {
+                "path": str(path.resolve()),
+                "file_sha256": f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}",
+            }
+        )
+    return {
+        "schema": "tau.dag_transition_batch.v1",
+        "edge_settlements": [asdict(item) for item in batch.edge_settlements],
+        "node_settlements": [asdict(item) for item in batch.node_settlements],
+        "node_cancellations": [asdict(item) for item in batch.node_cancellations],
+        "deadline_arms": [
+            {
+                "deadline_id": item.deadline_id,
+                "deadline_due_at_ms": now_wall_ms
+                + max(0, int((item.deadline_monotonic - now_monotonic) * 1000)),
+                "reason_code": item.reason_code,
+            }
+            for item in batch.deadline_arms
+        ],
+        "deadline_cancellations": list(batch.deadline_cancellations),
+        "receipt_refs": receipt_refs,
+        "events": list(batch.events),
+        "block_run": (
+            {
+                "failure_code": batch.block_run.failure_code,
+                "message": batch.block_run.message,
+                "evidence": batch.block_run.evidence,
+            }
+            if batch.block_run
+            else None
+        ),
+    }
+
+
+def transition_batch_from_payload(payload: Mapping[str, Any]) -> DagTransitionBatch:
+    """Restore a transition and translate durable wall deadlines to monotonic time."""
+
+    if payload.get("schema") != "tau.dag_transition_batch.v1":
+        raise RuntimeError("dag_transition_replay_mismatch")
+    now_monotonic = time.monotonic()
+    now_wall_ms = time.time_ns() // 1_000_000
+    block = payload.get("block_run")
+    return DagTransitionBatch(
+        edge_settlements=tuple(DagEdgeSettlement(**item) for item in payload["edge_settlements"]),
+        node_settlements=tuple(DagNodeSettlement(**item) for item in payload["node_settlements"]),
+        node_cancellations=tuple(
+            DagNodeCancellation(**item) for item in payload["node_cancellations"]
+        ),
+        deadline_arms=tuple(
+            DagDeadlineArm(
+                deadline_id=str(item["deadline_id"]),
+                deadline_monotonic=now_monotonic
+                + max(0.0, (int(item["deadline_due_at_ms"]) - now_wall_ms) / 1000),
+                reason_code=str(item["reason_code"]),
+            )
+            for item in payload["deadline_arms"]
+        ),
+        deadline_cancellations=tuple(str(item) for item in payload["deadline_cancellations"]),
+        receipt_paths=tuple(str(item["path"]) for item in payload["receipt_refs"]),
+        events=tuple(dict(item) for item in payload["events"]),
+        block_run=(
+            DagRunBlock(
+                failure_code=str(block["failure_code"]),
+                message=str(block["message"]),
+                evidence=dict(block["evidence"]),
+            )
+            if isinstance(block, Mapping)
+            else None
+        ),
+    )
+
+
 class DagTransitionPolicy(Protocol):
     def validate_plan(self, plan: DagPlan) -> None: ...
+
+    def restore(self, plan: DagPlan, replay: DagPolicyReplayState) -> None: ...
 
     def after_node_terminal(
         self,
@@ -107,6 +210,9 @@ class AllSuccessTransitionPolicy:
     def validate_plan(self, plan: DagPlan) -> None:
         if plan.route_contracts or plan.join_contracts:
             raise RuntimeError("dag_transition_policy_required")
+
+    def restore(self, plan: DagPlan, replay: DagPolicyReplayState) -> None:
+        del plan, replay
 
     def after_node_terminal(
         self,

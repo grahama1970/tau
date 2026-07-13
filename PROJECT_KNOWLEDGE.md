@@ -6572,6 +6572,44 @@
 
 ## Infrastructure State
 
+### 2026-07-13: Durable Canonical DAG Scheduler (#79)
+
+- Generic and project DAG runs now use a local SQLite/WAL `dag-run.sqlite3`
+  journal behind the canonical `run_dag_plan` scheduler.
+- The store records fenced leases, stable attempt identities, idempotency keys,
+  staged and validated results, committed outputs, retries, and scheduler
+  transitions in an append-only event stream.
+- Restart replay does not rerun settled adapters. Staged, validated, and
+  output-committed results finish from durable state; reserved attempts retain
+  their identity; dispatched attempts without a staged result block as
+  `DAG_ATTEMPT_EFFECT_UNCERTAIN`.
+- Scheduler leases are renewed while long-running adapters execute and while
+  cancelled parallel workers finish. Replay restores a committed run block even
+  when the process stopped before the terminal run outcome was written. Replay
+  re-emits committed route/join decisions so project verdict and progress views
+  reconstruct the same terminal state. Generic runs acquire the scheduler lease
+  before writing shared checkpoints or event files. Replay also verifies event
+  hashes, staged/committed output hashes, and committed route/join receipt
+  hashes. Replayed project runs retain course-correction artifact paths, and
+  conflicting or tampered output projections fail closed.
+- Focused deterministic proof covers real local SQLite files, lease
+  fencing/takeover and heartbeat, duplicate result rejection, stable attempt
+  recovery, committed replay, staged/validated/output recovery, retry replay,
+  uncertain dispatch blocking, generic/project scheduler compatibility, and
+  join receipt tamper handling, committed-block crash replay, and slow parallel
+  cancellation past a lease TTL. Ruff passed; mypy reported no issues in the
+  nine affected DAG-runtime/generic modules (the broader `project_dag.py` command
+  retains 15 pre-existing typing findings). The focused scheduler,
+  generic/project DAG, transaction, skill, and join matrix reported `171
+  passed`.
+- Full repository suite: `2034 passed, 3 failed`. The remaining failures are
+  the pre-existing compliance-package CLI fixture and two absent retained
+  experiment proof/command-spec artifacts; none exercises the durable scheduler
+  implementation.
+- Proof boundary: this does not prove distributed consensus, provider-side
+  exactly-once effects, automatic uncertain-effect reconciliation, external
+  provider/model quality, or host/disk-loss recovery.
+
 ### 2026-07-13: Canonical DagPlan Compilation (#77)
 
 - `tau dag-plan <contract> --out <plan.json>` compiles validated

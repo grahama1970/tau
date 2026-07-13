@@ -12,6 +12,7 @@ from tau_coding.dag_runtime.model import (
     DagPlanEdge,
     DagPlanNode,
 )
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagSchedulerResult, run_dag_plan
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "write_dag_plan",
     "DagSchedulerResult",
     "run_dag_plan",
+    "SqliteDagRunStore",
 ]

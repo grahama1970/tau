@@ -86,6 +86,87 @@ def test_project_dag_runs_creator_reviewer_loop(tmp_path: Path) -> None:
     assert Path(str(receipt["command_loop_receipt"])).exists()
 
 
+def test_project_dag_durable_replay_preserves_receipt_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stamp_counter = iter(range(10_000))
+    monkeypatch.setattr(
+        project_dag,
+        "_utc_stamp",
+        lambda: f"2026-07-13T20:00:{next(stamp_counter):04d}Z",
+    )
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+    run_dir = tmp_path / "run"
+
+    first = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+    second = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+    third = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert first["status"] == second["status"] == "PASS"
+    assert second["replayed_event_count"] > 0
+    assert second["command_executed"] is True
+    assert second["selected_agents"] == first["selected_agents"]
+    assert second["reviewer_verdicts"] == first["reviewer_verdicts"]
+    assert second["node_attempts"] == first["node_attempts"]
+    assert second["max_observed_concurrency"] == first["max_observed_concurrency"]
+    assert len(third["scheduler_events"]) == len(second["scheduler_events"])
+    normalized_events = [
+        {
+            key: value
+            for key, value in event.items()
+            if key not in {"durably_replayed", "ts"}
+        }
+        for event in third["scheduler_events"]
+    ]
+    assert len({json.dumps(event, sort_keys=True) for event in normalized_events}) == len(
+        normalized_events
+    )
+
+
+def test_project_dag_replays_when_derived_receipt_is_truncated(tmp_path: Path) -> None:
+    contract_path = _write_contract(tmp_path)
+    _write_response_spec(tmp_path, "coder", _handoff("coder", "reviewer", _creator_evidence()))
+    _write_response_spec(tmp_path, "reviewer", _reviewer_handoff(goal_hash="sha256:active-goal"))
+    run_dir = tmp_path / "run"
+
+    first = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+    (run_dir / "dag-receipt.json").write_text('{"status":', encoding="utf-8")
+
+    recovered = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=run_dir,
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+
+    assert recovered["status"] == "PASS"
+    assert recovered["replayed_event_count"] > 0
+    assert recovered["max_observed_concurrency"] == first["max_observed_concurrency"]
+    assert recovered["max_observed_concurrency"] > 0
+
+
 def test_project_dag_preserves_semantic_node_block_verdict(tmp_path: Path) -> None:
     contract_path = _write_contract(tmp_path)
     blocked = _handoff("coder", "reviewer", [])
@@ -728,6 +809,14 @@ def test_project_dag_ready_queue_blocks_pointless_unit_test_drift(
             "instead of continuing non-essential deterministic unit tests."
         ),
     }
+
+    replayed = run_project_dag_contract(
+        contract_path=contract_path,
+        receipt_dir=tmp_path / "run",
+        agents_root=tmp_path / "agents",
+        scheduler="bounded-ready-queue",
+    )
+    assert replayed["course_correction_artifacts"] == receipt["course_correction_artifacts"]
 
 
 def test_project_dag_ready_queue_requires_brave_search_after_two_failed_attempts(
