@@ -4,7 +4,11 @@ import hashlib
 import json
 from pathlib import Path
 
-from tau_coding.battle_live_handoff import _handoff, _materialize_team_artifact
+from tau_coding.battle_live_handoff import (
+    _context_for_team,
+    _handoff,
+    _materialize_team_artifact,
+)
 
 
 def test_battle_handoff_requires_strategy_genome_for_both_teams() -> None:
@@ -22,6 +26,34 @@ def test_battle_handoff_requires_strategy_genome_for_both_teams() -> None:
         )
         assert "strategy_genome" in handoff["instructions"]
         assert "selected_methods" in handoff["instructions"]
+
+
+def test_team_context_projection_excludes_opposing_memory() -> None:
+    context = {
+        "summary": {
+            "scenario": "arena-1",
+            "teams": {
+                "red": {"objective": "use red-memory"},
+                "blue": {"objective": "use blue-memory"},
+            },
+        },
+        "team_contexts": {
+            "red": {"memory_key": "red-memory", "memory_sha256": "red-sha"},
+            "blue": {"memory_key": "blue-memory", "memory_sha256": "blue-sha"},
+        },
+    }
+
+    red = _context_for_team(context, "red")
+    blue = _context_for_team(context, "blue")
+
+    assert red["team_context"]["memory_key"] == "red-memory"
+    assert blue["team_context"]["memory_key"] == "blue-memory"
+    assert set(red["summary"]["teams"]) == {"red"}
+    assert set(blue["summary"]["teams"]) == {"blue"}
+    assert "team_contexts" not in red
+    assert "team_contexts" not in blue
+    assert "blue-memory" not in json.dumps(red)
+    assert "red-memory" not in json.dumps(blue)
 
 
 def test_red_materialization_declares_artifact_and_genome_hashes(tmp_path: Path) -> None:
