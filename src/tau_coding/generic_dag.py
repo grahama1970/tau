@@ -10,12 +10,14 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Event
 from typing import Any
 
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -146,6 +148,7 @@ def run_generic_dag(
             accepted_inputs=list(accepted_inputs),
             goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
             scheduler_attempt=execution.attempt,
+            cancel_event=execution.cancel_event,
         )
 
     scheduler_result = run_dag_plan(
@@ -406,6 +409,7 @@ def _run_node(
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
     scheduler_attempt: int,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     if node.skill is not None:
         return _run_skill_node(
@@ -414,6 +418,7 @@ def _run_node(
             accepted_inputs=accepted_inputs,
             goal_hash=goal_hash,
             resume=resume,
+            cancel_event=cancel_event,
         )
     if node.transaction is not None:
         return _run_transaction_node(
@@ -423,6 +428,7 @@ def _run_node(
             events_path=events_path,
             resume=resume,
             accepted_inputs=accepted_inputs,
+            cancel_event=cancel_event,
         )
     context_path, context_sha256 = _write_legacy_node_context(
         node=node,
@@ -439,6 +445,7 @@ def _run_node(
         context_path=context_path,
         context_sha256=context_sha256,
         attempt=scheduler_attempt,
+        cancel_event=cancel_event,
     )
 
 
@@ -449,6 +456,7 @@ def _run_skill_node(
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
     resume: bool,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     assert node.skill is not None
     started_at = _utc_stamp()
@@ -514,6 +522,7 @@ def _run_skill_node(
         goal_hash=goal_hash,
         work_order_sha256=_work_order_sha256(node),
         accepted_inputs=accepted_inputs,
+        cancel_event=cancel_event,
     )
     receipt["goal_hash"] = goal_hash
     receipt["work_order_sha256"] = _work_order_sha256(node)
@@ -568,6 +577,7 @@ def _run_legacy_node(
     context_path: Path,
     context_sha256: str,
     attempt: int,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     node_started_at = _utc_stamp()
     node_started_monotonic = time.monotonic()
@@ -611,6 +621,7 @@ def _run_legacy_node(
             "TAU_GENERIC_DAG_CONTEXT": str(context_path),
             "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
         },
+        cancel_event=cancel_event,
     )
     command_results = [
         _command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)
@@ -681,6 +692,7 @@ def _run_transaction_node(
     events_path: Path,
     resume: bool,
     accepted_inputs: list[dict[str, Any]],
+    cancel_event: Event,
 ) -> dict[str, Any]:
     """Run one bounded producer/reviewer transaction owned by Tau."""
 
@@ -758,6 +770,7 @@ def _run_transaction_node(
                         started_at=started_at,
                         started_monotonic=started_monotonic,
                         resumed=True,
+                        cancel_event=cancel_event,
                     )
             if prior_errors:
                 return _transaction_record(
@@ -814,6 +827,7 @@ def _run_transaction_node(
                 "TAU_GENERIC_DAG_CONTEXT": str(attempt_context_path),
                 "TAU_GENERIC_DAG_CONTEXT_SHA256": attempt_context_sha256,
             },
+            cancel_event=cancel_event,
         )
         command_results.append(
             _command_result_dict(
@@ -885,6 +899,7 @@ def _run_transaction_node(
                     "TAU_GENERIC_DAG_VALIDATION_CONTEXT": str(validation_context_path),
                     "TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256": validation_context_sha256,
                 },
+                cancel_event=cancel_event,
             )
             command_results.append(_command_result_dict(validator_result, elapsed_seconds=0.0))
             validation, validation_errors = load_json(
@@ -938,6 +953,7 @@ def _run_transaction_node(
                 "TAU_GENERIC_DAG_REVIEW_CONTEXT": str(review_context_path),
                 "TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256": review_context_sha256,
             },
+            cancel_event=cancel_event,
         )
         command_results.append(
             _command_result_dict(
@@ -1086,6 +1102,7 @@ def _run_transaction_node(
                 started_at=started_at,
                 started_monotonic=started_monotonic,
                 resumed=False,
+                cancel_event=cancel_event,
             )
         _write_transaction_receipt(
             path=transaction_receipt_path,
@@ -1138,6 +1155,7 @@ def _continue_transaction(
     started_at: str,
     started_monotonic: float,
     resumed: bool,
+    cancel_event: Event,
 ) -> dict[str, Any]:
     continuation = spec.continuation
     assert continuation is not None
@@ -1204,6 +1222,7 @@ def _continue_transaction(
         cwd=run_dir,
         timeout_seconds=continuation.timeout_seconds,
         env_overrides={"TAU_GENERIC_DAG_CONTEXT": str(continuation_context)},
+        cancel_event=cancel_event,
     )
     if result.returncode != 0:
         return _transaction_blocked(
@@ -1730,23 +1749,15 @@ def _run_command(
     cwd: Path,
     timeout_seconds: float,
     env_overrides: dict[str, str] | None = None,
+    cancel_event: Event | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(
-            command,
-            cwd=str(cwd),
-            text=True,
-            capture_output=True,
-            timeout=timeout_seconds,
-            env={**os.environ, **(env_overrides or {})},
-        )
-    except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
-        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
-        if stderr:
-            stderr = f"{stderr}\n"
-        stderr += f"timed out after {timeout_seconds:.1f}s"
-        return subprocess.CompletedProcess(command, 124, stdout=stdout, stderr=stderr)
+    return run_cancellable_subprocess(
+        command,
+        cwd=cwd,
+        timeout_seconds=timeout_seconds,
+        env={**os.environ, **(env_overrides or {})},
+        cancel_event=cancel_event,
+    )
 
 
 def _command_result_dict(
@@ -1824,7 +1835,7 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
 

@@ -75,7 +75,9 @@ def test_webgpt_transport_failure_emits_surf_doctor_request(
         raw.write_text("Pro thinking.\n", encoding="utf-8")
         return SimpleNamespace(returncode=4, stdout="", stderr="missing sentinel\n")
 
-    monkeypatch.setattr("tau_coding.skill_dag_adapter.subprocess.run", failed_run)
+    monkeypatch.setattr(
+        "tau_coding.skill_dag_adapter.run_cancellable_subprocess", failed_run
+    )
 
     receipt = _execute(spec)
     incident_path = tmp_path / "out" / "surf-doctor-request.json"
@@ -210,7 +212,9 @@ def test_generic_dag_resume_reuses_hash_valid_skill_receipt(
     def unexpected_run(*args, **kwargs):
         raise AssertionError("skill transport reran during resume")
 
-    monkeypatch.setattr("tau_coding.skill_dag_adapter.subprocess.run", unexpected_run)
+    monkeypatch.setattr(
+        "tau_coding.skill_dag_adapter.run_cancellable_subprocess", unexpected_run
+    )
     second = run_generic_dag(spec_path=spec_path, resume=True)
 
     assert second["status"] == "PASS"
@@ -288,4 +292,6 @@ def _patch_webgpt(
         transport.write_text('{"status":"submitted_to_chatgpt"}\n', encoding="utf-8")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr("tau_coding.skill_dag_adapter.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "tau_coding.skill_dag_adapter.run_cancellable_subprocess", fake_run
+    )
