@@ -27,22 +27,26 @@
   tests/test_project_dag_join_policies.py tests/test_dag_route_decision.py
   tests/test_dag_join_decision.py
   tests/test_cli.py::test_cli_dag_run_and_run_alias_execute_generic_dag -q` ->
-  `269 passed`. The process-control test
+  `271 passed in 18.95s`. The process-control test
   launches a real local parent and child process and confirms scheduler
   cancellation prevents the child artifact from appearing. A mixed-DAG fixture
   runs a real artifact producer, deterministic validator, reviewer, and
   downstream command through the shared scheduler, and positive compatibility
   tests execute that generic DAG through both `tau dag-run` and `tau run`.
   Independent review found and the branch repaired ignored pre-start node
-  effects, Windows-only receipt path classification, and parent-only Windows
-  cancellation. `mypy` passed for nine touched runtime sources. Mocked: no for
+  effects, Windows-only receipt path classification, parent-only Windows
+  cancellation, retries after scheduler cancellation, pre-start policy blocks
+  that left already-running roots alive, and POSIX descendants that ignored
+  `SIGTERM`. Scheduler-originated cancellation is terminal and non-retryable,
+  while transition policies still emit join bookkeeping such as ignored late
+  contributions. `mypy` passed for the shared DAG runtime package. Mocked: no for
   command, transaction, join, route, process-group, mixed-adapter, and CLI
   acceptance; native WebGPT skill semantic tests remain transport-mocked. Live:
   yes for local subprocesses. Provider-live: no. This
   does not prove provider/model semantic quality, live WebGPT skill execution,
   durable restart, OS sandbox isolation, or future route correctness.
-  Full-suite command `uv run pytest -q` reports `2006 passed, 3 failed in
-  95.53s`; the failures are the existing clean-main baseline cases
+  Full-suite command `uv run pytest -q` reports `2008 passed, 3 failed in
+  100.38s`; the failures are the existing clean-main baseline cases
   `test_cli_compliance_package_writes_review_bundle`,
   `test_loop2_alignment_tool_map_indexes_live_proofs`, and
   `test_tau_dag_command_specs_reference_agent_contracts`. No scheduler,
