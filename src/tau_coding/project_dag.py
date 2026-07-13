@@ -905,15 +905,14 @@ def _run_bounded_ready_queue_project_dag(
     )
     dag_agent_registry = _write_dag_agent_registry(contract=contract, receipt_dir=receipt_dir)
     plan = compile_project_dag_plan(contract.payload, source_path=contract_path)
-    if _shared_project_scheduler_supported(plan, contract):
-        return _run_shared_project_dag_plan(
-            plan=plan,
-            contract=contract,
-            contract_path=contract_path,
-            receipt_dir=receipt_dir,
-            command_spec_root=command_spec_root,
-            dag_agent_registry=dag_agent_registry,
-        )
+    return _run_shared_project_dag_plan(
+        plan=plan,
+        contract=contract,
+        contract_path=contract_path,
+        receipt_dir=receipt_dir,
+        command_spec_root=command_spec_root,
+        dag_agent_registry=dag_agent_registry,
+    )
 
     max_concurrency = _max_concurrency(contract)
     runnable_nodes = {
@@ -4136,19 +4135,6 @@ def _apply_provider_command_timeout_policy(
     )
     updated["timeout_policy"] = dict(timeout_policy)
     return updated
-
-
-def _shared_project_scheduler_supported(
-    plan: DagPlan,
-    contract: ProjectDagContract,
-) -> bool:
-    """Return whether all declared nodes fit the first shared adapter set."""
-
-    return not any(
-        node.executor == "provider"
-        or isinstance(_node_payload(contract, node.node_id).get("provider"), dict)
-        for node in plan.nodes
-    )
 
 
 def _run_shared_project_dag_plan(
