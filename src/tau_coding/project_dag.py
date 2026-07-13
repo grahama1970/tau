@@ -4180,7 +4180,21 @@ def _run_shared_project_dag_plan(
         execution: DagNodeAttempt,
     ) -> dict[str, Any]:
         node = contract.nodes[plan_node.node_id]
-        if plan_node.adapter_kind in {"project_virtual", "project_human"}:
+        if plan_node.adapter_kind == "project_human":
+            return {
+                "node_id": node.node_id,
+                "status": "BLOCKED",
+                "verdict": "HUMAN_APPROVAL_REQUIRED",
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "attempt_count": 0,
+                "accepted_output": None,
+                "retryable": False,
+                "stop_reason": "human_approval_required",
+                "errors": ["human interrupt requires an action-bound approval receipt"],
+            }
+        if plan_node.adapter_kind == "project_virtual":
             with lock:
                 events.append(
                     {

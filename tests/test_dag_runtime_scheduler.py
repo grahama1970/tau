@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
-from tau_coding.dag_runtime.model import DagPlanNode
+from tau_coding.dag_runtime.model import DagPlanNode, DagPlanTerminal
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 
 
@@ -224,6 +224,46 @@ def test_dag_plan_scheduler_respects_non_retryable_adapter_result(tmp_path: Path
 
     assert result.status == "BLOCKED"
     assert calls == 1
+
+
+def test_dag_plan_scheduler_settles_declared_terminal_without_executing_it(
+    tmp_path: Path,
+) -> None:
+    plan = compile_generic_dag_plan(
+        _generic_spec(
+            tmp_path,
+            [
+                _node(tmp_path, "producer"),
+                _node(tmp_path, "human", depends_on=["producer"]),
+            ],
+        ),
+        source_path=tmp_path / "dag.json",
+    )
+    plan = replace(
+        plan,
+        terminal_endpoints=(DagPlanTerminal("human", "declared_node", "declared"),),
+    )
+    called: list[str] = []
+
+    def execute(
+        node: DagPlanNode,
+        accepted_inputs: tuple[dict[str, Any], ...],
+        execution: DagNodeAttempt,
+    ) -> dict[str, Any]:
+        del accepted_inputs, execution
+        called.append(node.node_id)
+        return {
+            "node_id": node.node_id,
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"source_node_id": node.node_id},
+        }
+
+    result = run_dag_plan(plan, execute_node=execute)
+
+    assert result.status == "PASS"
+    assert result.completed_node_ids == ("producer",)
+    assert called == ["producer"]
 
 
 def test_base_scheduler_rejects_route_contract_without_route_adapter(tmp_path: Path) -> None:

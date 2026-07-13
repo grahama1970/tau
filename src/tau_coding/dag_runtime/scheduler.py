@@ -52,7 +52,16 @@ def run_dag_plan(
     if plan.route_contracts or plan.join_contracts:
         raise RuntimeError("dag_plan_route_join_adapter_required")
 
-    nodes = {node.node_id: node for node in plan.nodes}
+    declared_terminal_nodes = {
+        terminal.terminal_id
+        for terminal in plan.terminal_endpoints
+        if terminal.kind == "declared_node"
+    }
+    nodes = {
+        node.node_id: node
+        for node in plan.nodes
+        if node.node_id not in declared_terminal_nodes
+    }
     predecessors = _predecessors(plan, node_ids=set(nodes))
     context_sources = _context_sources(plan)
     completed: set[str] = set()
@@ -247,7 +256,7 @@ def run_dag_plan(
 def _predecessors(plan: DagPlan, *, node_ids: set[str]) -> dict[str, set[str]]:
     predecessors: dict[str, set[str]] = {node_id: set() for node_id in node_ids}
     for edge in plan.control_edges:
-        if edge.target_kind == "node":
+        if edge.target_kind == "node" and edge.target_id in predecessors:
             predecessors[edge.target_id].add(edge.source_node_id)
     return predecessors
 
