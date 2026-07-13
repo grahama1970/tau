@@ -2391,6 +2391,7 @@ def test_project_dag_typed_route_modes_dispatch_only_activated_branches(
     )
 
     assert receipt["status"] == "PASS"
+    assert receipt["execution"] == "project_agent_dag_plan_ready_queue"
     assert receipt["selected_agents"][0] == expected_agents[0]
     assert set(receipt["selected_agents"][1:]) == set(expected_agents[1:])
     assert len(receipt["route_decision_receipts"]) == 1

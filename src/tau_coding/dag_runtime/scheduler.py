@@ -39,6 +39,9 @@ class DagSchedulerResult:
     node_results: tuple[dict[str, Any], ...]
     completed_node_ids: tuple[str, ...]
     max_observed_concurrency: int
+    edge_states: tuple[tuple[str, str], ...]
+    terminal_states: tuple[tuple[str, str], ...]
+    transition_receipt_paths: tuple[str, ...]
 
 
 def run_dag_plan(
@@ -76,6 +79,7 @@ def run_dag_plan(
     terminal_states: dict[str, str] = {}
     node_states = {node_id: "pending" for node_id in nodes}
     completed: set[str] = set()
+    resolved: set[str] = set()
     results: dict[str, dict[str, Any]] = {}
     result_order: list[str] = []
     scheduled: set[str] = set()
@@ -84,15 +88,31 @@ def run_dag_plan(
     attempt_history: dict[str, list[dict[str, Any]]] = {node_id: [] for node_id in nodes}
     max_observed_concurrency = 0
     blocked_result: dict[str, Any] | None = None
+    transition_receipt_paths: list[str] = []
 
     _emit(event_sink, {"event": "scheduler_started", "plan_id": plan.plan_id})
     with ThreadPoolExecutor(max_workers=max_concurrency) as pool:
         futures: dict[Future[dict[str, Any]], str] = {}
-        while len(completed) < len(nodes):
+        while len(resolved) < len(nodes):
+            _settle_unrunnable_nodes(
+                plan=plan,
+                policy=policy,
+                nodes=nodes,
+                resolved=resolved,
+                scheduled=scheduled,
+                completed=completed,
+                results=results,
+                result_order=result_order,
+                node_states=node_states,
+                edge_states=edge_states,
+                terminal_states=terminal_states,
+                transition_receipt_paths=transition_receipt_paths,
+                event_sink=event_sink,
+            )
             ready = [
                 node_id
                 for node_id in sorted(nodes)
-                if node_id not in completed
+                if node_id not in resolved
                 and node_id not in scheduled
                 and _node_is_ready(node_id, incoming_edges=incoming_edges, edge_states=edge_states)
             ]
@@ -217,10 +237,20 @@ def run_dag_plan(
                     edge_states=edge_states,
                     terminal_states=terminal_states,
                 )
+                transition_receipt_paths.extend(transition.receipt_paths)
+                for transition_event in transition.events:
+                    _emit(event_sink, transition_event)
                 if transition.block_run is not None:
                     if blocked_result is None:
-                        blocked_result = result
+                        blocked_result = {
+                            **result,
+                            "status": "BLOCKED",
+                            "verdict": transition.block_run.failure_code,
+                            "errors": [transition.block_run.message],
+                            "transition_evidence": transition.block_run.evidence,
+                        }
                     node_states[node_id] = "blocked"
+                    resolved.add(node_id)
                     _emit(
                         event_sink,
                         {
@@ -233,6 +263,7 @@ def run_dag_plan(
                     batch_blocked = True
                     continue
                 completed.add(node_id)
+                resolved.add(node_id)
                 node_states[node_id] = "success"
                 _emit(
                     event_sink,
@@ -290,6 +321,9 @@ def run_dag_plan(
         node_results=ordered_results,
         completed_node_ids=tuple(sorted(completed)),
         max_observed_concurrency=max_observed_concurrency,
+        edge_states=tuple(sorted(edge_states.items())),
+        terminal_states=tuple(sorted(terminal_states.items())),
+        transition_receipt_paths=tuple(transition_receipt_paths),
     )
 
 
@@ -356,6 +390,85 @@ def _apply_transition_batch(
         edge = edges[settlement.edge_id]
         if edge.target_kind == "terminal" or edge.target_id in terminal_ids:
             terminal_states[edge.target_id] = settlement.state
+
+
+def _settle_unrunnable_nodes(
+    *,
+    plan: DagPlan,
+    policy: DagTransitionPolicy,
+    nodes: dict[str, DagPlanNode],
+    resolved: set[str],
+    scheduled: set[str],
+    completed: set[str],
+    results: dict[str, dict[str, Any]],
+    result_order: list[str],
+    node_states: dict[str, str],
+    edge_states: dict[str, str],
+    terminal_states: dict[str, str],
+    transition_receipt_paths: list[str],
+    event_sink: EventSink | None,
+) -> None:
+    incoming = _incoming_edges(plan, node_ids=set(nodes))
+    changed = True
+    while changed:
+        changed = False
+        for node_id in sorted(nodes):
+            if node_id in resolved or node_id in scheduled:
+                continue
+            edge_ids = incoming[node_id]
+            if not edge_ids or not all(edge_id in edge_states for edge_id in edge_ids):
+                continue
+            if all(edge_states[edge_id] == "success" for edge_id in edge_ids):
+                continue
+            state = (
+                "skipped"
+                if all(edge_states[edge_id] == "skipped" for edge_id in edge_ids)
+                else "blocked"
+            )
+            result = {
+                "node_id": node_id,
+                "status": state.upper(),
+                "verdict": state.upper(),
+                "attempt_count": 0,
+                "accepted_output": None,
+                "errors": [],
+            }
+            transition = policy.after_node_terminal(
+                _transition_view(
+                    plan=plan,
+                    node_states=node_states,
+                    edge_states=edge_states,
+                    terminal_states=terminal_states,
+                    running_node_ids=set(),
+                ),
+                DagNodeCompletion(
+                    node_id=node_id,
+                    attempt=0,
+                    status=state.upper(),
+                    verdict=state.upper(),
+                    retryable=False,
+                    raw_result=result,
+                    terminal_state=state,
+                ),
+            )
+            _apply_transition_batch(
+                plan=plan,
+                batch=transition,
+                edge_states=edge_states,
+                terminal_states=terminal_states,
+            )
+            if transition.block_run is not None:
+                raise RuntimeError(transition.block_run.failure_code)
+            transition_receipt_paths.extend(transition.receipt_paths)
+            results[node_id] = result
+            result_order.append(node_id)
+            node_states[node_id] = state
+            resolved.add(node_id)
+            _emit(
+                event_sink,
+                {"event": f"node_{state}", "node_id": node_id, "attempt": 0},
+            )
+            changed = True
 
 
 def _emit(sink: EventSink | None, event: dict[str, Any]) -> None:

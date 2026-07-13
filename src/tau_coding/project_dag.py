@@ -40,6 +40,7 @@ from tau_coding.dag_route_decision import (
 )
 from tau_coding.dag_runtime.compiler import compile_project_dag_plan
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
+from tau_coding.dag_runtime.project_transition import ProjectDagTransitionPolicy
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
@@ -4143,7 +4144,7 @@ def _shared_project_scheduler_supported(
 ) -> bool:
     """Return whether all declared nodes fit the first shared adapter set."""
 
-    if plan.route_contracts or plan.join_contracts:
+    if plan.join_contracts:
         return False
     return not any(
         node.executor == "provider"
@@ -4473,6 +4474,11 @@ def _run_shared_project_dag_plan(
     result = run_dag_plan(
         plan,
         execute_node=execute_node,
+        transition_policy=ProjectDagTransitionPolicy(
+            receipt_dir=receipt_dir,
+            dag_id=contract.dag_id,
+            goal_hash=str(contract.goal["goal_hash"]),
+        ),
         max_concurrency=_max_concurrency(contract),
         event_sink=record_event,
     )
@@ -4553,6 +4559,7 @@ def _run_shared_project_dag_plan(
         errors=errors,
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
+        route_decision_artifacts=list(result.transition_receipt_paths),
         node_terminal_states={node_id: "success" for node_id in completed},
         resolved_sources=completed,
         activated_edges=activated_edges,

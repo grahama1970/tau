@@ -16,6 +16,7 @@ class DagNodeCompletion:
     verdict: str
     retryable: bool
     raw_result: dict[str, Any]
+    terminal_state: str = "success"
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +45,8 @@ class DagRunBlock:
 @dataclass(frozen=True, slots=True)
 class DagTransitionBatch:
     edge_settlements: tuple[DagEdgeSettlement, ...] = ()
+    receipt_paths: tuple[str, ...] = ()
+    events: tuple[dict[str, Any], ...] = ()
     block_run: DagRunBlock | None = None
 
 
