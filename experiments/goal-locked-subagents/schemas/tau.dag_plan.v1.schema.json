@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tau.local/schemas/tau.dag_plan.v1.schema.json",
+  "title": "Tau canonical DAG plan",
+  "type": "object",
+  "required": [
+    "schema", "plan_id", "source", "goal_binding", "target_binding",
+    "entry_node_ids", "terminal_endpoints", "completion_policy", "nodes",
+    "control_edges", "context_bindings", "runtime_bindings", "route_contracts", "join_contracts",
+    "required_evidence", "fail_closed_on", "security_declarations",
+    "execution_limits", "source_extensions", "plan_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "tau.dag_plan.v1"},
+    "plan_id": {"type": "string", "pattern": "^(project|generic):.+$"},
+    "source": {
+      "type": "object",
+      "required": ["family", "schema", "logical_id", "canonical_source_sha256"],
+      "properties": {
+        "family": {"enum": ["project_dag", "generic_dag"]},
+        "schema": {"enum": ["tau.dag_contract.v1", "tau.generic_dag_spec.v1"]},
+        "logical_id": {"type": "string", "minLength": 1},
+        "canonical_source_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "goal_binding": {"type": "object"},
+    "target_binding": {"type": "object"},
+    "entry_node_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "terminal_endpoints": {"type": "array", "items": {"type": "object"}, "minItems": 1},
+    "completion_policy": {"type": "object", "required": ["kind"]},
+    "nodes": {"type": "array", "items": {"type": "object"}, "minItems": 1},
+    "control_edges": {"type": "array", "items": {"type": "object"}},
+    "context_bindings": {"type": "array", "items": {"type": "object"}},
+    "runtime_bindings": {"type": "array", "items": {"type": "object"}},
+    "route_contracts": {"type": "array", "items": {"type": "object"}},
+    "join_contracts": {"type": "array", "items": {"type": "object"}},
+    "required_evidence": {"type": "array", "items": {"type": "string"}},
+    "fail_closed_on": {"type": "array", "items": {"type": "string"}},
+    "security_declarations": {"type": "object"},
+    "execution_limits": {"type": "object"},
+    "source_extensions": {"type": "object"},
+    "plan_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

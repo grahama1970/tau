@@ -6523,6 +6523,25 @@
 
 ## Infrastructure State
 
+### 2026-07-13: Canonical DagPlan Compilation (#77)
+
+- `tau dag-plan <contract> --out <plan.json>` compiles validated
+  `tau.dag_contract.v1` and `tau.generic_dag_spec.v1` sources into immutable,
+  backend-neutral `tau.dag_plan.v1` artifacts without dispatching nodes or
+  providers.
+- The plan preserves typed entries and terminals, ordered conditional routes,
+  join policies, control edges, separate context bindings, adapter kinds,
+  portable source bindings, security declarations, source extensions, and a
+  deterministic canonical hash.
+- Focused proof: `24 passed`; existing project/generic DAG compatibility matrix:
+  `248 passed`; Ruff, mypy, schema parsing, and `git diff --check` passed.
+- Full repository suite: `1979 passed, 3 failed`. The three failures predate and
+  do not exercise DagPlan: the compliance-package CLI fixture and two absent
+  retained proof/command-spec artifact checks.
+- Proof boundary: compilation is non-mocked and deterministic but not live
+  execution. It does not prove scheduler convergence, provider/model quality,
+  sandbox enforcement, or semantic correctness of node outputs.
+
 ### 2026-07-10: Phase 2.2 Bubblewrap Secure Executor
 
 - Secure handoff-loop nodes consume attempt-bound `process.execute` grants and
