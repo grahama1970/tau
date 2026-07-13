@@ -63,6 +63,7 @@ from tau_coding.dag_route_memory import (
     write_dag_route_memory_candidate_receipt,
     write_dag_route_memory_sync_receipt,
 )
+from tau_coding.dag_runtime import write_dag_plan
 from tau_coding.dag_signals import write_dag_signal_receipt
 from tau_coding.dag_stress_poc import (
     inspect_dag_stress_campaign,
@@ -1151,6 +1152,15 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if payload.get("ok") is not True:
             raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-plan":
+        try:
+            source_path, output_path = _parse_dag_plan_cli_args(positional_args[1:])
+            payload = write_dag_plan(source_path, output_path=output_path)
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
     if prompt_option is None and command == "dag-signals":
@@ -3338,6 +3348,29 @@ def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, obj
         spec_path=spec_path,
         resume=bool(options["resume"]),
     )
+
+
+def _parse_dag_plan_cli_args(args: list[str]) -> tuple[Path, Path]:
+    if not args:
+        raise RuntimeError("Usage: tau dag-plan <dag-spec> --out <plan.json>")
+    source_path = Path(args[0])
+    output_path: Path | None = None
+    index = 1
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--out requires a value")
+            output_path = Path(args[index])
+        elif arg.startswith("--out="):
+            output_path = Path(arg.partition("=")[2])
+        else:
+            raise RuntimeError(f"unknown dag-plan option: {arg}")
+        index += 1
+    if output_path is None:
+        raise RuntimeError("--out is required")
+    return source_path, output_path
 
 
 def _parse_generic_dag_run_cli_args(

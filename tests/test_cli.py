@@ -48,6 +48,40 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
 
 
+def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) -> None:
+    spec_path = tmp_path / "dag.json"
+    output_path = tmp_path / "plan.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "schema": "tau.generic_dag_spec.v1",
+                "run_id": "cli-dag-plan",
+                "run_dir": str(tmp_path / "run"),
+                "nodes": [
+                    {
+                        "node_id": "worker",
+                        "command": [sys.executable, "-c", "raise SystemExit(99)"],
+                        "receipt_path": str(tmp_path / "worker.json"),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["dag-plan", str(spec_path), "--out", str(output_path)],
+    )
+
+    assert result.exit_code == 0
+    receipt = json.loads(result.output)
+    assert receipt["schema"] == "tau.dag_plan_compile_receipt.v1"
+    assert receipt["status"] == "PASS"
+    assert output_path.exists()
+    assert not (tmp_path / "worker.json").exists()
+
+
 async def _passing_scillm_auth_preflight(
     contract: dict[str, object],
 ) -> dict[str, object]:

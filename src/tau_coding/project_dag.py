@@ -2177,6 +2177,28 @@ def validate_dag_contract(payload: dict[str, Any]) -> ProjectDagContract:
     )
 
 
+def validate_project_dag_plan_semantics(contract: ProjectDagContract) -> None:
+    """Validate graph, route, and join semantics without runtime backend restrictions."""
+
+    runtime_only_codes = {
+        "non_local_ready_queue_node_not_allowed",
+        "provider_node_not_allowed",
+        "mutating_node_not_allowed",
+    }
+    alerts = [
+        alert
+        for alert in _ready_queue_contract_alerts(contract)
+        if alert.get("code") not in runtime_only_codes
+    ]
+    if alerts:
+        raise RuntimeError(
+            "; ".join(
+                f"{alert.get('code')}: {alert.get('message')}"
+                for alert in alerts
+            )
+        )
+
+
 def fail_closed_registry_payload() -> dict[str, Any]:
     """Return the executable fail-closed invariant registry for DAG authors."""
 

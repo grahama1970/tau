@@ -72,8 +72,8 @@ def run_generic_dag(
     """
 
     resolved_spec_path = spec_path.expanduser().resolve()
-    spec = _read_json_object(resolved_spec_path, label="generic DAG spec")
-    nodes = _validate_spec(spec, spec_path=resolved_spec_path)
+    spec = load_generic_dag_spec(resolved_spec_path)
+    nodes = validate_generic_dag_spec(spec, source_path=resolved_spec_path)
     run_dir = Path(str(spec["run_dir"])).expanduser().resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
     events_path = Path(str(spec.get("events_jsonl") or run_dir / "events.jsonl")).expanduser()
@@ -1521,6 +1521,20 @@ def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNod
                 raise RuntimeError(f"node {node.node_id} depends on unknown node {dep}")
     _topological_order(nodes)
     return nodes
+
+
+def load_generic_dag_spec(path: Path) -> dict[str, Any]:
+    """Load a generic DAG source document without executing it."""
+
+    return _read_json_object(path.expanduser().resolve(), label="generic DAG spec")
+
+
+def validate_generic_dag_spec(
+    payload: dict[str, Any], *, source_path: Path
+) -> dict[str, DagNode]:
+    """Public pure validation boundary shared by runtime and DagPlan compiler."""
+
+    return _validate_spec(payload, spec_path=source_path.expanduser().resolve())
 
 
 def _parse_node(raw_node: dict[str, Any], *, base_dir: Path) -> DagNode:
