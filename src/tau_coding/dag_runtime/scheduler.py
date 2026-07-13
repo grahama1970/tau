@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from concurrent.futures import FIRST_COMPLETED, CancelledError, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from threading import Event
 from typing import Any
@@ -118,6 +118,29 @@ def run_dag_plan(
                     for pending, pending_node_id in futures.items():
                         cancel_events[pending_node_id].set()
                         pending.cancel()
+                    for pending, pending_node_id in futures.items():
+                        try:
+                            cancelled_result = pending.result()
+                        except CancelledError:
+                            cancelled_result = {
+                                "node_id": pending_node_id,
+                                "status": "BLOCKED",
+                                "verdict": "CANCELLED",
+                                "errors": ["cancelled before adapter execution"],
+                            }
+                        except Exception as exc:  # pragma: no cover - defensive boundary.
+                            cancelled_result = {
+                                "node_id": pending_node_id,
+                                "status": "BLOCKED",
+                                "verdict": "CANCELLED",
+                                "errors": [str(exc)],
+                            }
+                        results[pending_node_id] = cancelled_result
+                        result_order.append(pending_node_id)
+                        _emit(
+                            event_sink,
+                            {"event": "node_cancelled", "node_id": pending_node_id},
+                        )
                     futures.clear()
                     break
                 completed.add(node_id)

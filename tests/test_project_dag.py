@@ -517,6 +517,7 @@ def test_shared_project_scheduler_cancels_running_sibling_on_block(tmp_path: Pat
     assert receipt["status"] == "BLOCKED"
     assert marker.exists() is False
     assert any(item["status"] == "BLOCKED" for item in progress["node_progress"])
+    assert progress["active_subagents"] == []
 
 
 def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(

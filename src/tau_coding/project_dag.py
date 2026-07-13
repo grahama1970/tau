@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import re
+import tempfile
 import threading
 import time
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
@@ -4693,7 +4694,7 @@ def _write_project_dag_progress(
         },
         "updated_at": _utc_stamp(),
     }
-    _write_json(receipt_dir / "dag-progress.json", payload)
+    _write_json_atomic(receipt_dir / "dag-progress.json", payload)
 
 
 def _project_dag_node_progress(
@@ -4722,7 +4723,13 @@ def _project_dag_node_progress(
             statuses[node_id] = "COMPLETED" if event.get("ok", True) is True else "BLOCKED"
         elif name == "step_completed":
             statuses[node_id] = "COMPLETED" if event.get("ok") is True else "BLOCKED"
-        elif name in {"node_attempt_failed", "node_blocked", "step_blocked", "loop_blocked"}:
+        elif name in {
+            "node_attempt_failed",
+            "node_blocked",
+            "node_cancelled",
+            "step_blocked",
+            "loop_blocked",
+        }:
             statuses[node_id] = "BLOCKED"
     progress: list[dict[str, Any]] = []
     for node_id in sorted(statuses):
@@ -5707,6 +5714,24 @@ def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
 
 
 def _sha256(path: Path) -> str:
