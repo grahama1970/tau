@@ -204,6 +204,58 @@
       "x-tau-max-depth": 8,
       "x-tau-runtime-max-condition-objects": 64,
       "$comment": "JSON Schema enforces depth and per-array limits. Tau's runtime normalizer enforces the 64-object total across the complete condition tree."
+    },
+    "joinPolicy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "policy", "timeout_seconds", "required_successes"],
+          "properties": {
+            "schema": {"const": "tau.dag_join_policy.v1"},
+            "policy": {"enum": ["exact_success_count", "minimum_success_count"]},
+            "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 86400},
+            "required_successes": {"type": "integer", "minimum": 1}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "policy", "timeout_seconds", "quorum_fraction"],
+          "properties": {
+            "schema": {"const": "tau.dag_join_policy.v1"},
+            "policy": {"const": "quorum"},
+            "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 86400},
+            "quorum_fraction": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["numerator", "denominator"],
+              "properties": {
+                "numerator": {"type": "integer", "minimum": 1},
+                "denominator": {"type": "integer", "minimum": 1, "maximum": 1000}
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "policy", "timeout_seconds"],
+          "properties": {
+            "schema": {"const": "tau.dag_join_policy.v1"},
+            "policy": {
+              "enum": [
+                "all_success",
+                "all_terminal",
+                "any_success",
+                "fail_fast",
+                "collect_failures"
+              ]
+            },
+            "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+          }
+        }
+      ]
     }
   },
   "required": [
@@ -341,6 +393,9 @@
                 "enum": ["exclusive", "first_match", "fanout", "all_matching"]
               }
             }
+          },
+          "join": {
+            "$ref": "#/$defs/joinPolicy"
           },
           "required_evidence": {
             "type": "array",

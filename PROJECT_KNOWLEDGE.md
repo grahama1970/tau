@@ -1,9 +1,42 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 12:32 by agent
+**Last updated:** 2026-07-13 14:05 by agent
 **Status:** Active development
 
 ## Current Understanding
+
+- 2026-07-13 issue #76 terminal-contribution/join-policy slice: the
+  `bounded-ready-queue` scheduler now accepts virtual
+  `tau.dag_join_policy.v1` nodes with `all_success`, `all_terminal`,
+  `exact_success_count`, `minimum_success_count`, rational `quorum`,
+  `any_success`, `fail_fast`, and `collect_failures`. Every declared incoming
+  edge produces one immutable `tau.dag_terminal_contribution.v1` using the
+  closed states `success`, `failed`, `blocked`, `skipped`, `cancelled`, or
+  `timed_out`; Tau persists a hash-bound, replayable
+  `tau.dag_join_decision.v1` before settling the virtual join. Unselected typed
+  routes propagate `skipped`, branch-local operational failures can be consumed
+  by a declared join, early decisions close unresolved inputs as `cancelled`,
+  and scheduler-owned deadlines close unresolved edges as `timed_out` while
+  ignoring late replacements. Invalid/implicit joins block before command
+  compilation. Focused deterministic proof:
+  `uv run pytest tests/test_dag_join_decision.py
+  tests/test_project_dag_join_policies.py tests/test_project_dag.py -q` ->
+  `119 passed`; stable non-mocked local subprocess acceptance under
+  `/tmp/tau-issue-76-acceptance/` -> `39 passed` and six inspectable DAG runs,
+  including a skipped branch, a blocking all-success join, a failed branch
+  accepted by all-terminal, timeout closure, deterministic replay, and malformed
+  quorum pre-dispatch blocking. `ruff`, focused `mypy`, schema JSON parsing,
+  `py_compile`, and `git diff --check` pass. Full repository proof ->
+  `1947 passed, 3 failed`; the three failures are unchanged clean-main baseline
+  gaps: one stale compliance-package fixture and two absent generated
+  proof/command-spec artifacts. Browser Oracle resolved the configured Tau tab;
+  WebGPT returned sentinel-proven architecture advice with degraded focus
+  transport, and create-architecture saved the advisory UX Lab diagram
+  `tau-dag-terminal-contributions-and-join-decisions---issue-76`. This slice
+  proves deterministic local join handling and receipts; it does not prove
+  source-result truth, provider/model quality, process termination for
+  cancelled contributions, durable restart recovery, OS isolation, DagPlan
+  convergence, or arbitrary nested-workflow correctness.
 
 - 2026-07-13 issue #75 typed route-decision slice: the project DAG
   `bounded-ready-queue` scheduler now accepts closed
