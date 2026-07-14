@@ -116,8 +116,10 @@ class HerdrRuntimeBackend:
         return RuntimeCapabilities(
             backend="herdr",
             version=(
-                f"tau-herdr-runtime-v1+native-protocol-"
-                f"{self._native_event_transport.protocol}"
+                f"tau-herdr-runtime-v1+native-"
+                f"{self._native_event_transport.server_version}-protocol-"
+                f"{self._native_event_transport.protocol}-binding-"
+                f"{self._native_event_transport.binding_sha256.removeprefix('sha256:')[:16]}"
                 if self._native_event_transport is not None
                 else "tau-herdr-runtime-v1"
             ),

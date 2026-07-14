@@ -15,6 +15,13 @@ following for the requested session:
 - the reported socket is an existing Unix socket;
 - the reported session matches the requested session.
 
+Herdr 0.7.1 protocols 14 and 15 represent the default session as `null`; Tau
+accepts that encoding only for the default session and only for those verified
+version/protocol pairs. Named sessions must match exactly. The advertised
+native capability hash also binds the resolved absolute socket, session,
+server version, and protocol so an endpoint lease cannot be reused with a
+different Herdr server binding.
+
 Otherwise the backend advertises `native_events=false` and retains bounded
 polling. If a verified native stream later fails during setup or delivery, the
 same `wait_event()` call falls back to bounded polling and records the failure

@@ -39,7 +39,7 @@ def test_native_subscription_returns_exact_bound_runtime_event(tmp_path: Path) -
     assert observed.liveness == "ALIVE"
     assert observed.confidence == "NATIVE"
     observation = observed.observation.to_value()
-    assert observation["session"] == "default"
+    assert observation["backend_session_id"] == "default"
     assert observation["workspace_id"] == endpoint.scope_id
     assert observation["pane_id"] == endpoint.endpoint_id
     assert observation["transport"]["mode"] == "native"
@@ -68,6 +68,7 @@ def test_native_subscription_preserves_event_buffered_with_ack(tmp_path: Path) -
         ({"pane_id": "w1:p-other"}, "herdr_native_event_pane_mismatch"),
         ({"workspace_id": "w-other"}, "herdr_native_event_workspace_mismatch"),
         ({"agent": "other-agent"}, "herdr_native_event_agent_mismatch"),
+        ({"session": "other"}, "herdr_native_event_session_mismatch"),
     ],
 )
 def test_native_subscription_rejects_wrong_endpoint_bindings(
@@ -157,6 +158,59 @@ def test_discovery_rejects_unverified_version_for_known_protocol(tmp_path: Path)
 
     assert transport is None
     assert error == "herdr_native_protocol_unsupported"
+
+
+def test_discovery_rejects_relative_socket_path() -> None:
+    transport, error = discover_herdr_native_event_transport(
+        session="default",
+        herdr_bin="herdr",
+        command_runner=_status_runner(socket_path=Path("relative.sock"), protocol=14),
+        timeout_seconds=1,
+    )
+
+    assert transport is None
+    assert error == "herdr_native_socket_unavailable"
+
+
+def test_discovery_rejects_missing_named_session_binding(tmp_path: Path) -> None:
+    socket_path = tmp_path / "herdr.sock"
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(socket_path))
+    try:
+        transport, error = discover_herdr_native_event_transport(
+            session="named",
+            herdr_bin="herdr",
+            command_runner=_status_runner(
+                socket_path=socket_path,
+                protocol=14,
+                reported_session=None,
+            ),
+            timeout_seconds=1,
+        )
+    finally:
+        listener.close()
+
+    assert transport is None
+    assert error == "herdr_native_session_mismatch"
+
+
+def test_distinct_native_payloads_have_distinct_event_ids(tmp_path: Path) -> None:
+    endpoint = _endpoint()
+    first_payload = _status_event(endpoint, status="working")
+    second_payload = _status_event(endpoint, status="working")
+    second_payload["data"]["backend_sequence"] = 2
+    observed = []
+
+    for index, payload in enumerate((first_payload, second_payload)):
+        with _subscription_server(tmp_path / f"herdr-{index}.sock", payload) as socket_path:
+            event = _transport(socket_path).wait_event(
+                endpoint,
+                datetime.now(UTC) + timedelta(seconds=2),
+            )
+            assert event is not None
+            observed.append(event)
+
+    assert observed[0].event_id != observed[1].event_id
 
 
 def _endpoint() -> RuntimeEndpointLease:
@@ -266,7 +320,13 @@ def _recv_line(connection: socket.socket) -> dict[str, Any]:
     return value
 
 
-def _status_runner(*, socket_path: Path, protocol: int, version: str = "0.7.1"):
+def _status_runner(
+    *,
+    socket_path: Path,
+    protocol: int,
+    version: str = "0.7.1",
+    reported_session: str | None = None,
+):
     def runner(argv: list[str], **_: Any) -> subprocess.CompletedProcess[str]:
         payload = {
             "running": True,
@@ -274,7 +334,7 @@ def _status_runner(*, socket_path: Path, protocol: int, version: str = "0.7.1"):
             "version": version,
             "protocol": protocol,
             "socket": str(socket_path),
-            "session": None,
+            "session": reported_session,
         }
         return subprocess.CompletedProcess(argv, 0, json.dumps(payload), "")
 

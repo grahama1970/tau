@@ -54,6 +54,22 @@ class HerdrNativeEventTransport:
     def stream_id(self) -> str:
         return f"herdr:{self.session}:protocol-{self.protocol}"
 
+    @property
+    def binding_sha256(self) -> str:
+        """Identify the exact verified Herdr server binding."""
+
+        return cast(
+            str,
+            canonical_sha256(
+                {
+                    "session": self.session,
+                    "socket_path": str(self.socket_path),
+                    "server_version": self.server_version,
+                    "protocol": self.protocol,
+                }
+            ),
+        )
+
     def wait_event(
         self,
         endpoint: RuntimeEndpointLease,
@@ -140,7 +156,10 @@ def discover_herdr_native_event_transport(
         return None, "herdr_native_status_incomplete"
     if type(protocol) is not int or (version, protocol) not in _SUPPORTED_PROTOCOL_VERSIONS:
         return None, "herdr_native_protocol_unsupported"
-    socket_path = Path(socket_value).expanduser().resolve()
+    raw_socket_path = Path(socket_value)
+    if not raw_socket_path.is_absolute():
+        return None, "herdr_native_socket_unavailable"
+    socket_path = raw_socket_path.resolve(strict=False)
     try:
         is_socket = socket_path.is_socket()
     except OSError:
@@ -148,10 +167,9 @@ def discover_herdr_native_event_transport(
     if not socket_path.is_absolute() or not is_socket:
         return None, "herdr_native_socket_unavailable"
     reported_session = status.get("session")
-    if session == "default":
-        if reported_session not in {None, "default"}:
-            return None, "herdr_native_session_mismatch"
-    elif reported_session != session:
+    # Herdr 0.7.1 protocols 14 and 15 encode the default session as null.
+    expected_reported_session = None if session == "default" else session
+    if reported_session != expected_reported_session:
         return None, "herdr_native_session_mismatch"
     return (
         HerdrNativeEventTransport(
@@ -180,6 +198,9 @@ def _event_from_payload(
         raise HerdrNativeEventError("herdr_native_event_pane_mismatch")
     if workspace_id != endpoint.scope_id:
         raise HerdrNativeEventError("herdr_native_event_workspace_mismatch")
+    observed_session = data.get("session")
+    if observed_session is not None and observed_session != session:
+        raise HerdrNativeEventError("herdr_native_event_session_mismatch")
     expected_agent = endpoint.backend_ids.to_value().get("agent_name")
     observed_agent = data.get("agent")
     if observed_agent is not None and observed_agent != expected_agent:
@@ -199,7 +220,7 @@ def _event_from_payload(
         },
     }
     observation = {
-        "session": session,
+        "backend_session_id": session,
         "workspace_id": workspace_id,
         "pane_id": pane_id,
         "agent_status": status,
@@ -219,10 +240,7 @@ def _event_from_payload(
     digest = canonical_sha256(
         {
             "endpoint_lease_sha256": endpoint.sha256,
-            "state": state,
-            "liveness": liveness,
-            "agent_status": status,
-            "agent": observed_agent,
+            "raw_payload_sha256": raw_payload_sha256,
         }
     ).removeprefix("sha256:")
     return RuntimeEvent(

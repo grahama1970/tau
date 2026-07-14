@@ -1,3 +1,5 @@
+"""Contract tests for Tau's Herdr runtime backend."""
+
 from __future__ import annotations
 
 import json
@@ -932,7 +934,32 @@ def test_verified_native_transport_enables_native_event_capability(tmp_path: Pat
 
     assert capabilities.native_events is True
     assert "native_events" not in capabilities.unsupported_requirements
-    assert capabilities.version.endswith("native-protocol-14")
+    assert "native-0.7.1-protocol-14-binding-" in capabilities.version
+
+
+def test_native_capability_hash_binds_exact_socket(tmp_path: Path) -> None:
+    first = HerdrRuntimeBackend(
+        session="default",
+        command_runner=FakeHerdr(),
+        native_event_transport=HerdrNativeEventTransport(
+            session="default",
+            socket_path=tmp_path / "first.sock",
+            server_version="0.7.1",
+            protocol=14,
+        ),
+    )
+    second = HerdrRuntimeBackend(
+        session="default",
+        command_runner=FakeHerdr(),
+        native_event_transport=HerdrNativeEventTransport(
+            session="default",
+            socket_path=tmp_path / "second.sock",
+            server_version="0.7.1",
+            protocol=14,
+        ),
+    )
+
+    assert first.capabilities().sha256 != second.capabilities().sha256
 
 
 def test_native_stream_failure_falls_back_to_bounded_polling(tmp_path: Path) -> None:
