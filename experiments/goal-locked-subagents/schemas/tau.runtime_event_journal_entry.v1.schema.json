@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.runtime_event_journal_entry.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "runtime_event",
+    "runtime_event_sha256",
+    "runtime_event_identity_sha256",
+    "endpoint_lease_sha256",
+    "transport_mode"
+  ],
+  "properties": {
+    "schema": {"const": "tau.runtime_event_journal_entry.v1"},
+    "runtime_event": {"$ref": "tau.runtime_event.v1.schema.json"},
+    "runtime_event_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "runtime_event_identity_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "transport_mode": {"enum": ["poll", "native"]}
+  }
+}
