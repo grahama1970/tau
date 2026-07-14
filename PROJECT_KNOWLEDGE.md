@@ -6648,6 +6648,64 @@
   providers, signing, and audit ledger.
 
 <!-- Auto-populated from /project-state --quick -->
+- 2026-07-14 issue #90 Herdr runtime adapter slice: added
+  `src/tau_coding/runtime_backends/herdr.py` as the explicit-session interactive
+  implementation of `RuntimeBackend`. It records exact workspace/tab/pane/
+  terminal IDs, attempt-bound endpoint leases, at-most-once submit receipts,
+  bounded diagnostic capture, native/process observations, owned inventory, and
+  exact lease-bound termination. Observation and cleanup now require specific
+  Herdr `pane_not_found` evidence before classifying death/absence; transport or
+  session failures remain `UNKNOWN`/`BLOCKED`. `run_herdr_cleanup` now accepts an
+  explicit session, records it, and emits documented applied/post-verified
+  counts. Herdr GC also targets an explicit named session, including through the
+  public CLI. Cleanup rejects a selected session that differs from the runtime
+  manifest, GC approvals bind the selected session, spawn requests are fully
+  validated before `agent start`, and already-absent panes reconcile as
+  terminated. A sessionless ambient `HERDR_WORKSPACE_ID` is now treated as the
+  current workspace only for the default session, preventing default-session
+  cleanup from closing the active pane without conflating named sessions. All
+  current provider-pane, provider-readiness, provider-DAG, and visible-DAG
+  runtime-manifest producers resolve the explicit or ambient Herdr session once
+  and record that effective `backend_session_id`, so cleanup cannot target a
+  different default session when execution used an ambient named session. If
+  `agent start` returns an incomplete response, Tau reclaims a pane only when
+  the exact pane ID remains available and an independent pre-close `pane get`
+  confirms the expected agent identity and owned workspace; this also safely
+  handles a start response that omits its redundant workspace ID. Tau
+  post-verifies only the exact `pane_not_found` code. Ambiguous
+  nested IDs and generic not-found errors cannot authorize or verify cleanup;
+  the attempt stays reserved and cannot be submitted again blindly.
+  A complete start response that misreports the workspace uses the same
+  independently verified reclamation path before Tau rejects the spawn. A
+  missing or mismatched response agent name also uses that path when an exact
+  pane ID is available. A duplicate response pane ID never authorizes closing
+  the already leased endpoint. Complete responses still select the exact
+  expected agent from nested or list-wrapped records before malformed-response
+  recovery is considered.
+  Explicit or ambient empty session identifiers are rejected rather than
+  silently retargeted. Deterministic proof: `104 passed, 1 deselected` across Herdr
+  backend/smoke/cleanup and provider/
+  visible-DAG compatibility tests; Ruff passed for all touched files. The full
+  suite reports `2160 passed` and
+  the same three retained baseline failures: one compliance-package fixture and
+  two absent retained proof/spec artifacts. Non-mocked development-host proof:
+  `/tmp/tau-herdr-runtime-smoke-issue90-reviewed-20260714T065329Z/herdr-runtime-smoke-receipt.json`
+  reports `status:"PASS"`, `mocked:false`, `live:true`, `provider_live:false`,
+  distinct same-label workspace IDs `w8D`/`w8E`, protected ambient workspace
+  `w11`, wrong-session lookup blocked,
+  unowned cleanup blocked, input delivery `CONFIRMED`, endpoint absence verified
+  with `pane_not_found`, and `2/2` workspaces post-verified absent. The negative
+  substitute-binary receipt at
+  `/tmp/tau-herdr-runtime-smoke-bare-substitute-20260714T053335Z/herdr-runtime-smoke-receipt.json`
+  reports `status:"BLOCKED"`, `mocked:true`, `live:false`, and
+  `herdr_binary_provenance_unverified`. The session-bound GC sanity receipt at
+  `/tmp/tau-issue90-real-world-sanity-final/20260714T054152Z-issue90-gc-session-final/real-world-sanity-receipt.json`
+  reports `3/3` expected checks passed for missing approval, approved apply, and
+  wrong-target rejection. This proves
+  real Herdr adapter mechanics on this host; it does not prove DAG completion,
+  provider/model quality, sandbox isolation, crash-safe reconciliation, or
+  production readiness.
+
 - 2026-07-13 issue #88 runtime-contract slice: every canonical `DagPlan` node
   now carries a hash-bound `tau.runtime_requirement.v1` naming backend,
   interaction mode, required capabilities, session scope, and observation

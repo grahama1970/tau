@@ -76,3 +76,15 @@ closure, or provider semantic completion.
 close stale Tau-labeled workspaces and verified they were no longer addressable.
 It does not prove cleanup of arbitrary non-Tau Herdr workspaces, proof artifact
 deletion, Git worktree deletion, or provider/model semantic quality.
+
+Cleanup and GC target a named Herdr session. The CLI accepts `--session` and
+uses the explicit `default` session when omitted for compatibility. Tau records
+`backend_session_id` and invokes workspace list/close/get as
+`herdr --session <name> ...`; it does not rely on the focused session. Apply
+cleanup blocks when the manifest session differs from the selected session, and
+GC approval targets include the session so approval cannot be replayed across
+Herdr namespaces.
+
+Current-workspace protection applies only when `HERDR_SESSION` identifies the
+same named session being cleaned. Workspace IDs are session-local, so an
+ambient workspace ID never suppresses cleanup in a different selected session.

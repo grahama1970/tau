@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.herdr_cleanup import resolve_herdr_session
 from tau_coding.provider_lifecycle import (
     build_provider_session_state,
     compact_provider_session_state,
@@ -50,6 +51,7 @@ def run_provider_pane_poc(
 ) -> dict[str, Any]:
     """Launch real Codex and OpenCode sessions in visible Herdr panes."""
 
+    session = resolve_herdr_session(session)
     resolved_repo = repo.expanduser().resolve()
     if not resolved_repo.exists():
         raise RuntimeError(f"repo does not exist: {resolved_repo}")
@@ -292,6 +294,7 @@ def run_provider_pane_poc(
 
     runtime_manifest = {
         "schema": PROVIDER_PANE_MANIFEST_SCHEMA,
+        "backend_session_id": session,
         "run_id": run_id,
         "label": label,
         "repo": str(resolved_repo),
@@ -364,6 +367,7 @@ def inspect_provider_pane_run(run_dir: Path) -> dict[str, Any]:
         "status": receipt.get("status"),
         "mocked": receipt.get("mocked"),
         "live": receipt.get("live"),
+        "backend_session_id": manifest.get("backend_session_id"),
         "run_dir": str(resolved),
         "workstation_manifest": manifest.get("workstation_manifest"),
         "inspect_path": manifest.get("inspect_path"),
@@ -402,6 +406,7 @@ def run_provider_readiness_poc(
 ) -> dict[str, Any]:
     """Launch provider panes and gate PASS on structured Herdr readiness state."""
 
+    session = resolve_herdr_session(session)
     resolved_repo = repo.expanduser().resolve()
     if not resolved_repo.exists():
         raise RuntimeError(f"repo does not exist: {resolved_repo}")
@@ -662,6 +667,7 @@ def run_provider_readiness_poc(
 
     runtime_manifest = {
         "schema": PROVIDER_READINESS_MANIFEST_SCHEMA,
+        "backend_session_id": session,
         "run_id": run_id,
         "label": label,
         "repo": str(resolved_repo),
@@ -772,6 +778,7 @@ def inspect_provider_readiness_run(run_dir: Path) -> dict[str, Any]:
         "status": receipt.get("status"),
         "mocked": receipt.get("mocked"),
         "live": receipt.get("live"),
+        "backend_session_id": manifest.get("backend_session_id"),
         "run_dir": str(resolved),
         "workstation_manifest": manifest.get("workstation_manifest"),
         "inspect_path": manifest.get("inspect_path"),
@@ -1147,9 +1154,7 @@ def _sample_provider_readiness(
     foreground_process = _matching_foreground_process(foreground_processes, expected_command)
     process_alive = process_info.returncode == 0 and bool(foreground_process)
     command_matches = _process_matches_expected_command(foreground_process, expected_command)
-    if process_info.returncode != 0 or pane_get.returncode != 0:
-        state = "unknown"
-    elif not process_alive:
+    if process_info.returncode != 0 or pane_get.returncode != 0 or not process_alive:
         state = "unknown"
     elif not command_matches:
         state = "blocked"

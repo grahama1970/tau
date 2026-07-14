@@ -10,7 +10,11 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from tau_coding.herdr_cleanup import HERDR_WORKSPACE_LEASE_SCHEMA, run_herdr_cleanup
+from tau_coding.herdr_cleanup import (
+    HERDR_WORKSPACE_LEASE_SCHEMA,
+    resolve_herdr_session,
+    run_herdr_cleanup,
+)
 from tau_coding.orchestration_evidence import build_orchestration_evidence
 from tau_coding.provider_pane_poc import run_provider_readiness_poc
 
@@ -100,7 +104,9 @@ def plan_provider_dag_poc(
     for path in (work_order_dir, receipt_dir, scratch_dir, logs_dir):
         path.mkdir(parents=True, exist_ok=True)
     target_file = scratch_dir / "message.txt"
-    target_file.write_text("TODO: replace this line with a completed implementation.\n", encoding="utf-8")
+    target_file.write_text(
+        "TODO: replace this line with a completed implementation.\n", encoding="utf-8"
+    )
 
     dag_spec = _dag_spec(
         run_id,
@@ -173,6 +179,7 @@ def run_provider_dag_orchestrator(
     """Execute a planner-created provider DAG spec through visible provider panes."""
 
     _validate_cleanup_mode(cleanup_mode)
+    session = resolve_herdr_session(session)
     resolved_repo = repo.expanduser().resolve()
     if not resolved_repo.exists():
         raise RuntimeError(f"repo does not exist: {resolved_repo}")
@@ -189,7 +196,9 @@ def run_provider_dag_orchestrator(
     logs_dir = Path(str(spec["logs_dir"])).expanduser().resolve()
     target_file = Path(str(spec["target_file"])).expanduser().resolve()
     max_attempts = int(spec["max_attempts"])
-    proof_controls = spec.get("proof_controls") if isinstance(spec.get("proof_controls"), dict) else {}
+    proof_controls = (
+        spec.get("proof_controls") if isinstance(spec.get("proof_controls"), dict) else {}
+    )
     force_reviewer_revise_attempts = {
         int(attempt)
         for attempt in proof_controls.get("force_reviewer_revise_attempts", [])
@@ -542,6 +551,7 @@ def run_provider_dag_orchestrator(
     runtime_manifest = {
         "schema": PROVIDER_DAG_MANIFEST_SCHEMA,
         "run_id": run_id,
+        "backend_session_id": session,
         "label": label,
         "repo": str(resolved_repo),
         "run_dir": str(run_dir),
@@ -559,6 +569,7 @@ def run_provider_dag_orchestrator(
         run_dir=run_dir,
         mode=cleanup_mode,
         herdr_bin=herdr_bin,
+        session=session,
     )
     final_receipt = {
         "schema": PROVIDER_DAG_RUN_SCHEMA,
@@ -662,6 +673,7 @@ def _run_provider_dag_cleanup(
     run_dir: Path,
     mode: str,
     herdr_bin: str,
+    session: str = "default",
 ) -> dict[str, Any]:
     if mode == "off":
         return {
@@ -678,6 +690,7 @@ def _run_provider_dag_cleanup(
         run_dir=run_dir,
         mode=mode,
         herdr_bin=herdr_bin,
+        session=session,
         workspace_lease_path=workspace_lease_path,
     )
     return {
@@ -737,7 +750,9 @@ def _count(value: Any) -> int:
 def _post_verified_absent_count(value: Any) -> int:
     if not isinstance(value, list):
         return 0
-    return sum(1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True)
+    return sum(
+        1 for item in value if isinstance(item, dict) and item.get("post_verified_absent") is True
+    )
 
 
 def _validate_cleanup_mode(mode: str) -> None:
@@ -1497,9 +1512,7 @@ def _validate_forced_revise_attempts(
         if attempt > max_attempts:
             raise RuntimeError("force_reviewer_revise_attempts must not exceed max_attempts")
         if attempt == max_attempts and not allow_final:
-            raise RuntimeError(
-                "force_reviewer_revise_attempts must leave a later attempt for PASS"
-            )
+            raise RuntimeError("force_reviewer_revise_attempts must leave a later attempt for PASS")
 
 
 def _provider_dag_proof_claims(reached: set[str]) -> list[str]:
@@ -1510,7 +1523,8 @@ def _provider_dag_proof_claims(reached: set[str]) -> list[str]:
         ),
         (
             "visible_roles_started",
-            "Tau exposes planner, orchestrator, coder, and reviewer roles as Herdr-visible subagents",
+            "Tau exposes planner, orchestrator, coder, and reviewer roles as "
+            "Herdr-visible subagents",
         ),
         (
             "structured_readiness_required",
@@ -1783,7 +1797,8 @@ def _start_visible_deterministic_coder_pane(
         "from pathlib import Path; "
         "wo=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8')); "
         "target=Path(wo['target_file']); "
-        "target.write_text('completed implementation by deterministic visible coder attempt %s\\n' % wo['attempt'], encoding='utf-8'); "
+        "target.write_text('completed implementation by deterministic visible coder "
+        "attempt %s\\n' % wo['attempt'], encoding='utf-8'); "
         "receipt=Path(wo['receipt_path']); "
         "receipt.parent.mkdir(parents=True, exist_ok=True); "
         "payload={"
@@ -1797,7 +1812,10 @@ def _start_visible_deterministic_coder_pane(
         "'pane_id':wo['herdr']['pane_id'],"
         "'terminal_id':wo['herdr']['terminal_id'],"
         "'visible_log_path':wo['herdr'].get('visible_log_path'),"
-        "'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get('visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get('visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() else None,"
+        "'visible_log_sha256':hashlib.sha256(Path(wo['herdr'].get("
+        "'visible_log_path') or '').read_bytes()).hexdigest() if wo['herdr'].get("
+        "'visible_log_path') and Path(wo['herdr'].get('visible_log_path')).is_file() "
+        "else None,"
         "'work_order_sha256':wo['work_order_sha256'],"
         "'status':'PASS',"
         "'verdict':'PASS',"
@@ -1809,7 +1827,8 @@ def _start_visible_deterministic_coder_pane(
         "'errors':[],"
         "'policy_exceptions':[]"
         "}; "
-        "receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\n', encoding='utf-8'); "
+        "receipt.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\\n', "
+        "encoding='utf-8'); "
         "print(json.dumps({'wrote_receipt': str(receipt), 'target_file': str(target)}))"
     )
     result = _run_pane_command(
@@ -2047,7 +2066,9 @@ def _capture_visible_logs(
         safe_name = _slug(f"{name}-{pane_id}")
         log_text = read.stdout
         if read.returncode != 0:
-            log_text = f"pane_read_failed returncode={read.returncode}\n{read.stderr or read.stdout}"
+            log_text = (
+                f"pane_read_failed returncode={read.returncode}\n{read.stderr or read.stdout}"
+            )
         (logs_dir / f"{safe_name}.visible.txt").write_text(log_text, encoding="utf-8")
 
 

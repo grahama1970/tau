@@ -3,22 +3,26 @@ import json
 import os
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.herdr_cleanup import (
     DEFAULT_GC_LABEL_PREFIXES,
+    classify_herdr_surface,
+    resolve_herdr_session,
     run_herdr_cleanup,
     run_herdr_gc,
 )
 
 
-def _write_manifest(run_dir: Path) -> None:
+def _write_manifest(run_dir: Path, *, session: str = "default") -> None:
     run_dir.mkdir(parents=True)
     (run_dir / "runtime-manifest.json").write_text(
         json.dumps(
             {
                 "schema": "tau.provider_dag_runtime_manifest.v1",
+                "backend_session_id": session,
                 "provider_sessions": {
                     "codex": {
                         "workspace_id": "w-run",
@@ -42,6 +46,44 @@ def _write_manifest(run_dir: Path) -> None:
         ),
         encoding="utf-8",
     )
+
+
+def test_resolve_herdr_session_prefers_explicit_then_ambient(monkeypatch) -> None:
+    monkeypatch.setenv("HERDR_SESSION", "ambient-session")
+
+    assert resolve_herdr_session("explicit-session") == "explicit-session"
+    assert resolve_herdr_session(None) == "ambient-session"
+
+    monkeypatch.delenv("HERDR_SESSION")
+    assert resolve_herdr_session(None) == "default"
+
+
+def test_resolve_herdr_session_rejects_explicit_or_ambient_empty(monkeypatch) -> None:
+    with pytest.raises(RuntimeError, match="non-empty"):
+        resolve_herdr_session("")
+
+    monkeypatch.setenv("HERDR_SESSION", "")
+    with pytest.raises(RuntimeError, match="HERDR_SESSION"):
+        resolve_herdr_session(None)
+
+
+def test_classify_herdr_surface_rejects_substitute_binary(
+    tmp_path: Path, monkeypatch
+) -> None:
+    real = tmp_path / "herdr"
+    substitute = tmp_path / "herdr-fixture"
+    real.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    substitute.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    real.chmod(0o755)
+    substitute.chmod(0o755)
+    binaries = {"herdr": str(real), "herdr-fixture": str(substitute)}
+    monkeypatch.setattr(
+        "tau_coding.herdr_cleanup.shutil.which", lambda name: binaries.get(name)
+    )
+
+    assert classify_herdr_surface(str(substitute)) == "fixture"
+    assert classify_herdr_surface("herdr-fixture") == "fixture"
+    assert classify_herdr_surface("herdr") == "real"
 
 
 def test_herdr_cleanup_dry_run_collects_run_owned_workspace(tmp_path: Path) -> None:
@@ -72,11 +114,46 @@ def test_herdr_cleanup_refuses_current_workspace_by_default(
     run_dir = tmp_path / "run"
     _write_manifest(run_dir)
     monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-run")
+    monkeypatch.setenv("HERDR_SESSION", "default")
 
     receipt = run_herdr_cleanup(run_dir=run_dir, mode="dry-run")
 
     assert receipt["candidate_count"] == 0
     assert receipt["current_workspace"] == "w-run"
+
+
+def test_herdr_cleanup_default_session_protects_ambient_workspace_without_session(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-run")
+    monkeypatch.delenv("HERDR_SESSION", raising=False)
+
+    receipt = run_herdr_cleanup(run_dir=run_dir, mode="dry-run")
+
+    assert receipt["candidate_count"] == 0
+    assert receipt["current_workspace"] == "w-run"
+
+
+def test_herdr_cleanup_named_session_does_not_adopt_sessionless_workspace(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir, session="named-session")
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-run")
+    monkeypatch.delenv("HERDR_SESSION", raising=False)
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="dry-run",
+        session="named-session",
+    )
+
+    assert receipt["candidate_count"] == 1
+    assert receipt["current_workspace"] is None
 
 
 def test_herdr_cleanup_apply_uses_herdr_workspace_close(
@@ -97,11 +174,14 @@ def test_herdr_cleanup_apply_uses_herdr_workspace_close(
         'for arg in "$@"; do\n'
         '  if [ "$first" = 0 ]; then printf \',\' >> "$HERDR_CALLS"; fi\n'
         "  first=0\n"
-        '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_CALLS"\n'
+        '  python3 -c \'import json,sys; '
+        'print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_CALLS"\n'
         "done\n"
         "printf ']}\\n' >> \"$HERDR_CALLS\"\n"
+        'if [ "$1" = "--session" ]; then shift 2; fi\n'
         'if [ "$1 $2 $3" = "workspace get w-run" ]; then\n'
-        '  printf \'{"error":{"code":"workspace_not_found","message":"workspace w-run not found"}}\\n\'\n'
+        '  printf \'{"error":{"code":"workspace_not_found",'
+        '"message":"workspace w-run not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
         'printf \'{"result":{"type":"ok"}}\\n\'\n',
@@ -137,13 +217,104 @@ def test_herdr_cleanup_apply_uses_herdr_workspace_close(
             "post_verified_absent": True,
         }
     ]
+    assert receipt["applied_action_count"] == 1
+    assert receipt["post_verified_absent_count"] == 1
     calls = [json.loads(line) for line in calls_path.read_text(encoding="utf-8").splitlines()]
     assert calls == [
-        {"argv": ["workspace", "close", "w-run"]},
-        {"argv": ["workspace", "get", "w-run"]},
+        {"argv": ["--session", "default", "workspace", "close", "w-run"]},
+        {"argv": ["--session", "default", "workspace", "get", "w-run"]},
     ]
-    assert receipt["command_results"][0]["argv"] == [str(fake_herdr), "workspace", "close", "w-run"]
-    assert receipt["command_results"][1]["argv"] == [str(fake_herdr), "workspace", "get", "w-run"]
+    assert receipt["command_results"][0]["argv"] == [
+        str(fake_herdr),
+        "--session",
+        "default",
+        "workspace",
+        "close",
+        "w-run",
+    ]
+    assert receipt["command_results"][1]["argv"] == [
+        str(fake_herdr),
+        "--session",
+        "default",
+        "workspace",
+        "get",
+        "w-run",
+    ]
+
+
+def test_herdr_cleanup_targets_explicit_session_for_workspace_mutation(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir, session="named-session")
+    lease_path = _write_workspace_lease(run_dir)
+    calls_path = tmp_path / "calls.jsonl"
+    fake_herdr = tmp_path / "herdr"
+    fake_herdr.write_text(
+        "#!/usr/bin/env bash\n"
+        'python3 -c \'import json,os,sys; '
+        'open(os.environ["HERDR_CALLS"], "a").write(json.dumps(sys.argv[1:]) + "\\n")\' "$@"\n'
+        'if [ "$3 $4 $5" = "workspace get w-run" ]; then\n'
+        '  printf \'{"error":{"code":"workspace_not_found"}}\\n\'\n'
+        "  exit 1\n"
+        "fi\n"
+        'printf \'{"result":{"type":"ok"}}\\n\'\n',
+        encoding="utf-8",
+    )
+    fake_herdr.chmod(0o755)
+    monkeypatch.setenv("HERDR_CALLS", str(calls_path))
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin=str(fake_herdr),
+        session="named-session",
+        workspace_lease_path=lease_path,
+    )
+
+    calls = [json.loads(line) for line in calls_path.read_text(encoding="utf-8").splitlines()]
+    assert calls == [
+        ["--session", "named-session", "workspace", "close", "w-run"],
+        ["--session", "named-session", "workspace", "get", "w-run"],
+    ]
+    assert receipt["backend_session_id"] == "named-session"
+    assert receipt["status"] == "PASS"
+
+
+def test_herdr_cleanup_blocks_session_mismatch_before_mutation(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir, session="owned-session")
+    lease_path = _write_workspace_lease(run_dir)
+    calls_path = tmp_path / "calls.jsonl"
+    fake_herdr = tmp_path / "herdr"
+    fake_herdr.write_text(
+        "#!/usr/bin/env bash\n"
+        'printf "%s\\n" "$*" >> "$HERDR_CALLS"\n'
+        'printf \'{"result":{"type":"ok"}}\\n\'\n',
+        encoding="utf-8",
+    )
+    fake_herdr.chmod(0o755)
+    monkeypatch.setenv("HERDR_CALLS", str(calls_path))
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="apply",
+        herdr_bin=str(fake_herdr),
+        session="other-session",
+        workspace_lease_path=lease_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert any(
+        alert["code"] == "backend_session_id_mismatch"
+        for alert in receipt["alerts"]
+    )
+    assert receipt["command_results"] == []
+    assert not calls_path.exists()
 
 
 def test_herdr_cleanup_apply_blocks_without_workspace_lease(tmp_path: Path) -> None:
@@ -204,9 +375,11 @@ def test_herdr_cleanup_apply_blocks_when_workspace_still_exists(
         'for arg in "$@"; do\n'
         '  if [ "$first" = 0 ]; then printf \',\' >> "$HERDR_CALLS"; fi\n'
         "  first=0\n"
-        '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_CALLS"\n'
+        '  python3 -c \'import json,sys; '
+        'print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_CALLS"\n'
         "done\n"
         "printf ']}\\n' >> \"$HERDR_CALLS\"\n"
+        'if [ "$1" = "--session" ]; then shift 2; fi\n'
         'if [ "$1 $2 $3" = "workspace get w-run" ]; then\n'
         '  printf \'{"workspace":{"id":"w-run"}}\\n\'\n'
         "  exit 0\n"
@@ -227,13 +400,15 @@ def test_herdr_cleanup_apply_blocks_when_workspace_still_exists(
     assert receipt["ok"] is False
     assert receipt["status"] == "BLOCKED"
     assert receipt["applied_actions"][0]["applied"] is True
+    assert receipt["applied_action_count"] == 1
+    assert receipt["post_verified_absent_count"] == 0
     assert receipt["applied_actions"][0]["post_verify_returncode"] == 0
     assert receipt["applied_actions"][0]["post_verify_error_code"] is None
     assert receipt["applied_actions"][0]["post_verified_absent"] is False
     calls = [json.loads(line) for line in calls_path.read_text(encoding="utf-8").splitlines()]
     assert calls == [
-        {"argv": ["workspace", "close", "w-run"]},
-        {"argv": ["workspace", "get", "w-run"]},
+        {"argv": ["--session", "default", "workspace", "close", "w-run"]},
+        {"argv": ["--session", "default", "workspace", "get", "w-run"]},
     ]
 
 
@@ -396,15 +571,19 @@ def test_herdr_cleanup_apply_stops_owned_sessions(
         'for arg in "$@"; do\n'
         '  if [ "$first" = 0 ]; then printf \',\' >> "$HERDR_CALLS"; fi\n'
         "  first=0\n"
-        '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_CALLS"\n'
+        '  python3 -c \'import json,sys; '
+        'print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_CALLS"\n'
         "done\n"
         "printf ']}\\n' >> \"$HERDR_CALLS\"\n"
+        'if [ "$1" = "--session" ]; then shift 2; fi\n'
         'if [ "$1 $2 $3" = "workspace get w-run" ]; then\n'
-        '  printf \'{"error":{"code":"workspace_not_found","message":"workspace w-run not found"}}\\n\'\n'
+        '  printf \'{"error":{"code":"workspace_not_found",'
+        '"message":"workspace w-run not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
         'if [ "$1 $2 $3" = "session get session-codex" ]; then\n'
-        '  printf \'{"error":{"code":"session_not_found","message":"session session-codex not found"}}\\n\'\n'
+        '  printf \'{"error":{"code":"session_not_found",'
+        '"message":"session session-codex not found"}}\\n\'\n'
         "  exit 1\n"
         "fi\n"
         'printf \'{"result":{"type":"ok"}}\\n\'\n',
@@ -439,8 +618,8 @@ def test_herdr_cleanup_apply_stops_owned_sessions(
     assert calls == [
         {"argv": ["session", "stop", "session-codex"]},
         {"argv": ["session", "get", "session-codex"]},
-        {"argv": ["workspace", "close", "w-run"]},
-        {"argv": ["workspace", "get", "w-run"]},
+        {"argv": ["--session", "default", "workspace", "close", "w-run"]},
+        {"argv": ["--session", "default", "workspace", "get", "w-run"]},
     ]
 
 
@@ -450,6 +629,7 @@ def test_herdr_gc_dry_run_selects_stale_tau_workspaces(
 ) -> None:
     fake_herdr = _write_fake_gc_herdr(tmp_path)
     monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+    monkeypatch.setenv("HERDR_SESSION", "default")
 
     receipt = run_herdr_gc(
         run_dir=tmp_path / "gc",
@@ -472,6 +652,38 @@ def test_herdr_gc_dry_run_selects_stale_tau_workspaces(
     assert (tmp_path / "gc" / "herdr-gc-receipt.json").exists()
 
 
+def test_herdr_gc_default_session_protects_ambient_workspace_without_session(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+    monkeypatch.delenv("HERDR_SESSION", raising=False)
+
+    receipt = run_herdr_gc(run_dir=tmp_path / "gc", herdr_bin=str(fake_herdr))
+
+    assert receipt["current_workspace"] == "w-current"
+    assert "w-current" not in {item["workspace_id"] for item in receipt["candidates"]}
+
+
+def test_herdr_gc_does_not_apply_ambient_workspace_id_to_another_session(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+    monkeypatch.setenv("HERDR_SESSION", "ambient-session")
+
+    receipt = run_herdr_gc(
+        run_dir=tmp_path / "gc",
+        herdr_bin=str(fake_herdr),
+        session="selected-session",
+    )
+
+    assert receipt["current_workspace"] is None
+    assert "w-current" in {item["workspace_id"] for item in receipt["candidates"]}
+
+
 def test_herdr_gc_apply_closes_and_verifies_absence(
     tmp_path: Path,
     monkeypatch,
@@ -479,6 +691,7 @@ def test_herdr_gc_apply_closes_and_verifies_absence(
     fake_herdr = _write_fake_gc_herdr(tmp_path)
     approval_path = _write_gc_approval_receipt(tmp_path)
     monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+    monkeypatch.setenv("HERDR_SESSION", "default")
 
     receipt = run_herdr_gc(
         run_dir=tmp_path / "gc",
@@ -511,11 +724,11 @@ def test_herdr_gc_apply_closes_and_verifies_absence(
         for line in (tmp_path / "gc-calls.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert calls == [
-        {"argv": ["workspace", "list"]},
-        {"argv": ["workspace", "close", "w-old"]},
-        {"argv": ["workspace", "get", "w-old"]},
-        {"argv": ["workspace", "close", "w-generic"]},
-        {"argv": ["workspace", "get", "w-generic"]},
+        {"argv": ["--session", "default", "workspace", "list"]},
+        {"argv": ["--session", "default", "workspace", "close", "w-old"]},
+        {"argv": ["--session", "default", "workspace", "get", "w-old"]},
+        {"argv": ["--session", "default", "workspace", "close", "w-generic"]},
+        {"argv": ["--session", "default", "workspace", "get", "w-generic"]},
     ]
 
 
@@ -541,7 +754,7 @@ def test_herdr_gc_apply_blocks_without_approval_receipt(
         json.loads(line)
         for line in (tmp_path / "gc-calls.jsonl").read_text(encoding="utf-8").splitlines()
     ]
-    assert calls == [{"argv": ["workspace", "list"]}]
+    assert calls == [{"argv": ["--session", "default", "workspace", "list"]}]
 
 
 def test_herdr_gc_apply_blocks_wrong_approval_action(
@@ -589,6 +802,27 @@ def test_herdr_gc_apply_blocks_wrong_approval_target(
     assert receipt["applied_actions"] == []
 
 
+def test_herdr_gc_approval_cannot_be_replayed_across_sessions(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+    approval_path = _write_gc_approval_receipt(tmp_path, session="session-a")
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+
+    receipt = run_herdr_gc(
+        run_dir=tmp_path / "gc",
+        apply=True,
+        herdr_bin=str(fake_herdr),
+        session="session-b",
+        approval_receipt_path=approval_path,
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["alerts"][0]["code"] == "approval_target_mismatch"
+    assert receipt["applied_actions"] == []
+
+
 def test_cli_herdr_gc_apply_without_approval_exits_nonzero(tmp_path: Path) -> None:
     fake_herdr = _write_fake_gc_herdr(tmp_path)
 
@@ -602,13 +836,21 @@ def test_cli_herdr_gc_apply_without_approval_exits_nonzero(tmp_path: Path) -> No
             "--apply",
             "--herdr-bin",
             str(fake_herdr),
+            "--session",
+            "issue-90",
         ],
     )
 
     assert result.exit_code == 1
     payload = json.loads(result.stdout)
     assert payload["status"] == "BLOCKED"
+    assert payload["backend_session_id"] == "issue-90"
     assert payload["alerts"][0]["code"] == "missing_approval_receipt"
+    calls = [
+        json.loads(line)
+        for line in (tmp_path / "gc-calls.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert calls == [{"argv": ["--session", "issue-90", "workspace", "list"]}]
 
 
 def _write_fake_gc_herdr(tmp_path: Path) -> Path:
@@ -677,9 +919,11 @@ def _write_fake_gc_herdr(tmp_path: Path) -> Path:
         'for arg in "$@"; do\n'
         '  if [ "$first" = 0 ]; then printf \',\' >> "$HERDR_GC_CALLS"; fi\n'
         "  first=0\n"
-        '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_GC_CALLS"\n'
+        '  python3 -c \'import json,sys; '
+        'print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_GC_CALLS"\n'
         "done\n"
         "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
+        'if [ "$1" = "--session" ]; then shift 2; fi\n'
         'if [ "$1 $2" = "workspace list" ]; then\n'
         '  cat "$HERDR_GC_WORKSPACES"\n'
         "  exit 0\n"
@@ -702,6 +946,7 @@ def _write_gc_approval_receipt(
     *,
     requested_action: str = "herdr_gc_apply",
     target_id: str | None = None,
+    session: str = "default",
 ) -> Path:
     path = tmp_path / f"approval-{requested_action}.json"
     path.write_text(
@@ -714,7 +959,7 @@ def _write_gc_approval_receipt(
                 "approval_packet": str(tmp_path / "approval-packet.json"),
                 "approval_packet_sha256": "sha256:test-approval",
                 "packet_summary": {
-                    "target_id": target_id or _gc_target_id(),
+                    "target_id": target_id or _gc_target_id(session),
                 },
                 "errors": [],
             }
@@ -724,8 +969,8 @@ def _write_gc_approval_receipt(
     return path
 
 
-def _gc_target_id() -> str:
-    return f"herdr-gc:{','.join(DEFAULT_GC_LABEL_PREFIXES)}"
+def _gc_target_id(session: str = "default") -> str:
+    return f"herdr-gc:{session}:{','.join(DEFAULT_GC_LABEL_PREFIXES)}"
 
 
 def _write_workspace_lease(

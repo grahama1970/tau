@@ -41,6 +41,7 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
         json.dumps(
             {
                 "schema": "tau.provider_pane_runtime_manifest.v1",
+                "backend_session_id": "default",
                 "run_id": "run-1",
                 "events_jsonl": str(events),
                 "workstation_manifest": "/tmp/workstation.json",
@@ -96,6 +97,7 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
     assert summary["ok"] is True
     assert summary["mocked"] is False
     assert summary["live"] is True
+    assert summary["backend_session_id"] == "default"
     assert summary["events_count"] == 1
     assert summary["providers"] == [
         {
@@ -924,8 +926,14 @@ def test_provider_node_receipt_validator_requires_work_order_and_herdr_binding(
         allowed_paths=[Path(path) for path in work_order["target"]["allowed_paths"]],
     )
 
-    assert f"changed_files entry is outside work order allowed_paths: {out_of_scope}" in unsafe_errors
-    assert f"artifacts entry is outside work order allowed_paths: {out_of_scope}" in unsafe_errors
+    assert (
+        f"changed_files entry is outside work order allowed_paths: {out_of_scope}"
+        in unsafe_errors
+    )
+    assert (
+        f"artifacts entry is outside work order allowed_paths: {out_of_scope}"
+        in unsafe_errors
+    )
     assert "PASS receipt errors must be empty" in unsafe_errors
     assert "PASS receipt policy_exceptions must be empty" in unsafe_errors
 
@@ -1112,7 +1120,8 @@ def test_visible_worker_exit_errors_reports_vanished_pane(monkeypatch, tmp_path:
     )
 
     assert errors == [
-        'provider_worker_exited_before_receipt: {"code":"pane_not_found","message":"pane w1:pA not found"}'
+        'provider_worker_exited_before_receipt: {"code":"pane_not_found",'
+        '"message":"pane w1:pA not found"}'
     ]
     assert len(command_results) == 1
 
@@ -1307,9 +1316,10 @@ def test_provider_dag_orchestrator_rejects_invalid_spec(tmp_path: Path) -> None:
 def test_provider_dag_cleanup_writes_dry_run_receipt(tmp_path: Path) -> None:
     (tmp_path / "runtime-manifest.json").write_text(
         json.dumps(
-            {
-                "schema": "tau.provider_dag_runtime_manifest.v1",
-                "provider_sessions": {
+                {
+                    "schema": "tau.provider_dag_runtime_manifest.v1",
+                    "backend_session_id": "default",
+                    "provider_sessions": {
                     "codex": {
                         "workspace_id": "w-clean",
                         "pane_id": "w-clean:p5",
@@ -1354,6 +1364,7 @@ def test_provider_dag_cleanup_apply_summarizes_verified_absence(
         json.dumps(
             {
                 "schema": "tau.provider_dag_runtime_manifest.v1",
+                "backend_session_id": "default",
                 "provider_sessions": {
                     "codex": {
                         "workspace_id": "w-clean",
@@ -1374,9 +1385,11 @@ def test_provider_dag_cleanup_apply_summarizes_verified_absence(
         "for arg in \"$@\"; do\n"
         "  if [ \"$first\" = 0 ]; then printf ',' >> \"$HERDR_CALLS\"; fi\n"
         "  first=0\n"
-        "  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$HERDR_CALLS\"\n"
+        "  python3 -c 'import json,sys; "
+        "print(json.dumps(sys.argv[1]), end=\"\")' \"$arg\" >> \"$HERDR_CALLS\"\n"
         "done\n"
         "printf ']}\\n' >> \"$HERDR_CALLS\"\n"
+        'if [ "$1" = "--session" ]; then shift 2; fi\n'
         "if [ \"$1 $2 $3\" = \"workspace get w-clean\" ]; then\n"
         "  printf '{\"error\":{\"code\":\"workspace_not_found\"}}\\n'\n"
         "  exit 1\n"

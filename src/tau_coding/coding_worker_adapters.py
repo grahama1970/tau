@@ -1423,7 +1423,7 @@ def _maybe_post_scillm_opencode_run(
         with urllib.request.urlopen(request, timeout=request_timeout_s) as response:
             response_body = response.read().decode("utf-8", errors="replace")
             http_status = response.status
-    except TimeoutError, socket.timeout:
+    except TimeoutError:
         alerts.append(
             _alert(
                 "scillm_launch_timeout",
@@ -1855,7 +1855,7 @@ def _docker_scillm_auth_token() -> tuple[str | None, str]:
             timeout=5,
             check=False,
         )
-    except OSError, subprocess.TimeoutExpired:
+    except (OSError, subprocess.TimeoutExpired):
         return None, "missing"
     if result.returncode != 0:
         return None, "missing"
@@ -2168,7 +2168,7 @@ def _referenced_substrate_receipt_artifact(
         return None
     try:
         payload = json.loads(Path(str(descriptor["path"])).read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return descriptor
     if not isinstance(payload, Mapping):
         return descriptor

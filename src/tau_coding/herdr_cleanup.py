@@ -27,11 +27,33 @@ DEFAULT_GC_LABEL_PREFIXES = (
 )
 
 
+def _ambient_workspace_belongs_to_session(
+    ambient_session: str, selected_session: str
+) -> bool:
+    return ambient_session == selected_session or (
+        not ambient_session and selected_session == "default"
+    )
+
+
+def resolve_herdr_session(session: str | None) -> str:
+    if session is not None:
+        if not session.strip():
+            raise RuntimeError("Herdr session must be a non-empty string")
+        return session
+    ambient_session = os.environ.get("HERDR_SESSION")
+    if ambient_session is None:
+        return "default"
+    if not ambient_session.strip():
+        raise RuntimeError("HERDR_SESSION must be a non-empty string")
+    return ambient_session
+
+
 def run_herdr_cleanup(
     *,
     run_dir: Path,
     mode: str = "audit",
     herdr_bin: str = "herdr",
+    session: str = "default",
     include_current_workspace: bool = False,
     workspace_lease_path: Path | None = None,
     session_ownership_path: Path | None = None,
@@ -43,7 +65,12 @@ def run_herdr_cleanup(
     resolved_run_dir = run_dir.expanduser().resolve()
     manifest = _load_runtime_manifest(resolved_run_dir)
     resources = _resources_from_manifest(manifest)
-    current_workspace = os.environ.get("HERDR_WORKSPACE_ID") or ""
+    ambient_session = os.environ.get("HERDR_SESSION") or ""
+    current_workspace = (
+        (os.environ.get("HERDR_WORKSPACE_ID") or "")
+        if _ambient_workspace_belongs_to_session(ambient_session, session)
+        else ""
+    )
     candidates = _candidate_actions(
         resources,
         current_workspace=current_workspace,
@@ -62,7 +89,12 @@ def run_herdr_cleanup(
         candidates=candidates,
         mode=mode,
     )
-    alerts = [*lease_alerts, *session_alerts]
+    backend_session_alerts = _backend_session_alerts(
+        manifest=manifest,
+        selected_session=session,
+        mode=mode,
+    )
+    alerts = [*lease_alerts, *session_alerts, *backend_session_alerts]
     resolved_lease_path = (
         workspace_lease_path.expanduser().resolve() if workspace_lease_path is not None else None
     )
@@ -86,14 +118,14 @@ def run_herdr_cleanup(
             if candidate["action"] == "workspace_close":
                 workspace_id = candidate["workspace_id"]
                 result = subprocess.run(
-                    [herdr_bin, "workspace", "close", workspace_id],
+                    _herdr_command(herdr_bin, session, "workspace", "close", workspace_id),
                     cwd=str(resolved_run_dir),
                     text=True,
                     capture_output=True,
                 )
                 command_results.append(_command_result_dict(result))
                 verify_result = subprocess.run(
-                    [herdr_bin, "workspace", "get", workspace_id],
+                    _herdr_command(herdr_bin, session, "workspace", "get", workspace_id),
                     cwd=str(resolved_run_dir),
                     text=True,
                     capture_output=True,
@@ -115,16 +147,16 @@ def run_herdr_cleanup(
                     }
                 )
             elif candidate["action"] == "session_stop":
-                session = candidate["session"]
+                candidate_session = candidate["session"]
                 result = subprocess.run(
-                    [herdr_bin, "session", "stop", session],
+                    [herdr_bin, "session", "stop", candidate_session],
                     cwd=str(resolved_run_dir),
                     text=True,
                     capture_output=True,
                 )
                 command_results.append(_command_result_dict(result))
                 verify_result = subprocess.run(
-                    [herdr_bin, "session", "get", session],
+                    [herdr_bin, "session", "get", candidate_session],
                     cwd=str(resolved_run_dir),
                     text=True,
                     capture_output=True,
@@ -155,6 +187,7 @@ def run_herdr_cleanup(
         "mode": mode,
         "run_dir": str(resolved_run_dir),
         "herdr_bin": herdr_bin,
+        "backend_session_id": session,
         "herdr_surface": _herdr_surface(herdr_bin),
         "runtime_manifest": str(resolved_run_dir / "runtime-manifest.json"),
         "runtime_manifest_sha256": _file_sha256(resolved_run_dir / "runtime-manifest.json"),
@@ -181,6 +214,10 @@ def run_herdr_cleanup(
         "lease_required": mode == "apply",
         "alerts": alerts,
         "applied_actions": applied_actions,
+        "applied_action_count": len(applied_actions),
+        "post_verified_absent_count": sum(
+            action.get("post_verified_absent") is True for action in applied_actions
+        ),
         "command_results": command_results,
         "proof_scope": {
             "proves": [
@@ -188,14 +225,17 @@ def run_herdr_cleanup(
                 "Tau cleanup defaults to audit/dry-run before mutation",
                 "Tau refuses to close the current Herdr workspace unless explicitly allowed",
                 "Tau apply cleanup requires a Herdr workspace lease before mutation",
-                "Tau verifies applied workspace cleanup by requiring Herdr workspace get to report workspace_not_found",
+                "Tau verifies applied workspace cleanup by requiring Herdr workspace "
+                "get to report workspace_not_found",
                 "Tau apply cleanup blocks instead of silently skipping recorded Herdr sessions",
-                "Tau apply cleanup requires explicit session ownership before stopping recorded sessions",
+                "Tau apply cleanup requires explicit session ownership before stopping "
+                "recorded sessions",
             ],
             "does_not_prove": [
                 "global regex cleanup of unrelated Herdr resources",
                 "Git worktree deletion",
-                "session deletion beyond explicitly owned sessions recorded in tau.herdr_session_ownership.v1",
+                "session deletion beyond explicitly owned sessions recorded in "
+                "tau.herdr_session_ownership.v1",
             ],
         },
         "timestamp": _utc_stamp(),
@@ -204,11 +244,18 @@ def run_herdr_cleanup(
     return receipt
 
 
+def _herdr_command(herdr_bin: str, session: str, *args: str) -> list[str]:
+    if not session.strip():
+        raise RuntimeError("Herdr session must be a non-empty string")
+    return [herdr_bin, "--session", session, *args]
+
+
 def run_herdr_gc(
     *,
     run_dir: Path,
     apply: bool = False,
     herdr_bin: str = "herdr",
+    session: str = "default",
     include_current_workspace: bool = False,
     label_prefixes: tuple[str, ...] = DEFAULT_GC_LABEL_PREFIXES,
     approval_receipt_path: Path | None = None,
@@ -220,9 +267,14 @@ def run_herdr_gc(
     resolved_approval_path = (
         approval_receipt_path.expanduser().resolve() if approval_receipt_path is not None else None
     )
-    current_workspace = os.environ.get("HERDR_WORKSPACE_ID") or ""
+    ambient_session = os.environ.get("HERDR_SESSION") or ""
+    current_workspace = (
+        (os.environ.get("HERDR_WORKSPACE_ID") or "")
+        if _ambient_workspace_belongs_to_session(ambient_session, session)
+        else ""
+    )
     list_result = subprocess.run(
-        [herdr_bin, "workspace", "list"],
+        _herdr_command(herdr_bin, session, "workspace", "list"),
         cwd=str(resolved_run_dir),
         text=True,
         capture_output=True,
@@ -269,6 +321,7 @@ def run_herdr_gc(
         approval_receipt_path=resolved_approval_path,
         apply=apply,
         label_prefixes=label_prefixes,
+        session=session,
     )
     herdr_surface = _herdr_surface(herdr_bin)
     applied_actions: list[dict[str, Any]] = []
@@ -276,14 +329,14 @@ def run_herdr_gc(
         for candidate in candidates:
             workspace_id = str(candidate["workspace_id"])
             close_result = subprocess.run(
-                [herdr_bin, "workspace", "close", workspace_id],
+                _herdr_command(herdr_bin, session, "workspace", "close", workspace_id),
                 cwd=str(resolved_run_dir),
                 text=True,
                 capture_output=True,
             )
             command_results.append(_command_result_dict(close_result))
             verify_result = subprocess.run(
-                [herdr_bin, "workspace", "get", workspace_id],
+                _herdr_command(herdr_bin, session, "workspace", "get", workspace_id),
                 cwd=str(resolved_run_dir),
                 text=True,
                 capture_output=True,
@@ -314,6 +367,7 @@ def run_herdr_gc(
         "mode": "apply" if apply else "dry-run",
         "run_dir": str(resolved_run_dir),
         "herdr_bin": herdr_bin,
+        "backend_session_id": session,
         "herdr_surface": herdr_surface,
         "approval_receipt": str(resolved_approval_path) if resolved_approval_path else None,
         "approval_receipt_sha256": (
@@ -321,7 +375,7 @@ def run_herdr_gc(
             if resolved_approval_path and resolved_approval_path.is_file()
             else None
         ),
-        "approval_target_id_expected": _gc_approval_target_id(label_prefixes),
+        "approval_target_id_expected": _gc_approval_target_id(label_prefixes, session),
         "approval_required": apply,
         "label_prefixes": list(label_prefixes),
         "current_workspace": current_workspace or None,
@@ -358,18 +412,25 @@ def run_herdr_gc(
     return receipt
 
 
-def _herdr_surface(herdr_bin: str) -> str:
+def classify_herdr_surface(herdr_bin: str) -> str:
     discovered = shutil.which("herdr")
     if not discovered:
         return "fixture"
     try:
         if Path(herdr_bin).name == herdr_bin:
-            candidate = Path(discovered).resolve()
+            requested = shutil.which(herdr_bin)
+            if not requested:
+                return "fixture"
+            candidate = Path(requested).resolve()
         else:
             candidate = Path(herdr_bin).expanduser().resolve()
         return "real" if candidate == Path(discovered).resolve() else "fixture"
     except OSError:
         return "fixture"
+
+
+def _herdr_surface(herdr_bin: str) -> str:
+    return classify_herdr_surface(herdr_bin)
 
 
 def _load_runtime_manifest(run_dir: Path) -> dict[str, Any]:
@@ -453,7 +514,7 @@ def _records_from_path_list(value: Any, manifest_dir: Path) -> list[dict[str, An
             path = manifest_dir / path
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         if isinstance(payload, dict):
             records.append(payload)
@@ -642,7 +703,9 @@ def _session_cleanup_alerts(
                 "Apply cleanup requires explicit Herdr session ownership before stopping sessions.",
                 {
                     "sessions": candidate_sessions,
-                    "required_next": "record tau.herdr_session_ownership.v1 before session cleanup apply",
+                    "required_next": (
+                        "record tau.herdr_session_ownership.v1 before session cleanup apply"
+                    ),
                 },
             )
         ]
@@ -745,6 +808,7 @@ def _approval_receipt_alerts(
     approval_receipt_path: Path | None,
     apply: bool,
     label_prefixes: tuple[str, ...],
+    session: str,
 ) -> list[dict[str, Any]]:
     if not apply:
         return []
@@ -802,7 +866,7 @@ def _approval_receipt_alerts(
         )
     packet_summary = approval.get("packet_summary")
     target_id = packet_summary.get("target_id") if isinstance(packet_summary, dict) else None
-    expected_target_id = _gc_approval_target_id(label_prefixes)
+    expected_target_id = _gc_approval_target_id(label_prefixes, session)
     if target_id != expected_target_id:
         alerts.append(
             _alert(
@@ -818,8 +882,38 @@ def _approval_receipt_alerts(
     return alerts
 
 
-def _gc_approval_target_id(label_prefixes: tuple[str, ...]) -> str:
-    return f"herdr-gc:{','.join(label_prefixes)}"
+def _gc_approval_target_id(label_prefixes: tuple[str, ...], session: str) -> str:
+    return f"herdr-gc:{session}:{','.join(label_prefixes)}"
+
+
+def _backend_session_alerts(
+    *, manifest: dict[str, Any], selected_session: str, mode: str
+) -> list[dict[str, Any]]:
+    if mode != "apply":
+        return []
+    recorded_session = manifest.get("backend_session_id")
+    if not isinstance(recorded_session, str) or not recorded_session.strip():
+        return [
+            _alert(
+                "BLOCK",
+                "missing_backend_session_id",
+                "Apply cleanup requires the runtime manifest to name its Herdr session.",
+                {"selected_session": selected_session},
+            )
+        ]
+    if recorded_session != selected_session:
+        return [
+            _alert(
+                "BLOCK",
+                "backend_session_id_mismatch",
+                "Selected Herdr session does not match the runtime manifest.",
+                {
+                    "expected": recorded_session,
+                    "observed": selected_session,
+                },
+            )
+        ]
+    return []
 
 
 def _lease_workspace_ids(lease: dict[str, Any]) -> list[str]:
@@ -920,8 +1014,9 @@ def _json_error_code(result: subprocess.CompletedProcess[str]) -> str | None:
         if not isinstance(payload, dict):
             continue
         error = payload.get("error")
-        if isinstance(error, dict) and isinstance(error.get("code"), str):
-            return error["code"]
+        code = error.get("code") if isinstance(error, dict) else None
+        if isinstance(code, str):
+            return code
     return None
 
 

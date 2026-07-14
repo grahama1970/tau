@@ -29,7 +29,9 @@ HERDR_GC_DEFAULT_LABEL_PREFIXES = (
     "tau-generic-provider-",
     "tau-traycer-",
 )
-HERDR_GC_DEFAULT_TARGET_ID = f"herdr-gc:{','.join(HERDR_GC_DEFAULT_LABEL_PREFIXES)}"
+HERDR_GC_DEFAULT_TARGET_ID = (
+    f"herdr-gc:default:{','.join(HERDR_GC_DEFAULT_LABEL_PREFIXES)}"
+)
 
 
 @dataclass(frozen=True)
@@ -4754,6 +4756,7 @@ def create_cleanup_gc_fixture(run_dir: Path) -> dict[str, Path]:
             '  python3 -c \'import json,sys; print(json.dumps(sys.argv[1]), end="")\' "$arg" >> "$HERDR_GC_CALLS"\n'
             "done\n"
             "printf ']}\\n' >> \"$HERDR_GC_CALLS\"\n"
+            'if [ "$1" = "--session" ]; then shift 2; fi\n'
             'if [ "$1 $2" = "workspace list" ]; then\n'
             '  cat "$HERDR_GC_WORKSPACES"\n'
             "  exit 0\n"
