@@ -21,6 +21,12 @@ SQLite `dag_run_events.seq` value is the authoritative replay order. A native
 backend cursor or sequence is transport evidence used for resumption and
 deduplication; it never replaces journal order.
 
+Observation evidence has global node and character budgets in addition to
+per-value limits. Sensitive fields are redacted, and Tau omits the complete
+payload hash when redaction or truncation would make that hash a guessing
+oracle. Opaque stream IDs and cursors that exceed the contract limit are
+rejected rather than silently truncated.
+
 The durable event key is:
 
 ```text
@@ -53,6 +59,8 @@ The bridge uses the common `RuntimeBackend.wait_event()` contract. Current
 Herdr and tmux adapters provide bounded polling and declare
 `native_events=false`. A deterministic conformance backend proves that nested
 native cursor and sequence evidence can use the same bridge.
+Backends that advertise native-event support may emit `mode=poll` while using
+their bounded fallback path; only `mode=native` requires the native capability.
 
 Real Herdr AF_UNIX `events.subscribe` transport is tracked separately in issue
 `#101` and is not claimed by this implementation.

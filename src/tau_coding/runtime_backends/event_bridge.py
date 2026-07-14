@@ -21,18 +21,31 @@ from tau_coding.runtime_backends.contracts import (
 _MAX_DEPTH = 6
 _MAX_ITEMS = 64
 _MAX_STRING_LENGTH = 2048
+_MAX_TOTAL_NODES = 512
+_MAX_TOTAL_CHARACTERS = 16_384
 _SENSITIVE_KEY_PARTS = (
+    "access_key",
+    "api_key",
+    "apikey",
     "authorization",
+    "bearer",
+    "client_secret",
+    "cookie",
     "credential",
+    "passphrase",
     "password",
+    "private_key",
     "prompt",
+    "refresh_token",
     "secret",
+    "session_token",
     "stderr",
     "stdout",
     "terminal_output",
     "token",
     "visible_text",
 )
+_SENSITIVE_EXACT_KEYS = ("session",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +54,29 @@ class RuntimeEventAppendResult:
     journal_sequence: int
     event_id: str
     projection: RuntimeStateProjection
+
+
+@dataclass(slots=True)
+class _RedactionBudget:
+    nodes: int = 0
+    characters: int = 0
+    redacted: bool = False
+    truncated: bool = False
+
+    def consume_node(self) -> bool:
+        self.nodes += 1
+        if self.nodes > _MAX_TOTAL_NODES:
+            self.truncated = True
+            return False
+        return True
+
+    def consume_characters(self, requested: int) -> int:
+        remaining = max(0, _MAX_TOTAL_CHARACTERS - self.characters)
+        accepted = min(requested, remaining)
+        self.characters += accepted
+        if accepted < requested:
+            self.truncated = True
+        return accepted
 
 
 class RuntimeEventBridge:
@@ -108,9 +144,7 @@ class RuntimeEventBridge:
         if endpoint.backend != backend_name:
             raise DagRunStoreError("runtime_event_backend_mismatch", endpoint.endpoint_id)
         if endpoint.capabilities_sha256 != capabilities_sha256:
-            raise DagRunStoreError(
-                "runtime_event_capabilities_mismatch", endpoint.endpoint_id
-            )
+            raise DagRunStoreError("runtime_event_capabilities_mismatch", endpoint.endpoint_id)
 
     @staticmethod
     def _validate_event(
@@ -134,14 +168,14 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
     if transport_value is not None and not isinstance(transport_value, dict):
         raise DagRunStoreError("runtime_event_transport_invalid", event.event_id)
     transport = dict(transport_value or {})
-    expected_mode = "native" if native else "poll"
     declared_mode = transport.get("mode")
-    if declared_mode is not None and declared_mode != expected_mode:
+    mode = declared_mode or "poll"
+    if mode not in {"poll", "native"}:
+        raise DagRunStoreError("runtime_event_transport_mode_mismatch", event.event_id)
+    if mode == "native" and not native:
         raise DagRunStoreError("runtime_event_transport_mode_mismatch", event.event_id)
     backend_sequence = transport.get("backend_sequence")
-    if backend_sequence is not None and (
-        type(backend_sequence) is not int or backend_sequence < 0
-    ):
+    if backend_sequence is not None and (type(backend_sequence) is not int or backend_sequence < 0):
         raise DagRunStoreError("runtime_event_transport_sequence_invalid", event.event_id)
     stream_id = _optional_string(transport.get("stream_id"), "stream_id", event.event_id)
     backend_cursor = _optional_string(
@@ -151,21 +185,43 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
     if raw_projection is not None and not isinstance(raw_projection, dict):
         raise DagRunStoreError("runtime_event_raw_projection_invalid", event.event_id)
     full_observation = event.observation.to_value()
-    bounded_observation = _bounded_redacted(observation)
+    observation_budget = _RedactionBudget()
+    bounded_observation = _bounded_redacted(observation, budget=observation_budget)
     if not isinstance(bounded_observation, dict):
         raise DagRunStoreError("runtime_event_observation_invalid", event.event_id)
-    bounded_projection = _bounded_redacted(raw_projection) if raw_projection is not None else None
+    projection_budget = _RedactionBudget()
+    bounded_projection = (
+        _bounded_redacted(raw_projection, budget=projection_budget)
+        if raw_projection is not None
+        else None
+    )
+    raw_hash_omitted = (
+        observation_budget.redacted
+        or observation_budget.truncated
+        or projection_budget.redacted
+        or projection_budget.truncated
+    )
     bounded_observation["transport"] = {
-        "mode": expected_mode,
+        "mode": mode,
         "stream_id": stream_id,
         "backend_cursor": backend_cursor,
         "backend_sequence": backend_sequence,
-        "raw_payload_sha256": canonical_sha256(full_observation),
+        "raw_payload_sha256": (None if raw_hash_omitted else canonical_sha256(full_observation)),
         "raw_payload_projection": bounded_projection,
         "raw_payload_omitted_reason": (
-            None if bounded_projection is not None else "not_available"
+            "sensitive_fields_redacted"
+            if observation_budget.redacted or projection_budget.redacted
+            else "payload_truncated"
+            if observation_budget.truncated or projection_budget.truncated
+            else None
+            if bounded_projection is not None
+            else "not_available"
         ),
-        "raw_payload_truncated": bounded_projection != raw_projection,
+        "raw_payload_truncated": (
+            observation_budget.truncated
+            or projection_budget.truncated
+            or bounded_projection != raw_projection
+        ),
     }
     return RuntimeEvent(
         event_id=event.event_id,
@@ -186,36 +242,60 @@ def _optional_string(value: object, label: str, event_id: str) -> str | None:
         return None
     if not isinstance(value, str) or not value:
         raise DagRunStoreError(f"runtime_event_transport_{label}_invalid", event_id)
-    return value[:_MAX_STRING_LENGTH]
+    if len(value) > _MAX_STRING_LENGTH:
+        raise DagRunStoreError(f"runtime_event_transport_{label}_too_long", event_id)
+    return value
 
 
-def _bounded_redacted(value: object, *, depth: int = 0, key: str = "") -> object:
-    if key and not key.endswith("_sha256") and any(
-        part in key.casefold() for part in _SENSITIVE_KEY_PARTS
+def _bounded_redacted(
+    value: object,
+    *,
+    budget: _RedactionBudget,
+    depth: int = 0,
+    key: str = "",
+) -> object:
+    if not budget.consume_node():
+        return "<budget-exhausted>"
+    normalized_key = key.casefold()
+    if (
+        key
+        and not normalized_key.endswith("_sha256")
+        and (
+            normalized_key in _SENSITIVE_EXACT_KEYS
+            or any(part in normalized_key for part in _SENSITIVE_KEY_PARTS)
+        )
     ):
+        budget.redacted = True
         return "<redacted>"
     if depth >= _MAX_DEPTH:
+        budget.truncated = True
         return "<max-depth>"
     if isinstance(value, dict):
         bounded: dict[str, object] = {}
-        for index, item_key in enumerate(sorted(value)):
-            if index >= _MAX_ITEMS:
-                bounded["_truncated"] = True
-                break
-            bounded[str(item_key)[:128]] = _bounded_redacted(
-                value[item_key], depth=depth + 1, key=str(item_key)
+        selected_keys = list(value)[: _MAX_ITEMS + 1]
+        for item_key in sorted(selected_keys[:_MAX_ITEMS]):
+            bounded_key = str(item_key)[:128]
+            budget.consume_characters(len(bounded_key))
+            bounded[bounded_key] = _bounded_redacted(
+                value[item_key], budget=budget, depth=depth + 1, key=str(item_key)
             )
+        if len(selected_keys) > _MAX_ITEMS:
+            budget.truncated = True
+            bounded["_truncated"] = True
         return bounded
     if isinstance(value, list):
         items = [
-            _bounded_redacted(item, depth=depth + 1)
-            for item in value[:_MAX_ITEMS]
+            _bounded_redacted(item, budget=budget, depth=depth + 1) for item in value[:_MAX_ITEMS]
         ]
         if len(value) > _MAX_ITEMS:
+            budget.truncated = True
             items.append("<truncated>")
         return items
     if isinstance(value, str):
-        return value[:_MAX_STRING_LENGTH]
+        accepted = budget.consume_characters(min(len(value), _MAX_STRING_LENGTH))
+        if len(value) > _MAX_STRING_LENGTH:
+            budget.truncated = True
+        return value[:accepted]
     if value is None or isinstance(value, (bool, int, float)):
         return value
     return f"<unsupported:{type(value).__name__}>"

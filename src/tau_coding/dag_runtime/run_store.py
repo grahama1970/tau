@@ -184,11 +184,32 @@ def _decoded_runtime_journal_payload(row: sqlite3.Row) -> dict[str, Any]:
         raise DagRunStoreError("runtime_event_hash_mismatch", str(row["seq"]))
     identity_payload = dict(runtime_payload)
     identity_payload.pop("observed_at", None)
-    if canonical_sha256(identity_payload) != payload.get(
-        "runtime_event_identity_sha256"
-    ):
+    if canonical_sha256(identity_payload) != payload.get("runtime_event_identity_sha256"):
         raise DagRunStoreError("runtime_event_identity_hash_mismatch", str(row["seq"]))
     return payload
+
+
+def _runtime_event_from_journal_row(
+    row: sqlite3.Row,
+    *,
+    expected_run_id: str,
+) -> RuntimeEvent:
+    payload = _decoded_runtime_journal_payload(row)
+    runtime_payload = cast(dict[str, Any], payload["runtime_event"])
+    try:
+        runtime_event = RuntimeEvent.from_payload(runtime_payload)
+    except (TypeError, ValueError) as exc:
+        raise DagRunStoreError("runtime_event_schema_invalid", str(row["seq"])) from exc
+    if payload.get("endpoint_lease_sha256") != runtime_event.endpoint_lease_sha256:
+        raise DagRunStoreError("runtime_event_endpoint_mismatch", runtime_event.event_id)
+    if runtime_event.run_id != expected_run_id:
+        raise DagRunStoreError("runtime_event_run_mismatch", runtime_event.event_id)
+    expected_key = f"runtime:{runtime_event.endpoint_lease_sha256}:{runtime_event.event_id}"
+    if row["event_key"] != expected_key:
+        raise DagRunStoreError("runtime_event_key_mismatch", runtime_event.event_id)
+    if payload.get("transport_mode") != _runtime_transport_mode(runtime_event):
+        raise DagRunStoreError("runtime_event_transport_mode_mismatch", runtime_event.event_id)
+    return runtime_event
 
 
 class SqliteDagRunStore:
@@ -266,9 +287,7 @@ class SqliteDagRunStore:
         ).fetchone()
         if row is None:
             return None
-        return str(row["status"]), (
-            str(row["verdict"]) if row["verdict"] is not None else None
-        )
+        return str(row["status"]), (str(row["verdict"]) if row["verdict"] is not None else None)
 
     def max_observed_concurrency(self, run_id: str) -> int:
         """Return the highest scheduler concurrency recorded in the journal."""
@@ -759,9 +778,7 @@ class SqliteDagRunStore:
                     (_now_iso(), lease.run_id),
                 )
         return tuple(
-            attempt
-            for attempt in self.list_attempts(lease.run_id)
-            if attempt.state == "UNCERTAIN"
+            attempt for attempt in self.list_attempts(lease.run_id) if attempt.state == "UNCERTAIN"
         )
 
     def list_attempts(self, run_id: str) -> tuple[StoredAttempt, ...]:
@@ -843,9 +860,7 @@ class SqliteDagRunStore:
                     payload=journal_payload,
                 )
                 appended = True
-            projection = self.runtime_state_projection(
-                lease.run_id, event.endpoint_lease_sha256
-            )
+            projection = self.runtime_state_projection(lease.run_id, event.endpoint_lease_sha256)
             if projection is None:
                 raise DagRunStoreError("runtime_event_projection_missing", event.event_id)
         return appended, sequence, projection
@@ -856,57 +871,20 @@ class SqliteDagRunStore:
         endpoint_lease_sha256: str | None = None,
     ) -> tuple[tuple[int, RuntimeEvent], ...]:
         runtime_events: list[tuple[int, RuntimeEvent]] = []
-        for journal_event in self.load_events(run_id):
-            if journal_event["event_type"] != "runtime_event_appended":
-                continue
-            payload = journal_event["payload"]
-            if payload.get("schema") != RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA:
-                raise DagRunStoreError(
-                    "runtime_event_journal_schema_invalid", str(journal_event["seq"])
-                )
-            runtime_payload = payload.get("runtime_event")
-            if not isinstance(runtime_payload, dict):
-                raise DagRunStoreError(
-                    "runtime_event_journal_invalid", str(journal_event["seq"])
-                )
-            if canonical_sha256(runtime_payload) != payload.get("runtime_event_sha256"):
-                raise DagRunStoreError(
-                    "runtime_event_hash_mismatch", str(journal_event["seq"])
-                )
-            identity_payload = dict(runtime_payload)
-            identity_payload.pop("observed_at", None)
-            if canonical_sha256(identity_payload) != payload.get(
-                "runtime_event_identity_sha256"
-            ):
-                raise DagRunStoreError(
-                    "runtime_event_identity_hash_mismatch", str(journal_event["seq"])
-                )
-            try:
-                runtime_event = RuntimeEvent.from_payload(runtime_payload)
-            except (TypeError, ValueError) as exc:
-                raise DagRunStoreError(
-                    "runtime_event_schema_invalid", str(journal_event["seq"])
-                ) from exc
-            if payload.get("endpoint_lease_sha256") != runtime_event.endpoint_lease_sha256:
-                raise DagRunStoreError(
-                    "runtime_event_endpoint_mismatch", runtime_event.event_id
-                )
-            if runtime_event.run_id != run_id:
-                raise DagRunStoreError("runtime_event_run_mismatch", runtime_event.event_id)
-            expected_key = (
-                f"runtime:{runtime_event.endpoint_lease_sha256}:{runtime_event.event_id}"
+        rows = self._connection.execute(
+            "SELECT * FROM dag_run_events "
+            "WHERE run_id = ? AND event_type = 'runtime_event_appended' ORDER BY seq",
+            (run_id,),
+        ).fetchall()
+        for row in rows:
+            runtime_event = _runtime_event_from_journal_row(
+                cast(sqlite3.Row, row), expected_run_id=run_id
             )
-            if journal_event["event_key"] != expected_key:
-                raise DagRunStoreError("runtime_event_key_mismatch", runtime_event.event_id)
-            if payload.get("transport_mode") != _runtime_transport_mode(runtime_event):
-                raise DagRunStoreError(
-                    "runtime_event_transport_mode_mismatch", runtime_event.event_id
-                )
             if (
                 endpoint_lease_sha256 is None
                 or runtime_event.endpoint_lease_sha256 == endpoint_lease_sha256
             ):
-                runtime_events.append((int(journal_event["seq"]), runtime_event))
+                runtime_events.append((int(row["seq"]), runtime_event))
         return tuple(runtime_events)
 
     def runtime_state_projection(
@@ -914,10 +892,24 @@ class SqliteDagRunStore:
         run_id: str,
         endpoint_lease_sha256: str,
     ) -> RuntimeStateProjection | None:
-        events = self.load_runtime_events(run_id, endpoint_lease_sha256)
-        if not events:
+        summary = self._connection.execute(
+            "SELECT COUNT(*) AS event_count, MAX(seq) AS latest_seq "
+            "FROM dag_run_events "
+            "WHERE run_id = ? AND event_type = 'runtime_event_appended' "
+            "AND entity_type = 'runtime_endpoint' AND entity_id = ?",
+            (run_id, endpoint_lease_sha256),
+        ).fetchone()
+        if summary is None or int(summary["event_count"]) == 0:
             return None
-        latest = events[-1][1]
+        row = self._connection.execute(
+            "SELECT * FROM dag_run_events WHERE run_id = ? AND seq = ?",
+            (run_id, int(summary["latest_seq"])),
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("runtime_event_projection_missing", endpoint_lease_sha256)
+        latest = _runtime_event_from_journal_row(cast(sqlite3.Row, row), expected_run_id=run_id)
+        if latest.endpoint_lease_sha256 != endpoint_lease_sha256:
+            raise DagRunStoreError("runtime_event_endpoint_mismatch", latest.event_id)
         return RuntimeStateProjection(
             run_id=run_id,
             endpoint_lease_sha256=endpoint_lease_sha256,
@@ -925,7 +917,7 @@ class SqliteDagRunStore:
             liveness=latest.liveness,
             confidence=latest.confidence,
             last_event_id=latest.event_id,
-            event_count=len(events),
+            event_count=int(summary["event_count"]),
         )
 
     def runtime_event_cursor(
@@ -1061,8 +1053,8 @@ class SqliteDagRunStore:
         return cast(
             sqlite3.Row | None,
             self._connection.execute(
-            "SELECT * FROM dag_run_events WHERE run_id = ? AND event_key = ?",
-            (run_id, event_key),
+                "SELECT * FROM dag_run_events WHERE run_id = ? AND event_key = ?",
+                (run_id, event_key),
             ).fetchone(),
         )
 

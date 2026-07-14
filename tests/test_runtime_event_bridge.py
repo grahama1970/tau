@@ -94,9 +94,7 @@ class EventBackend:
 def test_polling_runtime_events_append_deduplicate_and_project(tmp_path: Path) -> None:
     database = tmp_path / "run.sqlite3"
     with SqliteDagRunStore(database) as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         first_event = _event(endpoint, event_id="event-1", state="RUNNING")
         duplicate = replace(first_event, observed_at="2026-07-14T12:00:01+00:00")
@@ -139,9 +137,7 @@ def test_append_builds_returned_projection_inside_transaction(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         event = _event(
             endpoint,
@@ -165,9 +161,7 @@ def test_append_builds_returned_projection_inside_transaction(
 
 def test_changed_observation_appends_but_reused_event_id_conflicts(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         bridge = RuntimeEventBridge(store)
         running = _event(endpoint, event_id="event-1", state="RUNNING")
@@ -237,9 +231,7 @@ def test_replay_blocks_tampered_runtime_event_identity_hash(tmp_path: Path) -> N
     database = tmp_path / "run.sqlite3"
     endpoint = _endpoint(run_id="run-1")
     with SqliteDagRunStore(database) as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         RuntimeEventBridge(store).wait_and_append(
             lease=lease,
             backend=EventBackend([_event(endpoint)]),
@@ -262,17 +254,16 @@ def test_replay_blocks_tampered_runtime_event_identity_hash(tmp_path: Path) -> N
             (canonical_json(payload), canonical_sha256(payload), row[0]),
         )
 
-    with SqliteDagRunStore(database) as reopened, pytest.raises(
-        DagRunStoreError, match="runtime_event_identity_hash_mismatch"
+    with (
+        SqliteDagRunStore(database) as reopened,
+        pytest.raises(DagRunStoreError, match="runtime_event_identity_hash_mismatch"),
     ):
         reopened.load_runtime_events("run-1", endpoint.sha256)
 
 
 def test_bridge_blocks_invalid_bindings_schema_and_transport(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         bridge = RuntimeEventBridge(store)
 
@@ -325,9 +316,7 @@ def test_backend_contract_failure_propagates_and_unknown_event_remains_diagnosti
     tmp_path: Path,
 ) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         failed_backend = EventBackend([RuntimeError("endpoint_binding_mismatch")])
         with pytest.raises(RuntimeError, match="endpoint_binding_mismatch"):
@@ -365,21 +354,22 @@ def test_backend_contract_failure_propagates_and_unknown_event_remains_diagnosti
         )
 
         expired_backend = EventBackend([_event(endpoint)])
-        assert RuntimeEventBridge(store).wait_and_append(
-            lease=lease,
-            backend=expired_backend,
-            endpoint=endpoint,
-            cursor=None,
-            deadline=datetime.now(UTC) - timedelta(seconds=1),
-        ) is None
+        assert (
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=expired_backend,
+                endpoint=endpoint,
+                cursor=None,
+                deadline=datetime.now(UTC) - timedelta(seconds=1),
+            )
+            is None
+        )
         assert expired_backend.wait_count == 0
 
 
 def test_event_returned_after_deadline_is_not_appended(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         result = RuntimeEventBridge(store).wait_and_append(
             lease=lease,
@@ -395,9 +385,7 @@ def test_event_returned_after_deadline_is_not_appended(tmp_path: Path) -> None:
 
 def test_endpoint_capabilities_hash_must_match_selected_backend(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = replace(
             _endpoint(run_id="run-1"),
             capabilities_sha256=canonical_sha256("stale-capabilities"),
@@ -417,9 +405,7 @@ def test_endpoint_capabilities_hash_must_match_selected_backend(tmp_path: Path) 
 
 def test_store_rejects_runtime_event_without_normalized_transport(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
 
         with pytest.raises(DagRunStoreError, match="runtime_event_transport_mode_invalid"):
@@ -429,9 +415,7 @@ def test_store_rejects_runtime_event_without_normalized_transport(tmp_path: Path
 
 def test_native_transport_metadata_is_nested_and_deduplicated(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1", native=True)
         event = _event(
             endpoint,
@@ -475,16 +459,179 @@ def test_native_transport_metadata_is_nested_and_deduplicated(tmp_path: Path) ->
         assert transport["backend_cursor"] == "cursor-184"
         assert store.runtime_event_cursor("run-1", endpoint.sha256) == "cursor-184"
         assert set(stored.to_payload()) == {
-            "schema", "event_id", "run_id", "endpoint_lease_sha256", "event_type",
-            "observed_at", "state", "liveness", "confidence", "source", "observation",
+            "schema",
+            "event_id",
+            "run_id",
+            "endpoint_lease_sha256",
+            "event_type",
+            "observed_at",
+            "state",
+            "liveness",
+            "confidence",
+            "source",
+            "observation",
         }
+
+
+def test_native_capable_backend_may_emit_poll_fallback(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1", native=True)
+        event = _event(
+            endpoint,
+            observation={
+                "agent_status": "working",
+                "transport": {"mode": "poll"},
+            },
+        )
+
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([event], native=True),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+
+        assert result is not None and result.appended is True
+        stored = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
+        assert stored.observation.to_value()["transport"]["mode"] == "poll"
+
+
+def test_sensitive_observation_is_redacted_without_hash_oracle(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+        secrets = {
+            "api_key": "api-secret",
+            "access_key": "access-secret",
+            "client_secret": "client-secret",
+            "private_key": "private-secret",
+            "cookie": "cookie-secret",
+            "session": "session-secret",
+            "bearer": "bearer-secret",
+            "refresh_token": "refresh-secret",
+            "passphrase": "passphrase-secret",
+        }
+        event = _event(
+            endpoint,
+            observation={
+                **secrets,
+                "session_id": "operational-session-id",
+                "transport": {
+                    "mode": "poll",
+                    "raw_payload_projection": {"api_key": "projected-secret"},
+                },
+            },
+        )
+
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([event]),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+
+        assert result is not None
+        stored = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
+        observation = stored.observation.to_value()
+        serialized = canonical_json(observation)
+        for secret in secrets.values():
+            assert secret not in serialized
+        assert "projected-secret" not in serialized
+        assert observation["session_id"] == "operational-session-id"
+        transport = observation["transport"]
+        assert transport["raw_payload_sha256"] is None
+        assert transport["raw_payload_omitted_reason"] == "sensitive_fields_redacted"
+
+
+def test_observation_global_budget_is_bounded_and_omits_raw_hash(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+        event = _event(
+            endpoint,
+            observation={
+                "groups": [
+                    {f"field-{field}": "x" * 2048 for field in range(64)} for _ in range(64)
+                ],
+                "transport": {"mode": "poll"},
+            },
+        )
+
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([event]),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+
+        assert result is not None
+        stored = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
+        observation = stored.observation.to_value()
+        assert len(canonical_json(observation)) < 30_000
+        transport = observation["transport"]
+        assert transport["raw_payload_sha256"] is None
+        assert transport["raw_payload_omitted_reason"] == "payload_truncated"
+        assert transport["raw_payload_truncated"] is True
+
+
+@pytest.mark.parametrize("field", ["stream_id", "backend_cursor"])
+def test_overlong_transport_identifier_blocks_without_append(
+    tmp_path: Path,
+    field: str,
+) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1", native=True)
+        event = _event(
+            endpoint,
+            observation={
+                "transport": {"mode": "native", field: "x" * 2049},
+            },
+        )
+
+        with pytest.raises(DagRunStoreError, match=f"runtime_event_transport_{field}_too_long"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=EventBackend([event], native=True),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
+def test_append_projection_does_not_replay_full_journal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+
+        def full_replay_forbidden(*args: object, **kwargs: object) -> None:
+            del args, kwargs
+            raise AssertionError("projection must use the targeted runtime-event query")
+
+        monkeypatch.setattr(store, "load_events", full_replay_forbidden)
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([_event(endpoint)]),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+
+        assert result is not None
+        assert result.projection.event_count == 1
 
 
 def test_runtime_terminal_text_is_diagnostic_and_cannot_complete_run(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         event = _event(
             endpoint,
@@ -510,16 +657,17 @@ def test_runtime_terminal_text_is_diagnostic_and_cannot_complete_run(tmp_path: P
 
 def test_missed_poll_is_reconciled_by_later_changed_observation(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
-        lease = store.acquire_run(
-            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
-        )
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
         backend = EventBackend([None, _event(endpoint, state="BLOCKED")])
         bridge = RuntimeEventBridge(store)
 
-        assert bridge.wait_and_append(
-            lease=lease, backend=backend, endpoint=endpoint, cursor=None, deadline=_deadline()
-        ) is None
+        assert (
+            bridge.wait_and_append(
+                lease=lease, backend=backend, endpoint=endpoint, cursor=None, deadline=_deadline()
+            )
+            is None
+        )
         reconciled = bridge.wait_and_append(
             lease=lease, backend=backend, endpoint=endpoint, cursor=None, deadline=_deadline()
         )
