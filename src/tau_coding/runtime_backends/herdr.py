@@ -517,6 +517,8 @@ class HerdrRuntimeBackend:
             if remaining <= 0:
                 return None
             event = self._observe(endpoint, deadline=deadline)
+            if datetime.now(UTC) >= deadline:
+                return None
             if event.event_id != cursor:
                 return event
             remaining = (deadline - datetime.now(UTC)).total_seconds()
