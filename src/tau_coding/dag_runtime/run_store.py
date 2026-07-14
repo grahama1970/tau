@@ -171,6 +171,14 @@ def _runtime_transport_mode(event: RuntimeEvent) -> str:
     return mode if isinstance(mode, str) and mode else "unknown"
 
 
+def _runtime_event_is_lossy(event: RuntimeEvent) -> bool:
+    transport = event.observation.to_value().get("transport")
+    return not isinstance(transport, dict) or (
+        transport.get("raw_payload_sha256") is None
+        or transport.get("raw_payload_truncated") is True
+    )
+
+
 def _decoded_runtime_journal_payload(row: sqlite3.Row) -> dict[str, Any]:
     try:
         payload = json.loads(row["payload_json"])
@@ -873,6 +881,11 @@ class SqliteDagRunStore:
                 existing_payload = _decoded_runtime_journal_payload(existing)
                 if existing_payload.get("runtime_event_identity_sha256") != identity_sha256:
                     raise DagRunStoreError("runtime_event_conflict", event.event_id)
+                existing_event = _runtime_event_from_journal_row(
+                    existing, expected_run_id=lease.run_id
+                )
+                if _runtime_event_is_lossy(existing_event) or _runtime_event_is_lossy(event):
+                    raise DagRunStoreError("runtime_event_lossy_duplicate", event.event_id)
                 sequence = int(existing["seq"])
                 appended = False
             else:

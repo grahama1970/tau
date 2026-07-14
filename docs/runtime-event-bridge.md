@@ -11,7 +11,7 @@ giving a backend authority over node completion.
 1. Calls the selected backend's bounded `wait_event()` method.
 2. Validates the run, backend, and exact endpoint lease binding.
 3. Verifies that the backend capabilities hash matches the endpoint lease.
-4. Verifies the authoritative run lease before backend I/O.
+4. Verifies the authoritative run lease and endpoint expiry before backend I/O.
 5. Bounds and redacts backend observation data under one evidence budget.
 6. Stores backend transport evidence under `observation.transport`.
 7. Appends `runtime_event_appended` and reads its projection in one transaction.
@@ -35,6 +35,10 @@ checks.
 consume only a bounded key prefix without scanning an arbitrary backend mapping.
 Projection replay is scoped by the endpoint-bound event-key prefix and validates
 every selected row before deriving state.
+The canonical backend observation also has a pre-normalization byte ceiling,
+and overlong mapping keys are rejected rather than truncated. Because redacted
+or truncated evidence cannot establish exact equality safely, reusing its event
+ID blocks with `runtime_event_lossy_duplicate` instead of claiming idempotency.
 
 The durable event key is:
 

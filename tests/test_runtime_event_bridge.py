@@ -20,7 +20,10 @@ from tau_coding.runtime_backends.contracts import (
     RuntimeEndpointLease,
     RuntimeEvent,
 )
-from tau_coding.runtime_backends.event_bridge import RuntimeEventBridge
+from tau_coding.runtime_backends.event_bridge import (
+    RuntimeEventBridge,
+    _normalized_runtime_event,
+)
 
 
 class EventBackend:
@@ -506,6 +509,28 @@ def test_stale_run_lease_blocks_before_backend_wait(tmp_path: Path) -> None:
         assert store.load_runtime_events("run-1", endpoint.sha256) == ()
 
 
+def test_expired_endpoint_lease_blocks_before_backend_wait(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = replace(
+            _endpoint(run_id="run-1"),
+            expires_at="2020-01-01T00:00:00+00:00",
+        )
+        backend = EventBackend([_event(endpoint)])
+
+        with pytest.raises(DagRunStoreError, match="runtime_event_endpoint_expired"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=backend,
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+
+        assert backend.wait_count == 0
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
 def test_store_rejects_runtime_event_without_normalized_transport(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         assert not hasattr(store, "append_runtime_event")
@@ -675,6 +700,15 @@ def test_sensitive_observation_is_redacted_without_hash_oracle(tmp_path: Path) -
         assert transport["raw_payload_sha256"] is None
         assert transport["raw_payload_omitted_reason"] == "sensitive_fields_redacted"
 
+        with pytest.raises(DagRunStoreError, match="runtime_event_lossy_duplicate"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=EventBackend([replace(event, observed_at="2026-07-14T12:00:02+00:00")]),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+
 
 def test_observation_global_budget_is_bounded_and_omits_raw_hash(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
@@ -683,9 +717,7 @@ def test_observation_global_budget_is_bounded_and_omits_raw_hash(tmp_path: Path)
         event = _event(
             endpoint,
             observation={
-                "groups": [
-                    {f"field-{field}": "x" * 2048 for field in range(64)} for _ in range(64)
-                ],
+                "groups": [{f"field-{field}": "x" * 2048 for field in range(32)}],
                 "transport": {"mode": "poll"},
             },
         )
@@ -708,7 +740,9 @@ def test_observation_global_budget_is_bounded_and_omits_raw_hash(tmp_path: Path)
         assert transport["raw_payload_truncated"] is True
 
 
-def test_bounded_dictionary_selection_is_insertion_order_independent(tmp_path: Path) -> None:
+def test_lossy_dictionary_normalization_is_stable_but_duplicate_blocks(
+    tmp_path: Path,
+) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
@@ -725,6 +759,10 @@ def test_bounded_dictionary_selection_is_insertion_order_independent(tmp_path: P
             observed_at="2026-07-14T12:00:02+00:00",
         )
         bridge = RuntimeEventBridge(store)
+        assert (
+            _normalized_runtime_event(first, native=False).observation
+            == _normalized_runtime_event(duplicate, native=False).observation
+        )
 
         initial = bridge.wait_and_append(
             lease=lease,
@@ -733,16 +771,16 @@ def test_bounded_dictionary_selection_is_insertion_order_independent(tmp_path: P
             cursor=None,
             deadline=_deadline(),
         )
-        repeated = bridge.wait_and_append(
-            lease=lease,
-            backend=EventBackend([duplicate]),
-            endpoint=endpoint,
-            cursor=None,
-            deadline=_deadline(),
-        )
+        with pytest.raises(DagRunStoreError, match="runtime_event_lossy_duplicate"):
+            bridge.wait_and_append(
+                lease=lease,
+                backend=EventBackend([duplicate]),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
 
         assert initial is not None and initial.appended is True
-        assert repeated is not None and repeated.appended is False
 
 
 @pytest.mark.parametrize("field", ["stream_id", "backend_cursor"])
@@ -792,6 +830,32 @@ def test_multibyte_transport_identifier_uses_byte_limit(tmp_path: Path) -> None:
                 cursor=None,
                 deadline=_deadline(),
             )
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
+def test_oversized_raw_observation_and_mapping_key_block(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+        bridge = RuntimeEventBridge(store)
+
+        with pytest.raises(DagRunStoreError, match="runtime_event_observation_too_large"):
+            bridge.wait_and_append(
+                lease=lease,
+                backend=EventBackend([_event(endpoint, observation={"detail": "x" * 131_073})]),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+        with pytest.raises(DagRunStoreError, match="runtime_event_observation_key_too_long"):
+            bridge.wait_and_append(
+                lease=lease,
+                backend=EventBackend([_event(endpoint, observation={"k" * 129: "value"})]),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+
         assert store.load_runtime_events("run-1", endpoint.sha256) == ()
 
 
@@ -890,7 +954,7 @@ def _endpoint(*, run_id: str, native: bool = False) -> RuntimeEndpointLease:
         goal_hash=canonical_sha256({"goal": 1}),
         owner="tau",
         created_at="2026-07-14T12:00:00+00:00",
-        expires_at="2026-07-14T13:00:00+00:00",
+        expires_at="2099-07-14T13:00:00+00:00",
         heartbeat_policy=FrozenJson.from_value({}),
         cleanup_policy=FrozenJson.from_value({}),
         capabilities_sha256=capabilities.sha256,

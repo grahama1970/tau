@@ -24,6 +24,8 @@ _MAX_ITEMS = 64
 _MAX_STRING_LENGTH = 2048
 _MAX_TOTAL_NODES = 512
 _MAX_TOTAL_CHARACTERS = 16_384
+_MAX_RAW_OBSERVATION_BYTES = 131_072
+_MAX_KEY_BYTES = 128
 _SENSITIVE_KEY_PARTS = (
     "access_key",
     "api_key",
@@ -101,6 +103,7 @@ class RuntimeEventBridge:
             return None
         if cursor is not None:
             _optional_string(cursor, "cursor", "wait_event")
+        self._store.assert_active_lease(lease)
         capabilities = backend.capabilities()
         self._validate_bindings(
             lease=lease,
@@ -108,7 +111,7 @@ class RuntimeEventBridge:
             backend_name=capabilities.backend,
             capabilities_sha256=capabilities.sha256,
         )
-        self._store.assert_active_lease(lease)
+        self._validate_endpoint_expiry(endpoint)
         event = backend.wait_event(endpoint, cursor, deadline)
         if datetime.now(UTC) >= deadline:
             return None
@@ -116,10 +119,9 @@ class RuntimeEventBridge:
             return None
         if not isinstance(event, RuntimeEvent):
             raise DagRunStoreError("runtime_event_schema_invalid", type(event).__name__)
-        try:
-            validated = RuntimeEvent.from_payload(event.to_payload())
-        except (TypeError, ValueError) as exc:
-            raise DagRunStoreError("runtime_event_schema_invalid", event.event_id) from exc
+        if len(event.observation.canonical.encode("utf-8")) > _MAX_RAW_OBSERVATION_BYTES:
+            raise DagRunStoreError("runtime_event_observation_too_large", event.event_id)
+        validated = event
         self._validate_event(
             event=validated,
             lease=lease,
@@ -129,6 +131,7 @@ class RuntimeEventBridge:
         normalized = _normalized_runtime_event(validated, native=capabilities.native_events)
         if datetime.now(UTC) >= deadline:
             return None
+        self._validate_endpoint_expiry(endpoint)
         appended, sequence, projection = self._store._append_runtime_event(
             lease, normalized, deadline=deadline
         )
@@ -172,6 +175,19 @@ class RuntimeEventBridge:
             raise DagRunStoreError("runtime_event_endpoint_mismatch", event.event_id)
         if event.source != backend_name:
             raise DagRunStoreError("runtime_event_backend_mismatch", event.event_id)
+
+    @staticmethod
+    def _validate_endpoint_expiry(endpoint: RuntimeEndpointLease) -> None:
+        try:
+            expires_at = datetime.fromisoformat(endpoint.expires_at)
+        except ValueError as exc:
+            raise DagRunStoreError(
+                "runtime_event_endpoint_expiry_invalid", endpoint.endpoint_id
+            ) from exc
+        if expires_at.tzinfo is None:
+            raise DagRunStoreError("runtime_event_endpoint_expiry_invalid", endpoint.endpoint_id)
+        if datetime.now(UTC) >= expires_at.astimezone(UTC):
+            raise DagRunStoreError("runtime_event_endpoint_expired", endpoint.endpoint_id)
 
 
 def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEvent:
@@ -278,7 +294,9 @@ def _bounded_redacted(
         bounded: dict[str, object] = {}
         selected_keys = list(itertools.islice(value, _MAX_ITEMS + 1))
         for item_key in selected_keys[:_MAX_ITEMS]:
-            bounded_key = str(item_key)[:128]
+            bounded_key = str(item_key)
+            if len(bounded_key.encode("utf-8")) > _MAX_KEY_BYTES:
+                raise DagRunStoreError("runtime_event_observation_key_too_long", bounded_key[:64])
             budget.consume_characters(len(bounded_key))
             bounded[bounded_key] = _bounded_redacted(
                 value[item_key], budget=budget, depth=depth + 1, key=str(item_key)
