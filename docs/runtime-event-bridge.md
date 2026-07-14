@@ -14,7 +14,7 @@ giving a backend authority over node completion.
 4. Bounds and redacts backend observation data.
 5. Stores backend transport evidence under `observation.transport`.
 6. Appends `runtime_event_appended` and reads its projection in one transaction.
-7. Rebuilds `tau.runtime_state_projection.v1` from journal order.
+7. Rebuilds `tau.runtime_state_projection.v1` from validated endpoint journal order.
 
 The top-level `tau.runtime_event.v1` schema remains backend-neutral. The
 SQLite `dag_run_events.seq` value is the authoritative replay order. A native
@@ -25,7 +25,10 @@ Observation evidence has global node and character budgets in addition to
 per-value limits. Sensitive fields are redacted, and Tau omits the complete
 payload hash when redaction or truncation would make that hash a guessing
 oracle. Opaque stream IDs and cursors that exceed the contract limit are
-rejected rather than silently truncated.
+rejected rather than silently truncated. Runtime event IDs are likewise bounded
+and may not contain control characters. The store append primitive is internal;
+external callers must pass through the bridge's endpoint and backend binding
+checks.
 
 The durable event key is:
 

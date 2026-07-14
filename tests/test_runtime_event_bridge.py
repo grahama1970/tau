@@ -1,3 +1,5 @@
+"""Deterministic tests for the durable runtime-event bridge."""
+
 from __future__ import annotations
 
 import json
@@ -152,7 +154,7 @@ def test_append_builds_returned_projection_inside_transaction(
 
         monkeypatch.setattr(store, "runtime_state_projection", observed_projection)
 
-        appended, _, projection = store.append_runtime_event(lease, event)
+        appended, _, projection = store._append_runtime_event(lease, event)
 
         assert appended is True
         assert projection.state == "RUNNING"
@@ -259,6 +261,43 @@ def test_replay_blocks_tampered_runtime_event_identity_hash(tmp_path: Path) -> N
         pytest.raises(DagRunStoreError, match="runtime_event_identity_hash_mismatch"),
     ):
         reopened.load_runtime_events("run-1", endpoint.sha256)
+
+
+def test_projection_blocks_tampered_earlier_runtime_event(tmp_path: Path) -> None:
+    database = tmp_path / "run.sqlite3"
+    endpoint = _endpoint(run_id="run-1")
+    with SqliteDagRunStore(database) as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        bridge = RuntimeEventBridge(store)
+        for event_id in ("event-1", "event-2"):
+            result = bridge.wait_and_append(
+                lease=lease,
+                backend=EventBackend([_event(endpoint, event_id=event_id)]),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+            assert result is not None
+
+    with sqlite3.connect(database) as connection:
+        row = connection.execute(
+            "SELECT seq, payload_json FROM dag_run_events "
+            "WHERE event_type = 'runtime_event_appended' ORDER BY seq LIMIT 1"
+        ).fetchone()
+        assert row is not None
+        payload = json.loads(row[1])
+        payload["runtime_event_identity_sha256"] = canonical_sha256("forged")
+        connection.execute("DROP TRIGGER dag_run_events_no_update")
+        connection.execute(
+            "UPDATE dag_run_events SET payload_json = ?, payload_sha256 = ? WHERE seq = ?",
+            (canonical_json(payload), canonical_sha256(payload), row[0]),
+        )
+
+    with (
+        SqliteDagRunStore(database) as reopened,
+        pytest.raises(DagRunStoreError, match="runtime_event_identity_hash_mismatch"),
+    ):
+        reopened.runtime_state_projection("run-1", endpoint.sha256)
 
 
 def test_bridge_blocks_invalid_bindings_schema_and_transport(tmp_path: Path) -> None:
@@ -405,11 +444,35 @@ def test_endpoint_capabilities_hash_must_match_selected_backend(tmp_path: Path) 
 
 def test_store_rejects_runtime_event_without_normalized_transport(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        assert not hasattr(store, "append_runtime_event")
         lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
         endpoint = _endpoint(run_id="run-1")
 
         with pytest.raises(DagRunStoreError, match="runtime_event_transport_mode_invalid"):
-            store.append_runtime_event(lease, _event(endpoint))
+            store._append_runtime_event(lease, _event(endpoint))
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
+def test_overlong_or_control_character_event_id_blocks_without_append(
+    tmp_path: Path,
+) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+        bridge = RuntimeEventBridge(store)
+
+        for event_id, code in (
+            ("x" * 2049, "runtime_event_id_too_long"),
+            ("event\nforged", "runtime_event_id_invalid"),
+        ):
+            with pytest.raises(DagRunStoreError, match=code):
+                bridge.wait_and_append(
+                    lease=lease,
+                    backend=EventBackend([_event(endpoint, event_id=event_id)]),
+                    endpoint=endpoint,
+                    cursor=None,
+                    deadline=_deadline(),
+                )
         assert store.load_runtime_events("run-1", endpoint.sha256) == ()
 
 
@@ -495,7 +558,10 @@ def test_native_capable_backend_may_emit_poll_fallback(tmp_path: Path) -> None:
 
         assert result is not None and result.appended is True
         stored = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
-        assert stored.observation.to_value()["transport"]["mode"] == "poll"
+        transport = stored.observation.to_value()["transport"]
+        assert transport["mode"] == "poll"
+        assert transport["raw_payload_sha256"].startswith("sha256:")
+        assert transport["raw_payload_omitted_reason"] is None
 
 
 def test_sensitive_observation_is_redacted_without_hash_oracle(tmp_path: Path) -> None:

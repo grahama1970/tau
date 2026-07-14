@@ -123,7 +123,7 @@ class RuntimeEventBridge:
             backend_name=capabilities.backend,
         )
         normalized = _normalized_runtime_event(validated, native=capabilities.native_events)
-        appended, sequence, projection = self._store.append_runtime_event(lease, normalized)
+        appended, sequence, projection = self._store._append_runtime_event(lease, normalized)
         return RuntimeEventAppendResult(
             appended=appended,
             journal_sequence=sequence,
@@ -154,6 +154,10 @@ class RuntimeEventBridge:
         endpoint: RuntimeEndpointLease,
         backend_name: str,
     ) -> None:
+        if len(event.event_id.encode("utf-8")) > 2048:
+            raise DagRunStoreError("runtime_event_id_too_long", event.event_id[:128])
+        if any(ord(character) < 32 or ord(character) == 127 for character in event.event_id):
+            raise DagRunStoreError("runtime_event_id_invalid", event.event_id[:128])
         if event.run_id != lease.run_id:
             raise DagRunStoreError("runtime_event_run_mismatch", event.event_id)
         if event.endpoint_lease_sha256 != endpoint.sha256:
@@ -214,8 +218,6 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
             else "payload_truncated"
             if observation_budget.truncated or projection_budget.truncated
             else None
-            if bounded_projection is not None
-            else "not_available"
         ),
         "raw_payload_truncated": (
             observation_budget.truncated
