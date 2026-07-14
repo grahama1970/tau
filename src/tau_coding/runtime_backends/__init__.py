@@ -12,10 +12,19 @@ from tau_coding.runtime_backends.contracts import (
     RuntimeStateProjection,
     RuntimeSubmitReceipt,
 )
+from tau_coding.runtime_backends.local import (
+    LocalRuntimeBackend,
+    LocalRuntimeExecutionRequest,
+    LocalRuntimeExecutionResult,
+    local_runtime_request,
+)
 from tau_coding.runtime_backends.registry import RuntimeBackendRegistry
 
 __all__ = [
     "GitWorktreeLease",
+    "LocalRuntimeBackend",
+    "LocalRuntimeExecutionRequest",
+    "LocalRuntimeExecutionResult",
     "RuntimeBackend",
     "RuntimeBackendRegistry",
     "RuntimeCapabilities",
@@ -26,4 +35,5 @@ __all__ = [
     "RuntimeRequirement",
     "RuntimeStateProjection",
     "RuntimeSubmitReceipt",
+    "local_runtime_request",
 ]

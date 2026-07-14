@@ -3,6 +3,7 @@ import json
 import sys
 from pathlib import Path
 
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.generic_dag import (
     GENERIC_DAG_NODE_RECEIPT_SCHEMA,
     GENERIC_DAG_SPEC_SCHEMA,
@@ -41,6 +42,21 @@ def test_generic_dag_runs_dependency_ordered_subprocess_workers(tmp_path: Path) 
     assert Path(str(receipt["current_state_path"])).exists()
     assert [node["node_id"] for node in receipt["nodes"]] == ["planner", "coder", "reviewer"]
     assert all(node["status"] == "PASS" for node in receipt["nodes"])
+    runtime_result = receipt["nodes"][0]["command_results"][0]
+    assert runtime_result["runtime_backend"] == "local"
+    assert runtime_result["runtime_endpoint_lease"]["backend"] == "local"
+    expected_plan = compile_generic_dag_plan(
+        json.loads(spec_path.read_text(encoding="utf-8")),
+        source_path=spec_path,
+    )
+    assert (
+        runtime_result["runtime_endpoint_lease"]["goal_hash"]
+        == expected_plan.runtime_goal_hash
+    )
+    assert runtime_result["runtime_submit_receipt"]["delivery_status"] == "CONFIRMED"
+    assert runtime_result["runtime_event"]["state"] == "EXITED"
+    assert len(runtime_result["runtime_artifacts"]) == 4
+    assert all(Path(path).is_file() for path in runtime_result["runtime_artifacts"])
     checkpoint = json.loads(Path(str(receipt["checkpoint_path"])).read_text(encoding="utf-8"))
     assert checkpoint["schema"] == "tau.generic_dag_checkpoint.v1"
     assert checkpoint["status"] == "PASS"
@@ -306,6 +322,27 @@ def test_generic_dag_fails_closed_after_timeout_attempts(tmp_path: Path) -> None
     assert len(node["command_results"]) == 2
     assert all(result["returncode"] == 124 for result in node["command_results"])
     assert "timed out after 0.1s" in node["errors"][0]
+
+
+def test_generic_dag_does_not_invent_timeout_from_exit_code(tmp_path: Path) -> None:
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            {
+                **_node(tmp_path, "explicit-exit"),
+                "command": [sys.executable, "-c", "raise SystemExit(124)"],
+                "max_attempts": 1,
+            }
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "SUBAGENT_ERROR"
+    command_result = receipt["nodes"][0]["command_results"][0]
+    assert command_result["returncode"] == 124
+    assert command_result["termination_cause"] == "exited"
 
 
 def test_generic_dag_rejects_cycles(tmp_path: Path) -> None:

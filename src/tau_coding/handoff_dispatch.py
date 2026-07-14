@@ -14,11 +14,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-from tau_coding.dag_runtime.subprocess_control import (
-    process_group_options,
-    terminate_process_tree,
-)
+from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.generated_ticket import ROUTABLE_AGENTS, project_agent_handoff
+from tau_coding.runtime_backends.local import LocalRuntimeBackend, local_runtime_request
 from tau_coding.secure_executor import execute_secure_command
 
 TAU_AGENT_HANDOFF_DISPATCH_RECEIPT_SCHEMA = "tau.agent_handoff_dispatch_receipt.v1"
@@ -248,6 +246,7 @@ def dispatch_agent_handoff_command_once(
     artifact_dir: Path | None = None,
     command_spec_metadata: Mapping[str, Any] | None = None,
     secure_execution: Mapping[str, Any] | None = None,
+    runtime_identity: Mapping[str, Any] | None = None,
     attempt: int = 1,
     cancel_event: threading.Event | None = None,
 ) -> AgentHandoffDispatchResult:
@@ -367,16 +366,67 @@ def dispatch_agent_handoff_command_once(
             env["TAU_HANDOFF_AGENT_REGISTRY_ROOT"] = str(agent_registry_root.expanduser().resolve())
         if resolved_artifact_dir is not None:
             env["TAU_HANDOFF_COMMAND_ARTIFACT_DIR"] = str(resolved_artifact_dir)
-        try:
-            completed = _run_command_with_optional_cancellation(
-                command,
-                stdin=stdin,
+        node_metadata = (
+            command_spec_metadata.get("tau_dag_node")
+            if isinstance(command_spec_metadata, Mapping)
+            else None
+        )
+        node_id = (
+            str(node_metadata.get("node_id"))
+            if isinstance(node_metadata, Mapping) and node_metadata.get("node_id")
+            else str(selected_agent)
+        )
+        dag_id = (
+            str(node_metadata.get("dag_id"))
+            if isinstance(node_metadata, Mapping) and node_metadata.get("dag_id")
+            else "handoff-command"
+        )
+        identity_seed = {
+            "dag_id": dag_id,
+            "node_id": node_id,
+            "attempt": attempt,
+            "work_order": command_start_payload,
+        }
+        identity_hash = canonical_sha256(identity_seed)
+        resolved_runtime_identity = runtime_identity or {}
+        completed = LocalRuntimeBackend().execute(
+            local_runtime_request(
+                command=command,
+                run_id=str(
+                    resolved_runtime_identity.get("run_id")
+                    or f"{dag_id}:{identity_hash[-16:]}"
+                ),
+                plan_revision=str(
+                    resolved_runtime_identity.get("plan_revision") or identity_hash
+                ),
+                dag_id=dag_id,
+                node_id=node_id,
+                attempt_id=str(
+                    resolved_runtime_identity.get("attempt_id")
+                    or f"{node_id}:attempt-{attempt:03d}"
+                ),
+                attempt_number=attempt,
+                execution_token=str(
+                    resolved_runtime_identity.get("execution_token") or identity_hash
+                ),
+                work_order=command_start_payload,
+                goal=(
+                    active_goal_hash
+                    or str(command_start_payload.get("goal", {}).get("goal_hash"))
+                ),
                 cwd=cwd,
                 env=env,
-                timeout_s=timeout_s,
+                stdin_text=stdin,
+                timeout_seconds=timeout_s,
+                artifact_dir=(
+                    resolved_artifact_dir / "runtime"
+                    if resolved_artifact_dir is not None
+                    else None
+                ),
                 cancel_event=cancel_event,
             )
-        except _CommandCancelled as exc:
+        )
+        if completed.termination_cause == "cancelled":
             return AgentHandoffDispatchResult(
                 ok=False,
                 status="BLOCKED",
@@ -387,17 +437,21 @@ def dispatch_agent_handoff_command_once(
                 command_results=(
                     {
                         "command": command,
-                        "exit_code": exc.returncode,
+                        "exit_code": completed.returncode,
                         "timeout_s": timeout_s,
                         "timed_out": False,
                         "cancelled": True,
-                        "stdout": exc.stdout,
-                        "stderr": exc.stderr,
+                        "stdout": completed.stdout,
+                        "stderr": completed.stderr,
+                        "runtime_endpoint_lease": completed.endpoint_lease.to_payload(),
+                        "runtime_submit_receipt": completed.submit_receipt.to_payload(),
+                        "runtime_event": completed.runtime_event.to_payload(),
+                        "runtime_artifacts": list(completed.artifact_paths),
                     },
                 ),
                 errors=("command cancelled by DAG scheduler",),
             )
-        except subprocess.TimeoutExpired as exc:
+        if completed.termination_cause == "timed_out":
             timeout_metadata: dict[str, object] = {}
             if command_spec_metadata is not None:
                 timeout_source = command_spec_metadata.get("timeout_s_source")
@@ -419,8 +473,12 @@ def dispatch_agent_handoff_command_once(
                         "exit_code": None,
                         "timeout_s": timeout_s,
                         "timed_out": True,
-                        "stdout": exc.stdout or "",
-                        "stderr": exc.stderr or "",
+                        "stdout": completed.stdout,
+                        "stderr": completed.stderr,
+                        "runtime_endpoint_lease": completed.endpoint_lease.to_payload(),
+                        "runtime_submit_receipt": completed.submit_receipt.to_payload(),
+                        "runtime_event": completed.runtime_event.to_payload(),
+                        "runtime_artifacts": list(completed.artifact_paths),
                         **timeout_metadata,
                     },
                 ),
@@ -433,6 +491,12 @@ def dispatch_agent_handoff_command_once(
             "timed_out": False,
             "stdout": completed.stdout,
             "stderr": completed.stderr,
+            "runtime_backend": "local",
+            "runtime_endpoint_lease": completed.endpoint_lease.to_payload(),
+            "runtime_submit_receipt": completed.submit_receipt.to_payload(),
+            "runtime_event": completed.runtime_event.to_payload(),
+            "runtime_capture": completed.capture.to_value(),
+            "runtime_artifacts": list(completed.artifact_paths),
         }
     if command_spec_metadata is not None:
         command_result.update(
@@ -1323,78 +1387,6 @@ def _artifact_paths(root: Path | None) -> list[str]:
     if root is None or not root.exists():
         return []
     return [str(path) for path in sorted(root.rglob("*")) if path.is_file()]
-
-
-class _CommandCancelled(RuntimeError):
-    def __init__(self, *, returncode: int | None, stdout: str, stderr: str) -> None:
-        super().__init__("command cancelled")
-        self.returncode = returncode
-        self.stdout = stdout
-        self.stderr = stderr
-
-
-def _run_command_with_optional_cancellation(
-    command: list[str],
-    *,
-    stdin: str,
-    cwd: Path | None,
-    env: Mapping[str, str],
-    timeout_s: float,
-    cancel_event: threading.Event | None,
-) -> subprocess.CompletedProcess[str]:
-    if cancel_event is None:
-        return subprocess.run(
-            command,
-            input=stdin,
-            cwd=str(cwd) if cwd else None,
-            env=dict(env),
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_s,
-        )
-
-    start_new_session, creationflags = process_group_options()
-    process = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        cwd=str(cwd) if cwd else None,
-        env=dict(env),
-        text=True,
-        start_new_session=start_new_session,
-        creationflags=creationflags,
-    )
-    deadline = time.monotonic() + timeout_s
-    pending_input: str | None = stdin
-    while True:
-        if cancel_event.is_set():
-            terminate_process_tree(process)
-            stdout, stderr = process.communicate()
-            raise _CommandCancelled(
-                returncode=process.returncode,
-                stdout=stdout or "",
-                stderr=stderr or "",
-            )
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            terminate_process_tree(process)
-            stdout, stderr = process.communicate()
-            raise subprocess.TimeoutExpired(
-                command,
-                timeout_s,
-                output=stdout or "",
-                stderr=stderr or "",
-            )
-        try:
-            stdout, stderr = process.communicate(
-                input=pending_input,
-                timeout=min(remaining, 0.05),
-            )
-            return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-        except subprocess.TimeoutExpired:
-            pending_input = None
 
 
 def _response_continuity_errors(
