@@ -37,6 +37,7 @@ RUNTIME_SCHEMAS = (
     "tau.runtime_endpoint_lease.v1",
     "tau.runtime_submit_receipt.v1",
     "tau.runtime_event.v1",
+    "tau.runtime_event_journal_entry.v1",
     "tau.runtime_state_projection.v1",
     "tau.runtime_reconciliation_receipt.v1",
     "tau.git_worktree_lease.v2",

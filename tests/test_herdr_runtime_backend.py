@@ -9,7 +9,9 @@ from typing import Any
 
 import pytest
 
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import FrozenJson, canonical_sha256
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.runtime_backends import (
     HerdrRuntimeBackend,
     RuntimeBackendRegistry,
@@ -19,6 +21,7 @@ from tau_coding.runtime_backends import (
     herdr_runtime_spawn_request,
     herdr_runtime_work_order,
 )
+from tau_coding.runtime_backends.event_bridge import RuntimeEventBridge
 from tau_coding.runtime_backends.herdr import _owned_label
 
 
@@ -909,6 +912,32 @@ def test_native_event_requirement_blocks_while_bounded_polling_remains_available
     assert event.source == "herdr"
 
 
+def test_runtime_event_bridge_appends_real_herdr_polling_observation(
+    tmp_path: Path,
+) -> None:
+    backend, _, endpoint, _ = _spawned_backend(tmp_path)
+    with SqliteDagRunStore(tmp_path / "bridge.sqlite3") as store:
+        lease = store.acquire_run(
+            plan=_runtime_bridge_plan(tmp_path),
+            run_id="run-1",
+            owner_id="owner-a",
+        )
+
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=backend,
+            endpoint=endpoint,
+            cursor=None,
+            deadline=datetime.now(UTC) + timedelta(milliseconds=50),
+        )
+
+        assert result is not None and result.appended is True
+        event = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
+        assert event.source == "herdr"
+        assert event.observation.to_value()["transport"]["mode"] == "poll"
+        assert store.run_outcome("run-1") == ("RUNNING", None)
+
+
 def test_wrong_session_and_stale_lease_are_rejected(tmp_path: Path) -> None:
     backend, fake, lease, _ = _spawned_backend(tmp_path)
     wrong_session = HerdrRuntimeBackend(session="other", command_runner=fake)
@@ -1058,3 +1087,26 @@ def _spawned_backend(
         )
     )
     return backend, fake, lease, work_hash
+
+
+def _runtime_bridge_plan(tmp_path: Path):
+    return compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "runtime-bridge",
+            "run_dir": str(tmp_path / "run"),
+            "nodes": [
+                {
+                    "node_id": "worker",
+                    "role": "worker",
+                    "command": ["true"],
+                    "depends_on": [],
+                    "accepted_context_from": [],
+                    "receipt_path": str(tmp_path / "worker.json"),
+                    "timeout_seconds": 1,
+                    "max_attempts": 1,
+                }
+            ],
+        },
+        source_path=tmp_path / "bridge-dag.json",
+    )
