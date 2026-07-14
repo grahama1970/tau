@@ -11,10 +11,11 @@ giving a backend authority over node completion.
 1. Calls the selected backend's bounded `wait_event()` method.
 2. Validates the run, backend, and exact endpoint lease binding.
 3. Verifies that the backend capabilities hash matches the endpoint lease.
-4. Bounds and redacts backend observation data.
-5. Stores backend transport evidence under `observation.transport`.
-6. Appends `runtime_event_appended` and reads its projection in one transaction.
-7. Rebuilds `tau.runtime_state_projection.v1` from validated endpoint journal order.
+4. Verifies the authoritative run lease before backend I/O.
+5. Bounds and redacts backend observation data under one evidence budget.
+6. Stores backend transport evidence under `observation.transport`.
+7. Appends `runtime_event_appended` and reads its projection in one transaction.
+8. Rebuilds `tau.runtime_state_projection.v1` from validated endpoint journal order.
 
 The top-level `tau.runtime_event.v1` schema remains backend-neutral. The
 SQLite `dag_run_events.seq` value is the authoritative replay order. A native

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import heapq
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -98,6 +99,8 @@ class RuntimeEventBridge:
             raise DagRunStoreError("runtime_event_deadline_invalid", "timezone_required")
         if datetime.now(UTC) >= deadline:
             return None
+        if cursor is not None:
+            _optional_string(cursor, "cursor", "wait_event")
         capabilities = backend.capabilities()
         self._validate_bindings(
             lease=lease,
@@ -105,6 +108,7 @@ class RuntimeEventBridge:
             backend_name=capabilities.backend,
             capabilities_sha256=capabilities.sha256,
         )
+        self._store.assert_active_lease(lease)
         event = backend.wait_event(endpoint, cursor, deadline)
         if datetime.now(UTC) >= deadline:
             return None
@@ -179,7 +183,9 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
     if mode == "native" and not native:
         raise DagRunStoreError("runtime_event_transport_mode_mismatch", event.event_id)
     backend_sequence = transport.get("backend_sequence")
-    if backend_sequence is not None and (type(backend_sequence) is not int or backend_sequence < 0):
+    if backend_sequence is not None and (
+        type(backend_sequence) is not int or backend_sequence < 0 or backend_sequence > 2**63 - 1
+    ):
         raise DagRunStoreError("runtime_event_transport_sequence_invalid", event.event_id)
     stream_id = _optional_string(transport.get("stream_id"), "stream_id", event.event_id)
     backend_cursor = _optional_string(
@@ -189,22 +195,16 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
     if raw_projection is not None and not isinstance(raw_projection, dict):
         raise DagRunStoreError("runtime_event_raw_projection_invalid", event.event_id)
     full_observation = event.observation.to_value()
-    observation_budget = _RedactionBudget()
-    bounded_observation = _bounded_redacted(observation, budget=observation_budget)
+    evidence_budget = _RedactionBudget()
+    bounded_observation = _bounded_redacted(observation, budget=evidence_budget)
     if not isinstance(bounded_observation, dict):
         raise DagRunStoreError("runtime_event_observation_invalid", event.event_id)
-    projection_budget = _RedactionBudget()
     bounded_projection = (
-        _bounded_redacted(raw_projection, budget=projection_budget)
+        _bounded_redacted(raw_projection, budget=evidence_budget)
         if raw_projection is not None
         else None
     )
-    raw_hash_omitted = (
-        observation_budget.redacted
-        or observation_budget.truncated
-        or projection_budget.redacted
-        or projection_budget.truncated
-    )
+    raw_hash_omitted = evidence_budget.redacted or evidence_budget.truncated
     bounded_observation["transport"] = {
         "mode": mode,
         "stream_id": stream_id,
@@ -214,15 +214,13 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
         "raw_payload_projection": bounded_projection,
         "raw_payload_omitted_reason": (
             "sensitive_fields_redacted"
-            if observation_budget.redacted or projection_budget.redacted
+            if evidence_budget.redacted
             else "payload_truncated"
-            if observation_budget.truncated or projection_budget.truncated
+            if evidence_budget.truncated
             else None
         ),
         "raw_payload_truncated": (
-            observation_budget.truncated
-            or projection_budget.truncated
-            or bounded_projection != raw_projection
+            evidence_budget.truncated or bounded_projection != raw_projection
         ),
     }
     return RuntimeEvent(
@@ -274,7 +272,7 @@ def _bounded_redacted(
         return "<max-depth>"
     if isinstance(value, dict):
         bounded: dict[str, object] = {}
-        selected_keys = list(value)[: _MAX_ITEMS + 1]
+        selected_keys = heapq.nsmallest(_MAX_ITEMS + 1, value, key=str)
         for item_key in sorted(selected_keys[:_MAX_ITEMS]):
             bounded_key = str(item_key)[:128]
             budget.consume_characters(len(bounded_key))

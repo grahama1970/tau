@@ -197,6 +197,13 @@ def _runtime_event_from_journal_row(
     *,
     expected_run_id: str,
 ) -> RuntimeEvent:
+    if (
+        row["event_schema"] != EVENT_SCHEMA
+        or int(row["event_version"]) != 1
+        or row["event_type"] != "runtime_event_appended"
+        or row["entity_type"] != "runtime_endpoint"
+    ):
+        raise DagRunStoreError("runtime_event_journal_metadata_invalid", str(row["seq"]))
     payload = _decoded_runtime_journal_payload(row)
     runtime_payload = cast(dict[str, Any], payload["runtime_event"])
     try:
@@ -204,6 +211,8 @@ def _runtime_event_from_journal_row(
     except (TypeError, ValueError) as exc:
         raise DagRunStoreError("runtime_event_schema_invalid", str(row["seq"])) from exc
     if payload.get("endpoint_lease_sha256") != runtime_event.endpoint_lease_sha256:
+        raise DagRunStoreError("runtime_event_endpoint_mismatch", runtime_event.event_id)
+    if row["entity_id"] != runtime_event.endpoint_lease_sha256:
         raise DagRunStoreError("runtime_event_endpoint_mismatch", runtime_event.event_id)
     if runtime_event.run_id != expected_run_id:
         raise DagRunStoreError("runtime_event_run_mismatch", runtime_event.event_id)
@@ -262,6 +271,11 @@ class SqliteDagRunStore:
         if status in {"RUNNING", "RECONCILIATION_REQUIRED"}:
             return stored_run_id
         return f"{base_run_id}:generation:{generation + 1}"
+
+    def assert_active_lease(self, lease: DagRunLease) -> None:
+        """Fail closed unless ``lease`` still owns the authoritative run."""
+
+        self._assert_lease(lease)
 
     def close(self) -> None:
         self._connection.close()
@@ -880,7 +894,7 @@ class SqliteDagRunStore:
         runtime_events: list[tuple[int, RuntimeEvent]] = []
         rows = self._connection.execute(
             "SELECT * FROM dag_run_events "
-            "WHERE run_id = ? AND event_type = 'runtime_event_appended' ORDER BY seq",
+            "WHERE run_id = ? AND event_key LIKE 'runtime:%' ORDER BY seq",
             (run_id,),
         ).fetchall()
         for row in rows:
@@ -901,19 +915,19 @@ class SqliteDagRunStore:
     ) -> RuntimeStateProjection | None:
         rows = self._connection.execute(
             "SELECT * FROM dag_run_events "
-            "WHERE run_id = ? AND event_type = 'runtime_event_appended' "
-            "AND entity_type = 'runtime_endpoint' AND entity_id = ? ORDER BY seq",
-            (run_id, endpoint_lease_sha256),
+            "WHERE run_id = ? AND event_key LIKE 'runtime:%' ORDER BY seq",
+            (run_id,),
         ).fetchall()
-        if not rows:
-            return None
         validated = tuple(
             _runtime_event_from_journal_row(cast(sqlite3.Row, row), expected_run_id=run_id)
             for row in rows
         )
-        if any(event.endpoint_lease_sha256 != endpoint_lease_sha256 for event in validated):
-            raise DagRunStoreError("runtime_event_endpoint_mismatch", endpoint_lease_sha256)
-        latest = validated[-1]
+        endpoint_events = tuple(
+            event for event in validated if event.endpoint_lease_sha256 == endpoint_lease_sha256
+        )
+        if not endpoint_events:
+            return None
+        latest = endpoint_events[-1]
         return RuntimeStateProjection(
             run_id=run_id,
             endpoint_lease_sha256=endpoint_lease_sha256,
@@ -921,7 +935,7 @@ class SqliteDagRunStore:
             liveness=latest.liveness,
             confidence=latest.confidence,
             last_event_id=latest.event_id,
-            event_count=len(validated),
+            event_count=len(endpoint_events),
         )
 
     def runtime_event_cursor(

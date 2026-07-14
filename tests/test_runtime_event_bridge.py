@@ -300,6 +300,34 @@ def test_projection_blocks_tampered_earlier_runtime_event(tmp_path: Path) -> Non
         reopened.runtime_state_projection("run-1", endpoint.sha256)
 
 
+def test_replay_blocks_tampered_runtime_journal_row_metadata(tmp_path: Path) -> None:
+    database = tmp_path / "run.sqlite3"
+    endpoint = _endpoint(run_id="run-1")
+    with SqliteDagRunStore(database) as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([_event(endpoint)]),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+        assert result is not None
+
+    with sqlite3.connect(database) as connection:
+        connection.execute("DROP TRIGGER dag_run_events_no_update")
+        connection.execute(
+            "UPDATE dag_run_events SET event_type = 'forged_runtime_event' "
+            "WHERE event_key LIKE 'runtime:%'"
+        )
+
+    with (
+        SqliteDagRunStore(database) as reopened,
+        pytest.raises(DagRunStoreError, match="runtime_event_journal_metadata_invalid"),
+    ):
+        reopened.runtime_state_projection("run-1", endpoint.sha256)
+
+
 def test_bridge_blocks_invalid_bindings_schema_and_transport(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
@@ -440,6 +468,26 @@ def test_endpoint_capabilities_hash_must_match_selected_backend(tmp_path: Path) 
                 deadline=_deadline(),
             )
         assert backend.wait_count == 0
+
+
+def test_stale_run_lease_blocks_before_backend_wait(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        stale_lease = replace(lease, epoch=lease.epoch + 1)
+        endpoint = _endpoint(run_id="run-1")
+        backend = EventBackend([_event(endpoint)])
+
+        with pytest.raises(DagRunStoreError, match="dag_run_lease_lost"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=stale_lease,
+                backend=backend,
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+
+        assert backend.wait_count == 0
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
 
 
 def test_store_rejects_runtime_event_without_normalized_transport(tmp_path: Path) -> None:
@@ -642,6 +690,43 @@ def test_observation_global_budget_is_bounded_and_omits_raw_hash(tmp_path: Path)
         assert transport["raw_payload_sha256"] is None
         assert transport["raw_payload_omitted_reason"] == "payload_truncated"
         assert transport["raw_payload_truncated"] is True
+
+
+def test_bounded_dictionary_selection_is_insertion_order_independent(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+        items = [(f"field-{index:03d}", index) for index in range(70)]
+        first = _event(
+            endpoint,
+            observation={**dict(items), "transport": {"mode": "poll"}},
+        )
+        duplicate = replace(
+            _event(
+                endpoint,
+                observation={**dict(reversed(items)), "transport": {"mode": "poll"}},
+            ),
+            observed_at="2026-07-14T12:00:02+00:00",
+        )
+        bridge = RuntimeEventBridge(store)
+
+        initial = bridge.wait_and_append(
+            lease=lease,
+            backend=EventBackend([first]),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+        repeated = bridge.wait_and_append(
+            lease=lease,
+            backend=EventBackend([duplicate]),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+
+        assert initial is not None and initial.appended is True
+        assert repeated is not None and repeated.appended is False
 
 
 @pytest.mark.parametrize("field", ["stream_id", "backend_cursor"])
