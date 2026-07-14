@@ -67,15 +67,11 @@ class RuntimeEventBridge:
             lease=lease,
             endpoint=endpoint,
             backend_name=capabilities.backend,
+            capabilities_sha256=capabilities.sha256,
         )
-        try:
-            event = backend.wait_event(endpoint, cursor, deadline)
-        except Exception as exc:
-            event = _unknown_runtime_event(
-                endpoint=endpoint,
-                backend_name=capabilities.backend,
-                error_type=type(exc).__name__,
-            )
+        event = backend.wait_event(endpoint, cursor, deadline)
+        if datetime.now(UTC) >= deadline:
+            return None
         if event is None:
             return None
         if not isinstance(event, RuntimeEvent):
@@ -105,11 +101,16 @@ class RuntimeEventBridge:
         lease: DagRunLease,
         endpoint: RuntimeEndpointLease,
         backend_name: str,
+        capabilities_sha256: str,
     ) -> None:
         if endpoint.run_id != lease.run_id:
             raise DagRunStoreError("runtime_event_run_mismatch", endpoint.endpoint_id)
         if endpoint.backend != backend_name:
             raise DagRunStoreError("runtime_event_backend_mismatch", endpoint.endpoint_id)
+        if endpoint.capabilities_sha256 != capabilities_sha256:
+            raise DagRunStoreError(
+                "runtime_event_capabilities_mismatch", endpoint.endpoint_id
+            )
 
     @staticmethod
     def _validate_event(
@@ -218,32 +219,3 @@ def _bounded_redacted(value: object, *, depth: int = 0, key: str = "") -> object
     if value is None or isinstance(value, (bool, int, float)):
         return value
     return f"<unsupported:{type(value).__name__}>"
-
-
-def _unknown_runtime_event(
-    *,
-    endpoint: RuntimeEndpointLease,
-    backend_name: str,
-    error_type: str,
-) -> RuntimeEvent:
-    observation = {
-        "observation_error": {
-            "code": "runtime_backend_wait_failed",
-            "error_type": error_type,
-        }
-    }
-    return RuntimeEvent(
-        event_id=(
-            f"{backend_name}:unknown:"
-            f"{canonical_sha256([endpoint.sha256, error_type]).removeprefix('sha256:')[:24]}"
-        ),
-        run_id=endpoint.run_id,
-        endpoint_lease_sha256=endpoint.sha256,
-        event_type="RUNTIME_OBSERVATION_FAILED",
-        observed_at=datetime.now(UTC).isoformat(),
-        state="UNKNOWN",
-        liveness="UNKNOWN",
-        confidence="UNKNOWN",
-        source=backend_name,
-        observation=FrozenJson.from_value(observation),
-    )

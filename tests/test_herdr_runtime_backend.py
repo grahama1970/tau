@@ -938,6 +938,32 @@ def test_runtime_event_bridge_appends_real_herdr_polling_observation(
         assert store.run_outcome("run-1") == ("RUNNING", None)
 
 
+def test_runtime_event_bridge_preserves_herdr_unknown_observation_failure(
+    tmp_path: Path,
+) -> None:
+    backend, fake, endpoint, _ = _spawned_backend(tmp_path)
+    fake.process_info_fails = True
+    with SqliteDagRunStore(tmp_path / "bridge-unknown.sqlite3") as store:
+        lease = store.acquire_run(
+            plan=_runtime_bridge_plan(tmp_path),
+            run_id="run-1",
+            owner_id="owner-a",
+        )
+
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=backend,
+            endpoint=endpoint,
+            cursor=None,
+            deadline=datetime.now(UTC) + timedelta(milliseconds=50),
+        )
+
+        assert result is not None
+        assert result.projection.state == "UNKNOWN"
+        assert result.projection.liveness == "UNKNOWN"
+        assert store.run_outcome("run-1") == ("RUNNING", None)
+
+
 def test_wrong_session_and_stale_lease_are_rejected(tmp_path: Path) -> None:
     backend, fake, lease, _ = _spawned_backend(tmp_path)
     wrong_session = HerdrRuntimeBackend(session="other", command_runner=fake)

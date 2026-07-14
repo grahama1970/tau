@@ -10,10 +10,11 @@ giving a backend authority over node completion.
 
 1. Calls the selected backend's bounded `wait_event()` method.
 2. Validates the run, backend, and exact endpoint lease binding.
-3. Bounds and redacts backend observation data.
-4. Stores backend transport evidence under `observation.transport`.
-5. Appends `runtime_event_appended` to `dag_run_events` transactionally.
-6. Rebuilds `tau.runtime_state_projection.v1` from journal order.
+3. Verifies that the backend capabilities hash matches the endpoint lease.
+4. Bounds and redacts backend observation data.
+5. Stores backend transport evidence under `observation.transport`.
+6. Appends `runtime_event_appended` and reads its projection in one transaction.
+7. Rebuilds `tau.runtime_state_projection.v1` from journal order.
 
 The top-level `tau.runtime_event.v1` schema remains backend-neutral. The
 SQLite `dag_run_events.seq` value is the authoritative replay order. A native
@@ -40,8 +41,11 @@ Runtime observations can wake or inform orchestration. They cannot:
 - replace a required Tau node receipt.
 
 Terminal text such as `PASS`, `done`, or `tests passed` remains diagnostic
-content and is redacted from the journal. A backend polling failure records an
-`UNKNOWN` state; Tau does not invent process death or successful completion.
+content and is redacted from the journal. A backend may normalize an
+unavailable observation as `UNKNOWN`; backend binding, ownership, and contract
+errors propagate and block instead of being converted into observations. Tau
+does not invent process death or successful completion, and an event returned
+after the caller's deadline is not appended.
 
 ## Backend Support
 

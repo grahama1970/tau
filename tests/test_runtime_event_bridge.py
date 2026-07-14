@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -27,9 +28,11 @@ class EventBackend:
         *,
         native: bool = False,
         backend: str = "fixture",
+        delay_seconds: float = 0.0,
     ) -> None:
         self.events = events
         self.wait_count = 0
+        self.delay_seconds = delay_seconds
         self._capabilities = RuntimeCapabilities(
             backend=backend,
             version="1",
@@ -59,6 +62,8 @@ class EventBackend:
     ) -> RuntimeEvent | None:
         del endpoint, cursor, deadline
         self.wait_count += 1
+        if self.delay_seconds:
+            time.sleep(self.delay_seconds)
         item = self.events.pop(0)
         if isinstance(item, BaseException):
             raise item
@@ -127,6 +132,35 @@ def test_polling_runtime_events_append_deduplicate_and_project(tmp_path: Path) -
             "event_count": 1,
         }
         assert store.runtime_event_cursor("run-1", endpoint.sha256) == "event-1"
+
+
+def test_append_builds_returned_projection_inside_transaction(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(
+            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
+        )
+        endpoint = _endpoint(run_id="run-1")
+        event = _event(
+            endpoint,
+            observation={"transport": {"mode": "poll"}},
+        )
+        original = store.runtime_state_projection
+        transaction_states: list[bool] = []
+
+        def observed_projection(run_id: str, endpoint_sha256: str):
+            transaction_states.append(store._connection.in_transaction)
+            return original(run_id, endpoint_sha256)
+
+        monkeypatch.setattr(store, "runtime_state_projection", observed_projection)
+
+        appended, _, projection = store.append_runtime_event(lease, event)
+
+        assert appended is True
+        assert projection.state == "RUNNING"
+        assert transaction_states == [True]
 
 
 def test_changed_observation_appends_but_reused_event_id_conflicts(tmp_path: Path) -> None:
@@ -287,16 +321,36 @@ def test_bridge_blocks_invalid_bindings_schema_and_transport(tmp_path: Path) -> 
             )
 
 
-def test_wait_failure_is_unknown_and_expired_deadline_does_not_poll(tmp_path: Path) -> None:
+def test_backend_contract_failure_propagates_and_unknown_event_remains_diagnostic(
+    tmp_path: Path,
+) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(
             plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
         )
         endpoint = _endpoint(run_id="run-1")
-        failed_backend = EventBackend([OSError("secret backend detail")])
+        failed_backend = EventBackend([RuntimeError("endpoint_binding_mismatch")])
+        with pytest.raises(RuntimeError, match="endpoint_binding_mismatch"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=failed_backend,
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+        unknown = _event(
+            endpoint,
+            event_id="unknown-1",
+            state="UNKNOWN",
+            liveness="UNKNOWN",
+            confidence="UNKNOWN",
+            observation={"observation_error_code": "process_info_unavailable"},
+        )
         result = RuntimeEventBridge(store).wait_and_append(
             lease=lease,
-            backend=failed_backend,
+            backend=EventBackend([unknown]),
             endpoint=endpoint,
             cursor=None,
             deadline=_deadline(),
@@ -306,7 +360,9 @@ def test_wait_failure_is_unknown_and_expired_deadline_does_not_poll(tmp_path: Pa
         assert result.projection.state == "UNKNOWN"
         assert result.projection.liveness == "UNKNOWN"
         stored = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
-        assert "secret backend detail" not in str(stored.to_payload())
+        assert stored.observation.to_value()["observation_error_code"] == (
+            "process_info_unavailable"
+        )
 
         expired_backend = EventBackend([_event(endpoint)])
         assert RuntimeEventBridge(store).wait_and_append(
@@ -319,12 +375,64 @@ def test_wait_failure_is_unknown_and_expired_deadline_does_not_poll(tmp_path: Pa
         assert expired_backend.wait_count == 0
 
 
-def test_native_transport_metadata_is_nested_and_deduplicated(tmp_path: Path) -> None:
+def test_event_returned_after_deadline_is_not_appended(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(
             plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
         )
         endpoint = _endpoint(run_id="run-1")
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([_event(endpoint)], delay_seconds=0.02),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=datetime.now(UTC) + timedelta(milliseconds=5),
+        )
+
+        assert result is None
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
+def test_endpoint_capabilities_hash_must_match_selected_backend(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(
+            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
+        )
+        endpoint = replace(
+            _endpoint(run_id="run-1"),
+            capabilities_sha256=canonical_sha256("stale-capabilities"),
+        )
+        backend = EventBackend([])
+
+        with pytest.raises(DagRunStoreError, match="runtime_event_capabilities_mismatch"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=backend,
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+        assert backend.wait_count == 0
+
+
+def test_store_rejects_runtime_event_without_normalized_transport(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(
+            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
+        )
+        endpoint = _endpoint(run_id="run-1")
+
+        with pytest.raises(DagRunStoreError, match="runtime_event_transport_mode_invalid"):
+            store.append_runtime_event(lease, _event(endpoint))
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
+def test_native_transport_metadata_is_nested_and_deduplicated(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(
+            plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a"
+        )
+        endpoint = _endpoint(run_id="run-1", native=True)
         event = _event(
             endpoint,
             confidence="NATIVE",
@@ -425,8 +533,8 @@ def _deadline() -> datetime:
     return datetime.now(UTC) + timedelta(seconds=1)
 
 
-def _endpoint(*, run_id: str) -> RuntimeEndpointLease:
-    capabilities = EventBackend([]).capabilities()
+def _endpoint(*, run_id: str, native: bool = False) -> RuntimeEndpointLease:
+    capabilities = EventBackend([], native=native).capabilities()
     return RuntimeEndpointLease(
         run_id=run_id,
         plan_revision=canonical_sha256({"plan": 1}),
@@ -456,6 +564,7 @@ def _event(
     *,
     event_id: str = "event-1",
     state: str = "RUNNING",
+    liveness: str = "ALIVE",
     confidence: str = "PROCESS",
     observation: dict[str, Any] | None = None,
 ) -> RuntimeEvent:
@@ -468,7 +577,7 @@ def _event(
             "event_type": "RUNTIME_OBSERVATION_RECORDED",
             "observed_at": "2026-07-14T12:00:00+00:00",
             "state": state,
-            "liveness": "ALIVE",
+            "liveness": liveness,
             "confidence": confidence,
             "source": endpoint.backend,
             "observation": observation or {"agent_status": state.casefold()},

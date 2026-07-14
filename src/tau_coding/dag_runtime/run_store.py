@@ -813,13 +813,16 @@ class SqliteDagRunStore:
         identity_payload = dict(event_payload)
         identity_payload.pop("observed_at")
         identity_sha256 = canonical_sha256(identity_payload)
+        transport_mode = _runtime_transport_mode(event)
+        if transport_mode not in {"poll", "native"}:
+            raise DagRunStoreError("runtime_event_transport_mode_invalid", event.event_id)
         journal_payload = {
             "schema": RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA,
             "runtime_event": event_payload,
             "runtime_event_sha256": canonical_sha256(event_payload),
             "runtime_event_identity_sha256": identity_sha256,
             "endpoint_lease_sha256": event.endpoint_lease_sha256,
-            "transport_mode": _runtime_transport_mode(event),
+            "transport_mode": transport_mode,
         }
         with self._transaction():
             self._assert_lease(lease)
@@ -840,11 +843,11 @@ class SqliteDagRunStore:
                     payload=journal_payload,
                 )
                 appended = True
-        projection = self.runtime_state_projection(
-            lease.run_id, event.endpoint_lease_sha256
-        )
-        if projection is None:
-            raise DagRunStoreError("runtime_event_projection_missing", event.event_id)
+            projection = self.runtime_state_projection(
+                lease.run_id, event.endpoint_lease_sha256
+            )
+            if projection is None:
+                raise DagRunStoreError("runtime_event_projection_missing", event.event_id)
         return appended, sequence, projection
 
     def load_runtime_events(
