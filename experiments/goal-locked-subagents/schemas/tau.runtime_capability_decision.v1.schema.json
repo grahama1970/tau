@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "tau.runtime_capability_decision.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "ok", "status", "backend", "requirement_sha256", "capabilities_sha256", "missing_capabilities", "errors", "proof_scope"],
+  "properties": {
+    "schema": {"const": "tau.runtime_capability_decision.v1"}, "ok": {"type": "boolean"}, "status": {"enum": ["PASS", "BLOCKED"]}, "backend": {"type": "string", "minLength": 1},
+    "requirement_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "capabilities_sha256": {"oneOf": [{"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, {"type": "null"}]}, "missing_capabilities": {"type": "array", "items": {"type": "string"}},
+    "errors": {"type": "array", "items": {"type": "string"}}, "proof_scope": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "PASS"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "ok": {"const": true},
+          "missing_capabilities": {"maxItems": 0},
+          "errors": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "BLOCKED"}}, "required": ["status"]},
+      "then": {
+        "properties": {"ok": {"const": false}, "errors": {"minItems": 1}}
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"const": "PASS"},
+          "backend": {"not": {"const": "none"}}
+        },
+        "required": ["status", "backend"]
+      },
+      "then": {
+        "properties": {
+          "capabilities_sha256": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  ]
+}

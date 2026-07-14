@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "tau.git_worktree_lease.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "run_id", "plan_revision", "node_id", "attempt_id", "repository", "worktree_path", "base_commit", "allowed_paths", "owner", "created_at", "expires_at", "cleanup_policy"],
+  "properties": {
+    "schema": {"const": "tau.git_worktree_lease.v1"}, "run_id": {"type": "string", "minLength": 1}, "plan_revision": {"type": "string", "minLength": 1}, "node_id": {"type": "string", "minLength": 1}, "attempt_id": {"type": "string", "minLength": 1}, "repository": {"type": "string", "minLength": 1}, "worktree_path": {"type": "string", "minLength": 1},
+    "base_commit": {"type": "string", "minLength": 1}, "allowed_paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}, "owner": {"type": "string", "minLength": 1}, "created_at": {"type": "string", "minLength": 1}, "expires_at": {"type": "string", "minLength": 1}, "cleanup_policy": {"type": "object"}
+  }
+}

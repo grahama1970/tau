@@ -224,6 +224,22 @@ def test_project_provider_only_node_uses_provider_adapter(tmp_path: Path) -> Non
     assert node.adapter_config.to_value() == {
         "provider": {"adapter": "generic-provider-dag-node"}
     }
+    assert node.runtime_requirement.to_value()["backend"] == "herdr"
+
+
+def test_legacy_local_executor_provider_node_still_uses_provider_backend(
+    tmp_path: Path,
+) -> None:
+    payload = _project_payload(tmp_path)
+    provider = payload["nodes"][1]
+    provider["executor"] = "local"
+    provider["provider"] = {"adapter": "generic-provider-dag-node"}
+
+    plan = compile_project_dag_plan(payload, source_path=tmp_path / "dag.json")
+    node = next(item for item in plan.nodes if item.node_id == "branch-a")
+
+    assert node.adapter_kind == "project_provider"
+    assert node.runtime_requirement.to_value()["backend"] == "herdr"
 
 
 def test_generic_skill_output_directory_is_source_anchored(tmp_path: Path) -> None:

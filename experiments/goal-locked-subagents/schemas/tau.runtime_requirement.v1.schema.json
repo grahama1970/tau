@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tau.local/schemas/tau.runtime_requirement.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "backend", "interaction_mode", "required_capabilities", "session_scope", "observation_requirements"],
+  "properties": {
+    "schema": {"const": "tau.runtime_requirement.v1"},
+    "backend": {"type": "string", "minLength": 1},
+    "interaction_mode": {"enum": ["none", "one_shot", "interactive"]},
+    "required_capabilities": {
+      "type": "array",
+      "items": {"enum": ["interactive", "one_shot", "native_events", "native_agent_state", "foreground_process_state", "structured_composer_state", "stable_endpoint_id", "human_attach", "supports_working_directory", "supports_owned_inventory", "supports_terminate"]},
+      "uniqueItems": true
+    },
+    "session_scope": {"type": "string", "minLength": 1},
+    "observation_requirements": {"type": "array", "items": {"enum": ["NATIVE", "PROCESS", "HEURISTIC", "UNKNOWN"]}, "uniqueItems": true}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"interaction_mode": {"const": "none"}}, "required": ["interaction_mode"]},
+      "then": {
+        "properties": {
+          "backend": {"const": "none"},
+          "required_capabilities": {"maxItems": 0},
+          "observation_requirements": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"interaction_mode": {"const": "one_shot"}}, "required": ["interaction_mode"]},
+      "then": {
+        "properties": {
+          "backend": {"not": {"const": "none"}},
+          "required_capabilities": {"contains": {"const": "one_shot"}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"interaction_mode": {"const": "interactive"}}, "required": ["interaction_mode"]},
+      "then": {
+        "properties": {
+          "backend": {"not": {"const": "none"}},
+          "required_capabilities": {"contains": {"const": "interactive"}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"backend": {"const": "none"}}, "required": ["backend"]},
+      "then": {"properties": {"interaction_mode": {"const": "none"}}}
+    }
+  ]
+}

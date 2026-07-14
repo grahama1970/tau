@@ -6648,3 +6648,35 @@
   providers, signing, and audit ledger.
 
 <!-- Auto-populated from /project-state --quick -->
+- 2026-07-13 issue #88 runtime-contract slice: every canonical `DagPlan` node
+  now carries a hash-bound `tau.runtime_requirement.v1` naming backend,
+  interaction mode, required capabilities, session scope, and observation
+  requirements. The new backend-neutral contract package defines typed
+  capabilities, endpoint leases, submit receipts, runtime events/state,
+  reconciliation, and Git worktree leases. `RuntimeBackendRegistry` rejects
+  unknown backends, duplicate registration, unsupported capabilities, and
+  unsupported observation sources before dispatch. This is contract and
+  negotiation evidence only; local subprocess migration and Herdr/tmux runtime
+  execution remain in #89-#95.
+  Independent review additionally hardened all runtime hash fields to complete
+  lowercase SHA-256 digests, closed the projected runtime-state vocabulary, and
+  separated `runtime_backend` from executor labels. Migration defaults resolve
+  local commands to `local` and current provider nodes to `herdr`; other
+  executable labels require an explicit backend.
+  Persistent-subagent compatibility review classifies commandless declarations
+  as `project_persistent_declaration`, defaults them to the interactive Herdr
+  backend, and keeps ordinary commandless local nodes virtual. Until the Herdr
+  runtime adapter exists, the scheduler blocks those declarations with
+  `runtime_backend_execution_not_implemented` instead of attempting command-spec
+  dispatch.
+  The bounded-ready-queue now checks each dispatching adapter against its
+  compiled runtime requirement. A persistent command or explicit backend that
+  the legacy adapter cannot enforce blocks before ready-queue artifacts or a
+  subprocess are created.
+  Command-backed persistent nodes remain bounded one-shot command ticks and must
+  emit the declared persistent-surface receipts; only commandless persistent
+  declarations request an interactive Herdr endpoint.
+  Runtime backends now positively declare supported session scopes, so an
+  unknown or misspelled scope cannot pass capability negotiation. Handoff-loop
+  runtime preflight derives node requirements without invoking the acyclic plan
+  compiler, preserving bounded iterative DAGs.

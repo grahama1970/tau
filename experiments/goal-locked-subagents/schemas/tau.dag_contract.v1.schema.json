@@ -377,6 +377,10 @@
             "type": "string",
             "minLength": 1
           },
+          "runtime_backend": {
+            "type": "string",
+            "minLength": 1
+          },
           "max_attempts": {
             "type": "integer",
             "minimum": 1
