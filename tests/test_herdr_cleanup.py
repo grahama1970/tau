@@ -3,12 +3,14 @@ import json
 import os
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from tau_coding.cli import app
 from tau_coding.herdr_cleanup import (
     DEFAULT_GC_LABEL_PREFIXES,
     classify_herdr_surface,
+    resolve_herdr_session,
     run_herdr_cleanup,
     run_herdr_gc,
 )
@@ -44,6 +46,25 @@ def _write_manifest(run_dir: Path, *, session: str = "default") -> None:
         ),
         encoding="utf-8",
     )
+
+
+def test_resolve_herdr_session_prefers_explicit_then_ambient(monkeypatch) -> None:
+    monkeypatch.setenv("HERDR_SESSION", "ambient-session")
+
+    assert resolve_herdr_session("explicit-session") == "explicit-session"
+    assert resolve_herdr_session(None) == "ambient-session"
+
+    monkeypatch.delenv("HERDR_SESSION")
+    assert resolve_herdr_session(None) == "default"
+
+
+def test_resolve_herdr_session_rejects_explicit_or_ambient_empty(monkeypatch) -> None:
+    with pytest.raises(RuntimeError, match="non-empty"):
+        resolve_herdr_session("")
+
+    monkeypatch.setenv("HERDR_SESSION", "")
+    with pytest.raises(RuntimeError, match="HERDR_SESSION"):
+        resolve_herdr_session(None)
 
 
 def test_classify_herdr_surface_rejects_substitute_binary(
@@ -99,6 +120,40 @@ def test_herdr_cleanup_refuses_current_workspace_by_default(
 
     assert receipt["candidate_count"] == 0
     assert receipt["current_workspace"] == "w-run"
+
+
+def test_herdr_cleanup_default_session_protects_ambient_workspace_without_session(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir)
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-run")
+    monkeypatch.delenv("HERDR_SESSION", raising=False)
+
+    receipt = run_herdr_cleanup(run_dir=run_dir, mode="dry-run")
+
+    assert receipt["candidate_count"] == 0
+    assert receipt["current_workspace"] == "w-run"
+
+
+def test_herdr_cleanup_named_session_does_not_adopt_sessionless_workspace(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    run_dir = tmp_path / "run"
+    _write_manifest(run_dir, session="named-session")
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-run")
+    monkeypatch.delenv("HERDR_SESSION", raising=False)
+
+    receipt = run_herdr_cleanup(
+        run_dir=run_dir,
+        mode="dry-run",
+        session="named-session",
+    )
+
+    assert receipt["candidate_count"] == 1
+    assert receipt["current_workspace"] is None
 
 
 def test_herdr_cleanup_apply_uses_herdr_workspace_close(
@@ -595,6 +650,20 @@ def test_herdr_gc_dry_run_selects_stale_tau_workspaces(
     }
     assert receipt["applied_actions"] == []
     assert (tmp_path / "gc" / "herdr-gc-receipt.json").exists()
+
+
+def test_herdr_gc_default_session_protects_ambient_workspace_without_session(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fake_herdr = _write_fake_gc_herdr(tmp_path)
+    monkeypatch.setenv("HERDR_WORKSPACE_ID", "w-current")
+    monkeypatch.delenv("HERDR_SESSION", raising=False)
+
+    receipt = run_herdr_gc(run_dir=tmp_path / "gc", herdr_bin=str(fake_herdr))
+
+    assert receipt["current_workspace"] == "w-current"
+    assert "w-current" not in {item["workspace_id"] for item in receipt["candidates"]}
 
 
 def test_herdr_gc_does_not_apply_ambient_workspace_id_to_another_session(

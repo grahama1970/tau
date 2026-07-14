@@ -12,6 +12,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from tau_coding.herdr_cleanup import resolve_herdr_session
+
 VISIBLE_DAG_RUN_SCHEMA = "tau.visible_dag_run_receipt.v1"
 VISIBLE_DAG_MANIFEST_SCHEMA = "tau.visible_dag_runtime_manifest.v1"
 
@@ -43,6 +45,7 @@ def run_visible_dag_poc(
 ) -> dict[str, Any]:
     """Run a two-node creator->reviewer DAG in visible Herdr panes."""
 
+    session = resolve_herdr_session(session)
     resolved_repo = repo.expanduser().resolve()
     if not resolved_repo.exists():
         raise RuntimeError(f"repo does not exist: {resolved_repo}")
@@ -279,6 +282,7 @@ def run_visible_dag_poc(
 
     runtime_manifest = {
         "schema": VISIBLE_DAG_MANIFEST_SCHEMA,
+        "backend_session_id": session,
         "run_id": run_id,
         "label": label,
         "repo": str(resolved_repo),
@@ -370,6 +374,7 @@ def inspect_visible_dag_run(run_dir: Path) -> dict[str, Any]:
         "status": receipt.get("status"),
         "mocked": receipt.get("mocked"),
         "live": receipt.get("live"),
+        "backend_session_id": manifest.get("backend_session_id"),
         "run_dir": str(resolved),
         "workstation_manifest": manifest.get("workstation_manifest"),
         "inspect_path": manifest.get("inspect_path"),

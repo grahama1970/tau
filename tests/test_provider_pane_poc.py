@@ -41,6 +41,7 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
         json.dumps(
             {
                 "schema": "tau.provider_pane_runtime_manifest.v1",
+                "backend_session_id": "default",
                 "run_id": "run-1",
                 "events_jsonl": str(events),
                 "workstation_manifest": "/tmp/workstation.json",
@@ -96,6 +97,7 @@ def test_inspect_provider_pane_run_summarizes_artifacts(tmp_path: Path) -> None:
     assert summary["ok"] is True
     assert summary["mocked"] is False
     assert summary["live"] is True
+    assert summary["backend_session_id"] == "default"
     assert summary["events_count"] == 1
     assert summary["providers"] == [
         {

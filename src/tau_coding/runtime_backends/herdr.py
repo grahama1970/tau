@@ -232,12 +232,38 @@ class HerdrRuntimeBackend:
             args.extend(("--env", item))
         args.extend(("--no-focus", "--", *command))
         started = self._run_json(*args)
-        agent = _find_agent(started, endpoint_label)
-        workspace_id = _required_string(agent, "workspace_id")
-        pane_id = _required_string(agent, "pane_id")
-        terminal_id = _required_string(agent, "terminal_id")
+        try:
+            agent = _find_agent(started, endpoint_label)
+        except ValueError:
+            recoverable = [
+                candidate
+                for candidate in _find_objects(started, "agent")
+                if isinstance(candidate.get("pane_id"), str) and candidate.get("pane_id")
+            ]
+            if len(recoverable) == 1:
+                self._reclaim_failed_spawn(
+                    recoverable[0],
+                    expected_workspace_id=scope.workspace_id,
+                    expected_agent_name=endpoint_label,
+                )
+            raise RuntimeError("herdr_runtime_spawn_agent_mismatch") from None
+        try:
+            workspace_id = _required_string(agent, "workspace_id")
+            pane_id = _required_string(agent, "pane_id")
+            terminal_id = _required_string(agent, "terminal_id")
+        except ValueError:
+            self._reclaim_failed_spawn(
+                agent,
+                expected_workspace_id=scope.workspace_id,
+                expected_agent_name=endpoint_label,
+            )
+            raise
         if workspace_id != scope.workspace_id:
-            self._run_json("pane", "close", pane_id, check=False)
+            self._reclaim_failed_spawn(
+                agent,
+                expected_workspace_id=scope.workspace_id,
+                expected_agent_name=endpoint_label,
+            )
             raise RuntimeError("herdr_runtime_spawn_workspace_mismatch")
         now = datetime.now(UTC)
         lease = RuntimeEndpointLease(
@@ -281,11 +307,38 @@ class HerdrRuntimeBackend:
         state = _HerdrEndpointState(lease=lease, scope=scope)
         with self._lock:
             if pane_id in self._endpoint_ids:
-                self._run_json("pane", "close", pane_id, check=False)
                 raise RuntimeError("herdr_runtime_endpoint_already_exists")
             self._endpoints[lease.sha256] = state
             self._endpoint_ids[pane_id] = lease.sha256
         return lease
+
+    def _reclaim_failed_spawn(
+        self,
+        agent: Mapping[str, Any],
+        *,
+        expected_workspace_id: str,
+        expected_agent_name: str,
+    ) -> None:
+        pane_id = agent.get("pane_id")
+        if not isinstance(pane_id, str) or not pane_id:
+            return
+        observed_before = self._run_json("pane", "get", pane_id, check=False)
+        try:
+            observed_pane = _find_object(observed_before, "pane")
+        except ValueError as exc:
+            raise RuntimeError("herdr_runtime_failed_spawn_ownership_not_verified") from exc
+        observed_agent = observed_pane.get("agent") or observed_pane.get("name")
+        if (
+            observed_before.get("returncode") != 0
+            or observed_pane.get("pane_id") != pane_id
+            or observed_pane.get("workspace_id") != expected_workspace_id
+            or observed_agent != expected_agent_name
+        ):
+            raise RuntimeError("herdr_runtime_failed_spawn_ownership_not_verified")
+        self._run_json("pane", "close", pane_id, check=False)
+        observed = self._run_json("pane", "get", pane_id, check=False)
+        if observed.get("returncode") == 0 or _herdr_error_code(observed) != "pane_not_found":
+            raise RuntimeError("herdr_runtime_failed_spawn_cleanup_not_verified")
 
     def submit(
         self, endpoint: RuntimeEndpointLease, work_order: FrozenJson
@@ -902,27 +955,6 @@ def _find_required_id(payload: Any, key: str) -> str:
     raise ValueError(f"Herdr response is missing {key}")
 
 
-def _find_agent(payload: Any, expected_name: str) -> dict[str, Any]:
-    if isinstance(payload, dict):
-        agent = payload.get("agent")
-        if isinstance(agent, dict) and (
-            agent.get("agent") == expected_name or agent.get("name") == expected_name
-        ):
-            return agent
-        for item in payload.values():
-            try:
-                return _find_agent(item, expected_name)
-            except ValueError:
-                pass
-    elif isinstance(payload, list):
-        for item in payload:
-            try:
-                return _find_agent(item, expected_name)
-            except ValueError:
-                pass
-    raise ValueError(f"Herdr response is missing expected agent {expected_name}")
-
-
 def _find_object(payload: Any, key: str) -> dict[str, Any]:
     if isinstance(payload, dict):
         value = payload.get(key)
@@ -934,6 +966,27 @@ def _find_object(payload: Any, key: str) -> dict[str, Any]:
             except ValueError:
                 pass
     raise ValueError(f"Herdr response is missing {key}")
+
+
+def _find_objects(payload: Any, key: str) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    if isinstance(payload, dict):
+        value = payload.get(key)
+        if isinstance(value, dict):
+            matches.append(value)
+        for item in payload.values():
+            matches.extend(_find_objects(item, key))
+    elif isinstance(payload, list):
+        for item in payload:
+            matches.extend(_find_objects(item, key))
+    return matches
+
+
+def _find_agent(payload: Any, expected_name: str) -> dict[str, Any]:
+    for agent in _find_objects(payload, "agent"):
+        if agent.get("agent") == expected_name or agent.get("name") == expected_name:
+            return agent
+    raise ValueError(f"Herdr response is missing expected agent {expected_name}")
 
 
 __all__ = [

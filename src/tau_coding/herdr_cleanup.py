@@ -27,6 +27,27 @@ DEFAULT_GC_LABEL_PREFIXES = (
 )
 
 
+def _ambient_workspace_belongs_to_session(
+    ambient_session: str, selected_session: str
+) -> bool:
+    return ambient_session == selected_session or (
+        not ambient_session and selected_session == "default"
+    )
+
+
+def resolve_herdr_session(session: str | None) -> str:
+    if session is not None:
+        if not session.strip():
+            raise RuntimeError("Herdr session must be a non-empty string")
+        return session
+    ambient_session = os.environ.get("HERDR_SESSION")
+    if ambient_session is None:
+        return "default"
+    if not ambient_session.strip():
+        raise RuntimeError("HERDR_SESSION must be a non-empty string")
+    return ambient_session
+
+
 def run_herdr_cleanup(
     *,
     run_dir: Path,
@@ -47,7 +68,7 @@ def run_herdr_cleanup(
     ambient_session = os.environ.get("HERDR_SESSION") or ""
     current_workspace = (
         (os.environ.get("HERDR_WORKSPACE_ID") or "")
-        if ambient_session == session
+        if _ambient_workspace_belongs_to_session(ambient_session, session)
         else ""
     )
     candidates = _candidate_actions(
@@ -249,7 +270,7 @@ def run_herdr_gc(
     ambient_session = os.environ.get("HERDR_SESSION") or ""
     current_workspace = (
         (os.environ.get("HERDR_WORKSPACE_ID") or "")
-        if ambient_session == session
+        if _ambient_workspace_belongs_to_session(ambient_session, session)
         else ""
     )
     list_result = subprocess.run(

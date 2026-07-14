@@ -6661,15 +6661,38 @@
   public CLI. Cleanup rejects a selected session that differs from the runtime
   manifest, GC approvals bind the selected session, spawn requests are fully
   validated before `agent start`, and already-absent panes reconcile as
-  terminated. Deterministic proof: `57 passed` across Herdr backend and cleanup
-  tests, plus `274 passed, 1 deselected` across the wider runtime/provider/DAG
-  compatibility set; Ruff passed for all touched files and mypy passed for the
-  backend, cleanup, and smoke script. The full suite reports `2144 passed` and
+  terminated. A sessionless ambient `HERDR_WORKSPACE_ID` is now treated as the
+  current workspace only for the default session, preventing default-session
+  cleanup from closing the active pane without conflating named sessions. All
+  current provider-pane, provider-readiness, provider-DAG, and visible-DAG
+  runtime-manifest producers resolve the explicit or ambient Herdr session once
+  and record that effective `backend_session_id`, so cleanup cannot target a
+  different default session when execution used an ambient named session. If
+  `agent start` returns an incomplete response, Tau reclaims a pane only when
+  the exact pane ID remains available and an independent pre-close `pane get`
+  confirms the expected agent identity and owned workspace; this also safely
+  handles a start response that omits its redundant workspace ID. Tau
+  post-verifies only the exact `pane_not_found` code. Ambiguous
+  nested IDs and generic not-found errors cannot authorize or verify cleanup;
+  the attempt stays reserved and cannot be submitted again blindly.
+  A complete start response that misreports the workspace uses the same
+  independently verified reclamation path before Tau rejects the spawn. A
+  missing or mismatched response agent name also uses that path when an exact
+  pane ID is available. A duplicate response pane ID never authorizes closing
+  the already leased endpoint. Complete responses still select the exact
+  expected agent from nested or list-wrapped records before malformed-response
+  recovery is considered.
+  Explicit or ambient empty session identifiers are rejected rather than
+  silently retargeted. Deterministic proof: `104 passed, 1 deselected` across Herdr
+  backend/smoke/cleanup and provider/
+  visible-DAG compatibility tests; Ruff passed for all touched files. The full
+  suite reports `2156 passed` and
   the same three retained baseline failures: one compliance-package fixture and
   two absent retained proof/spec artifacts. Non-mocked development-host proof:
-  `/tmp/tau-herdr-runtime-smoke-issue90-final5-20260714T055541Z/herdr-runtime-smoke-receipt.json`
+  `/tmp/tau-herdr-runtime-smoke-issue90-exact-20260714T063950Z/herdr-runtime-smoke-receipt.json`
   reports `status:"PASS"`, `mocked:false`, `live:true`, `provider_live:false`,
-  distinct same-label workspace IDs `w85`/`w86`, wrong-session lookup blocked,
+  distinct same-label workspace IDs `w8B`/`w8C`, protected ambient workspace
+  `w11`, wrong-session lookup blocked,
   unowned cleanup blocked, input delivery `CONFIRMED`, endpoint absence verified
   with `pane_not_found`, and `2/2` workspaces post-verified absent. The negative
   substitute-binary receipt at

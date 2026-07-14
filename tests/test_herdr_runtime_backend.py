@@ -28,6 +28,7 @@ class FakeHerdr:
         self.workspace_count = 0
         self.pane_count = 0
         self.closed_panes: set[str] = set()
+        self.pane_agents: dict[str, str] = {}
         self.pane_status = "idle"
         self.visible_text = "ready"
         self.processes: list[dict[str, Any]] = [
@@ -40,6 +41,16 @@ class FakeHerdr:
         self.closed_pane_error_code = "pane_not_found"
         self.close_missing_returns_not_found = False
         self.raise_oserror = False
+        self.start_missing_terminal_id = False
+        self.start_missing_agent_name = False
+        self.start_missing_workspace_id = False
+        self.start_missing_pane_id = False
+        self.start_wrap_agent_in_list = False
+        self.start_prepend_unrelated_agent = False
+        self.start_unrelated_pane_id = False
+        self.start_pane_id_override: str | None = None
+        self.start_workspace_id_override: str | None = None
+        self.pane_get_agent_override: str | None = None
         self.timeouts: list[float | None] = []
 
     def __call__(self, argv: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
@@ -68,20 +79,36 @@ class FakeHerdr:
             self.pane_count += 1
             name = command[2]
             workspace_id = command[command.index("--workspace") + 1]
-            pane_id = f"{workspace_id}:p{self.pane_count}"
-            return self._ok(
-                argv,
-                {
-                    "result": {
-                        "agent": {
-                            "agent": name,
-                            "workspace_id": workspace_id,
-                            "pane_id": pane_id,
-                            "terminal_id": f"term-{self.pane_count}",
-                        }
-                    }
-                },
-            )
+            pane_id = self.start_pane_id_override or f"{workspace_id}:p{self.pane_count}"
+            self.pane_agents[pane_id] = name
+            agent = {
+                "agent": name,
+                "workspace_id": workspace_id,
+                "pane_id": pane_id,
+                "terminal_id": f"term-{self.pane_count}",
+            }
+            if self.start_missing_terminal_id:
+                agent.pop("terminal_id")
+            if self.start_missing_agent_name:
+                agent.pop("agent")
+            if self.start_missing_workspace_id:
+                agent.pop("workspace_id")
+            elif self.start_workspace_id_override is not None:
+                agent["workspace_id"] = self.start_workspace_id_override
+            if self.start_missing_pane_id:
+                agent.pop("pane_id")
+            if self.start_wrap_agent_in_list:
+                result: dict[str, Any] = {"agents": [{"agent": agent}]}
+            elif self.start_prepend_unrelated_agent:
+                result = {
+                    "agent": {"agent": "unrelated-agent"},
+                    "nested": {"agent": agent},
+                }
+            else:
+                result = {"agent": agent}
+            if self.start_unrelated_pane_id:
+                result["unrelated"] = {"pane_id": "w-unowned:p99"}
+            return self._ok(argv, {"result": result})
         if command[:2] == ["pane", "send-text"]:
             return self._ok(argv, {"result": {"type": "text_sent"}})
         if command[:2] == ["pane", "read"]:
@@ -100,6 +127,8 @@ class FakeHerdr:
                 {
                     "result": {
                         "pane": {
+                            "agent": self.pane_get_agent_override
+                            or self.pane_agents.get(pane_id),
                             "workspace_id": workspace_id,
                             "pane_id": pane_id,
                             "agent_status": self.pane_status,
@@ -241,6 +270,22 @@ def test_spawn_binds_exact_workspace_pane_terminal_and_session(tmp_path: Path) -
     assert backend.list_owned("run-1") == [lease]
 
 
+@pytest.mark.parametrize("response_shape", ["list", "multiple"])
+def test_spawn_selects_exact_agent_from_nested_response(
+    tmp_path: Path,
+    response_shape: str,
+) -> None:
+    fake = FakeHerdr()
+    fake.start_wrap_agent_in_list = response_shape == "list"
+    fake.start_prepend_unrelated_agent = response_shape == "multiple"
+    backend, _, lease, _ = _spawned_backend(tmp_path, command_runner=fake)
+
+    assert lease.endpoint_id == "w1:p1"
+    assert lease.backend_ids.to_value()["agent_name"].startswith("tau-")
+    assert backend.list_owned("run-1") == [lease]
+    assert fake.closed_panes == set()
+
+
 def test_duplicate_endpoint_labels_create_distinct_attempt_bound_ids(
     tmp_path: Path,
 ) -> None:
@@ -281,6 +326,40 @@ def test_duplicate_endpoint_labels_create_distinct_attempt_bound_ids(
     assert backend.list_owned("run-1") == leases
 
 
+def test_spawn_does_not_close_existing_endpoint_on_duplicate_response_id(
+    tmp_path: Path,
+) -> None:
+    backend, fake, first, _ = _spawned_backend(tmp_path)
+    fake.start_pane_id_override = first.endpoint_id
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(RuntimeError, match="endpoint_already_exists"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-2",
+                attempt_number=2,
+                execution_token="token-2",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 2}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == set()
+    assert backend.list_owned("run-1") == [first]
+
+
 def test_spawn_rejects_duplicate_attempt_before_starting_second_agent(
     tmp_path: Path,
 ) -> None:
@@ -312,6 +391,279 @@ def test_spawn_rejects_duplicate_attempt_before_starting_second_agent(
         backend.spawn(request)
 
     assert sum(call[3:5] == ["agent", "start"] for call in fake.calls) == start_count
+
+
+def test_spawn_reclaims_pane_when_start_response_is_incomplete(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_terminal_id = True
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+    request = herdr_runtime_spawn_request(
+        run_id="run-1",
+        plan_revision=canonical_sha256({"plan": 1}),
+        dag_id="dag-1",
+        node_id="worker",
+        attempt_id="attempt-1",
+        attempt_number=1,
+        execution_token="token-1",
+        scope_id=scope["scope_id"],
+        command=("bash",),
+        cwd=tmp_path,
+        work_order_sha256=canonical_sha256({"work": 1}),
+        goal_hash=canonical_sha256({"goal": 1}),
+        owner="tau",
+    )
+
+    with pytest.raises(ValueError, match="terminal_id"):
+        backend.spawn(request)
+
+    assert fake.closed_panes == {"w1:p1"}
+    assert [call[3:5] for call in fake.calls[-3:]] == [
+        ["pane", "get"],
+        ["pane", "close"],
+        ["pane", "get"],
+    ]
+
+
+def test_spawn_reclaims_pane_when_start_response_omits_agent_name(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_agent_name = True
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(RuntimeError, match="spawn_agent_mismatch"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-1",
+                attempt_number=1,
+                execution_token="token-1",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 1}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == {"w1:p1"}
+
+
+def test_spawn_without_recoverable_pane_id_reserves_attempt(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_pane_id = True
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+    request = herdr_runtime_spawn_request(
+        run_id="run-1",
+        plan_revision=canonical_sha256({"plan": 1}),
+        dag_id="dag-1",
+        node_id="worker",
+        attempt_id="attempt-1",
+        attempt_number=1,
+        execution_token="token-1",
+        scope_id=scope["scope_id"],
+        command=("bash",),
+        cwd=tmp_path,
+        work_order_sha256=canonical_sha256({"work": 1}),
+        goal_hash=canonical_sha256({"goal": 1}),
+        owner="tau",
+    )
+
+    with pytest.raises(ValueError, match="pane_id"):
+        backend.spawn(request)
+    with pytest.raises(RuntimeError, match="attempt_already_spawned"):
+        backend.spawn(request)
+
+    assert sum(call[3:5] == ["agent", "start"] for call in fake.calls) == 1
+    assert fake.closed_panes == set()
+
+
+def test_spawn_does_not_reclaim_unrelated_nested_pane_id(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_pane_id = True
+    fake.start_unrelated_pane_id = True
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(ValueError, match="pane_id"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-1",
+                attempt_number=1,
+                execution_token="token-1",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 1}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == set()
+
+
+def test_failed_spawn_cleanup_requires_exact_pane_not_found(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_terminal_id = True
+    fake.closed_pane_error_code = "resource_not_found"
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(RuntimeError, match="failed_spawn_cleanup_not_verified"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-1",
+                attempt_number=1,
+                execution_token="token-1",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 1}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == {"w1:p1"}
+
+
+def test_failed_spawn_cleanup_recovers_when_start_omits_workspace_id(
+    tmp_path: Path,
+) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_workspace_id = True
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(ValueError, match="workspace_id"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-1",
+                attempt_number=1,
+                execution_token="token-1",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 1}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == {"w1:p1"}
+    assert [call[3:6] for call in fake.calls if call[3:5] == ["pane", "get"]] == [
+        ["pane", "get", "w1:p1"],
+        ["pane", "get", "w1:p1"],
+    ]
+
+
+def test_failed_spawn_cleanup_recovers_when_start_misreports_workspace_id(
+    tmp_path: Path,
+) -> None:
+    fake = FakeHerdr()
+    fake.start_workspace_id_override = "w-unowned"
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(RuntimeError, match="spawn_workspace_mismatch"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-1",
+                attempt_number=1,
+                execution_token="token-1",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 1}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == {"w1:p1"}
+
+
+def test_failed_spawn_cleanup_requires_independent_agent_identity(tmp_path: Path) -> None:
+    fake = FakeHerdr()
+    fake.start_missing_terminal_id = True
+    fake.pane_get_agent_override = "unrelated-agent"
+    backend = HerdrRuntimeBackend(session="default", command_runner=fake)
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+
+    with pytest.raises(RuntimeError, match="ownership_not_verified"):
+        backend.spawn(
+            herdr_runtime_spawn_request(
+                run_id="run-1",
+                plan_revision=canonical_sha256({"plan": 1}),
+                dag_id="dag-1",
+                node_id="worker",
+                attempt_id="attempt-1",
+                attempt_number=1,
+                execution_token="token-1",
+                scope_id=scope["scope_id"],
+                command=("bash",),
+                cwd=tmp_path,
+                work_order_sha256=canonical_sha256({"work": 1}),
+                goal_hash=canonical_sha256({"goal": 1}),
+                owner="tau",
+            )
+        )
+
+    assert fake.closed_panes == set()
 
 
 def test_spawn_rejects_attempted_adoption_of_unowned_scope(tmp_path: Path) -> None:
