@@ -923,6 +923,9 @@ def test_verified_native_transport_enables_native_event_capability(tmp_path: Pat
         socket_path=tmp_path / "herdr.sock",
         server_version="0.7.1",
         protocol=14,
+        socket_device=1,
+        socket_inode=1,
+        socket_ctime_ns=1,
     )
     backend = HerdrRuntimeBackend(
         session="default",
@@ -946,6 +949,9 @@ def test_native_capability_hash_binds_exact_socket(tmp_path: Path) -> None:
             socket_path=tmp_path / "first.sock",
             server_version="0.7.1",
             protocol=14,
+            socket_device=1,
+            socket_inode=1,
+            socket_ctime_ns=1,
         ),
     )
     second = HerdrRuntimeBackend(
@@ -956,6 +962,9 @@ def test_native_capability_hash_binds_exact_socket(tmp_path: Path) -> None:
             socket_path=tmp_path / "second.sock",
             server_version="0.7.1",
             protocol=14,
+            socket_device=1,
+            socket_inode=2,
+            socket_ctime_ns=2,
         ),
     )
 
@@ -968,6 +977,9 @@ def test_native_stream_failure_falls_back_to_bounded_polling(tmp_path: Path) -> 
         socket_path=tmp_path / "missing.sock",
         server_version="0.7.1",
         protocol=14,
+        socket_device=0,
+        socket_inode=0,
+        socket_ctime_ns=0,
     )
     fake = FakeHerdr()
     backend = HerdrRuntimeBackend(
@@ -1029,6 +1041,9 @@ def test_native_stream_close_after_ack_falls_back_to_bounded_polling(
         socket_path=socket_path,
         server_version="0.7.1",
         protocol=14,
+        socket_device=socket_path.stat().st_dev,
+        socket_inode=socket_path.stat().st_ino,
+        socket_ctime_ns=socket_path.stat().st_ctime_ns,
     )
     fake = FakeHerdr()
     backend = HerdrRuntimeBackend(

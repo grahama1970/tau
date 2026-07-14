@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import socket
 import subprocess
 import threading
@@ -95,6 +96,9 @@ def test_native_subscription_rejects_wrong_session_before_connect(tmp_path: Path
         socket_path=tmp_path / "missing.sock",
         server_version="0.7.1",
         protocol=14,
+        socket_device=0,
+        socket_inode=0,
+        socket_ctime_ns=0,
     )
 
     with pytest.raises(HerdrNativeEventError, match="endpoint_session_mismatch"):
@@ -213,6 +217,40 @@ def test_distinct_native_payloads_have_distinct_event_ids(tmp_path: Path) -> Non
     assert observed[0].event_id != observed[1].event_id
 
 
+def test_socket_replacement_is_rejected_before_connect(tmp_path: Path) -> None:
+    socket_path = tmp_path / "herdr.sock"
+    first = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    first.bind(str(socket_path))
+    transport = _transport(socket_path)
+    replacement_path = tmp_path / "replacement.sock"
+    replacement = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    replacement.bind(str(replacement_path))
+    os.replace(replacement_path, socket_path)
+    try:
+        with pytest.raises(HerdrNativeEventError, match="socket_binding_changed"):
+            transport.wait_event(
+                _endpoint(),
+                datetime.now(UTC) + timedelta(seconds=1),
+            )
+    finally:
+        first.close()
+        replacement.close()
+
+
+def test_stream_id_binds_server_socket_identity(tmp_path: Path) -> None:
+    first_path = tmp_path / "first.sock"
+    second_path = tmp_path / "second.sock"
+    first = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    second = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    first.bind(str(first_path))
+    second.bind(str(second_path))
+    try:
+        assert _transport(first_path).stream_id != _transport(second_path).stream_id
+    finally:
+        first.close()
+        second.close()
+
+
 def _endpoint() -> RuntimeEndpointLease:
     now = datetime.now(UTC)
     return RuntimeEndpointLease(
@@ -248,11 +286,15 @@ def _endpoint() -> RuntimeEndpointLease:
 
 
 def _transport(socket_path: Path) -> HerdrNativeEventTransport:
+    metadata = socket_path.stat()
     return HerdrNativeEventTransport(
         session="default",
         socket_path=socket_path,
         server_version="0.7.1",
         protocol=14,
+        socket_device=metadata.st_dev,
+        socket_inode=metadata.st_ino,
+        socket_ctime_ns=metadata.st_ctime_ns,
     )
 
 

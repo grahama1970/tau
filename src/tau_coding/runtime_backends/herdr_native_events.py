@@ -49,10 +49,17 @@ class HerdrNativeEventTransport:
     socket_path: Path
     server_version: str
     protocol: int
+    socket_device: int
+    socket_inode: int
+    socket_ctime_ns: int
 
     @property
     def stream_id(self) -> str:
-        return f"herdr:{self.session}:protocol-{self.protocol}"
+        binding = self.binding_sha256.removeprefix("sha256:")[:16]
+        return (
+            f"herdr:{self.session}:v{self.server_version}:"
+            f"protocol-{self.protocol}:binding-{binding}"
+        )
 
     @property
     def binding_sha256(self) -> str:
@@ -66,6 +73,9 @@ class HerdrNativeEventTransport:
                     "socket_path": str(self.socket_path),
                     "server_version": self.server_version,
                     "protocol": self.protocol,
+                    "socket_device": self.socket_device,
+                    "socket_inode": self.socket_inode,
+                    "socket_ctime_ns": self.socket_ctime_ns,
                 }
             ),
         )
@@ -94,6 +104,7 @@ class HerdrNativeEventTransport:
             },
         }
         try:
+            self._validate_socket_identity()
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as stream:
                 _set_remaining_timeout(stream, deadline)
                 stream.connect(str(self.socket_path))
@@ -117,6 +128,18 @@ class HerdrNativeEventTransport:
             raise
         except (OSError, UnicodeError, json.JSONDecodeError) as exc:
             raise HerdrNativeEventError("herdr_native_stream_failed") from exc
+
+    def _validate_socket_identity(self) -> None:
+        try:
+            metadata = self.socket_path.stat()
+        except OSError as exc:
+            raise HerdrNativeEventError("herdr_native_stream_failed") from exc
+        if (metadata.st_dev, metadata.st_ino, metadata.st_ctime_ns) != (
+            self.socket_device,
+            self.socket_inode,
+            self.socket_ctime_ns,
+        ):
+            raise HerdrNativeEventError("herdr_native_socket_binding_changed")
 
 
 def discover_herdr_native_event_transport(
@@ -161,6 +184,7 @@ def discover_herdr_native_event_transport(
         return None, "herdr_native_socket_unavailable"
     socket_path = raw_socket_path.resolve(strict=False)
     try:
+        socket_metadata = socket_path.stat()
         is_socket = socket_path.is_socket()
     except OSError:
         is_socket = False
@@ -177,6 +201,9 @@ def discover_herdr_native_event_transport(
             socket_path=socket_path,
             server_version=version,
             protocol=protocol,
+            socket_device=socket_metadata.st_dev,
+            socket_inode=socket_metadata.st_ino,
+            socket_ctime_ns=socket_metadata.st_ctime_ns,
         ),
         None,
     )
