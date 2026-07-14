@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tau.git_worktree_lease.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "plan_revision",
+    "node_id",
+    "attempt_id",
+    "repository",
+    "worktree_path",
+    "base_commit",
+    "head_commit",
+    "branch",
+    "detached",
+    "allowed_paths",
+    "owner",
+    "created_at",
+    "expires_at",
+    "pre_status_sha256",
+    "cleanup_policy"
+  ],
+  "properties": {
+    "schema": {"const": "tau.git_worktree_lease.v2"},
+    "run_id": {"type": "string", "minLength": 1},
+    "plan_revision": {"type": "string", "minLength": 1},
+    "node_id": {"type": "string", "minLength": 1},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "repository": {"type": "string", "minLength": 1},
+    "worktree_path": {"type": "string", "minLength": 1},
+    "base_commit": {"type": "string", "minLength": 1},
+    "head_commit": {"type": "string", "minLength": 1},
+    "branch": {"type": ["string", "null"]},
+    "detached": {"type": "boolean"},
+    "allowed_paths": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "owner": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "expires_at": {"type": "string", "minLength": 1},
+    "pre_status_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "cleanup_policy": {"type": "object"}
+  }
+}

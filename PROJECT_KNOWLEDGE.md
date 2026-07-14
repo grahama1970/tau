@@ -5,6 +5,53 @@
 
 ## Current Understanding
 
+- 2026-07-14 runtime worktree ownership: interactive Herdr/tmux operations use
+  exact `tau.runtime_endpoint_lease.v1` identities; labels and visible terminal
+  text are not ownership authority. `GitWorktreeLeaseManager` creates one real
+  detached Git worktree per attempt, persists a hash-checked lease record, and
+  supports restart rediscovery without allocating a duplicate. Inspection
+  hashes status/diff state and blocks disallowed paths, symlink escapes,
+  changed head/branch identity, and dirty unadmitted cleanup. Cleanup requires
+  exact diff admission or exact discard authorization and post-verifies
+  absence. Per-lease writer locks close inspection/removal races; durable
+  allocation intents recover pre-lease crashes, and post-removal lease records
+  are retained as retired provenance and prevent attempt-ID reuse. Symlinks
+  anywhere in the checkout, nested repositories, special files, untracked empty
+  directories, index visibility flags, executable Git content/diff drivers,
+  repository-control mutations, directory-mode changes, and incomplete bounded
+  hashes fail closed. Git subprocesses use a bounded timeout, sanitized
+  environment, disabled hooks/fsmonitor/global configuration, and disabled
+  external diff/text conversion. Clean uninitialized submodule gitlinks are not
+  treated as untracked empty directories. Crash recovery retains the original
+  repository-control hash while explicitly binding the recovered baseline.
+  Independent adversarial review then reproduced six additional boundaries:
+  post-allocation worktree filters, discard with persistent shared-ref mutation,
+  unrelated-worktree pruning, timeout descendants, top-level `.git` replacement,
+  and same-PID atomic-temp restart collision. Tau now checks drivers before each
+  inspection, requires shared-control restoration before cleanup, removes only
+  the exact owned worktree, terminates Git process groups, hash-binds the linked
+  worktree gitfile, and uses collision-resistant temporary files. Focused lease
+  review also caught and repaired the remaining allocation-rollback prune,
+  parent-exited timeout descendant, linked-gitdir ancestor escape,
+  repository-control directory symlink, external config include, and
+  `core.filemode=false` paths. The next review also caught recovery-time filter ordering, linked `commondir`
+  redirection, and primary `.git` symlink replacement; all are now validated
+  before worktree Git operations. A fourth review found the missing-checkout
+  retirement path still skipped this topology check; the exact admin directory
+  is now lease-bound and validated before removal or retirement. A final
+  replacement-admin probe also blocks retirement when Git advertises the path
+  through a renamed metadata entry. Symlinked admin parents and duplicate admin
+  registrations for one checkout path also block. A copied replacement then prompted device/inode binding in the
+  durable allocation intent and lease. Final focused lease proof is `78 passed`;
+  the runtime-backend matrix is `221 passed`.
+  Live smoke artifact:
+  `/tmp/tau-git-worktree-lease-smoke-issue92.json` with `mocked:false`,
+  `live:true`, `provider_live:false`, all six checks true, and a 4.7 KB receipt.
+  This proves local Git lease ownership and cleanup behavior,
+  not scheduler integration, OS sandbox isolation, provider semantics, or
+  durable runtime-event reconciliation. Durable runtime-event bridging and
+  endpoint adoption remain later runtime work packages.
+
 - 2026-07-13 issue #78 scheduler-convergence branch: project and generic local
   DAG contracts compile to `tau.dag_plan.v1` and execute through one canonical
   bounded ready queue. The scheduler owns readiness, bounded retries, terminal

@@ -37,9 +37,16 @@ from tau_coding.runtime_backends.tmux import (
     tmux_runtime_spawn_request,
     tmux_runtime_work_order,
 )
+from tau_coding.runtime_backends.worktrees import (
+    GitWorktreeLeaseError,
+    GitWorktreeLeaseManager,
+    worktree_discard_authorization,
+)
 
 __all__ = [
     "GitWorktreeLease",
+    "GitWorktreeLeaseError",
+    "GitWorktreeLeaseManager",
     "HERDR_CLEANUP_AUTHORIZATION_SCHEMA",
     "HerdrRuntimeBackend",
     "HerdrRuntimeScope",
@@ -68,4 +75,5 @@ __all__ = [
     "tmux_runtime_scope_request",
     "tmux_runtime_spawn_request",
     "tmux_runtime_work_order",
+    "worktree_discard_authorization",
 ]
