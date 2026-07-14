@@ -6648,6 +6648,24 @@
   providers, signing, and audit ledger.
 
 <!-- Auto-populated from /project-state --quick -->
+- 2026-07-14 issue #91 tmux runtime adapter slice: added an explicit-server
+  `TmuxRuntimeBackend` implementing Tau's interactive runtime protocol with
+  exact session/window/pane leases, duplicate-attempt reservation, bounded
+  capture and observation, fail-closed owned inventory, lease-bound exact-pane
+  termination, and at-most-once buffered submit. Submit uses one target-mutating
+  `paste-buffer`; an ambiguous acknowledgement is cached as `INDETERMINATE` and
+  is never automatically retried. Only a successful complete tmux inventory can
+  prove an exact pane absent; command, timeout, or parse failures remain
+  `UNKNOWN`. The real smoke at
+  `/tmp/tau-tmux-runtime-smoke-issue91-accepted/tmux-runtime-smoke-receipt.json`
+  records
+  `status:"PASS"`, `mocked:false`, `live:true`, `provider_live:false`, one real
+  paste, one induced missing acknowledgement, one cached replay, exactly one
+  side-effect byte, wrong-server isolation, blocked unowned cleanup, exact pane
+  absence, and dedicated-server absence. This proves tmux adapter mechanics on
+  this host; it does not prove DAG completion, provider/model semantics,
+  restart reconciliation, sandbox isolation, or production readiness.
+
 - 2026-07-14 issue #90 Herdr runtime adapter slice: added
   `src/tau_coding/runtime_backends/herdr.py` as the explicit-session interactive
   implementation of `RuntimeBackend`. It records exact workspace/tab/pane/
