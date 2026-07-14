@@ -16,6 +16,7 @@ from typing import Any
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 from tau_coding.generic_artifact_transaction import (
@@ -87,37 +88,38 @@ def run_generic_dag(
     events_path.parent.mkdir(parents=True, exist_ok=True)
 
     run_id = str(spec["run_id"])
-    _append_event(
-        events_path,
-        "dag_started",
-        {
-            "run_id": run_id,
-            "spec_path": str(resolved_spec_path),
-            "resume": resume,
-            "resume_source": resume_source,
-        },
-    )
     completed: set[str] = set()
     node_results: list[dict[str, Any]] = []
     checkpoint_path = run_dir / "checkpoint.json"
     current_state_path = run_dir / "current-state.json"
-    _write_checkpoint(
-        path=checkpoint_path,
-        current_state_path=current_state_path,
-        run_id=run_id,
-        spec_path=resolved_spec_path,
-        run_dir=run_dir,
-        events_path=events_path,
-        nodes=nodes,
-        node_results=node_results,
-        completed=completed,
-        status="RUNNING",
-        verdict="RUNNING",
-        active_node_id=None,
-    )
-
     nodes_by_id = nodes
     plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
+
+    def initialize_run_artifacts(_lease: object) -> None:
+        _append_event(
+            events_path,
+            "dag_started",
+            {
+                "run_id": run_id,
+                "spec_path": str(resolved_spec_path),
+                "resume": resume,
+                "resume_source": resume_source,
+            },
+        )
+        _write_checkpoint(
+            path=checkpoint_path,
+            current_state_path=current_state_path,
+            run_id=run_id,
+            spec_path=resolved_spec_path,
+            run_dir=run_dir,
+            events_path=events_path,
+            nodes=nodes,
+            node_results=node_results,
+            completed=completed,
+            status="RUNNING",
+            verdict="RUNNING",
+            active_node_id=None,
+        )
 
     def execute_plan_node(
         plan_node: DagPlanNode,
@@ -169,11 +171,18 @@ def run_generic_dag(
             )
         return result
 
-    scheduler_result = run_dag_plan(
-        plan,
-        execute_node=execute_plan_node,
-        max_concurrency=1,
-    )
+    run_store_path = run_dir / "dag-run.sqlite3"
+    with SqliteDagRunStore(run_store_path) as run_store:
+        scheduler_run_id = run_store.execution_run_id(run_id)
+        scheduler_result = run_dag_plan(
+            plan,
+            execute_node=execute_plan_node,
+            max_concurrency=1,
+            run_store=run_store,
+            run_id=scheduler_run_id,
+            allow_lease_takeover=True,
+            on_lease_acquired=initialize_run_artifacts,
+        )
     node_results = list(scheduler_result.node_results)
     completed = set(scheduler_result.completed_node_ids)
     final_status = scheduler_result.status
@@ -208,6 +217,11 @@ def run_generic_dag(
         "scheduler": "dag_plan_ready_queue",
         "dag_plan_sha256": plan.plan_sha256,
         "max_observed_concurrency": scheduler_result.max_observed_concurrency,
+        "durable": scheduler_result.durable,
+        "run_store_path": str(run_store_path),
+        "scheduler_run_id": scheduler_result.run_id,
+        "lease_epoch": scheduler_result.lease_epoch,
+        "replayed_event_count": scheduler_result.replayed_event_count,
         "run_id": run_id,
         "run_dir": str(run_dir),
         "spec_path": str(resolved_spec_path),

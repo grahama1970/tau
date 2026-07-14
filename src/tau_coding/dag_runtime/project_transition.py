@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +26,7 @@ from tau_coding.dag_runtime.transition import (
     DagNodeCancellation,
     DagNodeCompletion,
     DagNodeSettlement,
+    DagPolicyReplayState,
     DagRunBlock,
     DagTransitionBatch,
     DagTransitionView,
@@ -63,6 +66,45 @@ class ProjectDagTransitionPolicy:
                 raise RuntimeError("dag_plan_join_edge_missing")
             if contract.get("policy_sha256") != canonical_sha256(contract.get("policy")):
                 raise RuntimeError("dag_plan_join_policy_hash_mismatch")
+
+    def restore(self, plan: DagPlan, replay: DagPolicyReplayState) -> None:
+        """Restore only receipt state committed by the durable scheduler journal."""
+
+        self._contributions.clear()
+        self._finalized_joins.clear()
+        self._dirty_joins.clear()
+        edges_by_ordinal_and_target = {
+            (edge.source_ordinal, edge.target_id): edge.edge_id for edge in plan.control_edges
+        }
+        for receipt in replay.committed_receipts:
+            path = Path(receipt.path)
+            if not path.is_file():
+                raise RuntimeError(f"dag_transition_receipt_missing:{path}")
+            digest = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+            if digest != receipt.file_sha256:
+                code = (
+                    "terminal_contribution_conflict"
+                    if "terminal-contributions" in path.parts
+                    else "dag_transition_receipt_hash_mismatch"
+                )
+                raise RuntimeError(f"{code}:{path}")
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            schema = payload.get("schema")
+            if schema == "tau.dag_terminal_contribution.v1":
+                edge = payload.get("edge_contract")
+                if not isinstance(edge, dict):
+                    raise RuntimeError("dag_transition_replay_mismatch")
+                edge_id = edges_by_ordinal_and_target.get(
+                    (edge.get("edge_index"), payload.get("join_node_id"))
+                )
+                if edge_id is None:
+                    raise RuntimeError("dag_transition_replay_mismatch")
+                self._contributions[edge_id] = payload
+                self._dirty_joins.add(str(payload["join_node_id"]))
+            elif schema == "tau.dag_join_decision.v1":
+                join_node_id = str(payload["join_node_id"])
+                self._finalized_joins.add(join_node_id)
+                self._dirty_joins.discard(join_node_id)
 
     def before_node_start(
         self,

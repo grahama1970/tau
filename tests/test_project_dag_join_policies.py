@@ -117,6 +117,35 @@ def test_collect_failures_noop_skip_is_valid_terminal_settlement(tmp_path: Path)
     assert receipt["activated_terminals"] == []
 
 
+def test_replayed_collect_failures_skip_remains_pass_and_progress_is_terminal(
+    tmp_path: Path,
+) -> None:
+    contract_path = _write_join_contract(
+        tmp_path,
+        policy="collect_failures",
+        route="ALL",
+        branches=("branch-a", "branch-b"),
+    )
+    _write_response_spec(tmp_path, "router", _handoff("router", "branch-a", route="ALL"))
+    _write_response_spec(tmp_path, "branch-a", _handoff("branch-a", "join"))
+    _write_response_spec(tmp_path, "branch-b", _handoff("branch-b", "join"))
+
+    first = _run(tmp_path, contract_path)
+    (tmp_path / "run" / "dag-receipt.json").unlink()
+    replayed = _run(tmp_path, contract_path)
+    progress = json.loads((tmp_path / "run" / "dag-progress.json").read_text())
+
+    assert first["status"] == replayed["status"] == "PASS"
+    assert replayed["verdict"] == "PASS"
+    assert any(
+        event["event"] == "join_decided"
+        and event["decision"] == "skip"
+        and event["durably_replayed"] is True
+        for event in replayed["scheduler_events"]
+    )
+    assert {item["status"] for item in progress["node_progress"]} == {"COMPLETED"}
+
+
 def test_join_timeout_writes_timed_out_contribution_and_ignores_late_success(
     tmp_path: Path,
 ) -> None:

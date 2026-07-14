@@ -34,6 +34,7 @@ from tau_coding.dag_route_decision import (
 from tau_coding.dag_runtime.compiler import compile_project_dag_plan
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
 from tau_coding.dag_runtime.project_transition import ProjectDagTransitionPolicy
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
@@ -3023,6 +3024,17 @@ def _run_shared_project_dag_plan(
     course_correction_artifacts: list[str] = []
     lock = threading.Lock()
     started_at = time.monotonic()
+    prior_receipt_path = receipt_dir / "dag-receipt.json"
+    prior_receipt: dict[str, Any] = {}
+    if prior_receipt_path.is_file():
+        try:
+            prior_receipt = _read_json_object(
+                prior_receipt_path, label="project DAG receipt"
+            )
+        except RuntimeError:
+            # The SQLite journal is authoritative during recovery. A derived
+            # receipt may be truncated if the prior process died while writing it.
+            prior_receipt = {}
 
     def execute_node(
         plan_node: DagPlanNode,
@@ -3144,6 +3156,7 @@ def _run_shared_project_dag_plan(
                         "verdict": "POINTLESS_UNIT_TEST_DRIFT",
                         "retryable": False,
                         "alerts": [drift_alert],
+                        "course_correction_artifacts": [str(correction_path)],
                     }
                 )
             elif attempt >= 2 and attempt < execution.max_attempts:
@@ -3181,6 +3194,7 @@ def _run_shared_project_dag_plan(
                         "verdict": "BRAVE_SEARCH_REQUIRED_AFTER_TWO_ATTEMPTS",
                         "retryable": False,
                         "alerts": [correction_alert],
+                        "course_correction_artifacts": [str(correction_path)],
                     }
                 )
             return blocked
@@ -3320,22 +3334,56 @@ def _run_shared_project_dag_plan(
                 status="RUNNING",
             )
 
-    result = run_dag_plan(
-        plan,
-        execute_node=execute_node,
-        transition_policy=ProjectDagTransitionPolicy(
-            receipt_dir=receipt_dir,
-            dag_id=contract.dag_id,
-            goal_hash=str(contract.goal["goal_hash"]),
-        ),
-        max_concurrency=_max_concurrency(contract),
-        event_sink=record_event,
-    )
+    run_store_path = receipt_dir / "dag-run.sqlite3"
+    with SqliteDagRunStore(run_store_path) as run_store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute_node,
+            transition_policy=ProjectDagTransitionPolicy(
+                receipt_dir=receipt_dir,
+                dag_id=contract.dag_id,
+                goal_hash=str(contract.goal["goal_hash"]),
+            ),
+            max_concurrency=_max_concurrency(contract),
+            event_sink=record_event,
+            run_store=run_store,
+            run_id=contract.dag_id,
+            allow_lease_takeover=True,
+        )
     for node_result in result.node_results:
+        node_id = str(node_result.get("node_id") or "")
+        dispatch = node_result.get("dispatch")
+        if isinstance(dispatch, dict) and dispatch not in dispatches:
+            dispatches.append(dispatch)
+        accepted_output = node_result.get("accepted_output")
+        if node_id and isinstance(accepted_output, dict):
+            responses[node_id] = accepted_output
+        attempt_count = node_result.get("attempt_count")
+        if node_id and isinstance(attempt_count, int) and attempt_count > 0:
+            node_attempts[node_id] = attempt_count
+        if node_id:
+            node_root = receipt_dir / "ready-queue" / node_id
+            node_artifacts[node_id] = [
+                str(path) for path in sorted(node_root.rglob("*")) if path.is_file()
+            ]
         alerts.extend(
             item for item in node_result.get("alerts", []) if isinstance(item, dict)
         )
         errors.extend(str(item) for item in node_result.get("errors", []))
+        course_correction_artifacts.extend(
+            str(item)
+            for item in node_result.get("course_correction_artifacts", [])
+            if isinstance(item, str)
+        )
+        for alert in node_result.get("alerts", []):
+            evidence = alert.get("evidence") if isinstance(alert, dict) else None
+            correction = (
+                evidence.get("course_correction_receipt")
+                if isinstance(evidence, dict)
+                else None
+            )
+            if isinstance(correction, str):
+                course_correction_artifacts.append(correction)
     if result.status != "PASS" and not alerts:
         blocked_node = next(
             (
@@ -3409,6 +3457,23 @@ def _run_shared_project_dag_plan(
         )
     status = "PASS" if result.status == "PASS" and not alerts else "BLOCKED"
     verdict = "PASS" if status == "PASS" else str(alerts[0]["code"]).upper()
+    prior_events = prior_receipt.get("scheduler_events")
+    if result.replayed_event_count and isinstance(prior_events, list):
+        events = _deduplicate_scheduler_events(
+            [dict(item) for item in prior_events if isinstance(item, dict)] + events
+        )
+    prior_concurrency = prior_receipt.get("max_observed_concurrency")
+    max_observed_concurrency = max(
+        result.max_observed_concurrency,
+        prior_concurrency if isinstance(prior_concurrency, int) else 0,
+    )
+    if result.replayed_event_count:
+        course_correction_artifacts.extend(
+            str(item)
+            for item in prior_receipt.get("course_correction_artifacts", [])
+            if isinstance(item, str)
+        )
+    course_correction_artifacts = list(dict.fromkeys(course_correction_artifacts))
     receipt = _ready_queue_receipt(
         contract=contract,
         contract_path=contract_path,
@@ -3428,7 +3493,7 @@ def _run_shared_project_dag_plan(
         ],
         observed_edges=_ready_queue_observed_edges(contract, activated_edges),
         execution_seconds=round(time.monotonic() - started_at, 6),
-        max_observed_concurrency=result.max_observed_concurrency,
+        max_observed_concurrency=max_observed_concurrency,
         errors=errors,
         node_artifacts=node_artifacts,
         course_correction_artifacts=course_correction_artifacts,
@@ -3449,6 +3514,10 @@ def _run_shared_project_dag_plan(
         dag_plan_sha256=plan.plan_sha256,
     )
     receipt["execution"] = "project_agent_dag_plan_ready_queue"
+    receipt["durable"] = result.durable
+    receipt["run_store_path"] = str(run_store_path)
+    receipt["lease_epoch"] = result.lease_epoch
+    receipt["replayed_event_count"] = result.replayed_event_count
     _write_project_dag_progress(
         contract=contract,
         receipt_dir=receipt_dir,
@@ -3459,7 +3528,7 @@ def _run_shared_project_dag_plan(
         verdict=verdict,
     )
     receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
-    _write_json(receipt_dir / "dag-receipt.json", receipt)
+    _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
     return receipt
 
 
@@ -3473,6 +3542,23 @@ def _transition_receipts_in_directory(
         for path in receipt_paths
         if directory_name in Path(path).parts or directory_name in PureWindowsPath(path).parts
     ]
+
+
+def _deduplicate_scheduler_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep one canonical copy of events re-emitted from the durable journal."""
+
+    unique: list[dict[str, Any]] = []
+    observed: set[str] = set()
+    for event in events:
+        identity = dict(event)
+        identity.pop("durably_replayed", None)
+        identity.pop("ts", None)
+        key = json.dumps(identity, sort_keys=True, separators=(",", ":"), default=str)
+        if key in observed:
+            continue
+        observed.add(key)
+        unique.append(event)
+    return unique
 
 
 def _max_concurrency(contract: ProjectDagContract) -> int:
@@ -3725,6 +3811,9 @@ def _project_dag_node_progress(
         if not isinstance(node_id, str) or not node_id:
             selected_agent = event.get("selected_agent")
             node_id = selected_agent if isinstance(selected_agent, str) else None
+        if not node_id and name == "join_decided":
+            join_node_id = event.get("join_node_id")
+            node_id = join_node_id if isinstance(join_node_id, str) else None
         if not node_id or node_id == "human":
             continue
         last_seen[node_id] = str(event.get("ts") or "")
@@ -3734,6 +3823,14 @@ def _project_dag_node_progress(
             statuses[node_id] = "COMPLETED" if event.get("ok", True) is True else "BLOCKED"
         elif name == "step_completed":
             statuses[node_id] = "COMPLETED" if event.get("ok") is True else "BLOCKED"
+        elif name == "node_replayed":
+            statuses[node_id] = (
+                "COMPLETED" if event.get("terminal_state") == "success" else "BLOCKED"
+            )
+        elif name == "join_decided":
+            statuses[node_id] = (
+                "COMPLETED" if event.get("decision") in {"release", "skip"} else "BLOCKED"
+            )
         elif name in {
             "node_attempt_failed",
             "node_blocked",
