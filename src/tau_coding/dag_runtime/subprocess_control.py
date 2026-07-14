@@ -66,7 +66,7 @@ def run_cancellable_subprocess(
                 stdin_stream.flush()
                 if written == len(input_text):
                     stdin_delivery = "confirmed"
-            except BrokenPipeError, OSError:
+            except (BrokenPipeError, OSError):
                 stdin_delivery = "indeterminate"
             finally:
                 with suppress(BrokenPipeError, OSError):

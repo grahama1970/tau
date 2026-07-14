@@ -542,6 +542,7 @@ def run_provider_dag_orchestrator(
     runtime_manifest = {
         "schema": PROVIDER_DAG_MANIFEST_SCHEMA,
         "run_id": run_id,
+        "backend_session_id": session or "default",
         "label": label,
         "repo": str(resolved_repo),
         "run_dir": str(run_dir),
@@ -559,6 +560,7 @@ def run_provider_dag_orchestrator(
         run_dir=run_dir,
         mode=cleanup_mode,
         herdr_bin=herdr_bin,
+        session=session or "default",
     )
     final_receipt = {
         "schema": PROVIDER_DAG_RUN_SCHEMA,
@@ -662,6 +664,7 @@ def _run_provider_dag_cleanup(
     run_dir: Path,
     mode: str,
     herdr_bin: str,
+    session: str = "default",
 ) -> dict[str, Any]:
     if mode == "off":
         return {
@@ -678,6 +681,7 @@ def _run_provider_dag_cleanup(
         run_dir=run_dir,
         mode=mode,
         herdr_bin=herdr_bin,
+        session=session,
         workspace_lease_path=workspace_lease_path,
     )
     return {

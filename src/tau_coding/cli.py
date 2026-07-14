@@ -3630,7 +3630,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except OSError, json.JSONDecodeError, RuntimeError:
+    except (OSError, json.JSONDecodeError, RuntimeError):
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -4294,14 +4294,17 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             "Usage: tau herdr-cleanup audit|dry-run|apply --run-dir <run-dir> "
             "[--workspace-lease <lease.json>] "
             "[--session-ownership <ownership.json>] [--herdr-bin herdr] "
+            "[--session default] "
             "[--include-current-workspace]\n"
             "       tau herdr-cleanup gc --run-dir <receipt-dir> "
             "[--apply --approval-receipt <receipt.json>] [--herdr-bin herdr] "
+            "[--session default] "
             "[--include-current-workspace]"
         )
     mode = args[0]
     run_dir: Path | None = None
     herdr_bin = "herdr"
+    session = "default"
     include_current_workspace = False
     workspace_lease_path: Path | None = None
     session_ownership_path: Path | None = None
@@ -4324,6 +4327,13 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
             herdr_bin = args[index]
         elif arg.startswith("--herdr-bin="):
             herdr_bin = arg.partition("=")[2]
+        elif arg == "--session":
+            index += 1
+            if index >= len(args):
+                raise RuntimeError("--session requires a value")
+            session = args[index]
+        elif arg.startswith("--session="):
+            session = arg.partition("=")[2]
         elif arg == "--workspace-lease":
             index += 1
             if index >= len(args):
@@ -4354,11 +4364,14 @@ def _parse_herdr_cleanup_cli_args(args: list[str]) -> dict[str, object]:
         index += 1
     if run_dir is None:
         raise RuntimeError("--run-dir is required")
+    if not session.strip():
+        raise RuntimeError("--session must be a non-empty string")
     return {
         "run_dir": run_dir,
         "mode": mode,
         "apply": apply_gc,
         "herdr_bin": herdr_bin,
+        "session": session,
         "include_current_workspace": include_current_workspace,
         "workspace_lease_path": workspace_lease_path,
         "session_ownership_path": session_ownership_path,
@@ -9171,7 +9184,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return
     if not isinstance(final_receipt, dict):
         return
@@ -9194,7 +9207,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -9223,7 +9236,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         if not isinstance(payload, dict):
             continue
@@ -9408,7 +9421,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 

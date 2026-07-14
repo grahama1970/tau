@@ -1710,7 +1710,7 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _read_json_optional(path: Path) -> dict[str, Any]:
     try:
         return _read_json(path)
-    except OSError, json.JSONDecodeError, RuntimeError:
+    except (OSError, json.JSONDecodeError, RuntimeError):
         return {}
 
 

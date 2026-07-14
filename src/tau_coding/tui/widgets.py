@@ -1017,7 +1017,7 @@ class ThemedCodeBlock(CodeBlock):
     """Rich Markdown code block with Tau's themed background color."""
 
     @classmethod
-    def create(cls, markdown: Markdown, token: Any) -> "ThemedCodeBlock":
+    def create(cls, markdown: Markdown, token: Any) -> ThemedCodeBlock:
         node_info = token.info or ""
         lexer_name = node_info.partition(" ")[0]
         code_block_background = getattr(markdown, "code_block_background", "default")
@@ -1242,7 +1242,7 @@ def _context_file_label(path: Path, *, cwd: Path) -> str:
         expanded_path = cwd / expanded_path
     try:
         return str(expanded_path.resolve().relative_to(cwd.expanduser().resolve()))
-    except OSError, ValueError:
+    except (OSError, ValueError):
         return _short_path(expanded_path)
 
 

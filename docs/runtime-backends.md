@@ -72,5 +72,57 @@ validated receipt -> Tau may advance the DAG
 ```
 
 The local adapter proof is a development-host process proof, not a sandbox or
-secure-executor claim. Herdr/tmux adapters, persistent runtime events, worktree
+secure-executor claim. Tmux adapters, persistent runtime events, worktree
 leases, and restart reconciliation remain in later children of issue #84.
+
+## Herdr Runtime Backend
+
+`HerdrRuntimeBackend` implements the interactive runtime contract for a named
+Herdr session. The session is mandatory and is included explicitly in every
+Herdr CLI invocation. It does not infer a session from the focused terminal or
+ambient workspace.
+
+The backend:
+
+- creates Tau-owned workspaces and tabs and records their exact IDs;
+- creates unique attempt-bound agent names even when human-facing labels collide;
+- reserves attempt identity before `agent start`, preventing duplicate endpoint
+  launch for the same run/node/attempt/execution identity;
+- binds workspace, tab, pane, terminal, session, work order, goal, and attempt
+  identity into `tau.runtime_endpoint_lease.v1`;
+- submits work-order text at most once per endpoint lease and reports uncertain
+  delivery as `INDETERMINATE` rather than retrying the full text;
+- captures bounded visible pane text as diagnostic evidence only;
+- records visible auth/interstitial markers as diagnostics without allowing pane
+  prose to change the native/process-derived runtime state;
+- observes exact pane identity, native Herdr agent state, and foreground process
+  state without using pane prose as completion truth;
+- treats one empty process sample as `UNKNOWN`, not confirmed process death;
+- caps observation command timeouts by the caller's `wait_event` deadline;
+- preserves failed observation as `UNKNOWN` unless Herdr specifically reports
+  `pane_not_found`;
+- maps malformed pane/process response payloads to `UNKNOWN` rather than raising
+  them out of the runtime observation loop;
+- requires exact lease-bound `tau.runtime_cleanup_authorization.v1` before pane
+  termination;
+- requires `pane_not_found` after close before claiming endpoint absence; and
+- delegates workspace cleanup to the existing Herdr workspace-lease gate.
+
+Run the development-host smoke with:
+
+```bash
+uv run python scripts/run-herdr-runtime-smoke.py \
+  --out-dir /tmp/tau-herdr-runtime-smoke \
+  --session default
+```
+
+The smoke uses real Herdr, creates two same-label workspaces, proves their exact
+IDs differ, spawns a shell endpoint, submits and captures one marker, verifies a
+wrong-session lookup fails, verifies unowned endpoint cleanup is blocked, and
+post-verifies endpoint and workspace absence. It does not complete a DAG node,
+exercise provider semantics, prove sandbox isolation, or prove crash-safe
+restart reconciliation.
+
+The smoke marks `live:true` only when the requested binary resolves to the same
+installed executable as `herdr`. A wrapper, fixture, missing command, or other
+PATH executable is recorded as `mocked:true`, `live:false`, and blocks the smoke.
