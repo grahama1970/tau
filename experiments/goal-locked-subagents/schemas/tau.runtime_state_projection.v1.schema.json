@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "tau.runtime_state_projection.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "run_id", "endpoint_lease_sha256", "state", "liveness", "confidence", "last_event_id", "event_count"],
+  "properties": {
+    "schema": {"const": "tau.runtime_state_projection.v1"}, "run_id": {"type": "string", "minLength": 1}, "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "state": {"enum": ["STARTING", "READY", "RUNNING", "WAITING_ON_INPUT", "WAITING_ON_APPROVAL", "AUTH_REQUIRED", "INTERSTITIAL", "BLOCKED", "EXITED", "CRASHED", "UNKNOWN"]}, "liveness": {"enum": ["ALIVE", "DEAD", "UNKNOWN"]}, "confidence": {"enum": ["NATIVE", "PROCESS", "HEURISTIC", "UNKNOWN"]},
+    "last_event_id": {"type": "string", "minLength": 1}, "event_count": {"type": "integer", "minimum": 0}
+  }
+}

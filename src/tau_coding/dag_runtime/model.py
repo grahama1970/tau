@@ -111,6 +111,7 @@ class DagPlanNode:
     requested_capabilities: tuple[FrozenJson, ...]
     source_bindings: tuple[FrozenJson, ...]
     source_extensions: FrozenJson
+    runtime_requirement: FrozenJson
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -131,6 +132,7 @@ class DagPlanNode:
             "requested_capabilities": [item.to_value() for item in self.requested_capabilities],
             "source_bindings": [item.to_value() for item in self.source_bindings],
             "source_extensions": self.source_extensions.to_value(),
+            "runtime_requirement": self.runtime_requirement.to_value(),
         }
 
 
@@ -159,6 +161,12 @@ class DagPlan:
     execution_limits: FrozenJson
     source_extensions: FrozenJson
     plan_sha256: str = ""
+
+    @property
+    def runtime_goal_hash(self) -> str:
+        """Return the complete digest runtime leases use for this goal binding."""
+
+        return canonical_sha256(self.goal_binding.to_value())
 
     def to_payload(self, *, include_hash: bool = True) -> dict[str, Any]:
         payload: dict[str, Any] = {

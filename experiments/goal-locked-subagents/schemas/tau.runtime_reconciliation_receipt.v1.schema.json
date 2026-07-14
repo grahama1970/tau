@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "tau.runtime_reconciliation_receipt.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "run_id", "endpoint_lease_sha256", "status", "action", "evidence", "errors"],
+  "properties": {
+    "schema": {"const": "tau.runtime_reconciliation_receipt.v1"}, "run_id": {"type": "string", "minLength": 1}, "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "status": {"enum": ["PASS", "BLOCKED"]}, "action": {"type": "string", "minLength": 1}, "evidence": {"type": "object"}, "errors": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "PASS"}}, "required": ["status"]},
+      "then": {"properties": {"errors": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "BLOCKED"}}, "required": ["status"]},
+      "then": {"properties": {"errors": {"minItems": 1}}}
+    }
+  ]
+}

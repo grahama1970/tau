@@ -29,7 +29,19 @@
     "entry_node_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
     "terminal_endpoints": {"type": "array", "items": {"type": "object"}, "minItems": 1},
     "completion_policy": {"type": "object", "required": ["kind"]},
-    "nodes": {"type": "array", "items": {"type": "object"}, "minItems": 1},
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["runtime_requirement"],
+        "properties": {
+          "runtime_requirement": {
+            "$ref": "https://tau.local/schemas/tau.runtime_requirement.v1.schema.json"
+          }
+        }
+      }
+    },
     "control_edges": {"type": "array", "items": {"type": "object"}},
     "context_bindings": {"type": "array", "items": {"type": "object"}},
     "runtime_bindings": {"type": "array", "items": {"type": "object"}},

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -31,8 +32,11 @@ from tau_coding.dag_route_decision import (
     RouteDecisionError,
     normalize_route_condition,
 )
-from tau_coding.dag_runtime.compiler import compile_project_dag_plan
-from tau_coding.dag_runtime.model import DagPlan, DagPlanNode
+from tau_coding.dag_runtime.compiler import (
+    compile_project_dag_plan,
+    compile_project_node_runtime_requirement,
+)
+from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.project_transition import ProjectDagTransitionPolicy
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
@@ -48,6 +52,7 @@ from tau_coding.memory_evidence_gate import (
     write_memory_intent_gate_receipt,
 )
 from tau_coding.policy_profile import zero_trust_preflight_receipt
+from tau_coding.runtime_backends.contracts import RuntimeRequirement
 from tau_coding.security_capability import (
     compile_capability_decision,
     validate_capability_declaration,
@@ -518,6 +523,29 @@ def run_project_dag_contract(
             command_spec_root=command_spec_root,
         )
 
+    runtime_alerts = _project_contract_runtime_preflight_alerts(
+        contract,
+        command_spec_root=command_spec_root,
+    )
+    if runtime_alerts:
+        receipt = _pre_dispatch_blocked_receipt(
+            contract=contract,
+            contract_path=resolved_contract_path,
+            receipt_dir=resolved_receipt_dir,
+            scheduler=scheduler,
+            verdict=str(runtime_alerts[0]["code"]).upper(),
+            alerts=runtime_alerts,
+            memory_intent_gate_receipt=memory_intent_receipt,
+            evidence_case_gate_receipt=evidence_case_receipt,
+            evidence_validation_receipt=evidence_validation_receipt,
+            zero_trust_preflight_receipt=zero_trust_receipt,
+            containment_gate_receipts=containment_receipts,
+            security_context_receipt=security_context_result.receipt,
+            capability_decision_receipt=capability_decision_receipt,
+        )
+        _write_json(resolved_receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+
     compiled_spec_root = _compile_command_specs(
         contract=contract,
         contract_path=resolved_contract_path,
@@ -891,6 +919,37 @@ def _run_bounded_ready_queue_project_dag(
         _write_json(receipt_dir / "dag-receipt.json", receipt)
         return receipt
 
+    plan_payload = _project_payload_with_fallback_command_specs(
+        contract,
+        command_spec_root=command_spec_root,
+    )
+    plan = compile_project_dag_plan(
+        plan_payload,
+        source_path=contract_path,
+        source_payload_sha256=canonical_sha256(contract.payload),
+    )
+    runtime_alerts = _project_runtime_preflight_alerts(plan)
+    if runtime_alerts:
+        receipt = _ready_queue_receipt(
+            contract=contract,
+            contract_path=contract_path,
+            receipt_dir=receipt_dir,
+            command_spec_root=command_spec_root,
+            status="BLOCKED",
+            verdict=str(runtime_alerts[0]["code"]).upper(),
+            alerts=runtime_alerts,
+            dispatches=[],
+            events=[],
+            node_attempts={},
+            reviewer_verdicts=[],
+            observed_edges=[],
+            execution_seconds=0.0,
+            max_observed_concurrency=0,
+            errors=[],
+        )
+        _write_json(receipt_dir / "dag-receipt.json", receipt)
+        return receipt
+
     command_spec_root = _compile_command_specs(
         contract=contract,
         contract_path=contract_path,
@@ -898,7 +957,6 @@ def _run_bounded_ready_queue_project_dag(
         fallback_root=command_spec_root,
     )
     dag_agent_registry = _write_dag_agent_registry(contract=contract, receipt_dir=receipt_dir)
-    plan = compile_project_dag_plan(contract.payload, source_path=contract_path)
     return _run_shared_project_dag_plan(
         plan=plan,
         contract=contract,
@@ -2003,6 +2061,13 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
             errors,
         )
         command_spec = item.get("command_spec")
+        runtime_backend = item.get("runtime_backend")
+        if runtime_backend is not None and (
+            not isinstance(runtime_backend, str) or not runtime_backend.strip()
+        ):
+            errors.append(
+                f"nodes[{index}].runtime_backend must be a non-empty string when provided"
+            )
         reviewer = item.get("reviewer")
         if reviewer is not None and not isinstance(reviewer, dict):
             errors.append(f"nodes[{index}].reviewer must be an object")
@@ -2180,6 +2245,8 @@ def _compile_command_specs(
     if fallback_root is not None:
         for node in contract.nodes.values():
             if node.command_spec:
+                continue
+            if node.executor == "human" or node.agent == "human":
                 continue
             resolved_fallback_root = fallback_root.expanduser().resolve()
             source = resolved_fallback_root / node.node_id / "tau-dispatch-command.json"
@@ -3077,6 +3144,39 @@ def _run_shared_project_dag_plan(
                 "accepted_output": None,
                 "errors": [],
             }
+        if plan_node.adapter_kind == "project_persistent_declaration":
+            return {
+                "node_id": node.node_id,
+                "status": "BLOCKED",
+                "verdict": "RUNTIME_BACKEND_EXECUTION_NOT_IMPLEMENTED",
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "attempt_count": 0,
+                "accepted_output": None,
+                "retryable": False,
+                "stop_reason": "runtime_backend_execution_not_implemented",
+                "errors": [
+                    "persistent subagent declares the Herdr runtime backend, but this "
+                    "scheduler slice does not execute runtime backends"
+                ],
+            }
+
+        runtime_error = _legacy_runtime_requirement_error(plan_node)
+        if runtime_error is not None:
+            return {
+                "node_id": node.node_id,
+                "status": "BLOCKED",
+                "verdict": "RUNTIME_REQUIREMENT_UNSUPPORTED",
+                "mocked": False,
+                "live": False,
+                "provider_live": False,
+                "attempt_count": 0,
+                "accepted_output": None,
+                "retryable": False,
+                "stop_reason": "runtime_requirement_unsupported",
+                "errors": [runtime_error],
+            }
 
         attempt = execution.attempt
         artifact_dir = receipt_dir / "ready-queue" / node.node_id / f"attempt-{attempt:03d}"
@@ -3530,6 +3630,164 @@ def _run_shared_project_dag_plan(
     receipt["progress_path"] = str(receipt_dir / "dag-progress.json")
     _write_json_atomic(receipt_dir / "dag-receipt.json", receipt)
     return receipt
+
+
+def _legacy_runtime_requirement_error(plan_node: DagPlanNode) -> str | None:
+    """Reject requirements the current project dispatch adapters cannot enforce."""
+
+    requirement = RuntimeRequirement.from_payload(plan_node.runtime_requirement.to_value())
+    return _runtime_requirement_error(plan_node.adapter_kind, requirement)
+
+
+def _runtime_requirement_error(
+    adapter_kind: str, requirement: RuntimeRequirement
+) -> str | None:
+    expected_backend = {
+        "project_handoff_command": "local",
+        "project_provider": "herdr",
+        "project_provider_handoff_command": "herdr",
+    }.get(adapter_kind)
+    if expected_backend is None:
+        return f"runtime_adapter_not_executable:{adapter_kind}"
+    expected = RuntimeRequirement(
+        backend=expected_backend,
+        interaction_mode="one_shot",
+        required_capabilities=("one_shot", "supports_working_directory"),
+        session_scope="node_attempt",
+        observation_requirements=("PROCESS",),
+    )
+    if requirement != expected:
+        return (
+            f"runtime_requirement_not_enforced_by_adapter:{adapter_kind}:"
+            f"{requirement.backend}:{requirement.interaction_mode}"
+        )
+    return None
+
+
+def _project_runtime_preflight_alerts(plan: DagPlan) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    for node in plan.nodes:
+        requirement = RuntimeRequirement.from_payload(node.runtime_requirement.to_value())
+        alert = _project_runtime_preflight_alert(
+            node_id=node.node_id,
+            adapter_kind=node.adapter_kind,
+            requirement=requirement,
+        )
+        if alert is not None:
+            alerts.append(alert)
+    return alerts
+
+
+def _project_contract_runtime_preflight_alerts(
+    contract: ProjectDagContract,
+    *,
+    command_spec_root: Path | None = None,
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    raw_nodes = contract.payload.get("nodes")
+    if not isinstance(raw_nodes, list):
+        return alerts
+    for raw in raw_nodes:
+        if not isinstance(raw, dict):
+            continue
+        node_id = raw.get("id")
+        if not isinstance(node_id, str) or node_id not in contract.nodes:
+            continue
+        effective_raw = dict(raw)
+        if contract.nodes[node_id].executor == "human" or contract.nodes[node_id].agent == "human":
+            fallback_spec = None
+        else:
+            fallback_spec = _fallback_command_spec_path(
+                command_spec_root,
+                node_id=node_id,
+                agent=contract.nodes[node_id].agent,
+            )
+        if effective_raw.get("command_spec") is None and fallback_spec is not None:
+            effective_raw["command_spec"] = str(fallback_spec)
+        adapter_kind, requirement = compile_project_node_runtime_requirement(
+            effective_raw,
+            executor=contract.nodes[node_id].executor,
+        )
+        alert = _project_runtime_preflight_alert(
+            node_id=node_id,
+            adapter_kind=adapter_kind,
+            requirement=requirement,
+        )
+        if alert is not None:
+            alerts.append(alert)
+    return alerts
+
+
+def _fallback_command_spec_path(
+    command_spec_root: Path | None, *, node_id: str, agent: str
+) -> Path | None:
+    if command_spec_root is None:
+        return None
+    root = command_spec_root.expanduser().resolve()
+    for identity in (node_id, agent):
+        candidate = root / identity / "tau-dispatch-command.json"
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _project_payload_with_fallback_command_specs(
+    contract: ProjectDagContract, *, command_spec_root: Path | None
+) -> dict[str, Any]:
+    payload = copy.deepcopy(contract.payload)
+    raw_nodes = payload.get("nodes")
+    if not isinstance(raw_nodes, list):
+        return payload
+    for raw in raw_nodes:
+        if not isinstance(raw, dict) or raw.get("command_spec") is not None:
+            continue
+        node_id = raw.get("id")
+        if not isinstance(node_id, str) or node_id not in contract.nodes:
+            continue
+        if contract.nodes[node_id].executor == "human" or contract.nodes[node_id].agent == "human":
+            continue
+        fallback = _fallback_command_spec_path(
+            command_spec_root,
+            node_id=node_id,
+            agent=contract.nodes[node_id].agent,
+        )
+        if fallback is not None:
+            raw["command_spec"] = str(fallback)
+    return payload
+
+
+def _project_runtime_preflight_alert(
+    *, node_id: str, adapter_kind: str, requirement: RuntimeRequirement
+) -> dict[str, Any] | None:
+    if adapter_kind == "project_persistent_declaration":
+        return _alert(
+            "BLOCK",
+            "runtime_backend_execution_not_implemented",
+            "The selected persistent runtime backend is not integrated with the scheduler.",
+            {
+                "node_id": node_id,
+                "adapter_kind": adapter_kind,
+                "runtime_backend": requirement.backend,
+                "interaction_mode": requirement.interaction_mode,
+            },
+        )
+    if adapter_kind in {"project_human", "project_virtual"}:
+        return None
+    error = _runtime_requirement_error(adapter_kind, requirement)
+    if error is None:
+        return None
+    return _alert(
+        "BLOCK",
+        "runtime_requirement_unsupported",
+        "The selected runtime requirement cannot be enforced by this dispatch adapter.",
+        {
+            "node_id": node_id,
+            "adapter_kind": adapter_kind,
+            "runtime_backend": requirement.backend,
+            "interaction_mode": requirement.interaction_mode,
+            "error": error,
+        },
+    )
 
 
 def _transition_receipts_in_directory(

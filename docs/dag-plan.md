@@ -29,6 +29,8 @@ Each plan records:
 - generic working directories and project evidence manifests as explicit bindings;
 - explicit or derived runtime event-log bindings;
 - declared security inputs without claiming those gates passed.
+- an explicit backend, interaction mode, session scope, and runtime capability
+  requirement for every compiled node.
 
 Project command specs and generic command arrays intentionally remain distinct
 artifact bindings. DagPlan normalizes orchestration meaning; it does not erase
@@ -67,6 +69,10 @@ quality.
 
 Unsupported provider/non-local nodes remain fail-closed during project DAG
 preflight; they do not select a legacy scheduler fallback.
+
+Backend capability negotiation is defined in [Runtime Backend Contracts](runtime-backends.md).
+The selected backend is compiled into the plan rather than inferred from the
+current terminal or environment.
 
 ## Boundary
 

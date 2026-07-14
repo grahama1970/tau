@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "tau.runtime_event.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "event_id", "run_id", "endpoint_lease_sha256", "event_type", "observed_at", "state", "liveness", "confidence", "source", "observation"],
+  "properties": {
+    "schema": {"const": "tau.runtime_event.v1"}, "event_id": {"type": "string", "minLength": 1}, "run_id": {"type": "string", "minLength": 1}, "endpoint_lease_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "event_type": {"type": "string", "minLength": 1}, "observed_at": {"type": "string", "minLength": 1},
+    "state": {"enum": ["STARTING", "READY", "RUNNING", "WAITING_ON_INPUT", "WAITING_ON_APPROVAL", "AUTH_REQUIRED", "INTERSTITIAL", "BLOCKED", "EXITED", "CRASHED", "UNKNOWN"]},
+    "liveness": {"enum": ["ALIVE", "DEAD", "UNKNOWN"]}, "confidence": {"enum": ["NATIVE", "PROCESS", "HEURISTIC", "UNKNOWN"]}, "source": {"type": "string", "minLength": 1}, "observation": {"type": "object"}
+  }
+}

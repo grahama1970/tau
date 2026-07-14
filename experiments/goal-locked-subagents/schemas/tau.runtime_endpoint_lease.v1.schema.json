@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "tau.runtime_endpoint_lease.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "run_id", "plan_revision", "dag_id", "node_id", "attempt_id", "attempt_number", "execution_token", "backend", "backend_session_id", "scope_id", "endpoint_id", "work_order_sha256", "goal_hash", "owner", "created_at", "expires_at", "heartbeat_policy", "cleanup_policy", "capabilities_sha256", "backend_ids"],
+  "properties": {
+    "schema": {"const": "tau.runtime_endpoint_lease.v1"},
+    "run_id": {"type": "string", "minLength": 1}, "plan_revision": {"type": "string", "minLength": 1}, "dag_id": {"type": "string", "minLength": 1}, "node_id": {"type": "string", "minLength": 1}, "attempt_id": {"type": "string", "minLength": 1},
+    "attempt_number": {"type": "integer", "minimum": 1}, "execution_token": {"type": "string", "minLength": 1}, "backend": {"type": "string", "minLength": 1}, "backend_session_id": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+    "scope_id": {"type": "string", "minLength": 1}, "endpoint_id": {"type": "string", "minLength": 1}, "work_order_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "goal_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "owner": {"type": "string", "minLength": 1}, "created_at": {"type": "string", "minLength": 1}, "expires_at": {"type": "string", "minLength": 1}, "heartbeat_policy": {"type": "object"}, "cleanup_policy": {"type": "object"},
+    "capabilities_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "backend_ids": {"type": "object"}
+  }
+}

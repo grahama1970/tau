@@ -20,6 +20,7 @@ from tau_coding.dag_runtime.model import (
     FrozenJson,
     canonical_sha256,
 )
+from tau_coding.runtime_backends.contracts import RuntimeRequirement
 
 PROJECT_ROOT_KEYS = {
     "schema",
@@ -65,6 +66,7 @@ PROJECT_NODE_KEYS = {
     "model_policy",
     "prompt_contract",
     "persistent_subagent",
+    "runtime_backend",
 }
 GENERIC_ROOT_KEYS = {"schema", "run_id", "run_dir", "events_jsonl", "goal_hash", "nodes"}
 GENERIC_NODE_KEYS = {
@@ -83,7 +85,10 @@ GENERIC_NODE_KEYS = {
 
 
 def compile_project_dag_plan(
-    payload: dict[str, Any], *, source_path: Path | None = None
+    payload: dict[str, Any],
+    *,
+    source_path: Path | None = None,
+    source_payload_sha256: str | None = None,
 ) -> DagPlan:
     """Validate and compile ``tau.dag_contract.v1`` without dispatching it."""
 
@@ -102,7 +107,9 @@ def compile_project_dag_plan(
     for node_id in sorted(contract.nodes):
         node = contract.nodes[node_id]
         raw = raw_nodes[node_id]
-        adapter_kind = _project_adapter_kind(raw, executor=node.executor)
+        adapter_kind, runtime_requirement = compile_project_node_runtime_requirement(
+            raw, executor=node.executor
+        )
         explicit_timeout = raw.get("timeout_seconds")
         source_default_timeout = contract.limits.get("default_timeout_seconds")
         timeout_value = explicit_timeout if explicit_timeout is not None else source_default_timeout
@@ -145,6 +152,9 @@ def compile_project_dag_plan(
                     )
                 ),
                 source_extensions=FrozenJson.from_value(_extensions(raw, PROJECT_NODE_KEYS)),
+                runtime_requirement=FrozenJson.from_value(
+                    runtime_requirement.to_payload()
+                ),
             )
         )
 
@@ -192,7 +202,7 @@ def compile_project_dag_plan(
         source_family="project_dag",
         source_schema=str(payload["schema"]),
         source_logical_id=contract.dag_id,
-        source_payload_sha256=canonical_sha256(payload),
+        source_payload_sha256=source_payload_sha256 or canonical_sha256(payload),
         goal_binding=FrozenJson.from_value({"kind": "full", **contract.goal}),
         target_binding=FrozenJson.from_value(contract.target),
         entry_node_ids=(contract.entry_node,),
@@ -301,6 +311,15 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
             ),
             source_extensions=FrozenJson.from_value(
                 _extensions(raw_nodes[node_id], GENERIC_NODE_KEYS)
+            ),
+            runtime_requirement=FrozenJson.from_value(
+                RuntimeRequirement(
+                    backend="local",
+                    interaction_mode="one_shot",
+                    required_capabilities=("one_shot", "supports_working_directory"),
+                    session_scope="node_attempt",
+                    observation_requirements=("PROCESS",),
+                ).to_payload()
             ),
         )
         for node_id in sorted(typed_nodes)
@@ -457,6 +476,13 @@ def _project_join_contracts(
 def _project_adapter_kind(raw: Mapping[str, Any], *, executor: str) -> str:
     if raw.get("join") is not None:
         return "project_virtual"
+    if (
+        raw.get("command_spec") is None
+        and isinstance(raw.get("persistent_subagent"), Mapping)
+        and executor != "human"
+        and raw.get("agent") != "human"
+    ):
+        return "project_persistent_declaration"
     if executor == "provider" or isinstance(raw.get("provider"), Mapping):
         return (
             "project_provider_handoff_command"
@@ -506,13 +532,85 @@ def _generic_adapter_config(raw: Mapping[str, Any], *, source_dir: Path) -> dict
     return {"argv": list(raw.get("command", []))}
 
 
+def _project_runtime_requirement(
+    raw: Mapping[str, Any], *, executor: str, adapter_kind: str
+) -> RuntimeRequirement:
+    declared_backend = raw.get("runtime_backend")
+    if declared_backend is not None and (
+        not isinstance(declared_backend, str) or not declared_backend.strip()
+    ):
+        raise RuntimeError("runtime_backend must be a non-empty string when provided")
+    persistent = raw.get("persistent_subagent")
+    if isinstance(persistent, Mapping) and adapter_kind in {
+        "project_virtual",
+        "project_human",
+    }:
+        raise RuntimeError("persistent_subagent_requires_executable_node")
+    if isinstance(declared_backend, str):
+        backend = declared_backend
+    elif adapter_kind == "project_persistent_declaration" or adapter_kind in {
+        "project_provider",
+        "project_provider_handoff_command",
+    }:
+        backend = "herdr"
+    elif executor == "local":
+        backend = "local"
+    else:
+        backend = ""
+    if isinstance(persistent, Mapping) and adapter_kind == "project_persistent_declaration":
+        if not backend:
+            raise RuntimeError(f"runtime_backend_required_for_executor:{executor}")
+        return RuntimeRequirement(
+            backend=backend,
+            interaction_mode="interactive",
+            required_capabilities=(
+                "interactive",
+                "stable_endpoint_id",
+                "supports_owned_inventory",
+                "supports_terminate",
+            ),
+            session_scope="persistent_subagent",
+            observation_requirements=("PROCESS",),
+        )
+    if adapter_kind in {"project_virtual", "project_human"}:
+        return RuntimeRequirement(
+            backend="none",
+            interaction_mode="none",
+            required_capabilities=(),
+            session_scope="dag_control",
+            observation_requirements=(),
+        )
+    if not backend:
+        raise RuntimeError(f"runtime_backend_required_for_executor:{executor}")
+    return RuntimeRequirement(
+        backend=backend,
+        interaction_mode="one_shot",
+        required_capabilities=("one_shot", "supports_working_directory"),
+        session_scope="node_attempt",
+        observation_requirements=("PROCESS",),
+    )
+
+
+def compile_project_node_runtime_requirement(
+    raw: Mapping[str, Any], *, executor: str
+) -> tuple[str, RuntimeRequirement]:
+    """Compile one project node's adapter and runtime contract without graph checks."""
+
+    adapter_kind = _project_adapter_kind(raw, executor=executor)
+    return adapter_kind, _project_runtime_requirement(
+        raw,
+        executor=executor,
+        adapter_kind=adapter_kind,
+    )
+
+
 def _project_source_bindings(
     *, node_id: str, raw: Mapping[str, Any], source_dir: Path
 ) -> list[dict[str, Any]]:
     bindings = []
     if isinstance(raw.get("command_spec"), str):
-        bindings.append(
-            _file_binding(
+        try:
+            binding = _file_binding(
                 binding_id=f"node:{node_id}:command-spec",
                 kind="input_file",
                 declared_path=str(raw["command_spec"]),
@@ -520,7 +618,9 @@ def _project_source_bindings(
                 require_exists=True,
                 directory_default="tau-dispatch-command.json",
             )
-        )
+        except RuntimeError as exc:
+            raise RuntimeError(f"command_spec for node {node_id} does not exist: {exc}") from exc
+        bindings.append(binding)
     return bindings
 
 
