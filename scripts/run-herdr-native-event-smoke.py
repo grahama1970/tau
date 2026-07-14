@@ -41,9 +41,10 @@ def main(
     backend = HerdrRuntimeBackend(session=session)
     capabilities = backend.capabilities()
     if not capabilities.native_events:
-        raise typer.Exit(_write_blocked(out, run_id, "native_events_unavailable"))
+        raise typer.Exit(_write_blocked(out, run_id, ["native_events_unavailable"]))
     scope: dict[str, Any] | None = None
     endpoint = None
+    primary_error: str | None = None
     cleanup_errors: list[str] = []
     try:
         scope = backend.ensure_scope(
@@ -118,7 +119,8 @@ def main(
         out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
         typer.echo(json.dumps(receipt, sort_keys=True))
     except Exception as exc:
-        _write_blocked(out, run_id, str(exc))
+        primary_error = str(exc)
+        _write_blocked(out, run_id, [primary_error])
         raise
     finally:
         if endpoint is not None:
@@ -143,12 +145,13 @@ def main(
             if completed.returncode != 0:
                 cleanup_errors.append("workspace_cleanup_failed")
         if cleanup_errors:
-            cleanup_error = ",".join(cleanup_errors)
-            _write_blocked(out, run_id, cleanup_error)
-            raise RuntimeError(cleanup_error)
+            errors = ([primary_error] if primary_error is not None else []) + cleanup_errors
+            _write_blocked(out, run_id, errors)
+            if primary_error is None:
+                raise RuntimeError(",".join(cleanup_errors))
 
 
-def _write_blocked(out: Path, run_id: str, error: str) -> int:
+def _write_blocked(out: Path, run_id: str, errors: list[str]) -> int:
     receipt = {
         "schema": "tau.herdr_native_event_smoke_receipt.v1",
         "ok": False,
@@ -157,7 +160,7 @@ def _write_blocked(out: Path, run_id: str, error: str) -> int:
         "live": True,
         "provider_live": False,
         "run_id": run_id,
-        "errors": [error],
+        "errors": errors,
         "node_completion_claimed": False,
     }
     out.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")

@@ -37,6 +37,11 @@ a bounded projection containing only pane, workspace, status, and agent fields.
 Titles, terminal output, prompts, and credentials are not copied into the run
 journal.
 
+The transport does not authenticate the connected Herdr server as a hostile
+same-host peer because Herdr 0.7.1 exposes no post-connect server-identity
+handshake. Tau binds and rechecks the discovered socket identity before
+connecting; stronger peer authentication requires a future Herdr protocol.
+
 Herdr events are diagnostic evidence. Text such as `PASS`, `done`, or `tests
 passed` never accepts a node, activates an edge, satisfies a terminal, or
 replaces a Tau node receipt.

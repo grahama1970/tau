@@ -132,6 +132,7 @@ class RuntimeEventBridge:
         if datetime.now(UTC) >= deadline:
             return None
         self._validate_endpoint_expiry(endpoint)
+        self._store.assert_active_lease(lease)
         appended, sequence, projection = self._store._append_runtime_event(
             lease, normalized, deadline=deadline
         )
