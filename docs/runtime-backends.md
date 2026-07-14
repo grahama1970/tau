@@ -179,3 +179,97 @@ byte. It also checks wrong-server isolation, cleanup authorization, owned
 inventory, exact pane absence, and dedicated-server absence. It does not prove
 DAG-node completion, provider/model quality, restart reconciliation, sandbox
 isolation, or production readiness.
+
+## Endpoint And Git Worktree Ownership
+
+Every interactive runtime operation is bound to a
+`tau.runtime_endpoint_lease.v1`; visible pane text and backend labels are not
+ownership authority. The Herdr and tmux adapters require the exact typed lease
+for submit, capture, observation, inventory, and cleanup.
+
+Repository-mutating attempts can use `GitWorktreeLeaseManager` to allocate a
+real detached Git worktree outside the primary checkout. The
+`tau.git_worktree_lease.v2` binds the run, plan revision, node, attempt, source
+repository, base/head commit, branch state, allowed paths, owner, expiry, and
+initial status hash. Lease records use a hash-bearing envelope so a new Tau
+process can rediscover them and reject modified records.
+
+Inspection records current status, changed paths, diff hash, base/head, and
+path-policy violations. Cleanup fails closed when work is dirty and unadmitted,
+or when an allowed path resolves through a symlink outside the worktree. A
+dirty worktree can be removed only after exact diff admission or an exact
+`tau.git_worktree_cleanup_authorization.v1` discard authorization. Successful
+cleanup post-verifies filesystem absence and removal from Git's inventory.
+Tau-launched writers must hold `writer_guard()` for their mutation lifetime;
+cleanup acquires the same exclusive OS lock before its final inspection and
+removal, and blocks with `worktree_writer_active` when the writer is still live.
+Allocation intents allow restart recovery when a process stops between Git
+worktree creation and lease persistence; post-removal stale leases are retained
+under `retired-leases/` instead of blocking reuse. Admission and discard require
+a complete bounded content hash. Symlinks anywhere in the leased checkout,
+nested Git repositories, special files, empty untracked directories, or
+byte/entry-limit overflow block or require explicit hash-bound handling.
+The lease identity resolves linked checkouts to their shared primary repository,
+so the same attempt cannot obtain duplicate ownership through another linked
+worktree and cleanup does not depend on the caller's checkout remaining present;
+the requested base revision is still resolved in the caller's checkout before
+that identity normalization.
+Inspection rejects `assume-unchanged` and `skip-worktree` index flags, and its
+content hash binds file type and permission bits as well as bytes. Once a lease
+record is durable, a later allocation-intent cleanup failure preserves the
+owned worktree for restart recovery rather than rolling it back.
+State directories reject symlink redirection and use owner-only traversal
+permissions; nested `.git` metadata is an incomplete-hash blocker rather than
+an ignored payload. Lease expiry begins only after allocation ownership is
+acquired, so lock contention cannot consume the new lease lifetime.
+Tau disables repository checkout hooks, filesystem monitors, global/system Git
+configuration, external configuration includes, external diff/textconv, and repository-configured content
+filters for its bounded Git control calls. Repositories declaring executable
+content drivers are rejected before worktree creation. Every Git subprocess has
+a fixed deadline and an isolated process group that is terminated as a tree.
+Driver declarations are checked again before inspection so a worktree-local
+filter cannot execute after allocation. Allocation requires a clean post-checkout before
+persisting a lease. The lease also binds a bounded hash of
+the shared repository control plane (configuration, refs, index, hooks, and
+other non-object metadata while excluding per-worktree administration), so a
+leased worker's shared-ref or configuration mutation blocks admission and
+automatic cleanup instead of appearing as a clean worktree.
+Directory permission baselines are stored with the lease and changed directory
+modes participate in path policy and diff admission. Clean uninitialized
+submodule gitlinks are excluded from the untracked-empty-directory rule.
+Pre-lease restart recovery records both the original repository-control hash
+and the newly observed baseline, allowing a primary-checkout change during the
+crash window to remain explicit without creating an immediately blocked lease.
+The linked worktree `.git` file is type-checked and hash-bound, and its Git
+administration directory must have a canonical, non-symlinked parent under the
+repository's own `.git/worktrees`; its `commondir` and reverse `gitdir` records
+and exact administration-directory path are also hash-bound. Recovery validates
+the same topology even when the checkout directory is already missing, before
+removing a registration or retiring a lease. A registration cannot substitute a
+renamed/replacement admin directory for the lease-bound path. Retirement also
+requires exactly one Git administration record to point at the
+missing checkout; duplicate registrations block rather than being collapsed by
+checkout path. The admin directory's filesystem device/inode identity is bound
+into both the allocation intent and lease, so a copied replacement at the same
+pathname cannot inherit cleanup authority. Recovery validates Git drivers and linked metadata before
+running worktree status. The primary `.git` directory and repository-control
+directory symlinks are rejected, and mode-sensitive Git inspection is forced even when repository
+configuration sets `core.filemode=false`. Cleanup never
+runs repository-wide `git worktree prune`, cannot use discard authorization to
+override a shared repository-control mutation, and retires a lease only after
+the shared baseline has been restored. Atomic state writes use collision-resistant
+temporary names so an interrupted write cannot wedge same-PID restart recovery.
+Cleanup revalidates admin identity immediately before destructive removal. This
+is cooperative Tau ownership evidence, not OS isolation against a malicious
+same-user process racing between validation and the Git syscall; secure executor
+isolation remains a separate runtime boundary.
+
+```bash
+uv run python scripts/run-git-worktree-lease-smoke.py \
+  --repository . \
+  --out /tmp/tau-git-worktree-lease-smoke.json
+```
+
+This does not yet prove scheduler-driven allocation, runtime-event bridging,
+or restart adoption of a live interactive endpoint. Those remain separate
+runtime work packages.

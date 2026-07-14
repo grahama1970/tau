@@ -39,7 +39,7 @@ RUNTIME_SCHEMAS = (
     "tau.runtime_event.v1",
     "tau.runtime_state_projection.v1",
     "tau.runtime_reconciliation_receipt.v1",
-    "tau.git_worktree_lease.v1",
+    "tau.git_worktree_lease.v2",
     "tau.runtime_capability_decision.v1",
 )
 DIGEST = "sha256:" + "a" * 64
@@ -303,9 +303,10 @@ def test_persisted_runtime_contract_family_round_trips() -> None:
     )
     worktree = GitWorktreeLease(
         run_id="run", plan_revision="rev", node_id="node", attempt_id="attempt",
-        repository="repo",
-        worktree_path="/tmp/worktree", base_commit="abc", allowed_paths=("src/",),
+        repository="repo", worktree_path="/tmp/worktree", base_commit="abc",
+        head_commit="abc", branch=None, detached=True, allowed_paths=("src/",),
         owner="tau", created_at="now", expires_at="later",
+        pre_status_sha256=DIGEST,
         cleanup_policy=FrozenJson.from_value({}),
     )
     decision = RuntimeBackendRegistry().decide(_one_shot_requirement())
@@ -320,6 +321,32 @@ def test_persisted_runtime_contract_family_round_trips() -> None:
         (decision, RuntimeCapabilityDecision),
     ):
         assert model.from_payload(value.to_payload()) == value
+
+
+def test_legacy_git_worktree_lease_migrates_to_v2() -> None:
+    legacy = {
+        "schema": "tau.git_worktree_lease.v1",
+        "run_id": "run",
+        "plan_revision": "rev",
+        "node_id": "node",
+        "attempt_id": "attempt",
+        "repository": "repo",
+        "worktree_path": "/tmp/worktree",
+        "base_commit": "abc",
+        "allowed_paths": ["src/"],
+        "owner": "tau",
+        "created_at": "now",
+        "expires_at": "later",
+        "cleanup_policy": {},
+    }
+
+    migrated = GitWorktreeLease.from_payload(legacy)
+
+    assert migrated.to_payload()["schema"] == "tau.git_worktree_lease.v2"
+    assert migrated.head_commit == "abc"
+    assert migrated.detached is True
+    assert migrated.branch is None
+    assert migrated.pre_status_sha256.startswith("sha256:")
 
 
 def test_runtime_contract_parsers_reject_unknown_properties() -> None:
@@ -1225,7 +1252,8 @@ def test_runtime_direct_construction_rejects_empty_schema_bound_strings() -> Non
     worktree = GitWorktreeLease(
         run_id="run", plan_revision="rev", node_id="node", attempt_id="attempt",
         repository="repo", worktree_path="/tmp/worktree", base_commit="abc",
-        allowed_paths=("src/",), owner="tau", created_at="now", expires_at="later",
+        head_commit="abc", branch=None, detached=True, allowed_paths=("src/",),
+        owner="tau", created_at="now", expires_at="later", pre_status_sha256=DIGEST,
         cleanup_policy=FrozenJson.from_value({}),
     )
 

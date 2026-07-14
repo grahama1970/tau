@@ -13,7 +13,8 @@ RUNTIME_SUBMIT_RECEIPT_SCHEMA = "tau.runtime_submit_receipt.v1"
 RUNTIME_EVENT_SCHEMA = "tau.runtime_event.v1"
 RUNTIME_STATE_PROJECTION_SCHEMA = "tau.runtime_state_projection.v1"
 RUNTIME_RECONCILIATION_RECEIPT_SCHEMA = "tau.runtime_reconciliation_receipt.v1"
-GIT_WORKTREE_LEASE_SCHEMA = "tau.git_worktree_lease.v1"
+LEGACY_GIT_WORKTREE_LEASE_SCHEMA = "tau.git_worktree_lease.v1"
+GIT_WORKTREE_LEASE_SCHEMA = "tau.git_worktree_lease.v2"
 RUNTIME_CAPABILITY_DECISION_SCHEMA = "tau.runtime_capability_decision.v1"
 RUNTIME_REQUIREMENT_SCHEMA = "tau.runtime_requirement.v1"
 
@@ -466,10 +467,14 @@ class GitWorktreeLease:
     repository: str
     worktree_path: str
     base_commit: str
+    head_commit: str
+    branch: str | None
+    detached: bool
     allowed_paths: tuple[str, ...]
     owner: str
     created_at: str
     expires_at: str
+    pre_status_sha256: str
     cleanup_policy: FrozenJson
 
     def __post_init__(self) -> None:
@@ -483,6 +488,7 @@ class GitWorktreeLease:
                 "repository",
                 "worktree_path",
                 "base_commit",
+                "head_commit",
                 "owner",
                 "created_at",
                 "expires_at",
@@ -492,14 +498,30 @@ class GitWorktreeLease:
             raise ValueError("allowed_paths must be unique")
         if any(not isinstance(path, str) or not path for path in self.allowed_paths):
             raise ValueError("allowed_paths must contain non-empty strings")
+        if self.branch is not None and (not isinstance(self.branch, str) or not self.branch):
+            raise ValueError("branch must be a non-empty string or null")
+        if type(self.detached) is not bool:
+            raise ValueError("detached must be a boolean")
+        if self.detached == (self.branch is not None):
+            raise ValueError("detached and branch identity are inconsistent")
+        _require_sha256(self.pre_status_sha256, "pre_status_sha256")
         _require_frozen_object(self.cleanup_policy, "cleanup_policy")
 
     def to_payload(self) -> dict[str, Any]:
         return {"schema": GIT_WORKTREE_LEASE_SCHEMA, **_dataclass_payload(self)}
 
+    @property
+    def sha256(self) -> str:
+        return canonical_sha256(self.to_payload())
+
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> GitWorktreeLease:
-        _require_schema(payload, GIT_WORKTREE_LEASE_SCHEMA, cls)
+        schema = payload.get("schema")
+        if schema not in {LEGACY_GIT_WORKTREE_LEASE_SCHEMA, GIT_WORKTREE_LEASE_SCHEMA}:
+            raise ValueError(f"schema must be {GIT_WORKTREE_LEASE_SCHEMA}")
+        _require_schema(payload, cast(str, schema), cls)
+        legacy = schema == LEGACY_GIT_WORKTREE_LEASE_SCHEMA
+        base_commit = _required_string(payload, "base_commit")
         return cls(
             run_id=_required_string(payload, "run_id"),
             plan_revision=_required_string(payload, "plan_revision"),
@@ -507,11 +529,19 @@ class GitWorktreeLease:
             attempt_id=_required_string(payload, "attempt_id"),
             repository=_required_string(payload, "repository"),
             worktree_path=_required_string(payload, "worktree_path"),
-            base_commit=_required_string(payload, "base_commit"),
+            base_commit=base_commit,
+            head_commit=base_commit if legacy else _required_string(payload, "head_commit"),
+            branch=None if legacy else _nullable_string(payload, "branch"),
+            detached=True if legacy else _required_bool(payload, "detached"),
             allowed_paths=_string_tuple(payload, "allowed_paths"),
             owner=_required_string(payload, "owner"),
             created_at=_required_string(payload, "created_at"),
             expires_at=_required_string(payload, "expires_at"),
+            pre_status_sha256=(
+                canonical_sha256("")
+                if legacy
+                else _required_string(payload, "pre_status_sha256")
+            ),
             cleanup_policy=_frozen_object(payload, "cleanup_policy"),
         )
 
