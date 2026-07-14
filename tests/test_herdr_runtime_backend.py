@@ -1,7 +1,11 @@
+"""Contract tests for Tau's Herdr runtime backend."""
+
 from __future__ import annotations
 
 import json
+import socket
 import subprocess
+import threading
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -23,6 +27,7 @@ from tau_coding.runtime_backends import (
 )
 from tau_coding.runtime_backends.event_bridge import RuntimeEventBridge
 from tau_coding.runtime_backends.herdr import _owned_label
+from tau_coding.runtime_backends.herdr_native_events import HerdrNativeEventTransport
 
 
 class FakeHerdr:
@@ -912,6 +917,165 @@ def test_native_event_requirement_blocks_while_bounded_polling_remains_available
     assert event.source == "herdr"
 
 
+def test_verified_native_transport_enables_native_event_capability(tmp_path: Path) -> None:
+    transport = HerdrNativeEventTransport(
+        session="default",
+        socket_path=tmp_path / "herdr.sock",
+        server_version="0.7.1",
+        protocol=14,
+        socket_device=1,
+        socket_inode=1,
+        socket_ctime_ns=1,
+    )
+    backend = HerdrRuntimeBackend(
+        session="default",
+        command_runner=FakeHerdr(),
+        native_event_transport=transport,
+    )
+
+    capabilities = backend.capabilities()
+
+    assert capabilities.native_events is True
+    assert "native_events" not in capabilities.unsupported_requirements
+    assert "native-0.7.1-protocol-14-binding-" in capabilities.version
+
+
+def test_native_capability_hash_binds_exact_socket(tmp_path: Path) -> None:
+    first = HerdrRuntimeBackend(
+        session="default",
+        command_runner=FakeHerdr(),
+        native_event_transport=HerdrNativeEventTransport(
+            session="default",
+            socket_path=tmp_path / "first.sock",
+            server_version="0.7.1",
+            protocol=14,
+            socket_device=1,
+            socket_inode=1,
+            socket_ctime_ns=1,
+        ),
+    )
+    second = HerdrRuntimeBackend(
+        session="default",
+        command_runner=FakeHerdr(),
+        native_event_transport=HerdrNativeEventTransport(
+            session="default",
+            socket_path=tmp_path / "second.sock",
+            server_version="0.7.1",
+            protocol=14,
+            socket_device=1,
+            socket_inode=2,
+            socket_ctime_ns=2,
+        ),
+    )
+
+    assert first.capabilities().sha256 != second.capabilities().sha256
+
+
+def test_native_stream_failure_falls_back_to_bounded_polling(tmp_path: Path) -> None:
+    transport = HerdrNativeEventTransport(
+        session="default",
+        socket_path=tmp_path / "missing.sock",
+        server_version="0.7.1",
+        protocol=14,
+        socket_device=0,
+        socket_inode=0,
+        socket_ctime_ns=0,
+    )
+    fake = FakeHerdr()
+    backend = HerdrRuntimeBackend(
+        session="default",
+        command_runner=fake,
+        native_event_transport=transport,
+        poll_interval_seconds=0.001,
+    )
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+    lease = _spawn_native_test_endpoint(backend, scope_id=scope["scope_id"], cwd=tmp_path)
+
+    event = backend.wait_event(
+        lease,
+        cursor=None,
+        deadline=datetime.now(UTC) + timedelta(seconds=1),
+    )
+
+    assert event is not None
+    assert event.observation.to_value()["native_event_fallback"] == {
+        "code": "herdr_native_stream_failed",
+        "polling_used": True,
+    }
+
+
+def test_native_stream_close_after_ack_falls_back_to_bounded_polling(
+    tmp_path: Path,
+) -> None:
+    socket_path = tmp_path / "herdr.sock"
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(socket_path))
+    listener.listen(1)
+    server_errors: list[BaseException] = []
+
+    def serve_ack_then_close() -> None:
+        try:
+            connection, _ = listener.accept()
+            with connection:
+                request = json.loads(connection.recv(8192).split(b"\n", 1)[0])
+                connection.sendall(
+                    json.dumps(
+                        {
+                            "id": request["id"],
+                            "result": {"type": "subscription_started"},
+                        }
+                    ).encode()
+                    + b"\n"
+                )
+        except BaseException as exc:
+            server_errors.append(exc)
+
+    thread = threading.Thread(target=serve_ack_then_close, daemon=True)
+    thread.start()
+    transport = HerdrNativeEventTransport(
+        session="default",
+        socket_path=socket_path,
+        server_version="0.7.1",
+        protocol=14,
+        socket_device=socket_path.stat().st_dev,
+        socket_inode=socket_path.stat().st_ino,
+        socket_ctime_ns=socket_path.stat().st_ctime_ns,
+    )
+    fake = FakeHerdr()
+    backend = HerdrRuntimeBackend(
+        session="default",
+        command_runner=fake,
+        native_event_transport=transport,
+        poll_interval_seconds=0.001,
+    )
+    scope = backend.ensure_scope(
+        herdr_runtime_scope_request(
+            run_id="run-1", owner="tau", cwd=tmp_path, label="runtime"
+        )
+    ).to_value()
+    lease = _spawn_native_test_endpoint(backend, scope_id=scope["scope_id"], cwd=tmp_path)
+
+    event = backend.wait_event(
+        lease,
+        cursor=None,
+        deadline=datetime.now(UTC) + timedelta(seconds=1),
+    )
+    thread.join(timeout=2)
+    listener.close()
+
+    assert not thread.is_alive()
+    assert not server_errors
+    assert event is not None
+    assert event.observation.to_value()["native_event_fallback"] == {
+        "code": "herdr_native_stream_closed",
+        "polling_used": True,
+    }
+
+
 def test_runtime_event_bridge_appends_real_herdr_polling_observation(
     tmp_path: Path,
 ) -> None:
@@ -1113,6 +1277,31 @@ def _spawned_backend(
         )
     )
     return backend, fake, lease, work_hash
+
+
+def _spawn_native_test_endpoint(
+    backend: HerdrRuntimeBackend,
+    *,
+    scope_id: str,
+    cwd: Path,
+) -> Any:
+    return backend.spawn(
+        herdr_runtime_spawn_request(
+            run_id="run-1",
+            plan_revision=canonical_sha256({"plan": 1}),
+            dag_id="dag-1",
+            node_id="worker",
+            attempt_id="attempt-1",
+            attempt_number=1,
+            execution_token="token-1",
+            scope_id=scope_id,
+            command=("bash",),
+            cwd=cwd,
+            work_order_sha256=canonical_sha256({"work": 1}),
+            goal_hash=canonical_sha256({"goal": 1}),
+            owner="tau",
+        )
+    )
 
 
 def _runtime_bridge_plan(tmp_path: Path):

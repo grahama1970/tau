@@ -653,6 +653,67 @@ def test_native_capable_backend_may_emit_poll_fallback(tmp_path: Path) -> None:
         assert transport["raw_payload_omitted_reason"] is None
 
 
+def test_native_event_preserves_declared_source_payload_hash(tmp_path: Path) -> None:
+    source_hash = canonical_sha256({"event": "pane.agent_status_changed"})
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1", native=True)
+        event = _event(
+            endpoint,
+            observation={
+                "agent_status": "working",
+                "transport": {
+                    "mode": "native",
+                    "raw_payload_sha256": source_hash,
+                    "raw_payload_omitted_reason": "redacted_to_runtime_fields",
+                    "raw_payload_projection": {
+                        "event": "pane.agent_status_changed"
+                    },
+                },
+            },
+        )
+
+        result = RuntimeEventBridge(store).wait_and_append(
+            lease=lease,
+            backend=EventBackend([event], native=True),
+            endpoint=endpoint,
+            cursor=None,
+            deadline=_deadline(),
+        )
+
+        assert result is not None
+        stored = store.load_runtime_events("run-1", endpoint.sha256)[0][1]
+        assert stored.observation.to_value()["transport"]["raw_payload_sha256"] == source_hash
+        assert (
+            stored.observation.to_value()["transport"]["raw_payload_omitted_reason"]
+            == "redacted_to_runtime_fields"
+        )
+
+
+def test_runtime_event_bridge_rejects_malformed_source_payload_hash(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1", native=True)
+        event = _event(
+            endpoint,
+            observation={
+                "transport": {
+                    "mode": "native",
+                    "raw_payload_sha256": "not-a-digest",
+                }
+            },
+        )
+
+        with pytest.raises(DagRunStoreError, match="runtime_event_raw_hash_invalid"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=EventBackend([event], native=True),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+
+
 def test_sensitive_observation_is_redacted_without_hash_oracle(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")

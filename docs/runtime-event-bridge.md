@@ -75,8 +75,10 @@ native cursor and sequence evidence can use the same bridge.
 Backends that advertise native-event support may emit `mode=poll` while using
 their bounded fallback path; only `mode=native` requires the native capability.
 
-Real Herdr AF_UNIX `events.subscribe` transport is tracked separately in issue
-`#101` and is not claimed by this implementation.
+Herdr AF_UNIX `events.subscribe` transport is implemented by
+`herdr_native_events.py` and documented in `herdr-native-events.md`. It is
+enabled only after session socket and protocol verification; setup or stream
+failure falls back to the same bounded polling contract.
 
 ## Focused Proof
 
@@ -99,6 +101,6 @@ uv run pytest \
 ```
 
 These checks are deterministic and non-provider-live. They prove contract,
-journal, replay, and current backend polling behavior. They do not prove the
-future Herdr native subscription transport, provider semantic quality, or node
-completion correctness outside Tau's required receipt validators.
+journal, replay, and backend transport behavior. The separate live smoke proves
+one non-mocked local Herdr subscription. Neither proves provider semantic
+quality or node completion correctness outside Tau's required receipt validators.

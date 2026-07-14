@@ -21,6 +21,11 @@ from tau_coding.runtime_backends.contracts import (
     RuntimeState,
     RuntimeSubmitReceipt,
 )
+from tau_coding.runtime_backends.herdr_native_events import (
+    HerdrNativeEventError,
+    HerdrNativeEventTransport,
+    discover_herdr_native_event_transport,
+)
 
 HERDR_CLEANUP_AUTHORIZATION_SCHEMA = "tau.runtime_cleanup_authorization.v1"
 
@@ -72,6 +77,7 @@ class HerdrRuntimeBackend:
         command_runner: _CommandRunner = subprocess.run,
         poll_interval_seconds: float = 0.1,
         command_timeout_seconds: float = 10.0,
+        native_event_transport: HerdrNativeEventTransport | None = None,
     ) -> None:
         if not session.strip():
             raise ValueError("herdr runtime requires an explicit session")
@@ -86,6 +92,18 @@ class HerdrRuntimeBackend:
         self._command_runner = command_runner
         self._poll_interval_seconds = poll_interval_seconds
         self._command_timeout_seconds = command_timeout_seconds
+        self._native_event_transport = native_event_transport
+        self._native_event_discovery_error: str | None = None
+        if native_event_transport is None and command_runner is subprocess.run:
+            (
+                self._native_event_transport,
+                self._native_event_discovery_error,
+            ) = discover_herdr_native_event_transport(
+                session=session,
+                herdr_bin=herdr_bin,
+                command_runner=command_runner,
+                timeout_seconds=command_timeout_seconds,
+            )
         self._scopes: dict[str, HerdrRuntimeScope] = {}
         self._scope_ids: dict[str, str] = {}
         self._endpoints: dict[str, _HerdrEndpointState] = {}
@@ -94,12 +112,20 @@ class HerdrRuntimeBackend:
         self._lock = threading.Lock()
 
     def capabilities(self) -> RuntimeCapabilities:
+        native_events = self._native_event_transport is not None
         return RuntimeCapabilities(
             backend="herdr",
-            version="tau-herdr-runtime-v1",
+            version=(
+                f"tau-herdr-runtime-v1+native-"
+                f"{self._native_event_transport.server_version}-protocol-"
+                f"{self._native_event_transport.protocol}-binding-"
+                f"{self._native_event_transport.binding_sha256.removeprefix('sha256:')[:16]}"
+                if self._native_event_transport is not None
+                else "tau-herdr-runtime-v1"
+            ),
             interactive=True,
             one_shot=False,
-            native_events=False,
+            native_events=native_events,
             native_agent_state=True,
             foreground_process_state=True,
             structured_composer_state=False,
@@ -110,7 +136,11 @@ class HerdrRuntimeBackend:
             supports_terminate=True,
             observation_confidence_levels=("NATIVE", "PROCESS", "HEURISTIC", "UNKNOWN"),
             supported_session_scopes=("node_attempt", "persistent_subagent"),
-            unsupported_requirements=("native_events", "structured_composer_state"),
+            unsupported_requirements=(
+                ("structured_composer_state",)
+                if native_events
+                else ("native_events", "structured_composer_state")
+            ),
         )
 
     def ensure_scope(self, request: FrozenJson) -> FrozenJson:
@@ -284,7 +314,15 @@ class HerdrRuntimeBackend:
             created_at=now.isoformat(),
             expires_at=(now + timedelta(seconds=lease_seconds)).isoformat(),
             heartbeat_policy=FrozenJson.from_value(
-                {"kind": "bounded_poll", "interval_seconds": self._poll_interval_seconds}
+                {
+                    "kind": (
+                        "native_event_with_bounded_poll_fallback"
+                        if self._native_event_transport is not None
+                        else "bounded_poll"
+                    ),
+                    "interval_seconds": self._poll_interval_seconds,
+                    "native_discovery_error": self._native_event_discovery_error,
+                }
             ),
             cleanup_policy=FrozenJson.from_value(
                 {
@@ -512,6 +550,26 @@ class HerdrRuntimeBackend:
         deadline: datetime,
     ) -> RuntimeEvent | None:
         self._state(endpoint)
+        if self._native_event_transport is not None:
+            try:
+                return self._native_event_transport.wait_event(endpoint, deadline)
+            except HerdrNativeEventError as exc:
+                return self._wait_event_poll(
+                    endpoint,
+                    cursor,
+                    deadline,
+                    native_fallback_code=exc.code,
+                )
+        return self._wait_event_poll(endpoint, cursor, deadline)
+
+    def _wait_event_poll(
+        self,
+        endpoint: RuntimeEndpointLease,
+        cursor: str | None,
+        deadline: datetime,
+        *,
+        native_fallback_code: str | None = None,
+    ) -> RuntimeEvent | None:
         while True:
             remaining = (deadline - datetime.now(UTC)).total_seconds()
             if remaining <= 0:
@@ -519,6 +577,30 @@ class HerdrRuntimeBackend:
             event = self._observe(endpoint, deadline=deadline)
             if datetime.now(UTC) >= deadline:
                 return None
+            if native_fallback_code is not None:
+                observation = event.observation.to_value()
+                observation["native_event_fallback"] = {
+                    "code": native_fallback_code,
+                    "polling_used": True,
+                }
+                fallback_digest = canonical_sha256(
+                    {
+                        "poll_event_id": event.event_id,
+                        "native_event_fallback": native_fallback_code,
+                    }
+                ).removeprefix("sha256:")
+                event = RuntimeEvent(
+                    event_id=f"herdr:{fallback_digest}",
+                    run_id=event.run_id,
+                    endpoint_lease_sha256=event.endpoint_lease_sha256,
+                    event_type=event.event_type,
+                    observed_at=event.observed_at,
+                    state=event.state,
+                    liveness=event.liveness,
+                    confidence=event.confidence,
+                    source=event.source,
+                    observation=FrozenJson.from_value(observation),
+                )
             if event.event_id != cursor:
                 return event
             remaining = (deadline - datetime.now(UTC)).total_seconds()

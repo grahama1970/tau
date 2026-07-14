@@ -132,6 +132,7 @@ class RuntimeEventBridge:
         if datetime.now(UTC) >= deadline:
             return None
         self._validate_endpoint_expiry(endpoint)
+        self._store.assert_active_lease(lease)
         appended, sequence, projection = self._store._append_runtime_event(
             lease, normalized, deadline=deadline
         )
@@ -214,6 +215,26 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
     raw_projection = transport.get("raw_payload_projection")
     if raw_projection is not None and not isinstance(raw_projection, dict):
         raise DagRunStoreError("runtime_event_raw_projection_invalid", event.event_id)
+    declared_raw_sha256 = transport.get("raw_payload_sha256")
+    if declared_raw_sha256 is not None and (
+        not isinstance(declared_raw_sha256, str)
+        or len(declared_raw_sha256) != 71
+        or not declared_raw_sha256.startswith("sha256:")
+    ):
+        raise DagRunStoreError("runtime_event_raw_hash_invalid", event.event_id)
+    if declared_raw_sha256 is not None:
+        try:
+            int(declared_raw_sha256.removeprefix("sha256:"), 16)
+        except ValueError as exc:
+            raise DagRunStoreError("runtime_event_raw_hash_invalid", event.event_id) from exc
+    declared_omitted_reason = transport.get("raw_payload_omitted_reason")
+    if declared_omitted_reason is not None and (
+        not isinstance(declared_omitted_reason, str) or not declared_omitted_reason
+    ):
+        raise DagRunStoreError("runtime_event_raw_omission_reason_invalid", event.event_id)
+    declared_truncated = transport.get("raw_payload_truncated", False)
+    if type(declared_truncated) is not bool:
+        raise DagRunStoreError("runtime_event_raw_truncated_invalid", event.event_id)
     full_observation = event.observation.to_value()
     evidence_budget = _RedactionBudget()
     bounded_observation = _bounded_redacted(observation, budget=evidence_budget)
@@ -230,17 +251,23 @@ def _normalized_runtime_event(event: RuntimeEvent, *, native: bool) -> RuntimeEv
         "stream_id": stream_id,
         "backend_cursor": backend_cursor,
         "backend_sequence": backend_sequence,
-        "raw_payload_sha256": (None if raw_hash_omitted else canonical_sha256(full_observation)),
+        "raw_payload_sha256": (
+            None
+            if raw_hash_omitted
+            else declared_raw_sha256 or canonical_sha256(full_observation)
+        ),
         "raw_payload_projection": bounded_projection,
         "raw_payload_omitted_reason": (
             "sensitive_fields_redacted"
             if evidence_budget.redacted
             else "payload_truncated"
             if evidence_budget.truncated
-            else None
+            else declared_omitted_reason
         ),
         "raw_payload_truncated": (
-            evidence_budget.truncated or bounded_projection != raw_projection
+            declared_truncated
+            or evidence_budget.truncated
+            or bounded_projection != raw_projection
         ),
     }
     return RuntimeEvent(
