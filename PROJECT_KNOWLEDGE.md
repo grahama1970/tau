@@ -6686,12 +6686,12 @@
   silently retargeted. Deterministic proof: `104 passed, 1 deselected` across Herdr
   backend/smoke/cleanup and provider/
   visible-DAG compatibility tests; Ruff passed for all touched files. The full
-  suite reports `2156 passed` and
+  suite reports `2160 passed` and
   the same three retained baseline failures: one compliance-package fixture and
   two absent retained proof/spec artifacts. Non-mocked development-host proof:
-  `/tmp/tau-herdr-runtime-smoke-issue90-exact-20260714T063950Z/herdr-runtime-smoke-receipt.json`
+  `/tmp/tau-herdr-runtime-smoke-issue90-reviewed-20260714T065329Z/herdr-runtime-smoke-receipt.json`
   reports `status:"PASS"`, `mocked:false`, `live:true`, `provider_live:false`,
-  distinct same-label workspace IDs `w8B`/`w8C`, protected ambient workspace
+  distinct same-label workspace IDs `w8D`/`w8E`, protected ambient workspace
   `w11`, wrong-session lookup blocked,
   unowned cleanup blocked, input delivery `CONFIRMED`, endpoint absence verified
   with `pane_not_found`, and `2/2` workspaces post-verified absent. The negative
