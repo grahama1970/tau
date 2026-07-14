@@ -126,3 +126,56 @@ restart reconciliation.
 The smoke marks `live:true` only when the requested binary resolves to the same
 installed executable as `herdr`. A wrapper, fixture, missing command, or other
 PATH executable is recorded as `mocked:true`, `live:false`, and blocks the smoke.
+
+## Tmux Runtime Backend
+
+`TmuxRuntimeBackend` implements the same interactive contract through one
+explicit Tau-owned tmux server (`tmux -L <server>`). It never selects the
+ambient `$TMUX` server. Each run scope records an exact session ID and each node
+attempt records exact window and pane IDs; labels are diagnostic names, not
+ownership evidence.
+
+Work-order delivery accepts one printable line, rejects newline/control
+characters, and derives an endpoint-specific named tmux buffer. One bounded
+tmux command queue loads the buffer, pastes it to the exact pane, and sends
+Enter. Tau reserves and caches the submit result before any caller can repeat
+the work order. If acknowledgement is lost after mutation starts, delivery is
+`INDETERMINATE` and automatic retry remains forbidden. This avoids converting
+transport uncertainty into duplicated agent input.
+
+The lease binds the configured server name to a frozen socket root plus the
+observed socket path, server PID, start time, and tmux version. Their canonical
+hash is `backend_session_id`. Non-creating commands use tmux's `-N` guard and
+recheck the server incarnation so a restarted server under the same name cannot
+inherit an old lease.
+
+Tmux inventory is process evidence. A successful complete inventory that omits
+the exact pane is `DEAD`; a failed, timed-out, or malformed inventory is
+`UNKNOWN`. Pane output remains diagnostic and cannot mark a DAG node complete.
+Owned inventory likewise fails closed when the tmux server cannot be inspected,
+rather than returning a misleading empty list.
+
+Capture is bounded by both requested terminal lines and a configured byte
+ceiling. The receipt records returned lines/bytes and whether deterministic
+UTF-8 truncation occurred.
+
+Termination requires the same lease-bound cleanup authorization fields used by
+the Herdr adapter. Tau kills only the exact pane and then requires a successful
+inventory proving that pane ID absent. Persistent scope/session cleanup remains
+explicit and is not inferred from endpoint termination.
+
+Run the development-host smoke with:
+
+```bash
+uv run python scripts/run-tmux-runtime-smoke.py \
+  --out-dir /tmp/tau-tmux-runtime-smoke
+```
+
+The smoke uses a dedicated real tmux server, creates two same-label scopes,
+spawns one shell pane, and deliberately hides the acknowledgement after one
+successful real paste. A second `submit` call must return the cached receipt,
+the paste count must remain one, and a filesystem side effect must contain one
+byte. It also checks wrong-server isolation, cleanup authorization, owned
+inventory, exact pane absence, and dedicated-server absence. It does not prove
+DAG-node completion, provider/model quality, restart reconciliation, sandbox
+isolation, or production readiness.
