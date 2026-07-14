@@ -34,6 +34,11 @@ def test_transaction_revises_then_projects_only_accepted_artifact(tmp_path: Path
     second_context = json.loads(second_context_path.read_text())
     assert second_context["revision"]["source_attempt"] == 1
     assert second_context["revision"]["findings"][0]["revision_instruction"] == "revise bytes"
+    leases = [item["runtime_endpoint_lease"] for item in transaction["command_results"]]
+    assert all(item["run_id"] == "run-transaction" for item in leases)
+    assert all(item["node_id"] == "stage" for item in leases)
+    assert all(item["dag_id"] != "generic-local-command" for item in leases)
+    assert len({item["attempt_id"] for item in leases}) == len(leases)
 
 
 def test_transaction_resume_blocks_modified_accepted_artifact_without_rerun(

@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import subprocess
+import tempfile
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -15,10 +16,9 @@ from typing import Any
 
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
-from tau_coding.dag_runtime.model import DagPlanNode
+from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
-from tau_coding.dag_runtime.subprocess_control import run_cancellable_subprocess
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -35,6 +35,11 @@ from tau_coding.generic_artifact_transaction import (
     write_attempt_context,
     write_json,
     write_review_context,
+)
+from tau_coding.runtime_backends.local import (
+    LocalRuntimeBackend,
+    LocalRuntimeExecutionResult,
+    local_runtime_request,
 )
 from tau_coding.skill_dag_adapter import (
     SkillDagSpec,
@@ -150,6 +155,18 @@ def run_generic_dag(
             accepted_inputs=list(accepted_inputs),
             goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
             scheduler_attempt=execution.attempt,
+            runtime_identity={
+                "run_id": execution.run_id,
+                "plan_revision": plan.plan_sha256,
+                "dag_id": plan.plan_id,
+                "node_id": plan_node.node_id,
+                "attempt_id": execution.attempt_id,
+                "attempt": execution.attempt,
+                "execution_token": execution.idempotency_key,
+                "goal": str(spec.get("goal_hash"))
+                if spec.get("goal_hash")
+                else plan.runtime_goal_hash,
+            },
             cancel_event=execution.cancel_event,
         )
         if result.get("status") == "PASS" and result.get("verdict") == "PASS":
@@ -441,6 +458,7 @@ def _run_node(
     accepted_inputs: list[dict[str, Any]],
     goal_hash: str | None,
     scheduler_attempt: int,
+    runtime_identity: dict[str, Any],
     cancel_event: Event,
 ) -> dict[str, Any]:
     if node.skill is not None:
@@ -460,6 +478,8 @@ def _run_node(
             events_path=events_path,
             resume=resume,
             accepted_inputs=accepted_inputs,
+            goal_hash=goal_hash,
+            runtime_identity=runtime_identity,
             cancel_event=cancel_event,
         )
     context_path, context_sha256 = _write_legacy_node_context(
@@ -476,7 +496,9 @@ def _run_node(
         resume=resume,
         context_path=context_path,
         context_sha256=context_sha256,
+        goal_hash=goal_hash,
         attempt=scheduler_attempt,
+        runtime_identity=runtime_identity,
         cancel_event=cancel_event,
     )
 
@@ -608,7 +630,9 @@ def _run_legacy_node(
     resume: bool,
     context_path: Path,
     context_sha256: str,
+    goal_hash: str | None,
     attempt: int,
+    runtime_identity: dict[str, Any],
     cancel_event: Event,
 ) -> dict[str, Any]:
     node_started_at = _utc_stamp()
@@ -654,12 +678,27 @@ def _run_legacy_node(
             "TAU_GENERIC_DAG_CONTEXT_SHA256": context_sha256,
         },
         cancel_event=cancel_event,
+        runtime_identity={
+            **runtime_identity,
+            "work_order": _work_order_sha256(node) or context_sha256,
+            "goal": goal_hash or runtime_identity["goal"],
+            "artifact_dir": (
+                node.receipt_path.parent
+                / ".tau-runtime"
+                / node.node_id
+                / f"attempt-{attempt:03d}"
+            ),
+        },
     )
     command_results = [
         _command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)
     ]
     if result.returncode != 0:
-        verdict = "SUBAGENT_TIMEOUT" if result.returncode == 124 else "SUBAGENT_ERROR"
+        verdict = (
+            "SUBAGENT_TIMEOUT"
+            if result.termination_cause == "timed_out"
+            else "SUBAGENT_ERROR"
+        )
         return _blocked_node_record(
             node,
             verdict=verdict,
@@ -724,6 +763,8 @@ def _run_transaction_node(
     events_path: Path,
     resume: bool,
     accepted_inputs: list[dict[str, Any]],
+    goal_hash: str | None,
+    runtime_identity: dict[str, Any],
     cancel_event: Event,
 ) -> dict[str, Any]:
     """Run one bounded producer/reviewer transaction owned by Tau."""
@@ -802,6 +843,7 @@ def _run_transaction_node(
                         started_at=started_at,
                         started_monotonic=started_monotonic,
                         resumed=True,
+                        runtime_identity=runtime_identity,
                         cancel_event=cancel_event,
                     )
             if prior_errors:
@@ -860,6 +902,15 @@ def _run_transaction_node(
                 "TAU_GENERIC_DAG_CONTEXT_SHA256": attempt_context_sha256,
             },
             cancel_event=cancel_event,
+            runtime_identity=_transaction_runtime_identity(
+                runtime_identity,
+                node=node,
+                phase="producer",
+                attempt=attempt,
+                work_order_sha256=work_order_sha256,
+                goal_hash=goal_hash,
+                artifact_dir=attempt_dir / "runtime" / "producer",
+            ),
         )
         command_results.append(
             _command_result_dict(
@@ -932,6 +983,15 @@ def _run_transaction_node(
                     "TAU_GENERIC_DAG_VALIDATION_CONTEXT_SHA256": validation_context_sha256,
                 },
                 cancel_event=cancel_event,
+                runtime_identity=_transaction_runtime_identity(
+                    runtime_identity,
+                    node=node,
+                    phase="validator",
+                    attempt=attempt,
+                    work_order_sha256=work_order_sha256,
+                    goal_hash=goal_hash,
+                    artifact_dir=attempt_dir / "runtime" / "validator",
+                ),
             )
             command_results.append(_command_result_dict(validator_result, elapsed_seconds=0.0))
             validation, validation_errors = load_json(
@@ -986,6 +1046,15 @@ def _run_transaction_node(
                 "TAU_GENERIC_DAG_REVIEW_CONTEXT_SHA256": review_context_sha256,
             },
             cancel_event=cancel_event,
+            runtime_identity=_transaction_runtime_identity(
+                runtime_identity,
+                node=node,
+                phase="reviewer",
+                attempt=attempt,
+                work_order_sha256=work_order_sha256,
+                goal_hash=goal_hash,
+                artifact_dir=attempt_dir / "runtime" / "reviewer",
+            ),
         )
         command_results.append(
             _command_result_dict(
@@ -1134,6 +1203,7 @@ def _run_transaction_node(
                 started_at=started_at,
                 started_monotonic=started_monotonic,
                 resumed=False,
+                runtime_identity=runtime_identity,
                 cancel_event=cancel_event,
             )
         _write_transaction_receipt(
@@ -1187,6 +1257,7 @@ def _continue_transaction(
     started_at: str,
     started_monotonic: float,
     resumed: bool,
+    runtime_identity: dict[str, Any],
     cancel_event: Event,
 ) -> dict[str, Any]:
     continuation = spec.continuation
@@ -1255,6 +1326,19 @@ def _continue_transaction(
         timeout_seconds=continuation.timeout_seconds,
         env_overrides={"TAU_GENERIC_DAG_CONTEXT": str(continuation_context)},
         cancel_event=cancel_event,
+        runtime_identity=_transaction_runtime_identity(
+            runtime_identity,
+            node=node,
+            phase="continuation",
+            attempt=int(accepted.get("attempt") or max(len(attempts), 1)),
+            work_order_sha256=str(accepted.get("work_order_sha256") or accepted_manifest_sha256),
+            goal_hash=(
+                str(runtime_identity.get("goal"))
+                if runtime_identity.get("goal") is not None
+                else None
+            ),
+            artifact_dir=transaction_receipt_path.parent / "runtime" / "continuation",
+        ),
     )
     if result.returncode != 0:
         return _transaction_blocked(
@@ -1782,31 +1866,99 @@ def _run_command(
     timeout_seconds: float,
     env_overrides: dict[str, str] | None = None,
     cancel_event: Event | None = None,
-) -> subprocess.CompletedProcess[str]:
-    return run_cancellable_subprocess(
-        command,
-        cwd=cwd,
-        timeout_seconds=timeout_seconds,
-        env={**os.environ, **(env_overrides or {})},
-        cancel_event=cancel_event,
+    runtime_identity: dict[str, Any] | None = None,
+) -> LocalRuntimeExecutionResult:
+    identity = runtime_identity or {}
+    identity_seed = {
+        "command": command,
+        "cwd": str(cwd),
+        "environment_names": sorted((env_overrides or {}).keys()),
+    }
+    identity_hash = canonical_sha256(identity_seed)
+    attempt = int(identity.get("attempt", 1))
+    node_id = str(identity.get("node_id") or "local-command")
+    backend = LocalRuntimeBackend()
+    return backend.execute(
+        local_runtime_request(
+            command=command,
+            run_id=str(identity.get("run_id") or f"local:{identity_hash[-16:]}"),
+            plan_revision=str(identity.get("plan_revision") or identity_hash),
+            dag_id=str(identity.get("dag_id") or "generic-local-command"),
+            node_id=node_id,
+            attempt_id=str(
+                identity.get("attempt_id") or f"{node_id}:attempt-{attempt:03d}"
+            ),
+            attempt_number=attempt,
+            execution_token=str(identity.get("execution_token") or identity_hash),
+            work_order=identity.get("work_order", identity_seed),
+            goal=identity.get("goal", {"kind": "development-local-command"}),
+            cwd=cwd,
+            env={**os.environ, **(env_overrides or {})},
+            timeout_seconds=timeout_seconds,
+            artifact_dir=(
+                identity.get("artifact_dir")
+                if isinstance(identity.get("artifact_dir"), Path)
+                else None
+            ),
+            cancel_event=cancel_event,
+        )
     )
 
 
+def _transaction_runtime_identity(
+    base: dict[str, Any],
+    *,
+    node: DagNode,
+    phase: str,
+    attempt: int,
+    work_order_sha256: str,
+    goal_hash: str | None,
+    artifact_dir: Path,
+) -> dict[str, Any]:
+    attempt_id = f"{base['attempt_id']}:{phase}:{attempt:03d}"
+    return {
+        **base,
+        "node_id": node.node_id,
+        "attempt_id": attempt_id,
+        "attempt": attempt,
+        "execution_token": canonical_sha256(
+            {
+                "scheduler_execution_token": base["execution_token"],
+                "attempt_id": attempt_id,
+            }
+        ),
+        "work_order": work_order_sha256,
+        "goal": goal_hash or base["goal"],
+        "artifact_dir": artifact_dir,
+    }
+
+
 def _command_result_dict(
-    result: subprocess.CompletedProcess[str],
+    result: subprocess.CompletedProcess[str] | LocalRuntimeExecutionResult,
     *,
     elapsed_seconds: float,
 ) -> dict[str, Any]:
-    return {
+    payload = {
         "argv": result.args,
         "returncode": result.returncode,
         "stdout": result.stdout,
         "stderr": result.stderr,
         "elapsed_seconds": round(elapsed_seconds, 3),
     }
+    if isinstance(result, LocalRuntimeExecutionResult):
+        payload["runtime_backend"] = "local"
+        payload["runtime_endpoint_lease"] = result.endpoint_lease.to_payload()
+        payload["runtime_submit_receipt"] = result.submit_receipt.to_payload()
+        payload["runtime_event"] = result.runtime_event.to_payload()
+        payload["runtime_capture"] = result.capture.to_value()
+        payload["runtime_artifacts"] = list(result.artifact_paths)
+        payload["termination_cause"] = result.termination_cause
+    return payload
 
 
-def _command_error(result: subprocess.CompletedProcess[str]) -> str:
+def _command_error(
+    result: subprocess.CompletedProcess[str] | LocalRuntimeExecutionResult,
+) -> str:
     detail = (result.stderr or "").strip() or (result.stdout or "").strip() or "no output"
     return f"{' '.join(result.args)} exited {result.returncode}: {detail}"
 
@@ -1874,7 +2026,20 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
 
 
 def _utc_stamp() -> str:

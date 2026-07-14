@@ -654,6 +654,31 @@ def test_project_dag_bounded_ready_queue_recovers_after_timeout_retry(
     assert receipt["status"] == "PASS"
     assert receipt["node_attempts"]["coder"] == 2
     assert receipt["max_observed_concurrency"] >= 2
+    first_lease = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "ready-queue"
+            / "coder"
+            / "attempt-001"
+            / "runtime"
+            / "runtime-endpoint-lease.json"
+        ).read_text(encoding="utf-8")
+    )
+    second_lease = json.loads(
+        (
+            tmp_path
+            / "run"
+            / "ready-queue"
+            / "coder"
+            / "attempt-002"
+            / "runtime"
+            / "runtime-endpoint-lease.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert first_lease["attempt_number"] == 1
+    assert second_lease["attempt_number"] == 2
+    assert first_lease["run_id"] == second_lease["run_id"] == payload["dag_id"]
     assert [
         event
         for event in receipt["scheduler_events"]

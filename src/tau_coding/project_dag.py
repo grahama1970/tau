@@ -10,6 +10,7 @@ import re
 import tempfile
 import threading
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path, PureWindowsPath
@@ -2992,6 +2993,8 @@ def _dispatch_ready_node(
     command_spec_root: Path | None,
     artifact_dir: Path,
     command_policy_path: Path | None = None,
+    runtime_identity: Mapping[str, Any] | None = None,
+    attempt: int = 1,
     cancel_event: threading.Event | None = None,
 ) -> dict[str, Any]:
     started = time.monotonic()
@@ -3022,6 +3025,8 @@ def _dispatch_ready_node(
             agent_registry_root=agents_root,
             artifact_dir=artifact_dir,
             command_spec_metadata=spec,
+            runtime_identity=runtime_identity,
+            attempt=attempt,
             cancel_event=cancel_event,
         )
         dispatch_payload = dispatch.as_dict()
@@ -3193,6 +3198,13 @@ def _run_shared_project_dag_plan(
             command_spec_root=command_spec_root,
             artifact_dir=artifact_dir,
             command_policy_path=_contract_relative_path(contract.command_policy, contract_path),
+            runtime_identity={
+                "run_id": execution.run_id,
+                "plan_revision": plan.plan_sha256,
+                "attempt_id": execution.attempt_id,
+                "execution_token": execution.idempotency_key,
+            },
+            attempt=attempt,
             cancel_event=execution.cancel_event,
         )
         dispatch = result.get("dispatch")

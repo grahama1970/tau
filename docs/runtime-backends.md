@@ -28,13 +28,33 @@ the compiled requirement. Backends positively declare
 `supported_session_scopes`; an undeclared or misspelled scope is rejected rather
 than relying on a denylist.
 
-The current bounded-ready-queue also checks the compiled requirement before
-using a legacy dispatch adapter. A local command adapter accepts only the
-canonical local one-shot requirement, and the existing provider adapter accepts
-only its canonical Herdr one-shot requirement. Interactive, persistent, unknown,
-or otherwise mismatched requirements block before command artifacts or a
-subprocess are created. Later issue slices replace these migration checks with
-registered runtime implementations.
+The bounded-ready-queue checks the compiled requirement before dispatch. A local
+command adapter accepts only the canonical local one-shot requirement, and the
+existing provider adapter accepts only its canonical Herdr one-shot requirement.
+Interactive, persistent, unknown, or otherwise mismatched requirements block
+before command artifacts or a subprocess are created.
+
+## Local Runtime Backend
+
+`LocalRuntimeBackend` is the one-shot reference implementation. Generic DAG
+commands and non-secure project handoff commands now launch through this backend
+instead of importing process launch mechanics into their scheduler callbacks.
+The backend preserves the existing process-group cancellation, timeout,
+working-directory, environment, stdin, stdout, stderr, and return-code behavior.
+
+Each launch records normalized runtime evidence:
+
+- `runtime-endpoint-lease.json` binds the local endpoint to the run, node,
+  attempt, work order, goal, and backend capability hash;
+- `runtime-submit-receipt.json` records command/input delivery separately from
+  execution outcome;
+- `runtime-event.json` records the observed process terminal state and
+  liveness;
+- `runtime-capture.json` records bounded command output and exit metadata.
+
+These artifacts do not replace the node receipt. A zero exit code and an
+`EXITED` runtime event cannot advance the DAG unless Tau independently admits
+the required node receipt.
 
 The common contract family also defines endpoint leases, submit receipts,
 runtime events and state projections, reconciliation receipts, and Git worktree
@@ -51,7 +71,6 @@ runtime says done != receipt admitted
 validated receipt -> Tau may advance the DAG
 ```
 
-This first slice defines and validates contracts only. It does not migrate local
-subprocess execution, implement Herdr or tmux adapters, persist runtime events,
-or prove that a backend enforces its declared capabilities. Those steps are
-tracked by the remaining children of issue #84.
+The local adapter proof is a development-host process proof, not a sandbox or
+secure-executor claim. Herdr/tmux adapters, persistent runtime events, worktree
+leases, and restart reconciliation remain in later children of issue #84.

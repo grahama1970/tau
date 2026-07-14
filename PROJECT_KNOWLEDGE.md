@@ -6680,3 +6680,15 @@
   unknown or misspelled scope cannot pass capability negotiation. Handoff-loop
   runtime preflight derives node requirements without invoking the acyclic plan
   compiler, preserving bounded iterative DAGs.
+
+- 2026-07-13 issue #89 local-runtime slice: `LocalRuntimeBackend` is the
+  one-shot reference adapter for command-backed generic DAG nodes and non-secure
+  project handoff commands. Scheduler callbacks no longer launch those commands
+  through direct subprocess helpers. The adapter preserves process-group
+  cancellation, timeout, stdin, working directory, environment, stdout/stderr,
+  and return-code behavior while emitting endpoint-lease, submit, event, and
+  capture artifacts. Delivery confirmation and process exit remain separate
+  from Tau's node-receipt admission. Non-mocked local tests exercise successful
+  stdin delivery, nonzero exit, timeout, capability registration, and artifact
+  persistence. This does not prove sandbox isolation, secure execution, Herdr
+  or tmux behavior, provider/model quality, or semantic correctness.

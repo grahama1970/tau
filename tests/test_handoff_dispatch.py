@@ -143,6 +143,7 @@ def test_command_handoff_dispatch_consumes_stdout_response(tmp_path: Path) -> No
             f"from pathlib import Path; print(Path({str(response_path)!r}).read_text())",
         ],
         active_goal_hash="sha256:active-goal",
+        artifact_dir=tmp_path / "artifacts",
     )
 
     assert result.ok is True
@@ -152,6 +153,13 @@ def test_command_handoff_dispatch_consumes_stdout_response(tmp_path: Path) -> No
     assert result.live is True
     assert result.runner == "command"
     assert result.command_results[0]["exit_code"] == 0
+    runtime_result = result.command_results[0]
+    assert runtime_result["runtime_backend"] == "local"
+    assert runtime_result["runtime_endpoint_lease"]["backend"] == "local"
+    assert runtime_result["runtime_submit_receipt"]["delivery_status"] == "CONFIRMED"
+    assert runtime_result["runtime_event"]["state"] == "EXITED"
+    assert len(runtime_result["runtime_artifacts"]) == 4
+    assert all(Path(path).is_file() for path in runtime_result["runtime_artifacts"])
     assert result.response_projection is not None
     assert result.response_projection["next_agent"] == "human"
 
@@ -222,6 +230,48 @@ def test_command_handoff_dispatch_blocks_nonzero_exit() -> None:
     assert result.status == "BLOCKED"
     assert result.stop_reason == "command_failed"
     assert result.command_results[0]["exit_code"] == 7
+
+
+def test_command_handoff_dispatch_does_not_invent_timeout_from_exit_code() -> None:
+    result = dispatch_agent_handoff_command_once(
+        _valid_handoff(),
+        [sys.executable, "-c", "raise SystemExit(124)"],
+        active_goal_hash="sha256:active-goal",
+    )
+
+    assert result.ok is False
+    assert result.stop_reason == "command_failed"
+    assert result.command_results[0]["exit_code"] == 124
+    assert result.command_results[0]["timed_out"] is False
+
+
+def test_command_handoff_runtime_lease_binds_authoritative_goal_hash(tmp_path: Path) -> None:
+    goal_hash = "sha256:" + "a" * 64
+    start = _valid_handoff()
+    start["goal"]["goal_hash"] = goal_hash
+    response = _valid_handoff()
+    response["goal"]["goal_hash"] = goal_hash
+    response["previous_subagent"] = "reviewer"
+    response_path = tmp_path / "response.json"
+    response_path.write_text(json.dumps(response), encoding="utf-8")
+
+    result = dispatch_agent_handoff_command_once(
+        start,
+        [sys.executable, "-c", f"print(open({str(response_path)!r}).read())"],
+        active_goal_hash=goal_hash,
+        runtime_identity={
+            "run_id": "project-run-001",
+            "plan_revision": "sha256:" + "b" * 64,
+            "attempt_id": "reviewer:attempt-001:token",
+            "execution_token": "sha256:" + "c" * 64,
+        },
+    )
+
+    assert result.ok is True
+    lease = result.command_results[0]["runtime_endpoint_lease"]
+    assert lease["goal_hash"] == goal_hash
+    assert lease["run_id"] == "project-run-001"
+    assert lease["attempt_id"] == "reviewer:attempt-001:token"
 
 
 def test_command_handoff_dispatch_preserves_valid_semantic_node_block(tmp_path: Path) -> None:

@@ -38,6 +38,7 @@ def test_scheduler_cancellation_terminates_command_process_group(tmp_path: Path)
     elapsed = time.monotonic() - started
 
     assert result.returncode == 130
+    assert result.termination_cause == "cancelled"
     assert "cancelled by DAG scheduler" in result.stderr
     assert elapsed < 1
     time.sleep(0.9)
@@ -52,8 +53,31 @@ def test_timeout_terminates_command_process_group() -> None:
     )
 
     assert result.returncode == 124
+    assert result.termination_cause == "timed_out"
     assert "timed out after 0.1s" in result.stderr
     assert time.monotonic() - started < 1
+
+
+def test_explicit_timeout_style_exit_codes_are_not_termination_causes() -> None:
+    for returncode in (124, 130):
+        result = run_cancellable_subprocess(
+            [sys.executable, "-c", f"raise SystemExit({returncode})"],
+            timeout_seconds=5,
+        )
+
+        assert result.returncode == returncode
+        assert result.termination_cause == "exited"
+
+
+def test_child_exit_without_stdin_read_is_indeterminate_without_thread_error() -> None:
+    result = run_cancellable_subprocess(
+        [sys.executable, "-c", "raise SystemExit(0)"],
+        input_text="x" * 1_000_000,
+        timeout_seconds=5,
+    )
+
+    assert result.returncode == 0
+    assert result.stdin_delivery == "indeterminate"
 
 
 def test_windows_process_tree_uses_new_group_and_taskkill(
