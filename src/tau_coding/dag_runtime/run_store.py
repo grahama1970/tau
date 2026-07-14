@@ -837,6 +837,8 @@ class SqliteDagRunStore:
         self,
         lease: DagRunLease,
         event: RuntimeEvent,
+        *,
+        deadline: datetime | None = None,
     ) -> tuple[bool, int, RuntimeStateProjection]:
         """Append one normalized runtime observation without changing DAG authority."""
 
@@ -863,6 +865,8 @@ class SqliteDagRunStore:
             "transport_mode": transport_mode,
         }
         with self._transaction():
+            if deadline is not None and datetime.now(UTC) >= deadline:
+                raise DagRunStoreError("runtime_event_deadline_exceeded", event.event_id)
             self._assert_lease(lease)
             existing = self._event_by_key(lease.run_id, event_key)
             if existing is not None:
@@ -892,11 +896,13 @@ class SqliteDagRunStore:
         endpoint_lease_sha256: str | None = None,
     ) -> tuple[tuple[int, RuntimeEvent], ...]:
         runtime_events: list[tuple[int, RuntimeEvent]] = []
-        rows = self._connection.execute(
-            "SELECT * FROM dag_run_events "
-            "WHERE run_id = ? AND event_key LIKE 'runtime:%' ORDER BY seq",
-            (run_id,),
-        ).fetchall()
+        query = "SELECT * FROM dag_run_events WHERE run_id = ? AND event_key LIKE ? ORDER BY seq"
+        event_key_pattern = (
+            f"runtime:{endpoint_lease_sha256}:%"
+            if endpoint_lease_sha256 is not None
+            else "runtime:%"
+        )
+        rows = self._connection.execute(query, (run_id, event_key_pattern)).fetchall()
         for row in rows:
             runtime_event = _runtime_event_from_journal_row(
                 cast(sqlite3.Row, row), expected_run_id=run_id
@@ -914,9 +920,8 @@ class SqliteDagRunStore:
         endpoint_lease_sha256: str,
     ) -> RuntimeStateProjection | None:
         rows = self._connection.execute(
-            "SELECT * FROM dag_run_events "
-            "WHERE run_id = ? AND event_key LIKE 'runtime:%' ORDER BY seq",
-            (run_id,),
+            "SELECT * FROM dag_run_events WHERE run_id = ? AND event_key LIKE ? ORDER BY seq",
+            (run_id, f"runtime:{endpoint_lease_sha256}:%"),
         ).fetchall()
         validated = tuple(
             _runtime_event_from_journal_row(cast(sqlite3.Row, row), expected_run_id=run_id)

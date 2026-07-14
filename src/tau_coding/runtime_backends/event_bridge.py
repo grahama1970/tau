@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import heapq
+import itertools
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -127,7 +127,11 @@ class RuntimeEventBridge:
             backend_name=capabilities.backend,
         )
         normalized = _normalized_runtime_event(validated, native=capabilities.native_events)
-        appended, sequence, projection = self._store._append_runtime_event(lease, normalized)
+        if datetime.now(UTC) >= deadline:
+            return None
+        appended, sequence, projection = self._store._append_runtime_event(
+            lease, normalized, deadline=deadline
+        )
         return RuntimeEventAppendResult(
             appended=appended,
             journal_sequence=sequence,
@@ -242,7 +246,7 @@ def _optional_string(value: object, label: str, event_id: str) -> str | None:
         return None
     if not isinstance(value, str) or not value:
         raise DagRunStoreError(f"runtime_event_transport_{label}_invalid", event_id)
-    if len(value) > _MAX_STRING_LENGTH:
+    if len(value.encode("utf-8")) > _MAX_STRING_LENGTH:
         raise DagRunStoreError(f"runtime_event_transport_{label}_too_long", event_id)
     return value
 
@@ -272,8 +276,8 @@ def _bounded_redacted(
         return "<max-depth>"
     if isinstance(value, dict):
         bounded: dict[str, object] = {}
-        selected_keys = heapq.nsmallest(_MAX_ITEMS + 1, value, key=str)
-        for item_key in sorted(selected_keys[:_MAX_ITEMS]):
+        selected_keys = list(itertools.islice(value, _MAX_ITEMS + 1))
+        for item_key in selected_keys[:_MAX_ITEMS]:
             bounded_key = str(item_key)[:128]
             budget.consume_characters(len(bounded_key))
             bounded[bounded_key] = _bounded_redacted(

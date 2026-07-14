@@ -31,6 +31,11 @@ and may not contain control characters. The store append primitive is internal;
 external callers must pass through the bridge's endpoint and backend binding
 checks.
 
+`FrozenJson` canonicalizes mapping order before normalization, so the bridge can
+consume only a bounded key prefix without scanning an arbitrary backend mapping.
+Projection replay is scoped by the endpoint-bound event-key prefix and validates
+every selected row before deriving state.
+
 The durable event key is:
 
 ```text

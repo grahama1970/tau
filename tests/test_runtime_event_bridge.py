@@ -450,6 +450,22 @@ def test_event_returned_after_deadline_is_not_appended(tmp_path: Path) -> None:
         assert store.load_runtime_events("run-1", endpoint.sha256) == ()
 
 
+def test_store_rechecks_deadline_inside_append_transaction(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1")
+        event = _event(endpoint, observation={"transport": {"mode": "poll"}})
+
+        with pytest.raises(DagRunStoreError, match="runtime_event_deadline_exceeded"):
+            store._append_runtime_event(
+                lease,
+                event,
+                deadline=datetime.now(UTC) - timedelta(milliseconds=1),
+            )
+
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
 def test_endpoint_capabilities_hash_must_match_selected_backend(tmp_path: Path) -> None:
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
@@ -745,6 +761,30 @@ def test_overlong_transport_identifier_blocks_without_append(
         )
 
         with pytest.raises(DagRunStoreError, match=f"runtime_event_transport_{field}_too_long"):
+            RuntimeEventBridge(store).wait_and_append(
+                lease=lease,
+                backend=EventBackend([event], native=True),
+                endpoint=endpoint,
+                cursor=None,
+                deadline=_deadline(),
+            )
+        assert store.load_runtime_events("run-1", endpoint.sha256) == ()
+
+
+def test_multibyte_transport_identifier_uses_byte_limit(tmp_path: Path) -> None:
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=_plan(tmp_path), run_id="run-1", owner_id="owner-a")
+        endpoint = _endpoint(run_id="run-1", native=True)
+        event = _event(
+            endpoint,
+            observation={
+                "transport": {"mode": "native", "backend_cursor": "é" * 1025},
+            },
+        )
+
+        with pytest.raises(
+            DagRunStoreError, match="runtime_event_transport_backend_cursor_too_long"
+        ):
             RuntimeEventBridge(store).wait_and_append(
                 lease=lease,
                 backend=EventBackend([event], native=True),
