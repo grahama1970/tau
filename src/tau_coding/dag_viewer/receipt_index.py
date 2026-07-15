@@ -101,7 +101,7 @@ def build_receipt_index(
         except (UnicodeError, json.JSONDecodeError) as exc:
             raise RuntimeError("dag_viewer_receipt_invalid") from exc
         schema = payload.get("schema") if isinstance(payload, dict) else None
-        if not isinstance(schema, str) or "receipt" not in schema.casefold():
+        if not isinstance(schema, str) or not schema.startswith("tau."):
             raise RuntimeError("dag_viewer_receipt_invalid")
         digest_hex = hashlib.sha256(data).hexdigest()
         digest = f"sha256:{digest_hex}"

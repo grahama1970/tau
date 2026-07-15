@@ -22,7 +22,11 @@ from tau_coding.dag_runtime.transition import (
     DagTransitionBatch,
     DagTransitionView,
 )
-from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
+from tau_coding.dag_viewer.server import (
+    RunningDagViewerServer,
+    _host_header_matches_server,
+    create_dag_viewer_server,
+)
 
 
 class _ReceiptTransitionPolicy(AllSuccessTransitionPolicy):
@@ -251,6 +255,12 @@ def test_localhost_authority_is_preserved(tmp_path: Path) -> None:
     finally:
         server.shutdown()
         thread.join(timeout=2)
+
+
+def test_default_http_port_may_be_omitted_from_authority() -> None:
+    assert _host_header_matches_server("127.0.0.1", host="127.0.0.1", port=80)
+    assert _host_header_matches_server("[::1]", host="::1", port=80)
+    assert not _host_header_matches_server("127.0.0.1", host="127.0.0.1", port=8080)
 
 
 def test_store_failure_is_structured_and_shutdown_releases_port(

@@ -70,3 +70,22 @@ def test_receipt_index_is_run_scoped_and_allows_identical_content(tmp_path: Path
         "second-receipt.json",
     }
     assert len({entry.receipt_id for entry in index.entries}) == 2
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        "tau.dag_route_decision.v1",
+        "tau.dag_join_decision.v1",
+        "tau.dag_terminal_contribution.v1",
+    ],
+)
+def test_receipt_index_accepts_canonical_transition_artifacts(
+    tmp_path: Path, schema: str
+) -> None:
+    artifact = tmp_path / f"{schema}.json"
+    artifact.write_text(json.dumps({"schema": schema, "status": "PASS"}), encoding="utf-8")
+
+    index = build_receipt_index(tmp_path, (_ref(artifact),))
+
+    assert index.entries[0].schema == schema

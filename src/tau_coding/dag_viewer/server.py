@@ -257,4 +257,7 @@ def _host_header_matches_server(value: str | None, *, host: str, port: int) -> b
     if value is None or "," in value or "@" in value:
         return False
     expected_host = f"[{host}]" if ":" in host else host
-    return value.casefold() == f"{expected_host}:{port}".casefold()
+    allowed = {f"{expected_host}:{port}".casefold()}
+    if port == 80:
+        allowed.add(expected_host.casefold())
+    return value.casefold() in allowed
