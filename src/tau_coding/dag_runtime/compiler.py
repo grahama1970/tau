@@ -528,6 +528,7 @@ def _generic_adapter_config(raw: Mapping[str, Any], *, source_dir: Path) -> dict
         return {
             "producer_command": _portable_config(raw.get("command", []), source_dir=source_dir),
             "transaction": _portable_config(raw["transaction"], source_dir=source_dir),
+            "transaction_max_attempts": int(raw.get("max_attempts", 1)),
         }
     return {"argv": list(raw.get("command", []))}
 

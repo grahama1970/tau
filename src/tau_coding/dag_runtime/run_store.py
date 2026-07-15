@@ -27,6 +27,8 @@ from tau_coding.runtime_backends.contracts import RuntimeEvent, RuntimeStateProj
 
 EVENT_SCHEMA = "tau.dag_run_event.v1"
 RUNTIME_EVENT_JOURNAL_ENTRY_SCHEMA = "tau.runtime_event_journal_entry.v1"
+DIAGNOSTIC_EVENT_SCHEMA = "tau.dag_diagnostic_event.v1"
+MAX_DIAGNOSTIC_EVENT_BYTES = 64 * 1024
 STORE_SCHEMA_VERSION = 1
 
 
@@ -654,6 +656,34 @@ class SqliteDagRunStore:
                 entity_type="run",
                 entity_id=lease.run_id,
                 payload={"concurrency": concurrency},
+            )
+
+    def append_diagnostic_event(
+        self,
+        lease: DagRunLease,
+        *,
+        event_key: str,
+        node_id: str,
+        payload: Mapping[str, Any],
+        attempt_id: str | None = None,
+    ) -> int:
+        """Append bounded diagnostic evidence without changing scheduler state."""
+
+        value = dict(payload)
+        if value.get("schema") != DIAGNOSTIC_EVENT_SCHEMA:
+            raise DagRunStoreError("dag_diagnostic_event_schema_invalid")
+        if len(canonical_json(value).encode("utf-8")) > MAX_DIAGNOSTIC_EVENT_BYTES:
+            raise DagRunStoreError("dag_diagnostic_event_too_large")
+        with self._transaction():
+            self._assert_lease(lease)
+            return self._append_event(
+                lease,
+                event_key=event_key,
+                event_type="dag_diagnostic_event_appended",
+                entity_type="node",
+                entity_id=node_id,
+                attempt_id=attempt_id,
+                payload=value,
             )
 
     def acquire_run(

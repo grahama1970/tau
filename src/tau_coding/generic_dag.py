@@ -8,6 +8,7 @@ import os
 import subprocess
 import tempfile
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -17,7 +18,7 @@ from typing import Any
 from tau_coding.approval_gate import evaluate_approval_gate
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
-from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+from tau_coding.dag_runtime.run_store import DagRunLease, SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
 from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
 from tau_coding.generic_artifact_transaction import (
@@ -75,6 +76,7 @@ def run_generic_dag(
     spec_path: Path,
     resume: bool = True,
     resume_source: dict[str, Any] | None = None,
+    diagnostic_step_delay_seconds: float = 0.0,
 ) -> dict[str, Any]:
     """Execute a schema-valid, command-backed DAG spec.
 
@@ -83,6 +85,8 @@ def run_generic_dag(
     scheduler rather than changing the scheduler's receipt contract.
     """
 
+    if diagnostic_step_delay_seconds < 0:
+        raise ValueError("diagnostic_step_delay_seconds_must_be_non_negative")
     resolved_spec_path = spec_path.expanduser().resolve()
     spec = load_generic_dag_spec(resolved_spec_path)
     nodes = validate_generic_dag_spec(spec, source_path=resolved_spec_path)
@@ -100,8 +104,12 @@ def run_generic_dag(
     current_state_path = run_dir / "current-state.json"
     nodes_by_id = nodes
     plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
+    run_store_path = run_dir / "dag-run.sqlite3"
+    active_lease: DagRunLease | None = None
 
-    def initialize_run_artifacts(_lease: object) -> None:
+    def initialize_run_artifacts(lease: DagRunLease) -> None:
+        nonlocal active_lease
+        active_lease = lease
         write_dag_source_artifact(
             source_payload=spec,
             source_schema=str(spec["schema"]),
@@ -132,6 +140,34 @@ def run_generic_dag(
             verdict="RUNNING",
             active_node_id=None,
         )
+
+    def record_transaction_progress(
+        node_id: str,
+        attempt: int,
+        phase: str,
+        evidence: dict[str, Any],
+    ) -> None:
+        lease = active_lease
+        if lease is None:
+            raise RuntimeError("dag_diagnostic_event_lease_missing")
+        payload = {
+            "schema": "tau.dag_diagnostic_event.v1",
+            "diagnostic_kind": "generic_artifact_transaction_progress",
+            "node_id": node_id,
+            "attempt": attempt,
+            "phase": phase,
+            "evidence": evidence,
+            "authority": "diagnostic_only",
+        }
+        with SqliteDagRunStore(run_store_path) as progress_store:
+            progress_store.append_diagnostic_event(
+                lease,
+                event_key=f"transaction:{node_id}:{attempt}:{phase}",
+                node_id=node_id,
+                payload=payload,
+            )
+        if diagnostic_step_delay_seconds:
+            time.sleep(diagnostic_step_delay_seconds)
 
     def execute_plan_node(
         plan_node: DagPlanNode,
@@ -175,6 +211,7 @@ def run_generic_dag(
                 else plan.runtime_goal_hash,
             },
             cancel_event=execution.cancel_event,
+            progress_sink=record_transaction_progress,
         )
         if result.get("status") == "PASS" and result.get("verdict") == "PASS":
             node_results.append(result)
@@ -195,7 +232,6 @@ def run_generic_dag(
             )
         return result
 
-    run_store_path = run_dir / "dag-run.sqlite3"
     with SqliteDagRunStore(run_store_path) as run_store:
         scheduler_run_id = run_store.execution_run_id(run_id)
         scheduler_result = run_dag_plan(
@@ -467,6 +503,7 @@ def _run_node(
     scheduler_attempt: int,
     runtime_identity: dict[str, Any],
     cancel_event: Event,
+    progress_sink: Callable[[str, int, str, dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     if node.skill is not None:
         return _run_skill_node(
@@ -488,6 +525,7 @@ def _run_node(
             goal_hash=goal_hash,
             runtime_identity=runtime_identity,
             cancel_event=cancel_event,
+            progress_sink=progress_sink,
         )
     context_path, context_sha256 = _write_legacy_node_context(
         node=node,
@@ -766,6 +804,7 @@ def _run_transaction_node(
     goal_hash: str | None,
     runtime_identity: dict[str, Any],
     cancel_event: Event,
+    progress_sink: Callable[[str, int, str, dict[str, Any]], None] | None,
 ) -> dict[str, Any]:
     """Run one bounded producer/reviewer transaction owned by Tau."""
 
@@ -892,6 +931,12 @@ def _run_transaction_node(
             "transaction_producer_dispatch",
             {"run_id": run_id, "node_id": node.node_id, "attempt": attempt},
         )
+        _emit_transaction_progress(
+            progress_sink,
+            node_id=node.node_id,
+            attempt=attempt,
+            phase="producer_started",
+        )
         producer_started = time.monotonic()
         producer_result = _run_command(
             node.command,
@@ -956,6 +1001,13 @@ def _run_transaction_node(
                 started_monotonic=started_monotonic,
             )
         candidate_manifest_sha256 = file_sha256(candidate_manifest_path)
+        _emit_transaction_progress(
+            progress_sink,
+            node_id=node.node_id,
+            attempt=attempt,
+            phase="producer_completed",
+            evidence={"candidate_manifest_sha256": candidate_manifest_sha256},
+        )
         artifacts = candidate["artifacts"]
         if spec.validator is not None:
             write_json(
@@ -1023,6 +1075,16 @@ def _run_transaction_node(
                     started_at=started_at,
                     started_monotonic=started_monotonic,
                 )
+            _emit_transaction_progress(
+                progress_sink,
+                node_id=node.node_id,
+                attempt=attempt,
+                phase="validator_completed",
+                evidence={
+                    "status": "PASS",
+                    "validation_receipt_path": str(validation_receipt_path),
+                },
+            )
         _, review_context_sha256 = write_review_context(
             path=review_context_path,
             run_id=run_id,
@@ -1035,6 +1097,12 @@ def _run_transaction_node(
             candidate_manifest_sha256=candidate_manifest_sha256,
             artifacts=artifacts,
             review_feedback_path=review_feedback_path,
+        )
+        _emit_transaction_progress(
+            progress_sink,
+            node_id=node.node_id,
+            attempt=attempt,
+            phase="reviewer_started",
         )
         reviewer_started = time.monotonic()
         reviewer_result = _run_command(
@@ -1128,6 +1196,16 @@ def _run_transaction_node(
                 started_monotonic=started_monotonic,
             )
         verdict = str(feedback["verdict"]).upper()
+        _emit_transaction_progress(
+            progress_sink,
+            node_id=node.node_id,
+            attempt=attempt,
+            phase="reviewer_completed",
+            evidence={
+                "verdict": verdict,
+                "review_feedback_sha256": attempt_record["review_feedback_sha256"],
+            },
+        )
         if verdict == "BLOCKED":
             return _transaction_blocked(
                 node=node,
@@ -1150,6 +1228,16 @@ def _run_transaction_node(
                 "summary": feedback["summary"],
                 "findings": feedback["findings"],
             }
+            _emit_transaction_progress(
+                progress_sink,
+                node_id=node.node_id,
+                attempt=attempt,
+                phase="revision_committed",
+                evidence={
+                    "review_feedback_sha256": revision["review_feedback_sha256"],
+                    "instruction": revision["summary"],
+                },
+            )
             continue
         acceptance_errors = validate_acceptance_policy(
             spec=spec,
@@ -1187,6 +1275,13 @@ def _run_transaction_node(
         )
         projection = accepted_projection(
             path=accepted_manifest_path, sha256=accepted_sha256, payload=accepted
+        )
+        _emit_transaction_progress(
+            progress_sink,
+            node_id=node.node_id,
+            attempt=attempt,
+            phase="accepted_manifest_written",
+            evidence={"accepted_manifest_sha256": accepted_sha256},
         )
         if spec.continuation is not None:
             return _continue_transaction(
@@ -1240,6 +1335,18 @@ def _run_transaction_node(
         started_at=started_at,
         started_monotonic=started_monotonic,
     )
+
+
+def _emit_transaction_progress(
+    sink: Callable[[str, int, str, dict[str, Any]], None] | None,
+    *,
+    node_id: str,
+    attempt: int,
+    phase: str,
+    evidence: dict[str, Any] | None = None,
+) -> None:
+    if sink is not None:
+        sink(node_id, attempt, phase, evidence or {})
 
 
 def _continue_transaction(
@@ -2015,7 +2122,7 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
 

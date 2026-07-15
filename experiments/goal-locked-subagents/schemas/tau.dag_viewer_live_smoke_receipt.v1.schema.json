@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG viewer live smoke receipt v1",
+  "type": "object",
+  "required": ["schema", "status", "mocked", "live", "provider_live", "checks", "run_dir", "proof_scope"],
+  "properties": {
+    "schema": {"const": "tau.dag_viewer_live_smoke_receipt.v1"},
+    "status": {"enum": ["PASS", "BLOCKED"]},
+    "mocked": {"const": false},
+    "live": {"const": true},
+    "provider_live": {"const": false},
+    "checks": {"type": "object", "additionalProperties": {"type": "boolean"}},
+    "snapshot_count": {"type": "integer", "minimum": 1},
+    "run_dir": {"type": "string"},
+    "run_id": {"type": ["string", "null"]},
+    "proof_scope": {"type": "object"}
+  },
+  "additionalProperties": false
+}

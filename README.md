@@ -306,7 +306,7 @@ T’au has four related surfaces. They should not be collapsed into one vague
 | **Harness** | Yes | Validates receipts, goal hashes, handoff JSON, command specs, GitHub projections, and subagent routing before the loop can advance. |
 | **TUI** | Yes | Terminal frontend for the coding-agent runtime. It is one renderer of the agent loop, not the whole harness. |
 | **Chat** | Contract owned here; browser viewer in UX Lab | Memory-first shared chat surface that renders stages, receipts, handoffs, and proof boundaries for human inspection. |
-| **DAG viewer** | Contract/artifacts owned here; browser viewer in UX Lab | Read-only React Flow inspection of `tau.dag_contract.v1`, DAG receipts, node evidence, alerts, and non-claims. |
+| **DAG viewer** | Yes | Packaged, read-only React Flow projection of the immutable source DAG, compiled `DagPlan`, authoritative scheduler journal, runtime diagnostics, and admitted receipts. |
 
 The loop is intentionally bounded. A subagent does one step, emits a
 schema-valid handoff, names the next agent, and exits. The harness decides
@@ -401,25 +401,26 @@ products, evidence blocks, and embedded artifact affordances. T’au owns the
 contract and receipts; UX Lab proves that the contract can be rendered in a
 browser.
 
-### React Flow DAG inspection viewer
+### Self-contained live DAG viewer
 
-UX Lab also hosts a read-only Tau DAG inspection route:
+Tau packages its own read-only React Flow application:
 
-```text
-http://localhost:3002/#tau/dag
+```bash
+uv run tau dag-view --run-dir /path/to/run
 ```
 
-This route renders `tau.dag_contract.v1` and `tau.dag_receipt.v1` artifacts
-through the existing React Flow transport DAG workspace. It is useful for
-showing node order, allowed edges, receipt-backed node statuses, alerts,
-mocked/live/provider-live boundaries, artifact paths, and `proof_scope`
-non-claims.
+The viewer binds only to loopback, opens the scheduler SQLite database in
+query-only mode, and replaces browser state with Tau-authored journal replay
+snapshots. It shows the immutable source DAG, compiled `DagPlan`, scheduler and
+admission state, runtime liveness, bounded transaction attempts, route/join
+decisions, receipts, and the event timeline. Runtime pane text and reviewer
+`PASS` claims remain diagnostic; only a committed scheduler transition can turn
+a node green or release a dependent node.
 
-The DAG viewer is an inspection surface, not a dispatcher. A static fixture can
-prove that a Tau DAG contract and receipt can be rendered in the browser; it
-does not prove live Tau DAG execution from the browser, Herdr provider
-execution, GitHub mutation, provider/model semantic quality, or human
-acceptance.
+No Node installation is required at runtime because the built application is
+included in the Tau wheel. The viewer has no dispatch, retry, approval,
+cancellation, cleanup, or editing controls. It does not prove provider/model
+semantic quality or make runtime observations authoritative.
 
 ## What changed from upstream Tau
 
@@ -513,13 +514,17 @@ Run a bounded DAG through the product command:
 uv run tau run <dag-spec.json>
 uv run tau run-status <run-dir>
 uv run tau dag-viewer-link <run-dir>
+uv run tau dag-view --run-dir <run-dir>
 ```
 
-For project DAG runs, `run-status` includes a read-only `dag_viewer` contract
-when it can find both the DAG contract and `tau.dag_receipt.v1`. The viewer URL
-uses the local UX route `http://localhost:3002/#tau/dag?run=<encoded-run-dir>`
-and is an artifact pointer only: it does not prove browser rendering, provider
-semantic quality, GitHub mutation, or future route correctness.
+For durable project or generic DAG runs, `run-status` includes a read-only
+`dag_viewer` launch contract only when the authoritative `dag-run.sqlite3`
+journal replays successfully. Project DAG contracts and receipts remain
+supplemental metadata; they are not a substitute for the scheduler journal.
+`dag-viewer-link` returns the Tau-owned `tau dag-view` command rather than an
+external UX Lab URL. The launch contract does not prove the server is running,
+browser rendering, provider semantic quality, GitHub mutation, or future route
+correctness.
 
 Build a local proof index when you need a machine-readable ledger over receipt
 artifacts:

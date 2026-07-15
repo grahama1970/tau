@@ -2,6 +2,9 @@ import hashlib
 import json
 from pathlib import Path
 
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+from tau_coding.dag_runtime.scheduler import run_dag_plan
 from tau_coding.run_status import build_run_status
 
 
@@ -71,6 +74,7 @@ def test_run_status_summarizes_generic_dag_checkpoint(tmp_path: Path) -> None:
         },
     )
     (tmp_path / "events.jsonl").write_text('{"kind":"dag_started"}\n', encoding="utf-8")
+    _write_dag_viewer_store(tmp_path, run_id="run-1")
 
     status = build_run_status(tmp_path)
 
@@ -99,6 +103,18 @@ def test_run_status_summarizes_generic_dag_checkpoint(tmp_path: Path) -> None:
     assert status["generic_dag"]["nodes"][1]["errors"] == []
     assert status["checkpoint"]["completed_nodes"] == ["a", "b"]
     assert status["events"]["count"] == 1
+    assert status["dag_viewer"]["available"] is True
+    assert status["dag_viewer"]["source"] == "dag-run.sqlite3"
+    assert status["dag_viewer"]["source_authority"] == "tau_sqlite_journal"
+    assert status["dag_viewer"]["run_ids"] == ["run-1"]
+    assert status["dag_viewer"]["launch_command"] == [
+        "tau",
+        "dag-view",
+        "--run-dir",
+        str(tmp_path),
+        "--run-id",
+        "run-1",
+    ]
 
 
 def test_run_status_summarizes_blocked_generic_dag_work_order_node(
@@ -1566,6 +1582,7 @@ def test_run_status_exports_dag_viewer_link_for_project_dag_run_root(
             "errors": [],
         },
     )
+    _write_dag_viewer_store(receipt_path.parent, run_id="project-dag-viewer")
 
     status = build_run_status(tmp_path)
 
@@ -1578,9 +1595,26 @@ def test_run_status_exports_dag_viewer_link_for_project_dag_run_root(
     assert status["project_dag"]["dag_id"] == "project-dag-viewer"
     assert status["dag_viewer"]["schema"] == "tau.dag_viewer_link.v1"
     assert status["dag_viewer"]["available"] is True
-    assert status["dag_viewer"]["source"] == "dag-contract.json + dag-receipt.json"
-    assert status["dag_viewer"]["url"].startswith("http://localhost:3002/#tau/dag?run=")
-    assert "%2F" in status["dag_viewer"]["url"]
+    assert status["dag_viewer"]["source"] == "dag-run.sqlite3"
+    assert status["dag_viewer"]["source_authority"] == "tau_sqlite_journal"
+    assert status["dag_viewer"]["self_contained"] is True
+    assert status["dag_viewer"]["read_only"] is True
+    assert status["dag_viewer"]["launch_command"] == [
+        "tau",
+        "dag-view",
+        "--run-dir",
+        str(receipt_path.parent),
+        "--run-id",
+        "project-dag-viewer",
+    ]
+    assert status["dag_viewer"]["launch_commands"] == [
+        status["dag_viewer"]["launch_command"]
+    ]
+    assert status["dag_viewer"]["run_id_required"] is False
+    assert status["dag_viewer"]["run_ids"] == ["project-dag-viewer"]
+    assert status["dag_viewer"]["store_path"] == str(receipt_path.parent / "dag-run.sqlite3")
+    assert status["dag_viewer"]["store_error"] is None
+    assert status["dag_viewer"]["external_ux_lab_required"] is False
     assert status["dag_viewer"]["contract_path"] == str(contract_path)
     assert status["dag_viewer"]["receipt_path"] == str(receipt_path)
     assert status["dag_viewer"]["contract_sha256"] == _sha256(contract_path)
@@ -1589,7 +1623,7 @@ def test_run_status_exports_dag_viewer_link_for_project_dag_run_root(
     assert status["dag_viewer"]["goal_hash"] == "sha256:goal"
     assert status["dag_viewer"]["receipt_status"] == "PASS"
     assert status["dag_viewer"]["mocked"] is False
-    assert status["dag_viewer"]["live"] is True
+    assert status["dag_viewer"]["live"] is False
     assert status["dag_viewer"]["provider_live"] is False
 
 
@@ -2908,6 +2942,36 @@ def test_run_status_summarizes_lsp_rename_plan_fields(tmp_path: Path) -> None:
             "unhandled_herdr_block_count": None,
             "course_correction_count": None,
     }
+
+
+def _write_dag_viewer_store(run_dir: Path, *, run_id: str) -> None:
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": run_id,
+            "run_dir": str(run_dir),
+            "nodes": [
+                {
+                    "node_id": "viewer-node",
+                    "role": "viewer-fixture",
+                    "command": ["true"],
+                    "receipt_path": str(run_dir / "viewer-node-receipt.json"),
+                }
+            ],
+        },
+        source_path=run_dir / "viewer-dag.json",
+    )
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store:
+        run_dag_plan(
+            plan,
+            run_store=store,
+            run_id=run_id,
+            execute_node=lambda node, inputs, attempt: {
+                "node_id": node.node_id,
+                "status": "PASS",
+                "verdict": "PASS",
+            },
+        )
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:

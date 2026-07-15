@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tau_coding.dag_runtime.model import canonical_sha256
+from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.replay import DagReplayState, replay_dag_run
 from tau_coding.dag_runtime.run_store import DagJournalEvent, SqliteDagRunReader
 from tau_coding.dag_viewer.redaction import redact_for_viewer
@@ -153,7 +153,12 @@ def build_dag_live_snapshot(
                     "accepted": accepted,
                     "receipt_refs": [],
                 },
-                "transaction": None,
+                "transaction": _transaction_projection(
+                    plan_node=plan_node,
+                    replay_result=replay_result.payload if replay_result else None,
+                    recent_events=recent_events,
+                    accepted=accepted,
+                ),
                 "updated_sequence": replay.journal_sequence,
             }
         )
@@ -186,7 +191,7 @@ def build_dag_live_snapshot(
         "routes": [],
         "joins": [],
         "attention_items": [],
-        "recent_events": list(recent_events),
+        "recent_events": list(recent_events[-200:]),
         "proof_scope": PROOF_SCOPE,
     }
     redacted = redact_for_viewer(payload)
@@ -261,3 +266,85 @@ def _find_endpoint_lease_sha256(value: Any) -> str | None:
             if found:
                 return found
     return None
+
+
+def _transaction_projection(
+    *,
+    plan_node: DagPlanNode,
+    replay_result: dict[str, Any] | None,
+    recent_events: tuple[dict[str, Any], ...],
+    accepted: bool,
+) -> dict[str, Any] | None:
+    if plan_node.adapter_kind != "generic_artifact_transaction":
+        return None
+    config = plan_node.adapter_config.to_value()
+    transaction_config = config.get("transaction")
+    transaction_id = (
+        transaction_config.get("transaction_id")
+        if isinstance(transaction_config, dict)
+        else None
+    )
+    attempts: dict[int, dict[str, Any]] = {}
+    accepted_manifest_sha256: str | None = None
+    for event in recent_events:
+        if (
+            event.get("event_type") != "dag_diagnostic_event_appended"
+            or event.get("entity_id") != plan_node.node_id
+        ):
+            continue
+        payload = event.get("payload")
+        if not isinstance(payload, dict) or payload.get("authority") != "diagnostic_only":
+            continue
+        attempt_number = payload.get("attempt")
+        phase = payload.get("phase")
+        evidence = payload.get("evidence")
+        if not isinstance(attempt_number, int) or attempt_number < 1 or not isinstance(phase, str):
+            continue
+        evidence = evidence if isinstance(evidence, dict) else {}
+        attempt = attempts.setdefault(attempt_number, {"attempt": attempt_number})
+        if phase == "producer_started":
+            attempt["producer_state"] = "RUNNING"
+        elif phase == "producer_completed":
+            attempt["producer_state"] = "PASS"
+            attempt["candidate_manifest_sha256"] = evidence.get("candidate_manifest_sha256")
+        elif phase == "validator_completed":
+            attempt["validator_status"] = evidence.get("status")
+        elif phase == "reviewer_started":
+            attempt["reviewer_verdict"] = "RUNNING"
+        elif phase == "reviewer_completed":
+            attempt["reviewer_verdict"] = evidence.get("verdict")
+            attempt["review_feedback_sha256"] = evidence.get("review_feedback_sha256")
+        elif phase == "revision_committed":
+            attempt["revision_instruction"] = evidence.get("instruction")
+        elif phase == "accepted_manifest_written":
+            candidate = evidence.get("accepted_manifest_sha256")
+            if isinstance(candidate, str):
+                accepted_manifest_sha256 = candidate
+
+    if replay_result is not None:
+        result_attempts = replay_result.get("attempts")
+        if isinstance(result_attempts, list):
+            for item in result_attempts:
+                if not isinstance(item, dict) or not isinstance(item.get("attempt"), int):
+                    continue
+                attempt_number = int(item["attempt"])
+                projected = attempts.setdefault(attempt_number, {"attempt": attempt_number})
+                for source_key, target_key in (
+                    ("candidate_manifest_sha256", "candidate_manifest_sha256"),
+                    ("review_verdict", "reviewer_verdict"),
+                    ("review_feedback_sha256", "review_feedback_sha256"),
+                ):
+                    if item.get(source_key) is not None:
+                        projected[target_key] = item[source_key]
+        result_sha256 = replay_result.get("accepted_manifest_sha256")
+        if isinstance(result_sha256, str):
+            accepted_manifest_sha256 = result_sha256
+    ordered_attempts = [attempts[key] for key in sorted(attempts)]
+    return {
+        "transaction_id": transaction_id,
+        "current_attempt": max(attempts, default=0),
+        "max_attempts": int(config.get("transaction_max_attempts", plan_node.max_attempts)),
+        "state": "ACCEPTED" if accepted else "AWAITING_RECEIPT",
+        "accepted_manifest_sha256": accepted_manifest_sha256,
+        "attempts": ordered_attempts,
+    }
