@@ -73,6 +73,7 @@ from tau_coding.dag_stress_poc import (
 )
 from tau_coding.dag_viewer.contracts import viewer_capabilities
 from tau_coding.dag_viewer.projection import (
+    build_dag_live_events,
     build_dag_live_snapshot,
     load_dag_replay,
 )
@@ -740,12 +741,12 @@ def main(
             else:
                 after = int(options["after_sequence"])
                 limit = int(options["limit"])
-                payload = {
-                    "schema": "tau.dag_live_event.v1",
-                    "run_id": replay.run_id,
-                    "after_sequence": after,
-                    "events": [event for event in events if int(event["seq"]) > after][:limit],
-                }
+                payload = build_dag_live_events(
+                    replay=replay,
+                    events=events,
+                    after_sequence=after,
+                    limit=limit,
+                )
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))

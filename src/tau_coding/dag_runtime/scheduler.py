@@ -1160,6 +1160,7 @@ def _restore_durable_state(
     transition_receipt_paths.extend(item.path for item in replay.transition_receipts)
     for replay_event in replay.replay_events:
         _emit(event_sink, replay_event)
+    replayed_node_states = dict(replay.node_states)
     for replayed in replay.results:
         node_id = replayed.node_id
         attempt_counts[node_id] = max(attempt_counts.get(node_id, 0), replayed.attempt)
@@ -1168,7 +1169,7 @@ def _restore_durable_state(
             result_order.append(node_id)
         resolved.add(node_id)
         scheduled.add(node_id)
-        if replayed.terminal_state == "success" and replay.block is None:
+        if replayed.terminal_state == "success" and replayed_node_states.get(node_id) == "success":
             completed.add(node_id)
     for stored in attempts:
         if stored.staged_result is None or stored.state not in {

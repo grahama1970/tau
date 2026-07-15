@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from dataclasses import replace
 from pathlib import Path
@@ -9,9 +10,15 @@ from pathlib import Path
 import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.replay import DagReplayAttempt
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunReader, SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import run_dag_plan
-from tau_coding.dag_viewer.projection import build_dag_live_snapshot, load_dag_replay
+from tau_coding.dag_viewer.projection import (
+    build_dag_live_events,
+    build_dag_live_snapshot,
+    build_dag_view_manifest,
+    load_dag_replay,
+)
 
 
 def _durable_run(tmp_path: Path) -> Path:
@@ -105,3 +112,54 @@ def test_runtime_pass_text_cannot_accept_node(tmp_path: Path) -> None:
     assert node["scheduler"]["state"] == "running"
     assert node["admission"]["accepted"] is False
     assert node["admission"]["state"] == "awaiting_receipt"
+
+
+def test_active_attempt_state_is_visible_without_accepting_node(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    active = replace(
+        replay,
+        run_status="RUNNING",
+        node_states=(("node", "pending"),),
+        attempts=(DagReplayAttempt("node", 2, "attempt-2", "STAGED", "STARTED"),),
+        results=(),
+    )
+    node = build_dag_live_snapshot(replay=active, recent_events=())["nodes"][0]
+    assert node["scheduler"] == {"state": "validating", "attempt": 2, "max_attempts": 1}
+    assert node["admission"]["state"] == "validating"
+    assert node["admission"]["accepted"] is False
+
+
+def test_manifest_blocks_modified_or_malformed_retained_source(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    source_path = tmp_path / "source-dag.json"
+    source_path.write_text(json.dumps({"schema": "tau.generic_dag_spec.v1", "changed": True}))
+    with pytest.raises(RuntimeError, match="dag_source_artifact_hash_mismatch"):
+        build_dag_view_manifest(replay=replay, run_dir=tmp_path)
+    source_path.write_text("not-json", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="dag_source_artifact_invalid"):
+        build_dag_view_manifest(replay=replay, run_dir=tmp_path)
+
+
+def test_live_events_are_redacted_and_bounded(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    payload = build_dag_live_events(
+        replay=replay,
+        events=(
+            {
+                "seq": 1,
+                "payload": {"authorization": "Bearer secret", "stdout": "x" * 9000},
+            },
+        ),
+        after_sequence=0,
+        limit=200,
+    )
+    assert payload["events"][0]["payload"]["authorization"] == "[REDACTED]"
+    assert "Bearer secret" not in json.dumps(payload)
+    assert payload["redaction"] == {
+        "redacted": True,
+        "redacted_paths": ["$.events[0].payload.authorization"],
+        "truncated": True,
+    }

@@ -59,7 +59,17 @@ def load_dag_replay(
 def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[str, Any]:
     source_path = run_dir / "source-dag.json"
     source_available = source_path.is_file()
-    source = json.loads(source_path.read_text()) if source_available else None
+    source: dict[str, Any] | None = None
+    if source_available:
+        try:
+            loaded_source = json.loads(source_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise RuntimeError("dag_source_artifact_invalid") from exc
+        if not isinstance(loaded_source, dict):
+            raise RuntimeError("dag_source_artifact_invalid")
+        if canonical_sha256(loaded_source) != replay.plan.source_payload_sha256:
+            raise RuntimeError("dag_source_artifact_hash_mismatch")
+        source = loaded_source
     graph = {
         "nodes": [node.to_payload() for node in replay.plan.nodes],
         "edges": [edge.to_payload() for edge in replay.plan.control_edges],
@@ -99,10 +109,11 @@ def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[st
 def build_dag_live_snapshot(
     *, replay: DagReplayState, recent_events: tuple[dict[str, Any], ...]
 ) -> dict[str, Any]:
-    attempts = {(item.node_id, item.attempt): item for item in replay.attempts}
     latest_attempt = {
         node_id: max(
-            (attempt for candidate, attempt in attempts if candidate == node_id), default=0
+            (item for item in replay.attempts if item.node_id == node_id),
+            key=lambda item: item.attempt,
+            default=None,
         )
         for node_id, _ in replay.node_states
     }
@@ -110,30 +121,24 @@ def build_dag_live_snapshot(
     runtime_by_endpoint = {item.endpoint_lease_sha256: item for item in replay.runtime_projections}
     for node_id, state in replay.node_states:
         accepted = state == "success"
+        attempt = latest_attempt[node_id]
+        scheduler_state, admission_state = _project_node_state(
+            committed_state=state,
+            attempt_state=attempt.state if attempt is not None else None,
+        )
         plan_node = next(node for node in replay.plan.nodes if node.node_id == node_id)
         replay_result = next(
             (item for item in reversed(replay.results) if item.node_id == node_id), None
         )
         endpoint_hash = _find_endpoint_lease_sha256(replay_result.payload if replay_result else {})
         runtime = runtime_by_endpoint.get(endpoint_hash or "")
-        admission_state = (
-            "accepted"
-            if accepted
-            else "not_applicable"
-            if state in {"skipped", "cancelled"}
-            else "rejected"
-            if state in {"blocked", "failed", "timed_out"}
-            else "awaiting_receipt"
-            if state == "running"
-            else "not_started"
-        )
         nodes.append(
             {
                 "node_id": node_id,
                 "node_kind": plan_node.adapter_kind,
                 "scheduler": {
-                    "state": "settled" if accepted else state,
-                    "attempt": latest_attempt[node_id],
+                    "state": scheduler_state,
+                    "attempt": attempt.attempt if attempt is not None else 0,
                     "max_attempts": plan_node.max_attempts,
                 },
                 "runtime": {
@@ -192,6 +197,52 @@ def build_dag_live_snapshot(
         "truncated": redacted.truncated,
     }
     return result
+
+
+def build_dag_live_events(
+    *,
+    replay: DagReplayState,
+    events: tuple[dict[str, Any], ...],
+    after_sequence: int,
+    limit: int,
+) -> dict[str, Any]:
+    payload = {
+        "schema": "tau.dag_live_event.v1",
+        "run_id": replay.run_id,
+        "after_sequence": after_sequence,
+        "events": [event for event in events if int(event["seq"]) > after_sequence][:limit],
+    }
+    redacted = redact_for_viewer(payload)
+    result = dict(redacted.value)
+    result["redaction"] = {
+        "redacted": redacted.redacted,
+        "redacted_paths": list(redacted.redacted_paths),
+        "truncated": redacted.truncated,
+    }
+    return result
+
+
+def _project_node_state(*, committed_state: str, attempt_state: str | None) -> tuple[str, str]:
+    if committed_state == "success":
+        return "settled", "accepted"
+    if committed_state in {"skipped", "cancelled"}:
+        return committed_state, "not_applicable"
+    if committed_state in {"blocked", "failed", "timed_out"}:
+        return committed_state, "rejected"
+    if committed_state != "pending":
+        return committed_state, "awaiting_receipt"
+    attempt_projection = {
+        "RESERVED": ("ready", "not_started"),
+        "DISPATCHED": ("running", "awaiting_receipt"),
+        "STAGED": ("validating", "validating"),
+        "VALIDATED": ("committing", "validating"),
+        "OUTPUT_COMMITTED": ("committing", "validating"),
+        "RETRY_SCHEDULED": ("retry_pending", "rejected"),
+        "UNCERTAIN": ("reconciliation_required", "rejected"),
+    }
+    if attempt_state is None:
+        return "pending", "not_started"
+    return attempt_projection.get(attempt_state, ("pending", "not_started"))
 
 
 def _find_endpoint_lease_sha256(value: Any) -> str | None:

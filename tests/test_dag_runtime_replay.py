@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.replay import replay_dag_run
 from tau_coding.dag_runtime.run_store import SqliteDagRunReader, SqliteDagRunStore
@@ -60,3 +62,28 @@ def test_replay_matches_scheduler_state(tmp_path: Path) -> None:
     assert dict(replay.node_states) == dict(result.node_states)
     assert dict(replay.edge_states) == dict(result.edge_states)
     assert dict(replay.terminal_states) == dict(result.terminal_states)
+
+
+def test_blocked_replay_preserves_earlier_completed_nodes(tmp_path: Path) -> None:
+    plan = _plan(tmp_path)
+    database = tmp_path / "dag-run.sqlite3"
+    with SqliteDagRunStore(database) as store:
+        first = run_dag_plan(
+            plan,
+            run_store=store,
+            run_id="run-1",
+            execute_node=lambda node, inputs, attempt: {
+                "node_id": node.node_id,
+                "status": "PASS" if node.node_id == "creator" else "BLOCKED",
+                "verdict": "PASS" if node.node_id == "creator" else "REVIEW_BLOCKED",
+            },
+        )
+    assert first.status == "BLOCKED"
+    with SqliteDagRunStore(database) as store:
+        resumed = run_dag_plan(
+            plan,
+            run_store=store,
+            run_id="run-1",
+            execute_node=lambda node, inputs, attempt: pytest.fail("durable run re-executed"),
+        )
+    assert "creator" in resumed.completed_node_ids
