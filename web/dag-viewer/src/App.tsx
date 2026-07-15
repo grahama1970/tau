@@ -85,6 +85,10 @@ export default function App() {
   }, [manifest?.plan_sha256, snapshot]);
 
   const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
+  const selectedTerminal = useMemo(
+    () => snapshot?.terminals.find((terminal) => terminal.terminal_id === selectedId) ?? null,
+    [selectedId, snapshot],
+  );
   const transaction = selectedLive?.transaction ?? snapshot?.nodes.find((node) => node.transaction)?.transaction ?? null;
 
   const selectReceipt = (id: string) => {
@@ -101,7 +105,7 @@ export default function App() {
     ? manifest.source_dag
     : tab === "plan"
       ? manifest.dag_plan
-      : selectedLive ?? snapshot;
+      : selectedLive ?? selectedTerminal ?? snapshot;
 
   return <main className="dag-app">
     <StatusBanner snapshot={snapshot} connected={connected} />

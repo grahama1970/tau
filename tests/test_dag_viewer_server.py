@@ -186,6 +186,22 @@ def test_state_etag_and_concurrent_reads_are_consistent(
     assert {body for _, _, body in responses} == {first}
 
 
+def test_state_polling_does_not_rebuild_receipt_index(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread], monkeypatch
+) -> None:
+    server, _ = viewer_server
+
+    def fail_receipt_index(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("state polling invoked receipt indexing")
+
+    monkeypatch.setattr("tau_coding.dag_viewer.server.build_receipt_index", fail_receipt_index)
+
+    status, _, body = _request(server, "GET", "/api/v1/state")
+
+    assert status == 200
+    assert _json(body)["schema"] == "tau.dag_live_snapshot.v1"
+
+
 def test_event_ranges_are_bounded_and_invalid_ranges_are_structured(
     viewer_server: tuple[RunningDagViewerServer, threading.Thread],
 ) -> None:

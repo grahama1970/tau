@@ -13,6 +13,12 @@ export type PlanEdge = {
   target: { id: string; kind: string };
 };
 
+export type PlanTerminal = {
+  terminal_id: string;
+  kind: string;
+  origin: string;
+};
+
 export type ReceiptIndexEntry = {
   receipt_id: string;
   schema: string;
@@ -33,7 +39,7 @@ export type DagManifest = {
   graph: {
     nodes: PlanNode[];
     edges: PlanEdge[];
-    terminals: Array<Record<string, JsonValue>>;
+    terminals: PlanTerminal[];
     routes: Array<Record<string, JsonValue>>;
     joins: Array<Record<string, JsonValue>>;
   };

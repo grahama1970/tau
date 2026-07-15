@@ -107,6 +107,7 @@ def _transaction_run(tmp_path: Path) -> tuple[object, tuple[dict[str, object], .
                         "schema": "tau.dag_diagnostic_event.v1",
                         "diagnostic_kind": "generic_artifact_transaction_progress",
                         "node_id": "creator",
+                        "scheduler_attempt": 1,
                         "attempt": attempt,
                         "phase": phase,
                         "evidence": evidence,
@@ -222,6 +223,48 @@ def test_transaction_diagnostics_show_revisions_but_cannot_accept_node(tmp_path:
     assert node["transaction"]["attempts"][0]["reviewer_verdict"] == "REVISE"
     assert node["transaction"]["attempts"][1]["reviewer_verdict"] == "PASS"
     assert node["transaction"]["accepted_manifest_sha256"] == "sha256:accepted"
+
+
+def test_transaction_projection_excludes_prior_scheduler_attempt_diagnostics(
+    tmp_path: Path,
+) -> None:
+    replay, events = _transaction_run(tmp_path)
+    producer_event = next(
+        event
+        for event in events
+        if event.get("event_key") == "transaction:creator:1:producer_completed"
+    )
+    current_event = {
+        **producer_event,
+        "seq": max(int(event["seq"]) for event in events) + 1,
+        "event_key": "transaction:creator:2:1:producer_completed",
+        "payload": {
+            **producer_event["payload"],
+            "scheduler_attempt": 2,
+            "evidence": {"candidate_manifest_sha256": "sha256:current"},
+        },
+    }
+    current = replace(
+        replay,
+        run_status="RUNNING",
+        node_states=(("creator", "running"),),
+        attempts=(DagReplayAttempt("creator", 2, "outer-attempt-2", "DISPATCHED", "STARTED"),),
+        results=(),
+    )
+
+    transaction = build_dag_live_snapshot(
+        replay=current,
+        recent_events=events + (current_event,),
+    )["nodes"][0]["transaction"]
+
+    assert transaction["attempts"] == [
+        {
+            "attempt": 1,
+            "producer_state": "PASS",
+            "candidate_manifest_sha256": "sha256:current",
+        }
+    ]
+    assert "reviewer_verdict" not in transaction["attempts"][0]
 
 
 def test_transaction_projection_accepts_only_after_committed_scheduler_transition(

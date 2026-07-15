@@ -157,6 +157,7 @@ def build_dag_live_snapshot(
                     plan_node=plan_node,
                     replay_result=replay_result.payload if replay_result else None,
                     recent_events=recent_events,
+                    scheduler_attempt=attempt.attempt if attempt is not None else None,
                     accepted=accepted,
                     committed_state=state,
                 ),
@@ -274,6 +275,7 @@ def _transaction_projection(
     plan_node: DagPlanNode,
     replay_result: dict[str, Any] | None,
     recent_events: tuple[dict[str, Any], ...],
+    scheduler_attempt: int | None,
     accepted: bool,
     committed_state: str,
 ) -> dict[str, Any] | None:
@@ -296,6 +298,8 @@ def _transaction_projection(
             continue
         payload = event.get("payload")
         if not isinstance(payload, dict) or payload.get("authority") != "diagnostic_only":
+            continue
+        if payload.get("scheduler_attempt") != scheduler_attempt:
             continue
         attempt_number = payload.get("attempt")
         phase = payload.get("phase")

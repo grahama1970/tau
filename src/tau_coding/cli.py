@@ -739,7 +739,7 @@ def main(
                 run_dir=Path(str(options["run_dir"])), run_id=options.get("run_id")
             )
             if command == "dag-view-snapshot":
-                payload = build_dag_live_snapshot(replay=replay, recent_events=events[-200:])
+                payload = build_dag_live_snapshot(replay=replay, recent_events=events)
             else:
                 after = int(options["after_sequence"])
                 limit = int(options["limit"])

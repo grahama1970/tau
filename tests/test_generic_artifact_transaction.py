@@ -63,6 +63,32 @@ def test_transaction_diagnostics_are_namespaced_by_scheduler_attempt(
     ]
 
 
+def test_oversized_transaction_diagnostic_does_not_block_valid_transaction(
+    tmp_path: Path, monkeypatch
+) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(tmp_path, worker=worker)
+    emit_progress = generic_dag._emit_transaction_progress
+
+    def emit_with_oversized_revision(*args, **kwargs):  # type: ignore[no-untyped-def]
+        if kwargs.get("phase") == "revision_committed":
+            kwargs["evidence"] = {
+                **kwargs.get("evidence", {}),
+                "instruction": "x" * (64 * 1024),
+            }
+        emit_progress(*args, **kwargs)
+
+    monkeypatch.setattr(generic_dag, "_emit_transaction_progress", emit_with_oversized_revision)
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["verdict"] == "PASS"
+    assert receipt["nodes"][0]["transaction_state"] == "ACCEPTED"
+    assert receipt["nodes"][0]["attempt_count"] == 2
+    assert "ADAPTER_EXECUTION_FAILED" not in json.dumps(receipt)
+
+
 def test_transaction_revises_then_projects_only_accepted_artifact(tmp_path: Path) -> None:
     worker = _write_worker(tmp_path)
     spec_path = _write_transaction_spec(tmp_path, worker=worker, include_downstream=True)

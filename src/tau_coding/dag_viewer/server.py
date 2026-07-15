@@ -61,7 +61,6 @@ class DagViewerApplication:
             return json_response(manifest)
         if path == "/api/v1/state":
             replay, events = self._replay()
-            self.receipts = build_receipt_index(self.run_dir, replay.transition_receipts)
             snapshot = build_dag_live_snapshot(replay=replay, recent_events=events)
             etag = f'"{snapshot["snapshot_sha256"]}"'
             if if_none_match == etag:

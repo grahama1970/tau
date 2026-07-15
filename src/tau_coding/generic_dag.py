@@ -161,15 +161,20 @@ def run_generic_dag(
             "evidence": evidence,
             "authority": "diagnostic_only",
         }
-        with SqliteDagRunStore(run_store_path) as progress_store:
-            progress_store.append_diagnostic_event(
-                lease,
-                event_key=(
-                    f"transaction:{node_id}:{scheduler_attempt}:{attempt}:{phase}"
-                ),
-                node_id=node_id,
-                payload=payload,
-            )
+        try:
+            with SqliteDagRunStore(run_store_path) as progress_store:
+                progress_store.append_diagnostic_event(
+                    lease,
+                    event_key=(
+                        f"transaction:{node_id}:{scheduler_attempt}:{attempt}:{phase}"
+                    ),
+                    node_id=node_id,
+                    payload=payload,
+                )
+        except Exception:
+            # Transaction progress is diagnostic-only. Scheduler transitions and
+            # committed receipts remain authoritative when this side channel fails.
+            return
         if diagnostic_step_delay_seconds:
             time.sleep(diagnostic_step_delay_seconds)
 
