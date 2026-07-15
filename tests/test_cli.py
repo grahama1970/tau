@@ -48,6 +48,32 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
 
 
+def test_cli_dag_view_capabilities_is_read_only() -> None:
+    result = CliRunner().invoke(app, ["dag-view-capabilities", "--json"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["schema"] == "tau.dag_viewer_capabilities.v1"
+    assert payload["read_only"] is True
+
+
+def test_cli_dag_view_rejects_non_numeric_event_range_without_traceback(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-view-events",
+            "--run-dir",
+            str(tmp_path),
+            "--after-sequence",
+            "not-an-integer",
+            "--output",
+            "-",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "dag_viewer_event_range_invalid" in result.output
+    assert "Traceback" not in result.output
+
+
 def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) -> None:
     spec_path = tmp_path / "dag.json"
     output_path = tmp_path / "plan.json"
@@ -83,9 +109,7 @@ def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) 
 
 
 @pytest.mark.parametrize("command_name", ["dag-run", "run"])
-def test_cli_dag_run_and_run_alias_execute_generic_dag(
-    tmp_path: Path, command_name: str
-) -> None:
+def test_cli_dag_run_and_run_alias_execute_generic_dag(tmp_path: Path, command_name: str) -> None:
     receipt_path = tmp_path / command_name / "worker-receipt.json"
     run_dir = tmp_path / command_name / "run"
     payload = {
@@ -319,9 +343,7 @@ def test_cli_compliance_package_writes_review_bundle(tmp_path: Path) -> None:
                 "ok": True,
                 "status": "PASS",
                 "contract_path": str(contract_path),
-                "zero_trust_preflight_receipt": str(
-                    run_dir / "zero-trust-preflight-receipt.json"
-                ),
+                "zero_trust_preflight_receipt": str(run_dir / "zero-trust-preflight-receipt.json"),
             }
         ),
         encoding="utf-8",
@@ -2828,9 +2850,7 @@ def test_cli_persona_dream_panel_proof_writes_first_blocker(tmp_path: Path) -> N
     payload = json.loads(result.output)
     manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
     loop = json.loads(
-        (out_dir / "command-loop" / "command-loop-receipt.json").read_text(
-            encoding="utf-8"
-        )
+        (out_dir / "command-loop" / "command-loop-receipt.json").read_text(encoding="utf-8")
     )
     assert payload == manifest
     assert manifest["schema"] == "tau.persona_dream_panel_proof.v1"
@@ -2853,9 +2873,7 @@ def test_cli_persona_dream_panel_proof_writes_first_blocker(tmp_path: Path) -> N
         ).read_text(encoding="utf-8")
     )
     run_root_repair_receipt = json.loads(
-        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(
-            encoding="utf-8"
-        )
+        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(encoding="utf-8")
     )
     panel_source_receipt = json.loads(
         (out_dir / "receipts" / "panel_source_receipt.json").read_text(encoding="utf-8")
@@ -2955,9 +2973,7 @@ def test_cli_persona_dream_panel_proof_uses_supplied_panel_evidence(tmp_path: Pa
     assert reviewer_receipt["panel_id"] == "panel_custom"
     assert reviewer_receipt["reviewer_source"] == str(visual_review.resolve())
     repair_receipt = json.loads(
-        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(
-            encoding="utf-8"
-        )
+        (out_dir / "receipts" / "panel_repair_gate_receipt.json").read_text(encoding="utf-8")
     )
     panel_source_receipt = json.loads(
         (out_dir / "receipts" / "panel_source_receipt.json").read_text(encoding="utf-8")
@@ -3047,8 +3063,7 @@ def test_cli_persona_dream_panel_proof_accepts_source_panel_metadata(tmp_path: P
             {
                 "panel_id": "panel_source",
                 "action": (
-                    "Embry examines SPARTA evidence cards while tea steam crosses "
-                    "the laptop glow."
+                    "Embry examines SPARTA evidence cards while tea steam crosses the laptop glow."
                 ),
                 "required_visible_entities": ["Embry", "SPARTA laptop", "evidence cards"],
                 "required_props": ["tea cup", "paper evidence cards"],
@@ -3243,7 +3258,7 @@ def test_persona_dream_panel_sse_collector_records_liveness(tmp_path: Path) -> N
     events_path = tmp_path / "events.jsonl"
     result = _collect_scillm_sse(
         [
-            'event: started',
+            "event: started",
             'data: {"model":"gpt-5.5","elapsed_ms":1}',
             ': heartbeat {"model":"gpt-5.5"}',
             'data: {"choices":[{"delta":{"content":"{\\"status\\":\\"PASS\\"}"}}]}',
@@ -3252,10 +3267,7 @@ def test_persona_dream_panel_sse_collector_records_liveness(tmp_path: Path) -> N
         events_path,
     )
 
-    events = [
-        json.loads(line)
-        for line in events_path.read_text(encoding="utf-8").splitlines()
-    ]
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
     assert result == {
         "content": '{"status":"PASS"}',
         "event_count": 2,
@@ -3298,10 +3310,7 @@ def test_persona_dream_panel_mirrors_wrapper_jsonl_events(tmp_path: Path) -> Non
     )
 
     count = _mirror_wrapper_jsonl_events(wrapper_events_path, events_path)
-    events = [
-        json.loads(line)
-        for line in events_path.read_text(encoding="utf-8").splitlines()
-    ]
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
 
     assert count == 2
     assert [event["type"] for event in events] == [
@@ -4042,7 +4051,7 @@ def test_cli_loop2_run_rejects_fixture_run_when_receipt_validation_fails(
             ok=False,
             checked_artifacts=("contract",),
             errors=("node_result: missing events",),
-    )
+        )
 
     monkeypatch.setattr(cli, "validate_loop2_contract_file", fake_validate_loop2_contract_file)
     monkeypatch.setattr(
@@ -4324,9 +4333,7 @@ def test_cli_loop2_run_delegates_scillm_backend_to_loop2_runner(
                             "run_dir": str(run_dir),
                             "events": str(run_dir / "events.jsonl"),
                             "current_state": str(run_dir / "current-state.json"),
-                            "transport_dag_evidence": str(
-                                run_dir / "transport-dag-evidence.json"
-                            ),
+                            "transport_dag_evidence": str(run_dir / "transport-dag-evidence.json"),
                             "node_result": str(run_dir / "node-result.json"),
                         },
                     }
@@ -4537,7 +4544,7 @@ def test_cli_loop2_run_prepares_delegated_scillm_contract_from_env(
                 "#!/usr/bin/env bash",
                 "set -euo pipefail",
                 f"printf '%s\\n' \"$@\" > {args_path}",
-                f"cp \"$3\" {observed_contract_path}",
+                f'cp "$3" {observed_contract_path}',
                 "cat <<'JSON'",
                 json.dumps(
                     {
@@ -5164,9 +5171,7 @@ def test_cli_loop2_run_rejects_delegated_result_with_native_validation_errors(
         "checked_artifacts": ["contract", "final_receipt"],
         "errors": ["node_result: status mismatch"],
     }
-    assert payload["errors"] == [
-        "native Loop2 validation failed: node_result: status mismatch"
-    ]
+    assert payload["errors"] == ["native Loop2 validation failed: node_result: status mismatch"]
 
 
 def test_cli_loop2_run_rejects_blocked_scillm_doctor_receipt(
@@ -6316,11 +6321,7 @@ async def test_run_print_mode_writes_loop2_receipts_from_contract_adapter(
     run_dir = run_dirs[0]
     validation = cli.validate_loop_receipt_with_loop2_contracts(
         run_dir,
-        loop2_src=Path(__file__).resolve().parents[2]
-        / "agent-skills"
-        / "skills"
-        / "loop2"
-        / "src",
+        loop2_src=Path(__file__).resolve().parents[2] / "agent-skills" / "skills" / "loop2" / "src",
     )
     receipt = json.loads((run_dir / "final-receipt.json").read_text())
     emitted_contract = json.loads((run_dir / "contract.json").read_text())

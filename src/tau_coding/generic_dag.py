@@ -19,6 +19,7 @@ from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
 from tau_coding.generic_artifact_transaction import (
     TRANSACTION_RECEIPT_SCHEMA,
     ArtifactTransactionSpec,
@@ -101,6 +102,12 @@ def run_generic_dag(
     plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
 
     def initialize_run_artifacts(_lease: object) -> None:
+        write_dag_source_artifact(
+            source_payload=spec,
+            source_schema=str(spec["schema"]),
+            source_path=resolved_spec_path,
+            run_dir=run_dir,
+        )
         _append_event(
             events_path,
             "dag_started",
@@ -683,21 +690,14 @@ def _run_legacy_node(
             "work_order": _work_order_sha256(node) or context_sha256,
             "goal": goal_hash or runtime_identity["goal"],
             "artifact_dir": (
-                node.receipt_path.parent
-                / ".tau-runtime"
-                / node.node_id
-                / f"attempt-{attempt:03d}"
+                node.receipt_path.parent / ".tau-runtime" / node.node_id / f"attempt-{attempt:03d}"
             ),
         },
     )
-    command_results = [
-        _command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)
-    ]
+    command_results = [_command_result_dict(result, elapsed_seconds=time.monotonic() - started_at)]
     if result.returncode != 0:
         verdict = (
-            "SUBAGENT_TIMEOUT"
-            if result.termination_cause == "timed_out"
-            else "SUBAGENT_ERROR"
+            "SUBAGENT_TIMEOUT" if result.termination_cause == "timed_out" else "SUBAGENT_ERROR"
         )
         return _blocked_node_record(
             node,
@@ -1628,9 +1628,7 @@ def load_generic_dag_spec(path: Path) -> dict[str, Any]:
     return _read_json_object(path.expanduser().resolve(), label="generic DAG spec")
 
 
-def validate_generic_dag_spec(
-    payload: dict[str, Any], *, source_path: Path
-) -> dict[str, DagNode]:
+def validate_generic_dag_spec(payload: dict[str, Any], *, source_path: Path) -> dict[str, DagNode]:
     """Public pure validation boundary shared by runtime and DagPlan compiler."""
 
     return _validate_spec(payload, spec_path=source_path.expanduser().resolve())
@@ -1885,9 +1883,7 @@ def _run_command(
             plan_revision=str(identity.get("plan_revision") or identity_hash),
             dag_id=str(identity.get("dag_id") or "generic-local-command"),
             node_id=node_id,
-            attempt_id=str(
-                identity.get("attempt_id") or f"{node_id}:attempt-{attempt:03d}"
-            ),
+            attempt_id=str(identity.get("attempt_id") or f"{node_id}:attempt-{attempt:03d}"),
             attempt_number=attempt,
             execution_token=str(identity.get("execution_token") or identity_hash),
             work_order=identity.get("work_order", identity_seed),
@@ -2019,7 +2015,7 @@ def _optional_json_object(path: Path) -> dict[str, Any]:
         return {}
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
 

@@ -11,6 +11,7 @@ from threading import Event
 from typing import Any
 
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
+from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
 from tau_coding.dag_runtime.run_store import (
     DagAttemptIdentity,
     DagRunLease,
@@ -18,14 +19,12 @@ from tau_coding.dag_runtime.run_store import (
 )
 from tau_coding.dag_runtime.transition import (
     AllSuccessTransitionPolicy,
-    DagCommittedReceipt,
     DagNodeCompletion,
     DagPolicyReplayState,
     DagRunBlock,
     DagTransitionBatch,
     DagTransitionPolicy,
     DagTransitionView,
-    transition_batch_from_payload,
     transition_batch_to_payload,
 )
 
@@ -507,9 +506,7 @@ def run_dag_plan(
                 wait_timeout = max(0.0, min(deadlines.values()) - time.monotonic())
             if run_store is not None and lease is not None:
                 lease_wait = max(0.0, next_lease_renewal - time.monotonic())
-                wait_timeout = (
-                    lease_wait if wait_timeout is None else min(wait_timeout, lease_wait)
-                )
+                wait_timeout = lease_wait if wait_timeout is None else min(wait_timeout, lease_wait)
             done, _ = wait(futures, timeout=wait_timeout, return_when=FIRST_COMPLETED)
             if not done:
                 for deadline_id in sorted(
@@ -623,9 +620,7 @@ def run_dag_plan(
                 scheduler_cancelled = cancel_events[node_id].is_set()
                 failed_attempt = result.get("status") != "PASS" or result.get("verdict") != "PASS"
                 will_retry = (
-                    retryable
-                    and not scheduler_cancelled
-                    and attempt < nodes[node_id].max_attempts
+                    retryable and not scheduler_cancelled and attempt < nodes[node_id].max_attempts
                 )
                 if failed_attempt:
                     _emit(
@@ -936,9 +931,7 @@ def _recover_incomplete_attempts(
         failed = result.get("status") != "PASS" or result.get("verdict") != "PASS"
         will_retry = retryable and identity.attempt < nodes[node_id].max_attempts
         if stored.state != "OUTPUT_COMMITTED" and failed and will_retry:
-            run_store.schedule_retry(
-                lease, identity.attempt_id, next_attempt=identity.attempt + 1
-            )
+            run_store.schedule_retry(lease, identity.attempt_id, next_attempt=identity.attempt + 1)
             attempt_history[node_id].append(raw_result)
             attempt_counts[node_id] = max(attempt_counts[node_id], identity.attempt)
             node_states[node_id] = "pending"
@@ -1133,108 +1126,52 @@ def _restore_durable_state(
     event_sink: EventSink | None,
 ) -> tuple[int, dict[str, Any] | None]:
     events = run_store.load_events(run_id)
-    committed_receipts: dict[str, DagCommittedReceipt] = {}
-    replayed_block: dict[str, Any] | None = None
-    for event in events:
-        if event["event_type"] not in {
-            "scheduler_transition_committed",
-            "scheduler_control_transition_committed",
-        }:
-            continue
-        transition_payload = event["payload"].get("transition")
-        if not isinstance(transition_payload, Mapping):
-            raise RuntimeError("dag_transition_replay_mismatch")
-        for receipt in transition_payload.get("receipt_refs", []):
-            if not isinstance(receipt, Mapping):
-                raise RuntimeError("dag_transition_replay_mismatch")
-            path = str(receipt["path"])
-            committed_receipts[path] = DagCommittedReceipt(
-                path=path,
-                file_sha256=str(receipt["file_sha256"]),
-            )
+    attempts = run_store.list_attempts(run_id)
+    runtime_endpoints = {
+        str(event["entity_id"])
+        for event in events
+        if event["event_type"] == "runtime_event_appended"
+    }
+    runtime_projections = tuple(
+        projection
+        for endpoint in sorted(runtime_endpoints)
+        if (projection := run_store.runtime_state_projection(run_id, endpoint)) is not None
+    )
+    replay = replay_dag_run(
+        plan=plan,
+        run_record=run_store.load_run_record(run_id),
+        events=events,
+        attempts=attempts,
+        runtime_projections=runtime_projections,
+    )
     policy.restore(
         plan,
         DagPolicyReplayState(
-            committed_receipts=tuple(committed_receipts.values()),
+            committed_receipts=replay.transition_receipts,
             node_states=dict(node_states),
             edge_states=dict(edge_states),
             terminal_states=dict(terminal_states),
         ),
     )
-    empty_futures: dict[Future[dict[str, Any]], str] = {}
-    for event in events:
-        event_type = event["event_type"]
-        if event_type not in {
-            "scheduler_transition_committed",
-            "scheduler_control_transition_committed",
-        }:
-            continue
-        transition_payload = event["payload"].get("transition")
-        if not isinstance(transition_payload, Mapping):
-            raise RuntimeError("dag_transition_replay_mismatch")
-        batch = transition_batch_from_payload(transition_payload)
-        _apply_transition_batch(
-            plan=plan,
-            batch=batch,
-            edge_states=edge_states,
-            terminal_states=terminal_states,
-            deadlines=deadlines,
-        )
-        _apply_node_effects(
-            batch=batch,
-            nodes=nodes,
-            node_states=node_states,
-            resolved=resolved,
-            completed=completed,
-            results=results,
-            result_order=result_order,
-            scheduled=scheduled,
-            cancel_events=cancel_events,
-            futures=empty_futures,
-            event_sink=event_sink,
-        )
-        transition_receipt_paths.extend(batch.receipt_paths)
-        for transition_event in batch.events:
-            _emit(event_sink, {**transition_event, "durably_replayed": True})
-        if batch.block_run is not None and replayed_block is None:
-            replayed_block = {
-                "status": "BLOCKED",
-                "verdict": batch.block_run.failure_code,
-                "errors": [batch.block_run.message],
-                "transition_evidence": batch.block_run.evidence,
-            }
-        if event_type != "scheduler_transition_committed":
-            continue
-        completion = event["payload"].get("completion")
-        result = event["payload"].get("result")
-        if not isinstance(completion, Mapping) or not isinstance(result, dict):
-            raise RuntimeError("dag_transition_replay_mismatch")
-        result = dict(result)
-        if "resumed" in result:
-            result["resumed"] = True
-        result["durably_replayed"] = True
-        node_id = str(completion["node_id"])
-        attempt = int(completion["attempt"])
-        attempt_counts[node_id] = max(attempt_counts.get(node_id, 0), attempt)
-        results[node_id] = result
+    node_states.update(replay.node_states)
+    edge_states.update(replay.edge_states)
+    terminal_states.update(replay.terminal_states)
+    deadlines.update(replay.deadline_monotonic)
+    transition_receipt_paths.extend(item.path for item in replay.transition_receipts)
+    for replay_event in replay.replay_events:
+        _emit(event_sink, replay_event)
+    replayed_node_states = dict(replay.node_states)
+    for replayed in replay.results:
+        node_id = replayed.node_id
+        attempt_counts[node_id] = max(attempt_counts.get(node_id, 0), replayed.attempt)
+        results[node_id] = replayed.payload
         if node_id not in result_order:
             result_order.append(node_id)
-        terminal_state = str(completion["terminal_state"])
-        node_states[node_id] = "blocked" if batch.block_run is not None else terminal_state
         resolved.add(node_id)
         scheduled.add(node_id)
-        if terminal_state == "success" and batch.block_run is None:
+        if replayed.terminal_state == "success" and replayed_node_states.get(node_id) == "success":
             completed.add(node_id)
-        _emit(
-            event_sink,
-            {
-                "event": "node_replayed",
-                "node_id": node_id,
-                "attempt": attempt,
-                "terminal_state": node_states[node_id],
-            },
-        )
-    for stored in run_store.list_attempts(run_id):
+    for stored in attempts:
         if stored.staged_result is None or stored.state not in {
             "RETRY_SCHEDULED",
             "SETTLED",
@@ -1242,7 +1179,7 @@ def _restore_durable_state(
             continue
         if stored.state == "RETRY_SCHEDULED":
             attempt_history[stored.identity.node_id].append(stored.staged_result)
-    return len(events), replayed_block
+    return len(events), replay.block
 
 
 def _cancel_and_collect_futures(
@@ -1295,9 +1232,7 @@ def _cancel_and_collect_futures(
                 "errors": [str(exc)],
             }
         if run_store is not None and lease is not None:
-            cancelled_result = run_store.stage_result(
-                lease, identity.attempt_id, cancelled_result
-            )
+            cancelled_result = run_store.stage_result(lease, identity.attempt_id, cancelled_result)
             run_store.validate_result(
                 lease,
                 identity.attempt_id,
@@ -1382,25 +1317,14 @@ def _apply_transition_batch(
     terminal_states: dict[str, str],
     deadlines: dict[str, float],
 ) -> None:
-    edges = {edge.edge_id: edge for edge in plan.control_edges}
-    terminal_ids = {terminal.terminal_id for terminal in plan.terminal_endpoints}
-    for settlement in batch.edge_settlements:
-        if settlement.edge_id not in edges:
-            raise RuntimeError(f"dag_transition_unknown_edge:{settlement.edge_id}")
-        prior = edge_states.get(settlement.edge_id)
-        if prior is not None and prior != settlement.state:
-            raise RuntimeError(f"dag_transition_effect_conflict:{settlement.edge_id}")
-        edge_states[settlement.edge_id] = settlement.state
-        edge = edges[settlement.edge_id]
-        if edge.target_kind == "terminal" or edge.target_id in terminal_ids:
-            terminal_states[edge.target_id] = settlement.state
-    for arm in batch.deadline_arms:
-        deadline_prior = deadlines.get(arm.deadline_id)
-        if deadline_prior is not None and deadline_prior != arm.deadline_monotonic:
-            raise RuntimeError(f"dag_transition_deadline_conflict:{arm.deadline_id}")
-        deadlines[arm.deadline_id] = arm.deadline_monotonic
-    for deadline_id in batch.deadline_cancellations:
-        deadlines.pop(deadline_id, None)
+    apply_transition_state(
+        plan=plan,
+        batch=batch,
+        node_states={},
+        edge_states=edge_states,
+        terminal_states=terminal_states,
+        deadlines=deadlines,
+    )
 
 
 def _apply_node_effects(

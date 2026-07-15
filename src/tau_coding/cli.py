@@ -71,6 +71,12 @@ from tau_coding.dag_stress_poc import (
     run_dag_stress_campaign,
     run_dag_stress_poc,
 )
+from tau_coding.dag_viewer.contracts import viewer_capabilities
+from tau_coding.dag_viewer.projection import (
+    build_dag_live_events,
+    build_dag_live_snapshot,
+    load_dag_replay,
+)
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.demo_airgap_itar import run_demo_airgap_itar_basic
@@ -716,6 +722,34 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         if not payload.get("ok"):
             raise typer.Exit(1)
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-view-capabilities":
+        if positional_args[1:] not in ([], ["--json"]):
+            raise typer.BadParameter("Usage: tau dag-view-capabilities [--json]")
+        typer.echo(json.dumps(viewer_capabilities(), indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if prompt_option is None and command in {"dag-view-snapshot", "dag-view-events"}:
+        try:
+            options = _parse_dag_view_cli_args(positional_args[1:], command=str(command))
+            replay, events = load_dag_replay(
+                run_dir=Path(str(options["run_dir"])), run_id=options.get("run_id")
+            )
+            if command == "dag-view-snapshot":
+                payload = build_dag_live_snapshot(replay=replay, recent_events=events[-200:])
+            else:
+                after = int(options["after_sequence"])
+                limit = int(options["limit"])
+                payload = build_dag_live_events(
+                    replay=replay,
+                    events=events,
+                    after_sequence=after,
+                    limit=limit,
+                )
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
     if prompt_option is None and command == "init":
@@ -3630,7 +3664,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except (OSError, json.JSONDecodeError, RuntimeError):
+    except OSError, json.JSONDecodeError, RuntimeError:
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -6104,6 +6138,46 @@ def _read_optional_json_object(value: object) -> dict[str, object] | None:
     if not isinstance(payload, dict):
         raise RuntimeError(f"{path} must contain a JSON object")
     return payload
+
+
+def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_dir": None,
+        "run_id": None,
+        "after_sequence": 0,
+        "limit": 200,
+    }
+    index = 0
+    while index < len(args):
+        argument = args[index]
+        if argument in {"--run-dir", "--run-id", "--after-sequence", "--limit", "--output"}:
+            if index + 1 >= len(args):
+                raise RuntimeError(f"{argument} requires a value")
+            value = args[index + 1]
+            if argument == "--run-dir":
+                options["run_dir"] = value
+            elif argument == "--run-id":
+                options["run_id"] = value
+            elif argument == "--after-sequence":
+                try:
+                    options["after_sequence"] = int(value)
+                except ValueError as exc:
+                    raise RuntimeError("dag_viewer_event_range_invalid") from exc
+            elif argument == "--limit":
+                try:
+                    options["limit"] = int(value)
+                except ValueError as exc:
+                    raise RuntimeError("dag_viewer_event_range_invalid") from exc
+            elif value != "-":
+                raise RuntimeError("Child A supports --output - only")
+            index += 2
+            continue
+        raise RuntimeError(f"unknown {command} option: {argument}")
+    if options["run_dir"] is None:
+        raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir> [--run-id <run-id>]")
+    if int(options["after_sequence"]) < 0 or not 1 <= int(options["limit"]) <= 5000:
+        raise RuntimeError("dag_viewer_event_range_invalid")
+    return options
 
 
 def _parse_research_skill_adapter_cli_args(args: list[str]) -> dict[str, object]:
@@ -9184,7 +9258,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return
     if not isinstance(final_receipt, dict):
         return
@@ -9207,7 +9281,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -9236,7 +9310,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except OSError, json.JSONDecodeError:
             continue
         if not isinstance(payload, dict):
             continue
@@ -9421,7 +9495,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except OSError, json.JSONDecodeError:
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 

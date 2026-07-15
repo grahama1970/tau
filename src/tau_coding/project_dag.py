@@ -41,6 +41,7 @@ from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.project_transition import ProjectDagTransitionPolicy
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagNodeAttempt, run_dag_plan
+from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
 from tau_coding.evidence_manifest import write_evidence_validation_receipt
 from tau_coding.handoff_dispatch import (
     dispatch_agent_handoff_command_once,
@@ -454,8 +455,7 @@ def run_project_dag_contract(
         scheduler_alert = _alert(
             "BLOCK",
             "secure_mode_requires_handoff_loop",
-            "Secure execution is currently authoritative only through the "
-            "handoff-loop scheduler.",
+            "Secure execution is currently authoritative only through the handoff-loop scheduler.",
             {"requested_scheduler": scheduler, "supported_scheduler": "handoff-loop"},
         )
     if scheduler_alert is not None:
@@ -632,9 +632,7 @@ def run_project_dag_contract(
         "max_steps": max_steps,
         "command_loop_receipt": str(loop_receipt_path),
         "security_context_receipt": security_context_result.receipt.get("receipt_path"),
-        "security_context_sha256": security_context_result.receipt.get(
-            "security_context_sha256"
-        ),
+        "security_context_sha256": security_context_result.receipt.get("security_context_sha256"),
         "capability_decision_receipt": (
             capability_decision_receipt.get("receipt_path")
             if isinstance(capability_decision_receipt, dict)
@@ -863,9 +861,7 @@ def _secure_execution_configuration(
     ):
         raise RuntimeError("secure execution references must be path- and hash-bound")
 
-    grants_by_node: dict[str, list[dict[str, Any]]] = {
-        node_id: [] for node_id in contract.nodes
-    }
+    grants_by_node: dict[str, list[dict[str, Any]]] = {node_id: [] for node_id in contract.nodes}
     for grant in capability_decision_receipt.get("grants", []):
         if not isinstance(grant, dict):
             continue
@@ -950,6 +946,13 @@ def _run_bounded_ready_queue_project_dag(
         )
         _write_json(receipt_dir / "dag-receipt.json", receipt)
         return receipt
+
+    write_dag_source_artifact(
+        source_payload=contract.payload,
+        source_schema="tau.dag_contract.v1",
+        source_path=contract_path,
+        run_dir=receipt_dir,
+    )
 
     command_spec_root = _compile_command_specs(
         contract=contract,
@@ -1132,10 +1135,7 @@ def validate_project_dag_plan_semantics(contract: ProjectDagContract) -> None:
     ]
     if alerts:
         raise RuntimeError(
-            "; ".join(
-                f"{alert.get('code')}: {alert.get('message')}"
-                for alert in alerts
-            )
+            "; ".join(f"{alert.get('code')}: {alert.get('message')}" for alert in alerts)
         )
 
 
@@ -1616,7 +1616,7 @@ def _provider_command_timeout_policy(
     )
     try:
         timeout_s = float(raw_timeout)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
     if timeout_s <= 0:
         timeout_s = PROVIDER_COMMAND_TIMEOUT_SECONDS
@@ -2087,9 +2087,7 @@ def _parse_nodes(value: object, errors: list[str]) -> dict[str, ProjectDagNode]:
                 errors.extend(
                     validate_capability_declaration(
                         declaration,
-                        label=(
-                            f"nodes[{index}].requested_capabilities[{capability_index}]"
-                        ),
+                        label=(f"nodes[{index}].requested_capabilities[{capability_index}]"),
                     )
                 )
                 if isinstance(declaration, dict):
@@ -2161,9 +2159,7 @@ def _validate_persistent_subagent_declaration(
             "(http://localhost:<port>/... or http://127.0.0.1:<port>/...)"
         )
     if value.get("session_mode") != "persistent":
-        errors.append(
-            f"{label}.session_mode must be persistent for a declared persistent subagent"
-        )
+        errors.append(f"{label}.session_mode must be persistent for a declared persistent subagent")
     if value.get("tau_control") != "bounded_receipt_gated_ticks":
         errors.append(
             f"{label}.tau_control must be bounded_receipt_gated_ticks so Tau remains "
@@ -2633,9 +2629,7 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
             valid_join_nodes.add(node_id)
     for join_id in sorted(valid_join_nodes):
         for incoming_edge in incoming.get(join_id, []):
-            source_targets = {
-                edge.target for edge in outgoing.get(incoming_edge.source, [])
-            }
+            source_targets = {edge.target for edge in outgoing.get(incoming_edge.source, [])}
             if source_targets - {join_id}:
                 alerts.append(
                     _alert(
@@ -2803,8 +2797,7 @@ def _ready_queue_contract_alerts(contract: ProjectDagContract) -> list[dict[str,
 
 def _has_join_policies(contract: ProjectDagContract) -> bool:
     return any(
-        _node_payload(contract, node_id).get("join") is not None
-        for node_id in contract.nodes
+        _node_payload(contract, node_id).get("join") is not None for node_id in contract.nodes
     )
 
 
@@ -2830,8 +2823,7 @@ def _incoming_edge_objects(contract: ProjectDagContract) -> dict[str, list[Proje
 
 def _has_typed_routes(contract: ProjectDagContract) -> bool:
     return any(
-        isinstance(edge.condition, dict)
-        and edge.condition.get("schema") == ROUTE_CONDITION_SCHEMA
+        isinstance(edge.condition, dict) and edge.condition.get("schema") == ROUTE_CONDITION_SCHEMA
         for edge in contract.edges
     )
 
@@ -3100,9 +3092,7 @@ def _run_shared_project_dag_plan(
     prior_receipt: dict[str, Any] = {}
     if prior_receipt_path.is_file():
         try:
-            prior_receipt = _read_json_object(
-                prior_receipt_path, label="project DAG receipt"
-            )
+            prior_receipt = _read_json_object(prior_receipt_path, label="project DAG receipt")
         except RuntimeError:
             # The SQLite journal is authoritative during recovery. A derived
             # receipt may be truncated if the prior process died while writing it.
@@ -3350,9 +3340,7 @@ def _run_shared_project_dag_plan(
                     if isinstance(item, str)
                 ]
                 auth_errors.extend(
-                    str(item)
-                    for item in repair_payload.get("errors", [])
-                    if isinstance(item, str)
+                    str(item) for item in repair_payload.get("errors", []) if isinstance(item, str)
                 )
                 auth_evidence.update(
                     {
@@ -3478,9 +3466,7 @@ def _run_shared_project_dag_plan(
             node_artifacts[node_id] = [
                 str(path) for path in sorted(node_root.rglob("*")) if path.is_file()
             ]
-        alerts.extend(
-            item for item in node_result.get("alerts", []) if isinstance(item, dict)
-        )
+        alerts.extend(item for item in node_result.get("alerts", []) if isinstance(item, dict))
         errors.extend(str(item) for item in node_result.get("errors", []))
         course_correction_artifacts.extend(
             str(item)
@@ -3490,9 +3476,7 @@ def _run_shared_project_dag_plan(
         for alert in node_result.get("alerts", []):
             evidence = alert.get("evidence") if isinstance(alert, dict) else None
             correction = (
-                evidence.get("course_correction_receipt")
-                if isinstance(evidence, dict)
-                else None
+                evidence.get("course_correction_receipt") if isinstance(evidence, dict) else None
             )
             if isinstance(correction, str):
                 course_correction_artifacts.append(correction)
@@ -3651,9 +3635,7 @@ def _legacy_runtime_requirement_error(plan_node: DagPlanNode) -> str | None:
     return _runtime_requirement_error(plan_node.adapter_kind, requirement)
 
 
-def _runtime_requirement_error(
-    adapter_kind: str, requirement: RuntimeRequirement
-) -> str | None:
+def _runtime_requirement_error(adapter_kind: str, requirement: RuntimeRequirement) -> str | None:
     expected_backend = {
         "project_handoff_command": "local",
         "project_provider": "herdr",
@@ -5014,7 +4996,7 @@ def _optional_context_mapping(value: object, label: str, errors: list[str]) -> d
 def _json_safe_alert_value(value: object) -> object:
     try:
         json.dumps(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return {"type": type(value).__name__, "value": str(value)}
     return value
 
@@ -5060,9 +5042,7 @@ def _required_string(
 
 def _validate_dag_identifier(value: str, label: str, errors: list[str]) -> None:
     if value and not DAG_IDENTIFIER_PATTERN.fullmatch(value):
-        errors.append(
-            f"{label} must match ^[A-Za-z][A-Za-z0-9_-]{{0,63}}$"
-        )
+        errors.append(f"{label} must match ^[A-Za-z][A-Za-z0-9_-]{{0,63}}$")
 
 
 def _string_list(value: object, label: str, errors: list[str]) -> list[str]:
