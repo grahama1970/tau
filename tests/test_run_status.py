@@ -1627,6 +1627,17 @@ def test_run_status_exports_dag_viewer_link_for_project_dag_run_root(
     assert status["dag_viewer"]["provider_live"] is False
 
 
+def test_run_status_blocks_malformed_dag_viewer_store(tmp_path: Path) -> None:
+    (tmp_path / "dag-run.sqlite3").write_bytes(b"SQLite format 3\x00truncated")
+
+    status = build_run_status(tmp_path)
+
+    assert status["dag_viewer"]["available"] is False
+    assert status["dag_viewer"]["status"] == "BLOCKED"
+    assert status["dag_viewer"]["source"] == "missing_or_invalid_dag_run_store"
+    assert status["dag_viewer"]["store_error"] == "dag_viewer_store_invalid"
+
+
 def test_run_status_summarizes_project_dag_command_policy_rejection(
     tmp_path: Path,
 ) -> None:

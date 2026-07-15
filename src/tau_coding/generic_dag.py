@@ -142,6 +142,7 @@ def run_generic_dag(
         )
 
     def record_transaction_progress(
+        scheduler_attempt: int,
         node_id: str,
         attempt: int,
         phase: str,
@@ -154,6 +155,7 @@ def run_generic_dag(
             "schema": "tau.dag_diagnostic_event.v1",
             "diagnostic_kind": "generic_artifact_transaction_progress",
             "node_id": node_id,
+            "scheduler_attempt": scheduler_attempt,
             "attempt": attempt,
             "phase": phase,
             "evidence": evidence,
@@ -162,7 +164,9 @@ def run_generic_dag(
         with SqliteDagRunStore(run_store_path) as progress_store:
             progress_store.append_diagnostic_event(
                 lease,
-                event_key=f"transaction:{node_id}:{attempt}:{phase}",
+                event_key=(
+                    f"transaction:{node_id}:{scheduler_attempt}:{attempt}:{phase}"
+                ),
                 node_id=node_id,
                 payload=payload,
             )
@@ -211,7 +215,15 @@ def run_generic_dag(
                 else plan.runtime_goal_hash,
             },
             cancel_event=execution.cancel_event,
-            progress_sink=record_transaction_progress,
+            progress_sink=lambda node_id, attempt, phase, evidence: (
+                record_transaction_progress(
+                    execution.attempt,
+                    node_id,
+                    attempt,
+                    phase,
+                    evidence,
+                )
+            ),
         )
         if result.get("status") == "PASS" and result.get("verdict") == "PASS":
             node_results.append(result)

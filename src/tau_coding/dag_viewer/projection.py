@@ -158,6 +158,7 @@ def build_dag_live_snapshot(
                     replay_result=replay_result.payload if replay_result else None,
                     recent_events=recent_events,
                     accepted=accepted,
+                    committed_state=state,
                 ),
                 "updated_sequence": replay.journal_sequence,
             }
@@ -274,6 +275,7 @@ def _transaction_projection(
     replay_result: dict[str, Any] | None,
     recent_events: tuple[dict[str, Any], ...],
     accepted: bool,
+    committed_state: str,
 ) -> dict[str, Any] | None:
     if plan_node.adapter_kind != "generic_artifact_transaction":
         return None
@@ -340,11 +342,19 @@ def _transaction_projection(
         if isinstance(result_sha256, str):
             accepted_manifest_sha256 = result_sha256
     ordered_attempts = [attempts[key] for key in sorted(attempts)]
+    if accepted:
+        transaction_state = "ACCEPTED"
+    elif committed_state == "blocked":
+        transaction_state = "BLOCKED"
+    elif committed_state in {"failed", "timed_out"}:
+        transaction_state = "REJECTED"
+    else:
+        transaction_state = "AWAITING_RECEIPT"
     return {
         "transaction_id": transaction_id,
         "current_attempt": max(attempts, default=0),
         "max_attempts": int(config.get("transaction_max_attempts", plan_node.max_attempts)),
-        "state": "ACCEPTED" if accepted else "AWAITING_RECEIPT",
+        "state": transaction_state,
         "accepted_manifest_sha256": accepted_manifest_sha256,
         "attempts": ordered_attempts,
     }

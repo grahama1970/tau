@@ -1,13 +1,66 @@
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
+from tau_coding import generic_dag
+from tau_coding.dag_runtime.run_store import SqliteDagRunReader
 from tau_coding.generic_artifact_transaction import (
     canonical_command_sha256,
     parse_transaction_spec,
     revalidate_accepted_manifest,
 )
 from tau_coding.generic_dag import run_generic_dag
+
+
+def test_transaction_diagnostics_are_namespaced_by_scheduler_attempt(
+    tmp_path: Path, monkeypatch
+) -> None:
+    worker = _write_worker(tmp_path)
+    spec_path = _write_transaction_spec(tmp_path, worker=worker)
+    compile_plan = generic_dag.compile_generic_dag_plan
+
+    def compile_with_scheduler_retry(*args, **kwargs):  # type: ignore[no-untyped-def]
+        plan = compile_plan(*args, **kwargs)
+        return replace(
+            plan,
+            nodes=tuple(replace(node, max_attempts=2) for node in plan.nodes),
+        ).with_computed_hash()
+
+    def run_transaction(*args, **kwargs):  # type: ignore[no-untyped-def]
+        runtime_identity = kwargs["runtime_identity"]
+        progress_sink = kwargs["progress_sink"]
+        scheduler_attempt = runtime_identity["attempt"]
+        evidence = {"candidate_manifest_sha256": f"sha256:scheduler-{scheduler_attempt}"}
+        progress_sink("stage", 1, "producer_completed", evidence)
+        progress_sink("stage", 1, "producer_completed", evidence)
+        return {
+            "node_id": "stage",
+            "status": "BLOCKED" if scheduler_attempt == 1 else "PASS",
+            "verdict": "RETRY" if scheduler_attempt == 1 else "PASS",
+        }
+
+    monkeypatch.setattr(generic_dag, "_run_transaction_node", run_transaction)
+    monkeypatch.setattr(generic_dag, "compile_generic_dag_plan", compile_with_scheduler_retry)
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    with SqliteDagRunReader(tmp_path / "run" / "dag-run.sqlite3") as reader:
+        events = tuple(
+            event.to_mapping()
+            for event in reader.load_events("run-transaction")
+            if event.event_type == "dag_diagnostic_event_appended"
+        )
+    assert [event["event_key"] for event in events] == [
+        "transaction:stage:1:1:producer_completed",
+        "transaction:stage:2:1:producer_completed",
+    ]
+    assert [event["payload"]["scheduler_attempt"] for event in events] == [1, 2]
+    assert [event["payload"]["evidence"]["candidate_manifest_sha256"] for event in events] == [
+        "sha256:scheduler-1",
+        "sha256:scheduler-2",
+    ]
 
 
 def test_transaction_revises_then_projects_only_accepted_artifact(tmp_path: Path) -> None:

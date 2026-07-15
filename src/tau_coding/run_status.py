@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -1468,7 +1469,7 @@ def _dag_viewer_summary(
                 run_ids = reader.run_ids()
             for run_id in run_ids:
                 load_dag_replay(run_dir=run_store_path.parent, run_id=run_id)
-        except (DagRunStoreError, OSError, RuntimeError):
+        except (DagRunStoreError, OSError, RuntimeError, sqlite3.Error):
             run_ids = ()
             store_error = "dag_viewer_store_invalid"
     available = store_exists and bool(run_ids) and store_error is None

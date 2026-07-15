@@ -239,6 +239,29 @@ def test_transaction_projection_accepts_only_after_committed_scheduler_transitio
     assert first == second
 
 
+@pytest.mark.parametrize(
+    ("committed_state", "transaction_state"),
+    (("blocked", "BLOCKED"), ("failed", "REJECTED"), ("timed_out", "REJECTED")),
+)
+def test_transaction_projection_rejects_terminal_non_accepted_outcomes(
+    tmp_path: Path,
+    committed_state: str,
+    transaction_state: str,
+) -> None:
+    replay, events = _transaction_run(tmp_path)
+    terminal = replace(
+        replay,
+        run_status="BLOCKED",
+        node_states=(("creator", committed_state),),
+    )
+
+    node = build_dag_live_snapshot(replay=terminal, recent_events=events)["nodes"][0]
+
+    assert node["admission"]["accepted"] is False
+    assert node["admission"]["state"] == "rejected"
+    assert node["transaction"]["state"] == transaction_state
+
+
 def test_active_attempt_state_is_visible_without_accepting_node(tmp_path: Path) -> None:
     _durable_run(tmp_path)
     replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
