@@ -10,8 +10,19 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import quote
 
-from tau_coding.dag_runtime.model import DagPlan, canonical_json, canonical_sha256
+from tau_coding.dag_runtime.model import (
+    DAG_PLAN_SCHEMA,
+    DagPlan,
+    DagPlanContextBinding,
+    DagPlanEdge,
+    DagPlanNode,
+    DagPlanTerminal,
+    FrozenJson,
+    canonical_json,
+    canonical_sha256,
+)
 from tau_coding.runtime_backends.contracts import RuntimeEvent, RuntimeStateProjection
 
 EVENT_SCHEMA = "tau.dag_run_event.v1"
@@ -53,6 +64,42 @@ class StoredAttempt:
     effect_state: str
     staged_result: dict[str, Any] | None
     committed_result: dict[str, Any] | None
+
+
+@dataclass(frozen=True, slots=True)
+class DagRunRecord:
+    run_id: str
+    plan_id: str
+    plan_sha256: str
+    status: str
+    verdict: str | None
+    lease_owner: str | None
+    lease_epoch: int
+    lease_expires_at_ms: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class DagJournalEvent:
+    sequence: int
+    event_key: str
+    event_type: str
+    entity_type: str
+    entity_id: str
+    attempt_id: str | None
+    lease_epoch: int
+    payload: dict[str, Any]
+
+    def to_mapping(self) -> dict[str, Any]:
+        return {
+            "seq": self.sequence,
+            "event_key": self.event_key,
+            "event_type": self.event_type,
+            "entity_type": self.entity_type,
+            "entity_id": self.entity_id,
+            "attempt_id": self.attempt_id,
+            "lease_epoch": self.lease_epoch,
+            "payload": self.payload,
+        }
 
 
 _SCHEMA = """
@@ -232,6 +279,236 @@ def _runtime_event_from_journal_row(
     return runtime_event
 
 
+def _verified_event(row: sqlite3.Row) -> DagJournalEvent:
+    if row["event_schema"] != EVENT_SCHEMA or int(row["event_version"]) != 1:
+        raise DagRunStoreError("dag_run_event_schema_invalid", str(row["seq"]))
+    try:
+        payload = json.loads(row["payload_json"])
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise DagRunStoreError("dag_run_event_invalid", str(row["seq"])) from exc
+    if not isinstance(payload, dict) or canonical_sha256(payload) != row["payload_sha256"]:
+        raise DagRunStoreError("dag_run_event_hash_mismatch", str(row["seq"]))
+    return DagJournalEvent(
+        sequence=int(row["seq"]),
+        event_key=str(row["event_key"]),
+        event_type=str(row["event_type"]),
+        entity_type=str(row["entity_type"]),
+        entity_id=str(row["entity_id"]),
+        attempt_id=str(row["attempt_id"]) if row["attempt_id"] is not None else None,
+        lease_epoch=int(row["lease_epoch"]),
+        payload=payload,
+    )
+
+
+def _plan_from_payload(payload: dict[str, Any]) -> DagPlan:
+    if payload.get("schema") != DAG_PLAN_SCHEMA:
+        raise DagRunStoreError("dag_run_plan_schema_invalid")
+    source = payload.get("source")
+    completion = payload.get("completion_policy")
+    if not isinstance(source, dict) or not isinstance(completion, dict):
+        raise DagRunStoreError("dag_run_plan_schema_invalid")
+    try:
+        plan = DagPlan(
+            schema=str(payload["schema"]),
+            plan_id=str(payload["plan_id"]),
+            source_family=str(source["family"]),
+            source_schema=str(source["schema"]),
+            source_logical_id=str(source["logical_id"]),
+            source_payload_sha256=str(source["canonical_source_sha256"]),
+            goal_binding=FrozenJson.from_value(payload["goal_binding"]),
+            target_binding=FrozenJson.from_value(payload["target_binding"]),
+            entry_node_ids=tuple(str(item) for item in payload["entry_node_ids"]),
+            terminal_endpoints=tuple(
+                DagPlanTerminal(str(item["terminal_id"]), str(item["kind"]), str(item["origin"]))
+                for item in payload["terminal_endpoints"]
+            ),
+            completion_policy=str(completion["kind"]),
+            nodes=tuple(_plan_node_from_payload(item) for item in payload["nodes"]),
+            control_edges=tuple(_plan_edge_from_payload(item) for item in payload["control_edges"]),
+            context_bindings=tuple(
+                DagPlanContextBinding(**{key: str(value) for key, value in item.items()})
+                for item in payload["context_bindings"]
+            ),
+            runtime_bindings=tuple(
+                FrozenJson.from_value(item) for item in payload["runtime_bindings"]
+            ),
+            route_contracts=tuple(
+                FrozenJson.from_value(item) for item in payload["route_contracts"]
+            ),
+            join_contracts=tuple(FrozenJson.from_value(item) for item in payload["join_contracts"]),
+            required_evidence=tuple(str(item) for item in payload["required_evidence"]),
+            fail_closed_on=tuple(str(item) for item in payload["fail_closed_on"]),
+            security_declarations=FrozenJson.from_value(payload["security_declarations"]),
+            execution_limits=FrozenJson.from_value(payload["execution_limits"]),
+            source_extensions=FrozenJson.from_value(payload["source_extensions"]),
+            plan_sha256=str(payload["plan_sha256"]),
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise DagRunStoreError("dag_run_plan_schema_invalid") from exc
+    if plan.with_computed_hash().plan_sha256 != plan.plan_sha256:
+        raise DagRunStoreError("dag_run_plan_hash_mismatch", plan.plan_id)
+    return plan
+
+
+def _plan_node_from_payload(item: Mapping[str, Any]) -> DagPlanNode:
+    adapter = cast(Mapping[str, Any], item["adapter"])
+    retry = cast(Mapping[str, Any], item["retry_policy"])
+    timeout = cast(Mapping[str, Any], item["timeout_policy"])
+    return DagPlanNode(
+        node_id=str(item["node_id"]),
+        role=str(item["role"]),
+        executor=str(item["executor"]),
+        adapter_kind=str(adapter["kind"]),
+        adapter_config=FrozenJson.from_value(adapter["config"]),
+        max_attempts=int(retry["max_attempts"]),
+        timeout_kind=str(timeout["kind"]),
+        timeout_seconds=float(timeout["seconds"]) if timeout["seconds"] is not None else None,
+        required_evidence=tuple(str(value) for value in item["required_evidence"]),
+        static_context=FrozenJson.from_value(item["static_context"]),
+        requested_capabilities=tuple(
+            FrozenJson.from_value(value) for value in item["requested_capabilities"]
+        ),
+        source_bindings=tuple(FrozenJson.from_value(value) for value in item["source_bindings"]),
+        source_extensions=FrozenJson.from_value(item["source_extensions"]),
+        runtime_requirement=FrozenJson.from_value(item["runtime_requirement"]),
+    )
+
+
+def _plan_edge_from_payload(item: Mapping[str, Any]) -> DagPlanEdge:
+    target = cast(Mapping[str, Any], item["target"])
+    return DagPlanEdge(
+        edge_id=str(item["edge_id"]),
+        source_node_id=str(item["source_node_id"]),
+        target_id=str(target["id"]),
+        target_kind=str(target["kind"]),
+        condition=FrozenJson.from_value(item["condition"])
+        if item["condition"] is not None
+        else None,
+        source_ordinal=int(item["source_ordinal"]) if item["source_ordinal"] is not None else None,
+    )
+
+
+class SqliteDagRunReader:
+    """Query-only reader for live or completed durable DAG runs."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path.expanduser().resolve()
+        if not self.path.is_file():
+            raise DagRunStoreError("dag_run_store_missing", str(self.path))
+        uri = f"file:{quote(str(self.path), safe='/')}?mode=ro"
+        self._connection = sqlite3.connect(uri, uri=True, isolation_level=None)
+        self._connection.row_factory = sqlite3.Row
+        self._connection.execute("PRAGMA query_only = ON")
+        self._connection.execute("PRAGMA foreign_keys = ON")
+        self._connection.execute("PRAGMA busy_timeout = 1000")
+        version = self._connection.execute(
+            "SELECT value FROM dag_store_meta WHERE key = 'schema_version'"
+        ).fetchone()
+        if version is None or str(version[0]) != str(STORE_SCHEMA_VERSION):
+            raise DagRunStoreError("dag_run_store_schema_mismatch")
+
+    def close(self) -> None:
+        self._connection.close()
+
+    def __enter__(self) -> SqliteDagRunReader:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def load_run_record(self, run_id: str) -> DagRunRecord:
+        row = self._connection.execute(
+            "SELECT * FROM dag_runs WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_run_missing", run_id)
+        return DagRunRecord(
+            run_id=str(row["run_id"]),
+            plan_id=str(row["plan_id"]),
+            plan_sha256=str(row["plan_sha256"]),
+            status=str(row["status"]),
+            verdict=str(row["verdict"]) if row["verdict"] is not None else None,
+            lease_owner=str(row["lease_owner"]) if row["lease_owner"] is not None else None,
+            lease_epoch=int(row["lease_epoch"]),
+            lease_expires_at_ms=int(row["lease_expires_at_ms"])
+            if row["lease_expires_at_ms"] is not None
+            else None,
+        )
+
+    def run_ids(self) -> tuple[str, ...]:
+        rows = self._connection.execute("SELECT run_id FROM dag_runs ORDER BY run_id").fetchall()
+        return tuple(str(row[0]) for row in rows)
+
+    def load_plan(self, run_id: str) -> DagPlan:
+        row = self._connection.execute(
+            "SELECT plan_json, plan_sha256 FROM dag_runs WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_run_missing", run_id)
+        try:
+            payload = json.loads(row["plan_json"])
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise DagRunStoreError("dag_run_plan_schema_invalid", run_id) from exc
+        if not isinstance(payload, dict):
+            raise DagRunStoreError("dag_run_plan_schema_invalid", run_id)
+        plan = _plan_from_payload(payload)
+        if plan.plan_sha256 != row["plan_sha256"]:
+            raise DagRunStoreError("dag_run_plan_hash_mismatch", run_id)
+        return plan
+
+    def load_events(
+        self, run_id: str, *, after_sequence: int = 0, limit: int = 500
+    ) -> tuple[DagJournalEvent, ...]:
+        if after_sequence < 0 or limit < 1 or limit > 5000:
+            raise DagRunStoreError("dag_viewer_event_range_invalid")
+        rows = self._connection.execute(
+            "SELECT * FROM dag_run_events WHERE run_id = ? AND seq > ? ORDER BY seq LIMIT ?",
+            (run_id, after_sequence, limit),
+        ).fetchall()
+        return tuple(_verified_event(cast(sqlite3.Row, row)) for row in rows)
+
+    def load_attempts(self, run_id: str) -> tuple[StoredAttempt, ...]:
+        rows = self._connection.execute(
+            """SELECT a.*, o.staged_json, o.staged_sha256, o.validation_json,
+                      o.validation_sha256, o.committed_json, o.committed_sha256
+               FROM dag_node_attempts a LEFT JOIN dag_attempt_outputs o
+               ON o.attempt_id = a.attempt_id WHERE a.run_id = ?
+               ORDER BY a.attempt_no, a.node_id""",
+            (run_id,),
+        ).fetchall()
+        return tuple(SqliteDagRunStore._stored_attempt(cast(sqlite3.Row, row)) for row in rows)
+
+    def runtime_projections(self, run_id: str) -> tuple[RuntimeStateProjection, ...]:
+        rows = self._connection.execute(
+            """SELECT * FROM dag_run_events
+               WHERE run_id = ? AND event_type = 'runtime_event_appended'
+               ORDER BY seq""",
+            (run_id,),
+        ).fetchall()
+        grouped: dict[str, list[RuntimeEvent]] = {}
+        for row in rows:
+            event = _runtime_event_from_journal_row(cast(sqlite3.Row, row), expected_run_id=run_id)
+            grouped.setdefault(event.endpoint_lease_sha256, []).append(event)
+        return tuple(
+            RuntimeStateProjection(
+                run_id,
+                endpoint,
+                values[-1].state,
+                values[-1].liveness,
+                values[-1].confidence,
+                values[-1].event_id,
+                len(values),
+            )
+            for endpoint, values in sorted(grouped.items())
+        )
+
+    def latest_sequence(self, run_id: str) -> int:
+        row = self._connection.execute(
+            "SELECT COALESCE(MAX(seq), 0) FROM dag_run_events WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        return int(row[0])
+
+
 class SqliteDagRunStore:
     """File-backed append-only event journal with transactional projections."""
 
@@ -313,6 +590,25 @@ class SqliteDagRunStore:
         if row is None:
             return None
         return str(row["status"]), (str(row["verdict"]) if row["verdict"] is not None else None)
+
+    def load_run_record(self, run_id: str) -> DagRunRecord:
+        row = self._connection.execute(
+            "SELECT * FROM dag_runs WHERE run_id = ?", (run_id,)
+        ).fetchone()
+        if row is None:
+            raise DagRunStoreError("dag_run_missing", run_id)
+        return DagRunRecord(
+            run_id=str(row["run_id"]),
+            plan_id=str(row["plan_id"]),
+            plan_sha256=str(row["plan_sha256"]),
+            status=str(row["status"]),
+            verdict=str(row["verdict"]) if row["verdict"] is not None else None,
+            lease_owner=str(row["lease_owner"]) if row["lease_owner"] is not None else None,
+            lease_epoch=int(row["lease_epoch"]),
+            lease_expires_at_ms=int(row["lease_expires_at_ms"])
+            if row["lease_expires_at_ms"] is not None
+            else None,
+        )
 
     def max_observed_concurrency(self, run_id: str) -> int:
         """Return the highest scheduler concurrency recorded in the journal."""

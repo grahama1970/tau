@@ -6815,3 +6815,15 @@
   stdin delivery, nonzero exit, timeout, capability registration, and artifact
   persistence. This does not prove sandbox isolation, secure execution, Herdr
   or tmux behavior, provider/model quality, or semantic correctness.
+# 2026-07-15: Authoritative DAG Viewer Replay Foundation
+
+- The self-contained DAG viewer fleet is tracked by Tau #105; Child A is #106.
+- `dag_runtime/replay.py` is the shared durable reducer used by scheduler restore and viewer state.
+- `SqliteDagRunReader` opens stores with `mode=ro` and `PRAGMA query_only=ON`; viewers never acquire
+  scheduler leases or write SQLite.
+- Generic and project DAG runs retain canonical `source-dag.json` and
+  `source-dag-reference.json` before dispatch. Conflicting source retention fails closed.
+- Viewer projection keeps scheduler state, runtime liveness, and receipt admission distinct. Runtime
+  text cannot accept a node.
+- Child A adds read-only snapshot/events/capabilities CLI surfaces only. HTTP and React remain Child
+  B and Child C work.
