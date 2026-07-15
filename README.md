@@ -210,7 +210,7 @@ copyable example in
 | Terminal contributions and join policies | Implemented for `bounded-ready-queue` | Per-edge terminal receipts, eight deterministic policies, skip/block propagation, timeout closure, and replayable join decisions; does not prove branch-result truth. |
 | GitHub apply policy | Implemented as a local gate | Does not itself post to GitHub. |
 | Browser/CDP proof lane | Implemented for proof surfaces | Not a production chat UI proof. |
-| Tau DAG React Flow viewer | Implemented as UX Lab integration surface | Static fixtures prove renderability only; not live DAG execution. |
+| Tau DAG React Flow viewer | Implemented as a self-contained Tau surface | Read-only journal projection with packaged assets; does not authorize DAG mutation or prove provider/model semantics. |
 | Proof index | Implemented | Indexes receipt metadata and hashes; does not prove receipt semantic truth. |
 | Route-memory signals | Implemented as local receipts | No approved Memory sync unless explicitly run. |
 | Adaptive DAG expansion | Implemented as validate/policy/apply artifacts | Does not mutate a running DAG silently. |
@@ -453,8 +453,9 @@ Added or materially changed areas include:
   execution or mutation.
 - **T’au-owned UX contract** at `ui/tau-chat-contract.json`, with UX Lab acting
   as an integration viewer rather than the source of truth.
-- **T’au DAG React Flow inspection** through UX Lab `#tau/dag`, where the DAG
-  contract and receipt remain the authoritative artifacts.
+- **Tau-owned live DAG inspection** through `tau dag-view`, where the immutable
+  source DAG, compiled plan, scheduler journal, and admitted receipts remain the
+  authoritative artifacts.
 
 ## When to reach for it
 

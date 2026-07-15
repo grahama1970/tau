@@ -14,17 +14,19 @@
   validator, reviewer, and revision evidence. Reviewer `PASS` remains amber
   until the scheduler commits acceptance. `run_status` exports a Tau-owned
   launch command and no longer points to UX Lab. Deterministic local smoke:
-  `/tmp/tau-dag-viewer-live-smoke.json` (`mocked:false`, `live:true`,
-  `provider_live:false`, 61 snapshots). Browser proof:
-  `/tmp/tau-dag-viewer-browser-proof-round-1-repair.json` and
-  `/tmp/tau-dag-viewer-browser-proof-round-1-repair.png` report 13/13 checks
+  `/tmp/tau-dag-viewer-live-smoke-post-patch.json` (`mocked:false`, `live:true`,
+  `provider_live:false`, 96 snapshots). Browser proof:
+  `/tmp/tau-dag-viewer-browser-proof-post-patch.json` and
+  `/tmp/tau-dag-viewer-browser-proof-post-patch.png` report 13/13 checks
   PASS, GET requests only, and a non-overlapping 1440×1000 viewport containing
   the graph, source/plan inspector, bounded transaction attempts, Tau admission,
   proof boundary, and journal timeline. Installed-wheel proof verifies packaged
-  assets and starts the wheel-installed viewer without Node. The branch still
-  requires current-main integration and a fresh deterministic proof rerun. This
-  does not prove provider or model semantic quality or production deployment
-  readiness.
+  assets and starts the wheel-installed viewer without Node. Focused Python
+  checks report 66 passed; frontend checks report 5 passed with typecheck and
+  build passing. The full suite reports 2377 passed and the same three retained
+  base failures; mypy retains the same 28 base errors, so neither baseline is
+  claimed green. This does not prove provider or model semantic quality or
+  production deployment readiness.
 - 2026-07-15 DAG viewer server: `tau dag-view-serve` owns the temporary
   loopback-only read surface over the Child A projection. It accepts only GET,
   opens SQLite through query-only snapshot readers, emits full Tau-authored
