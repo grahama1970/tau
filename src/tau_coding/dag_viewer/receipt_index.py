@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.transition import DagCommittedReceipt
 from tau_coding.dag_viewer.redaction import redact_for_viewer
 
 MAX_RECEIPT_BYTES = 5 * 1024 * 1024
@@ -77,34 +78,38 @@ class ReceiptIndex:
         }
 
 
-def build_receipt_index(run_dir: Path) -> ReceiptIndex:
+def build_receipt_index(
+    run_dir: Path, receipt_refs: tuple[DagCommittedReceipt, ...]
+) -> ReceiptIndex:
     root = run_dir.expanduser().resolve()
     entries: list[IndexedReceipt] = []
     ids: set[str] = set()
-    for candidate in sorted(run_dir.expanduser().absolute().rglob("*.json")):
+    for receipt_ref in sorted(receipt_refs, key=lambda item: item.path):
+        candidate = Path(receipt_ref.path)
         resolved = candidate.resolve()
         if candidate.is_symlink() and not _is_beneath(resolved, root):
-            if "receipt" in candidate.name.casefold():
-                raise RuntimeError("dag_viewer_receipt_symlink_escape")
-            continue
-        if not _is_beneath(resolved, root) or not resolved.is_file():
-            continue
+            raise RuntimeError("dag_viewer_receipt_symlink_escape")
+        if not _is_beneath(resolved, root):
+            raise RuntimeError("dag_viewer_receipt_path_escape")
+        if not resolved.is_file():
+            raise RuntimeError("dag_viewer_receipt_not_found")
         if resolved.stat().st_size > MAX_RECEIPT_BYTES:
-            if "receipt" in candidate.name.casefold():
-                raise RuntimeError("dag_viewer_receipt_too_large")
-            continue
+            raise RuntimeError("dag_viewer_receipt_too_large")
         data = resolved.read_bytes()
         try:
             payload = json.loads(data)
         except (UnicodeError, json.JSONDecodeError) as exc:
-            if "receipt" in candidate.name.casefold():
-                raise RuntimeError("dag_viewer_receipt_invalid") from exc
-            continue
+            raise RuntimeError("dag_viewer_receipt_invalid") from exc
         schema = payload.get("schema") if isinstance(payload, dict) else None
         if not isinstance(schema, str) or "receipt" not in schema.casefold():
-            continue
+            raise RuntimeError("dag_viewer_receipt_invalid")
         digest_hex = hashlib.sha256(data).hexdigest()
-        receipt_id = f"sha256-{digest_hex[:24]}"
+        digest = f"sha256:{digest_hex}"
+        if digest != receipt_ref.file_sha256:
+            raise RuntimeError("dag_viewer_receipt_hash_mismatch")
+        path_display = resolved.relative_to(root).as_posix()
+        identity = hashlib.sha256(f"{path_display}\0{digest}".encode()).hexdigest()
+        receipt_id = f"sha256-{identity[:24]}"
         if receipt_id in ids:
             raise RuntimeError("dag_viewer_receipt_id_collision")
         ids.add(receipt_id)
@@ -112,11 +117,9 @@ def build_receipt_index(run_dir: Path) -> ReceiptIndex:
             IndexedReceipt(
                 receipt_id=receipt_id,
                 schema=schema,
-                path=candidate,
-                path_display=candidate.absolute()
-                .relative_to(run_dir.expanduser().absolute())
-                .as_posix(),
-                sha256=f"sha256:{digest_hex}",
+                path=resolved,
+                path_display=path_display,
+                sha256=digest,
             )
         )
     return ReceiptIndex(root, tuple(entries))

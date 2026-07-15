@@ -7,7 +7,16 @@ from pathlib import Path
 
 import pytest
 
+from tau_coding.dag_runtime.transition import DagCommittedReceipt
 from tau_coding.dag_viewer.receipt_index import build_receipt_index
+
+
+def _ref(path: Path) -> DagCommittedReceipt:
+    import hashlib
+
+    return DagCommittedReceipt(
+        str(path), f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+    )
 
 
 def test_receipt_index_hashes_and_redacts_only_receipts(tmp_path: Path) -> None:
@@ -23,7 +32,7 @@ def test_receipt_index_hashes_and_redacts_only_receipts(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (tmp_path / "source-dag.json").write_text(json.dumps({"schema": "tau.dag_contract.v1"}))
-    index = build_receipt_index(tmp_path)
+    index = build_receipt_index(tmp_path, (_ref(receipt),))
     assert len(index.entries) == 1
     projection = index.read_projection(index.entries[0].receipt_id)
     assert projection["receipt"]["authorization"] == "[REDACTED]"
@@ -33,7 +42,7 @@ def test_receipt_index_hashes_and_redacts_only_receipts(tmp_path: Path) -> None:
 def test_receipt_index_blocks_hash_change_and_symlink_escape(tmp_path: Path) -> None:
     receipt = tmp_path / "node-receipt.json"
     receipt.write_text(json.dumps({"schema": "tau.node_receipt.v1", "status": "PASS"}))
-    index = build_receipt_index(tmp_path)
+    index = build_receipt_index(tmp_path, (_ref(receipt),))
     receipt.write_text(json.dumps({"schema": "tau.node_receipt.v1", "status": "BLOCKED"}))
     with pytest.raises(RuntimeError, match="dag_viewer_receipt_hash_mismatch"):
         index.read_projection(index.entries[0].receipt_id)
@@ -43,4 +52,21 @@ def test_receipt_index_blocks_hash_change_and_symlink_escape(tmp_path: Path) -> 
     escaped = tmp_path / "escaped-receipt.json"
     escaped.symlink_to(external)
     with pytest.raises(RuntimeError, match="dag_viewer_receipt_symlink_escape"):
-        build_receipt_index(tmp_path)
+        build_receipt_index(tmp_path, (_ref(escaped),))
+
+
+def test_receipt_index_is_run_scoped_and_allows_identical_content(tmp_path: Path) -> None:
+    first = tmp_path / "first-receipt.json"
+    second = tmp_path / "second-receipt.json"
+    unrelated = tmp_path / "unrelated-receipt.json"
+    payload = json.dumps({"schema": "tau.node_receipt.v1", "status": "PASS"})
+    for path in (first, second, unrelated):
+        path.write_text(payload, encoding="utf-8")
+
+    index = build_receipt_index(tmp_path, (_ref(first), _ref(second)))
+
+    assert {entry.path_display for entry in index.entries} == {
+        "first-receipt.json",
+        "second-receipt.json",
+    }
+    assert len({entry.receipt_id for entry in index.entries}) == 2

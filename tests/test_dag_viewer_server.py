@@ -16,7 +16,33 @@ import pytest
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import run_dag_plan
+from tau_coding.dag_runtime.transition import (
+    AllSuccessTransitionPolicy,
+    DagNodeCompletion,
+    DagTransitionBatch,
+    DagTransitionView,
+)
 from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
+
+
+class _ReceiptTransitionPolicy(AllSuccessTransitionPolicy):
+    def __init__(self, receipt_path: Path) -> None:
+        self.receipt_path = receipt_path
+
+    def after_node_terminal(
+        self, view: DagTransitionView, completion: DagNodeCompletion
+    ) -> DagTransitionBatch:
+        base = super().after_node_terminal(view, completion)
+        return DagTransitionBatch(
+            edge_settlements=base.edge_settlements,
+            node_settlements=base.node_settlements,
+            node_cancellations=base.node_cancellations,
+            deadline_arms=base.deadline_arms,
+            deadline_cancellations=base.deadline_cancellations,
+            receipt_paths=(str(self.receipt_path),),
+            events=base.events,
+            block_run=base.block_run,
+        )
 
 
 def _durable_run(tmp_path: Path) -> None:
@@ -34,21 +60,23 @@ def _durable_run(tmp_path: Path) -> None:
         ],
     }
     plan = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    receipt_path = tmp_path / "worker-receipt.json"
+    receipt_path.write_text(
+        json.dumps({"schema": "tau.worker_receipt.v1", "status": "PASS"}),
+        encoding="utf-8",
+    )
     with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
         run_dag_plan(
             plan,
             run_store=store,
             run_id="viewer-run",
+            transition_policy=_ReceiptTransitionPolicy(receipt_path),
             execute_node=lambda node, inputs, attempt: {
                 "node_id": node.node_id,
                 "status": "PASS",
                 "verdict": "PASS",
             },
         )
-    (tmp_path / "worker-receipt.json").write_text(
-        json.dumps({"schema": "tau.worker_receipt.v1", "status": "PASS"}),
-        encoding="utf-8",
-    )
 
 
 @pytest.fixture
@@ -138,6 +166,7 @@ def test_state_etag_and_concurrent_reads_are_consistent(
     assert status == 304
     assert body == b""
     assert cached_headers["Cache-Control"] == "no-store"
+    assert "Content-Length" not in cached_headers
     with ThreadPoolExecutor(max_workers=8) as pool:
         responses = list(pool.map(lambda _: _request(server, "GET", "/api/v1/state"), range(16)))
     assert {headers["ETag"] for _, headers, _ in responses} == {etag}
@@ -191,6 +220,39 @@ def test_receipts_are_allowlisted_and_tamper_evident(
     assert _json(body)["code"] == "dag_viewer_receipt_hash_mismatch"
 
 
+def test_host_header_must_match_bound_loopback_authority(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
+) -> None:
+    server, _ = viewer_server
+    status, _, body = _request(
+        server,
+        "GET",
+        "/api/v1/state",
+        headers={"Host": f"attacker.example:{server.port}"},
+    )
+    assert status == 421
+    assert _json(body)["code"] == "dag_viewer_host_forbidden"
+
+
+def test_localhost_authority_is_preserved(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    server = create_dag_viewer_server(run_dir=tmp_path, host="localhost", port=0)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        status, _, body = _request(
+            server,
+            "GET",
+            "/api/v1/state",
+            headers={"Host": f"localhost:{server.port}"},
+        )
+        assert status == 200
+        assert _json(body)["schema"] == "tau.dag_live_snapshot.v1"
+    finally:
+        server.shutdown()
+        thread.join(timeout=2)
+
+
 def test_store_failure_is_structured_and_shutdown_releases_port(
     viewer_server: tuple[RunningDagViewerServer, threading.Thread],
 ) -> None:
@@ -226,12 +288,7 @@ def test_corrupt_event_is_structured_without_sqlite_details(
     assert "sqlite" not in error["message"].casefold()
 
 
-def test_non_loopback_and_symlink_receipt_block_before_bind(tmp_path: Path) -> None:
+def test_non_loopback_blocks_before_bind(tmp_path: Path) -> None:
     _durable_run(tmp_path)
     with pytest.raises(RuntimeError, match="dag_viewer_non_loopback_forbidden"):
         create_dag_viewer_server(run_dir=tmp_path, host="0.0.0.0", port=0)
-    external = tmp_path.parent / "outside-receipt.json"
-    external.write_text(json.dumps({"schema": "tau.outside_receipt.v1"}))
-    (tmp_path / "escape-receipt.json").symlink_to(external)
-    with pytest.raises(RuntimeError, match="dag_viewer_receipt_symlink_escape"):
-        create_dag_viewer_server(run_dir=tmp_path, host="127.0.0.1", port=0)

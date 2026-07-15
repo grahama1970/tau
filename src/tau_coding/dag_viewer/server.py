@@ -44,7 +44,9 @@ class DagViewerApplication:
         replay, _ = load_dag_replay(run_dir=self.run_dir, run_id=run_id)
         self.run_id = replay.run_id
         self.plan_sha256 = replay.plan.plan_sha256
-        self.receipts: ReceiptIndex = build_receipt_index(self.run_dir)
+        self.receipts: ReceiptIndex = build_receipt_index(
+            self.run_dir, replay.transition_receipts
+        )
 
     def handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
         parsed = urlsplit(target)
@@ -173,15 +175,32 @@ def create_dag_viewer_server(
     if not 0 <= port <= 65535:
         raise RuntimeError("dag_viewer_port_invalid")
     application = DagViewerApplication(run_dir=run_dir, run_id=run_id)
-    handler = _handler_for(application)
+    handler = _handler_for(application, authority_host=host)
     server_type = DagViewerHttpServerV6 if host == "::1" else DagViewerHttpServer
     httpd = server_type((host, port), handler)
     return RunningDagViewerServer(httpd=httpd, application=application, host=host)
 
 
-def _handler_for(application: DagViewerApplication) -> type[BaseHTTPRequestHandler]:
+def _handler_for(
+    application: DagViewerApplication, *, authority_host: str
+) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802
+            server_address = self.server.server_address
+            bound_port = int(server_address[1]) if isinstance(server_address, tuple) else -1
+            if not _host_header_matches_server(
+                self.headers.get("Host"),
+                host=authority_host,
+                port=bound_port,
+            ):
+                self._send(
+                    viewer_error(
+                        "dag_viewer_host_forbidden",
+                        "The request authority does not match the loopback viewer.",
+                        status=HTTPStatus.MISDIRECTED_REQUEST,
+                    )
+                )
+                return
             try:
                 response = application.handle_get(
                     self.path,
@@ -220,7 +239,8 @@ def _handler_for(application: DagViewerApplication) -> type[BaseHTTPRequestHandl
                 **(extra or {}),
             }
             headers["Content-Type"] = response.content_type
-            headers["Content-Length"] = str(len(response.body))
+            if response.status != HTTPStatus.NOT_MODIFIED:
+                headers["Content-Length"] = str(len(response.body))
             for key, value in headers.items():
                 self.send_header(key, value)
             self.end_headers()
@@ -231,3 +251,10 @@ def _handler_for(application: DagViewerApplication) -> type[BaseHTTPRequestHandl
             return
 
     return Handler
+
+
+def _host_header_matches_server(value: str | None, *, host: str, port: int) -> bool:
+    if value is None or "," in value or "@" in value:
+        return False
+    expected_host = f"[{host}]" if ":" in host else host
+    return value.casefold() == f"{expected_host}:{port}".casefold()
