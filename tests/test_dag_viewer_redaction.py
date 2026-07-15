@@ -13,6 +13,23 @@ def test_redactor_removes_sensitive_values_and_bounds_strings() -> None:
     assert result.truncated is True
 
 
+def test_redactor_omits_raw_command_and_terminal_output() -> None:
+    result = redact_for_viewer(
+        {
+            "stdout": "Bearer sk-secret-value",
+            "nested": {"stderr": "TOKEN=secret", "pane_text": "password=hunter2"},
+        }
+    )
+    assert result.value == {
+        "stdout": "[REDACTED:RAW_OUTPUT]",
+        "nested": {
+            "stderr": "[REDACTED:RAW_OUTPUT]",
+            "pane_text": "[REDACTED:RAW_OUTPUT]",
+        },
+    }
+    assert "secret" not in str(result.value)
+
+
 def test_redactor_bounds_collections_and_depth() -> None:
     value: object = "leaf"
     for _ in range(14):

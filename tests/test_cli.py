@@ -56,6 +56,24 @@ def test_cli_dag_view_capabilities_is_read_only() -> None:
     assert payload["read_only"] is True
 
 
+def test_cli_dag_view_rejects_non_numeric_event_range_without_traceback(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "dag-view-events",
+            "--run-dir",
+            str(tmp_path),
+            "--after-sequence",
+            "not-an-integer",
+            "--output",
+            "-",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "dag_viewer_event_range_invalid" in result.output
+    assert "Traceback" not in result.output
+
+
 def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) -> None:
     spec_path = tmp_path / "dag.json"
     output_path = tmp_path / "plan.json"

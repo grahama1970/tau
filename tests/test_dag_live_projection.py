@@ -77,6 +77,19 @@ def test_reader_rejects_missing_store_and_invalid_ranges(tmp_path: Path) -> None
         reader.load_events("run-1", after_sequence=-1)
 
 
+def test_reader_snapshot_is_consistent_across_concurrent_wal_commit(tmp_path: Path) -> None:
+    database = _durable_run(tmp_path)
+    with sqlite3.connect(database) as connection:
+        connection.execute("UPDATE dag_runs SET status = 'RUNNING', verdict = NULL")
+    with SqliteDagRunReader(database) as reader, reader.snapshot():
+        assert reader.load_run_record("run-1").status == "RUNNING"
+        with sqlite3.connect(database) as writer:
+            writer.execute("UPDATE dag_runs SET status = 'PASS', verdict = 'PASS'")
+        assert reader.load_run_record("run-1").status == "RUNNING"
+    with SqliteDagRunReader(database) as reader:
+        assert reader.load_run_record("run-1").status == "PASS"
+
+
 def test_reader_blocks_unknown_store_schema_and_corrupt_event(tmp_path: Path) -> None:
     database = _durable_run(tmp_path)
     with sqlite3.connect(database) as connection:
@@ -157,9 +170,13 @@ def test_live_events_are_redacted_and_bounded(tmp_path: Path) -> None:
         limit=200,
     )
     assert payload["events"][0]["payload"]["authorization"] == "[REDACTED]"
+    assert payload["events"][0]["payload"]["stdout"] == "[REDACTED:RAW_OUTPUT]"
     assert "Bearer secret" not in json.dumps(payload)
     assert payload["redaction"] == {
         "redacted": True,
-        "redacted_paths": ["$.events[0].payload.authorization"],
-        "truncated": True,
+        "redacted_paths": [
+            "$.events[0].payload.authorization",
+            "$.events[0].payload.stdout",
+        ],
+        "truncated": False,
     }

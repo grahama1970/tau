@@ -29,7 +29,7 @@ def load_dag_replay(
     *, run_dir: Path, run_id: str | None = None
 ) -> tuple[DagReplayState, tuple[dict[str, Any], ...]]:
     database = run_dir.expanduser().resolve() / "dag-run.sqlite3"
-    with SqliteDagRunReader(database) as reader:
+    with SqliteDagRunReader(database) as reader, reader.snapshot():
         run_ids = reader.run_ids()
         if run_id is None:
             if len(run_ids) != 1:
@@ -38,7 +38,8 @@ def load_dag_replay(
         plan = reader.load_plan(run_id)
         event_pages: list[DagJournalEvent] = []
         cursor = 0
-        while cursor < reader.latest_sequence(run_id):
+        latest_sequence = reader.latest_sequence(run_id)
+        while cursor < latest_sequence:
             page = reader.load_events(run_id, after_sequence=cursor, limit=5000)
             if not page:
                 raise RuntimeError("dag_viewer_journal_sequence_gap")

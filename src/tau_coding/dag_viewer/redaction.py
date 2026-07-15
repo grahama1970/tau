@@ -11,6 +11,11 @@ SENSITIVE_KEY = re.compile(
     r"(?:secret|token|password|credential|authorization|api_key|private_key|cookie|session_cookie)",
     re.IGNORECASE,
 )
+RAW_OUTPUT_KEY = re.compile(
+    r"^(?:stdout|stderr|pane_text|pane_capture|terminal_output|raw_output|"
+    r"chain_of_thought|hidden_reasoning)$",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,7 +46,10 @@ def _walk(value: Any, *, path: str, depth: int, paths: list[str], truncated: lis
                 truncated[0] = True
                 break
             child = f"{path}.{key}"
-            if SENSITIVE_KEY.search(str(key)):
+            if RAW_OUTPUT_KEY.fullmatch(str(key)):
+                output[str(key)] = "[REDACTED:RAW_OUTPUT]"
+                paths.append(child)
+            elif SENSITIVE_KEY.search(str(key)):
                 output[str(key)] = "[REDACTED]"
                 paths.append(child)
             else:

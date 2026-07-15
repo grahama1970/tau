@@ -6159,9 +6159,15 @@ def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, obje
             elif argument == "--run-id":
                 options["run_id"] = value
             elif argument == "--after-sequence":
-                options["after_sequence"] = int(value)
+                try:
+                    options["after_sequence"] = int(value)
+                except ValueError as exc:
+                    raise RuntimeError("dag_viewer_event_range_invalid") from exc
             elif argument == "--limit":
-                options["limit"] = int(value)
+                try:
+                    options["limit"] = int(value)
+                except ValueError as exc:
+                    raise RuntimeError("dag_viewer_event_range_invalid") from exc
             elif value != "-":
                 raise RuntimeError("Child A supports --output - only")
             index += 2

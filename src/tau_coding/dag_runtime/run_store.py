@@ -416,6 +416,21 @@ class SqliteDagRunReader:
     def __exit__(self, *_: object) -> None:
         self.close()
 
+    class _Snapshot:
+        def __init__(self, connection: sqlite3.Connection) -> None:
+            self.connection = connection
+
+        def __enter__(self) -> None:
+            self.connection.execute("BEGIN")
+
+        def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
+            self.connection.execute("ROLLBACK" if exc_type else "COMMIT")
+
+    def snapshot(self) -> _Snapshot:
+        """Hold one consistent read snapshot across all projection queries."""
+
+        return self._Snapshot(self._connection)
+
     def load_run_record(self, run_id: str) -> DagRunRecord:
         row = self._connection.execute(
             "SELECT * FROM dag_runs WHERE run_id = ?", (run_id,)
