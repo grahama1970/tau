@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Tau DAG viewer error v1","type":"object","required":["schema","status","code","message","details"],"properties":{"schema":{"const":"tau.dag_viewer_error.v1"},"status":{"const":"BLOCKED"},"code":{"type":"string"},"message":{"type":"string"},"details":{"type":"object"}},"additionalProperties":false}

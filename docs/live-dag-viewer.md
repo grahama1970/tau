@@ -25,5 +25,29 @@ pass `--run-id`; Tau does not silently choose a generation.
 - Browser-facing values are recursively redacted and size bounded.
 - Older runs without `source-dag.json` report `SOURCE_DAG_NOT_RETAINED`; Tau does not synthesize it.
 
-This layer does not provide HTTP or React assets. Those are later fleet children built on this read
-model.
+## Read-only server
+
+Child B adds a loopback-only standard-library HTTP surface over the authoritative
+Child A projection:
+
+```bash
+uv run tau dag-view-serve \
+  --run-dir /path/to/run \
+  --host 127.0.0.1 \
+  --port 0 \
+  --json
+```
+
+The startup receipt prints the assigned port. The server exposes only `GET`
+endpoints for capabilities, manifest, full state snapshots, bounded events, and
+allowlisted receipts. It opens SQLite read-only, uses one snapshot transaction
+per projection, never acquires a scheduler lease, and rejects non-loopback
+hosts. Receipt paths are frozen at startup and hash-checked on every fetch.
+
+`/api/v1/state` supports `ETag` and `If-None-Match`. A `304` means the last
+Tau-authored replacement snapshot is still current; clients must not infer
+transitions locally.
+
+The root page is intentionally informational until the packaged React Flow
+application lands in Child C. This server does not provide dispatch, retry,
+cancellation, approval, cleanup, or any other mutation authority.

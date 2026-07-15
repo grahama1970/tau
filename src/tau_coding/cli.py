@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, suppress
 from datetime import UTC, datetime
 from os import environ
 from pathlib import Path
@@ -77,6 +77,7 @@ from tau_coding.dag_viewer.projection import (
     build_dag_live_snapshot,
     load_dag_replay,
 )
+from tau_coding.dag_viewer.server import create_dag_viewer_server
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
 from tau_coding.demo_airgap_itar import run_demo_airgap_itar_basic
@@ -750,6 +751,22 @@ def main(
         except RuntimeError as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        raise typer.Exit()
+
+    if prompt_option is None and command == "dag-view-serve":
+        try:
+            options = _parse_dag_view_serve_cli_args(positional_args[1:])
+            viewer_server = create_dag_viewer_server(
+                run_dir=Path(str(options["run_dir"])),
+                run_id=_optional_str(options.get("run_id")),
+                host=str(options["host"]),
+                port=int(options["port"]),
+            )
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        typer.echo(json.dumps(viewer_server.receipt(), indent=2, sort_keys=True))
+        with suppress(KeyboardInterrupt):
+            viewer_server.serve_forever()
         raise typer.Exit()
 
     if prompt_option is None and command == "init":
@@ -6177,6 +6194,41 @@ def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, obje
         raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir> [--run-id <run-id>]")
     if int(options["after_sequence"]) < 0 or not 1 <= int(options["limit"]) <= 5000:
         raise RuntimeError("dag_viewer_event_range_invalid")
+    return options
+
+
+def _parse_dag_view_serve_cli_args(args: list[str]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "run_dir": None,
+        "run_id": None,
+        "host": "127.0.0.1",
+        "port": 0,
+    }
+    index = 0
+    while index < len(args):
+        argument = args[index]
+        if argument == "--json":
+            index += 1
+            continue
+        if argument not in {"--run-dir", "--run-id", "--host", "--port"}:
+            raise RuntimeError(f"unknown dag-view-serve option: {argument}")
+        if index + 1 >= len(args):
+            raise RuntimeError(f"{argument} requires a value")
+        value = args[index + 1]
+        if argument == "--run-dir":
+            options["run_dir"] = value
+        elif argument == "--run-id":
+            options["run_id"] = value
+        elif argument == "--host":
+            options["host"] = value
+        else:
+            try:
+                options["port"] = int(value)
+            except ValueError as exc:
+                raise RuntimeError("dag_viewer_port_invalid") from exc
+        index += 2
+    if options["run_dir"] is None:
+        raise RuntimeError("Usage: tau dag-view-serve --run-dir <run-dir> [--run-id <run-id>]")
     return options
 
 

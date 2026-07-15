@@ -5,6 +5,12 @@
 
 ## Current Understanding
 
+- 2026-07-15 DAG viewer server: `tau dag-view-serve` owns the temporary
+  loopback-only read surface over the Child A projection. It accepts only GET,
+  opens SQLite through query-only snapshot readers, emits full Tau-authored
+  snapshots with ETags, and serves receipts only through a startup-frozen,
+  path-checked, symlink-checked, hash-checked allowlist. React assets and browser
+  proof remain Child C work and are not implied by the server receipt.
 - 2026-07-14 runtime worktree ownership: interactive Herdr/tmux operations use
   exact `tau.runtime_endpoint_lease.v1` identities; labels and visible terminal
   text are not ownership authority. `GitWorktreeLeaseManager` creates one real
