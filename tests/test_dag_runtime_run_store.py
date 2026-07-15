@@ -105,6 +105,59 @@ def test_store_persists_scheduler_concurrency_high_water_mark(tmp_path: Path) ->
         assert [event["payload"]["concurrency"] for event in events] == [1, 3]
 
 
+def test_store_appends_bounded_idempotent_diagnostic_events_without_state_change(
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path, ["producer"])
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
+        payload = {
+            "schema": "tau.dag_diagnostic_event.v1",
+            "diagnostic_kind": "transaction_progress",
+            "authority": "diagnostic_only",
+        }
+        sequence = store.append_diagnostic_event(
+            lease,
+            event_key="transaction:producer:1:reviewer_completed",
+            node_id="producer",
+            payload=payload,
+        )
+        assert (
+            store.append_diagnostic_event(
+                lease,
+                event_key="transaction:producer:1:reviewer_completed",
+                node_id="producer",
+                payload=payload,
+            )
+            == sequence
+        )
+        assert store.load_run_record("run-1").status == "RUNNING"
+        with pytest.raises(DagRunStoreError, match="dag_run_event_conflict"):
+            store.append_diagnostic_event(
+                lease,
+                event_key="transaction:producer:1:reviewer_completed",
+                node_id="producer",
+                payload={**payload, "authority": "changed"},
+            )
+        with pytest.raises(DagRunStoreError, match="dag_diagnostic_event_schema_invalid"):
+            store.append_diagnostic_event(
+                lease,
+                event_key="invalid",
+                node_id="producer",
+                payload={"schema": "unknown"},
+            )
+        with pytest.raises(DagRunStoreError, match="dag_diagnostic_event_too_large"):
+            store.append_diagnostic_event(
+                lease,
+                event_key="oversized",
+                node_id="producer",
+                payload={
+                    "schema": "tau.dag_diagnostic_event.v1",
+                    "value": "x" * (65 * 1024),
+                },
+            )
+
+
 def test_store_deduplicates_identical_result_and_blocks_conflicting_result(
     tmp_path: Path,
 ) -> None:

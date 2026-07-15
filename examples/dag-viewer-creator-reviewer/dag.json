@@ -1,0 +1,33 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "dag-viewer-creator-reviewer",
+  "run_dir": "REPLACED_BY_SMOKE_RUNNER",
+  "nodes": [
+    {
+      "node_id": "creator-reviewer",
+      "role": "artifact-transaction",
+      "command": ["python", "producer.py"],
+      "depends_on": [],
+      "receipt_path": "creator-receipt.json",
+      "work_order_path": "work-order.json",
+      "max_attempts": 2,
+      "transaction": {
+        "schema": "tau.generic_artifact_transaction.v1",
+        "transaction_id": "tx-creator-reviewer",
+        "artifact_root": "artifacts",
+        "producer_id": "creator",
+        "validator": {"validator_id": "deterministic-validator", "command": ["python", "validator.py"]},
+        "reviewer": {"reviewer_id": "deterministic-reviewer", "command": ["python", "reviewer.py"]},
+        "acceptance": {"require_output_change_after_revise": true}
+      }
+    },
+    {
+      "node_id": "continuation",
+      "role": "dependent-continuation",
+      "command": ["python", "continuation.py"],
+      "depends_on": ["creator-reviewer"],
+      "accepted_context_from": ["creator-reviewer"],
+      "receipt_path": "continuation-receipt.json"
+    }
+  ]
+}

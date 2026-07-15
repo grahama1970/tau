@@ -26,6 +26,9 @@ from tau_coding import (
     github_handoff,
 )
 from tau_coding.cli import app, run_print_mode
+from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.run_store import SqliteDagRunStore
+from tau_coding.dag_runtime.scheduler import run_dag_plan
 from tau_coding.paths import TauPaths
 from tau_coding.persona_dream_panel_agent import (
     _collect_scillm_sse,
@@ -46,6 +49,107 @@ from tau_coding.tools import create_coding_tools
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
+
+
+def _write_cli_dag_viewer_store(run_dir: Path, *, run_id: str) -> None:
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": run_id,
+            "run_dir": str(run_dir),
+            "nodes": [
+                {
+                    "node_id": "viewer-node",
+                    "role": "viewer-fixture",
+                    "command": ["true"],
+                    "receipt_path": str(run_dir / "viewer-node-receipt.json"),
+                }
+            ],
+        },
+        source_path=run_dir / "viewer-dag.json",
+    )
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store:
+        run_dag_plan(
+            plan,
+            run_store=store,
+            run_id=run_id,
+            execute_node=lambda node, inputs, attempt: {
+                "node_id": node.node_id,
+                "status": "PASS",
+                "verdict": "PASS",
+            },
+        )
+
+
+def _write_cli_transaction_history_store(run_dir: Path, *, run_id: str) -> None:
+    work_order = run_dir / "work-order.json"
+    work_order.write_text('{"task":"retain early history"}\n', encoding="utf-8")
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": run_id,
+            "run_dir": str(run_dir),
+            "nodes": [
+                {
+                    "node_id": "transaction-node",
+                    "role": "producer",
+                    "command": ["true"],
+                    "receipt_path": str(run_dir / "transaction-receipt.json"),
+                    "work_order_path": str(work_order),
+                    "transaction": {
+                        "schema": "tau.generic_artifact_transaction.v1",
+                        "transaction_id": "tx-cli-history",
+                        "artifact_root": str(run_dir / "artifacts"),
+                        "producer_id": "producer",
+                        "reviewer": {"reviewer_id": "reviewer", "command": ["true"]},
+                    },
+                }
+            ],
+        },
+        source_path=run_dir / "transaction-dag.json",
+    )
+
+    def append_history(lease) -> None:  # type: ignore[no-untyped-def]
+        with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as writer:
+            writer.append_diagnostic_event(
+                lease,
+                event_key="transaction:transaction-node:1:1:producer_completed",
+                node_id="transaction-node",
+                payload={
+                    "schema": "tau.dag_diagnostic_event.v1",
+                    "diagnostic_kind": "generic_artifact_transaction_progress",
+                    "node_id": "transaction-node",
+                    "scheduler_attempt": 1,
+                    "attempt": 1,
+                    "phase": "producer_completed",
+                    "evidence": {"candidate_manifest_sha256": "sha256:early"},
+                    "authority": "diagnostic_only",
+                },
+            )
+            for index in range(210):
+                writer.append_diagnostic_event(
+                    lease,
+                    event_key=f"diagnostic:filler:{index}",
+                    node_id="transaction-node",
+                    payload={
+                        "schema": "tau.dag_diagnostic_event.v1",
+                        "diagnostic_kind": "cli_history_filler",
+                        "index": index,
+                    },
+                )
+
+    with SqliteDagRunStore(run_dir / "dag-run.sqlite3") as store:
+        run_dag_plan(
+            plan,
+            run_store=store,
+            run_id=run_id,
+            on_lease_acquired=append_history,
+            execute_node=lambda node, inputs, attempt: {
+                "node_id": node.node_id,
+                "status": "PASS",
+                "verdict": "PASS",
+            },
+        )
 
 
 def test_cli_dag_view_capabilities_is_read_only() -> None:
@@ -72,6 +176,23 @@ def test_cli_dag_view_rejects_non_numeric_event_range_without_traceback(tmp_path
     assert result.exit_code != 0
     assert "dag_viewer_event_range_invalid" in result.output
     assert "Traceback" not in result.output
+
+
+def test_cli_dag_view_snapshot_projects_history_older_than_visible_event_window(
+    tmp_path: Path,
+) -> None:
+    _write_cli_transaction_history_store(tmp_path, run_id="cli-transaction-history")
+
+    result = CliRunner().invoke(
+        app,
+        ["dag-view-snapshot", "--run-dir", str(tmp_path), "--output", "-"],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    transaction = payload["nodes"][0]["transaction"]
+    assert transaction["attempts"][0]["candidate_manifest_sha256"] == "sha256:early"
+    assert len(payload["recent_events"]) == 200
 
 
 def test_cli_dag_plan_exports_generic_contract_without_dispatch(tmp_path: Path) -> None:
@@ -712,6 +833,7 @@ def test_cli_dag_viewer_link_exports_project_dag_viewer_contract(tmp_path: Path)
         ),
         encoding="utf-8",
     )
+    _write_cli_dag_viewer_store(receipt_path.parent, run_id="cli-project-dag-viewer")
 
     result = CliRunner().invoke(app, ["dag-viewer-link", str(tmp_path)])
     payload = json.loads(result.output)
@@ -720,8 +842,21 @@ def test_cli_dag_viewer_link_exports_project_dag_viewer_contract(tmp_path: Path)
     assert payload["schema"] == "tau.dag_viewer_link.v1"
     assert payload["ok"] is True
     assert payload["status"] == "PASS"
+    assert payload["live"] is False
+    assert payload["provider_live"] is False
     assert payload["dag_viewer"]["available"] is True
-    assert payload["dag_viewer"]["url"].startswith("http://localhost:3002/#tau/dag?run=")
+    assert payload["dag_viewer"]["source_authority"] == "tau_sqlite_journal"
+    assert payload["dag_viewer"]["self_contained"] is True
+    assert payload["dag_viewer"]["read_only"] is True
+    assert payload["dag_viewer"]["launch_command"] == [
+        "tau",
+        "dag-view",
+        "--run-dir",
+        str(receipt_path.parent.resolve()),
+        "--run-id",
+        "cli-project-dag-viewer",
+    ]
+    assert payload["dag_viewer"]["external_ux_lab_required"] is False
     assert payload["dag_viewer"]["dag_id"] == "cli-project-dag-viewer"
     assert payload["dag_viewer"]["goal_hash"] == "sha256:goal"
     assert payload["dag_viewer"]["contract_path"] == str(contract_path.resolve())

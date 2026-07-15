@@ -1,16 +1,38 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-13 by agent
+**Last updated:** 2026-07-15 by agent
 **Status:** Active development
 
 ## Current Understanding
 
+- 2026-07-15 self-contained live DAG viewer Child C (#108): Tau now owns the
+  packaged React Flow application, loopback launch command, immutable source-DAG
+  and `DagPlan` inspectors, journal-derived graph, transaction attempts,
+  receipt admission, runtime diagnostics, and event timeline. Generic artifact
+  transactions append bounded lease-bound diagnostic events to SQLite; replay
+  ignores them for scheduler truth while the viewer uses them for creator,
+  validator, reviewer, and revision evidence. Reviewer `PASS` remains amber
+  until the scheduler commits acceptance. `run_status` exports a Tau-owned
+  launch command and no longer points to UX Lab. Deterministic local smoke:
+  `/tmp/tau-dag-viewer-live-smoke-post-patch.json` (`mocked:false`, `live:true`,
+  `provider_live:false`, 96 snapshots). Browser proof:
+  `/tmp/tau-dag-viewer-browser-proof-post-patch.json` and
+  `/tmp/tau-dag-viewer-browser-proof-post-patch.png` report 13/13 checks
+  PASS, GET requests only, and a non-overlapping 1440×1000 viewport containing
+  the graph, source/plan inspector, bounded transaction attempts, Tau admission,
+  proof boundary, and journal timeline. Installed-wheel proof verifies packaged
+  assets and starts the wheel-installed viewer without Node. Focused Python
+  checks report 66 passed; frontend checks report 5 passed with typecheck and
+  build passing. The full suite reports 2377 passed and the same three retained
+  base failures; mypy retains the same 28 base errors, so neither baseline is
+  claimed green. This does not prove provider or model semantic quality or
+  production deployment readiness.
 - 2026-07-15 DAG viewer server: `tau dag-view-serve` owns the temporary
   loopback-only read surface over the Child A projection. It accepts only GET,
   opens SQLite through query-only snapshot readers, emits full Tau-authored
-  snapshots with ETags, and serves receipts only through a startup-frozen,
-  path-checked, symlink-checked, hash-checked allowlist. React assets and browser
-  proof remain Child C work and are not implied by the server receipt.
+  snapshots with ETags, and serves receipts only through a journal-derived,
+  path-checked, symlink-checked, hash-checked allowlist. The server receipt alone
+  does not imply browser rendering.
 - 2026-07-14 runtime worktree ownership: interactive Herdr/tmux operations use
   exact `tau.runtime_endpoint_lease.v1` identities; labels and visible terminal
   text are not ownership authority. `GitWorktreeLeaseManager` creates one real

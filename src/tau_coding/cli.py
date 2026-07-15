@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import webbrowser
 from contextlib import redirect_stdout, suppress
 from datetime import UTC, datetime
 from os import environ
@@ -738,7 +739,7 @@ def main(
                 run_dir=Path(str(options["run_dir"])), run_id=options.get("run_id")
             )
             if command == "dag-view-snapshot":
-                payload = build_dag_live_snapshot(replay=replay, recent_events=events[-200:])
+                payload = build_dag_live_snapshot(replay=replay, recent_events=events)
             else:
                 after = int(options["after_sequence"])
                 limit = int(options["limit"])
@@ -753,9 +754,11 @@ def main(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         raise typer.Exit()
 
-    if prompt_option is None and command == "dag-view-serve":
+    if prompt_option is None and command in {"dag-view", "dag-view-serve"}:
         try:
-            options = _parse_dag_view_serve_cli_args(positional_args[1:])
+            options = _parse_dag_view_serve_cli_args(
+                positional_args[1:], command=str(command)
+            )
             viewer_server = create_dag_viewer_server(
                 run_dir=Path(str(options["run_dir"])),
                 run_id=_optional_str(options.get("run_id")),
@@ -765,6 +768,9 @@ def main(
         except (OSError, RuntimeError, ValueError) as exc:
             raise typer.BadParameter(str(exc)) from exc
         typer.echo(json.dumps(viewer_server.receipt(), indent=2, sort_keys=True))
+        should_open = bool(options["open"])
+        if should_open:
+            webbrowser.open(viewer_server.url)
         with suppress(KeyboardInterrupt):
             viewer_server.serve_forever()
         raise typer.Exit()
@@ -3681,7 +3687,7 @@ def _parse_zero_trust_doctor_cli_args(args: list[str]) -> dict[str, object]:
 def _dag_run_schema(spec_path: Path) -> str | None:
     try:
         payload = load_dag_contract_payload(spec_path)
-    except OSError, json.JSONDecodeError, RuntimeError:
+    except (OSError, json.JSONDecodeError, RuntimeError):
         return None
     return str(payload.get("schema")) if isinstance(payload.get("schema"), str) else None
 
@@ -6197,12 +6203,15 @@ def _parse_dag_view_cli_args(args: list[str], *, command: str) -> dict[str, obje
     return options
 
 
-def _parse_dag_view_serve_cli_args(args: list[str]) -> dict[str, object]:
+def _parse_dag_view_serve_cli_args(
+    args: list[str], *, command: str = "dag-view-serve"
+) -> dict[str, object]:
     options: dict[str, object] = {
         "run_dir": None,
         "run_id": None,
         "host": "127.0.0.1",
         "port": 0,
+        "open": command == "dag-view" and sys.stdout.isatty(),
     }
     index = 0
     while index < len(args):
@@ -6210,8 +6219,12 @@ def _parse_dag_view_serve_cli_args(args: list[str]) -> dict[str, object]:
         if argument == "--json":
             index += 1
             continue
+        if argument in {"--open", "--no-open"}:
+            options["open"] = argument == "--open"
+            index += 1
+            continue
         if argument not in {"--run-dir", "--run-id", "--host", "--port"}:
-            raise RuntimeError(f"unknown dag-view-serve option: {argument}")
+            raise RuntimeError(f"unknown {command} option: {argument}")
         if index + 1 >= len(args):
             raise RuntimeError(f"{argument} requires a value")
         value = args[index + 1]
@@ -6228,7 +6241,7 @@ def _parse_dag_view_serve_cli_args(args: list[str]) -> dict[str, object]:
                 raise RuntimeError("dag_viewer_port_invalid") from exc
         index += 2
     if options["run_dir"] is None:
-        raise RuntimeError("Usage: tau dag-view-serve --run-dir <run-dir> [--run-id <run-id>]")
+        raise RuntimeError(f"Usage: tau {command} --run-dir <run-dir> [--run-id <run-id>]")
     return options
 
 
@@ -9310,7 +9323,7 @@ def _index_tau_sanitization_artifact(run_dir: Path, artifact_path: Path) -> None
         return
     try:
         final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return
     if not isinstance(final_receipt, dict):
         return
@@ -9333,7 +9346,7 @@ def _redact_delegated_loop2_run_secrets(run_dir: Path) -> dict[str, str]:
         return {}
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return {}
     if not isinstance(contract, dict):
         return {}
@@ -9362,7 +9375,7 @@ def _filter_delegated_changed_files(run_dir: Path) -> dict[str, int]:
             continue
         try:
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             continue
         if not isinstance(payload, dict):
             continue
@@ -9547,7 +9560,7 @@ def _load_delegated_node_result(
     node_result_path = run_dir / "node-result.json"
     try:
         loaded = json.loads(node_result_path.read_text(encoding="utf-8"))
-    except OSError, json.JSONDecodeError:
+    except (OSError, json.JSONDecodeError):
         return fallback
     return loaded if isinstance(loaded, dict) else fallback
 

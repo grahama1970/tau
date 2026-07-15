@@ -53,6 +53,85 @@ def _durable_run(tmp_path: Path) -> Path:
     return database
 
 
+def _transaction_run(tmp_path: Path) -> tuple[object, tuple[dict[str, object], ...]]:
+    work_order = tmp_path / "work-order.json"
+    work_order.write_text('{"task":"projection fixture"}\n', encoding="utf-8")
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "transaction-run",
+            "run_dir": str(tmp_path),
+            "nodes": [
+                {
+                    "node_id": "creator",
+                    "role": "producer",
+                    "command": ["true"],
+                    "receipt_path": str(tmp_path / "creator.json"),
+                    "work_order_path": str(work_order),
+                    "max_attempts": 2,
+                    "transaction": {
+                        "schema": "tau.generic_artifact_transaction.v1",
+                        "transaction_id": "tx-creator",
+                        "artifact_root": str(tmp_path / "artifacts"),
+                        "producer_id": "creator",
+                        "reviewer": {"reviewer_id": "reviewer", "command": ["true"]},
+                    },
+                }
+            ],
+        },
+        source_path=tmp_path / "dag.json",
+    )
+    database = tmp_path / "dag-run.sqlite3"
+
+    def initialize(lease) -> None:  # type: ignore[no-untyped-def]
+        with SqliteDagRunStore(database) as writer:
+            for attempt, phase, evidence in (
+                (1, "producer_completed", {"candidate_manifest_sha256": "sha256:first"}),
+                (1, "validator_completed", {"status": "PASS"}),
+                (1, "reviewer_completed", {"verdict": "REVISE"}),
+                (1, "revision_committed", {"instruction": "address finding"}),
+                (2, "producer_completed", {"candidate_manifest_sha256": "sha256:second"}),
+                (2, "validator_completed", {"status": "PASS"}),
+                (2, "reviewer_completed", {"verdict": "PASS"}),
+                (
+                    2,
+                    "accepted_manifest_written",
+                    {"accepted_manifest_sha256": "sha256:accepted"},
+                ),
+            ):
+                writer.append_diagnostic_event(
+                    lease,
+                    event_key=f"transaction:creator:{attempt}:{phase}",
+                    node_id="creator",
+                    payload={
+                        "schema": "tau.dag_diagnostic_event.v1",
+                        "diagnostic_kind": "generic_artifact_transaction_progress",
+                        "node_id": "creator",
+                        "scheduler_attempt": 1,
+                        "attempt": attempt,
+                        "phase": phase,
+                        "evidence": evidence,
+                        "authority": "diagnostic_only",
+                    },
+                )
+
+    with SqliteDagRunStore(database) as store:
+        run_dag_plan(
+            plan,
+            run_store=store,
+            run_id="transaction-run",
+            on_lease_acquired=initialize,
+            execute_node=lambda node, inputs, attempt: {
+                "node_id": node.node_id,
+                "status": "PASS",
+                "verdict": "PASS",
+                "attempts": [{"attempt": 1}, {"attempt": 2, "review_verdict": "PASS"}],
+                "accepted_manifest_sha256": "sha256:accepted",
+            },
+        )
+    return load_dag_replay(run_dir=tmp_path, run_id="transaction-run")
+
+
 def test_reader_is_query_only_and_projection_accepts_only_scheduler_success(tmp_path: Path) -> None:
     database = _durable_run(tmp_path)
     with (
@@ -127,6 +206,105 @@ def test_runtime_pass_text_cannot_accept_node(tmp_path: Path) -> None:
     assert node["admission"]["state"] == "awaiting_receipt"
 
 
+def test_transaction_diagnostics_show_revisions_but_cannot_accept_node(tmp_path: Path) -> None:
+    replay, events = _transaction_run(tmp_path)
+    pending = replace(
+        replay,
+        run_status="RUNNING",
+        node_states=(("creator", "running"),),
+        results=(),
+    )
+    node = build_dag_live_snapshot(replay=pending, recent_events=events)["nodes"][0]
+
+    assert node["admission"]["accepted"] is False
+    assert node["transaction"]["state"] == "AWAITING_RECEIPT"
+    assert node["transaction"]["current_attempt"] == 2
+    assert node["transaction"]["max_attempts"] == 2
+    assert node["transaction"]["attempts"][0]["reviewer_verdict"] == "REVISE"
+    assert node["transaction"]["attempts"][1]["reviewer_verdict"] == "PASS"
+    assert node["transaction"]["accepted_manifest_sha256"] == "sha256:accepted"
+
+
+def test_transaction_projection_excludes_prior_scheduler_attempt_diagnostics(
+    tmp_path: Path,
+) -> None:
+    replay, events = _transaction_run(tmp_path)
+    producer_event = next(
+        event
+        for event in events
+        if event.get("event_key") == "transaction:creator:1:producer_completed"
+    )
+    current_event = {
+        **producer_event,
+        "seq": max(int(event["seq"]) for event in events) + 1,
+        "event_key": "transaction:creator:2:1:producer_completed",
+        "payload": {
+            **producer_event["payload"],
+            "scheduler_attempt": 2,
+            "evidence": {"candidate_manifest_sha256": "sha256:current"},
+        },
+    }
+    current = replace(
+        replay,
+        run_status="RUNNING",
+        node_states=(("creator", "running"),),
+        attempts=(DagReplayAttempt("creator", 2, "outer-attempt-2", "DISPATCHED", "STARTED"),),
+        results=(),
+    )
+
+    transaction = build_dag_live_snapshot(
+        replay=current,
+        recent_events=events + (current_event,),
+    )["nodes"][0]["transaction"]
+
+    assert transaction["attempts"] == [
+        {
+            "attempt": 1,
+            "producer_state": "PASS",
+            "candidate_manifest_sha256": "sha256:current",
+        }
+    ]
+    assert "reviewer_verdict" not in transaction["attempts"][0]
+
+
+def test_transaction_projection_accepts_only_after_committed_scheduler_transition(
+    tmp_path: Path,
+) -> None:
+    replay, events = _transaction_run(tmp_path)
+    first = build_dag_live_snapshot(replay=replay, recent_events=events)
+    second_replay, second_events = load_dag_replay(
+        run_dir=tmp_path, run_id="transaction-run"
+    )
+    second = build_dag_live_snapshot(replay=second_replay, recent_events=second_events)
+
+    assert first["nodes"][0]["admission"]["accepted"] is True
+    assert first["nodes"][0]["transaction"]["state"] == "ACCEPTED"
+    assert first == second
+
+
+@pytest.mark.parametrize(
+    ("committed_state", "transaction_state"),
+    (("blocked", "BLOCKED"), ("failed", "REJECTED"), ("timed_out", "REJECTED")),
+)
+def test_transaction_projection_rejects_terminal_non_accepted_outcomes(
+    tmp_path: Path,
+    committed_state: str,
+    transaction_state: str,
+) -> None:
+    replay, events = _transaction_run(tmp_path)
+    terminal = replace(
+        replay,
+        run_status="BLOCKED",
+        node_states=(("creator", committed_state),),
+    )
+
+    node = build_dag_live_snapshot(replay=terminal, recent_events=events)["nodes"][0]
+
+    assert node["admission"]["accepted"] is False
+    assert node["admission"]["state"] == "rejected"
+    assert node["transaction"]["state"] == transaction_state
+
+
 def test_active_attempt_state_is_visible_without_accepting_node(tmp_path: Path) -> None:
     _durable_run(tmp_path)
     replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
@@ -180,3 +358,34 @@ def test_live_events_are_redacted_and_bounded(tmp_path: Path) -> None:
         ],
         "truncated": False,
     }
+
+
+def test_transaction_projection_uses_full_journal_but_bounds_visible_timeline(
+    tmp_path: Path,
+) -> None:
+    replay, events = _transaction_run(tmp_path)
+    last_sequence = max(int(event["seq"]) for event in events)
+    filler = tuple(
+        {
+            "seq": last_sequence + offset,
+            "event_key": f"diagnostic:filler:{offset}",
+            "event_type": "scheduler_event_emitted",
+            "entity_type": "scheduler",
+            "entity_id": replay.run_id,
+            "attempt_id": None,
+            "lease_epoch": replay.lease_epoch,
+            "payload": {"event": "filler", "offset": offset},
+        }
+        for offset in range(1, 251)
+    )
+
+    snapshot = build_dag_live_snapshot(replay=replay, recent_events=events + filler)
+    transaction = snapshot["nodes"][0]["transaction"]
+
+    assert [attempt["attempt"] for attempt in transaction["attempts"]] == [1, 2]
+    assert transaction["attempts"][0]["reviewer_verdict"] == "REVISE"
+    assert transaction["attempts"][0]["revision_instruction"] == "address finding"
+    assert transaction["attempts"][1]["reviewer_verdict"] == "PASS"
+    assert len(snapshot["recent_events"]) == 200
+    assert snapshot["recent_events"][0]["payload"]["offset"] == 51
+    assert snapshot["recent_events"][-1]["payload"]["offset"] == 250

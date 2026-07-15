@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
+import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
+
+from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunReader
+from tau_coding.dag_viewer.projection import load_dag_replay
 
 RUN_STATUS_SCHEMA = "tau.run_status.v1"
 DAG_VIEWER_LINK_SCHEMA = "tau.dag_viewer_link.v1"
-DEFAULT_TAU_DAG_VIEWER_BASE_URL = "http://localhost:3002/#tau/dag"
 CODING_EVIDENCE_SCHEMAS = {
     "tau.code_patch_receipt.v1",
     "tau.code_runner_worker_receipt.v1",
@@ -87,6 +88,7 @@ def build_run_status(run_dir: Path) -> dict[str, Any]:
         project_dag_receipt,
         contract_path=artifacts["project_dag_contract"],
         receipt_path=artifacts["project_dag_receipt"],
+        run_store_path=artifacts["dag_run_store"],
     )
     coding_evidence = _coding_evidence_summary(resolved)
     detected_type = _detected_type(
@@ -261,20 +263,22 @@ def build_dag_viewer_link(run_dir: Path) -> dict[str, Any]:
         receipt,
         contract_path=artifacts["project_dag_contract"],
         receipt_path=artifacts["project_dag_receipt"],
+        run_store_path=artifacts["dag_run_store"],
     )
     available = bool(summary and summary.get("available") is True)
+    status = str(summary.get("status") or "MISSING") if summary else "MISSING"
     return {
         "schema": DAG_VIEWER_LINK_SCHEMA,
         "ok": available,
-        "status": "PASS" if available else "MISSING",
+        "status": status,
         "mocked": False,
-        "live": available,
-        "provider_live": bool(summary.get("provider_live")) if summary else False,
+        "live": False,
+        "provider_live": False,
         "run_dir": str(resolved),
         "dag_viewer": summary,
         "proof_scope": {
             "proves": [
-                "Tau can derive a DAG viewer URL from local DAG contract and receipt artifacts",
+                "Tau can derive a DAG viewer command from the local read-only SQLite journal",
                 (
                     "Tau does not mutate the DAG, route, provider state, Herdr state, or "
                     "GitHub state to create the viewer link"
@@ -317,6 +321,13 @@ def _artifact_paths(run_dir: Path) -> dict[str, Path]:
                 run_dir / "run" / "dag-progress.json",
             ],
             fallback=run_dir / "dag-progress.json",
+        ),
+        "dag_run_store": _first_existing_path(
+            [
+                run_dir / "dag-run.sqlite3",
+                run_dir / "run" / "dag-run.sqlite3",
+            ],
+            fallback=run_dir / "dag-run.sqlite3",
         ),
         "evidence_validation": run_dir / "evidence-validation-receipt.json",
         "runtime_manifest": run_dir / "runtime-manifest.json",
@@ -384,26 +395,28 @@ def _missing_required_artifact(
         "project_dag",
     }:
         return False
-    if name == "runtime_manifest" and detected_type in {
-        "approval_gate",
-        "dag_stress",
-        "dag_stress_campaign",
-        "herdr_gc",
-        "route_memory",
-        "dag_expansion",
-        "generic_dag",
-        "herdr_cleanup",
-        "orchestration_evidence",
-        "provider_dag_planner",
-        "real_world_sanity",
-        "browser_cdp_proof",
-        "github_apply_policy",
-        "github_handoff_transport",
-        "research_source",
-        "project_dag",
-    }:
-        return False
-    return True
+    return not (
+        name == "runtime_manifest"
+        and detected_type
+        in {
+            "approval_gate",
+            "dag_stress",
+            "dag_stress_campaign",
+            "herdr_gc",
+            "route_memory",
+            "dag_expansion",
+            "generic_dag",
+            "herdr_cleanup",
+            "orchestration_evidence",
+            "provider_dag_planner",
+            "real_world_sanity",
+            "browser_cdp_proof",
+            "github_apply_policy",
+            "github_handoff_transport",
+            "research_source",
+            "project_dag",
+        }
+    )
 
 
 def _detected_type(
@@ -1443,39 +1456,80 @@ def _dag_viewer_summary(
     *,
     contract_path: Path,
     receipt_path: Path,
+    run_store_path: Path,
 ) -> dict[str, Any]:
     contract_exists = contract_path.exists()
     receipt_exists = receipt_path.exists()
-    available = (
+    store_exists = run_store_path.is_file()
+    run_ids: tuple[str, ...] = ()
+    store_error: str | None = None
+    if store_exists:
+        try:
+            with SqliteDagRunReader(run_store_path) as reader:
+                run_ids = reader.run_ids()
+            for run_id in run_ids:
+                load_dag_replay(run_dir=run_store_path.parent, run_id=run_id)
+        except (DagRunStoreError, OSError, RuntimeError, sqlite3.Error):
+            run_ids = ()
+            store_error = "dag_viewer_store_invalid"
+    available = store_exists and bool(run_ids) and store_error is None
+    viewer_run_dir = run_store_path.parent
+    launch_commands = [
+        [
+            "tau",
+            "dag-view",
+            "--run-dir",
+            str(viewer_run_dir),
+            "--run-id",
+            run_id,
+        ]
+        for run_id in run_ids
+    ]
+    single_launch = launch_commands[0] if len(launch_commands) == 1 else None
+    project_receipt_available = (
         contract_exists
         and receipt_exists
         and project_dag_receipt.get("schema") == "tau.dag_receipt.v1"
     )
-    base_url = os.environ.get("TAU_DAG_VIEWER_BASE_URL", DEFAULT_TAU_DAG_VIEWER_BASE_URL)
-    run_arg = quote(str(run_dir), safe="")
-    viewer_url = f"{base_url}?run={run_arg}"
     return {
         "schema": DAG_VIEWER_LINK_SCHEMA,
         "available": available,
-        "url": viewer_url if available else None,
-        "viewer_route": base_url,
-        "run_query": str(run_dir),
-        "source": "dag-contract.json + dag-receipt.json" if available else "missing_dag_artifacts",
-        "mocked": bool(project_dag_receipt.get("mocked", False)) if available else False,
-        "live": project_dag_receipt.get("live") if available else False,
+        "status": "PASS" if available else "BLOCKED" if store_error else "MISSING",
+        "source_authority": "tau_sqlite_journal",
+        "self_contained": True,
+        "read_only": True,
+        "launch_command": single_launch,
+        "launch_commands": launch_commands,
+        "run_id_required": len(run_ids) > 1,
+        "run_ids": list(run_ids),
+        "external_ux_lab_required": False,
+        "source": "dag-run.sqlite3" if available else "missing_or_invalid_dag_run_store",
+        "store_path": str(run_store_path) if store_exists else None,
+        "store_error": store_error,
+        "mocked": bool(project_dag_receipt.get("mocked", False))
+        if project_receipt_available
+        else False,
+        "live": False,
         "provider_live": bool(project_dag_receipt.get("provider_live", False))
-        if available
+        if project_receipt_available
         else False,
         "contract_path": str(contract_path) if contract_exists else None,
         "contract_sha256": _file_sha256(contract_path) if contract_exists else None,
         "receipt_path": str(receipt_path) if receipt_exists else None,
         "receipt_sha256": _file_sha256(receipt_path) if receipt_exists else None,
-        "dag_id": project_dag_receipt.get("dag_id") if available else None,
-        "goal_hash": _project_dag_goal_hash(project_dag_receipt) if available else None,
-        "receipt_status": project_dag_receipt.get("status") if available else None,
-        "receipt_verdict": project_dag_receipt.get("verdict") if available else None,
+        "dag_id": project_dag_receipt.get("dag_id") if project_receipt_available else None,
+        "goal_hash": _project_dag_goal_hash(project_dag_receipt)
+        if project_receipt_available
+        else None,
+        "receipt_status": project_dag_receipt.get("status")
+        if project_receipt_available
+        else None,
+        "receipt_verdict": project_dag_receipt.get("verdict")
+        if project_receipt_available
+        else None,
         "does_not_prove": [
             "browser rendering",
+            "viewer server is currently running",
             "provider/model semantic quality",
             "future route correctness",
             "GitHub mutation",

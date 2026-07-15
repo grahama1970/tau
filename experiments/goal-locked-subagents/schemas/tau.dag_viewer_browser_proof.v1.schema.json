@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG viewer browser proof v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "mocked",
+    "live",
+    "provider_live",
+    "url",
+    "screenshot",
+    "screenshot_sha256",
+    "request_methods",
+    "checks"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tau.dag_viewer_browser_proof.v1"
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "BLOCKED"
+      ]
+    },
+    "mocked": {
+      "const": false
+    },
+    "live": {
+      "const": true
+    },
+    "provider_live": {
+      "const": false
+    },
+    "url": {
+      "type": "string"
+    },
+    "screenshot": {
+      "type": "string"
+    },
+    "screenshot_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "request_methods": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks": {
+      "type": "object",
+      "required": [
+        "graph_rendered",
+        "source_dag_visible",
+        "dag_plan_tab_visible",
+        "creator_attempt_1_visible",
+        "reviewer_revise_visible",
+        "revision_overlay_visible",
+        "creator_attempt_2_visible",
+        "reviewer_pass_remained_unaccepted",
+        "receipt_admission_turned_green",
+        "dependent_released_after_acceptance",
+        "refresh_reconstructed_state",
+        "read_only_requests",
+        "layout_non_overlapping"
+      ],
+      "properties": {
+        "graph_rendered": {
+          "type": "boolean"
+        },
+        "source_dag_visible": {
+          "type": "boolean"
+        },
+        "dag_plan_tab_visible": {
+          "type": "boolean"
+        },
+        "creator_attempt_1_visible": {
+          "type": "boolean"
+        },
+        "reviewer_revise_visible": {
+          "type": "boolean"
+        },
+        "revision_overlay_visible": {
+          "type": "boolean"
+        },
+        "creator_attempt_2_visible": {
+          "type": "boolean"
+        },
+        "reviewer_pass_remained_unaccepted": {
+          "type": "boolean"
+        },
+        "receipt_admission_turned_green": {
+          "type": "boolean"
+        },
+        "dependent_released_after_acceptance": {
+          "type": "boolean"
+        },
+        "refresh_reconstructed_state": {
+          "type": "boolean"
+        },
+        "read_only_requests": {
+          "type": "boolean"
+        },
+        "layout_non_overlapping": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "request_methods": {
+            "const": [
+              "GET"
+            ]
+          },
+          "checks": {
+            "properties": {
+              "graph_rendered": {
+                "const": true
+              },
+              "source_dag_visible": {
+                "const": true
+              },
+              "dag_plan_tab_visible": {
+                "const": true
+              },
+              "creator_attempt_1_visible": {
+                "const": true
+              },
+              "reviewer_revise_visible": {
+                "const": true
+              },
+              "revision_overlay_visible": {
+                "const": true
+              },
+              "creator_attempt_2_visible": {
+                "const": true
+              },
+              "reviewer_pass_remained_unaccepted": {
+                "const": true
+              },
+              "receipt_admission_turned_green": {
+                "const": true
+              },
+              "dependent_released_after_acceptance": {
+                "const": true
+              },
+              "refresh_reconstructed_state": {
+                "const": true
+              },
+              "read_only_requests": {
+                "const": true
+              },
+              "layout_non_overlapping": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import http.client
 import json
+import re
 import socket
 import sqlite3
 import threading
@@ -131,8 +132,16 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
         ).fetchone()
     status, headers, body = _request(server, "GET", "/")
     assert status == 200
-    assert b"read-only API is operational" in body
+    assert b'<div id="root"></div>' in body
     assert "default-src 'self'" in headers["Content-Security-Policy"]
+    asset_match = re.search(rb'href="(/assets/[^"]+\.css)"', body)
+    assert asset_match is not None
+    asset_status, asset_headers, asset_body = _request(
+        server, "GET", asset_match.group(1).decode()
+    )
+    assert asset_status == 200
+    assert asset_headers["Content-Type"].startswith("text/css")
+    assert asset_body
     for path, schema in (
         ("/api/v1/capabilities", "tau.dag_viewer_capabilities.v1"),
         ("/api/v1/manifest", "tau.dag_view_manifest.v1"),
@@ -175,6 +184,22 @@ def test_state_etag_and_concurrent_reads_are_consistent(
         responses = list(pool.map(lambda _: _request(server, "GET", "/api/v1/state"), range(16)))
     assert {headers["ETag"] for _, headers, _ in responses} == {etag}
     assert {body for _, _, body in responses} == {first}
+
+
+def test_state_polling_does_not_rebuild_receipt_index(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread], monkeypatch
+) -> None:
+    server, _ = viewer_server
+
+    def fail_receipt_index(*args, **kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("state polling invoked receipt indexing")
+
+    monkeypatch.setattr("tau_coding.dag_viewer.server.build_receipt_index", fail_receipt_index)
+
+    status, _, body = _request(server, "GET", "/api/v1/state")
+
+    assert status == 200
+    assert _json(body)["schema"] == "tau.dag_live_snapshot.v1"
 
 
 def test_event_ranges_are_bounded_and_invalid_ranges_are_structured(
@@ -222,6 +247,25 @@ def test_receipts_are_allowlisted_and_tamper_evident(
     status, _, body = _request(server, "GET", f"/api/v1/receipts/{entry['receipt_id']}")
     assert status == 409
     assert _json(body)["code"] == "dag_viewer_receipt_hash_mismatch"
+
+
+def test_receipt_read_replays_journal_before_using_cached_allowlist(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
+) -> None:
+    server, _ = viewer_server
+    manifest = _json(_request(server, "GET", "/api/v1/manifest")[2])
+    receipt_id = str(manifest["receipt_index"][0]["receipt_id"])
+    database = server.application.run_dir / "dag-run.sqlite3"
+    with sqlite3.connect(database) as connection:
+        connection.execute("DROP TRIGGER dag_run_events_no_update")
+        connection.execute(
+            "UPDATE dag_run_events SET payload_sha256 = 'sha256:corrupt' WHERE seq = 1"
+        )
+
+    status, _, body = _request(server, "GET", f"/api/v1/receipts/{receipt_id}")
+
+    assert status == 409
+    assert _json(body)["code"] == "dag_run_event_hash_mismatch"
 
 
 def test_host_header_must_match_bound_loopback_authority(

@@ -14,7 +14,6 @@ from tau_coding.dag_viewer.contracts import viewer_capabilities
 from tau_coding.dag_viewer.http import (
     ViewerHttpResponse,
     error_code,
-    html_response,
     json_response,
     parse_event_query,
     public_error_message,
@@ -29,13 +28,9 @@ from tau_coding.dag_viewer.projection import (
     load_dag_replay,
 )
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
+from tau_coding.dag_viewer.static_files import read_static_viewer_file
 
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
-INFO_PAGE = """<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Tau DAG Viewer API</title></head>
-<body><main><h1>Tau DAG Viewer API</h1>
-<p>The read-only API is operational. Packaged React assets arrive in Child C.</p>
-</main></body></html>"""
 
 
 class DagViewerApplication:
@@ -51,20 +46,22 @@ class DagViewerApplication:
     def handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
         parsed = urlsplit(target)
         path = unquote(parsed.path)
-        if path == "/":
-            return html_response(INFO_PAGE)
+        if path == "/" or path.startswith("/assets/"):
+            asset = read_static_viewer_file(path)
+            return ViewerHttpResponse(200, asset.body, asset.content_type, {})
         if path == "/healthz":
             return json_response({"status": "ok", "read_only": True})
         if path == "/api/v1/capabilities":
             return json_response(viewer_capabilities())
         if path == "/api/v1/manifest":
             replay, _ = self._replay()
+            self.receipts = build_receipt_index(self.run_dir, replay.transition_receipts)
             manifest = build_dag_view_manifest(replay=replay, run_dir=self.run_dir)
             manifest["receipt_index"] = self.receipts.public_entries()
             return json_response(manifest)
         if path == "/api/v1/state":
             replay, events = self._replay()
-            snapshot = build_dag_live_snapshot(replay=replay, recent_events=events[-200:])
+            snapshot = build_dag_live_snapshot(replay=replay, recent_events=events)
             etag = f'"{snapshot["snapshot_sha256"]}"'
             if if_none_match == etag:
                 return ViewerHttpResponse(
@@ -96,6 +93,8 @@ class DagViewerApplication:
             receipt_id = path.removeprefix(receipt_prefix)
             if not receipt_id or "/" in receipt_id or receipt_id in {".", ".."}:
                 raise RuntimeError("dag_viewer_receipt_not_found")
+            replay, _ = self._replay()
+            self.receipts = build_receipt_index(self.run_dir, replay.transition_receipts)
             return json_response(self.receipts.read_projection(receipt_id))
         return viewer_error(
             "dag_viewer_endpoint_not_found", "The endpoint does not exist.", status=404
