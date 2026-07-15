@@ -55,6 +55,16 @@ def test_receipt_index_blocks_hash_change_and_symlink_escape(tmp_path: Path) -> 
         build_receipt_index(tmp_path, (_ref(escaped),))
 
 
+def test_receipt_fetch_remains_size_bounded_after_startup(tmp_path: Path) -> None:
+    receipt = tmp_path / "node-receipt.json"
+    receipt.write_text(json.dumps({"schema": "tau.node_receipt.v1", "status": "PASS"}))
+    index = build_receipt_index(tmp_path, (_ref(receipt),))
+    receipt.write_bytes(b"x" * (5 * 1024 * 1024 + 1))
+
+    with pytest.raises(RuntimeError, match="dag_viewer_receipt_too_large"):
+        index.read_projection(index.entries[0].receipt_id)
+
+
 def test_receipt_index_is_run_scoped_and_allows_identical_content(tmp_path: Path) -> None:
     first = tmp_path / "first-receipt.json"
     second = tmp_path / "second-receipt.json"

@@ -278,7 +278,8 @@ def test_store_failure_is_structured_and_shutdown_releases_port(
     server.shutdown()
     thread.join(timeout=2)
     with socket.socket() as probe:
-        probe.bind(("127.0.0.1", port))
+        probe.settimeout(0.2)
+        assert probe.connect_ex(("127.0.0.1", port)) != 0
 
 
 def test_corrupt_event_is_structured_without_sqlite_details(

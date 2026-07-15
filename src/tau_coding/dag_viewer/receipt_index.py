@@ -51,9 +51,12 @@ class ReceiptIndex:
         if entry.path.is_symlink() and not _is_beneath(resolved, self.run_dir):
             raise RuntimeError("dag_viewer_receipt_symlink_escape")
         try:
-            data = resolved.read_bytes()
+            with resolved.open("rb") as stream:
+                data = stream.read(MAX_RECEIPT_BYTES + 1)
         except OSError as exc:
             raise RuntimeError("dag_viewer_receipt_not_found") from exc
+        if len(data) > MAX_RECEIPT_BYTES:
+            raise RuntimeError("dag_viewer_receipt_too_large")
         digest = f"sha256:{hashlib.sha256(data).hexdigest()}"
         if digest != entry.sha256:
             raise RuntimeError("dag_viewer_receipt_hash_mismatch")
