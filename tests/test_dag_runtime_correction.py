@@ -14,6 +14,7 @@ from tau_coding.dag_runtime.correction import (
 )
 from tau_coding.dag_runtime.model import DagPlan
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunStore
+from tau_coding.dag_runtime.scheduler import DagCorrectionRequest, run_dag_plan
 
 
 class InjectedCorrectionCrash(RuntimeError):
@@ -188,6 +189,144 @@ def test_conflicting_duplicate_correction_event_blocks(tmp_path: Path) -> None:
                 incident_id=incident.incident_id,
                 payload={**payload, "reason": "changed"},
             )
+
+
+def test_scheduler_releases_retry_only_after_verified_correction_on_restart(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "run.sqlite3"
+    auth_state = tmp_path / "auth-state.json"
+    auth_state.write_text(json.dumps({"state": "EXPIRED", "effect_count": 0}))
+    plan = _plan(tmp_path)
+    node_calls = 0
+    action_calls = 0
+    verifier_calls = 0
+
+    def execute_node(*_args: object) -> dict[str, Any]:
+        nonlocal node_calls
+        node_calls += 1
+        if node_calls == 1:
+            return {
+                "node_id": "reviewer",
+                "status": "BLOCKED",
+                "verdict": "PROVIDER_AUTH_REQUIRED",
+                "retryable": True,
+                "correction_required": True,
+                "errors": ["local provider auth is stale"],
+            }
+        return {
+            "node_id": "reviewer",
+            "status": "PASS",
+            "verdict": "PASS",
+            "accepted_output": {"auth": "VALID"},
+        }
+
+    def correction_handler(request: DagCorrectionRequest):  # type: ignore[no-untyped-def]
+        incident = CorrectionIncident.create(
+            run_id=request.attempt.run_id,
+            node_id=request.node.node_id,
+            attempt=request.attempt.attempt,
+            trigger="provider_auth_required",
+            classification="RETRYABLE",
+            goal_hash=request.plan.runtime_goal_hash,
+            observed_state={"auth": "EXPIRED"},
+        )
+        intent = CorrectionActionIntent.create(
+            incident=incident,
+            capability="provider.repair_auth",
+            action="refresh_local_provider_auth",
+            target={"provider": "local-fixture"},
+            policy_sha256="sha256:policy",
+            authorized=True,
+        )
+
+        def apply_action(_intent: CorrectionActionIntent) -> dict[str, Any]:
+            nonlocal action_calls
+            action_calls += 1
+            value = json.loads(auth_state.read_text())
+            value["state"] = "VALID"
+            value["effect_count"] += 1
+            auth_state.write_text(json.dumps(value, sort_keys=True))
+            return value
+
+        def verify_action(
+            _intent: CorrectionActionIntent, _receipt: dict[str, Any]
+        ) -> dict[str, Any]:
+            nonlocal verifier_calls
+            verifier_calls += 1
+            value = json.loads(auth_state.read_text())
+            return {"verified": value == {"state": "VALID", "effect_count": 1}}
+
+        return run_correction_transaction(
+            store=request.run_store,
+            lease=request.lease,
+            incident=incident,
+            intent=intent,
+            apply_action=apply_action,
+            verify_action=verify_action,
+            fault_injector=lambda phase, _payload: (
+                (_ for _ in ()).throw(InjectedCorrectionCrash())
+                if phase == "after_applied" and verifier_calls == 0
+                else None
+            ),
+        )
+
+    with SqliteDagRunStore(database) as store, pytest.raises(InjectedCorrectionCrash):
+        run_dag_plan(
+            plan,
+            execute_node=execute_node,
+            run_store=store,
+            run_id="run-1",
+            lease_owner="owner-a",
+            correction_handler=correction_handler,
+        )
+
+    with SqliteDagRunStore(database) as store:
+        result = run_dag_plan(
+            plan,
+            execute_node=execute_node,
+            run_store=store,
+            run_id="run-1",
+            lease_owner="owner-a",
+            correction_handler=correction_handler,
+        )
+
+    assert result.status == "PASS"
+    assert result.verdict == "PASS"
+    assert node_calls == 2
+    assert action_calls == 1
+    assert verifier_calls == 1
+    assert json.loads(auth_state.read_text()) == {"state": "VALID", "effect_count": 1}
+
+
+def test_scheduler_does_not_retry_correction_gated_failure_without_handler(
+    tmp_path: Path,
+) -> None:
+    calls = 0
+
+    def execute_node(*_args: object) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        return {
+            "node_id": "reviewer",
+            "status": "BLOCKED",
+            "verdict": "PROVIDER_AUTH_REQUIRED",
+            "retryable": True,
+            "correction_required": True,
+            "errors": ["local provider auth is stale"],
+        }
+
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        result = run_dag_plan(
+            _plan(tmp_path),
+            execute_node=execute_node,
+            run_store=store,
+            run_id="run-1",
+            lease_owner="owner-a",
+        )
+
+    assert result.status == "BLOCKED"
+    assert calls == 1
 
 
 def _incident() -> CorrectionIncident:

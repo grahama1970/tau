@@ -10,6 +10,7 @@ from dataclasses import dataclass, replace
 from threading import Event
 from typing import Any
 
+from tau_coding.dag_runtime.correction import CorrectionStateProjection
 from tau_coding.dag_runtime.model import DagPlan, DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.replay import apply_transition_state, replay_dag_run
 from tau_coding.dag_runtime.run_store import (
@@ -48,6 +49,19 @@ EventSink = Callable[[dict[str, Any]], None]
 
 
 @dataclass(frozen=True, slots=True)
+class DagCorrectionRequest:
+    plan: DagPlan
+    node: DagPlanNode
+    result: Mapping[str, Any]
+    attempt: DagNodeAttempt
+    run_store: SqliteDagRunStore
+    lease: DagRunLease
+
+
+CorrectionHandler = Callable[[DagCorrectionRequest], CorrectionStateProjection]
+
+
+@dataclass(frozen=True, slots=True)
 class DagSchedulerResult:
     status: str
     verdict: str
@@ -78,6 +92,7 @@ def run_dag_plan(
     lease_ttl_seconds: float = 15.0,
     fault_injector: Callable[[str, Mapping[str, Any]], None] | None = None,
     on_lease_acquired: Callable[[DagRunLease], None] | None = None,
+    correction_handler: CorrectionHandler | None = None,
 ) -> DagSchedulerResult:
     """Execute an all-success DagPlan through one bounded ready queue.
 
@@ -243,6 +258,7 @@ def run_dag_plan(
             transition_receipt_paths=transition_receipt_paths,
             event_sink=event_sink,
             fault_injector=fault_injector,
+            correction_handler=correction_handler,
         )
         blocked_result = replayed_block or recovery_block
 
@@ -619,8 +635,28 @@ def run_dag_plan(
                 retryable = result.get("retryable") is not False
                 scheduler_cancelled = cancel_events[node_id].is_set()
                 failed_attempt = result.get("status") != "PASS" or result.get("verdict") != "PASS"
+                correction_allows_retry = _correction_allows_retry(
+                    plan=plan,
+                    node=nodes[node_id],
+                    result=result,
+                    attempt=DagNodeAttempt(
+                        attempt=attempt,
+                        max_attempts=nodes[node_id].max_attempts,
+                        cancel_event=cancel_events[node_id],
+                        run_id=effective_run_id,
+                        attempt_id=identity.attempt_id,
+                        idempotency_key=identity.idempotency_key,
+                    ),
+                    run_store=run_store,
+                    lease=lease,
+                    correction_handler=correction_handler,
+                    event_sink=event_sink,
+                )
                 will_retry = (
-                    retryable and not scheduler_cancelled and attempt < nodes[node_id].max_attempts
+                    retryable
+                    and correction_allows_retry
+                    and not scheduler_cancelled
+                    and attempt < nodes[node_id].max_attempts
                 )
                 if failed_attempt:
                     _emit(
@@ -886,6 +922,57 @@ def _inject_fault(
     injector(point, payload)
 
 
+def _correction_allows_retry(
+    *,
+    plan: DagPlan,
+    node: DagPlanNode,
+    result: Mapping[str, Any],
+    attempt: DagNodeAttempt,
+    run_store: SqliteDagRunStore | None,
+    lease: DagRunLease | None,
+    correction_handler: CorrectionHandler | None,
+    event_sink: EventSink | None,
+) -> bool:
+    """Require durable verification only for explicitly correction-gated failures."""
+
+    if result.get("correction_required") is not True:
+        return True
+    if correction_handler is None or run_store is None or lease is None:
+        _emit(
+            event_sink,
+            {
+                "event": "correction_blocked",
+                "node_id": node.node_id,
+                "attempt": attempt.attempt,
+                "reason": "durable_correction_handler_required",
+            },
+        )
+        return False
+    projection = correction_handler(
+        DagCorrectionRequest(
+            plan=plan,
+            node=node,
+            result=dict(result),
+            attempt=attempt,
+            run_store=run_store,
+            lease=lease,
+        )
+    )
+    _emit(
+        event_sink,
+        {
+            "event": "correction_evaluated",
+            "node_id": node.node_id,
+            "attempt": attempt.attempt,
+            "incident_id": projection.incident_id,
+            "correction_state": projection.state,
+            "journal_sequence": projection.journal_sequence,
+            "retry_authorized": projection.state == "VERIFIED",
+        },
+    )
+    return projection.state == "VERIFIED"
+
+
 def _recover_incomplete_attempts(
     *,
     plan: DagPlan,
@@ -908,6 +995,7 @@ def _recover_incomplete_attempts(
     transition_receipt_paths: list[str],
     event_sink: EventSink | None,
     fault_injector: Callable[[str, Mapping[str, Any]], None] | None,
+    correction_handler: CorrectionHandler | None,
 ) -> dict[str, Any] | None:
     empty_futures: dict[Future[dict[str, Any]], str] = {}
     for stored in run_store.list_attempts(lease.run_id):
@@ -929,7 +1017,29 @@ def _recover_incomplete_attempts(
         )
         retryable = result.get("retryable") is not False
         failed = result.get("status") != "PASS" or result.get("verdict") != "PASS"
-        will_retry = retryable and identity.attempt < nodes[node_id].max_attempts
+        correction_allows_retry = _correction_allows_retry(
+            plan=plan,
+            node=nodes[node_id],
+            result=result,
+            attempt=DagNodeAttempt(
+                attempt=identity.attempt,
+                max_attempts=nodes[node_id].max_attempts,
+                cancel_event=cancel_events[node_id],
+                run_id=lease.run_id,
+                attempt_id=identity.attempt_id,
+                idempotency_key=identity.idempotency_key,
+                recovered=True,
+            ),
+            run_store=run_store,
+            lease=lease,
+            correction_handler=correction_handler,
+            event_sink=event_sink,
+        )
+        will_retry = (
+            retryable
+            and correction_allows_retry
+            and identity.attempt < nodes[node_id].max_attempts
+        )
         if stored.state != "OUTPUT_COMMITTED" and failed and will_retry:
             run_store.schedule_retry(lease, identity.attempt_id, next_attempt=identity.attempt + 1)
             attempt_history[node_id].append(raw_result)
