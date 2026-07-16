@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG view query result v1",
+  "type": "object",
+  "required": ["schema", "run_id", "as_of_sequence", "query", "items", "next_cursor", "result_count", "total_match_count", "proof_scope"],
+  "properties": {
+    "schema": {"const": "tau.dag_view_query_result.v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "as_of_sequence": {"type": "integer", "minimum": 1},
+    "query": {"type": "object"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entity_kind", "entity_id", "state", "sequence", "preview"],
+        "properties": {
+          "entity_kind": {"enum": ["NODE", "EDGE", "TERMINAL", "ROUTE", "JOIN", "CORRECTION", "ATTENTION", "EVENT", "RECEIPT"]},
+          "entity_id": {"type": "string", "minLength": 1},
+          "node_id": {"type": ["string", "null"]},
+          "attempt": {"type": ["integer", "null"], "minimum": 1},
+          "event_type": {"type": ["string", "null"]},
+          "receipt_schema": {"type": ["string", "null"]},
+          "state": {"type": "string"},
+          "attention_state": {"type": ["string", "null"]},
+          "attention_severity": {"type": ["string", "null"]},
+          "sequence": {"type": "integer", "minimum": 0},
+          "preview": {"type": "string", "maxLength": 512}
+        },
+        "additionalProperties": false
+      }
+    },
+    "next_cursor": {"type": ["string", "null"]},
+    "result_count": {"type": "integer", "minimum": 0},
+    "total_match_count": {"type": "integer", "minimum": 0},
+    "proof_scope": {"type": "object"}
+  },
+  "additionalProperties": false
+}

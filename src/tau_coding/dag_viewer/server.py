@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 import socket
 from dataclasses import dataclass
 from http import HTTPStatus
@@ -10,13 +11,20 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
+from tau_coding.dag_viewer.compare import (
+    compare_attempts,
+    compare_correction,
+    compare_sequences,
+)
 from tau_coding.dag_viewer.contracts import viewer_capabilities
 from tau_coding.dag_viewer.http import (
     ViewerHttpResponse,
     error_code,
     json_response,
     parse_at_sequence,
+    parse_compare_query,
     parse_event_query,
+    parse_view_query,
     public_error_message,
     security_headers,
     viewer_error,
@@ -28,6 +36,7 @@ from tau_coding.dag_viewer.projection import (
     build_dag_view_state,
     load_dag_replay_result,
 )
+from tau_coding.dag_viewer.query import query_dag_view
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
 from tau_coding.dag_viewer.static_files import read_static_viewer_file
 
@@ -40,6 +49,7 @@ class DagViewerApplication:
         result = load_dag_replay_result(run_dir=self.run_dir, run_id=run_id)
         self.run_id = result.replay.run_id
         self.plan_sha256 = result.replay.plan.plan_sha256
+        self._cursor_key = secrets.token_bytes(32)
         self.receipts: ReceiptIndex = build_receipt_index(
             self.run_dir, result.replay.transition_receipts
         )
@@ -103,6 +113,59 @@ class DagViewerApplication:
                     limit=limit,
                 )
             )
+        if path == "/api/v1/query":
+            query = parse_view_query(parsed.query)
+            result = self._replay(at_sequence=query.at_sequence)
+            self._refresh_receipts(result.replay.transition_receipts)
+            snapshot, _ = build_dag_view_state(
+                replay=result.replay,
+                recent_events=result.events,
+                view_mode=result.view_mode,
+                selected_event_created_at=result.selected_event_created_at,
+                receipt_index=self.receipts,
+            )
+            return json_response(
+                query_dag_view(
+                    run_id=self.run_id,
+                    view_sequence=result.selected_sequence,
+                    snapshot=snapshot,
+                    events=result.events,
+                    receipts=self.receipts,
+                    query=query,
+                    cursor_key=self._cursor_key,
+                )
+            )
+        if path == "/api/v1/compare":
+            comparison = parse_compare_query(parsed.query)
+            at_sequence = comparison["at_sequence"]
+
+            def load(sequence: int) -> Any:
+                return self._replay(at_sequence=sequence)
+
+            if comparison["kind"] == "SEQUENCE_PAIR":
+                payload = compare_sequences(
+                    left_sequence=comparison["left_sequence"],
+                    right_sequence=comparison["right_sequence"],
+                    at_sequence=at_sequence,
+                    load=load,
+                    run_dir=self.run_dir,
+                )
+            elif comparison["kind"] == "ATTEMPT_PAIR":
+                payload = compare_attempts(
+                    node_id=comparison["node_id"],
+                    left_attempt=comparison["left_attempt"],
+                    right_attempt=comparison["right_attempt"],
+                    load=load,
+                    at_sequence=at_sequence,
+                )
+            else:
+                payload = compare_correction(
+                    incident_id=comparison["incident_id"],
+                    load=load,
+                    at_sequence=at_sequence,
+                    run_dir=self.run_dir,
+                )
+            return json_response(payload)
         explanation_prefix = "/api/v1/explanations/"
         if path.startswith(explanation_prefix):
             remainder = path.removeprefix(explanation_prefix)

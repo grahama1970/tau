@@ -106,3 +106,32 @@ GET /api/v1/explanations/attention/<attention-id>?at_sequence=<optional-sequence
 Explanations contain deterministic codes, journal sequences, hashes, and allowlisted
 receipt IDs. Absolute receipt paths are removed from browser events. The attention rail
 is derived and read-only; it cannot acknowledge, assign, approve, retry, or resolve work.
+
+## Bounded query and exactly-two comparison
+
+The viewer exposes server-authored query and comparison contracts without giving the browser
+authority to replay or reduce scheduler events:
+
+```text
+GET /api/v1/query?entity_kind=NODE&state=settled&q=review&limit=50
+GET /api/v1/compare?kind=SEQUENCE_PAIR&at_sequence=26&left_sequence=9&right_sequence=26
+GET /api/v1/compare?kind=ATTEMPT_PAIR&at_sequence=26&node_id=reviewer&left_attempt=1&right_attempt=2
+GET /api/v1/compare?kind=CORRECTION_BEFORE_AFTER&at_sequence=26&incident_id=<incident-id>
+```
+
+Queries operate on bounded, redacted projections at one exact journal prefix. Search does not
+inspect raw journal payloads, prompts, terminal output, or receipt contents. Pagination cursors are
+authenticated with a process-local key and bound to the run ID, journal sequence, and normalized
+query; forging the boundary or changing any of those values invalidates the cursor.
+
+Comparisons always contain exactly two Tau-authored sides and require an explicit authoritative
+`at_sequence`. Sequence comparison replays two exact journal prefixes that cannot exceed that bound.
+Attempt comparison is restricted to two attempts of the same node committed by that prefix.
+Correction comparison contrasts the committed `REQUESTED` state with the latest state committed by
+that prefix. The response contains only size-bounded, allowlisted projected fields, honestly reports
+truncation, and reports metrics as `NOT_RECORDED` when Tau did not record them; it never estimates
+latency, token use, or cost.
+
+The React application persists filter state in the URL, replaces results with server responses, and
+does not infer workflow truth. Comparison and filtering remain read-only: they cannot fork, resume,
+retry, approve, cancel, acknowledge, or mutate a run.

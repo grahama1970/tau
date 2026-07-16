@@ -6936,3 +6936,40 @@
   attention item, source inspector, and timeline without overlap or clipped nodes.
 - This does not prove branch output correctness, human review, provider/model quality, future route
   behavior, filter/query support, or exactly-two comparison. Those remain later goal slices.
+
+# 2026-07-16: Bounded DAG Query And Exactly-Two Comparison
+
+- `dag_viewer/query.py` adds a closed-vocabulary, server-authored query surface over bounded,
+  redacted snapshot entities. Filters cover entity kind and ID, node, attempt, event type, receipt
+  schema, state, attention state/severity, exact journal prefix, and sequence range. Free-text search
+  is restricted to compact projections and never searches raw journal payloads, prompts, terminal
+  output, or receipt contents.
+- Query pagination uses HMAC-authenticated cursors bound to run ID, journal sequence, and the
+  normalized query. Cursor forgery or reuse against a changed run, prefix, or filter blocks rather
+  than silently returning a different result set. Event queries use the full verified prefix, not
+  the 200-row display timeline, and receipt results carry their actual commit sequence.
+- `dag_viewer/compare.py` adds exactly-two comparisons for exact journal sequences, two attempts of
+  the same node, and one correction incident from `REQUESTED` to its latest committed terminal or
+  current state. Every comparison requires an explicit authoritative prefix, and neither side may
+  disclose later events. Comparisons use bounded whitelisted projected fields, cap changes and wire
+  bytes, and report truncation honestly. Unrecorded latency, token, and cost metrics are emitted as
+  `NOT_RECORDED`; Tau does not estimate them.
+- The loopback server adds GET-only `/api/v1/query` and `/api/v1/compare` endpoints. The React
+  application adds URL-stable filters and an exactly-two comparison panel while continuing to
+  replace state with Tau-authored responses and refusing browser-side scheduler reduction.
+- Focused proof after seven WebGPT architecture/adversarial/code-review rounds: Ruff and mypy pass;
+  74 backend viewer/replay tests pass, including exact run-local prefix rejection for a journal gap,
+  another run's sequence, and a future sequence; frontend typecheck/build and 14 tests pass, including
+  stale comparison response suppression. Installed-wheel verification reports `mocked:false`,
+  `live:true`, `provider_live:false`. The full suite reports `2425 passed` and the same three retained
+  baseline failures.
+- Live browser proof `/tmp/tau-query-compare-browser-proof-final.json` reports `mocked:false`,
+  `live:true`, `provider_live:true`, GET-only traffic, and 11/11 checks for filters, URL refresh,
+  sequence/attempt/correction comparisons, and non-overlapping layout. Screenshot
+  `/tmp/tau-query-compare-viewer-final.png` visibly shows the status/sequence/filter controls, graph,
+  inspector, exactly-two sequence comparison, and journal timeline. The fresh UI-hook screenshot is
+  `/tmp/codex-ui-verification/tau-causal-replay/tau-causal-replay-final/20260716T152816Z.png`.
+- This proves the implemented bounded query and exactly-two comparison behavior for the exercised
+  local runs. It does not prove semantic agent correctness, provider/model quality, exhaustive
+  attack coverage, future route correctness, cross-run analytics, executable replay, or browser
+  mutation authority.

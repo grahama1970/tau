@@ -187,3 +187,53 @@ export type ReceiptProjection = {
   source_sha256: string;
   receipt: JsonValue;
 };
+
+export type QueryItem = {
+  entity_kind: string;
+  entity_id: string;
+  node_id: string | null;
+  attempt: number | null;
+  event_type: string | null;
+  receipt_schema: string | null;
+  state: string;
+  attention_state: string | null;
+  attention_severity: string | null;
+  sequence: number;
+  preview: string;
+};
+
+export type DagQueryResult = {
+  schema: "tau.dag_view_query_result.v1";
+  run_id: string;
+  as_of_sequence: number;
+  query: Record<string, JsonValue>;
+  items: QueryItem[];
+  next_cursor: string | null;
+  result_count: number;
+  total_match_count: number;
+};
+
+export type ComparisonSide = {
+  run_id: string;
+  reference: Record<string, JsonValue>;
+  sequence: number;
+  projection: Record<string, JsonValue>;
+  truncated: boolean;
+};
+
+export type DagComparison = {
+  schema: "tau.dag_view_comparison.v1";
+  kind: "SEQUENCE_PAIR" | "ATTEMPT_PAIR" | "CORRECTION_BEFORE_AFTER";
+  run_id: string;
+  as_of_sequence: number;
+  left: ComparisonSide;
+  right: ComparisonSide;
+  changes: Array<{
+    field: string;
+    change: "ADDED" | "REMOVED" | "CHANGED";
+    left?: JsonValue;
+    right?: JsonValue;
+  }>;
+  truncated: boolean;
+  comparison_sha256: string;
+};

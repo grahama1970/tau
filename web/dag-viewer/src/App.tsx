@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Braces, FileCheck2, FileJson2, GitBranch, RadioTower } from "lucide-react";
-import { loadExplanation, loadInitialState, loadJournalSequences, loadManifest, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
+import { loadComparison, loadExplanation, loadInitialState, loadJournalSequences, loadManifest, loadQuery, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
 import { AttentionRail } from "./components/AttentionRail";
 import { CausalDetails } from "./components/CausalDetails";
 import { DecisionRail } from "./components/DecisionRail";
 import { DagWorkspace } from "./components/DagWorkspace";
+import { ComparisonPanel, type ComparisonInput } from "./components/ComparisonPanel";
 import { EventTimeline } from "./components/EventTimeline";
+import { FilterBar, type FilterState } from "./components/FilterBar";
 import { JsonInspector } from "./components/JsonInspector";
 import { ReceiptInspector } from "./components/ReceiptInspector";
 import { SequenceNavigator } from "./components/SequenceNavigator";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
-import type { AttentionItem, CausalExplanation, DagManifest, DagSnapshot, JsonValue, ReceiptProjection } from "./types";
+import type { AttentionItem, CausalExplanation, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JsonValue, ReceiptProjection } from "./types";
 
 type InspectorTab = "source" | "plan" | "live" | "cause" | "receipt";
 const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
@@ -23,11 +25,18 @@ const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
 ];
 
 export default function App() {
-  const initialSequence = new URLSearchParams(window.location.search).get("at_sequence");
+  const initialUrl = new URLSearchParams(window.location.search);
+  const initialSequence = initialUrl.get("at_sequence");
+  const initialFilters: FilterState = {
+    q: initialUrl.get("filter_q") ?? "",
+    entityKind: initialUrl.get("filter_kind") ?? "",
+    state: initialUrl.get("filter_state") ?? "",
+  };
   const [manifest, setManifest] = useState<DagManifest | null>(null);
   const [snapshot, setSnapshot] = useState<DagSnapshot | null>(null);
   const etagsRef = useRef(new Map<string, string | null>());
   const requestGenerationRef = useRef(0);
+  const comparisonGenerationRef = useRef(0);
   const [selectedSequence, setSelectedSequence] = useState<number | null>(initialSequence ? Number(initialSequence) : null);
   const [sequences, setSequences] = useState<number[]>([]);
   const [connected, setConnected] = useState(true);
@@ -38,11 +47,27 @@ export default function App() {
   const [receipt, setReceipt] = useState<ReceiptProjection | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<{ kind: string; id: string } | null>(null);
   const [explanation, setExplanation] = useState<CausalExplanation | null>(null);
+  const [filterDraft, setFilterDraft] = useState<FilterState>(initialFilters);
+  const [appliedFilter, setAppliedFilter] = useState<FilterState>(initialFilters);
+  const [queryResult, setQueryResult] = useState<DagQueryResult | null>(null);
+  const [comparisonInput, setComparisonInput] = useState<ComparisonInput>({
+    kind: "SEQUENCE_PAIR", left: "", right: "", nodeId: "", incidentId: "",
+  });
+  const [comparison, setComparison] = useState<DagComparison | null>(null);
 
   useEffect(() => {
     const onPopState = () => {
-      const raw = new URLSearchParams(window.location.search).get("at_sequence");
+      const parameters = new URLSearchParams(window.location.search);
+      const raw = parameters.get("at_sequence");
+      const restored = {
+        q: parameters.get("filter_q") ?? "",
+        entityKind: parameters.get("filter_kind") ?? "",
+        state: parameters.get("filter_state") ?? "",
+      };
       setSelectedSequence(raw ? Number(raw) : null);
+      setFilterDraft(restored);
+      setAppliedFilter(restored);
+      setQueryResult(null);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -132,12 +157,50 @@ export default function App() {
     return () => { active = false; };
   }, [selectedSequence, selectedSubject]);
 
+  useEffect(() => {
+    comparisonGenerationRef.current += 1;
+    setComparison(null);
+  }, [selectedSequence, snapshot?.run_id, snapshot?.journal_sequence]);
+
+  useEffect(() => {
+    if (!snapshot || !Object.values(appliedFilter).some(Boolean)) {
+      setQueryResult(null);
+      return;
+    }
+    let active = true;
+    const parameters = new URLSearchParams();
+    parameters.set("at_sequence", String(snapshot.journal_sequence));
+    if (appliedFilter.q) parameters.set("q", appliedFilter.q);
+    if (appliedFilter.entityKind) parameters.set("entity_kind", appliedFilter.entityKind);
+    if (appliedFilter.state) parameters.set("state", appliedFilter.state);
+    loadQuery(parameters).then((result) => {
+      if (
+        active
+        && result.run_id === snapshot.run_id
+        && result.as_of_sequence === snapshot.journal_sequence
+      ) setQueryResult(result);
+    }).catch((reason: unknown) => {
+      if (active) setError(reason instanceof Error ? reason.message : "query_load_failed");
+    });
+    return () => { active = false; };
+  }, [appliedFilter, selectedSequence, snapshot?.snapshot_sha256]);
+
   const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
   const selectedTerminal = useMemo(
     () => snapshot?.terminals.find((terminal) => terminal.terminal_id === selectedId) ?? null,
     [selectedId, snapshot],
   );
   const transaction = selectedLive?.transaction ?? snapshot?.nodes.find((node) => node.transaction)?.transaction ?? null;
+
+  useEffect(() => {
+    setComparisonInput((current) => ({
+      ...current,
+      left: current.left || String(sequences[0] ?? transaction?.attempts[0]?.attempt ?? ""),
+      right: current.right || String(sequences.at(-1) ?? transaction?.attempts.at(-1)?.attempt ?? ""),
+      nodeId: current.nodeId || snapshot?.nodes.find((node) => node.transaction)?.node_id || selectedId || "",
+      incidentId: current.incidentId || snapshot?.corrections[0]?.incident_id || "",
+    }));
+  }, [selectedId, sequences, snapshot?.corrections, snapshot?.nodes, transaction]);
 
   const selectReceipt = (id: string) => {
     setReceiptId(id || null);
@@ -178,6 +241,64 @@ export default function App() {
     setTab("cause");
   };
 
+  const applyFilter = () => {
+    const url = new URL(window.location.href);
+    for (const [key, value] of Object.entries({ filter_q: filterDraft.q, filter_kind: filterDraft.entityKind, filter_state: filterDraft.state })) {
+      if (value) url.searchParams.set(key, value);
+      else url.searchParams.delete(key);
+    }
+    window.history.pushState({}, "", url);
+    setAppliedFilter(filterDraft);
+  };
+
+  const clearFilter = () => {
+    const empty = { q: "", entityKind: "", state: "" };
+    setFilterDraft(empty);
+    setAppliedFilter(empty);
+    setQueryResult(null);
+    const url = new URL(window.location.href);
+    for (const key of ["filter_q", "filter_kind", "filter_state"]) url.searchParams.delete(key);
+    window.history.pushState({}, "", url);
+  };
+
+  const selectQueryItem = (kind: string, id: string) => {
+    if (kind === "NODE" || kind === "TERMINAL") selectGraphSubject(id);
+    else if (["ROUTE", "JOIN", "CORRECTION", "ATTENTION"].includes(kind)) {
+      setSelectedSubject({ kind, id });
+      setTab("cause");
+    }
+  };
+
+  const runComparison = () => {
+    if (!snapshot) return;
+    const generation = ++comparisonGenerationRef.current;
+    const expectedRunId = snapshot.run_id;
+    const expectedSequence = snapshot.journal_sequence;
+    const parameters = new URLSearchParams({ kind: comparisonInput.kind });
+    parameters.set("at_sequence", String(expectedSequence));
+    if (comparisonInput.kind === "SEQUENCE_PAIR") {
+      parameters.set("left_sequence", comparisonInput.left || String(sequences[0] ?? ""));
+      parameters.set("right_sequence", comparisonInput.right || String(sequences.at(-1) ?? ""));
+    } else if (comparisonInput.kind === "ATTEMPT_PAIR") {
+      parameters.set("node_id", comparisonInput.nodeId);
+      parameters.set("left_attempt", comparisonInput.left || "1");
+      parameters.set("right_attempt", comparisonInput.right || String(selectedLive?.scheduler.attempt ?? 2));
+    } else {
+      parameters.set("incident_id", comparisonInput.incidentId);
+    }
+    loadComparison(parameters).then((result) => {
+      if (
+        generation === comparisonGenerationRef.current
+        && result.run_id === expectedRunId
+        && result.as_of_sequence === expectedSequence
+      ) setComparison(result);
+    }).catch((reason: unknown) => {
+      if (generation === comparisonGenerationRef.current) {
+        setError(reason instanceof Error ? reason.message : "comparison_load_failed");
+      }
+    });
+  };
+
   if (error && (!manifest || !snapshot)) return <main className="fatal-state"><h1>Tau Live DAG</h1><p>{error}</p></main>;
   if (!manifest || !snapshot) return <main className="loading-state"><RadioTower aria-hidden="true" /><span>Loading authoritative DAG projection</span></main>;
 
@@ -192,6 +313,7 @@ export default function App() {
     <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
     <AttentionRail items={snapshot.attention_items} onSelect={selectAttention} />
     <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />
+    <FilterBar value={filterDraft} result={queryResult} onChange={setFilterDraft} onApply={applyFilter} onClear={clearFilter} onSelect={selectQueryItem} />
     <section className="dag-app__workspace">
       <div className={`graph-pane${transaction ? " graph-pane--with-transaction" : ""}`} data-qid="dag:workspace:graph">
         <div className="pane-heading"><strong>Execution graph</strong><span>read-only · source DAG unchanged</span></div>
@@ -229,6 +351,7 @@ export default function App() {
         </footer>
       </aside>
     </section>
+    <ComparisonPanel value={comparisonInput} result={comparison} sequences={sequences.filter((sequence) => sequence <= snapshot.journal_sequence)} transaction={transaction} corrections={snapshot.corrections} onChange={(value) => { comparisonGenerationRef.current += 1; setComparisonInput(value); setComparison(null); }} onCompare={runComparison} />
     <EventTimeline events={snapshot.recent_events} onSelect={selectGraphSubject} />
   </main>;
 }

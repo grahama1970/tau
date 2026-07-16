@@ -33,5 +33,7 @@ def viewer_capabilities() -> dict[str, Any]:
         "supports_causal_explanations": True,
         "supports_route_join_projection": True,
         "supports_attention_items": True,
+        "supports_bounded_query": True,
+        "supports_exactly_two_comparison": True,
         "read_only": True,
     }

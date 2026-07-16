@@ -1,4 +1,4 @@
-import type { CausalExplanation, DagEventPage, DagManifest, DagSnapshot, ReceiptProjection } from "./types";
+import type { CausalExplanation, DagComparison, DagEventPage, DagManifest, DagQueryResult, DagSnapshot, ReceiptProjection } from "./types";
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<{ value: T | null; etag: string | null }> {
   const response = await fetch(path, init);
@@ -70,4 +70,16 @@ export async function loadJournalSequences(): Promise<number[]> {
     if (page.value.events.length < 500) break;
   }
   return sequences;
+}
+
+export async function loadQuery(parameters: URLSearchParams): Promise<DagQueryResult> {
+  const result = await getJson<DagQueryResult>(`/api/v1/query?${parameters.toString()}`);
+  if (!result.value) throw new Error("viewer_query_missing");
+  return result.value;
+}
+
+export async function loadComparison(parameters: URLSearchParams): Promise<DagComparison> {
+  const result = await getJson<DagComparison>(`/api/v1/compare?${parameters.toString()}`);
+  if (!result.value) throw new Error("viewer_comparison_missing");
+  return result.value;
 }

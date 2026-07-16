@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG view exactly-two comparison v1",
+  "type": "object",
+  "required": ["schema", "kind", "run_id", "as_of_sequence", "left", "right", "changes", "truncated", "proof_scope", "comparison_sha256"],
+  "properties": {
+    "schema": {"const": "tau.dag_view_comparison.v1"},
+    "kind": {"enum": ["SEQUENCE_PAIR", "ATTEMPT_PAIR", "CORRECTION_BEFORE_AFTER"]},
+    "run_id": {"type": "string", "minLength": 1},
+    "as_of_sequence": {"type": "integer", "minimum": 1},
+    "left": {"$ref": "#/$defs/side"},
+    "right": {"$ref": "#/$defs/side"},
+    "changes": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "required": ["field", "change", "causal_references"],
+        "properties": {
+          "field": {"type": "string", "minLength": 1},
+          "change": {"enum": ["ADDED", "REMOVED", "CHANGED"]},
+          "left": {},
+          "right": {},
+          "causal_references": {"type": "array"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "truncated": {"type": "boolean"},
+    "proof_scope": {"type": "object"},
+    "comparison_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "side": {
+      "type": "object",
+      "required": ["run_id", "reference", "sequence", "projection", "truncated"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1},
+        "reference": {"type": "object"},
+        "sequence": {"type": "integer", "minimum": 1},
+        "projection": {"type": "object"},
+        "truncated": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
