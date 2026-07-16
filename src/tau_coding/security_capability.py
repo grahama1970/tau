@@ -42,6 +42,7 @@ SECURITY_CAPABILITIES = frozenset(
         "process.spawn",
         "provider.invoke",
         "provider.read_credentials",
+        "provider.repair_auth",
         "research.import",
         "research.query",
     }
@@ -61,6 +62,7 @@ _MUTATING_CAPABILITIES = frozenset(
         "github.push",
         "memory.promote",
         "memory.write",
+        "provider.repair_auth",
     }
 )
 _NETWORK_CAPABILITIES = frozenset(
@@ -76,10 +78,48 @@ _NETWORK_CAPABILITIES = frozenset(
         "network.listen",
         "provider.invoke",
         "provider.read_credentials",
+        "provider.repair_auth",
         "research.import",
         "research.query",
     }
 )
+
+
+def validate_capability_grant(
+    grant: Mapping[str, Any],
+    *,
+    expected_bindings: Mapping[str, Any],
+    checked_at: datetime | None = None,
+) -> tuple[str, ...]:
+    """Validate one grant's integrity, expiry, and exact runtime bindings."""
+
+    errors: list[str] = []
+    if grant.get("schema") != CAPABILITY_GRANT_SCHEMA:
+        return ("capability_grant_schema_mismatch",)
+    expected_hash = capability_grant_sha256(grant)
+    if grant.get("grant_sha256") != expected_hash:
+        errors.append("capability_grant_hash_mismatch")
+    for field, expected in expected_bindings.items():
+        if grant.get(field) != expected:
+            errors.append(f"capability_grant_binding_mismatch:{field}")
+    expires_at = _parse_stamp(grant.get("expires_at"))
+    now = (checked_at or datetime.now(UTC)).astimezone(UTC)
+    if expires_at is None:
+        errors.append("capability_grant_expiry_invalid")
+    elif expires_at <= now:
+        errors.append("capability_grant_expired")
+    return tuple(errors)
+
+
+def capability_grant_sha256(grant: Mapping[str, Any]) -> str:
+    """Return the canonical hash used by Tau capability grants."""
+
+    payload = {
+        key: value
+        for key, value in grant.items()
+        if key not in {"grant_sha256", "grant_path"}
+    }
+    return f"sha256:{_canonical_sha256(payload)}"
 
 
 def validate_capability_declaration(value: object, *, label: str) -> list[str]:
@@ -487,3 +527,15 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 def _stamp(value: datetime) -> str:
     return value.astimezone(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _parse_stamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(UTC)

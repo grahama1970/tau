@@ -1,7 +1,10 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from tau_coding.security_capability import compile_capability_decision
+from tau_coding.security_capability import (
+    compile_capability_decision,
+    validate_capability_grant,
+)
 
 
 def test_capability_compiler_grants_exact_policy_scope(tmp_path: Path) -> None:
@@ -26,6 +29,49 @@ def test_capability_compiler_grants_exact_policy_scope(tmp_path: Path) -> None:
     assert grant["security_context_sha256"] == "sha256:security-context"
     assert grant["expires_at"] == "2026-07-10T12:05:00Z"
     assert Path(grant["grant_path"]).is_file()
+    assert validate_capability_grant(
+        grant,
+        expected_bindings={
+            "run_id": "run-001",
+            "dag_id": "secure-capability-test",
+            "node_id": "coder",
+            "attempt": 1,
+            "goal_hash": "sha256:goal",
+            "capability": "process.execute",
+            "target": "python3",
+        },
+        checked_at=datetime(2026, 7, 10, 12, 1, tzinfo=UTC),
+    ) == ()
+
+
+def test_capability_grant_validator_blocks_expired_or_modified_grants(
+    tmp_path: Path,
+) -> None:
+    issued_at = datetime(2026, 7, 10, 12, 0, tzinfo=UTC)
+    receipt = compile_capability_decision(
+        dag_id="secure-capability-test",
+        run_id="run-001",
+        goal_hash="sha256:goal",
+        security_context=_security_context(),
+        command_policy=_command_policy(),
+        nodes=[_node(_process_execute_request())],
+        receipt_dir=tmp_path,
+        issued_at=issued_at,
+    )
+    grant = receipt["grants"][0]
+    assert "capability_grant_expired" in validate_capability_grant(
+        grant,
+        expected_bindings={"run_id": "run-001"},
+        checked_at=issued_at + timedelta(minutes=6),
+    )
+    modified = {**grant, "node_id": "attacker"}
+    errors = validate_capability_grant(
+        modified,
+        expected_bindings={"node_id": "coder"},
+        checked_at=issued_at + timedelta(minutes=1),
+    )
+    assert "capability_grant_hash_mismatch" in errors
+    assert "capability_grant_binding_mismatch:node_id" in errors
 
 
 def test_capability_compiler_blocks_scope_escalation_without_issuing_grant(

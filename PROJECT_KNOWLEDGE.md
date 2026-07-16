@@ -6855,3 +6855,31 @@
   text cannot accept a node.
 - Child A adds read-only snapshot/events/capabilities CLI surfaces only. HTTP and React remain Child
   B and Child C work.
+
+# 2026-07-16: Durable Self-Healing Correction Loop
+
+- The active immutable goal is a provider-neutral, bounded self-healing control loop whose
+  correction lineage is inspectable in Tau's read-only React Flow viewer.
+- `dag_runtime/correction.py` implements the durable lifecycle `REQUESTED -> INTENT_COMMITTED ->
+  STARTED -> APPLIED -> VERIFIED`, with fail-closed `REJECTED`, `HUMAN_ROUTED`, `EXHAUSTED`, and
+  `UNCERTAIN` terminals. A restart after `APPLIED` runs the verifier only; a restart after `STARTED`
+  cannot safely infer whether the effect happened and routes `UNCERTAIN`.
+- Scheduler retries marked `correction_required` are released only after a `VERIFIED` correction.
+  A missing correction handler or invalid correction grant cannot release the retry.
+- Correction intents now require an existing `tau.capability_grant.v1`. Tau validates the grant's
+  canonical hash, expiry, run, DAG, node, attempt, goal, policy, capability, and action target before
+  committing or applying an effect. The first capability is `provider.repair_auth`.
+- The DAG viewer projects correction state separately from scheduler, runtime, and receipt-admission
+  state. Runtime text cannot accept a node. The React Flow node and event timeline show the full
+  correction lifecycle, and the server remains loopback-only and GET-only.
+- Deterministic proof after capability integration: 86 focused scheduler/store/replay/correction/
+  viewer tests passed. The fresh live canary at
+  `/tmp/tau-self-healing-smoke-capability/self-healing-smoke-receipt.json` records
+  `mocked:false`, `live:true`, `provider_live:true`, one action call, one verifier call, two node
+  calls, one durable effect, a crash after `APPLIED`, final correction `VERIFIED`, and final run
+  `PASS`. Its capability decision and grant are under
+  `/tmp/tau-self-healing-smoke-capability/security/`.
+- The live SciLLM readiness call returned HTTP 200 with valid Codex OAuth and
+  `repair_attempted:false`. This proves live provider-readiness binding, not that a stale OAuth mount
+  was refreshed. It does not prove provider/model semantic quality or that every provider-auth
+  failure is automatically repairable.

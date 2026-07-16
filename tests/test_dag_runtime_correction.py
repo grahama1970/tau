@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ from tau_coding.dag_runtime.correction import (
 from tau_coding.dag_runtime.model import DagPlan
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagCorrectionRequest, run_dag_plan
+from tau_coding.security_capability import capability_grant_sha256
 
 
 class InjectedCorrectionCrash(RuntimeError):
@@ -87,6 +89,7 @@ def test_non_retryable_incident_routes_human_without_side_effect(tmp_path: Path)
     plan = _plan(tmp_path)
     incident = CorrectionIncident.create(
         run_id="run-1",
+        dag_id=plan.plan_id,
         node_id="worker",
         attempt=1,
         trigger="goal_hash_mismatch",
@@ -101,6 +104,50 @@ def test_non_retryable_incident_routes_human_without_side_effect(tmp_path: Path)
         action_calls += 1
         return {"unexpected": True}
 
+    with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
+        projection = run_correction_transaction(
+            store=store,
+            lease=lease,
+            incident=incident,
+            intent=intent,
+            apply_action=apply_action,
+            verify_action=lambda _intent, _receipt: {"verified": True},
+        )
+
+    assert projection.state == "HUMAN_ROUTED"
+    assert action_calls == 0
+    assert projection.action_receipt is None
+
+
+@pytest.mark.parametrize("invalid_grant", ["missing", "expired", "modified_binding"])
+def test_correction_blocks_invalid_capability_grant_without_side_effect(
+    tmp_path: Path, invalid_grant: str
+) -> None:
+    incident = _incident()
+    grant = _grant(incident)
+    if invalid_grant == "missing":
+        grant = {}
+    elif invalid_grant == "expired":
+        grant = _grant(incident, expires_at=datetime(2020, 1, 1, tzinfo=UTC))
+    else:
+        grant["node_id"] = "another-node"
+    intent = CorrectionActionIntent.create(
+        incident=incident,
+        capability="provider.repair_auth",
+        action="refresh_local_provider_auth",
+        target={"provider": "local-fixture"},
+        policy_sha256="sha256:policy",
+        capability_grant=grant,
+    )
+    action_calls = 0
+
+    def apply_action(_intent: CorrectionActionIntent) -> dict[str, Any]:
+        nonlocal action_calls
+        action_calls += 1
+        return {"unexpected": True}
+
+    plan = _plan(tmp_path)
     with SqliteDagRunStore(tmp_path / "run.sqlite3") as store:
         lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
         projection = run_correction_transaction(
@@ -201,6 +248,7 @@ def test_scheduler_releases_retry_only_after_verified_correction_on_restart(
     node_calls = 0
     action_calls = 0
     verifier_calls = 0
+    committed_intent: CorrectionActionIntent | None = None
 
     def execute_node(*_args: object) -> dict[str, Any]:
         nonlocal node_calls
@@ -222,8 +270,10 @@ def test_scheduler_releases_retry_only_after_verified_correction_on_restart(
         }
 
     def correction_handler(request: DagCorrectionRequest):  # type: ignore[no-untyped-def]
+        nonlocal committed_intent
         incident = CorrectionIncident.create(
             run_id=request.attempt.run_id,
+            dag_id=request.plan.plan_id,
             node_id=request.node.node_id,
             attempt=request.attempt.attempt,
             trigger="provider_auth_required",
@@ -231,14 +281,16 @@ def test_scheduler_releases_retry_only_after_verified_correction_on_restart(
             goal_hash=request.plan.runtime_goal_hash,
             observed_state={"auth": "EXPIRED"},
         )
-        intent = CorrectionActionIntent.create(
-            incident=incident,
-            capability="provider.repair_auth",
-            action="refresh_local_provider_auth",
-            target={"provider": "local-fixture"},
-            policy_sha256="sha256:policy",
-            authorized=True,
-        )
+        if committed_intent is None:
+            committed_intent = CorrectionActionIntent.create(
+                incident=incident,
+                capability="provider.repair_auth",
+                action="refresh_local_provider_auth",
+                target={"provider": "local-fixture"},
+                policy_sha256="sha256:policy",
+                capability_grant=_grant(incident),
+            )
+        intent = committed_intent
 
         def apply_action(_intent: CorrectionActionIntent) -> dict[str, Any]:
             nonlocal action_calls
@@ -332,6 +384,7 @@ def test_scheduler_does_not_retry_correction_gated_failure_without_handler(
 def _incident() -> CorrectionIncident:
     return CorrectionIncident.create(
         run_id="run-1",
+        dag_id="dag-test",
         node_id="reviewer",
         attempt=2,
         trigger="provider_auth_required",
@@ -348,8 +401,40 @@ def _intent(incident: CorrectionIncident) -> CorrectionActionIntent:
         action="refresh_local_provider_auth",
         target={"provider": "local-fixture"},
         policy_sha256="sha256:policy",
-        authorized=True,
+        capability_grant=_grant(incident),
     )
+
+
+def _grant(
+    incident: CorrectionIncident,
+    *,
+    expires_at: datetime | None = None,
+) -> dict[str, Any]:
+    grant: dict[str, Any] = {
+        "schema": "tau.capability_grant.v1",
+        "grant_id": f"grant:{incident.incident_id}",
+        "request_sha256": "sha256:request",
+        "run_id": incident.run_id,
+        "dag_id": incident.dag_id,
+        "node_id": incident.node_id,
+        "attempt": incident.attempt,
+        "actor_id": "human:operator",
+        "goal_hash": incident.goal_hash,
+        "security_context_sha256": "sha256:security-context",
+        "policy_profile_sha256": "sha256:policy",
+        "data_boundary_sha256": "sha256:boundary",
+        "capability": "provider.repair_auth",
+        "target": "refresh_local_provider_auth",
+        "resource_scope": ["provider:local-fixture"],
+        "maximum_effect": {"max_repairs": 1},
+        "issued_at": "2026-07-16T00:00:00Z",
+        "expires_at": (
+            expires_at or datetime.now(UTC) + timedelta(minutes=5)
+        ).isoformat().replace("+00:00", "Z"),
+        "granting_authority": "tau.command_spec_policy.v1",
+    }
+    grant["grant_sha256"] = capability_grant_sha256(grant)
+    return grant
 
 
 def _plan(tmp_path: Path) -> DagPlan:

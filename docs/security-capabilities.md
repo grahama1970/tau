@@ -66,6 +66,14 @@ Bubblewrap executor. Before launch, Tau rechecks the grant's run, DAG, node,
 attempt, goal, security-context, policy, boundary, target, hash, and expiry.
 There is no direct-subprocess fallback when any check or Bubblewrap setup fails.
 
+Durable correction transactions use the same grant format. A correction intent
+must carry a `tau.capability_grant.v1` whose hash and expiry are valid and whose
+run, DAG, node, attempt, goal, policy, capability, and action target exactly
+match the incident. Missing, expired, modified, or mismatched grants route the
+incident to a human without applying the correction effect. The initial
+correction capability is `provider.repair_auth`; its command-policy rule must
+allow both network and mutation effects.
+
 The first executor slice is deliberately narrow: it uses an empty `/work`, an
 empty-base environment with explicit Tau identifiers, and a new network
 namespace. Secure `bounded-ready-queue` runs block until that scheduler uses the
@@ -79,4 +87,5 @@ hash binding. `tau.secure_execution_receipt.v1` additionally records whether a
 grant-bound Bubblewrap launch occurred. It does not prove successful sandbox
 execution on a host where Bubblewrap cannot establish isolation, scoped host
 filesystem mounts, secret references, network allow grants, secure retries
-beyond attempt 1, or provider/model quality.
+beyond attempt 1, that every provider-auth incident is repairable, or
+provider/model quality.

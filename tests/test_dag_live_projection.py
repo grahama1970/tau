@@ -24,6 +24,7 @@ from tau_coding.dag_viewer.projection import (
     build_dag_view_manifest,
     load_dag_replay,
 )
+from tau_coding.security_capability import capability_grant_sha256
 
 
 def _durable_run(tmp_path: Path) -> Path:
@@ -233,6 +234,7 @@ def test_snapshot_projects_verified_correction_lineage_without_accepting_node(
     )
     incident = CorrectionIncident.create(
         run_id="run-1",
+        dag_id=plan.plan_id,
         node_id="node",
         attempt=1,
         trigger="provider_auth_required",
@@ -240,13 +242,35 @@ def test_snapshot_projects_verified_correction_lineage_without_accepting_node(
         goal_hash=plan.runtime_goal_hash,
         observed_state={"auth": "EXPIRED"},
     )
+    grant = {
+        "schema": "tau.capability_grant.v1",
+        "grant_id": "grant:viewer-test",
+        "request_sha256": "sha256:request",
+        "run_id": "run-1",
+        "dag_id": plan.plan_id,
+        "node_id": "node",
+        "attempt": 1,
+        "actor_id": "human:operator",
+        "goal_hash": plan.runtime_goal_hash,
+        "security_context_sha256": "sha256:security-context",
+        "policy_profile_sha256": "sha256:policy",
+        "data_boundary_sha256": "sha256:boundary",
+        "capability": "provider.repair_auth",
+        "target": "refresh_local_provider_auth",
+        "resource_scope": ["provider:local-fixture"],
+        "maximum_effect": {"max_repairs": 1},
+        "issued_at": "2026-07-16T00:00:00Z",
+        "expires_at": "2099-07-16T00:05:00Z",
+        "granting_authority": "tau.command_spec_policy.v1",
+    }
+    grant["grant_sha256"] = capability_grant_sha256(grant)
     intent = CorrectionActionIntent.create(
         incident=incident,
         capability="provider.repair_auth",
         action="refresh_local_provider_auth",
         target={"provider": "local-fixture"},
         policy_sha256="sha256:policy",
-        authorized=True,
+        capability_grant=grant,
     )
     with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
         lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")

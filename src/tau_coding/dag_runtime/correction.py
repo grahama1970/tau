@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 from tau_coding.dag_runtime.model import canonical_sha256
@@ -12,6 +13,7 @@ from tau_coding.dag_runtime.run_store import (
     DagRunLease,
     SqliteDagRunStore,
 )
+from tau_coding.security_capability import validate_capability_grant
 
 CORRECTION_INCIDENT_SCHEMA = "tau.correction_incident.v1"
 CORRECTION_ACTION_INTENT_SCHEMA = "tau.correction_action_intent.v1"
@@ -56,6 +58,7 @@ class CorrectionTransactionError(RuntimeError):
 class CorrectionIncident:
     incident_id: str
     run_id: str
+    dag_id: str
     node_id: str
     attempt: int
     trigger: str
@@ -68,6 +71,7 @@ class CorrectionIncident:
         cls,
         *,
         run_id: str,
+        dag_id: str,
         node_id: str,
         attempt: int,
         trigger: str,
@@ -90,6 +94,7 @@ class CorrectionIncident:
         basis = {
             "schema": CORRECTION_INCIDENT_SCHEMA,
             "run_id": run_id,
+            "dag_id": dag_id,
             "node_id": node_id,
             "attempt": attempt,
             "trigger": trigger,
@@ -101,6 +106,7 @@ class CorrectionIncident:
         return cls(
             incident_id=f"incident-{digest[:32]}",
             run_id=run_id,
+            dag_id=dag_id,
             node_id=node_id,
             attempt=attempt,
             trigger=trigger,
@@ -114,6 +120,7 @@ class CorrectionIncident:
             "schema": CORRECTION_INCIDENT_SCHEMA,
             "incident_id": self.incident_id,
             "run_id": self.run_id,
+            "dag_id": self.dag_id,
             "node_id": self.node_id,
             "attempt": self.attempt,
             "trigger": self.trigger,
@@ -131,7 +138,7 @@ class CorrectionActionIntent:
     action: str
     target: Mapping[str, Any]
     policy_sha256: str
-    authorized: bool
+    capability_grant: Mapping[str, Any]
     idempotency_key: str
 
     @classmethod
@@ -143,7 +150,7 @@ class CorrectionActionIntent:
         action: str,
         target: Mapping[str, Any],
         policy_sha256: str,
-        authorized: bool,
+        capability_grant: Mapping[str, Any],
     ) -> CorrectionActionIntent:
         basis = {
             "schema": CORRECTION_ACTION_INTENT_SCHEMA,
@@ -155,6 +162,7 @@ class CorrectionActionIntent:
             "action": action,
             "target": dict(target),
             "policy_sha256": policy_sha256,
+            "capability_grant_sha256": capability_grant.get("grant_sha256"),
         }
         digest = canonical_sha256(basis).removeprefix("sha256:")
         return cls(
@@ -164,7 +172,7 @@ class CorrectionActionIntent:
             action=action,
             target=dict(target),
             policy_sha256=policy_sha256,
-            authorized=authorized,
+            capability_grant=dict(capability_grant),
             idempotency_key=canonical_sha256({**basis, "purpose": "correction_effect"}),
         )
 
@@ -177,7 +185,7 @@ class CorrectionActionIntent:
             "action": self.action,
             "target": dict(self.target),
             "policy_sha256": self.policy_sha256,
-            "authorized": self.authorized,
+            "capability_grant": dict(self.capability_grant),
             "idempotency_key": self.idempotency_key,
         }
 
@@ -209,6 +217,7 @@ def run_correction_transaction(
     apply_action: CorrectionAction,
     verify_action: CorrectionVerifier,
     fault_injector: CorrectionFaultInjector | None = None,
+    checked_at: datetime | None = None,
 ) -> CorrectionStateProjection:
     """Run or resume one correction without reapplying an applied effect."""
 
@@ -227,11 +236,25 @@ def run_correction_transaction(
         return projection
 
     if projection.state == "REQUESTED":
-        if incident.classification != "RETRYABLE" or not intent.authorized:
+        grant_errors = validate_capability_grant(
+            intent.capability_grant,
+            expected_bindings={
+                "run_id": incident.run_id,
+                "dag_id": incident.dag_id,
+                "node_id": incident.node_id,
+                "attempt": incident.attempt,
+                "goal_hash": incident.goal_hash,
+                "policy_profile_sha256": intent.policy_sha256,
+                "capability": intent.capability,
+                "target": intent.action,
+            },
+            checked_at=checked_at or datetime.now(UTC),
+        )
+        if incident.classification != "RETRYABLE" or grant_errors:
             reason = (
                 "incident_not_retryable"
                 if incident.classification != "RETRYABLE"
-                else "correction_action_not_authorized"
+                else f"correction_action_not_authorized:{','.join(grant_errors)}"
             )
             _append_state(store, lease, incident, "HUMAN_ROUTED", reason=reason)
             return _required_projection(store, incident)

@@ -22,6 +22,7 @@ from tau_coding.dag_runtime.correction import (
 from tau_coding.dag_runtime.run_store import SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import DagCorrectionRequest, run_dag_plan
 from tau_coding.dag_viewer.source_artifact import write_dag_source_artifact
+from tau_coding.security_capability import compile_capability_decision
 
 
 class InjectedSmokeCrash(RuntimeError):
@@ -68,6 +69,55 @@ def main() -> int:
         source_path=source_path,
         run_dir=run_dir,
     )
+    policy_sha256 = "sha256:self-healing-smoke-policy"
+    capability_receipt = compile_capability_decision(
+        dag_id=plan.plan_id,
+        run_id="self-healing-smoke",
+        goal_hash=plan.runtime_goal_hash,
+        security_context={
+            "security_context_sha256": "sha256:self-healing-smoke-context",
+            "policy_profile": {"sha256": policy_sha256},
+            "data_boundary": {"sha256": "sha256:self-healing-smoke-boundary"},
+            "actor": {"actor_id": "human:smoke-operator"},
+        },
+        command_policy={
+            "schema": "tau.command_spec_policy.v1",
+            "allows_network": True,
+            "allows_mutation": True,
+            "capability_grant_ttl_seconds": 300,
+            "capability_rules": [
+                {
+                    "capability": "provider.repair_auth",
+                    "targets": ["refresh_local_provider_auth"],
+                    "resource_scope": ["provider:scillm", "provider:local-fixture"],
+                    "maximum_effect": {"max_repairs": 1},
+                }
+            ],
+        },
+        nodes=[
+            {
+                "node_id": "provider-review",
+                "executor": "scheduler",
+                "attempt": 1,
+                "requested_capabilities": [
+                    {
+                        "capability": "provider.repair_auth",
+                        "target": "refresh_local_provider_auth",
+                        "resource_scope": [
+                            "provider:scillm"
+                            if args.live_scillm_readiness
+                            else "provider:local-fixture"
+                        ],
+                        "maximum_effect": {"max_repairs": 1},
+                    }
+                ],
+            }
+        ],
+        receipt_dir=run_dir / "security",
+    )
+    if capability_receipt["status"] != "PASS":
+        raise RuntimeError("self_healing_smoke_capability_denied")
+    capability_grant = capability_receipt["grants"][0]
 
     auth_state_path = run_dir / "auth-state.json"
     _atomic_json(auth_state_path, {"state": "EXPIRED", "effect_count": 0})
@@ -105,6 +155,7 @@ def main() -> int:
     def correction_handler(request: DagCorrectionRequest):  # type: ignore[no-untyped-def]
         incident = CorrectionIncident.create(
             run_id=request.attempt.run_id,
+            dag_id=request.plan.plan_id,
             node_id=request.node.node_id,
             attempt=request.attempt.attempt,
             trigger="provider_auth_required",
@@ -117,8 +168,8 @@ def main() -> int:
             capability="provider.repair_auth",
             action="refresh_local_provider_auth",
             target={"provider": "scillm" if args.live_scillm_readiness else "local-fixture"},
-            policy_sha256="sha256:self-healing-smoke-policy",
-            authorized=True,
+            policy_sha256=policy_sha256,
+            capability_grant=capability_grant,
         )
 
         def apply_action(_intent: CorrectionActionIntent) -> dict[str, Any]:
@@ -210,6 +261,8 @@ def main() -> int:
         and node_calls == 2
         and action_calls == 1
         and verifier_calls == 1
+        and capability_receipt["status"] == "PASS"
+        and capability_receipt["grant_count"] == 1
         and len(corrections) == 1
         and corrections[0].state == "VERIFIED"
         else "BLOCKED"
@@ -232,11 +285,16 @@ def main() -> int:
         "correction_state": corrections[0].state if corrections else None,
         "correction_incident_id": corrections[0].incident_id if corrections else None,
         "journal_sequence": events[-1]["seq"] if events else 0,
+        "capability_decision_status": capability_receipt["status"],
+        "capability_decision_receipt": capability_receipt["receipt_path"],
+        "capability_grant_sha256": capability_grant["grant_sha256"],
         "provider_readiness": provider_receipt,
         "run_dir": str(run_dir),
         "viewer_command": ["tau", "dag-view", "--run-dir", str(run_dir)],
         "proof_scope": {
             "proves": [
+                "Tau compiled the correction capability against a command policy and "
+                "validated its hash, expiry, and run/DAG/node/attempt/goal bindings.",
                 "Tau committed a correction intent before one local filesystem effect.",
                 "Tau resumed after a crash following APPLIED without duplicating the effect.",
                 "Tau verified the postcondition before releasing one original-node retry.",
