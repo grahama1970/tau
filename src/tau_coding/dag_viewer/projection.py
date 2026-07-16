@@ -4,13 +4,18 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from tau_coding.dag_runtime.correction import reduce_correction_projections
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
-from tau_coding.dag_runtime.replay import DagReplayState, replay_dag_run
-from tau_coding.dag_runtime.run_store import DagJournalEvent, SqliteDagRunReader
+from tau_coding.dag_runtime.replay import (
+    DagReplayState,
+    HistoricalReplayResult,
+    replay_dag_run_at_sequence,
+)
+from tau_coding.dag_runtime.run_store import SqliteDagRunReader
 from tau_coding.dag_viewer.redaction import redact_for_viewer
 
 PROOF_SCOPE = {
@@ -27,8 +32,17 @@ PROOF_SCOPE = {
 
 
 def load_dag_replay(
-    *, run_dir: Path, run_id: str | None = None
+    *, run_dir: Path, run_id: str | None = None, at_sequence: int | None = None
 ) -> tuple[DagReplayState, tuple[dict[str, Any], ...]]:
+    result = load_dag_replay_result(
+        run_dir=run_dir, run_id=run_id, at_sequence=at_sequence
+    )
+    return result.replay, result.events
+
+
+def load_dag_replay_result(
+    *, run_dir: Path, run_id: str | None = None, at_sequence: int | None = None
+) -> HistoricalReplayResult:
     database = run_dir.expanduser().resolve() / "dag-run.sqlite3"
     with SqliteDagRunReader(database) as reader, reader.snapshot():
         run_ids = reader.run_ids()
@@ -36,26 +50,7 @@ def load_dag_replay(
             if len(run_ids) != 1:
                 raise RuntimeError("dag_viewer_run_id_ambiguous")
             run_id = run_ids[0]
-        plan = reader.load_plan(run_id)
-        event_pages: list[DagJournalEvent] = []
-        cursor = 0
-        latest_sequence = reader.latest_sequence(run_id)
-        while cursor < latest_sequence:
-            page = reader.load_events(run_id, after_sequence=cursor, limit=5000)
-            if not page:
-                raise RuntimeError("dag_viewer_journal_sequence_gap")
-            event_pages.extend(page)
-            cursor = page[-1].sequence
-        events = tuple(event_pages)
-        mappings = tuple(event.to_mapping() for event in events)
-        replay = replay_dag_run(
-            plan=plan,
-            run_record=reader.load_run_record(run_id),
-            events=mappings,
-            attempts=reader.load_attempts(run_id),
-            runtime_projections=reader.runtime_projections(run_id),
-        )
-    return replay, mappings
+        return replay_dag_run_at_sequence(reader, run_id, at_sequence)
 
 
 def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[str, Any]:
@@ -109,7 +104,11 @@ def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[st
 
 
 def build_dag_live_snapshot(
-    *, replay: DagReplayState, recent_events: tuple[dict[str, Any], ...]
+    *,
+    replay: DagReplayState,
+    recent_events: tuple[dict[str, Any], ...],
+    view_mode: str = "LIVE",
+    selected_event_created_at: str | None = None,
 ) -> dict[str, Any]:
     corrections = reduce_correction_projections(recent_events)
     correction_by_node = {
@@ -170,10 +169,21 @@ def build_dag_live_snapshot(
                 "updated_sequence": replay.journal_sequence,
             }
         )
+    if view_mode not in {"LIVE", "HISTORICAL"}:
+        raise RuntimeError("dag_viewer_view_mode_invalid")
+    reference_time_ms = time.time_ns() // 1_000_000
+    if view_mode == "HISTORICAL":
+        if selected_event_created_at is None:
+            raise RuntimeError("dag_viewer_sequence_timestamp_missing")
+        try:
+            selected_time = datetime.fromisoformat(selected_event_created_at)
+            reference_time_ms = int(selected_time.timestamp() * 1000)
+        except ValueError as exc:
+            raise RuntimeError("dag_viewer_sequence_timestamp_invalid") from exc
     lease_stale = (
         replay.run_status == "RUNNING"
         and replay.lease_expires_at_ms is not None
-        and replay.lease_expires_at_ms < time.time_ns() // 1_000_000
+        and replay.lease_expires_at_ms < reference_time_ms
     )
     projection_state = (
         "RECONCILIATION_REQUIRED"
@@ -185,9 +195,14 @@ def build_dag_live_snapshot(
         else "LIVE"
     )
     payload = {
-        "schema": "tau.dag_live_snapshot.v1",
+        "schema": "tau.dag_view_snapshot.v2",
         "run_id": replay.run_id,
         "journal_sequence": replay.journal_sequence,
+        "view": {
+            "mode": view_mode,
+            "sequence": replay.journal_sequence,
+            "sequence_created_at": selected_event_created_at,
+        },
         "run_status": replay.run_status,
         "run_verdict": replay.run_verdict,
         "projection_state": projection_state,

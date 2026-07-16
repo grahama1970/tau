@@ -11,12 +11,21 @@ html, body, #root { width: 100%; min-width: 320px; height: 100%; margin: 0; }
 button, select { font: inherit; letter-spacing: 0; }
 button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline-offset: 2px; }
 
-.dag-app { display: grid; grid-template-rows: 58px minmax(0, 1fr) 190px; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #0e1218; }
+.dag-app { display: grid; grid-template-rows: 58px 44px minmax(0, 1fr) 190px; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #0e1218; }
 .status-banner { display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #263140; background: #131922; }
 .status-banner__identity, .status-banner__state { display: flex; align-items: center; gap: 10px; }
 .status-banner__identity div { display: grid; gap: 2px; }
 .status-banner__identity span, .status-banner__state span, .pane-heading span { color: #8f9daf; font-size: 12px; }
 .status-banner__state span:first-child { color: #6ed5cb; font-weight: 700; }
+
+.sequence-navigator { display: flex; align-items: center; justify-content: space-between; min-width: 0; padding: 0 14px; border-bottom: 1px solid #263140; background: #10161e; }
+.sequence-navigator__mode, .sequence-navigator__controls { display: flex; align-items: center; gap: 8px; }
+.sequence-navigator__mode strong { color: #72d6cc; font-size: 11px; }
+.sequence-navigator__mode span { color: #8f9daf; font-size: 11px; }
+.sequence-navigator__controls button { height: 28px; min-width: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 8px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; cursor: pointer; font-size: 11px; }
+.sequence-navigator__controls button:disabled { opacity: .35; cursor: default; }
+.sequence-navigator__controls select { height: 28px; min-width: 142px; padding: 0 8px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; font-size: 11px; }
+.sequence-navigator__controls .sequence-navigator__live { color: #72d6cc; }
 
 .dag-app__workspace { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(360px, .75fr); min-height: 0; overflow: hidden; }
 .graph-pane { position: relative; display: grid; grid-template-rows: 38px minmax(0, 1fr); min-width: 0; min-height: 0; overflow: hidden; border-right: 1px solid #263140; }
@@ -90,7 +99,10 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 @media (max-width: 900px) {
-  .dag-app { grid-template-rows: 58px auto 190px; height: auto; min-height: 100%; overflow: visible; }
+  .dag-app { grid-template-rows: 58px auto auto 190px; height: auto; min-height: 100%; overflow: visible; }
+  .sequence-navigator { min-height: 74px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 8px; }
+  .sequence-navigator__controls { width: 100%; }
+  .sequence-navigator__controls select { flex: 1; min-width: 0; }
   .dag-app__workspace { grid-template-columns: 1fr; overflow: visible; }
   .graph-pane { grid-template-rows: 38px minmax(520px, 1fr); min-height: 558px; border-right: 0; }
   .graph-pane--with-transaction { grid-template-rows: 38px minmax(360px, 1fr) minmax(148px, auto); min-height: 620px; }

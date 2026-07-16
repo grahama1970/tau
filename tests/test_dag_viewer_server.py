@@ -145,7 +145,7 @@ def test_server_is_loopback_read_only_and_serves_declared_contracts(
     for path, schema in (
         ("/api/v1/capabilities", "tau.dag_viewer_capabilities.v1"),
         ("/api/v1/manifest", "tau.dag_view_manifest.v1"),
-        ("/api/v1/state", "tau.dag_live_snapshot.v1"),
+        ("/api/v1/state", "tau.dag_view_snapshot.v2"),
         ("/api/v1/events?after_sequence=0&limit=20", "tau.dag_live_event.v1"),
     ):
         status, headers, body = _request(server, "GET", path)
@@ -199,7 +199,7 @@ def test_state_polling_does_not_rebuild_receipt_index(
     status, _, body = _request(server, "GET", "/api/v1/state")
 
     assert status == 200
-    assert _json(body)["schema"] == "tau.dag_live_snapshot.v1"
+    assert _json(body)["schema"] == "tau.dag_view_snapshot.v2"
 
 
 def test_event_ranges_are_bounded_and_invalid_ranges_are_structured(
@@ -216,7 +216,7 @@ def test_event_ranges_are_bounded_and_invalid_ranges_are_structured(
     assert _json(body)["code"] == "dag_viewer_event_range_invalid"
 
 
-def test_wal_commit_becomes_visible_without_server_mutation(
+def test_mutable_projection_change_without_journal_event_blocks(
     viewer_server: tuple[RunningDagViewerServer, threading.Thread],
 ) -> None:
     server, _ = viewer_server
@@ -224,9 +224,11 @@ def test_wal_commit_becomes_visible_without_server_mutation(
     before = _json(_request(server, "GET", "/api/v1/state")[2])
     with sqlite3.connect(database) as connection:
         connection.execute("UPDATE dag_runs SET status = 'BLOCKED', verdict = 'TEST_BLOCK'")
-    after = _json(_request(server, "GET", "/api/v1/state")[2])
-    assert before["snapshot_sha256"] != after["snapshot_sha256"]
-    assert after["run_status"] == "BLOCKED"
+    status, _, body = _request(server, "GET", "/api/v1/state")
+    after = _json(body)
+    assert before["run_status"] == "PASS"
+    assert status == 409
+    assert after["code"] == "dag_viewer_head_projection_mismatch"
 
 
 def test_receipts_are_allowlisted_and_tamper_evident(
@@ -295,7 +297,7 @@ def test_localhost_authority_is_preserved(tmp_path: Path) -> None:
             headers={"Host": f"localhost:{server.port}"},
         )
         assert status == 200
-        assert _json(body)["schema"] == "tau.dag_live_snapshot.v1"
+        assert _json(body)["schema"] == "tau.dag_view_snapshot.v2"
     finally:
         server.shutdown()
         thread.join(timeout=2)

@@ -20,8 +20,9 @@ const methods = [];
 page.on("request", (request) => methods.push(request.method()));
 await page.goto(url, { waitUntil: "networkidle0", timeout: 15000 });
 await page.waitForSelector('[data-qid="dag:node:provider-review"]', { timeout: 10000 });
+await page.waitForFunction(() => document.querySelectorAll('[aria-label="Committed journal sequence"] option').length > 1);
 
-const beforeRefresh = await page.$eval('[data-qid="dag:node:provider-review"]', (element) => ({
+const liveBefore = await page.$eval('[data-qid="dag:node:provider-review"]', (element) => ({
   scheduler: element.getAttribute("data-node-state"),
   admission: element.getAttribute("data-admission-state"),
   text: element.textContent || "",
@@ -33,9 +34,9 @@ const liveText = await page.$eval('[data-qid="dag:workspace:inspector-content"]'
 
 const checks = {
   graph_rendered: Boolean(await page.$(".react-flow__viewport")),
-  correction_badge_verified: beforeRefresh.text.toLowerCase().includes("correction verified"),
-  scheduler_settled: beforeRefresh.scheduler === "settled",
-  receipt_admission_accepted: beforeRefresh.admission === "accepted",
+  correction_badge_verified: liveBefore.text.toLowerCase().includes("correction verified"),
+  scheduler_settled: liveBefore.scheduler === "settled",
+  receipt_admission_accepted: liveBefore.admission === "accepted",
   requested_visible: timelineText.includes("REQUESTED"),
   intent_committed_visible: timelineText.includes("INTENT_COMMITTED"),
   started_visible: timelineText.includes("STARTED"),
@@ -47,8 +48,44 @@ const checks = {
   live_provider_evidence_visible: liveText.includes('"provider_live": true'),
   read_only_requests: false,
   refresh_reconstructed_state: false,
+  historical_mode_visible: false,
+  historical_applied_visible: false,
+  historical_verified_absent: false,
+  historical_not_accepted: false,
+  historical_url_frozen: false,
+  return_to_live_restored_head: false,
   layout_non_overlapping: false,
 };
+
+const appliedSequence = await page.evaluate(async () => {
+  const response = await fetch("/api/v1/events?after_sequence=0&limit=500");
+  const payload = await response.json();
+  const applied = payload.events.find((event) => event.event_type === "correction_state_committed" && event.payload.state === "APPLIED");
+  return applied?.seq ?? null;
+});
+if (!appliedSequence) throw new Error("applied correction sequence missing");
+await page.select('[aria-label="Committed journal sequence"]', String(appliedSequence));
+await page.waitForFunction(
+  (sequence) => window.location.search === `?at_sequence=${sequence}`
+    && document.querySelector('[data-qid="dag:sequence:navigator"]')?.textContent?.includes("HISTORICAL"),
+  {},
+  appliedSequence,
+);
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:node:provider-review"]')?.getAttribute("data-admission-state") !== "accepted");
+await page.click('[data-qid="dag:inspector:live"]');
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:live"]')?.getAttribute("aria-pressed") === "true");
+const historicalBeforeRefresh = await page.$eval('[data-qid="dag:node:provider-review"]', (element) => ({
+  scheduler: element.getAttribute("data-node-state"),
+  admission: element.getAttribute("data-admission-state"),
+  text: element.textContent || "",
+}));
+const historicalText = await page.$eval('[data-qid="dag:workspace:inspector-content"]', (element) => element.textContent || "");
+const navigatorText = await page.$eval('[data-qid="dag:sequence:navigator"]', (element) => element.textContent || "");
+checks.historical_mode_visible = navigatorText.includes("HISTORICAL") && navigatorText.includes(`#${appliedSequence}`);
+checks.historical_applied_visible = historicalText.includes('"state": "APPLIED"');
+checks.historical_verified_absent = !historicalText.includes('"state": "VERIFIED"') && !historicalText.includes("tau.correction_verification.v1");
+checks.historical_not_accepted = historicalBeforeRefresh.admission !== "accepted";
+checks.historical_url_frozen = new URL(page.url()).searchParams.get("at_sequence") === String(appliedSequence);
 
 checks.layout_non_overlapping = await page.evaluate(() => {
   const rect = (qid) => document.querySelector(`[data-qid="${qid}"]`)?.getBoundingClientRect();
@@ -72,7 +109,17 @@ const afterRefresh = await page.$eval('[data-qid="dag:node:provider-review"]', (
   admission: element.getAttribute("data-admission-state"),
   text: element.textContent || "",
 }));
-checks.refresh_reconstructed_state = JSON.stringify(beforeRefresh) === JSON.stringify(afterRefresh);
+checks.refresh_reconstructed_state = JSON.stringify(historicalBeforeRefresh) === JSON.stringify(afterRefresh)
+  && new URL(page.url()).searchParams.get("at_sequence") === String(appliedSequence);
+await page.click(".sequence-navigator__live");
+await page.waitForFunction(() => !new URL(window.location.href).searchParams.has("at_sequence"));
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:node:provider-review"]')?.getAttribute("data-admission-state") === "accepted");
+const liveAfter = await page.$eval('[data-qid="dag:node:provider-review"]', (element) => ({
+  scheduler: element.getAttribute("data-node-state"),
+  admission: element.getAttribute("data-admission-state"),
+  text: element.textContent || "",
+}));
+checks.return_to_live_restored_head = JSON.stringify(liveBefore) === JSON.stringify(liveAfter);
 checks.read_only_requests = methods.length > 0 && methods.every((method) => method === "GET");
 
 await browser.close();

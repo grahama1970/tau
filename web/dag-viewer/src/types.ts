@@ -98,9 +98,10 @@ export type JournalEvent = {
 };
 
 export type DagSnapshot = {
-  schema: "tau.dag_live_snapshot.v1";
+  schema: "tau.dag_view_snapshot.v2";
   run_id: string;
   journal_sequence: number;
+  view: { mode: "LIVE" | "HISTORICAL"; sequence: number; sequence_created_at: string | null };
   snapshot_sha256: string;
   run_status: string;
   run_verdict: string | null;
@@ -112,6 +113,13 @@ export type DagSnapshot = {
   attention_items: Array<Record<string, JsonValue>>;
   recent_events: JournalEvent[];
   proof_scope: { proves: string[]; does_not_prove: string[] };
+};
+
+export type DagEventPage = {
+  schema: "tau.dag_live_event.v1";
+  run_id: string;
+  after_sequence: number;
+  events: JournalEvent[];
 };
 
 export type ReceiptProjection = {

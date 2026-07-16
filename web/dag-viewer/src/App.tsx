@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Braces, FileCheck2, FileJson2, RadioTower } from "lucide-react";
-import { loadInitialState, loadManifest, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
+import { loadInitialState, loadJournalSequences, loadManifest, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
 import { DagWorkspace } from "./components/DagWorkspace";
 import { EventTimeline } from "./components/EventTimeline";
 import { JsonInspector } from "./components/JsonInspector";
 import { ReceiptInspector } from "./components/ReceiptInspector";
+import { SequenceNavigator } from "./components/SequenceNavigator";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
 import type { DagManifest, DagSnapshot, JsonValue, ReceiptProjection } from "./types";
@@ -18,9 +19,13 @@ const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
 ];
 
 export default function App() {
+  const initialSequence = new URLSearchParams(window.location.search).get("at_sequence");
   const [manifest, setManifest] = useState<DagManifest | null>(null);
   const [snapshot, setSnapshot] = useState<DagSnapshot | null>(null);
-  const etagRef = useRef<string | null>(null);
+  const etagsRef = useRef(new Map<string, string | null>());
+  const requestGenerationRef = useRef(0);
+  const [selectedSequence, setSelectedSequence] = useState<number | null>(initialSequence ? Number(initialSequence) : null);
+  const [sequences, setSequences] = useState<number[]>([]);
   const [connected, setConnected] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -29,45 +34,63 @@ export default function App() {
   const [receipt, setReceipt] = useState<ReceiptProjection | null>(null);
 
   useEffect(() => {
+    const onPopState = () => {
+      const raw = new URLSearchParams(window.location.search).get("at_sequence");
+      setSelectedSequence(raw ? Number(raw) : null);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
     let active = true;
-    loadInitialState().then((initial) => {
-      if (!active) return;
+    const generation = ++requestGenerationRef.current;
+    loadInitialState(selectedSequence).then((initial) => {
+      if (!active || generation !== requestGenerationRef.current) return;
       setManifest(initial.manifest);
       setSnapshot(initial.snapshot);
-      etagRef.current = initial.etag;
+      etagsRef.current.set(selectedSequence === null ? "live" : `historical:${selectedSequence}`, initial.etag);
       setSelectedId(initial.manifest.graph.nodes[0]?.node_id ?? null);
       setConnected(true);
+      setError(null);
+      return loadJournalSequences();
+    }).then((loadedSequences) => {
+      if (active && generation === requestGenerationRef.current && loadedSequences) setSequences(loadedSequences);
     }).catch((reason: unknown) => {
       if (!active) return;
       setError(reason instanceof Error ? reason.message : "viewer_initialization_failed");
       setConnected(false);
     });
     return () => { active = false; };
-  }, []);
+  }, [selectedSequence]);
 
   useEffect(() => {
-    if (!manifest) return;
+    if (!manifest || selectedSequence !== null) return;
     let active = true;
     let timer: number | null = null;
+    const generation = requestGenerationRef.current;
 
     const schedule = () => {
       if (active) timer = window.setTimeout(poll, 750);
     };
     const poll = async () => {
       try {
-        const next = await pollState(etagRef.current);
-        if (!active) return;
+        const next = await pollState(etagsRef.current.get("live") ?? null);
+        if (!active || generation !== requestGenerationRef.current) return;
         if (next.snapshot) {
           const current = snapshot;
-          if (!current || shouldReplaceSnapshot(current, next.snapshot)) {
+          if (!current || shouldReplaceSnapshot(current, next.snapshot, null)) {
             const refreshedManifest = await loadManifest();
-            if (!active) return;
+            if (!active || generation !== requestGenerationRef.current) return;
             setManifest(refreshedManifest);
             setSnapshot(next.snapshot);
-            etagRef.current = next.etag;
+            etagsRef.current.set("live", next.etag);
+            loadJournalSequences().then((items) => {
+              if (active && generation === requestGenerationRef.current) setSequences(items);
+            }).catch(() => undefined);
           }
         } else {
-          etagRef.current = next.etag;
+          etagsRef.current.set("live", next.etag);
         }
         setConnected(true);
       } catch {
@@ -82,7 +105,7 @@ export default function App() {
       active = false;
       if (timer !== null) window.clearTimeout(timer);
     };
-  }, [manifest?.plan_sha256, snapshot]);
+  }, [manifest?.plan_sha256, selectedSequence, snapshot]);
 
   const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
   const selectedTerminal = useMemo(
@@ -95,7 +118,17 @@ export default function App() {
     setReceiptId(id || null);
     setReceipt(null);
     if (!id) return;
-    loadReceipt(id).then(setReceipt).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "receipt_load_failed"));
+    loadReceipt(id, selectedSequence).then(setReceipt).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "receipt_load_failed"));
+  };
+
+  const selectSequence = (sequence: number | null) => {
+    const url = new URL(window.location.href);
+    if (sequence === null) url.searchParams.delete("at_sequence");
+    else url.searchParams.set("at_sequence", String(sequence));
+    window.history.pushState({}, "", url);
+    setReceiptId(null);
+    setReceipt(null);
+    setSelectedSequence(sequence);
   };
 
   if (error && (!manifest || !snapshot)) return <main className="fatal-state"><h1>Tau Live DAG</h1><p>{error}</p></main>;
@@ -109,6 +142,7 @@ export default function App() {
 
   return <main className="dag-app">
     <StatusBanner snapshot={snapshot} connected={connected} />
+    <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
     <section className="dag-app__workspace">
       <div className={`graph-pane${transaction ? " graph-pane--with-transaction" : ""}`} data-qid="dag:workspace:graph">
         <div className="pane-heading"><strong>Execution graph</strong><span>read-only · source DAG unchanged</span></div>

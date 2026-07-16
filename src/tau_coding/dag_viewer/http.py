@@ -64,6 +64,21 @@ def parse_event_query(query: str) -> tuple[int, int | None, int]:
     return after, before, limit
 
 
+def parse_at_sequence(query: str) -> int | None:
+    values = parse_qs(query, keep_blank_values=True, strict_parsing=False)
+    if set(values) - {"at_sequence"} or any(len(items) != 1 for items in values.values()):
+        raise RuntimeError("dag_viewer_sequence_invalid")
+    if "at_sequence" not in values:
+        return None
+    try:
+        sequence = int(values["at_sequence"][0])
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError("dag_viewer_sequence_invalid") from exc
+    if sequence < 1:
+        raise RuntimeError("dag_viewer_sequence_invalid")
+    return sequence
+
+
 def security_headers(*, html: bool) -> dict[str, str]:
     headers = {
         "X-Content-Type-Options": "nosniff",
@@ -95,6 +110,11 @@ def public_error_message(code: str) -> str:
         "dag_viewer_receipt_path_escape": "The indexed receipt path left the run directory.",
         "dag_viewer_receipt_symlink_escape": "A receipt symlink left the run directory.",
         "dag_viewer_event_range_invalid": "The requested event range is invalid.",
+        "dag_viewer_sequence_invalid": "The requested journal sequence is invalid.",
+        "dag_viewer_sequence_not_in_run": "The requested sequence is not part of this run.",
+        "dag_viewer_head_projection_mismatch": (
+            "The journal head disagrees with a mutable projection."
+        ),
     }
     return messages.get(code, "The DAG viewer could not validate the requested run data.")
 

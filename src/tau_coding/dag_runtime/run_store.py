@@ -90,6 +90,7 @@ class DagJournalEvent:
     entity_id: str
     attempt_id: str | None
     lease_epoch: int
+    created_at: str
     payload: dict[str, Any]
 
     def to_mapping(self) -> dict[str, Any]:
@@ -101,6 +102,7 @@ class DagJournalEvent:
             "entity_id": self.entity_id,
             "attempt_id": self.attempt_id,
             "lease_epoch": self.lease_epoch,
+            "created_at": self.created_at,
             "payload": self.payload,
         }
 
@@ -299,6 +301,7 @@ def _verified_event(row: sqlite3.Row) -> DagJournalEvent:
         entity_id=str(row["entity_id"]),
         attempt_id=str(row["attempt_id"]) if row["attempt_id"] is not None else None,
         lease_epoch=int(row["lease_epoch"]),
+        created_at=str(row["created_at"]),
         payload=payload,
     )
 
@@ -475,15 +478,44 @@ class SqliteDagRunReader:
         return plan
 
     def load_events(
-        self, run_id: str, *, after_sequence: int = 0, limit: int = 500
+        self,
+        run_id: str,
+        *,
+        after_sequence: int = 0,
+        through_sequence: int | None = None,
+        limit: int = 500,
     ) -> tuple[DagJournalEvent, ...]:
-        if after_sequence < 0 or limit < 1 or limit > 5000:
+        if (
+            after_sequence < 0
+            or through_sequence is not None
+            and through_sequence < 1
+            or through_sequence is not None
+            and through_sequence <= after_sequence
+            or limit < 1
+            or limit > 5000
+        ):
             raise DagRunStoreError("dag_viewer_event_range_invalid")
-        rows = self._connection.execute(
-            "SELECT * FROM dag_run_events WHERE run_id = ? AND seq > ? ORDER BY seq LIMIT ?",
-            (run_id, after_sequence, limit),
-        ).fetchall()
+        if through_sequence is None:
+            rows = self._connection.execute(
+                "SELECT * FROM dag_run_events WHERE run_id = ? AND seq > ? ORDER BY seq LIMIT ?",
+                (run_id, after_sequence, limit),
+            ).fetchall()
+        else:
+            rows = self._connection.execute(
+                """SELECT * FROM dag_run_events
+                   WHERE run_id = ? AND seq > ? AND seq <= ? ORDER BY seq LIMIT ?""",
+                (run_id, after_sequence, through_sequence, limit),
+            ).fetchall()
         return tuple(_verified_event(cast(sqlite3.Row, row)) for row in rows)
+
+    def event_sequence_belongs_to_run(self, run_id: str, sequence: int) -> bool:
+        if sequence < 1:
+            return False
+        row = self._connection.execute(
+            "SELECT 1 FROM dag_run_events WHERE run_id = ? AND seq = ?",
+            (run_id, sequence),
+        ).fetchone()
+        return row is not None
 
     def load_attempts(self, run_id: str) -> tuple[StoredAttempt, ...]:
         rows = self._connection.execute(

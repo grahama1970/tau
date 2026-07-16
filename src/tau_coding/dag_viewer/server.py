@@ -15,6 +15,7 @@ from tau_coding.dag_viewer.http import (
     ViewerHttpResponse,
     error_code,
     json_response,
+    parse_at_sequence,
     parse_event_query,
     public_error_message,
     security_headers,
@@ -25,7 +26,7 @@ from tau_coding.dag_viewer.projection import (
     build_dag_live_events,
     build_dag_live_snapshot,
     build_dag_view_manifest,
-    load_dag_replay,
+    load_dag_replay_result,
 )
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
 from tau_coding.dag_viewer.static_files import read_static_viewer_file
@@ -36,11 +37,11 @@ LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 class DagViewerApplication:
     def __init__(self, *, run_dir: Path, run_id: str | None = None) -> None:
         self.run_dir = run_dir.expanduser().resolve()
-        replay, _ = load_dag_replay(run_dir=self.run_dir, run_id=run_id)
-        self.run_id = replay.run_id
-        self.plan_sha256 = replay.plan.plan_sha256
+        result = load_dag_replay_result(run_dir=self.run_dir, run_id=run_id)
+        self.run_id = result.replay.run_id
+        self.plan_sha256 = result.replay.plan.plan_sha256
         self.receipts: ReceiptIndex = build_receipt_index(
-            self.run_dir, replay.transition_receipts
+            self.run_dir, result.replay.transition_receipts
         )
 
     def handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
@@ -54,26 +55,40 @@ class DagViewerApplication:
         if path == "/api/v1/capabilities":
             return json_response(viewer_capabilities())
         if path == "/api/v1/manifest":
-            replay, _ = self._replay()
-            self.receipts = build_receipt_index(self.run_dir, replay.transition_receipts)
-            manifest = build_dag_view_manifest(replay=replay, run_dir=self.run_dir)
+            at_sequence = parse_at_sequence(parsed.query)
+            result = self._replay(at_sequence=at_sequence)
+            self.receipts = build_receipt_index(
+                self.run_dir, result.replay.transition_receipts
+            )
+            manifest = build_dag_view_manifest(replay=result.replay, run_dir=self.run_dir)
             manifest["receipt_index"] = self.receipts.public_entries()
             return json_response(manifest)
         if path == "/api/v1/state":
-            replay, events = self._replay()
-            snapshot = build_dag_live_snapshot(replay=replay, recent_events=events)
+            at_sequence = parse_at_sequence(parsed.query)
+            result = self._replay(at_sequence=at_sequence)
+            snapshot = build_dag_live_snapshot(
+                replay=result.replay,
+                recent_events=result.events,
+                view_mode=result.view_mode,
+                selected_event_created_at=result.selected_event_created_at,
+            )
             etag = f'"{snapshot["snapshot_sha256"]}"'
+            response_headers = {
+                "ETag": etag,
+                "X-Tau-Journal-Head-Sequence": str(result.head_sequence),
+            }
             if if_none_match == etag:
                 return ViewerHttpResponse(
                     304,
                     b"",
                     "application/json",
-                    {"ETag": etag, "Cache-Control": "no-store"},
+                    {**response_headers, "Cache-Control": "no-store"},
                 )
-            return with_headers(json_response(snapshot), {"ETag": etag})
+            return with_headers(json_response(snapshot), response_headers)
         if path == "/api/v1/events":
             after, before, limit = parse_event_query(parsed.query)
-            replay, events = self._replay()
+            result = self._replay()
+            replay, events = result.replay, result.events
             selected = tuple(
                 event
                 for event in events
@@ -90,21 +105,26 @@ class DagViewerApplication:
             )
         receipt_prefix = "/api/v1/receipts/"
         if path.startswith(receipt_prefix):
+            at_sequence = parse_at_sequence(parsed.query)
             receipt_id = path.removeprefix(receipt_prefix)
             if not receipt_id or "/" in receipt_id or receipt_id in {".", ".."}:
                 raise RuntimeError("dag_viewer_receipt_not_found")
-            replay, _ = self._replay()
-            self.receipts = build_receipt_index(self.run_dir, replay.transition_receipts)
+            result = self._replay(at_sequence=at_sequence)
+            self.receipts = build_receipt_index(
+                self.run_dir, result.replay.transition_receipts
+            )
             return json_response(self.receipts.read_projection(receipt_id))
         return viewer_error(
             "dag_viewer_endpoint_not_found", "The endpoint does not exist.", status=404
         )
 
-    def _replay(self) -> tuple[Any, tuple[dict[str, Any], ...]]:
-        replay, events = load_dag_replay(run_dir=self.run_dir, run_id=self.run_id)
-        if replay.plan.plan_sha256 != self.plan_sha256:
+    def _replay(self, *, at_sequence: int | None = None) -> Any:
+        result = load_dag_replay_result(
+            run_dir=self.run_dir, run_id=self.run_id, at_sequence=at_sequence
+        )
+        if result.replay.plan.plan_sha256 != self.plan_sha256:
             raise RuntimeError("dag_viewer_plan_hash_mismatch")
-        return replay, events
+        return result
 
 
 class DagViewerHttpServer(ThreadingHTTPServer):

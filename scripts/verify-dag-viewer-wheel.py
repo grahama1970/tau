@@ -132,7 +132,7 @@ def main() -> int:
                     time.sleep(0.1)
             if b'<div id="root"></div>' not in html:
                 raise RuntimeError("dag_viewer_wheel_html_invalid")
-            if state.get("schema") != "tau.dag_live_snapshot.v1":
+            if state.get("schema") != "tau.dag_view_snapshot.v2":
                 raise RuntimeError("dag_viewer_wheel_state_invalid")
         finally:
             process.terminate()

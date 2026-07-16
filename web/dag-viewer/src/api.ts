@@ -1,4 +1,4 @@
-import type { DagManifest, DagSnapshot, ReceiptProjection } from "./types";
+import type { DagEventPage, DagManifest, DagSnapshot, ReceiptProjection } from "./types";
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<{ value: T | null; etag: string | null }> {
   const response = await fetch(path, init);
@@ -7,32 +7,54 @@ async function getJson<T>(path: string, init?: RequestInit): Promise<{ value: T 
   return { value: (await response.json()) as T, etag: response.headers.get("ETag") };
 }
 
-export async function loadManifest(): Promise<DagManifest> {
-  const result = await getJson<DagManifest>("/api/v1/manifest");
+function sequenceQuery(sequence: number | null): string {
+  return sequence === null ? "" : `?at_sequence=${sequence}`;
+}
+
+export async function loadManifest(sequence: number | null = null): Promise<DagManifest> {
+  const result = await getJson<DagManifest>(`/api/v1/manifest${sequenceQuery(sequence)}`);
   if (!result.value) throw new Error("viewer_manifest_missing");
   return result.value;
 }
 
-export async function loadInitialState(): Promise<{ manifest: DagManifest; snapshot: DagSnapshot; etag: string | null }> {
-  const stateResult = await getJson<DagSnapshot>("/api/v1/state");
+export async function loadInitialState(sequence: number | null = null): Promise<{ manifest: DagManifest; snapshot: DagSnapshot; etag: string | null }> {
+  const stateResult = await getJson<DagSnapshot>(`/api/v1/state${sequenceQuery(sequence)}`);
   if (!stateResult.value) throw new Error("viewer_initial_state_missing");
-  const manifest = await loadManifest();
+  const manifest = await loadManifest(sequence);
   return { manifest, snapshot: stateResult.value, etag: stateResult.etag };
 }
 
-export async function pollState(etag: string | null): Promise<{ snapshot: DagSnapshot | null; etag: string | null }> {
+export async function pollState(etag: string | null, sequence: number | null = null): Promise<{ snapshot: DagSnapshot | null; etag: string | null }> {
   const headers = etag ? { "If-None-Match": etag } : undefined;
-  const result = await getJson<DagSnapshot>("/api/v1/state", { headers });
+  const result = await getJson<DagSnapshot>(`/api/v1/state${sequenceQuery(sequence)}`, { headers });
   return { snapshot: result.value, etag: result.etag ?? etag };
 }
 
-export function shouldReplaceSnapshot(current: DagSnapshot, candidate: DagSnapshot): boolean {
+export function shouldReplaceSnapshot(current: DagSnapshot, candidate: DagSnapshot, expectedSequence: number | null): boolean {
+  const expectedMode = expectedSequence === null ? "LIVE" : "HISTORICAL";
   return candidate.run_id === current.run_id
-    && candidate.journal_sequence >= current.journal_sequence;
+    && candidate.view.mode === expectedMode
+    && (expectedSequence === null
+      ? candidate.journal_sequence >= current.journal_sequence
+      : candidate.view.sequence === expectedSequence);
 }
 
-export async function loadReceipt(receiptId: string): Promise<ReceiptProjection> {
-  const result = await getJson<ReceiptProjection>(`/api/v1/receipts/${encodeURIComponent(receiptId)}`);
+export async function loadReceipt(receiptId: string, sequence: number | null = null): Promise<ReceiptProjection> {
+  const result = await getJson<ReceiptProjection>(`/api/v1/receipts/${encodeURIComponent(receiptId)}${sequenceQuery(sequence)}`);
   if (!result.value) throw new Error("viewer_receipt_missing");
   return result.value;
+}
+
+export async function loadJournalSequences(): Promise<number[]> {
+  const sequences: number[] = [];
+  let after = 0;
+  while (true) {
+    const page = await getJson<DagEventPage>(`/api/v1/events?after_sequence=${after}&limit=500`);
+    if (!page.value) throw new Error("viewer_event_page_missing");
+    if (page.value.events.length === 0) break;
+    for (const event of page.value.events) sequences.push(event.seq);
+    after = page.value.events[page.value.events.length - 1].seq;
+    if (page.value.events.length < 500) break;
+  }
+  return sequences;
 }

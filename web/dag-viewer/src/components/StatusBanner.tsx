@@ -11,8 +11,8 @@ export function StatusBanner({ snapshot, connected }: { snapshot: DagSnapshot; c
         <div><strong>{snapshot.run_id}</strong><span>journal {snapshot.journal_sequence}</span></div>
       </div>
       <div className="status-banner__state">
-        <span>{connected ? snapshot.projection_state : "DISCONNECTED"}</span>
-        <span>{snapshot.run_status}{snapshot.run_verdict ? ` · ${snapshot.run_verdict}` : ""}</span>
+        <span>{connected ? snapshot.view.mode : "DISCONNECTED"}</span>
+        <span>{snapshot.projection_state} · {snapshot.run_status}{snapshot.run_verdict ? ` · ${snapshot.run_verdict}` : ""}</span>
       </div>
     </header>
   );

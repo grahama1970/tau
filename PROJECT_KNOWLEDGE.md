@@ -6883,3 +6883,32 @@
   `repair_attempted:false`. This proves live provider-readiness binding, not that a stale OAuth mount
   was refreshed. It does not prove provider/model semantic quality or that every provider-auth
   failure is automatically repairable.
+
+# 2026-07-16: Exact-Sequence DAG Viewer Replay
+
+- Tau's next viewer goal adopts only the directly useful LangSmith/LangGraph inspection patterns:
+  exact-sequence historical state, causal evidence navigation, bounded filtering, exactly-two
+  comparisons, and deterministic human-attention triage. Executable time travel, browser mutation,
+  cross-run dashboards, alerts, and hosted observability are excluded.
+- Historical replay has one authority: `replay_dag_run_at_sequence()` in
+  `dag_runtime/replay.py`. It derives run, lease, attempt, output, runtime, correction, transition,
+  and receipt state from one verified run-local journal prefix. Current mutable projection tables
+  are cross-checked at the journal head and are never historical inputs.
+- `GET /api/v1/state?at_sequence=N` accepts only an exact event sequence belonging to the selected
+  run. Historical manifests and receipt fetches are bounded to references committed by that
+  sequence. The server remains loopback-only, query-only, and GET-only.
+- The React Flow application has a LIVE/HISTORICAL sequence navigator over actual committed event
+  IDs. Historical mode is URL-addressable and refresh-stable. Request-generation binding prevents
+  an in-flight live poll from overwriting a newly selected historical snapshot.
+- Focused deterministic proof: Ruff and mypy pass; 62 Python replay/store/viewer tests pass; 9
+  frontend tests pass; the production frontend build succeeds; installed-wheel verification reports
+  `mocked:false`, `live:true`, `provider_live:false`.
+- The live self-healing fixture under `/tmp/tau-causal-replay-live` reports `mocked:false`,
+  `live:true`, `provider_live:true`, 26 committed events, one correction effect, crash/restart after
+  `APPLIED`, correction `VERIFIED`, and final run `PASS`. Browser proof at
+  `/tmp/tau-causal-replay-browser-proof-final.json` passes 22 checks with GET-only traffic. The
+  historical screenshot `/tmp/tau-causal-replay-historical-final.png` visibly shows sequence 13 at
+  `APPLIED`, an amber unaccepted node, no later verification, and a timeline ending at that prefix.
+- This proves the bounded historical projection and viewer behavior exercised above. It does not
+  prove semantic correctness, every failure is self-healable, provider/model quality, or any future
+  route/join/filter/comparison slice not yet implemented.
