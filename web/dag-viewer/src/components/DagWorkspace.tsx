@@ -73,6 +73,7 @@ function Workspace({ manifest, snapshot, selectedId, onSelect }: Props) {
                 runtime: { state: "UNKNOWN", liveness: "UNKNOWN", confidence: "UNKNOWN", last_event_id: null },
                 admission: { state: "not_applicable", accepted: false, receipt_refs: [] },
                 transaction: null,
+                correction: null,
                 updated_sequence: snapshot.journal_sequence,
               },
             },

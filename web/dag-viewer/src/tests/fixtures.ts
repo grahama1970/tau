@@ -41,17 +41,17 @@ export const snapshot: DagSnapshot = {
       transaction: {
         transaction_id: "tx-1", current_attempt: 1, max_attempts: 2, state: "AWAITING_RECEIPT",
         attempts: [{ attempt: 1, producer_state: "PASS", validator_status: "PASS", reviewer_verdict: "REVISE" }],
-      }, updated_sequence: 8,
+      }, correction: null, updated_sequence: 8,
     },
     {
       node_id: "publish", node_kind: "command",
       scheduler: { state: "pending", attempt: 0, max_attempts: 1 },
       runtime: { state: "UNKNOWN", liveness: "UNKNOWN", confidence: "UNKNOWN", last_event_id: null },
-      admission: { state: "not_started", accepted: false, receipt_refs: [] }, transaction: null, updated_sequence: 8,
+      admission: { state: "not_started", accepted: false, receipt_refs: [] }, transaction: null, correction: null, updated_sequence: 8,
     },
   ],
   edges: [{ edge_id: "creator-publish", state: "pending" }, { edge_id: "publish-human", state: "pending" }],
-  terminals: [{ terminal_id: "human", state: "pending" }], attention_items: [],
+  terminals: [{ terminal_id: "human", state: "pending" }], corrections: [], attention_items: [],
   recent_events: [{ seq: 8, event_type: "dag_diagnostic_event_appended", entity_type: "node", entity_id: "creator", attempt_id: null, payload: { phase: "reviewer" } }],
   proof_scope: { proves: ["journal projection"], does_not_prove: ["semantic correctness"] },
 };

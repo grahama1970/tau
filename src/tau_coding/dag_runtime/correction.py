@@ -310,13 +310,41 @@ def load_correction_projection(
 ) -> CorrectionStateProjection | None:
     """Reduce one correction solely from verified canonical journal events."""
 
+    return _reduce_correction_projection(store.load_events(run_id), incident_id)
+
+
+def reduce_correction_projections(
+    events: tuple[Mapping[str, Any], ...],
+) -> tuple[CorrectionStateProjection, ...]:
+    """Reduce all correction lineages from an authoritative event sequence."""
+
+    incident_ids = sorted(
+        {
+            str(event["entity_id"])
+            for event in events
+            if event.get("event_type") == "correction_state_committed"
+            and event.get("entity_type") == "correction"
+        }
+    )
+    projections: list[CorrectionStateProjection] = []
+    for incident_id in incident_ids:
+        projection = _reduce_correction_projection(events, incident_id)
+        if projection is not None:
+            projections.append(projection)
+    return tuple(projections)
+
+
+def _reduce_correction_projection(
+    events: tuple[Mapping[str, Any], ...], incident_id: str
+) -> CorrectionStateProjection | None:
+
     state: str | None = None
     incident: dict[str, Any] | None = None
     intent: dict[str, Any] | None = None
     action_receipt: dict[str, Any] | None = None
     verification: dict[str, Any] | None = None
     sequence = 0
-    for event in store.load_events(run_id):
+    for event in events:
         if event["event_type"] != "correction_state_committed":
             continue
         if event["entity_id"] != incident_id:

@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.correction import reduce_correction_projections
 from tau_coding.dag_runtime.model import DagPlanNode, canonical_sha256
 from tau_coding.dag_runtime.replay import DagReplayState, replay_dag_run
 from tau_coding.dag_runtime.run_store import DagJournalEvent, SqliteDagRunReader
@@ -110,6 +111,10 @@ def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[st
 def build_dag_live_snapshot(
     *, replay: DagReplayState, recent_events: tuple[dict[str, Any], ...]
 ) -> dict[str, Any]:
+    corrections = reduce_correction_projections(recent_events)
+    correction_by_node = {
+        str(correction.incident.get("node_id")): correction for correction in corrections
+    }
     latest_attempt = {
         node_id: max(
             (item for item in replay.attempts if item.node_id == node_id),
@@ -161,6 +166,7 @@ def build_dag_live_snapshot(
                     accepted=accepted,
                     committed_state=state,
                 ),
+                "correction": _correction_payload(correction_by_node.get(node_id)),
                 "updated_sequence": replay.journal_sequence,
             }
         )
@@ -192,7 +198,18 @@ def build_dag_live_snapshot(
         ],
         "routes": [],
         "joins": [],
-        "attention_items": [],
+        "corrections": [_correction_payload(item) for item in corrections],
+        "attention_items": [
+            {
+                "kind": "correction",
+                "incident_id": item.incident_id,
+                "node_id": item.incident.get("node_id"),
+                "state": item.state,
+                "required_action": "human_review",
+            }
+            for item in corrections
+            if item.state in {"UNCERTAIN", "REJECTED", "HUMAN_ROUTED"}
+        ],
         "recent_events": list(recent_events[-200:]),
         "proof_scope": PROOF_SCOPE,
     }
@@ -205,6 +222,20 @@ def build_dag_live_snapshot(
         "truncated": redacted.truncated,
     }
     return result
+
+
+def _correction_payload(correction: Any) -> dict[str, Any] | None:
+    if correction is None:
+        return None
+    return {
+        "incident_id": correction.incident_id,
+        "state": correction.state,
+        "journal_sequence": correction.journal_sequence,
+        "incident": correction.incident,
+        "intent": correction.intent,
+        "action_receipt": correction.action_receipt,
+        "verification": correction.verification,
+    }
 
 
 def build_dag_live_events(

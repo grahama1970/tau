@@ -54,7 +54,18 @@ export type LiveNode = {
   runtime: { state: string; liveness: string; confidence: string; last_event_id: string | null };
   admission: { state: string; accepted: boolean; receipt_refs: string[] };
   transaction: TransactionProjection | null;
+  correction: CorrectionProjection | null;
   updated_sequence: number;
+};
+
+export type CorrectionProjection = {
+  incident_id: string;
+  state: string;
+  journal_sequence: number;
+  incident: Record<string, JsonValue>;
+  intent: Record<string, JsonValue> | null;
+  action_receipt: Record<string, JsonValue> | null;
+  verification: Record<string, JsonValue> | null;
 };
 
 export type TransactionAttempt = {
@@ -97,6 +108,7 @@ export type DagSnapshot = {
   nodes: LiveNode[];
   edges: Array<{ edge_id: string; state: string }>;
   terminals: Array<{ terminal_id: string; state: string }>;
+  corrections: CorrectionProjection[];
   attention_items: Array<Record<string, JsonValue>>;
   recent_events: JournalEvent[];
   proof_scope: { proves: string[]; does_not_prove: string[] };

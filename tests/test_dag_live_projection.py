@@ -10,6 +10,11 @@ from pathlib import Path
 import pytest
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.correction import (
+    CorrectionActionIntent,
+    CorrectionIncident,
+    run_correction_transaction,
+)
 from tau_coding.dag_runtime.replay import DagReplayAttempt
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunReader, SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import run_dag_plan
@@ -204,6 +209,64 @@ def test_runtime_pass_text_cannot_accept_node(tmp_path: Path) -> None:
     assert node["scheduler"]["state"] == "running"
     assert node["admission"]["accepted"] is False
     assert node["admission"]["state"] == "awaiting_receipt"
+
+
+def test_snapshot_projects_verified_correction_lineage_without_accepting_node(
+    tmp_path: Path,
+) -> None:
+    plan = compile_generic_dag_plan(
+        {
+            "schema": "tau.generic_dag_spec.v1",
+            "run_id": "run-1",
+            "run_dir": str(tmp_path),
+            "nodes": [
+                {
+                    "node_id": "node",
+                    "role": "worker",
+                    "command": ["true"],
+                    "receipt_path": str(tmp_path / "node.json"),
+                    "max_attempts": 2,
+                }
+            ],
+        },
+        source_path=tmp_path / "dag.json",
+    )
+    incident = CorrectionIncident.create(
+        run_id="run-1",
+        node_id="node",
+        attempt=1,
+        trigger="provider_auth_required",
+        classification="RETRYABLE",
+        goal_hash=plan.runtime_goal_hash,
+        observed_state={"auth": "EXPIRED"},
+    )
+    intent = CorrectionActionIntent.create(
+        incident=incident,
+        capability="provider.repair_auth",
+        action="refresh_local_provider_auth",
+        target={"provider": "local-fixture"},
+        policy_sha256="sha256:policy",
+        authorized=True,
+    )
+    with SqliteDagRunStore(tmp_path / "dag-run.sqlite3") as store:
+        lease = store.acquire_run(plan=plan, run_id="run-1", owner_id="owner-a")
+        run_correction_transaction(
+            store=store,
+            lease=lease,
+            incident=incident,
+            intent=intent,
+            apply_action=lambda _intent: {"auth": "VALID"},
+            verify_action=lambda _intent, _receipt: {"verified": True},
+        )
+        store.release_lease(lease)
+
+    replay, events = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    snapshot = build_dag_live_snapshot(replay=replay, recent_events=events)
+
+    assert snapshot["corrections"][0]["state"] == "VERIFIED"
+    assert snapshot["nodes"][0]["correction"]["state"] == "VERIFIED"
+    assert snapshot["nodes"][0]["admission"]["accepted"] is False
+    assert snapshot["attention_items"] == []
 
 
 def test_transaction_diagnostics_show_revisions_but_cannot_accept_node(tmp_path: Path) -> None:

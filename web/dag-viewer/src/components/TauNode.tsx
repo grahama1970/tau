@@ -43,6 +43,7 @@ function TauNodeComponent({ data, selected }: NodeProps) {
       <div className="tau-node__states">
         <span><Clock3 aria-hidden="true" size={13} />{scheduler}</span>
         <span><CircleCheck aria-hidden="true" size={13} />{admission}</span>
+        {live?.correction && <span data-qid={`dag:node:${value.label}:correction`}>correction {live.correction.state.toLowerCase()}</span>}
       </div>
       <footer>
         <span>attempt {live?.scheduler.attempt ?? 0}/{live?.scheduler.max_attempts ?? 1}</span>
