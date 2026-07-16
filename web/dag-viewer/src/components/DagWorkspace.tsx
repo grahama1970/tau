@@ -22,6 +22,12 @@ function Workspace({ manifest, snapshot, selectedId, onSelect }: Props) {
     () => new Map(snapshot.terminals.map((terminal) => [terminal.terminal_id, terminal.state])),
     [snapshot.terminals],
   );
+  const terminalCause = useMemo(
+    () => new Map(
+      snapshot.terminals.map((terminal) => [terminal.terminal_id, terminal.causal_explanation_id]),
+    ),
+    [snapshot.terminals],
+  );
   const edges = useMemo<Edge[]>(() => manifest.graph.edges.map((edge) => ({
     id: edge.edge_id,
     source: edge.source_node_id,
@@ -74,6 +80,7 @@ function Workspace({ manifest, snapshot, selectedId, onSelect }: Props) {
                 admission: { state: "not_applicable", accepted: false, receipt_refs: [] },
                 transaction: null,
                 correction: null,
+                causal_explanation_id: terminalCause.get(terminal.terminal_id) ?? "",
                 updated_sequence: snapshot.journal_sequence,
               },
             },
@@ -81,7 +88,7 @@ function Workspace({ manifest, snapshot, selectedId, onSelect }: Props) {
         }),
     ],
     edges,
-  ) as Node<TauNodeData>[], [edges, manifest.graph.nodes, manifest.graph.terminals, selectedId, snapshot.journal_sequence, stateByNode, terminalIds, terminalState]);
+  ) as Node<TauNodeData>[], [edges, manifest.graph.nodes, manifest.graph.terminals, selectedId, snapshot.journal_sequence, stateByNode, terminalCause, terminalIds, terminalState]);
 
   return (
     <ReactFlow
@@ -90,8 +97,8 @@ function Workspace({ manifest, snapshot, selectedId, onSelect }: Props) {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
-      fitViewOptions={{ padding: 0.16, minZoom: 0.68, maxZoom: 1 }}
-      minZoom={0.55}
+      fitViewOptions={{ padding: 0.28, minZoom: 0.48, maxZoom: 0.92 }}
+      minZoom={0.45}
       maxZoom={1.4}
       nodesDraggable={false}
       nodesConnectable={false}

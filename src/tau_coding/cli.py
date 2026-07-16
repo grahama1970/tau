@@ -78,6 +78,7 @@ from tau_coding.dag_viewer.projection import (
     build_dag_live_snapshot,
     load_dag_replay,
 )
+from tau_coding.dag_viewer.receipt_index import build_receipt_index
 from tau_coding.dag_viewer.server import create_dag_viewer_server
 from tau_coding.debug_session_receipt import write_debug_session_receipt
 from tau_coding.debugger_skill_adapter import write_debugger_skill_adapter_receipt
@@ -739,7 +740,14 @@ def main(
                 run_dir=Path(str(options["run_dir"])), run_id=options.get("run_id")
             )
             if command == "dag-view-snapshot":
-                payload = build_dag_live_snapshot(replay=replay, recent_events=events)
+                run_dir = Path(str(options["run_dir"]))
+                payload = build_dag_live_snapshot(
+                    replay=replay,
+                    recent_events=events,
+                    receipt_index=build_receipt_index(
+                        run_dir, replay.transition_receipts
+                    ),
+                )
             else:
                 after = int(options["after_sequence"])
                 limit = int(options["limit"])

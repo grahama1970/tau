@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG join projection v1",
+  "type": "object",
+  "required": ["schema", "join_node_id", "policy_sha256", "state", "reason_code", "deadline_state", "incoming", "decision", "decision_sequence", "decision_receipt_id", "decision_receipt_sha256", "causal_explanation_id"],
+  "properties": {
+    "schema": {"const": "tau.dag_join_projection.v1"},
+    "join_node_id": {"type": "string", "minLength": 1},
+    "policy_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "state": {"enum": ["PENDING", "WAITING", "RELEASED", "SKIPPED", "BLOCKED"]},
+    "reason_code": {"type": "string", "minLength": 1},
+    "deadline_state": {"enum": ["NOT_ARMED", "ARMED", "EXPIRED"]},
+    "incoming": {"type": "array"},
+    "decision": {"type": ["string", "null"]},
+    "decision_sequence": {"type": ["integer", "null"]},
+    "decision_receipt_id": {"type": ["string", "null"]},
+    "decision_receipt_sha256": {"type": ["string", "null"]},
+    "causal_explanation_id": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

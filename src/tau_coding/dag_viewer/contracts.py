@@ -30,5 +30,8 @@ def viewer_capabilities() -> dict[str, Any]:
         "supports_historical_sequences": True,
         "supports_source_json": True,
         "supports_receipt_inspection": True,
+        "supports_causal_explanations": True,
+        "supports_route_join_projection": True,
+        "supports_attention_items": True,
         "read_only": True,
     }

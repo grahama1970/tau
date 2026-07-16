@@ -202,6 +202,37 @@ def test_state_polling_does_not_rebuild_receipt_index(
     assert _json(body)["schema"] == "tau.dag_view_snapshot.v2"
 
 
+def test_causal_explanation_is_prefix_bound_and_unknown_subjects_block(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
+) -> None:
+    server, _ = viewer_server
+    database = server.application.run_dir / "dag-run.sqlite3"
+    with sqlite3.connect(database) as connection:
+        created_sequence = int(
+            connection.execute(
+                "SELECT seq FROM dag_run_events "
+                "WHERE run_id = 'viewer-run' AND event_type = 'run_created'"
+            ).fetchone()[0]
+        )
+    status, _, body = _request(
+        server,
+        "GET",
+        f"/api/v1/explanations/node/worker?at_sequence={created_sequence}",
+    )
+    explanation = _json(body)
+    assert status == 200
+    assert explanation["schema"] == "tau.dag_causal_explanation.v1"
+    assert explanation["as_of_sequence"] == created_sequence
+    assert explanation["projected_state"] == "pending"
+    assert all(
+        reference.get("journal_sequence", 0) <= created_sequence
+        for reference in explanation["references"]
+    )
+    status, _, body = _request(server, "GET", "/api/v1/explanations/unknown/worker")
+    assert status == 409
+    assert _json(body)["code"] == "dag_viewer_explanation_subject_kind_invalid"
+
+
 def test_event_ranges_are_bounded_and_invalid_ranges_are_structured(
     viewer_server: tuple[RunningDagViewerServer, threading.Thread],
 ) -> None:

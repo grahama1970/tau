@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG causal explanation v1",
+  "type": "object",
+  "required": ["schema", "explanation_id", "run_id", "as_of_sequence", "subject", "projected_state", "reason_code", "summary_code", "trigger_sequence", "references", "chain", "proof_scope"],
+  "properties": {
+    "schema": {"const": "tau.dag_causal_explanation.v1"},
+    "explanation_id": {"type": "string", "pattern": "^explanation-[0-9a-f]{32}$"},
+    "run_id": {"type": "string", "minLength": 1},
+    "as_of_sequence": {"type": "integer", "minimum": 1},
+    "subject": {"type": "object", "required": ["kind", "id"]},
+    "projected_state": {"type": "string", "minLength": 1},
+    "reason_code": {"type": "string", "minLength": 1},
+    "summary_code": {"type": "string", "minLength": 1},
+    "trigger_sequence": {"type": "integer", "minimum": 0},
+    "references": {"type": "array"},
+    "chain": {"type": "array"},
+    "proof_scope": {"type": "object"}
+  },
+  "additionalProperties": false
+}

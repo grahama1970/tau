@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG attention item v1",
+  "type": "object",
+  "required": ["schema", "attention_id", "severity", "state", "reason_code", "subject", "opened_sequence", "resolved_sequence", "required_action_code", "causal_explanation_id"],
+  "properties": {
+    "schema": {"const": "tau.dag_attention_item.v1"},
+    "attention_id": {"type": "string", "pattern": "^attention-[0-9a-f]{24}$"},
+    "severity": {"enum": ["BLOCKER", "ACTION_REQUIRED", "WARNING"]},
+    "state": {"enum": ["OPEN", "RESOLVED"]},
+    "reason_code": {"type": "string", "minLength": 1},
+    "subject": {"type": "object", "required": ["kind", "id"]},
+    "opened_sequence": {"type": "integer", "minimum": 1},
+    "resolved_sequence": {"type": ["integer", "null"]},
+    "required_action_code": {"enum": ["RECONCILE_EFFECT", "PROVIDE_APPROVAL", "REVIEW_BLOCKED_RUN", "DECIDE_EXHAUSTED_INCIDENT", "RESTORE_LIVE_OBSERVATION"]},
+    "causal_explanation_id": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

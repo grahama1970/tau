@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Braces, FileCheck2, FileJson2, RadioTower } from "lucide-react";
-import { loadInitialState, loadJournalSequences, loadManifest, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
+import { Braces, FileCheck2, FileJson2, GitBranch, RadioTower } from "lucide-react";
+import { loadExplanation, loadInitialState, loadJournalSequences, loadManifest, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
+import { AttentionRail } from "./components/AttentionRail";
+import { CausalDetails } from "./components/CausalDetails";
+import { DecisionRail } from "./components/DecisionRail";
 import { DagWorkspace } from "./components/DagWorkspace";
 import { EventTimeline } from "./components/EventTimeline";
 import { JsonInspector } from "./components/JsonInspector";
@@ -8,13 +11,14 @@ import { ReceiptInspector } from "./components/ReceiptInspector";
 import { SequenceNavigator } from "./components/SequenceNavigator";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
-import type { DagManifest, DagSnapshot, JsonValue, ReceiptProjection } from "./types";
+import type { AttentionItem, CausalExplanation, DagManifest, DagSnapshot, JsonValue, ReceiptProjection } from "./types";
 
-type InspectorTab = "source" | "plan" | "live" | "receipt";
+type InspectorTab = "source" | "plan" | "live" | "cause" | "receipt";
 const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
   { id: "source", label: "Source DAG", icon: FileJson2 },
   { id: "plan", label: "DagPlan", icon: Braces },
   { id: "live", label: "Live State", icon: RadioTower },
+  { id: "cause", label: "Why", icon: GitBranch },
   { id: "receipt", label: "Receipt", icon: FileCheck2 },
 ];
 
@@ -32,6 +36,8 @@ export default function App() {
   const [tab, setTab] = useState<InspectorTab>("source");
   const [receiptId, setReceiptId] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<ReceiptProjection | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<{ kind: string; id: string } | null>(null);
+  const [explanation, setExplanation] = useState<CausalExplanation | null>(null);
 
   useEffect(() => {
     const onPopState = () => {
@@ -51,6 +57,11 @@ export default function App() {
       setSnapshot(initial.snapshot);
       etagsRef.current.set(selectedSequence === null ? "live" : `historical:${selectedSequence}`, initial.etag);
       setSelectedId(initial.manifest.graph.nodes[0]?.node_id ?? null);
+      setSelectedSubject(
+        initial.manifest.graph.nodes[0]
+          ? { kind: "NODE", id: initial.manifest.graph.nodes[0].node_id }
+          : null,
+      );
       setConnected(true);
       setError(null);
       return loadJournalSequences();
@@ -107,6 +118,20 @@ export default function App() {
     };
   }, [manifest?.plan_sha256, selectedSequence, snapshot]);
 
+  useEffect(() => {
+    let active = true;
+    if (!selectedSubject) {
+      setExplanation(null);
+      return () => { active = false; };
+    }
+    loadExplanation(selectedSubject.kind, selectedSubject.id, selectedSequence)
+      .then((value) => { if (active) setExplanation(value); })
+      .catch((reason: unknown) => {
+        if (active) setError(reason instanceof Error ? reason.message : "explanation_load_failed");
+      });
+    return () => { active = false; };
+  }, [selectedSequence, selectedSubject]);
+
   const selectedLive = useMemo(() => snapshot?.nodes.find((node) => node.node_id === selectedId) ?? null, [selectedId, snapshot]);
   const selectedTerminal = useMemo(
     () => snapshot?.terminals.find((terminal) => terminal.terminal_id === selectedId) ?? null,
@@ -131,6 +156,28 @@ export default function App() {
     setSelectedSequence(sequence);
   };
 
+  const selectGraphSubject = (id: string) => {
+    const kind = manifest?.graph.terminals.some((terminal) => terminal.terminal_id === id)
+      && !manifest?.graph.nodes.some((node) => node.node_id === id)
+      ? "TERMINAL"
+      : "NODE";
+    setSelectedId(id);
+    setSelectedSubject({ kind, id });
+  };
+
+  const selectAttention = (item: AttentionItem) => {
+    setSelectedSubject({ kind: "ATTENTION", id: item.attention_id });
+    if (item.subject.kind === "NODE" || item.subject.kind === "TERMINAL") {
+      setSelectedId(item.subject.id);
+    }
+    setTab("cause");
+  };
+
+  const selectDecision = (kind: "ROUTE" | "JOIN", id: string) => {
+    setSelectedSubject({ kind, id });
+    setTab("cause");
+  };
+
   if (error && (!manifest || !snapshot)) return <main className="fatal-state"><h1>Tau Live DAG</h1><p>{error}</p></main>;
   if (!manifest || !snapshot) return <main className="loading-state"><RadioTower aria-hidden="true" /><span>Loading authoritative DAG projection</span></main>;
 
@@ -143,11 +190,13 @@ export default function App() {
   return <main className="dag-app">
     <StatusBanner snapshot={snapshot} connected={connected} />
     <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
+    <AttentionRail items={snapshot.attention_items} onSelect={selectAttention} />
+    <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />
     <section className="dag-app__workspace">
       <div className={`graph-pane${transaction ? " graph-pane--with-transaction" : ""}`} data-qid="dag:workspace:graph">
         <div className="pane-heading"><strong>Execution graph</strong><span>read-only · source DAG unchanged</span></div>
         <div className="graph-canvas" data-qid="dag:workspace:canvas">
-          <DagWorkspace manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={setSelectedId} />
+          <DagWorkspace manifest={manifest} snapshot={snapshot} selectedId={selectedId} onSelect={selectGraphSubject} />
         </div>
         {transaction && <TransactionAttempts transaction={transaction} />}
       </div>
@@ -170,7 +219,9 @@ export default function App() {
         <div className="inspector-content" data-qid="dag:workspace:inspector-content">
           {tab === "receipt"
             ? <ReceiptInspector entries={manifest.receipt_index} selected={receiptId} onSelect={selectReceipt} projection={receipt} />
-            : <JsonInspector value={inspectorValue} label={`${tab} JSON`} />}
+            : tab === "cause"
+              ? <CausalDetails explanation={explanation} />
+              : <JsonInspector value={inspectorValue} label={`${tab} JSON`} />}
         </div>
         <footer className="proof-boundary" data-qid="dag:workspace:proof-boundary">
           <div><strong>Proves</strong>{snapshot.proof_scope.proves.map((claim) => <span key={claim}>{claim}</span>)}</div>
@@ -178,6 +229,6 @@ export default function App() {
         </footer>
       </aside>
     </section>
-    <EventTimeline events={snapshot.recent_events} onSelect={setSelectedId} />
+    <EventTimeline events={snapshot.recent_events} onSelect={selectGraphSubject} />
   </main>;
 }

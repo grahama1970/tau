@@ -86,3 +86,23 @@ These prove real local subprocess execution and browser rendering with
 `mocked:false`, `live:true`, and `provider_live:false`. They do not prove model
 or provider semantic quality, production deployment, or legal/compliance
 authority.
+
+## Causal decisions and attention
+
+The live snapshot projects typed routes, joins, correction state, and human-attention
+items only from committed transition events and hash-bound receipts. Conditional or
+fan-in topology without a committed decision remains `PENDING`; topology is never
+treated as execution evidence.
+
+Use the read-only explanation endpoint for one selected subject:
+
+```text
+GET /api/v1/explanations/node/<node-id>?at_sequence=<optional-sequence>
+GET /api/v1/explanations/route/<route-id>?at_sequence=<optional-sequence>
+GET /api/v1/explanations/join/<join-id>?at_sequence=<optional-sequence>
+GET /api/v1/explanations/attention/<attention-id>?at_sequence=<optional-sequence>
+```
+
+Explanations contain deterministic codes, journal sequences, hashes, and allowlisted
+receipt IDs. Absolute receipt paths are removed from browser events. The attention rail
+is derived and read-only; it cannot acknowledge, assign, approve, retry, or resolve work.

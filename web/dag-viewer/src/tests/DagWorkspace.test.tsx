@@ -24,7 +24,9 @@ test("renders an external terminal targeted by a plan edge without mutating the 
 test("renders a successful external terminal with the settled tone", () => {
   const successful = {
     ...snapshot,
-    terminals: [{ terminal_id: "human", state: "success" }],
+    terminals: [
+      { terminal_id: "human", state: "success", causal_explanation_id: "explanation-human" },
+    ],
   };
   const { container } = render(<div style={{ width: 900, height: 500 }}><DagWorkspace manifest={manifest} snapshot={successful} selectedId={null} onSelect={vi.fn()} /></div>);
   const terminal = container.querySelector('[data-qid="dag:node:human"]');

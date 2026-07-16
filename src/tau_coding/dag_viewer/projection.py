@@ -16,17 +16,21 @@ from tau_coding.dag_runtime.replay import (
     replay_dag_run_at_sequence,
 )
 from tau_coding.dag_runtime.run_store import SqliteDagRunReader
+from tau_coding.dag_viewer.causal import DagCausalModel, build_causal_model
+from tau_coding.dag_viewer.receipt_index import ReceiptIndex
 from tau_coding.dag_viewer.redaction import redact_for_viewer
 
 PROOF_SCOPE = {
     "proves": [
         "Tau projected verified SQLite journal state in authoritative sequence order.",
         "Scheduler, runtime, and receipt-admission state remain distinct.",
+        "Causal, route, join, and attention state derives from the selected journal prefix.",
     ],
     "does_not_prove": [
         "Runtime text proves node completion.",
         "Agent or reviewer claims are semantically correct.",
         "The source DAG may be edited from the viewer.",
+        "A causal explanation proves semantic correctness or future route behavior.",
     ],
 }
 
@@ -109,7 +113,26 @@ def build_dag_live_snapshot(
     recent_events: tuple[dict[str, Any], ...],
     view_mode: str = "LIVE",
     selected_event_created_at: str | None = None,
+    receipt_index: ReceiptIndex | None = None,
 ) -> dict[str, Any]:
+    snapshot, _ = build_dag_view_state(
+        replay=replay,
+        recent_events=recent_events,
+        view_mode=view_mode,
+        selected_event_created_at=selected_event_created_at,
+        receipt_index=receipt_index,
+    )
+    return snapshot
+
+
+def build_dag_view_state(
+    *,
+    replay: DagReplayState,
+    recent_events: tuple[dict[str, Any], ...],
+    view_mode: str = "LIVE",
+    selected_event_created_at: str | None = None,
+    receipt_index: ReceiptIndex | None = None,
+) -> tuple[dict[str, Any], DagCausalModel]:
     corrections = reduce_correction_projections(recent_events)
     correction_by_node = {
         str(correction.incident.get("node_id")): correction for correction in corrections
@@ -194,6 +217,23 @@ def build_dag_live_snapshot(
         if replay.run_status in {"PASS", "BLOCKED"}
         else "LIVE"
     )
+    edges = [{"edge_id": key, "state": value} for key, value in replay.edge_states]
+    terminals = [
+        {"terminal_id": key, "state": value} for key, value in replay.terminal_states
+    ]
+    correction_payloads = [
+        payload for item in corrections if (payload := _correction_payload(item)) is not None
+    ]
+    causal = build_causal_model(
+        replay=replay,
+        events=recent_events,
+        receipts=receipt_index or ReceiptIndex(Path(".").resolve(), ()),
+        node_projections=nodes,
+        edge_projections=edges,
+        terminal_projections=terminals,
+        corrections=correction_payloads,
+        projection_state=projection_state,
+    )
     payload = {
         "schema": "tau.dag_view_snapshot.v2",
         "run_id": replay.run_id,
@@ -207,25 +247,18 @@ def build_dag_live_snapshot(
         "run_verdict": replay.run_verdict,
         "projection_state": projection_state,
         "nodes": nodes,
-        "edges": [{"edge_id": key, "state": value} for key, value in replay.edge_states],
-        "terminals": [
-            {"terminal_id": key, "state": value} for key, value in replay.terminal_states
-        ],
-        "routes": [],
-        "joins": [],
-        "corrections": [_correction_payload(item) for item in corrections],
-        "attention_items": [
-            {
-                "kind": "correction",
-                "incident_id": item.incident_id,
-                "node_id": item.incident.get("node_id"),
-                "state": item.state,
-                "required_action": "human_review",
-            }
-            for item in corrections
-            if item.state in {"UNCERTAIN", "REJECTED", "HUMAN_ROUTED"}
-        ],
-        "recent_events": list(recent_events[-200:]),
+        "edges": edges,
+        "terminals": terminals,
+        "routes": list(causal.routes),
+        "joins": list(causal.joins),
+        "corrections": correction_payloads,
+        "attention_items": list(causal.attention_items),
+        "highest_priority_attention_id": (
+            causal.attention_items[0]["attention_id"] if causal.attention_items else None
+        ),
+        "recent_events": _browser_event_projections(
+            recent_events[-200:], receipt_index=receipt_index
+        ),
         "proof_scope": PROOF_SCOPE,
     }
     redacted = redact_for_viewer(payload)
@@ -236,7 +269,7 @@ def build_dag_live_snapshot(
         "redacted_paths": list(redacted.redacted_paths),
         "truncated": redacted.truncated,
     }
-    return result
+    return result, causal
 
 
 def _correction_payload(correction: Any) -> dict[str, Any] | None:
@@ -314,6 +347,35 @@ def _find_endpoint_lease_sha256(value: Any) -> str | None:
             if found:
                 return found
     return None
+
+
+def _browser_event_projections(
+    events: tuple[dict[str, Any], ...], *, receipt_index: ReceiptIndex | None
+) -> list[dict[str, Any]]:
+    receipt_ids = (
+        {str(item.path): item.receipt_id for item in receipt_index.entries}
+        if receipt_index is not None
+        else {}
+    )
+
+    def project(value: Any, *, key: str | None = None) -> Any:
+        if isinstance(value, dict):
+            return {item_key: project(item, key=item_key) for item_key, item in value.items()}
+        if isinstance(value, list):
+            return [project(item, key=key) for item in value]
+        if isinstance(value, str) and key in {
+            "path",
+            "receipt",
+            "route_decision_receipt",
+            "join_decision_receipt",
+        }:
+            if value in receipt_ids:
+                return receipt_ids[value]
+            if Path(value).is_absolute():
+                return "ABSOLUTE_PATH_OMITTED"
+        return value
+
+    return [project(event) for event in events]
 
 
 def _transaction_projection(

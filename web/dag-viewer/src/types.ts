@@ -55,6 +55,7 @@ export type LiveNode = {
   admission: { state: string; accepted: boolean; receipt_refs: string[] };
   transaction: TransactionProjection | null;
   correction: CorrectionProjection | null;
+  causal_explanation_id: string;
   updated_sequence: number;
 };
 
@@ -66,6 +67,60 @@ export type CorrectionProjection = {
   intent: Record<string, JsonValue> | null;
   action_receipt: Record<string, JsonValue> | null;
   verification: Record<string, JsonValue> | null;
+  causal_explanation_id: string;
+};
+
+export type RouteProjection = {
+  schema: "tau.dag_route_projection.v1";
+  route_id: string;
+  source_node_id: string;
+  state: string;
+  reason_code: string;
+  decision_sequence: number | null;
+  decision_receipt_id: string | null;
+  selected_edge_ids: string[];
+  skipped_edge_ids: string[];
+  causal_explanation_id: string;
+};
+
+export type JoinProjection = {
+  schema: "tau.dag_join_projection.v1";
+  join_node_id: string;
+  state: string;
+  reason_code: string;
+  deadline_state: string;
+  decision: string | null;
+  decision_sequence: number | null;
+  incoming: Array<Record<string, JsonValue>>;
+  causal_explanation_id: string;
+};
+
+export type AttentionItem = {
+  schema: "tau.dag_attention_item.v1";
+  attention_id: string;
+  severity: "BLOCKER" | "ACTION_REQUIRED" | "WARNING";
+  state: "OPEN" | "RESOLVED";
+  reason_code: string;
+  subject: { kind: string; id: string };
+  opened_sequence: number;
+  resolved_sequence: number | null;
+  required_action_code: string;
+  causal_explanation_id: string;
+};
+
+export type CausalExplanation = {
+  schema: "tau.dag_causal_explanation.v1";
+  explanation_id: string;
+  run_id: string;
+  as_of_sequence: number;
+  subject: { kind: string; id: string };
+  projected_state: string;
+  reason_code: string;
+  summary_code: string;
+  trigger_sequence: number;
+  references: Array<Record<string, JsonValue>>;
+  chain: Array<{ step: number; relation: string; reference_id: string }>;
+  proof_scope: { proves: string[]; does_not_prove: string[] };
 };
 
 export type TransactionAttempt = {
@@ -107,10 +162,13 @@ export type DagSnapshot = {
   run_verdict: string | null;
   projection_state: string;
   nodes: LiveNode[];
-  edges: Array<{ edge_id: string; state: string }>;
-  terminals: Array<{ terminal_id: string; state: string }>;
+  edges: Array<{ edge_id: string; state: string; causal_explanation_id: string }>;
+  terminals: Array<{ terminal_id: string; state: string; causal_explanation_id: string }>;
+  routes: RouteProjection[];
+  joins: JoinProjection[];
   corrections: CorrectionProjection[];
-  attention_items: Array<Record<string, JsonValue>>;
+  attention_items: AttentionItem[];
+  highest_priority_attention_id: string | null;
   recent_events: JournalEvent[];
   proof_scope: { proves: string[]; does_not_prove: string[] };
 };

@@ -1,4 +1,4 @@
-import type { DagManifest, DagSnapshot } from "../types";
+import type { CausalExplanation, DagManifest, DagSnapshot } from "../types";
 
 export const manifest: DagManifest = {
   schema: "tau.dag_view_manifest.v1",
@@ -42,17 +42,39 @@ export const snapshot: DagSnapshot = {
       transaction: {
         transaction_id: "tx-1", current_attempt: 1, max_attempts: 2, state: "AWAITING_RECEIPT",
         attempts: [{ attempt: 1, producer_state: "PASS", validator_status: "PASS", reviewer_verdict: "REVISE" }],
-      }, correction: null, updated_sequence: 8,
+      }, correction: null, causal_explanation_id: "explanation-creator", updated_sequence: 8,
     },
     {
       node_id: "publish", node_kind: "command",
       scheduler: { state: "pending", attempt: 0, max_attempts: 1 },
       runtime: { state: "UNKNOWN", liveness: "UNKNOWN", confidence: "UNKNOWN", last_event_id: null },
-      admission: { state: "not_started", accepted: false, receipt_refs: [] }, transaction: null, correction: null, updated_sequence: 8,
+      admission: { state: "not_started", accepted: false, receipt_refs: [] }, transaction: null, correction: null,
+      causal_explanation_id: "explanation-publish", updated_sequence: 8,
     },
   ],
-  edges: [{ edge_id: "creator-publish", state: "pending" }, { edge_id: "publish-human", state: "pending" }],
-  terminals: [{ terminal_id: "human", state: "pending" }], corrections: [], attention_items: [],
+  edges: [
+    { edge_id: "creator-publish", state: "pending", causal_explanation_id: "explanation-edge-1" },
+    { edge_id: "publish-human", state: "pending", causal_explanation_id: "explanation-edge-2" },
+  ],
+  terminals: [{ terminal_id: "human", state: "pending", causal_explanation_id: "explanation-human" }],
+  routes: [], joins: [], corrections: [], attention_items: [], highest_priority_attention_id: null,
   recent_events: [{ seq: 8, event_type: "dag_diagnostic_event_appended", entity_type: "node", entity_id: "creator", attempt_id: null, payload: { phase: "reviewer" } }],
   proof_scope: { proves: ["journal projection"], does_not_prove: ["semantic correctness"] },
+};
+
+export const explanation: CausalExplanation = {
+  schema: "tau.dag_causal_explanation.v1",
+  explanation_id: "explanation-creator",
+  run_id: "run-1",
+  as_of_sequence: 8,
+  subject: { kind: "NODE", id: "creator" },
+  projected_state: "running",
+  reason_code: "attempt_dispatched",
+  summary_code: "node_running",
+  trigger_sequence: 6,
+  references: [
+    { kind: "JOURNAL_EVENT", relation: "CAUSED_BY", reference_id: "journal:6", journal_sequence: 6 },
+  ],
+  chain: [{ step: 1, relation: "CAUSED_BY", reference_id: "journal:6" }],
+  proof_scope: { proves: ["prefix-derived"], does_not_prove: ["semantic correctness"] },
 };

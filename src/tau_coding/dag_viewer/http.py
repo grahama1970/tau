@@ -112,6 +112,13 @@ def public_error_message(code: str) -> str:
         "dag_viewer_event_range_invalid": "The requested event range is invalid.",
         "dag_viewer_sequence_invalid": "The requested journal sequence is invalid.",
         "dag_viewer_sequence_not_in_run": "The requested sequence is not part of this run.",
+        "dag_viewer_explanation_subject_kind_invalid": (
+            "The requested causal subject kind is not supported."
+        ),
+        "dag_viewer_explanation_not_found": "The requested causal subject is not projected.",
+        "dag_viewer_transition_receipt_not_indexed": (
+            "A committed transition receipt is not in the run receipt index."
+        ),
         "dag_viewer_head_projection_mismatch": (
             "The journal head disagrees with a mutable projection."
         ),

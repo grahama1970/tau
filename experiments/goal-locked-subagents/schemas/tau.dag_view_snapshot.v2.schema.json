@@ -17,6 +17,7 @@
     "joins",
     "corrections",
     "attention_items",
+    "highest_priority_attention_id",
     "recent_events",
     "proof_scope",
     "redaction"
@@ -46,6 +47,7 @@
     "joins": {"type": "array"},
     "corrections": {"type": "array"},
     "attention_items": {"type": "array"},
+    "highest_priority_attention_id": {"type": ["string", "null"]},
     "recent_events": {"type": "array"},
     "proof_scope": {"type": "object"},
     "redaction": {"type": "object"}

@@ -24,8 +24,8 @@ from tau_coding.dag_viewer.http import (
 )
 from tau_coding.dag_viewer.projection import (
     build_dag_live_events,
-    build_dag_live_snapshot,
     build_dag_view_manifest,
+    build_dag_view_state,
     load_dag_replay_result,
 )
 from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_index
@@ -57,20 +57,20 @@ class DagViewerApplication:
         if path == "/api/v1/manifest":
             at_sequence = parse_at_sequence(parsed.query)
             result = self._replay(at_sequence=at_sequence)
-            self.receipts = build_receipt_index(
-                self.run_dir, result.replay.transition_receipts
-            )
+            self._refresh_receipts(result.replay.transition_receipts)
             manifest = build_dag_view_manifest(replay=result.replay, run_dir=self.run_dir)
             manifest["receipt_index"] = self.receipts.public_entries()
             return json_response(manifest)
         if path == "/api/v1/state":
             at_sequence = parse_at_sequence(parsed.query)
             result = self._replay(at_sequence=at_sequence)
-            snapshot = build_dag_live_snapshot(
+            self._refresh_receipts(result.replay.transition_receipts)
+            snapshot, _ = build_dag_view_state(
                 replay=result.replay,
                 recent_events=result.events,
                 view_mode=result.view_mode,
                 selected_event_created_at=result.selected_event_created_at,
+                receipt_index=self.receipts,
             )
             etag = f'"{snapshot["snapshot_sha256"]}"'
             response_headers = {
@@ -103,6 +103,24 @@ class DagViewerApplication:
                     limit=limit,
                 )
             )
+        explanation_prefix = "/api/v1/explanations/"
+        if path.startswith(explanation_prefix):
+            remainder = path.removeprefix(explanation_prefix)
+            parts = remainder.split("/")
+            if len(parts) != 2 or not all(parts):
+                raise RuntimeError("dag_viewer_explanation_not_found")
+            kind, subject_id = parts[0].upper(), parts[1]
+            at_sequence = parse_at_sequence(parsed.query)
+            result = self._replay(at_sequence=at_sequence)
+            self._refresh_receipts(result.replay.transition_receipts)
+            _, causal = build_dag_view_state(
+                replay=result.replay,
+                recent_events=result.events,
+                view_mode=result.view_mode,
+                selected_event_created_at=result.selected_event_created_at,
+                receipt_index=self.receipts,
+            )
+            return json_response(causal.explanation(kind, subject_id))
         receipt_prefix = "/api/v1/receipts/"
         if path.startswith(receipt_prefix):
             at_sequence = parse_at_sequence(parsed.query)
@@ -110,9 +128,7 @@ class DagViewerApplication:
             if not receipt_id or "/" in receipt_id or receipt_id in {".", ".."}:
                 raise RuntimeError("dag_viewer_receipt_not_found")
             result = self._replay(at_sequence=at_sequence)
-            self.receipts = build_receipt_index(
-                self.run_dir, result.replay.transition_receipts
-            )
+            self._refresh_receipts(result.replay.transition_receipts)
             return json_response(self.receipts.read_projection(receipt_id))
         return viewer_error(
             "dag_viewer_endpoint_not_found", "The endpoint does not exist.", status=404
@@ -125,6 +141,15 @@ class DagViewerApplication:
         if result.replay.plan.plan_sha256 != self.plan_sha256:
             raise RuntimeError("dag_viewer_plan_hash_mismatch")
         return result
+
+    def _refresh_receipts(self, receipt_refs: Any) -> None:
+        expected = {
+            (str(Path(item.path).expanduser().resolve()), item.file_sha256)
+            for item in receipt_refs
+        }
+        current = {(str(item.path), item.sha256) for item in self.receipts.entries}
+        if current != expected:
+            self.receipts = build_receipt_index(self.run_dir, receipt_refs)
 
 
 class DagViewerHttpServer(ThreadingHTTPServer):

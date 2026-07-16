@@ -11,7 +11,7 @@ html, body, #root { width: 100%; min-width: 320px; height: 100%; margin: 0; }
 button, select { font: inherit; letter-spacing: 0; }
 button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline-offset: 2px; }
 
-.dag-app { display: grid; grid-template-rows: 58px 44px minmax(0, 1fr) 190px; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #0e1218; }
+.dag-app { display: grid; grid-template-rows: 58px 44px auto auto minmax(0, 1fr) 190px; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #0e1218; }
 .status-banner { display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #263140; background: #131922; }
 .status-banner__identity, .status-banner__state { display: flex; align-items: center; gap: 10px; }
 .status-banner__identity div { display: grid; gap: 2px; }
@@ -26,6 +26,22 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 .sequence-navigator__controls button:disabled { opacity: .35; cursor: default; }
 .sequence-navigator__controls select { height: 28px; min-width: 142px; padding: 0 8px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; font-size: 11px; }
 .sequence-navigator__controls .sequence-navigator__live { color: #72d6cc; }
+
+.attention-rail { min-width: 0; display: flex; align-items: center; gap: 12px; padding: 7px 14px; border-bottom: 1px solid #493b22; background: #1b1812; }
+.attention-rail header { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; color: #e2b95f; font-size: 11px; }
+.attention-rail > div { min-width: 0; display: flex; gap: 7px; overflow-x: auto; }
+.attention-item { flex: 0 0 auto; min-height: 34px; display: grid; grid-template-columns: auto auto; align-items: center; gap: 2px 6px; padding: 5px 9px; border: 1px solid #654d28; border-radius: 4px; color: #f0d69e; background: #271f13; text-align: left; cursor: pointer; }
+.attention-item small { grid-column: 2; color: #a99776; font: 9px ui-monospace, monospace; }
+.attention-item--blocker { border-color: #a94e52; color: #ffb3b8; background: #2b181b; }
+.attention-item--action_required { border-color: #9b7335; }
+.attention-item--warning { border-color: #526174; color: #c5d0dd; background: #18202a; }
+.decision-rail { min-width: 0; display: flex; gap: 7px; padding: 6px 14px; overflow-x: auto; border-bottom: 1px solid #263140; background: #111720; }
+.decision-rail button { flex: 0 0 auto; min-width: 226px; min-height: 38px; display: grid; grid-template-columns: auto minmax(72px, 1fr) auto; align-items: center; gap: 7px; padding: 5px 9px; border: 1px solid #354356; border-radius: 4px; color: #dce5ef; background: #17202b; text-align: left; cursor: pointer; }
+.decision-rail button:hover { border-color: #65a9ff; }
+.decision-rail button span { display: grid; gap: 1px; }
+.decision-rail button strong { font-size: 11px; }
+.decision-rail button small { color: #72d6cc; font-size: 9px; text-transform: uppercase; }
+.decision-rail button code { color: #8f9daf; font-size: 9px; }
 
 .dag-app__workspace { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(360px, .75fr); min-height: 0; overflow: hidden; }
 .graph-pane { position: relative; display: grid; grid-template-rows: 38px minmax(0, 1fr); min-width: 0; min-height: 0; overflow: hidden; border-right: 1px solid #263140; }
@@ -66,7 +82,7 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 .transaction-acceptance--accepted { border-color: #5ecb8b; background: #14271e; }
 
 .inspector-pane { display: grid; grid-template-rows: 42px minmax(0, 1fr) clamp(96px, 14vh, 132px); min-width: 0; min-height: 0; overflow: hidden; background: #121821; }
-.inspector-tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid #263140; }
+.inspector-tabs { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid #263140; }
 .inspector-tabs button { min-height: 42px; display: inline-flex; justify-content: center; align-items: center; gap: 5px; border: 0; border-right: 1px solid #263140; color: #9aa8ba; background: #151c26; cursor: pointer; font-size: 11px; }
 .inspector-tabs button.active { color: #f1f5f9; background: #202a37; box-shadow: inset 0 -2px #65a9ff; }
 .inspector-content { min-width: 0; min-height: 0; overflow: auto; }
@@ -76,6 +92,20 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 .receipt-inspector label { color: #aab6c5; font-size: 11px; }
 .receipt-inspector select { width: 100%; padding: 7px; color: #e7edf5; background: #17202b; border: 1px solid #354356; border-radius: 4px; }
 .empty-inspector { color: #8f9daf; font-size: 12px; }
+.causal-details { min-height: 100%; padding: 14px; overflow: auto; background: #10161e; }
+.causal-details header { display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid #263140; }
+.causal-details header div { min-width: 0; display: grid; gap: 2px; }
+.causal-details header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.causal-details header span { color: #72d6cc; font: 10px ui-monospace, monospace; }
+.causal-details header > span { margin-left: auto; }
+.causal-details dl { display: grid; gap: 1px; margin: 12px 0; background: #263140; }
+.causal-details dl div { display: grid; grid-template-columns: 76px minmax(0, 1fr); padding: 7px 8px; background: #151c26; font-size: 10px; }
+.causal-details dt { color: #8f9daf; }
+.causal-details dd { margin: 0; color: #dbe4ef; overflow-wrap: anywhere; }
+.causal-details ol { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.causal-details li { display: grid; grid-template-columns: auto 88px minmax(0, 1fr); align-items: center; gap: 6px; padding: 7px 8px; border-left: 2px solid #4b9cff; background: #151c26; font-size: 10px; }
+.causal-details li span { color: #8f9daf; }
+.causal-details li code { overflow-wrap: anywhere; color: #cbd7e4; }
 .proof-boundary { min-width: 0; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: 1px; overflow: auto; border-top: 1px solid #263140; background: #263140; }
 .proof-boundary div { display: grid; gap: 3px; padding: 9px; background: #151c26; }
 .proof-boundary strong { font-size: 10px; text-transform: uppercase; color: #8f9daf; }
@@ -99,7 +129,8 @@ button:focus-visible, select:focus-visible { outline: 2px solid #65a9ff; outline
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 @media (max-width: 900px) {
-  .dag-app { grid-template-rows: 58px auto auto 190px; height: auto; min-height: 100%; overflow: visible; }
+  .dag-app { grid-template-rows: 58px auto auto auto auto 190px; height: auto; min-height: 100%; overflow: visible; }
+  .attention-rail { align-items: flex-start; flex-direction: column; }
   .sequence-navigator { min-height: 74px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 8px; }
   .sequence-navigator__controls { width: 100%; }
   .sequence-navigator__controls select { flex: 1; min-width: 0; }

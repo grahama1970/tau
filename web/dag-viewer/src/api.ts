@@ -1,4 +1,4 @@
-import type { DagEventPage, DagManifest, DagSnapshot, ReceiptProjection } from "./types";
+import type { CausalExplanation, DagEventPage, DagManifest, DagSnapshot, ReceiptProjection } from "./types";
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<{ value: T | null; etag: string | null }> {
   const response = await fetch(path, init);
@@ -42,6 +42,19 @@ export function shouldReplaceSnapshot(current: DagSnapshot, candidate: DagSnapsh
 export async function loadReceipt(receiptId: string, sequence: number | null = null): Promise<ReceiptProjection> {
   const result = await getJson<ReceiptProjection>(`/api/v1/receipts/${encodeURIComponent(receiptId)}${sequenceQuery(sequence)}`);
   if (!result.value) throw new Error("viewer_receipt_missing");
+  return result.value;
+}
+
+export async function loadExplanation(
+  kind: string,
+  subjectId: string,
+  sequence: number | null = null,
+): Promise<CausalExplanation> {
+  const subject = `${encodeURIComponent(kind.toLowerCase())}/${encodeURIComponent(subjectId)}`;
+  const result = await getJson<CausalExplanation>(
+    `/api/v1/explanations/${subject}${sequenceQuery(sequence)}`,
+  );
+  if (!result.value) throw new Error("viewer_explanation_missing");
   return result.value;
 }
 

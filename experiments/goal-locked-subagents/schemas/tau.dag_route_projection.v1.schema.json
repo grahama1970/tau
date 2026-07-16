@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tau DAG route projection v1",
+  "type": "object",
+  "required": ["schema", "route_id", "source_node_id", "attempt", "mode", "contract_sha256", "state", "selected_edge_ids", "skipped_edge_ids", "reason_code", "decision_sequence", "decision_receipt_id", "decision_receipt_sha256", "causal_explanation_id"],
+  "properties": {
+    "schema": {"const": "tau.dag_route_projection.v1"},
+    "route_id": {"type": "string", "minLength": 1},
+    "source_node_id": {"type": "string", "minLength": 1},
+    "attempt": {"type": "integer", "minimum": 0},
+    "mode": {"type": "string", "minLength": 1},
+    "contract_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "state": {"enum": ["PENDING", "SELECTED", "BLOCKED"]},
+    "selected_edge_ids": {"type": "array", "items": {"type": "string"}},
+    "skipped_edge_ids": {"type": "array", "items": {"type": "string"}},
+    "reason_code": {"type": "string", "minLength": 1},
+    "decision_sequence": {"type": ["integer", "null"]},
+    "decision_receipt_id": {"type": ["string", "null"]},
+    "decision_receipt_sha256": {"type": ["string", "null"]},
+    "causal_explanation_id": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

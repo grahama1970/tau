@@ -6910,5 +6910,29 @@
   historical screenshot `/tmp/tau-causal-replay-historical-final.png` visibly shows sequence 13 at
   `APPLIED`, an amber unaccepted node, no later verification, and a timeline ending at that prefix.
 - This proves the bounded historical projection and viewer behavior exercised above. It does not
-  prove semantic correctness, every failure is self-healable, provider/model quality, or any future
-  route/join/filter/comparison slice not yet implemented.
+  prove semantic correctness, every failure is self-healable, provider/model quality, or the
+  filter/comparison slices not yet implemented.
+
+# 2026-07-16: Causal Route, Join, And Attention Projection
+
+- The viewer now projects committed typed-route decisions, selected/skipped edge IDs, join
+  contributions, deadline state, final join decisions, corrections, and deterministic human
+  attention from the same verified journal prefix used by historical replay.
+- `dag_viewer/causal.py` emits `tau.dag_causal_explanation.v1` references for run, node, edge,
+  terminal, route, join, correction, and attention subjects. Full explanations are fetched from a
+  GET-only endpoint; snapshot entities carry deterministic explanation IDs.
+- Conditional and fan-in topology without committed decision evidence remains `PENDING`.
+  Decision and contribution receipts must be in the prefix-bounded allowlist and match their
+  committed SHA-256. Absolute receipt paths are omitted from browser event projections.
+- The React application adds a read-only route/join decision rail, a deterministic human-attention
+  rail, and a `Why` inspector. Browser state still uses full Tau-authored replacement snapshots and
+  cannot approve, retry, cancel, acknowledge, or mutate the run.
+- Focused deterministic proof passes 160 route, join, correction, replay, server, and projection
+  tests. Frontend typecheck/build and 10 tests pass. The real local blocked route/join run under
+  `/tmp/tau-route-join-attention-live/run` projects two selected and one skipped route edge, three
+  join contributions, a blocked join, and one `REVIEW_BLOCKED_RUN` attention item.
+- Browser proof `/tmp/tau-causal-route-join-browser-proof-v2.json` passes all 11 checks with GET-only
+  traffic. Screenshot `/tmp/tau-causal-route-join-viewer-v2.png` shows the graph, route/join rail,
+  attention item, source inspector, and timeline without overlap or clipped nodes.
+- This does not prove branch output correctness, human review, provider/model quality, future route
+  behavior, filter/query support, or exactly-two comparison. Those remain later goal slices.
