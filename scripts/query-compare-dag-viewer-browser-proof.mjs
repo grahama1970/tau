@@ -5,7 +5,7 @@ import process from "node:process";
 
 const require = createRequire(import.meta.url);
 const puppeteer = require(`${process.env.NODE_PATH}/puppeteer`);
-const [url, screenshotPath, outputPath] = process.argv.slice(2);
+const [url, screenshotPath, outputPath, mobileScreenshotPath = screenshotPath.replace(/(\.[^.]+)$/, "-mobile$1")] = process.argv.slice(2);
 if (!url || !screenshotPath || !outputPath) throw new Error("browser-proof arguments missing");
 
 const browser = await puppeteer.launch({
@@ -60,6 +60,9 @@ const checks = {
   read_only_requests: false,
   top_controls_full_width: false,
   layout_non_overlapping: false,
+  comparison_side_synchronizes_sequence: false,
+  mobile_order_non_overlapping: false,
+  mobile_no_horizontal_overflow: false,
 };
 
 await setValue('[aria-label="Filter IDs, codes, schemas, states, and previews"]', "provider-review");
@@ -163,6 +166,38 @@ checks.layout_non_overlapping = await page.evaluate(() => {
 });
 
 await page.screenshot({ path: screenshotPath, fullPage: false });
+await page.click('[aria-label="Inspect left comparison side"]');
+await page.waitForFunction(() => window.location.search.includes("at_sequence=9"));
+await waitForText('[data-qid="dag:sequence:navigator"]', "HISTORICAL");
+checks.comparison_side_synchronizes_sequence = await page.$eval(
+  '[data-qid="dag:sequence:navigator"]',
+  (element) => (element.textContent || "").includes("frozen at #9"),
+);
+await clickButton("Return live");
+await waitForText('[data-qid="dag:sequence:navigator"]', "following journal head");
+
+await page.setViewport({ width: 430, height: 932, deviceScaleFactor: 1 });
+await page.reload({ waitUntil: "networkidle0", timeout: 15000 });
+await page.waitForSelector('[data-qid="dag:workspace:graph"]');
+checks.mobile_order_non_overlapping = await page.evaluate(() => {
+  const rect = (selector) => document.querySelector(selector)?.getBoundingClientRect();
+  const sequence = rect('[data-qid="dag:sequence:navigator"]');
+  const filters = rect('[data-qid="dag:filters"]');
+  const graph = rect('[data-qid="dag:workspace:graph"]');
+  const attention = rect('[data-qid="dag:attention:rail"]');
+  const decisions = document.querySelector('.decision-rail')?.getBoundingClientRect();
+  const inspector = rect('[data-qid="dag:workspace:inspector"]');
+  const comparison = rect('[data-qid="dag:comparison"]');
+  const timeline = rect('[data-qid="dag:timeline:events"]');
+  if (!sequence || !filters || !graph || !inspector || !comparison || !timeline) return false;
+  const ordered = [sequence, filters, graph, attention, decisions, inspector, comparison, timeline]
+    .filter(Boolean);
+  return ordered.every((item, index) => index === 0 || ordered[index - 1].bottom <= item.top + 1);
+});
+checks.mobile_no_horizontal_overflow = await page.evaluate(
+  () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+);
+await page.screenshot({ path: mobileScreenshotPath, fullPage: true });
 await browser.close();
 const receipt = {
   schema: "tau.dag_viewer_query_compare_browser_proof.v1",
@@ -173,6 +208,8 @@ const receipt = {
   url,
   screenshot: screenshotPath,
   screenshot_sha256: `sha256:${createHash("sha256").update(fs.readFileSync(screenshotPath)).digest("hex")}`,
+  mobile_screenshot: mobileScreenshotPath,
+  mobile_screenshot_sha256: `sha256:${createHash("sha256").update(fs.readFileSync(mobileScreenshotPath)).digest("hex")}`,
   request_methods: [...new Set(methods)].sort(),
   comparison_responses: responses,
   checks,

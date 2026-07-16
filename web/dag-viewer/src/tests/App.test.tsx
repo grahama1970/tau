@@ -76,8 +76,8 @@ test("stale comparison response cannot replace a newer request", async () => {
 
   const response = (field: string) => new Response(JSON.stringify({
     schema: "tau.dag_view_comparison.v1", kind: "ATTEMPT_PAIR", run_id: "run-1", as_of_sequence: 8,
-    left: { run_id: "run-1", reference: { kind: "ATTEMPT", attempt: 1 }, sequence: 1, projection: {}, truncated: false },
-    right: { run_id: "run-1", reference: { kind: "ATTEMPT", attempt: 2 }, sequence: 8, projection: {}, truncated: false },
+    left: { run_id: "run-1", reference: { kind: "ATTEMPT", node_id: "creator", attempt: 1, attempt_id: "attempt-1" }, sequence: 1, projection: {}, truncated: false },
+    right: { run_id: "run-1", reference: { kind: "ATTEMPT", node_id: "creator", attempt: 2, attempt_id: "attempt-2" }, sequence: 8, projection: {}, truncated: false },
     changes: [{ field, change: "CHANGED", left: null, right: null }], truncated: false, comparison_sha256: "sha256:comparison",
   }), { status: 200 });
   await act(async () => comparisonResolvers[1](response("$.newer")));
@@ -85,6 +85,8 @@ test("stale comparison response cannot replace a newer request", async () => {
   await act(async () => comparisonResolvers[0](response("$.stale")));
   expect(screen.queryByText("CHANGED $.stale")).not.toBeInTheDocument();
   expect(screen.getByText("CHANGED $.newer")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Inspect left comparison side" }));
+  await waitFor(() => expect(fetchMock.mock.calls.some(([value]) => String(value).includes("/explanations/attempt/attempt-1?at_sequence=1"))).toBe(true));
 });
 
 test("journal-prefix navigation clears and invalidates an in-flight comparison", async () => {
@@ -168,9 +170,150 @@ test("renders authoritative graph, inspectors, transaction, and proof boundary",
   expect(document.querySelector('[data-qid="dag:workspace:graph"]')).toHaveClass("graph-pane--with-transaction");
   expect(document.querySelector('[data-qid="dag:workspace:canvas"]')).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:workspace:proof-boundary"]')).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Why" }));
   await waitFor(() => expect(screen.getByText("attempt_dispatched")).toBeInTheDocument());
+  expect(screen.getByRole("button", { name: "Why" })).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByText("journal:6")).toBeInTheDocument();
+});
+
+test("timeline and comparison selections synchronize the authoritative sequence and subject", async () => {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = new URL(String(input), "http://viewer.test");
+    const selected = url.searchParams.get("at_sequence");
+    const projected = selected
+      ? { ...snapshot, journal_sequence: Number(selected), view: { ...snapshot.view, mode: "HISTORICAL" as const, sequence: Number(selected) } }
+      : snapshot;
+    const payload = url.pathname.includes("manifest")
+      ? manifest
+      : url.pathname.includes("explanations")
+        ? { ...explanation, as_of_sequence: Number(selected ?? 8) }
+        : url.pathname.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [{ ...snapshot.recent_events[0], seq: 1 }, snapshot.recent_events[0]] }
+          : url.pathname.includes("compare")
+            ? {
+              schema: "tau.dag_view_comparison.v1", kind: "SEQUENCE_PAIR", run_id: "run-1", as_of_sequence: 8,
+              left: { run_id: "run-1", reference: { kind: "SEQUENCE", sequence: 1 }, sequence: 1, projection: {}, truncated: false },
+              right: { run_id: "run-1", reference: { kind: "SEQUENCE", sequence: 8 }, sequence: 8, projection: {}, truncated: false },
+              changes: [], truncated: false, comparison_sha256: "sha256:comparison",
+            }
+            : projected;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: `"${selected ?? "live"}"` } });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:event:8"]')).toBeInTheDocument());
+
+  fireEvent.click(document.querySelector('[data-qid="dag:event:8"]') as Element);
+  expect(window.location.search).toContain("at_sequence=8");
+  await waitFor(() => expect(screen.getByRole("button", { name: "Why" })).toHaveAttribute("aria-pressed", "true"));
+
+  fireEvent.click(screen.getByRole("button", { name: "Compare" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Inspect left comparison side" })).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Inspect left comparison side" }));
+  expect(window.location.search).toContain("at_sequence=1");
+  await waitFor(() => expect(fetchMock.mock.calls.some(([value]) => String(value).includes("/explanations/run/run-1?at_sequence=1"))).toBe(true));
+});
+
+test("causal receipt references open the committed receipt inspector", async () => {
+  const receiptEntry = { receipt_id: "receipt-1", schema: "tau.test_receipt.v1", path_display: "receipts/test.json", sha256: "sha256:receipt", available: true };
+  const withReceipt = { ...manifest, receipt_index: [receiptEntry] };
+  const withReceiptReference = { ...explanation, references: [{ kind: "RECEIPT", relation: "SUPPORTED_BY", reference_id: "receipt-1" }] };
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("/receipts/")
+      ? { schema: "tau.dag_viewer_receipt_projection.v1", receipt_id: "receipt-1", source_schema: "tau.test_receipt.v1", source_sha256: "sha256:receipt", receipt: { status: "PASS" } }
+      : url.includes("manifest")
+        ? withReceipt
+        : url.includes("explanations")
+          ? withReceiptReference
+          : url.includes("events")
+            ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [] }
+            : snapshot;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"' } });
+  }));
+  render(<App />);
+  await waitFor(() => expect(screen.getByRole("button", { name: "receipt-1" })).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "receipt-1" }));
+  await waitFor(() => expect(screen.getByLabelText("Receipt JSON")).toHaveTextContent('"status": "PASS"'));
+  expect(screen.getByRole("button", { name: "Receipt" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("out-of-order and prefix-stale receipt responses cannot replace current evidence", async () => {
+  const entries = ["receipt-a", "receipt-b"].map((receiptId) => ({
+    receipt_id: receiptId, schema: "tau.test_receipt.v1", path_display: `${receiptId}.json`, sha256: `sha256:${receiptId}`, available: true,
+  }));
+  const resolvers = new Map<string, Array<(response: Response) => void>>();
+  vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/receipts/")) {
+      const id = url.includes("receipt-a") ? "receipt-a" : "receipt-b";
+      return new Promise<Response>((resolve) => resolvers.set(id, [...(resolvers.get(id) ?? []), resolve]));
+    }
+    const payload = url.includes("manifest")
+      ? { ...manifest, receipt_index: entries }
+      : url.includes("explanations")
+        ? explanation
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [{ ...snapshot.recent_events[0], seq: 1 }, snapshot.recent_events[0]] }
+          : snapshot;
+    return Promise.resolve(new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"' } }));
+  }));
+  render(<App />);
+  await waitFor(() => expect(screen.getByRole("button", { name: "Receipt" })).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Receipt" }));
+  const selector = screen.getByLabelText("Committed receipt");
+  fireEvent.change(selector, { target: { value: "receipt-a" } });
+  await waitFor(() => expect(resolvers.get("receipt-a")).toHaveLength(1));
+  fireEvent.change(selector, { target: { value: "receipt-b" } });
+  await waitFor(() => expect(resolvers.get("receipt-b")).toHaveLength(1));
+
+  await act(async () => resolvers.get("receipt-b")?.[0](new Response(JSON.stringify({
+    schema: "tau.dag_viewer_receipt_projection.v1", receipt_id: "receipt-b", source_schema: "tau.test_receipt.v1", source_sha256: "sha256:b", receipt: { marker: "CURRENT" },
+  }), { status: 200 })));
+  await waitFor(() => expect(screen.getByLabelText("Receipt JSON")).toHaveTextContent("CURRENT"));
+  await act(async () => resolvers.get("receipt-a")?.[0](new Response(JSON.stringify({
+    schema: "tau.dag_viewer_receipt_projection.v1", receipt_id: "receipt-a", source_schema: "tau.test_receipt.v1", source_sha256: "sha256:a", receipt: { marker: "STALE" },
+  }), { status: 200 })));
+  expect(screen.getByLabelText("Receipt JSON")).not.toHaveTextContent("STALE");
+
+  fireEvent.change(selector, { target: { value: "receipt-a" } });
+  await waitFor(() => expect(resolvers.get("receipt-a")).toHaveLength(2));
+  fireEvent.change(screen.getByLabelText("Committed journal sequence"), { target: { value: "1" } });
+  await act(async () => resolvers.get("receipt-a")?.[1](new Response(JSON.stringify({
+    schema: "tau.dag_viewer_receipt_projection.v1", receipt_id: "receipt-a", source_schema: "tau.test_receipt.v1", source_sha256: "sha256:a", receipt: { marker: "WRONG_PREFIX" },
+  }), { status: 200 })));
+  expect(screen.queryByText("WRONG_PREFIX")).not.toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText("Committed journal sequence"), { target: { value: "live" } });
+  await waitFor(() => expect(screen.getByText("following journal head")).toBeInTheDocument());
+  fireEvent.change(screen.getByLabelText("Committed receipt"), { target: { value: "receipt-a" } });
+  await waitFor(() => expect(resolvers.get("receipt-a")).toHaveLength(3));
+  window.history.pushState({}, "", "/?at_sequence=1");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  await act(async () => resolvers.get("receipt-a")?.[2](new Response(JSON.stringify({
+    schema: "tau.dag_viewer_receipt_projection.v1", receipt_id: "receipt-a", source_schema: "tau.test_receipt.v1", source_sha256: "sha256:a", receipt: { marker: "HISTORY_STALE" },
+  }), { status: 200 })));
+  expect(screen.queryByText("HISTORY_STALE")).not.toBeInTheDocument();
+});
+
+test("unsupported timeline entity types fall back to the run causal subject", async () => {
+  const unsupported = { ...snapshot.recent_events[0], entity_type: "scheduler-internal", entity_id: "private-scheduler" };
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const payload = url.includes("manifest")
+      ? manifest
+      : url.includes("explanations")
+        ? { ...explanation, subject: { kind: "RUN", id: "run-1" } }
+        : url.includes("events")
+          ? { schema: "tau.dag_live_event.v1", run_id: "run-1", after_sequence: 0, events: [{ ...unsupported, seq: 1 }, unsupported] }
+          : { ...snapshot, recent_events: [unsupported] };
+    return new Response(JSON.stringify(payload), { status: 200, headers: { ETag: '"one"' } });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<App />);
+  await waitFor(() => expect(document.querySelector('[data-qid="dag:event:8"]')).toBeInTheDocument());
+  fireEvent.click(document.querySelector('[data-qid="dag:event:8"]') as Element);
+  await waitFor(() => expect(fetchMock.mock.calls.some(([value]) => String(value).includes("/explanations/run/run-1?at_sequence=8"))).toBe(true));
+  expect(fetchMock.mock.calls.some(([value]) => String(value).includes("scheduler-internal"))).toBe(false);
 });
 
 test("shows the selected external terminal in the live-state inspector", async () => {

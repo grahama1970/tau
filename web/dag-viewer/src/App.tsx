@@ -13,7 +13,7 @@ import { ReceiptInspector } from "./components/ReceiptInspector";
 import { SequenceNavigator } from "./components/SequenceNavigator";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
-import type { AttentionItem, CausalExplanation, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JsonValue, ReceiptProjection } from "./types";
+import type { AttentionItem, CausalExplanation, ComparisonSide, DagComparison, DagManifest, DagQueryResult, DagSnapshot, JournalEvent, JsonValue, QueryItem, ReceiptProjection } from "./types";
 
 type InspectorTab = "source" | "plan" | "live" | "cause" | "receipt";
 const tabs: Array<{ id: InspectorTab; label: string; icon: typeof Braces }> = [
@@ -37,13 +37,17 @@ export default function App() {
   const etagsRef = useRef(new Map<string, string | null>());
   const requestGenerationRef = useRef(0);
   const comparisonGenerationRef = useRef(0);
+  const receiptGenerationRef = useRef(0);
+  const receiptAuthorityRef = useRef("");
+  const initializedRef = useRef(false);
   const [selectedSequence, setSelectedSequence] = useState<number | null>(initialSequence ? Number(initialSequence) : null);
   const [sequences, setSequences] = useState<number[]>([]);
   const [connected, setConnected] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [tab, setTab] = useState<InspectorTab>("source");
+  const [tab, setTab] = useState<InspectorTab>("cause");
   const [receiptId, setReceiptId] = useState<string | null>(null);
+  const [receiptAtSequence, setReceiptAtSequence] = useState<number | null>(null);
   const [receipt, setReceipt] = useState<ReceiptProjection | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<{ kind: string; id: string } | null>(null);
   const [explanation, setExplanation] = useState<CausalExplanation | null>(null);
@@ -64,6 +68,11 @@ export default function App() {
         entityKind: parameters.get("filter_kind") ?? "",
         state: parameters.get("filter_state") ?? "",
       };
+      receiptGenerationRef.current += 1;
+      receiptAuthorityRef.current = "";
+      setReceiptId(null);
+      setReceiptAtSequence(null);
+      setReceipt(null);
       setSelectedSequence(raw ? Number(raw) : null);
       setFilterDraft(restored);
       setAppliedFilter(restored);
@@ -81,12 +90,15 @@ export default function App() {
       setManifest(initial.manifest);
       setSnapshot(initial.snapshot);
       etagsRef.current.set(selectedSequence === null ? "live" : `historical:${selectedSequence}`, initial.etag);
-      setSelectedId(initial.manifest.graph.nodes[0]?.node_id ?? null);
-      setSelectedSubject(
-        initial.manifest.graph.nodes[0]
-          ? { kind: "NODE", id: initial.manifest.graph.nodes[0].node_id }
-          : null,
-      );
+      if (!initializedRef.current) {
+        setSelectedId(initial.manifest.graph.nodes[0]?.node_id ?? null);
+        setSelectedSubject(
+          initial.manifest.graph.nodes[0]
+            ? { kind: "NODE", id: initial.manifest.graph.nodes[0].node_id }
+            : null,
+        );
+        initializedRef.current = true;
+      }
       setConnected(true);
       setError(null);
       return loadJournalSequences();
@@ -163,6 +175,34 @@ export default function App() {
   }, [selectedSequence, snapshot?.run_id, snapshot?.journal_sequence]);
 
   useEffect(() => {
+    const generation = ++receiptGenerationRef.current;
+    setReceipt(null);
+    if (!receiptId || !snapshot) return;
+    const expectedRunId = snapshot.run_id;
+    const expectedSequence = receiptAtSequence ?? snapshot.journal_sequence;
+    if (snapshot.journal_sequence !== expectedSequence) return;
+    const authorityKey = `${expectedRunId}:${expectedSequence}:${receiptId}`;
+    receiptAuthorityRef.current = authorityKey;
+    let active = true;
+    loadReceipt(receiptId, receiptAtSequence).then((value) => {
+      if (
+        active
+        && generation === receiptGenerationRef.current
+        && receiptAuthorityRef.current === authorityKey
+        && value.receipt_id === receiptId
+      ) setReceipt(value);
+    }).catch((reason: unknown) => {
+      if (active && generation === receiptGenerationRef.current) {
+        setError(reason instanceof Error ? reason.message : "receipt_load_failed");
+      }
+    });
+    return () => {
+      active = false;
+      if (receiptAuthorityRef.current === authorityKey) receiptAuthorityRef.current = "";
+    };
+  }, [receiptAtSequence, receiptId, snapshot?.run_id, snapshot?.snapshot_sha256]);
+
+  useEffect(() => {
     if (!snapshot || !Object.values(appliedFilter).some(Boolean)) {
       setQueryResult(null);
       return;
@@ -202,11 +242,14 @@ export default function App() {
     }));
   }, [selectedId, sequences, snapshot?.corrections, snapshot?.nodes, transaction]);
 
-  const selectReceipt = (id: string) => {
+  const selectReceipt = (id: string, atSequence: number | null = selectedSequence) => {
+    receiptGenerationRef.current += 1;
+    receiptAuthorityRef.current = "";
     setReceiptId(id || null);
+    setReceiptAtSequence(id ? atSequence : null);
     setReceipt(null);
     if (!id) return;
-    loadReceipt(id, selectedSequence).then(setReceipt).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "receipt_load_failed"));
+    setTab("receipt");
   };
 
   const selectSequence = (sequence: number | null) => {
@@ -215,6 +258,7 @@ export default function App() {
     else url.searchParams.set("at_sequence", String(sequence));
     window.history.pushState({}, "", url);
     setReceiptId(null);
+    setReceiptAtSequence(null);
     setReceipt(null);
     setSelectedSequence(sequence);
   };
@@ -261,10 +305,53 @@ export default function App() {
     window.history.pushState({}, "", url);
   };
 
-  const selectQueryItem = (kind: string, id: string) => {
-    if (kind === "NODE" || kind === "TERMINAL") selectGraphSubject(id);
-    else if (["ROUTE", "JOIN", "CORRECTION", "ATTENTION"].includes(kind)) {
-      setSelectedSubject({ kind, id });
+  const selectQueryItem = (item: QueryItem) => {
+    selectSequence(item.sequence);
+    if (item.entity_kind === "RECEIPT") selectReceipt(item.entity_id, item.sequence);
+    else if (item.entity_kind === "NODE" || item.entity_kind === "TERMINAL") {
+      selectGraphSubject(item.entity_id);
+      setTab("cause");
+    } else if (item.entity_kind === "EVENT") {
+      const subject = item.node_id
+        ? { kind: "NODE", id: item.node_id }
+        : { kind: "RUN", id: snapshot?.run_id ?? "" };
+      if (item.node_id) setSelectedId(item.node_id);
+      setSelectedSubject(subject);
+      setTab("cause");
+    } else if (["EDGE", "ROUTE", "JOIN", "CORRECTION", "ATTENTION"].includes(item.entity_kind)) {
+      setSelectedSubject({ kind: item.entity_kind, id: item.entity_id });
+      setTab("cause");
+    }
+  };
+
+  const selectEvent = (event: JournalEvent) => {
+    const candidateKind = event.entity_type.toUpperCase();
+    const supportedKinds = new Set(["RUN", "NODE", "EDGE", "TERMINAL", "ROUTE", "JOIN", "ATTEMPT", "CORRECTION", "ATTENTION"]);
+    const kind = supportedKinds.has(candidateKind) ? candidateKind : "RUN";
+    const subjectId = kind === "RUN" ? snapshot?.run_id ?? event.entity_id : event.entity_id;
+    selectSequence(event.seq);
+    if (kind === "NODE" || kind === "TERMINAL") setSelectedId(event.entity_id);
+    setSelectedSubject({ kind, id: subjectId });
+    setTab("cause");
+  };
+
+  const selectComparisonSide = (side: ComparisonSide) => {
+    const kind = String(side.reference.kind ?? "");
+    selectSequence(side.sequence);
+    if (kind === "ATTEMPT" && typeof side.reference.node_id === "string") {
+      setSelectedId(side.reference.node_id);
+      setSelectedSubject({
+        kind: "ATTEMPT",
+        id: typeof side.reference.attempt_id === "string"
+          ? side.reference.attempt_id
+          : `${side.reference.node_id}:attempt:${String(side.reference.attempt ?? "")}`,
+      });
+      setTab("cause");
+    } else if (kind === "CORRECTION" && typeof side.reference.incident_id === "string") {
+      setSelectedSubject({ kind: "CORRECTION", id: side.reference.incident_id });
+      setTab("cause");
+    } else if (kind === "SEQUENCE") {
+      setSelectedSubject({ kind: "RUN", id: snapshot?.run_id ?? side.run_id });
       setTab("cause");
     }
   };
@@ -342,7 +429,7 @@ export default function App() {
           {tab === "receipt"
             ? <ReceiptInspector entries={manifest.receipt_index} selected={receiptId} onSelect={selectReceipt} projection={receipt} />
             : tab === "cause"
-              ? <CausalDetails explanation={explanation} />
+              ? <CausalDetails explanation={explanation} onReceipt={selectReceipt} />
               : <JsonInspector value={inspectorValue} label={`${tab} JSON`} />}
         </div>
         <footer className="proof-boundary" data-qid="dag:workspace:proof-boundary">
@@ -351,7 +438,7 @@ export default function App() {
         </footer>
       </aside>
     </section>
-    <ComparisonPanel value={comparisonInput} result={comparison} sequences={sequences.filter((sequence) => sequence <= snapshot.journal_sequence)} transaction={transaction} corrections={snapshot.corrections} onChange={(value) => { comparisonGenerationRef.current += 1; setComparisonInput(value); setComparison(null); }} onCompare={runComparison} />
-    <EventTimeline events={snapshot.recent_events} onSelect={selectGraphSubject} />
+    <ComparisonPanel value={comparisonInput} result={comparison} sequences={sequences.filter((sequence) => sequence <= snapshot.journal_sequence)} transaction={transaction} corrections={snapshot.corrections} onChange={(value) => { comparisonGenerationRef.current += 1; setComparisonInput(value); setComparison(null); }} onCompare={runComparison} onSelectSide={selectComparisonSide} />
+    <EventTimeline events={snapshot.recent_events} onSelect={selectEvent} />
   </main>;
 }

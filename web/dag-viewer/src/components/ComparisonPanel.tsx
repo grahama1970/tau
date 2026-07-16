@@ -1,5 +1,5 @@
 import { ArrowLeftRight, GitCompareArrows } from "lucide-react";
-import type { CorrectionProjection, DagComparison, TransactionProjection } from "../types";
+import type { ComparisonSide, CorrectionProjection, DagComparison, TransactionProjection } from "../types";
 
 export type ComparisonInput = {
   kind: "SEQUENCE_PAIR" | "ATTEMPT_PAIR" | "CORRECTION_BEFORE_AFTER";
@@ -9,7 +9,7 @@ export type ComparisonInput = {
   incidentId: string;
 };
 
-export function ComparisonPanel({ value, result, sequences, transaction, corrections, onChange, onCompare }: {
+export function ComparisonPanel({ value, result, sequences, transaction, corrections, onChange, onCompare, onSelectSide }: {
   value: ComparisonInput;
   result: DagComparison | null;
   sequences: number[];
@@ -17,6 +17,7 @@ export function ComparisonPanel({ value, result, sequences, transaction, correct
   corrections: CorrectionProjection[];
   onChange: (value: ComparisonInput) => void;
   onCompare: () => void;
+  onSelectSide: (side: ComparisonSide) => void;
 }) {
   const attempts = transaction?.attempts.map((item) => item.attempt) ?? [];
   return <section className="comparison-panel" aria-label="Exactly two comparison" data-qid="dag:comparison">
@@ -50,9 +51,9 @@ export function ComparisonPanel({ value, result, sequences, transaction, correct
     </div>
     <div className="comparison-panel__result" data-qid="dag:comparison:result">
       {!result ? <span>Select two authoritative states.</span> : <>
-        <div><strong>LEFT</strong><code>#{result.left.sequence}</code><small>{JSON.stringify(result.left.reference)}</small></div>
+        <button type="button" className="comparison-panel__side" aria-label="Inspect left comparison side" onClick={() => onSelectSide(result.left)}><strong>LEFT</strong><code>#{result.left.sequence}</code><small>{JSON.stringify(result.left.reference)}</small></button>
         <div className="comparison-panel__changes"><strong>{result.changes.length} changes</strong>{result.changes.slice(0, 5).map((change) => <code key={change.field}>{change.change} {change.field}</code>)}</div>
-        <div><strong>RIGHT</strong><code>#{result.right.sequence}</code><small>{JSON.stringify(result.right.reference)}</small></div>
+        <button type="button" className="comparison-panel__side" aria-label="Inspect right comparison side" onClick={() => onSelectSide(result.right)}><strong>RIGHT</strong><code>#{result.right.sequence}</code><small>{JSON.stringify(result.right.reference)}</small></button>
       </>}
     </div>
   </section>;

@@ -1,7 +1,7 @@
 import { Activity, ShieldAlert } from "lucide-react";
 import type { JournalEvent } from "../types";
 
-export function EventTimeline({ events, onSelect }: { events: JournalEvent[]; onSelect: (id: string) => void }) {
+export function EventTimeline({ events, onSelect }: { events: JournalEvent[]; onSelect: (event: JournalEvent) => void }) {
   const correctionStates = events
     .filter((event) => event.event_type === "correction_state_committed" && typeof event.payload.state === "string")
     .map((event) => String(event.payload.state));
@@ -20,7 +20,7 @@ export function EventTimeline({ events, onSelect }: { events: JournalEvent[]; on
         data-qid={`dag:event:${event.seq}`}
         data-qs-action="DAG_SELECT_EVENT"
         title={`Inspect journal event ${event.seq}`}
-        onClick={() => onSelect(event.entity_id)}
+        onClick={() => onSelect(event)}
       >
         <span className="event-row__seq">#{event.seq}</span>
         <span className="event-row__kind">{event.event_type}</span>

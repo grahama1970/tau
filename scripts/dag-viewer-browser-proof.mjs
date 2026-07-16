@@ -37,6 +37,14 @@ const observed = {
   layout_non_overlapping: false,
 };
 
+await page.click('[data-qid="dag:inspector:source"]');
+await page.waitForFunction(() => document.querySelector('[data-qid="dag:inspector:source"]')?.getAttribute("aria-pressed") === "true");
+observed.source_dag_visible = await page.$eval(
+  '[data-qid="dag:workspace:inspector-content"]',
+  (element) => (element.textContent || "").includes("tau.generic_dag_spec.v1"),
+);
+await page.click('[data-qid="dag:inspector:cause"]');
+
 const deadline = Date.now() + 25000;
 while (Date.now() < deadline) {
   const state = await page.evaluate(() => {
@@ -45,7 +53,6 @@ while (Date.now() < deadline) {
     const continuation = document.querySelector('[data-qid="dag:node:continuation"]');
     return {
       graph: Boolean(document.querySelector(".react-flow__viewport")),
-      source: text('[data-qid="dag:workspace:inspector"]').includes("tau.generic_dag_spec.v1"),
       attempt1: text('[data-qid="dag:transaction:attempt:1"]'),
       attempt2: text('[data-qid="dag:transaction:attempt:2"]'),
       creatorAdmission: creator?.getAttribute("data-admission-state"),
@@ -54,7 +61,6 @@ while (Date.now() < deadline) {
     };
   });
   observed.graph_rendered ||= state.graph;
-  observed.source_dag_visible ||= state.source;
   observed.creator_attempt_1_visible ||= Boolean(state.attempt1);
   observed.reviewer_revise_visible ||= state.attempt1.includes("REVISE");
   observed.revision_overlay_visible ||= state.attempt1.includes("revision committed");

@@ -135,3 +135,20 @@ latency, token use, or cost.
 The React application persists filter state in the URL, replaces results with server responses, and
 does not infer workflow truth. Comparison and filtering remain read-only: they cannot fork, resume,
 retry, approve, cancel, acknowledge, or mutate a run.
+
+## Integrated operator workbench
+
+The packaged workbench keeps one selected journal prefix and one selected causal subject aligned
+across the graph, compact `Why` inspector, bounded query results, comparison sides, committed
+receipts, and the event timeline. Selecting an event, query result, or comparison side navigates to
+its exact committed sequence; it does not execute or fork the run. Receipt references in a causal
+explanation open only receipts admitted to the selected prefix.
+
+The compact causal explanation is the default inspector. Immutable source DAG, compiled `DagPlan`,
+full projected state, and receipt JSON remain available as secondary evidence tabs. Desktop keeps
+the graph and inspector side by side. Mobile stacks filters, graph, attention/decision context,
+inspector, comparison, and journal timeline without creating a separate frontend reducer.
+
+The browser remains GET-only. It cannot dispatch, retry, approve, reject, cancel, terminate, edit,
+or acknowledge work. Selection synchronization is navigation over Tau-authored snapshots, not a
+mutation or an admission decision.

@@ -1,7 +1,10 @@
 import { GitBranch, Link2 } from "lucide-react";
 import type { CausalExplanation } from "../types";
 
-export function CausalDetails({ explanation }: { explanation: CausalExplanation | null }) {
+export function CausalDetails({ explanation, onReceipt }: {
+  explanation: CausalExplanation | null;
+  onReceipt: (receiptId: string) => void;
+}) {
   if (!explanation) {
     return <p className="empty-inspector">Select a graph or attention subject to inspect its cause.</p>;
   }
@@ -20,7 +23,9 @@ export function CausalDetails({ explanation }: { explanation: CausalExplanation 
       {explanation.references.map((reference, index) => <li key={`${index}:${String(reference.reference_id)}`}>
         <Link2 aria-hidden="true" size={12} />
         <span>{String(reference.kind)} · {String(reference.relation)}</span>
-        <code>{String(reference.reference_id)}</code>
+        {String(reference.kind) === "RECEIPT"
+          ? <button type="button" onClick={() => onReceipt(String(reference.reference_id))}><code>{String(reference.reference_id)}</code></button>
+          : <code>{String(reference.reference_id)}</code>}
       </li>)}
     </ol>
   </section>;

@@ -6973,3 +6973,37 @@
   local runs. It does not prove semantic agent correctness, provider/model quality, exhaustive
   attack coverage, future route correctness, cross-run analytics, executable replay, or browser
   mutation authority.
+
+# 2026-07-16: Integrated Causal Replay Workbench
+
+- The React workbench now defaults to the compact Tau-authored `Why` projection and synchronizes
+  event, bounded query, comparison-side, causal receipt, graph, and journal-prefix selections. An
+  event or comparison side navigates to its exact committed sequence; a causal `RECEIPT` reference
+  opens the committed receipt inspector. Raw source DAG, `DagPlan`, live projection, and receipt JSON
+  remain secondary read-only tabs.
+- Mobile rendering uses the same packaged application and Tau snapshot contracts. It stacks filter,
+  graph, deterministic attention/decision context, inspector, exactly-two comparison, and journal
+  timeline; long event types and entity IDs wrap instead of overlapping. No frontend scheduler
+  reducer, mutation endpoint, or inferred state was added.
+- Frontend typecheck/build and 18 tests pass, including out-of-order and browser-history receipt
+  invalidation. Backend viewer/replay proof remains `74 passed`; Ruff
+  and mypy pass. Installed-wheel verification at `/tmp/tau-workbench-final-dist/` reports
+  `status:"PASS"`, `mocked:false`, `live:true`, `provider_live:false`. Full pytest reports `2427
+  passed, 3 failed` with the same retained compliance-package, absent loop2 live-proof, and absent
+  provider command-spec fixture failures.
+- Creator-reviewer browser receipt `/tmp/tau-integrated-creator-reviewer-proof-closure.json` reports
+  `status:"PASS"`, `mocked:false`, `live:true`, `provider_live:false`, GET-only traffic, and 13/13
+  checks covering visible attempts 1/2, reviewer `REVISE`, revision commitment, unaccepted PASS
+  claim, Tau receipt admission, dependent release, refresh reconstruction, and layout containment.
+  Screenshot: `/tmp/tau-integrated-creator-reviewer-closure.png`.
+- Self-healing receipt `/tmp/tau-integrated-self-healing-proof-closure.json` reports `status:"PASS"`,
+  `mocked:false`, `live:true`, `provider_live:true`, GET-only traffic, and 14/14 checks covering
+  filters, URL persistence, attempt/correction/sequence comparison, comparison-side sequence
+  synchronization, desktop geometry, mobile ordering, and horizontal containment. Screenshots:
+  `/tmp/tau-integrated-self-healing-desktop-closure.png` and
+  `/tmp/tau-integrated-self-healing-mobile-closure.png`. Fresh UI marker:
+  `/tmp/codex-ui-verification/tau-causal-replay/tau-workbench-closure/20260716T160429Z.png`.
+- These artifacts prove the exercised local read-only projection and navigation behavior. They do
+  not prove agent truthfulness, semantic correctness, provider/model quality, exhaustive attack
+  coverage, future route correctness, cross-run analytics, executable replay, or browser mutation
+  authority.

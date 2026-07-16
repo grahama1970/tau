@@ -1,5 +1,5 @@
 import { Filter, Search, X } from "lucide-react";
-import type { DagQueryResult } from "../types";
+import type { DagQueryResult, QueryItem } from "../types";
 
 export type FilterState = { q: string; entityKind: string; state: string };
 
@@ -9,7 +9,7 @@ export function FilterBar({ value, result, onChange, onApply, onClear, onSelect 
   onChange: (next: FilterState) => void;
   onApply: () => void;
   onClear: () => void;
-  onSelect: (kind: string, id: string) => void;
+  onSelect: (item: QueryItem) => void;
 }) {
   return <section className="filter-bar" aria-label="Bounded projection filters" data-qid="dag:filters">
     <Filter aria-hidden="true" size={15} />
@@ -31,7 +31,7 @@ export function FilterBar({ value, result, onChange, onApply, onClear, onSelect 
     <span className="filter-bar__scope">redacted projections only</span>
     {result && <div className="filter-results" data-qid="dag:filter:results">
       <strong>{result.total_match_count} matches · {result.result_count} shown</strong>
-      {result.items.slice(0, 5).map((item) => <button key={`${item.entity_kind}:${item.entity_id}`} type="button" onClick={() => onSelect(item.entity_kind, item.entity_id)}>
+      {result.items.slice(0, 5).map((item) => <button key={`${item.entity_kind}:${item.entity_id}`} type="button" onClick={() => onSelect(item)}>
         <span>{item.entity_kind}</span><code>{item.preview}</code><small>#{item.sequence}</small>
       </button>)}
     </div>}
