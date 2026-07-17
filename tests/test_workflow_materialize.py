@@ -7,10 +7,42 @@ import pytest
 from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.workflows.catalog import get_workflow
 from tau_coding.workflows.materialize import (
+    materialize_approved_release_bundle,
     materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
 )
+
+
+def test_release_materializer_writes_mixed_retry_approval_dag(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    materialized = materialize_approved_release_bundle(
+        definition=get_workflow("approved-release-bundle"),
+        repo_path=repo,
+        human_goal="Publish an approved release bundle.",
+        publish_path=tmp_path / "published",
+        run_dir=tmp_path / "run",
+    )
+    dag = json.loads(materialized.source_dag_path.read_text(encoding="utf-8"))
+
+    assert dag["max_concurrency"] == 3
+    assert dag["workflow"]["topology"] == "MIXED_RETRY_APPROVAL"
+    assert [node["node_id"] for node in dag["nodes"]] == [
+        "prepare-release",
+        "draft-release-notes",
+        "build-release-manifest",
+        "verify-release-policy",
+        "assemble-release-bundle",
+        "publish-approved-release",
+        "finalize-approved-release",
+    ]
+    assert dag["nodes"][1]["max_attempts"] == 2
+    assert dag["nodes"][1]["transaction"]["acceptance"] == {
+        "require_output_change_after_revise": True
+    }
+    approval = dag["nodes"][5]["transaction"]["continuation"]["approval"]
+    assert approval["action"] == "generic_dag_transaction_continue"
+    assert not (tmp_path / "run" / "results").exists()
 
 
 def test_evidence_map_materializer_writes_locked_fan_out_fan_in_dag(

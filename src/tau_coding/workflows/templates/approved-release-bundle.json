@@ -1,0 +1,62 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "${RUN_ID}",
+  "run_dir": "${RUN_DIR}",
+  "goal": "${GOAL_OBJECT}",
+  "goal_hash": "${GOAL_HASH}",
+  "workflow": "${WORKFLOW_METADATA}",
+  "max_concurrency": 3,
+  "nodes": [
+    {
+      "node_id": "prepare-release", "role": "Prepare release context",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "prepare", "--request", "${REQUEST_PATH}", "--output", "${PREPARE_PATH}", "--receipt", "${PREPARE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": [], "accepted_context_from": [], "receipt_path": "${PREPARE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "draft-release-notes", "role": "Draft and review release notes",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "produce-notes", "--request", "${REQUEST_PATH}", "--receipt", "${NOTES_RECEIPT}"],
+      "depends_on": ["prepare-release"], "accepted_context_from": ["prepare-release"], "receipt_path": "${NOTES_RECEIPT}", "work_order_path": "${NOTES_WORK_ORDER}", "timeout_seconds": 30, "max_attempts": 2,
+      "transaction": {
+        "schema": "tau.generic_artifact_transaction.v1", "transaction_id": "approved-release-notes", "artifact_root": "${NOTES_ARTIFACT_ROOT}", "producer_id": "release-notes-producer",
+        "validator": {"validator_id": "release-notes-validator", "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "validate-transaction"]},
+        "reviewer": {"reviewer_id": "release-notes-reviewer", "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "review-notes"], "timeout_seconds": 30},
+        "acceptance": {"require_output_change_after_revise": true}
+      }
+    },
+    {
+      "node_id": "build-release-manifest", "role": "Build release manifest",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "manifest", "--request", "${REQUEST_PATH}", "--output", "${MANIFEST_PATH}", "--receipt", "${MANIFEST_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["prepare-release"], "accepted_context_from": ["prepare-release"], "receipt_path": "${MANIFEST_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "verify-release-policy", "role": "Verify release policy",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "policy", "--request", "${REQUEST_PATH}", "--output", "${POLICY_PATH}", "--receipt", "${POLICY_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["prepare-release"], "accepted_context_from": ["prepare-release"], "receipt_path": "${POLICY_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "assemble-release-bundle", "role": "Join accepted release branches",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "assemble", "--request", "${REQUEST_PATH}", "--output", "${ASSEMBLED_PATH}", "--receipt", "${ASSEMBLE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["draft-release-notes", "build-release-manifest", "verify-release-policy"], "accepted_context_from": ["draft-release-notes", "build-release-manifest", "verify-release-policy"], "receipt_path": "${ASSEMBLE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "publish-approved-release", "role": "Publish exact approved release bundle",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "produce-bundle", "--request", "${REQUEST_PATH}", "--receipt", "${PUBLISH_RECEIPT}"],
+      "depends_on": ["assemble-release-bundle"], "accepted_context_from": ["assemble-release-bundle"], "receipt_path": "${PUBLISH_RECEIPT}", "work_order_path": "${PUBLISH_WORK_ORDER}", "timeout_seconds": 30, "max_attempts": 1,
+      "transaction": {
+        "schema": "tau.generic_artifact_transaction.v1", "transaction_id": "approved-release-publication", "artifact_root": "${PUBLISH_ARTIFACT_ROOT}", "producer_id": "release-bundle-producer",
+        "validator": {"validator_id": "release-bundle-validator", "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "validate-transaction"]},
+        "reviewer": {"reviewer_id": "release-bundle-reviewer", "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "review-bundle"], "timeout_seconds": 30},
+        "continuation": {
+          "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "publish", "--request", "${REQUEST_PATH}", "--json-output", "${RESULT_JSON}", "--markdown-output", "${RESULT_MARKDOWN}", "--rollback-receipt", "${ROLLBACK_RECEIPT}"],
+          "timeout_seconds": 30,
+          "approval": {"action": "generic_dag_transaction_continue", "packet_path": "${APPROVAL_PACKET}"}
+        }
+      }
+    },
+    {
+      "node_id": "finalize-approved-release", "role": "Project approved release result",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.approved_release_bundle", "finalize", "--request", "${REQUEST_PATH}", "--json-output", "${RESULT_JSON}", "--receipt", "${FINALIZE_RECEIPT}"],
+      "depends_on": ["publish-approved-release"], "accepted_context_from": ["publish-approved-release"], "receipt_path": "${FINALIZE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    }
+  ]
+}

@@ -265,6 +265,9 @@ from tau_coding.workflows.catalog import (
     workflow_catalog_payload,
 )
 from tau_coding.workflows.runner import (
+    approve_approved_release_bundle,
+    resume_approved_release_bundle,
+    run_approved_release_bundle_workflow,
     run_repository_evidence_map_workflow,
     run_repository_readiness_workflow,
     run_tau_operator_reference_workflow,
@@ -333,6 +336,7 @@ def workflows_run_command(
     ] = None,
     require_clean: Annotated[bool, typer.Option("--require-clean")] = False,
     require_tests: Annotated[bool, typer.Option("--require-tests")] = False,
+    publish_path: Annotated[Path | None, typer.Option("--publish-path")] = None,
     open_viewer: Annotated[bool, typer.Option("--open-viewer")] = False,
     no_browser_open: Annotated[bool, typer.Option("--no-browser-open")] = False,
     viewer_hold_seconds: Annotated[
@@ -341,13 +345,26 @@ def workflows_run_command(
     ] = None,
 ) -> None:
     if workflow_id not in {
+        "approved-release-bundle",
         "repository-readiness",
         "repository-evidence-map",
         "tau-operator-reference",
     }:
         raise typer.BadParameter(f"unknown workflow_id: {workflow_id}")
     try:
-        if workflow_id == "repository-readiness":
+        if workflow_id == "approved-release-bundle":
+            if goal is None or publish_path is None:
+                raise RuntimeError("approved-release-bundle requires --goal and --publish-path")
+            payload = run_approved_release_bundle_workflow(
+                repo_path=repo,
+                human_goal=goal,
+                publish_path=publish_path,
+                run_dir=run_dir,
+                open_viewer=open_viewer,
+                browser_open=not no_browser_open,
+                viewer_hold_seconds=viewer_hold_seconds,
+            )
+        elif workflow_id == "repository-readiness":
             if goal is None:
                 raise RuntimeError("repository-readiness requires --goal")
             payload = run_repository_readiness_workflow(
@@ -380,6 +397,30 @@ def workflows_run_command(
                 browser_open=not no_browser_open,
                 viewer_hold_seconds=viewer_hold_seconds,
             )
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
+
+
+@workflows_app.command("approve")
+def workflows_approve_command(
+    run_dir: Annotated[Path, typer.Argument()],
+) -> None:
+    try:
+        payload = approve_approved_release_bundle(run_dir=run_dir)
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+
+
+@workflows_app.command("resume")
+def workflows_resume_command(
+    run_dir: Annotated[Path, typer.Argument()],
+) -> None:
+    try:
+        payload = resume_approved_release_bundle(run_dir=run_dir)
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -3577,12 +3618,22 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         if len(positional) != 1:
             raise RuntimeError("Usage: tau workflows describe <workflow-id> [--json]")
         return get_workflow(positional[0]).public_payload(), json_output
+    if subcommand in {"approve", "resume"}:
+        if len(remaining) != 1:
+            raise RuntimeError(f"Usage: tau workflows {subcommand} <run-dir>")
+        payload = (
+            approve_approved_release_bundle(run_dir=Path(remaining[0]))
+            if subcommand == "approve"
+            else resume_approved_release_bundle(run_dir=Path(remaining[0]))
+        )
+        return dict(payload), True
     if subcommand != "run":
         raise RuntimeError(f"unknown workflows subcommand: {subcommand}")
     if not remaining:
         raise RuntimeError("Usage: tau workflows run <workflow-id> [options]")
     workflow_id = remaining[0]
     if workflow_id not in {
+        "approved-release-bundle",
         "repository-readiness",
         "repository-evidence-map",
         "tau-operator-reference",
@@ -3596,6 +3647,7 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         "--goal",
         "--required-workflow",
         "--run-dir",
+        "--publish-path",
         "--viewer-hold-seconds",
     }
     flag_options = {
@@ -3615,8 +3667,14 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         values[argument] = remaining[index + 1]
         index += 2
     required_options = ["--repo", "--run-dir"]
-    if workflow_id in {"repository-readiness", "repository-evidence-map"}:
+    if workflow_id in {
+        "approved-release-bundle",
+        "repository-readiness",
+        "repository-evidence-map",
+    }:
         required_options.append("--goal")
+    if workflow_id == "approved-release-bundle":
+        required_options.append("--publish-path")
     missing = [option for option in required_options if option not in values]
     if missing:
         raise RuntimeError(f"workflows run missing required option: {missing[0]}")
@@ -3625,7 +3683,17 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         hold_seconds = float(hold) if hold is not None else None
     except ValueError as exc:
         raise RuntimeError("--viewer-hold-seconds must be a number") from exc
-    if workflow_id == "repository-readiness":
+    if workflow_id == "approved-release-bundle":
+        payload = run_approved_release_bundle_workflow(
+            repo_path=Path(values["--repo"]),
+            human_goal=values["--goal"],
+            publish_path=Path(values["--publish-path"]),
+            run_dir=Path(values["--run-dir"]),
+            open_viewer="--open-viewer" in flags,
+            browser_open="--no-browser-open" not in flags,
+            viewer_hold_seconds=hold_seconds,
+        )
+    elif workflow_id == "repository-readiness":
         payload = run_repository_readiness_workflow(
             repo_path=Path(values["--repo"]),
             human_goal=values["--goal"],

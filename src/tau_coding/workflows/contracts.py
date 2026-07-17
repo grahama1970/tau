@@ -34,7 +34,12 @@ class WorkflowDefinition:
             raise RuntimeError("workflow definition workflow_id is invalid")
         if type(self.workflow_version) is not int or self.workflow_version < 1:
             raise RuntimeError("workflow definition workflow_version must be positive")
-        if self.topology not in {"LINEAR", "MULTI_STEP_SEQUENTIAL", "FAN_OUT_FAN_IN"}:
+        if self.topology not in {
+            "LINEAR",
+            "MULTI_STEP_SEQUENTIAL",
+            "FAN_OUT_FAN_IN",
+            "MIXED_RETRY_APPROVAL",
+        }:
             raise RuntimeError("workflow definition topology is unsupported")
         if self.availability != "AVAILABLE":
             raise RuntimeError("workflow definition availability must be AVAILABLE")

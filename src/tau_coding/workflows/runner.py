@@ -16,10 +16,104 @@ from tau_coding.workflows.catalog import get_workflow
 from tau_coding.workflows.contracts import WORKFLOW_RUN_RECEIPT_SCHEMA
 from tau_coding.workflows.materialize import (
     MaterializedWorkflow,
+    materialize_approved_release_bundle,
     materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
 )
+
+
+def run_approved_release_bundle_workflow(
+    *,
+    repo_path: Path,
+    human_goal: str,
+    publish_path: Path,
+    run_dir: Path,
+    open_viewer: bool,
+    browser_open: bool,
+    viewer_hold_seconds: float | None,
+    force_terminal_failure: bool = False,
+    simulate_publish_verification_failure: bool = False,
+    step_delay_seconds: float = 0.0,
+) -> dict[str, object]:
+    materialized = materialize_approved_release_bundle(
+        definition=get_workflow("approved-release-bundle"),
+        repo_path=repo_path,
+        human_goal=human_goal,
+        publish_path=publish_path,
+        run_dir=run_dir,
+        force_terminal_failure=force_terminal_failure,
+        simulate_publish_verification_failure=simulate_publish_verification_failure,
+        step_delay_seconds=step_delay_seconds,
+    )
+    return _run_materialized_workflow(
+        materialized=materialized,
+        result_filename="approved-release-bundle.json",
+        open_viewer=open_viewer,
+        browser_open=browser_open,
+        viewer_hold_seconds=viewer_hold_seconds,
+    )
+
+
+def approve_approved_release_bundle(*, run_dir: Path) -> dict[str, object]:
+    resolved = run_dir.expanduser().resolve()
+    gate_path = (
+        resolved
+        / "transactions"
+        / "publish-approved-release"
+        / "approval-gate-receipt.json"
+    )
+    gate = _read_object(gate_path, "approval gate receipt")
+    target = gate.get("expected_target")
+    if not isinstance(target, dict):
+        raise RuntimeError("approval gate receipt has no exact expected_target")
+    packet = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "actor": {"id": "human:tau-operator", "auth_method": "manual"},
+        "action": "generic_dag_transaction_continue",
+        "target": target,
+        "reason": "Human approved the exact accepted release bundle for publication.",
+        "evidence": [str(gate_path)],
+        "nonce": f"approved-release:{target.get('accepted_manifest_sha256')}",
+        "signature": "declared-manual-approval",
+    }
+    packet_path = resolved / "input" / "approval.json"
+    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "schema": "tau.workflow_approval_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "workflow_id": "approved-release-bundle",
+        "run_dir": str(resolved),
+        "approval_packet_path": str(packet_path),
+        "target": target,
+    }
+
+
+def resume_approved_release_bundle(*, run_dir: Path) -> dict[str, object]:
+    resolved = run_dir.expanduser().resolve()
+    request_path = resolved / "input" / "approved-release-request.json"
+    request = _read_object(request_path, "approved release request")
+    goal = request.get("goal")
+    if not isinstance(goal, dict):
+        raise RuntimeError("approved release request goal is missing")
+    definition = get_workflow("approved-release-bundle")
+    materialized = MaterializedWorkflow(
+        definition=definition,
+        request_path=request_path,
+        source_dag_path=resolved / "workflow" / "dag.json",
+        run_dir=resolved,
+        run_id=str(_read_object(resolved / "workflow" / "dag.json", "workflow DAG")["run_id"]),
+        goal=goal,
+    )
+    dag_receipt = run_generic_dag(spec_path=materialized.source_dag_path, resume=True)
+    return _write_workflow_receipt(
+        materialized,
+        dag_receipt,
+        result_filename="approved-release-bundle.json",
+        viewer=None,
+    )
 
 
 def run_repository_evidence_map_workflow(
@@ -230,3 +324,13 @@ def _write_workflow_receipt(
     path = materialized.run_dir / "workflow-receipt.json"
     path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return receipt
+
+
+def _read_object(path: Path, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} is unavailable: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} must be an object")
+    return payload

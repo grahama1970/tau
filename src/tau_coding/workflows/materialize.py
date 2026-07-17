@@ -70,6 +70,12 @@ EVIDENCE_MAP_COMPLETION_CRITERIA = [
     "Analyze documentation, tests, and package metadata concurrently.",
     "Publish a repository evidence map only after every required branch is accepted.",
 ]
+APPROVED_RELEASE_COMPLETION_CRITERIA = [
+    "Prepare the exact requested Git repository without mutation.",
+    "Accept revised release notes, a release manifest, and release policy concurrently.",
+    "Stop before publication until the exact accepted bundle is approved by a human.",
+    "Publish one hash-bound release bundle with rollback on failed verification.",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -372,6 +378,137 @@ def materialize_repository_evidence_map(
         "${TESTS_RECEIPT}": str(receipts / "analyze-tests.json"),
         "${PACKAGE_RECEIPT}": str(receipts / "analyze-package.json"),
         "${PUBLISH_RECEIPT}": str(receipts / "publish-evidence-map.json"),
+        "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
+    }
+    source_dag_path = resolved_run_dir / "workflow" / "dag.json"
+    _write_json(source_dag_path, _replace_tokens(template, replacements))
+    return MaterializedWorkflow(
+        definition=definition,
+        request_path=request_path,
+        source_dag_path=source_dag_path,
+        run_dir=resolved_run_dir,
+        run_id=run_id,
+        goal=goal,
+    )
+
+
+def materialize_approved_release_bundle(
+    *,
+    definition: WorkflowDefinition,
+    repo_path: Path,
+    human_goal: str,
+    publish_path: Path,
+    run_dir: Path,
+    force_terminal_failure: bool = False,
+    simulate_publish_verification_failure: bool = False,
+    step_delay_seconds: float = 0.0,
+) -> MaterializedWorkflow:
+    if definition.workflow_id != "approved-release-bundle":
+        raise RuntimeError("materializer supports only approved-release-bundle")
+    resolved_repo = repo_path.expanduser().resolve()
+    if not resolved_repo.is_dir():
+        raise RuntimeError(f"repository path is not a directory: {resolved_repo}")
+    if not human_goal.strip():
+        raise RuntimeError("workflow goal must be a non-empty string")
+    if step_delay_seconds < 0:
+        raise RuntimeError("step_delay_seconds must be non-negative")
+    resolved_run_dir = run_dir.expanduser().resolve()
+    resolved_publish_path = publish_path.expanduser().resolve()
+    if resolved_publish_path == resolved_repo or resolved_repo in resolved_publish_path.parents:
+        raise RuntimeError("publish path must be outside the inspected repository")
+    if resolved_publish_path.exists():
+        raise RuntimeError(f"publish path already exists: {resolved_publish_path}")
+    if (resolved_run_dir / "dag-run.sqlite3").exists():
+        raise RuntimeError(f"workflow run already exists: {resolved_run_dir}")
+
+    request_seed = {
+        "schema": "tau.approved_release_request.v1",
+        "repo_path": str(resolved_repo),
+        "human_goal": human_goal.strip(),
+        "publish_path": str(resolved_publish_path),
+        "force_terminal_failure": force_terminal_failure,
+        "simulate_publish_verification_failure": simulate_publish_verification_failure,
+        "step_delay_seconds": step_delay_seconds,
+    }
+    request_sha = canonical_sha256(request_seed)
+    goal_without_hash: dict[str, object] = {
+        "goal_id": f"approved-release-bundle:{request_sha.removeprefix('sha256:')[:12]}",
+        "goal_version": 1,
+        "summary": human_goal.strip(),
+        "completion_criteria": list(APPROVED_RELEASE_COMPLETION_CRITERIA),
+    }
+    goal = {**goal_without_hash, "goal_hash": canonical_sha256(goal_without_hash)}
+    request = {**request_seed, "request_sha256": request_sha, "goal": goal}
+    run_id = f"approved-release-bundle-{request_sha.removeprefix('sha256:')[:12]}"
+    for relative in ("workflow", "input", "receipts", "intermediate"):
+        (resolved_run_dir / relative).mkdir(parents=True, exist_ok=True)
+    request_path = resolved_run_dir / "input" / "approved-release-request.json"
+    _write_json(request_path, request)
+    notes_work_order = resolved_run_dir / "input" / "release-notes-work-order.json"
+    publish_work_order = resolved_run_dir / "input" / "release-publication-work-order.json"
+    transaction_artifacts = resolved_run_dir / "transaction-artifacts"
+    _write_json(
+        notes_work_order,
+        {
+            "schema": "tau.release_notes_work_order.v1",
+            "goal": goal,
+            "artifact_root": str(transaction_artifacts / "release-notes"),
+        },
+    )
+    _write_json(
+        publish_work_order,
+        {
+            "schema": "tau.release_publication_work_order.v1",
+            "publish_path": str(resolved_publish_path),
+            "artifact_root": str(transaction_artifacts / "release-publication"),
+            "goal": goal,
+        },
+    )
+
+    template_resource = resources.files("tau_coding.workflows").joinpath(definition.template)
+    template = json.loads(template_resource.read_text(encoding="utf-8"))
+    if not isinstance(template, dict):
+        raise RuntimeError("approved-release-bundle template must be an object")
+    workflow_metadata = {
+        "schema": WORKFLOW_METADATA_SCHEMA,
+        "workflow_id": definition.workflow_id,
+        "workflow_version": definition.workflow_version,
+        "title": definition.title,
+        "summary": definition.summary,
+        "topology": definition.topology,
+        "result_node_id": definition.result_node_id,
+        "result_schema": definition.result_schema,
+    }
+    intermediate = resolved_run_dir / "intermediate"
+    receipts = resolved_run_dir / "receipts"
+    transactions = transaction_artifacts
+    replacements: dict[str, object] = {
+        "${RUN_ID}": run_id,
+        "${RUN_DIR}": str(resolved_run_dir),
+        "${GOAL_OBJECT}": goal,
+        "${GOAL_HASH}": goal["goal_hash"],
+        "${WORKFLOW_METADATA}": workflow_metadata,
+        "${PYTHON}": sys.executable,
+        "${REQUEST_PATH}": str(request_path),
+        "${PREPARE_PATH}": str(intermediate / "release-preparation.json"),
+        "${MANIFEST_PATH}": str(intermediate / "release-manifest.json"),
+        "${POLICY_PATH}": str(intermediate / "release-policy.json"),
+        "${ASSEMBLED_PATH}": str(intermediate / "assembled-release-bundle.json"),
+        "${PREPARE_RECEIPT}": str(receipts / "prepare-release.json"),
+        "${NOTES_RECEIPT}": str(receipts / "draft-release-notes.json"),
+        "${MANIFEST_RECEIPT}": str(receipts / "build-release-manifest.json"),
+        "${POLICY_RECEIPT}": str(receipts / "verify-release-policy.json"),
+        "${ASSEMBLE_RECEIPT}": str(receipts / "assemble-release-bundle.json"),
+        "${PUBLISH_RECEIPT}": str(receipts / "publish-approved-release.json"),
+        "${FINALIZE_RECEIPT}": str(receipts / "finalize-approved-release.json"),
+        "${NOTES_WORK_ORDER}": str(notes_work_order),
+        "${PUBLISH_WORK_ORDER}": str(publish_work_order),
+        "${NOTES_ARTIFACT_ROOT}": str(transactions / "release-notes"),
+        "${PUBLISH_ARTIFACT_ROOT}": str(transactions / "release-publication"),
+        "${APPROVAL_PACKET}": str(resolved_run_dir / "input" / "approval.json"),
+        "${RESULT_JSON}": str(resolved_run_dir / "results" / "approved-release-bundle.json"),
+        "${RESULT_MARKDOWN}": str(resolved_run_dir / "results" / "approved-release-bundle.md"),
+        "${ROLLBACK_RECEIPT}": str(receipts / "publication-rollback.json"),
         "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
     }
     source_dag_path = resolved_run_dir / "workflow" / "dag.json"

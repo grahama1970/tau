@@ -20,6 +20,7 @@ def test_workflows_list_and_describe() -> None:
         workflow["workflow_id"]
         for workflow in json.loads(listed.stdout)["workflows"]
     ] == [
+        "approved-release-bundle",
         "repository-evidence-map",
         "repository-readiness",
         "tau-operator-reference",
@@ -54,6 +55,38 @@ def test_workflows_describes_evidence_map() -> None:
 
     assert result.exit_code == 0, result.output
     assert json.loads(result.stdout)["topology"] == "FAN_OUT_FAN_IN"
+
+
+def test_workflows_approve_and_resume_release_bundle(tmp_path: Path) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    run_dir = tmp_path / "run"
+    publish_path = tmp_path / "published"
+    runner = CliRunner()
+    first = runner.invoke(
+        app,
+        [
+            "workflows",
+            "run",
+            "approved-release-bundle",
+            "--repo",
+            str(repo),
+            "--goal",
+            "Publish an approved release bundle.",
+            "--publish-path",
+            str(publish_path),
+            "--run-dir",
+            str(run_dir),
+        ],
+    )
+    approved = runner.invoke(app, ["workflows", "approve", str(run_dir)])
+    resumed = runner.invoke(app, ["workflows", "resume", str(run_dir)])
+
+    assert first.exit_code == 1
+    assert json.loads(first.stdout)["status"] == "BLOCKED"
+    assert approved.exit_code == 0, approved.output
+    assert resumed.exit_code == 0, resumed.output
+    assert json.loads(resumed.stdout)["result"]["status"] == "APPROVED"
+    assert (publish_path / "approved-release-bundle.json").is_file()
 
 
 def test_workflows_run_executes_packaged_definition(tmp_path: Path) -> None:
