@@ -19,7 +19,6 @@ from typing import Any
 WORKFLOW_ID = "tau-operator-reference"
 REQUIRED_WORKFLOW = "repository-readiness"
 ABSENT_WORKFLOW = "deliberately-absent-workflow"
-HUMAN_GOAL = "Produce a validated operator reference for this Tau installation."
 NODE_IDS = (
     "collect-operator-sources",
     "capture-operator-cli",
@@ -131,14 +130,20 @@ if os.environ.get("TAU_PROOF_NO_NETWORK") == "1":
     return path
 
 
-def _workflow_command(bin_dir: Path, *, required_workflow: str, run_dir: Path) -> list[str]:
+def _workflow_command(
+    bin_dir: Path,
+    *,
+    repo_path: Path,
+    required_workflow: str,
+    run_dir: Path,
+) -> list[str]:
     return [
         str(bin_dir / "tau"),
         "workflows",
         "run",
         WORKFLOW_ID,
-        "--goal",
-        HUMAN_GOAL,
+        "--repo",
+        str(repo_path),
         "--required-workflow",
         required_workflow,
         "--run-dir",
@@ -185,6 +190,7 @@ def main() -> int:
     args = parser.parse_args()
     wheel = args.wheel.expanduser().resolve()
     output = args.output.expanduser().resolve()
+    repo_root = Path(__file__).resolve().parents[1]
     output.parent.mkdir(parents=True, exist_ok=True)
     if not wheel.is_file():
         raise RuntimeError(f"operator_reference_wheel_missing:{wheel}")
@@ -224,6 +230,7 @@ def main() -> int:
                 "HTTPS_PROXY": "http://127.0.0.1:9",
                 "ALL_PROXY": "http://127.0.0.1:9",
                 "NO_PROXY": "127.0.0.1,localhost",
+                "PATH": f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}",
             }
         )
         _run(
@@ -294,7 +301,12 @@ def main() -> int:
         for run_number in (1, 2):
             run_dir = root / f"positive-run-{run_number}"
             process = _run(
-                _workflow_command(bin_dir, required_workflow=REQUIRED_WORKFLOW, run_dir=run_dir),
+                _workflow_command(
+                    bin_dir,
+                    repo_path=repo_root,
+                    required_workflow=REQUIRED_WORKFLOW,
+                    run_dir=run_dir,
+                ),
                 cwd=root,
                 env=clean_env,
             )
@@ -304,6 +316,13 @@ def main() -> int:
             if run_receipt.get("status") != "PASS" or run_receipt.get("ok") is not True:
                 raise RuntimeError("installed_operator_reference_positive_not_pass")
             result_json, result_markdown, result = _positive_result(run_dir)
+            cli_evidence = result.get("cli_evidence")
+            installed_tau = (bin_dir / "tau").resolve()
+            if (
+                not isinstance(cli_evidence, dict)
+                or Path(str(cli_evidence.get("tau_executable"))).resolve() != installed_tau
+            ):
+                raise RuntimeError("installed_operator_reference_cli_probe_not_from_wheel")
             positive_runs.append(
                 {
                     "run_receipt": run_receipt,
@@ -321,7 +340,12 @@ def main() -> int:
 
         negative_run_dir = root / "negative-run"
         negative_process = _run(
-            _workflow_command(bin_dir, required_workflow=ABSENT_WORKFLOW, run_dir=negative_run_dir),
+            _workflow_command(
+                bin_dir,
+                repo_path=repo_root,
+                required_workflow=ABSENT_WORKFLOW,
+                run_dir=negative_run_dir,
+            ),
             cwd=root,
             env=clean_env,
             expected_codes=(0, 1),
@@ -332,8 +356,11 @@ def main() -> int:
         if negative_receipt.get("status") != "BLOCKED" or negative_receipt.get("ok") is not False:
             raise RuntimeError("installed_operator_reference_negative_not_blocked")
         negative_nodes = _node_receipts(negative_run_dir, negative=True)
-        result_files = sorted(
-            path.name for path in (negative_run_dir / "results").iterdir() if path.is_file()
+        results_dir = negative_run_dir / "results"
+        result_files = (
+            sorted(path.name for path in results_dir.iterdir() if path.is_file())
+            if results_dir.is_dir()
+            else []
         )
         if result_files:
             raise RuntimeError("installed_operator_reference_negative_results_present")

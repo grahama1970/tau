@@ -97,6 +97,7 @@ const snapshot = async () => page.evaluate((ids) => {
     return {
       state: element?.getAttribute("data-node-state") || null,
       admission: element?.getAttribute("data-admission-state") || null,
+      blocker: text(`dag:node:${nodeId}:blocker`),
       text: element?.textContent?.trim() || "",
     };
   };
@@ -110,7 +111,6 @@ const snapshot = async () => page.evaluate((ids) => {
   };
 }, nodeIds);
 
-const hasExactCode = (text, code) => text.split(/[^a-zA-Z0-9_-]+/).includes(code);
 const startedAt = Date.now();
 const deadline = startedAt + 30000;
 let latest = null;
@@ -128,7 +128,9 @@ while (Date.now() < deadline) {
   const validate = latest.nodes["validate-operator-reference"];
   checks.workflow_title_visible ||= latest.workflow.includes("Tau Operator Reference");
   checks.goal_summary_visible ||=
-    latest.goal.includes("Produce a validated operator reference for this Tau installation.");
+    latest.goal.includes(
+      "Generate a validated Tau operator reference from fixed local repository sources and versioned public CLI evidence.",
+    );
   checks.collect_running_observed ||= collect.state === "running";
   checks.collect_accepted_observed ||=
     collect.state === "settled" && collect.admission === "accepted";
@@ -148,8 +150,7 @@ while (Date.now() < deadline) {
     && latest.result.includes("sha256:");
   checks.validate_blocked_observed ||= validate.state === "blocked";
   checks.required_workflow_missing_exact ||=
-    hasExactCode(latest.blocker, "required_workflow_missing")
-    || hasExactCode(validate.text, "required_workflow_missing");
+    validate.blocker === "required_workflow_missing";
   checks.first_three_accepted ||=
     [collect, capture, compose].every(
       (node) => node.state === "settled" && node.admission === "accepted",

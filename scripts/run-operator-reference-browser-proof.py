@@ -25,7 +25,6 @@ from tau_coding.workflows.catalog import get_workflow
 WORKFLOW_ID = "tau-operator-reference"
 POSITIVE_REQUIRED_WORKFLOW = "repository-readiness"
 NEGATIVE_REQUIRED_WORKFLOW = "deliberately-absent-workflow"
-HUMAN_GOAL = "Produce a validated operator reference for this Tau installation."
 NODE_IDS = (
     "collect-operator-sources",
     "capture-operator-cli",
@@ -46,12 +45,12 @@ def _materializer() -> Callable[..., Any]:
     raise RuntimeError("operator_reference_materializer_missing")
 
 
-def _materialize(*, run_dir: Path, required_workflow: str) -> Any:
+def _materialize(*, repo_path: Path, run_dir: Path, required_workflow: str) -> Any:
     materializer = _materializer()
     parameters = inspect.signature(materializer).parameters
     arguments: dict[str, object] = {
         "definition": get_workflow(WORKFLOW_ID),
-        "human_goal": HUMAN_GOAL,
+        "repo_path": repo_path,
         "run_dir": run_dir,
         "step_delay_seconds": 0.6,
     }
@@ -149,7 +148,11 @@ def _proof_scenario(
     mobile_screenshot: Path,
     node_root: str,
 ) -> dict[str, object]:
-    materialized = _materialize(run_dir=run_dir, required_workflow=required_workflow)
+    materialized = _materialize(
+        repo_path=repo_root,
+        run_dir=run_dir,
+        required_workflow=required_workflow,
+    )
     result: dict[str, object] = {}
     failure: list[BaseException] = []
     handshake_dir = run_dir.parent / f".{scenario}-browser-handshake"
@@ -218,7 +221,12 @@ def _proof_scenario(
     expected_artifact_count = 2 if scenario == "positive" else 0
     if len(artifacts) != expected_artifact_count:
         raise RuntimeError(f"operator_reference_result_artifact_count:{scenario}")
-    if scenario == "negative" and any(path.is_file() for path in (run_dir / "results").iterdir()):
+    results_dir = run_dir / "results"
+    if (
+        scenario == "negative"
+        and results_dir.is_dir()
+        and any(path.is_file() for path in results_dir.iterdir())
+    ):
         raise RuntimeError("operator_reference_negative_results_present")
     node_receipts = _validate_node_receipts(run_dir, scenario=scenario)
     receipt.update(
