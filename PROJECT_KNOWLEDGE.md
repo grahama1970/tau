@@ -7052,3 +7052,31 @@
   not prove agent truthfulness, semantic correctness, provider/model quality, exhaustive attack
   coverage, future route correctness, cross-run analytics, executable replay, or browser mutation
   authority.
+
+# 2026-07-17: Canonical Workflow Slice 04 - Approved Release Bundle
+
+- `approved-release-bundle` is the fourth packaged canonical workflow. Its seven-node
+  `MIXED_RETRY_APPROVAL` graph runs three branches concurrently after preparation, records a
+  deterministic release-note `REVISE -> PASS` transaction, joins only accepted branch outputs,
+  and stops at an exact human approval boundary before one external publication effect.
+- Launch with `uv run tau workflows run approved-release-bundle --repo <repo> --goal <goal>
+  --publish-path <file> --run-dir <run-dir> --open-viewer`. Continue with
+  `uv run tau workflows approve <run-dir>` and `uv run tau workflows resume <run-dir>`.
+- The successful deterministic run preserved the accepted manifest hash across resume, published
+  JSON and Markdown whose hashes matched the final result artifacts, and admitted all seven nodes.
+  Missing approval produced `APPROVAL_REQUIRED` with no publication. Terminal policy rejection
+  prevents assembly and publication. Failed post-write verification removes the target and records
+  rollback.
+- Backend proof: Ruff and mypy pass; the focused plus generic DAG/viewer regression set reports
+  `119 passed`. Frontend typecheck/build and `23 passed` succeed.
+- Browser receipt `/tmp/tau-approved-release-browser-proof.json` reports `PASS`,
+  `mocked:false`, `live:true`, `provider_live:false`, 13/13 checks, GET-only traffic, no manual
+  reload, visible parallel execution, retry, approval wait, resume, publication, final result, and
+  desktop/mobile geometry. Screenshots are `/tmp/tau-approved-release-desktop.png` and
+  `/tmp/tau-approved-release-mobile.png`.
+- Installed-wheel receipt `/tmp/tau-approved-release-wheel-proof.json` reports `PASS` and exercises
+  catalog discovery, approval blocking, exact approval, resume, result publication, and hash
+  equality from the built wheel without the source checkout on `PYTHONPATH`.
+- This proves the exercised local workflow and viewer path. It does not prove provider/model
+  quality, deployment readiness, every filesystem failure mode, or canonical workflow 05's
+  crash-safe targeted repair.

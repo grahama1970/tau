@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify repository-evidence-map from an offline installed Tau wheel."""
+"""Verify approved-release-bundle from an offline installed Tau wheel."""
 
 from __future__ import annotations
 
@@ -28,10 +28,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     wheel = args.wheel.resolve()
-    output = args.output.resolve()
-    if not wheel.is_file():
-        raise RuntimeError(f"wheel missing: {wheel}")
-    with tempfile.TemporaryDirectory(prefix="tau-evidence-map-wheel-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="tau-approved-release-wheel-") as temporary:
         root = Path(temporary)
         environment = root / "venv"
         venv.EnvBuilder(with_pip=True).create(environment)
@@ -85,43 +82,45 @@ def main() -> int:
         ).resolve()
         if not import_path.is_relative_to(environment_site.resolve()):
             raise RuntimeError(f"tau_coding not imported from wheel: {import_path}")
-        catalog = _json_text(
+        catalog = _json(
             _run([str(bin_dir / "tau"), "workflows", "list", "--json"], root, env).stdout
         )
         if [item["workflow_id"] for item in catalog["workflows"]] != WORKFLOW_IDS:
             raise RuntimeError("installed workflow catalog mismatch")
-        positive_repo = root / "positive-repo"
-        negative_repo = root / "negative-repo"
-        _git_repo(positive_repo, with_tests=True)
-        _git_repo(negative_repo, with_tests=False)
-        positive_dir = root / "positive-run"
-        negative_dir = root / "negative-run"
-        positive = _json_text(
-            _run(_command(bin_dir, positive_repo, positive_dir), root, env).stdout
+        repo = _git_repo(root / "repo")
+        run_dir = root / "run"
+        publish_path = root / "published"
+        command = [
+            str(bin_dir / "tau"),
+            "workflows",
+            "run",
+            "approved-release-bundle",
+            "--repo",
+            str(repo),
+            "--goal",
+            "Publish an approved release bundle.",
+            "--publish-path",
+            str(publish_path),
+            "--run-dir",
+            str(run_dir),
+        ]
+        first = _json(_run(command, root, env, expected=(1,)).stdout)
+        _run([str(bin_dir / "tau"), "workflows", "approve", str(run_dir)], root, env)
+        final = _json(
+            _run([str(bin_dir / "tau"), "workflows", "resume", str(run_dir)], root, env).stdout
         )
-        negative_process = _run(
-            _command(bin_dir, negative_repo, negative_dir),
-            root,
-            env,
-            expected=(1,),
-        )
-        negative = _json_text(negative_process.stdout)
-        dag_receipt = _json_file(positive_dir / "run-receipt.json")
-        if positive.get("status") != "PASS" or dag_receipt.get("max_observed_concurrency") != 3:
-            raise RuntimeError("installed positive concurrency failed")
-        test_receipt = _json_file(negative_dir / "receipts" / "analyze-tests.json")
-        if negative.get("status") != "BLOCKED" or test_receipt.get("errors") != [
-            "test_surface_missing"
-        ]:
-            raise RuntimeError("installed negative blocker mismatch")
-        if (negative_dir / "receipts" / "publish-evidence-map.json").exists():
-            raise RuntimeError("installed negative publisher dispatched")
-        if (negative_dir / "results").exists():
-            raise RuntimeError("installed negative results exist")
-        result_json = positive_dir / "results" / "repository-evidence-map.json"
-        result_markdown = positive_dir / "results" / "repository-evidence-map.md"
+        dag = _json((run_dir / "run-receipt.json").read_text(encoding="utf-8"))
+        notes = next(item for item in dag["nodes"] if item["node_id"] == "draft-release-notes")
+        if first["status"] != "BLOCKED" or final["status"] != "PASS":
+            raise RuntimeError("installed approval lifecycle failed")
+        if [item["review_verdict"] for item in notes["attempts"]] != ["REVISE", "PASS"]:
+            raise RuntimeError("installed revision lifecycle mismatch")
+        result_path = run_dir / "results" / "approved-release-bundle.json"
+        published_path = publish_path / result_path.name
+        if result_path.read_bytes() != published_path.read_bytes():
+            raise RuntimeError("installed publication differs from result")
         proof = {
-            "schema": "tau.repository_evidence_map_wheel_proof.v1",
+            "schema": "tau.approved_release_wheel_proof.v1",
             "status": "PASS",
             "mocked": False,
             "live": True,
@@ -130,64 +129,24 @@ def main() -> int:
             "wheel_sha256": _sha256(wheel),
             "installed_import": str(import_path),
             "installed_workflow_ids": WORKFLOW_IDS,
-            "positive": {
-                "status": positive["status"],
-                "max_observed_concurrency": dag_receipt["max_observed_concurrency"],
-                "json_sha256": _sha256(result_json),
-                "markdown_sha256": _sha256(result_markdown),
-            },
-            "negative": {
-                "status": negative["status"],
-                "blocker": test_receipt["errors"][0],
-                "publisher_dispatched": False,
-                "result_files": [],
-            },
-            "proof_scope": {
-                "proves": [
-                    "The offline installed wheel exposes the current canonical workflow catalog.",
-                    "The installed fan-out workflow reaches concurrency three and publishes.",
-                    "The installed negative path blocks exactly and publishes nothing.",
-                ],
-                "does_not_prove": [
-                    "The repository test suite passes.",
-                    "Provider or model quality.",
-                    "Production deployment readiness.",
-                ],
-            },
+            "approval_boundary": first["status"],
+            "final_status": final["status"],
+            "review_verdicts": ["REVISE", "PASS"],
+            "result_sha256": _sha256(result_path),
+            "published_sha256": _sha256(published_path),
         }
+    output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(proof, indent=2, sort_keys=True))
     return 0
 
 
-def _command(bin_dir: Path, repo: Path, run_dir: Path) -> list[str]:
-    return [
-        str(bin_dir / "tau"),
-        "workflows",
-        "run",
-        "repository-evidence-map",
-        "--repo",
-        str(repo),
-        "--goal",
-        "Map this repository for focused work.",
-        "--require-tests",
-        "--run-dir",
-        str(run_dir),
-    ]
-
-
-def _git_repo(path: Path, *, with_tests: bool) -> None:
+def _git_repo(path: Path) -> Path:
     path.mkdir()
-    (path / "README.md").write_text("# Wheel Fixture\n", encoding="utf-8")
-    (path / "pyproject.toml").write_text(
-        '[project]\nname = "wheel-fixture"\nversion = "0.1.0"\n', encoding="utf-8"
-    )
-    if with_tests:
-        (path / "tests").mkdir()
-        (path / "tests" / "test_fixture.py").write_text("def test_fixture():\n    assert True\n")
+    (path / "README.md").write_text("# Wheel release fixture\n", encoding="utf-8")
     subprocess.run(["git", "init", "-q", "-b", "main", str(path)], check=True)
-    subprocess.run(["git", "-C", str(path), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(path), "add", "README.md"], check=True)
     subprocess.run(
         [
             "git",
@@ -203,6 +162,7 @@ def _git_repo(path: Path, *, with_tests: bool) -> None:
         ],
         check=True,
     )
+    return path
 
 
 def _run(
@@ -212,7 +172,7 @@ def _run(
     expected: tuple[int, ...] = (0,),
 ) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
-        command, cwd=cwd, env=env, check=False, capture_output=True, text=True, timeout=120
+        command, cwd=cwd, env=env, capture_output=True, text=True, timeout=120, check=False
     )
     if result.returncode not in expected:
         raise RuntimeError(
@@ -221,15 +181,11 @@ def _run(
     return result
 
 
-def _json_text(value: str) -> dict[str, Any]:
+def _json(value: str) -> dict[str, Any]:
     payload = json.loads(value)
     if not isinstance(payload, dict):
         raise RuntimeError("JSON object expected")
     return payload
-
-
-def _json_file(path: Path) -> dict[str, Any]:
-    return _json_text(path.read_text(encoding="utf-8"))
 
 
 def _sha256(path: Path) -> str:

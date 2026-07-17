@@ -448,6 +448,16 @@ uv run tau workflows run repository-evidence-map \
   --require-tests \
   --run-dir /tmp/tau-repository-evidence-map \
   --open-viewer
+
+uv run tau workflows describe approved-release-bundle --json
+uv run tau workflows run approved-release-bundle \
+  --repo /path/to/repository \
+  --goal "Publish an approved local release bundle." \
+  --publish-path /tmp/tau-approved-release-published/release.json \
+  --run-dir /tmp/tau-approved-release-bundle \
+  --open-viewer
+uv run tau workflows approve /tmp/tau-approved-release-bundle
+uv run tau workflows resume /tmp/tau-approved-release-bundle
 ```
 
 A passing run writes `results/repository-readiness.json` and
@@ -472,6 +482,15 @@ single publishing join validates their shared inventory hash. It writes
 `results/repository-evidence-map.json` and `.md`. With `--require-tests`, a
 repository with no tracked test files blocks `analyze-tests` with
 `test_surface_missing`; the publisher is not dispatched and no result exists.
+
+The seven-node `approved-release-bundle` workflow prepares release evidence,
+runs release-note drafting, manifest construction, and policy validation in
+parallel, and deterministically revises the release notes once before joining.
+It stops with `APPROVAL_REQUIRED` before publication. `workflows approve`
+writes the exact expected approval packet; `workflows resume` preserves accepted
+work and performs the publication continuation once. Post-write verification
+failure removes the published target and records rollback rather than exposing
+a final result.
 
 ## What changed from upstream Tau
 
