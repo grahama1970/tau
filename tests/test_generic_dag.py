@@ -11,6 +11,7 @@ from tau_coding.generic_dag import (
     inspect_generic_dag_run,
     resume_generic_dag_from_run,
     run_generic_dag,
+    validate_generic_dag_spec,
 )
 
 
@@ -165,6 +166,24 @@ def test_generic_dag_validates_full_goal_and_preserves_legacy_hash(tmp_path: Pat
     legacy_payload["goal_hash"] = "sha256:legacy"
     legacy.write_text(json.dumps(legacy_payload), encoding="utf-8")
     assert compile_generic_dag_plan(legacy_payload, source_path=legacy).goal_binding.to_value() == {
+        "kind": "hash_only",
+        "goal_hash": "sha256:legacy",
+    }
+
+
+def test_generic_dag_preserves_legacy_descriptive_goal_object(tmp_path: Path) -> None:
+    spec = _write_spec(tmp_path, [_node(tmp_path, "legacy-goal")])
+    payload = json.loads(spec.read_text(encoding="utf-8"))
+    payload["goal_hash"] = "sha256:legacy"
+    payload["goal"] = {
+        "version": 1,
+        "sha256": "sha256:legacy-source",
+        "statement": "Legacy descriptive goal metadata.",
+    }
+    spec.write_text(json.dumps(payload), encoding="utf-8")
+
+    validate_generic_dag_spec(payload, source_path=spec)
+    assert compile_generic_dag_plan(payload, source_path=spec).goal_binding.to_value() == {
         "kind": "hash_only",
         "goal_hash": "sha256:legacy",
     }

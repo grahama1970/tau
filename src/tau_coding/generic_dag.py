@@ -1738,38 +1738,40 @@ def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNod
     if goal is not None:
         if not isinstance(goal, dict):
             raise RuntimeError("generic DAG goal must be an object")
-        for key in (
+        full_goal_keys = (
             "goal_id",
             "goal_version",
             "goal_hash",
             "summary",
             "completion_criteria",
-        ):
-            if key not in goal:
-                raise RuntimeError(f"generic DAG goal missing {key}")
-        if not isinstance(goal["goal_id"], str) or not goal["goal_id"].strip():
-            raise RuntimeError("generic DAG goal.goal_id must be a non-empty string")
-        if not isinstance(goal["goal_version"], (int, str)) or isinstance(
-            goal["goal_version"], bool
-        ):
-            raise RuntimeError("generic DAG goal.goal_version must be an integer or string")
-        if not isinstance(goal["summary"], str) or not goal["summary"].strip():
-            raise RuntimeError("generic DAG goal.summary must be a non-empty string")
-        criteria = goal["completion_criteria"]
-        if (
-            not isinstance(criteria, list)
-            or not criteria
-            or not all(isinstance(item, str) and item.strip() for item in criteria)
-        ):
-            raise RuntimeError(
-                "generic DAG goal.completion_criteria must be a non-empty string list"
-            )
-        hash_input = {key: value for key, value in goal.items() if key != "goal_hash"}
-        expected = canonical_sha256(hash_input)
-        if goal["goal_hash"] != expected:
-            raise RuntimeError("generic DAG goal.goal_hash does not match canonical goal")
-        if legacy_goal_hash is not None and legacy_goal_hash != goal["goal_hash"]:
-            raise RuntimeError("generic DAG goal_hash does not match goal.goal_hash")
+        )
+        if any(key in goal for key in full_goal_keys):
+            for key in full_goal_keys:
+                if key not in goal:
+                    raise RuntimeError(f"generic DAG goal missing {key}")
+            if not isinstance(goal["goal_id"], str) or not goal["goal_id"].strip():
+                raise RuntimeError("generic DAG goal.goal_id must be a non-empty string")
+            if not isinstance(goal["goal_version"], (int, str)) or isinstance(
+                goal["goal_version"], bool
+            ):
+                raise RuntimeError("generic DAG goal.goal_version must be an integer or string")
+            if not isinstance(goal["summary"], str) or not goal["summary"].strip():
+                raise RuntimeError("generic DAG goal.summary must be a non-empty string")
+            criteria = goal["completion_criteria"]
+            if (
+                not isinstance(criteria, list)
+                or not criteria
+                or not all(isinstance(item, str) and item.strip() for item in criteria)
+            ):
+                raise RuntimeError(
+                    "generic DAG goal.completion_criteria must be a non-empty string list"
+                )
+            hash_input = {key: value for key, value in goal.items() if key != "goal_hash"}
+            expected = canonical_sha256(hash_input)
+            if goal["goal_hash"] != expected:
+                raise RuntimeError("generic DAG goal.goal_hash does not match canonical goal")
+            if legacy_goal_hash is not None and legacy_goal_hash != goal["goal_hash"]:
+                raise RuntimeError("generic DAG goal_hash does not match goal.goal_hash")
     max_concurrency = spec.get("max_concurrency", 1)
     if type(max_concurrency) is not int or max_concurrency < 1:
         raise RuntimeError("generic DAG spec max_concurrency must be a positive integer")

@@ -334,7 +334,14 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
     )
     goal = payload.get("goal")
     goal_hash = payload.get("goal_hash")
-    if isinstance(goal, Mapping):
+    full_goal_keys = {
+        "goal_id",
+        "goal_version",
+        "goal_hash",
+        "summary",
+        "completion_criteria",
+    }
+    if isinstance(goal, Mapping) and any(key in goal for key in full_goal_keys):
         goal_binding = {"kind": "full", **dict(goal)}
     elif isinstance(goal_hash, str) and goal_hash:
         goal_binding = {"kind": "hash_only", "goal_hash": goal_hash}
