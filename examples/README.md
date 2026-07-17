@@ -5,6 +5,7 @@ visible-provider lanes.
 
 | Example | What it exercises | Boundary |
 | --- | --- | --- |
+| [`canonical-dags`](canonical-dags/) | Five goal-locked DAGs from linear through concurrent, retrying, approval-gated, and durable repair/resume workflows, all visible in the shared React Flow viewer. | Deterministic local workers prove scheduler, receipt, recovery, and viewer behavior; no external model provider. |
 | [`zero-trust-basic`](zero-trust-basic/) | Local policy/data-boundary preflight through `tau zero-trust-doctor`. | No subagent dispatch, sandbox proof, compliance certification, or provider call. |
 | [`memory-evidence-case`](memory-evidence-case/) | Memory-first `/intent` plus separate `/create-evidence-case` gate receipts. | Local receipt evidence only; no Memory truth, evidence sufficiency, compliance, or provider call. |
 | [`coding-reliability-basic`](coding-reliability-basic/) | Hash-bound patch receipts, diagnostics, focused test-run, debug-session evidence, dry-run GitHub read projection, structured review findings, dry-run commit planning, and orchestration reliability. | Local receipt evidence only; no agent truthfulness, semantic code correctness, provider call, live GitHub object proof, or GitHub mutation. |

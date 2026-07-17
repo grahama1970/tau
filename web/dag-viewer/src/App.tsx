@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Braces, FileCheck2, FileJson2, GitBranch, RadioTower } from "lucide-react";
-import { loadComparison, loadExplanation, loadInitialState, loadJournalSequences, loadManifest, loadQuery, loadReceipt, pollState, shouldReplaceSnapshot } from "./api";
+import { classifySnapshotTransition, loadComparison, loadExplanation, loadInitialState, loadJournalSequences, loadMatchingManifest, loadQuery, loadReceipt, pollState } from "./api";
 import { AttentionRail } from "./components/AttentionRail";
 import { CausalDetails } from "./components/CausalDetails";
 import { DecisionRail } from "./components/DecisionRail";
@@ -36,6 +36,7 @@ export default function App() {
   const [snapshot, setSnapshot] = useState<DagSnapshot | null>(null);
   const etagsRef = useRef(new Map<string, string | null>());
   const requestGenerationRef = useRef(0);
+  const explanationGenerationRef = useRef(0);
   const comparisonGenerationRef = useRef(0);
   const receiptGenerationRef = useRef(0);
   const receiptAuthorityRef = useRef("");
@@ -101,7 +102,7 @@ export default function App() {
       }
       setConnected(true);
       setError(null);
-      return loadJournalSequences();
+      return loadJournalSequences(initial.snapshot.run_id);
     }).then((loadedSequences) => {
       if (active && generation === requestGenerationRef.current && loadedSequences) setSequences(loadedSequences);
     }).catch((reason: unknown) => {
@@ -127,14 +128,52 @@ export default function App() {
         if (!active || generation !== requestGenerationRef.current) return;
         if (next.snapshot) {
           const current = snapshot;
-          if (!current || shouldReplaceSnapshot(current, next.snapshot, null)) {
-            const refreshedManifest = await loadManifest();
+          if (!current) return;
+          const transition = classifySnapshotTransition(current, next.snapshot, null);
+          if (transition === "SAME_RUN") {
+            const refreshedManifest = await loadMatchingManifest(next.snapshot);
             if (!active || generation !== requestGenerationRef.current) return;
             setManifest(refreshedManifest);
             setSnapshot(next.snapshot);
             etagsRef.current.set("live", next.etag);
-            loadJournalSequences().then((items) => {
+            loadJournalSequences(next.snapshot.run_id).then((items) => {
               if (active && generation === requestGenerationRef.current) setSequences(items);
+            }).catch(() => undefined);
+          } else if (transition === "NEWER_GENERATION") {
+            const refreshed = await loadInitialState();
+            if (
+              !active
+              || generation !== requestGenerationRef.current
+              || refreshed.snapshot.run_id !== next.snapshot.run_id
+              || classifySnapshotTransition(current, refreshed.snapshot, null) !== "NEWER_GENERATION"
+            ) return;
+            const nextRequestGeneration = ++requestGenerationRef.current;
+            explanationGenerationRef.current += 1;
+            comparisonGenerationRef.current += 1;
+            receiptGenerationRef.current += 1;
+            receiptAuthorityRef.current = "";
+            etagsRef.current.clear();
+            etagsRef.current.set("live", refreshed.etag);
+            setManifest(refreshed.manifest);
+            setSnapshot(refreshed.snapshot);
+            setSequences([]);
+            setSelectedId(refreshed.manifest.graph.nodes[0]?.node_id ?? null);
+            setSelectedSubject(
+              refreshed.manifest.graph.nodes[0]
+                ? { kind: "NODE", id: refreshed.manifest.graph.nodes[0].node_id }
+                : null,
+            );
+            setTab("cause");
+            setReceiptId(null);
+            setReceiptAtSequence(null);
+            setReceipt(null);
+            setExplanation(null);
+            setQueryResult(null);
+            setComparison(null);
+            setComparisonInput({ kind: "SEQUENCE_PAIR", left: "", right: "", nodeId: "", incidentId: "" });
+            setError(null);
+            loadJournalSequences(refreshed.snapshot.run_id).then((items) => {
+              if (active && nextRequestGeneration === requestGenerationRef.current) setSequences(items);
             }).catch(() => undefined);
           }
         } else {
@@ -157,17 +196,25 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
+    const generation = ++explanationGenerationRef.current;
     if (!selectedSubject) {
       setExplanation(null);
       return () => { active = false; };
     }
+    const expectedRunId = snapshot?.run_id;
     loadExplanation(selectedSubject.kind, selectedSubject.id, selectedSequence)
-      .then((value) => { if (active) setExplanation(value); })
+      .then((value) => {
+        if (
+          active
+          && generation === explanationGenerationRef.current
+          && value.run_id === expectedRunId
+        ) setExplanation(value);
+      })
       .catch((reason: unknown) => {
         if (active) setError(reason instanceof Error ? reason.message : "explanation_load_failed");
       });
     return () => { active = false; };
-  }, [selectedSequence, selectedSubject]);
+  }, [selectedSequence, selectedSubject, snapshot?.run_id]);
 
   useEffect(() => {
     comparisonGenerationRef.current += 1;
@@ -396,7 +443,7 @@ export default function App() {
       : selectedLive ?? selectedTerminal ?? snapshot;
 
   return <main className="dag-app">
-    <StatusBanner snapshot={snapshot} connected={connected} />
+    <StatusBanner manifest={manifest} snapshot={snapshot} connected={connected} />
     <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
     <AttentionRail items={snapshot.attention_items} onSelect={selectAttention} />
     <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />

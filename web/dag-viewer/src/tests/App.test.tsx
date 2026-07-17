@@ -39,6 +39,7 @@ test("filters bounded projections and renders exactly-two comparison", async () 
   render(<App />);
 
   await waitFor(() => expect(screen.getByText("1 matches · 1 shown")).toBeInTheDocument());
+  expect(screen.getByText("Keep the human-owned goal immutable.")).toBeInTheDocument();
   expect(screen.getByText("redacted projections only")).toBeInTheDocument();
   expect(window.location.search).toContain("filter_q=creator");
   await waitFor(() => expect(screen.getByLabelText("Left sequence")).toHaveValue("1"));
@@ -293,6 +294,75 @@ test("out-of-order and prefix-stale receipt responses cannot replace current evi
     schema: "tau.dag_viewer_receipt_projection.v1", receipt_id: "receipt-a", source_schema: "tau.test_receipt.v1", source_sha256: "sha256:a", receipt: { marker: "HISTORY_STALE" },
   }), { status: 200 })));
   expect(screen.queryByText("HISTORY_STALE")).not.toBeInTheDocument();
+});
+
+test("live polling reinitializes an exact successor and invalidates stale evidence", async () => {
+  const receiptEntry = {
+    receipt_id: "base-receipt",
+    schema: "tau.test_receipt.v1",
+    path_display: "base-receipt.json",
+    sha256: "sha256:base-receipt",
+    available: true,
+  };
+  const baseManifest = { ...manifest, receipt_index: [receiptEntry] };
+  const successorRunId = "run-1:generation:1";
+  const successorManifest = { ...manifest, run_id: successorRunId, receipt_index: [] };
+  const successorSnapshot = {
+    ...snapshot,
+    run_id: successorRunId,
+    journal_sequence: 15,
+    snapshot_sha256: "sha256:successor",
+    view: { ...snapshot.view, sequence: 15 },
+    recent_events: [{ ...snapshot.recent_events[0], seq: 15 }],
+  };
+  let stateCalls = 0;
+  let resolveReceipt: ((response: Response) => void) | null = null;
+  const initialLocation = window.location.href;
+  vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/receipts/")) {
+      return new Promise<Response>((resolve) => { resolveReceipt = resolve; });
+    }
+    if (url.includes("/api/v1/state")) {
+      stateCalls += 1;
+      if (stateCalls >= 4) return Promise.resolve(new Response(null, { status: 304, headers: { ETag: '"successor"' } }));
+      const value = stateCalls === 1 ? snapshot : successorSnapshot;
+      return Promise.resolve(new Response(JSON.stringify(value), { status: 200, headers: { ETag: stateCalls === 1 ? '"base"' : '"successor"' } }));
+    }
+    const successor = stateCalls > 1;
+    const payload = url.includes("manifest")
+      ? successor ? successorManifest : baseManifest
+      : url.includes("explanations")
+        ? { ...explanation, run_id: successor ? successorRunId : snapshot.run_id, as_of_sequence: successor ? 15 : 8 }
+        : url.includes("events")
+          ? {
+            schema: "tau.dag_live_event.v1",
+            run_id: successor ? successorRunId : snapshot.run_id,
+            after_sequence: 0,
+            events: successor ? successorSnapshot.recent_events : snapshot.recent_events,
+          }
+          : snapshot;
+    return Promise.resolve(new Response(JSON.stringify(payload), { status: 200 }));
+  }));
+
+  render(<App />);
+  await waitFor(() => expect(screen.getByRole("button", { name: "Receipt" })).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Receipt" }));
+  fireEvent.change(screen.getByLabelText("Committed receipt"), { target: { value: "base-receipt" } });
+  await waitFor(() => expect(resolveReceipt).not.toBeNull());
+  await waitFor(() => expect(screen.getByText(successorRunId)).toBeInTheDocument(), { timeout: 2500 });
+  expect(window.location.href).toBe(initialLocation);
+  expect(screen.getByRole("button", { name: "Why" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.queryByRole("option", { name: "base-receipt.json" })).not.toBeInTheDocument();
+
+  await act(async () => resolveReceipt?.(new Response(JSON.stringify({
+    schema: "tau.dag_viewer_receipt_projection.v1",
+    receipt_id: "base-receipt",
+    source_schema: "tau.test_receipt.v1",
+    source_sha256: "sha256:base-receipt",
+    receipt: { marker: "STALE_GENERATION" },
+  }), { status: 200 })));
+  expect(screen.queryByText("STALE_GENERATION")).not.toBeInTheDocument();
 });
 
 test("unsupported timeline entity types fall back to the run causal subject", async () => {

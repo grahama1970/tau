@@ -7,7 +7,10 @@ export const manifest: DagManifest = {
   plan_sha256: "sha256:plan",
   source_available: true,
   source_status: "AVAILABLE",
-  source_dag: { schema: "tau.generic_dag_spec.v1" },
+  source_dag: {
+    schema: "tau.generic_dag_spec.v1",
+    goal: { statement: "Keep the human-owned goal immutable." },
+  },
   dag_plan: { schema: "tau.dag_plan.v1" },
   graph: {
     nodes: [
@@ -27,6 +30,7 @@ export const manifest: DagManifest = {
 export const snapshot: DagSnapshot = {
   schema: "tau.dag_view_snapshot.v2",
   run_id: "run-1",
+  plan_sha256: "sha256:plan",
   journal_sequence: 8,
   view: { mode: "LIVE", sequence: 8, sequence_created_at: "2026-01-01T00:00:00Z" },
   snapshot_sha256: "sha256:snapshot",

@@ -74,6 +74,58 @@ def test_generic_dag_runs_dependency_ordered_subprocess_workers(tmp_path: Path) 
     assert validated_order == ["planner", "coder", "reviewer"]
 
 
+def test_generic_dag_honors_declared_concurrency(tmp_path: Path) -> None:
+    left_receipt = tmp_path / "receipts" / "left.json"
+    right_receipt = tmp_path / "receipts" / "right.json"
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "left",
+                command=[
+                    sys.executable,
+                    "-c",
+                    "import time; time.sleep(0.2); "
+                    + _receipt_writer_code(left_receipt, node_id="left"),
+                ],
+            ),
+            _node(
+                tmp_path,
+                "right",
+                command=[
+                    sys.executable,
+                    "-c",
+                    "import time; time.sleep(0.2); "
+                    + _receipt_writer_code(right_receipt, node_id="right"),
+                ],
+            ),
+        ],
+    )
+    payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    payload["max_concurrency"] = 2
+    spec_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["max_observed_concurrency"] == 2
+
+
+def test_generic_dag_rejects_invalid_declared_concurrency(tmp_path: Path) -> None:
+    spec_path = _write_spec(tmp_path, [_node(tmp_path, "only")])
+    payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    payload["max_concurrency"] = 0
+    spec_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    try:
+        run_generic_dag(spec_path=spec_path)
+    except RuntimeError as exc:
+        assert str(exc) == "generic DAG spec max_concurrency must be a positive integer"
+    else:
+        raise AssertionError("invalid max_concurrency should fail closed")
+
+
 def test_generic_dag_checkpoint_records_completed_node_before_next_dispatch(
     tmp_path: Path,
 ) -> None:
@@ -185,6 +237,51 @@ def test_generic_dag_resumes_from_existing_valid_receipts(tmp_path: Path) -> Non
     assert receipt["nodes"][0]["attempt_count"] == 0
     assert receipt["nodes"][1]["node_id"] == "coder"
     assert receipt["nodes"][1]["resumed"] is False
+
+
+def test_generic_dag_rejects_resumed_receipt_from_changed_goal(tmp_path: Path) -> None:
+    receipt_path = tmp_path / "receipts" / "planner.json"
+    payload = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": "planner",
+        "status": "PASS",
+        "verdict": "PASS",
+        "goal_hash": "sha256:goal-v1",
+        "artifacts": [],
+        "commands_run": ["goal-bound writer"],
+        "handoff_summary": "bound to the original goal",
+        "errors": [],
+        "policy_exceptions": [],
+    }
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            _node(
+                tmp_path,
+                "planner",
+                command=[
+                    sys.executable,
+                    "-c",
+                    _write_literal_json_code(receipt_path, payload),
+                ],
+            )
+        ],
+    )
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    spec["goal_hash"] = "sha256:goal-v1"
+    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+    assert run_generic_dag(spec_path=spec_path)["status"] == "PASS"
+
+    spec["goal_hash"] = "sha256:goal-v2"
+    spec["run_dir"] = str(tmp_path / "changed-goal-run")
+    spec["events_jsonl"] = str(tmp_path / "changed-goal-run" / "events.jsonl")
+    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+    receipt = run_generic_dag(spec_path=spec_path, resume=True)
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["verdict"] == "INVALID_RECEIPT"
+    assert receipt["nodes"][0]["resumed"] is False
+    assert "goal_hash does not match the active DAG goal" in receipt["nodes"][0]["errors"]
 
 
 def test_generic_dag_resumes_from_run_directory_metadata(tmp_path: Path) -> None:

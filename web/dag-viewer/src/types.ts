@@ -155,6 +155,7 @@ export type JournalEvent = {
 export type DagSnapshot = {
   schema: "tau.dag_view_snapshot.v2";
   run_id: string;
+  plan_sha256: string;
   journal_sequence: number;
   view: { mode: "LIVE" | "HISTORICAL"; sequence: number; sequence_created_at: string | null };
   snapshot_sha256: string;
