@@ -5,6 +5,31 @@
 
 ## Current Understanding
 
+- 2026-07-17 canonical workflow Slice 03: `repository-evidence-map` is the
+  third packaged workflow and has topology `FAN_OUT_FAN_IN`. One inventory node
+  releases `analyze-documentation`, `analyze-tests`, and `analyze-package` at
+  observed concurrency 3; `publish-evidence-map` validates their shared
+  inventory hash before atomically writing JSON and Markdown results. Focused
+  backend/viewer regression checks passed 79. Live browser receipts
+  `/tmp/tau-evidence-map-positive-proof.json` and
+  `/tmp/tau-evidence-map-negative-proof.json` report PASS, GET-only traffic,
+  no reload, simultaneous branch activity, desktop/mobile non-overlap, final
+  artifacts, and exact `test_surface_missing` fail-close with no publisher.
+  Installed-wheel receipt `/tmp/tau-evidence-map-wheel-proof.json` reports
+  `mocked:false`, `live:true`, `provider_live:false`, imports Tau from the
+  temporary wheel, exposes exactly three workflows, observes concurrency 3,
+  and runs both paths offline. This does not prove tests pass, documentation is
+  semantically correct, provider/model quality, or production readiness.
+- 2026-07-17 canonical workflow Slice 02: `tau-operator-reference` is the
+  four-node `MULTI_STEP_SEQUENTIAL` workflow. It reads five fixed Tau sources,
+  captures three public CLI probes, keeps drafts under `intermediate/`, and
+  publishes validated JSON/Markdown results. Its negative path blocks with
+  `required_workflow_missing`. Integrated checks passed 102; browser receipts
+  `/tmp/tau-operator-reference-positive-proof.json` and
+  `/tmp/tau-operator-reference-negative-proof.json` passed on desktop/mobile,
+  and `/tmp/tau-operator-reference-wheel-proof.json` proves offline installed
+  execution and byte-identical positive results. The durable goal criterion is
+  catalog presence rather than a historical exact workflow count.
 - 2026-07-17 canonical workflow Slice 01: `tau workflows list`, `describe`,
   and `run` expose one packaged `repository-readiness` workflow. Its immutable
   full goal compiles into the existing `DagPlan.goal_binding`; workflow metadata

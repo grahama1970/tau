@@ -424,7 +424,7 @@ semantic quality or make runtime observations authoritative.
 
 ### Packaged canonical workflows
 
-Discover and run either packaged canonical workflow without authoring a DAG:
+Discover and run any packaged canonical workflow without authoring a DAG:
 
 ```bash
 uv run tau workflows list --json
@@ -440,6 +440,14 @@ uv run tau workflows describe tau-operator-reference --json
 uv run tau workflows run tau-operator-reference \
   --repo /path/to/tau \
   --run-dir /tmp/tau-operator-reference
+
+uv run tau workflows describe repository-evidence-map --json
+uv run tau workflows run repository-evidence-map \
+  --repo /path/to/repository \
+  --goal "Map this repository for focused work." \
+  --require-tests \
+  --run-dir /tmp/tau-repository-evidence-map \
+  --open-viewer
 ```
 
 A passing run writes `results/repository-readiness.json` and
@@ -457,6 +465,13 @@ collection, CLI capture, and rendering before atomically publishing
 `--required-workflow deliberately-absent` for the required negative gate; it
 blocks at `validate-operator-reference` with `required_workflow_missing` and
 publishes no result.
+
+The five-node `repository-evidence-map` workflow inventories tracked Git files,
+then analyzes documentation, tests, and package metadata concurrently before a
+single publishing join validates their shared inventory hash. It writes
+`results/repository-evidence-map.json` and `.md`. With `--require-tests`, a
+repository with no tracked test files blocks `analyze-tests` with
+`test_surface_missing`; the publisher is not dispatched and no result exists.
 
 ## What changed from upstream Tau
 
