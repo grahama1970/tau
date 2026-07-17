@@ -7,7 +7,10 @@ export const manifest: DagManifest = {
   plan_sha256: "sha256:plan",
   source_available: true,
   source_status: "AVAILABLE",
-  source_dag: { schema: "tau.generic_dag_spec.v1" },
+  source_dag: {
+    schema: "tau.generic_dag_spec.v1",
+    goal: { statement: "Keep the human-owned goal immutable." },
+  },
   dag_plan: { schema: "tau.dag_plan.v1" },
   graph: {
     nodes: [

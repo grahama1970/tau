@@ -39,6 +39,7 @@ test("filters bounded projections and renders exactly-two comparison", async () 
   render(<App />);
 
   await waitFor(() => expect(screen.getByText("1 matches · 1 shown")).toBeInTheDocument());
+  expect(screen.getByText("Keep the human-owned goal immutable.")).toBeInTheDocument();
   expect(screen.getByText("redacted projections only")).toBeInTheDocument();
   expect(window.location.search).toContain("filter_q=creator");
   await waitFor(() => expect(screen.getByLabelText("Left sequence")).toHaveValue("1"));

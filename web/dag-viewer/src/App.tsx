@@ -443,7 +443,7 @@ export default function App() {
       : selectedLive ?? selectedTerminal ?? snapshot;
 
   return <main className="dag-app">
-    <StatusBanner snapshot={snapshot} connected={connected} />
+    <StatusBanner manifest={manifest} snapshot={snapshot} connected={connected} />
     <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
     <AttentionRail items={snapshot.attention_items} onSelect={selectAttention} />
     <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />

@@ -254,7 +254,7 @@ def run_generic_dag(
         scheduler_result = run_dag_plan(
             plan,
             execute_node=execute_plan_node,
-            max_concurrency=1,
+            max_concurrency=int(spec.get("max_concurrency", 1)),
             run_store=run_store,
             run_id=scheduler_run_id,
             allow_lease_takeover=True,
@@ -702,6 +702,8 @@ def _run_legacy_node(
     if resume and node.receipt_path.exists():
         existing = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
         errors = _validate_node_receipt(existing, node)
+        if goal_hash is not None and existing.get("goal_hash") != goal_hash:
+            errors.append("goal_hash does not match the active DAG goal")
         if not errors and existing.get("verdict") == "PASS":
             _append_event(
                 events_path,
@@ -777,6 +779,8 @@ def _run_legacy_node(
         )
     receipt = _read_json_object(node.receipt_path, label=f"{node.node_id} receipt")
     errors = _validate_node_receipt(receipt, node)
+    if goal_hash is not None and receipt.get("goal_hash") != goal_hash:
+        errors.append("goal_hash does not match the active DAG goal")
     if errors:
         return _blocked_node_record(
             node,
@@ -1726,6 +1730,9 @@ def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNod
         raise RuntimeError("generic DAG spec run_id must be a non-empty string")
     if not isinstance(spec["run_dir"], str) or not spec["run_dir"].strip():
         raise RuntimeError("generic DAG spec run_dir must be a non-empty string")
+    max_concurrency = spec.get("max_concurrency", 1)
+    if type(max_concurrency) is not int or max_concurrency < 1:
+        raise RuntimeError("generic DAG spec max_concurrency must be a positive integer")
     raw_nodes = spec["nodes"]
     if not isinstance(raw_nodes, list) or not raw_nodes:
         raise RuntimeError("generic DAG spec nodes must be a non-empty list")
