@@ -63,6 +63,24 @@ an interactive terminal. Use `--no-open` for scripts. The browser polls full
 Tau-authored snapshots with ETags and never reduces scheduler events locally.
 The source DAG remains immutable and the UI has no mutation controls.
 
+The packaged `repository-readiness` workflow opens this same viewer while its
+three-node linear plan executes:
+
+```bash
+tau workflows run repository-readiness \
+  --repo /path/to/repository \
+  --goal "Determine whether this checkout is ready for focused work." \
+  --require-clean \
+  --run-dir /tmp/tau-repository-readiness \
+  --open-viewer
+```
+
+The run overview projects the workflow title, full human goal, active node,
+accepted output, exact blocker code, and final result only from journal replay.
+A clean run publishes JSON and Markdown readiness reports. A dirty run with
+`--require-clean` displays `dirty_repository`, leaves `publish-readiness`
+pending, and publishes no final report.
+
 The graph keeps scheduler, runtime, and admission state separate. A generic
 artifact transaction expands into creator, validator, reviewer, revision, and
 acceptance phases without inventing a cycle in the source DAG. Diagnostic

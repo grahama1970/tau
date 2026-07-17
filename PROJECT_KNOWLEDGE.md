@@ -1,10 +1,30 @@
 # Project Knowledge: tau
 
-**Last updated:** 2026-07-15 by agent
+**Last updated:** 2026-07-17 by agent
 **Status:** Active development
 
 ## Current Understanding
 
+- 2026-07-17 canonical workflow Slice 01: `tau workflows list`, `describe`,
+  and `run` expose one packaged `repository-readiness` workflow. Its immutable
+  full goal compiles into the existing `DagPlan.goal_binding`; workflow metadata
+  remains hash-bound in `source_extensions`. The live three-node path inspects
+  a Git checkout with fixed read-only commands, independently applies the clean
+  worktree policy, and publishes `results/repository-readiness.json` plus
+  `results/repository-readiness.md` only after validation. Focused integrated
+  backend checks passed 96; frontend checks passed 23 with typecheck and build
+  passing. `/tmp/tau-repository-readiness-positive-proof.json` and
+  `/tmp/tau-repository-readiness-negative-proof.json` both report PASS with
+  GET-only traffic and no reload; their screenshots show the accepted result
+  and exact `dirty_repository` blocker. Installed-wheel receipt
+  `/tmp/tau-repository-readiness-wheel-proof.json` reports `mocked:false`,
+  `live:true`, `provider_live:false`, imports Tau from the temporary wheel
+  environment, runs all three nodes, and verifies three node receipts and two
+  result artifacts. Fresh integrated CDP evidence is under
+  `/tmp/codex-ui-verification/tau-immutable-integrate-1784294300/` with the
+  latest marker in `.codex/ui-verification/latest.json`. This slice does not
+  prove repository tests, provider/model quality, production deployment, or a
+  second canonical workflow.
 - 2026-07-15 self-contained live DAG viewer Child C (#108): Tau now owns the
   packaged React Flow application, loopback launch command, immutable source-DAG
   and `DagPlan` inspectors, journal-derived graph, transaction attempts,

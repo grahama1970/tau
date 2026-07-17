@@ -422,6 +422,27 @@ included in the Tau wheel. The viewer has no dispatch, retry, approval,
 cancellation, cleanup, or editing controls. It does not prove provider/model
 semantic quality or make runtime observations authoritative.
 
+### Repository readiness workflow
+
+Discover and run the single packaged canonical workflow without authoring a DAG:
+
+```bash
+uv run tau workflows list --json
+uv run tau workflows describe repository-readiness --json
+uv run tau workflows run repository-readiness \
+  --repo /path/to/repository \
+  --goal "Determine whether this checkout is ready for focused work." \
+  --require-clean \
+  --run-dir /tmp/tau-repository-readiness \
+  --open-viewer
+```
+
+A passing run writes `results/repository-readiness.json` and
+`results/repository-readiness.md` under the run directory. The three-node
+linear graph is driven by the same journal replay as `tau dag-view`; a dirty
+repository blocks at `validate-readiness` with `dirty_repository` and does not
+dispatch `publish-readiness`.
+
 ## What changed from upstream Tau
 
 This fork keeps the original Python teaching architecture, but adds a goal-locked
