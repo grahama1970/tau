@@ -8,10 +8,45 @@ from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.workflows.catalog import get_workflow
 from tau_coding.workflows.materialize import (
     materialize_approved_release_bundle,
+    materialize_durable_repository_qualification,
     materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
 )
+
+
+def test_durable_qualification_materializer_writes_repairable_mixed_dag(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    materialized = materialize_durable_repository_qualification(
+        definition=get_workflow("durable-repository-qualification"),
+        repo_path=repo,
+        human_goal="Qualify this repository durably.",
+        publish_path=tmp_path / "published",
+        run_dir=tmp_path / "run",
+        inject_test_branch_failure=True,
+    )
+    request = json.loads(materialized.request_path.read_text(encoding="utf-8"))
+    dag = json.loads(materialized.source_dag_path.read_text(encoding="utf-8"))
+
+    assert request["goal"]["goal_hash"] == canonical_sha256(
+        {key: value for key, value in request["goal"].items() if key != "goal_hash"}
+    )
+    assert dag["max_concurrency"] == 3
+    assert dag["workflow"]["topology"] == "DURABLE_MIXED_REPAIR_APPROVAL"
+    assert [node["node_id"] for node in dag["nodes"]] == [
+        "capture-repository",
+        "qualify-documentation",
+        "qualify-tests",
+        "qualify-package",
+        "reconcile-qualification",
+        "publish-qualification",
+        "finalize-qualification",
+    ]
+    assert dag["nodes"][5]["transaction"]["continuation"]["approval"]["action"] == (
+        "generic_dag_transaction_continue"
+    )
 
 
 def test_release_materializer_writes_mixed_retry_approval_dag(tmp_path: Path) -> None:

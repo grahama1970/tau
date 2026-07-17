@@ -8,7 +8,7 @@ import os
 import subprocess
 import tempfile
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -77,6 +77,7 @@ def run_generic_dag(
     resume: bool = True,
     resume_source: dict[str, Any] | None = None,
     diagnostic_step_delay_seconds: float = 0.0,
+    diagnostic_fault_injector: Callable[[str, Mapping[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Execute a schema-valid, command-backed DAG spec.
 
@@ -258,6 +259,7 @@ def run_generic_dag(
             run_id=scheduler_run_id,
             allow_lease_takeover=True,
             on_lease_acquired=initialize_run_artifacts,
+            fault_injector=diagnostic_fault_injector,
         )
     node_results = list(scheduler_result.node_results)
     completed = set(scheduler_result.completed_node_ids)

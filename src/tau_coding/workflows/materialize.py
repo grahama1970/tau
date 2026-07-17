@@ -76,6 +76,12 @@ APPROVED_RELEASE_COMPLETION_CRITERIA = [
     "Stop before publication until the exact accepted bundle is approved by a human.",
     "Publish one hash-bound release bundle with rollback on failed verification.",
 ]
+DURABLE_QUALIFICATION_COMPLETION_CRITERIA = [
+    "Capture the exact requested Git repository without mutation.",
+    "Qualify documentation, tests, and package metadata concurrently.",
+    "Repair only a blocked qualification branch while preserving accepted work.",
+    "Publish one idempotent qualification result after exact human approval.",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -509,6 +515,132 @@ def materialize_approved_release_bundle(
         "${RESULT_JSON}": str(resolved_run_dir / "results" / "approved-release-bundle.json"),
         "${RESULT_MARKDOWN}": str(resolved_run_dir / "results" / "approved-release-bundle.md"),
         "${ROLLBACK_RECEIPT}": str(receipts / "publication-rollback.json"),
+        "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
+    }
+    source_dag_path = resolved_run_dir / "workflow" / "dag.json"
+    _write_json(source_dag_path, _replace_tokens(template, replacements))
+    return MaterializedWorkflow(
+        definition=definition,
+        request_path=request_path,
+        source_dag_path=source_dag_path,
+        run_dir=resolved_run_dir,
+        run_id=run_id,
+        goal=goal,
+    )
+
+
+def materialize_durable_repository_qualification(
+    *,
+    definition: WorkflowDefinition,
+    repo_path: Path,
+    human_goal: str,
+    publish_path: Path,
+    run_dir: Path,
+    inject_test_branch_failure: bool = False,
+    step_delay_seconds: float = 0.0,
+) -> MaterializedWorkflow:
+    if definition.workflow_id != "durable-repository-qualification":
+        raise RuntimeError("materializer supports only durable-repository-qualification")
+    resolved_repo = repo_path.expanduser().resolve()
+    resolved_run_dir = run_dir.expanduser().resolve()
+    resolved_publish_path = publish_path.expanduser().resolve()
+    if not resolved_repo.is_dir():
+        raise RuntimeError(f"repository path is not a directory: {resolved_repo}")
+    if not human_goal.strip():
+        raise RuntimeError("workflow goal must be a non-empty string")
+    if step_delay_seconds < 0:
+        raise RuntimeError("step_delay_seconds must be non-negative")
+    if resolved_publish_path == resolved_repo or resolved_repo in resolved_publish_path.parents:
+        raise RuntimeError("publish path must be outside the inspected repository")
+    if resolved_publish_path.exists():
+        raise RuntimeError(f"publish path already exists: {resolved_publish_path}")
+    if (resolved_run_dir / "dag-run.sqlite3").exists():
+        raise RuntimeError(f"workflow run already exists: {resolved_run_dir}")
+
+    request_seed = {
+        "schema": "tau.durable_repository_qualification_request.v1",
+        "repo_path": str(resolved_repo),
+        "human_goal": human_goal.strip(),
+        "publish_path": str(resolved_publish_path),
+        "inject_test_branch_failure": inject_test_branch_failure,
+        "step_delay_seconds": step_delay_seconds,
+    }
+    request_sha = canonical_sha256(request_seed)
+    goal_without_hash: dict[str, object] = {
+        "goal_id": (
+            "durable-repository-qualification:"
+            f"{request_sha.removeprefix('sha256:')[:12]}"
+        ),
+        "goal_version": 1,
+        "summary": human_goal.strip(),
+        "completion_criteria": list(DURABLE_QUALIFICATION_COMPLETION_CRITERIA),
+    }
+    goal = {**goal_without_hash, "goal_hash": canonical_sha256(goal_without_hash)}
+    request = {**request_seed, "request_sha256": request_sha, "goal": goal}
+    run_id = f"durable-repository-qualification-{request_sha.removeprefix('sha256:')[:12]}"
+    for relative in ("workflow", "input", "receipts", "intermediate"):
+        (resolved_run_dir / relative).mkdir(parents=True, exist_ok=True)
+    request_path = resolved_run_dir / "input" / "durable-qualification-request.json"
+    _write_json(request_path, request)
+    artifact_root = resolved_run_dir / "transaction-artifacts" / "qualification"
+    work_order = resolved_run_dir / "input" / "qualification-publication-work-order.json"
+    _write_json(
+        work_order,
+        {
+            "schema": "tau.qualification_publication_work_order.v1",
+            "artifact_root": str(artifact_root),
+            "publish_path": str(resolved_publish_path),
+            "goal": goal,
+        },
+    )
+
+    template_resource = resources.files("tau_coding.workflows").joinpath(definition.template)
+    template = json.loads(template_resource.read_text(encoding="utf-8"))
+    if not isinstance(template, dict):
+        raise RuntimeError("durable repository qualification template must be an object")
+    workflow_metadata = {
+        "schema": WORKFLOW_METADATA_SCHEMA,
+        "workflow_id": definition.workflow_id,
+        "workflow_version": definition.workflow_version,
+        "title": definition.title,
+        "summary": definition.summary,
+        "topology": definition.topology,
+        "result_node_id": definition.result_node_id,
+        "result_schema": definition.result_schema,
+    }
+    intermediate = resolved_run_dir / "intermediate"
+    receipts = resolved_run_dir / "receipts"
+    replacements: dict[str, object] = {
+        "${RUN_ID}": run_id,
+        "${RUN_DIR}": str(resolved_run_dir),
+        "${GOAL_OBJECT}": goal,
+        "${GOAL_HASH}": goal["goal_hash"],
+        "${WORKFLOW_METADATA}": workflow_metadata,
+        "${PYTHON}": sys.executable,
+        "${REQUEST_PATH}": str(request_path),
+        "${CAPTURE_PATH}": str(intermediate / "repository-capture.json"),
+        "${DOCUMENTATION_PATH}": str(intermediate / "documentation-qualification.json"),
+        "${TESTS_PATH}": str(intermediate / "test-qualification.json"),
+        "${PACKAGE_PATH}": str(intermediate / "package-qualification.json"),
+        "${RECONCILE_PATH}": str(intermediate / "repository-qualification.json"),
+        "${CAPTURE_RECEIPT}": str(receipts / "capture-repository.json"),
+        "${DOCUMENTATION_RECEIPT}": str(receipts / "qualify-documentation.json"),
+        "${TESTS_RECEIPT}": str(receipts / "qualify-tests.json"),
+        "${PACKAGE_RECEIPT}": str(receipts / "qualify-package.json"),
+        "${RECONCILE_RECEIPT}": str(receipts / "reconcile-qualification.json"),
+        "${PUBLISH_RECEIPT}": str(receipts / "publish-qualification.json"),
+        "${FINALIZE_RECEIPT}": str(receipts / "finalize-qualification.json"),
+        "${REPAIR_PACKET}": str(resolved_run_dir / "input" / "repair-qualify-tests.json"),
+        "${APPROVAL_PACKET}": str(resolved_run_dir / "input" / "approval.json"),
+        "${WORK_ORDER}": str(work_order),
+        "${ARTIFACT_ROOT}": str(artifact_root),
+        "${RESULT_JSON}": str(
+            resolved_run_dir / "results" / "durable-repository-qualification.json"
+        ),
+        "${RESULT_MARKDOWN}": str(
+            resolved_run_dir / "results" / "durable-repository-qualification.md"
+        ),
+        "${PUBLICATION_LEDGER}": str(receipts / "qualification-publication-ledger.json"),
         "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
     }
     source_dag_path = resolved_run_dir / "workflow" / "dag.json"

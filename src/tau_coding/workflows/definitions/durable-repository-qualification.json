@@ -1,0 +1,15 @@
+{
+  "schema": "tau.workflow_definition.v1",
+  "workflow_id": "durable-repository-qualification",
+  "workflow_version": 1,
+  "title": "Durable Repository Qualification",
+  "summary": "Qualify concurrent repository evidence, recover interrupted work, repair one affected branch, and publish one idempotent result after exact human approval.",
+  "topology": "DURABLE_MIXED_REPAIR_APPROVAL",
+  "availability": "AVAILABLE",
+  "input_schema": "tau.durable_repository_qualification_request.v1",
+  "result_schema": "tau.durable_repository_qualification.v1",
+  "result_node_id": "finalize-qualification",
+  "template": "templates/durable-repository-qualification.json",
+  "runtime": {"local": true, "network_required": false, "provider_required": false, "mutation_allowed": false},
+  "proof_boundary": {"mocked": false, "live": true, "provider_live": false}
+}

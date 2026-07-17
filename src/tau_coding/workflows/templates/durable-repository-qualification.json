@@ -1,0 +1,56 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "${RUN_ID}",
+  "run_dir": "${RUN_DIR}",
+  "goal": "${GOAL_OBJECT}",
+  "goal_hash": "${GOAL_HASH}",
+  "workflow": "${WORKFLOW_METADATA}",
+  "max_concurrency": 3,
+  "nodes": [
+    {
+      "node_id": "capture-repository", "role": "Capture immutable repository identity",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "capture", "--request", "${REQUEST_PATH}", "--output", "${CAPTURE_PATH}", "--receipt", "${CAPTURE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": [], "accepted_context_from": [], "receipt_path": "${CAPTURE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "qualify-documentation", "role": "Qualify documentation",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "documentation", "--request", "${REQUEST_PATH}", "--output", "${DOCUMENTATION_PATH}", "--receipt", "${DOCUMENTATION_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["capture-repository"], "accepted_context_from": ["capture-repository"], "receipt_path": "${DOCUMENTATION_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "qualify-tests", "role": "Qualify and repair test evidence",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "tests", "--request", "${REQUEST_PATH}", "--repair-packet", "${REPAIR_PACKET}", "--output", "${TESTS_PATH}", "--receipt", "${TESTS_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["capture-repository"], "accepted_context_from": ["capture-repository"], "receipt_path": "${TESTS_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "qualify-package", "role": "Qualify package metadata",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "package", "--request", "${REQUEST_PATH}", "--output", "${PACKAGE_PATH}", "--receipt", "${PACKAGE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["capture-repository"], "accepted_context_from": ["capture-repository"], "receipt_path": "${PACKAGE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "reconcile-qualification", "role": "Reconcile accepted qualification branches",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "reconcile", "--request", "${REQUEST_PATH}", "--output", "${RECONCILE_PATH}", "--receipt", "${RECONCILE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["qualify-documentation", "qualify-tests", "qualify-package"], "accepted_context_from": ["qualify-documentation", "qualify-tests", "qualify-package"], "receipt_path": "${RECONCILE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "publish-qualification", "role": "Publish exact approved qualification",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "produce", "--request", "${REQUEST_PATH}", "--receipt", "${PUBLISH_RECEIPT}"],
+      "depends_on": ["reconcile-qualification"], "accepted_context_from": ["reconcile-qualification"], "receipt_path": "${PUBLISH_RECEIPT}", "work_order_path": "${WORK_ORDER}", "timeout_seconds": 30, "max_attempts": 1,
+      "transaction": {
+        "schema": "tau.generic_artifact_transaction.v1", "transaction_id": "durable-qualification-publication", "artifact_root": "${ARTIFACT_ROOT}", "producer_id": "qualification-producer",
+        "validator": {"validator_id": "qualification-validator", "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "validate-transaction"]},
+        "reviewer": {"reviewer_id": "qualification-reviewer", "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "review"], "timeout_seconds": 30},
+        "continuation": {
+          "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "publish", "--request", "${REQUEST_PATH}", "--json-output", "${RESULT_JSON}", "--markdown-output", "${RESULT_MARKDOWN}", "--ledger", "${PUBLICATION_LEDGER}"],
+          "timeout_seconds": 30,
+          "approval": {"action": "generic_dag_transaction_continue", "packet_path": "${APPROVAL_PACKET}"}
+        }
+      }
+    },
+    {
+      "node_id": "finalize-qualification", "role": "Project durable qualification result",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.durable_repository_qualification", "finalize", "--request", "${REQUEST_PATH}", "--json-output", "${RESULT_JSON}", "--receipt", "${FINALIZE_RECEIPT}"],
+      "depends_on": ["publish-qualification"], "accepted_context_from": ["publish-qualification"], "receipt_path": "${FINALIZE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    }
+  ]
+}

@@ -39,6 +39,7 @@ class WorkflowDefinition:
             "MULTI_STEP_SEQUENTIAL",
             "FAN_OUT_FAN_IN",
             "MIXED_RETRY_APPROVAL",
+            "DURABLE_MIXED_REPAIR_APPROVAL",
         }:
             raise RuntimeError("workflow definition topology is unsupported")
         if self.availability != "AVAILABLE":

@@ -21,6 +21,7 @@ def test_workflows_list_and_describe() -> None:
         for workflow in json.loads(listed.stdout)["workflows"]
     ] == [
         "approved-release-bundle",
+        "durable-repository-qualification",
         "repository-evidence-map",
         "repository-readiness",
         "tau-operator-reference",
@@ -87,6 +88,47 @@ def test_workflows_approve_and_resume_release_bundle(tmp_path: Path) -> None:
     assert resumed.exit_code == 0, resumed.output
     assert json.loads(resumed.stdout)["result"]["status"] == "APPROVED"
     assert (publish_path / "approved-release-bundle.json").is_file()
+
+
+def test_workflows_repair_approve_and_resume_durable_qualification(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    run_dir = tmp_path / "run"
+    publish_path = tmp_path / "published"
+    runner = CliRunner()
+    first = runner.invoke(
+        app,
+        [
+            "workflows",
+            "run",
+            "durable-repository-qualification",
+            "--repo",
+            str(repo),
+            "--goal",
+            "Qualify this repository durably.",
+            "--publish-path",
+            str(publish_path),
+            "--run-dir",
+            str(run_dir),
+            "--inject-test-branch-failure",
+        ],
+    )
+    repaired = runner.invoke(
+        app, ["workflows", "repair", str(run_dir), "--node", "qualify-tests"]
+    )
+    resumed = runner.invoke(app, ["workflows", "resume", str(run_dir)])
+    approved = runner.invoke(app, ["workflows", "approve", str(run_dir)])
+    final = runner.invoke(app, ["workflows", "resume", str(run_dir)])
+
+    assert first.exit_code == 1
+    assert repaired.exit_code == 0, repaired.output
+    assert resumed.exit_code == 1
+    assert json.loads(resumed.stdout)["status"] == "BLOCKED"
+    assert approved.exit_code == 0, approved.output
+    assert final.exit_code == 0, final.output
+    assert json.loads(final.stdout)["result"]["status"] == "QUALIFIED"
+    assert (publish_path / "publication-ledger.json").is_file()
 
 
 def test_workflows_run_executes_packaged_definition(tmp_path: Path) -> None:

@@ -7,9 +7,11 @@ import sys
 import threading
 import time
 import webbrowser
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
+from tau_coding.dag_runtime.run_store import DagRunStoreError
 from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_viewer_server
 from tau_coding.generic_dag import run_generic_dag
 from tau_coding.workflows.catalog import get_workflow
@@ -17,10 +19,188 @@ from tau_coding.workflows.contracts import WORKFLOW_RUN_RECEIPT_SCHEMA
 from tau_coding.workflows.materialize import (
     MaterializedWorkflow,
     materialize_approved_release_bundle,
+    materialize_durable_repository_qualification,
     materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
 )
+
+
+def run_durable_repository_qualification_workflow(
+    *,
+    repo_path: Path,
+    human_goal: str,
+    publish_path: Path,
+    run_dir: Path,
+    open_viewer: bool,
+    browser_open: bool,
+    viewer_hold_seconds: float | None,
+    inject_test_branch_failure: bool = False,
+    crash_after_staged_node_id: str | None = None,
+    step_delay_seconds: float = 0.0,
+) -> dict[str, object]:
+    materialized = materialize_durable_repository_qualification(
+        definition=get_workflow("durable-repository-qualification"),
+        repo_path=repo_path,
+        human_goal=human_goal,
+        publish_path=publish_path,
+        run_dir=run_dir,
+        inject_test_branch_failure=inject_test_branch_failure,
+        step_delay_seconds=step_delay_seconds,
+    )
+    fault_injector: Callable[[str, Mapping[str, Any]], None] | None = None
+    if crash_after_staged_node_id is not None:
+        valid_node_ids = {
+            "capture-repository",
+            "qualify-documentation",
+            "qualify-tests",
+            "qualify-package",
+            "reconcile-qualification",
+        }
+        if crash_after_staged_node_id not in valid_node_ids:
+            raise RuntimeError("diagnostic crash node is invalid")
+
+        def inject(point: str, context: Mapping[str, Any]) -> None:
+            if (
+                point == "after_result_staged"
+                and context.get("node_id") == crash_after_staged_node_id
+            ):
+                raise RuntimeError(
+                    f"diagnostic_injected_crash_after_staged:{crash_after_staged_node_id}"
+                )
+
+        fault_injector = inject
+    return _run_materialized_workflow(
+        materialized=materialized,
+        result_filename="durable-repository-qualification.json",
+        open_viewer=open_viewer,
+        browser_open=browser_open,
+        viewer_hold_seconds=viewer_hold_seconds,
+        fault_injector=fault_injector,
+    )
+
+
+def repair_durable_repository_qualification(
+    *, run_dir: Path, node_id: str
+) -> dict[str, object]:
+    resolved = run_dir.expanduser().resolve()
+    if node_id != "qualify-tests":
+        raise RuntimeError("only qualify-tests is repairable in this workflow")
+    request = _read_object(
+        resolved / "input" / "durable-qualification-request.json",
+        "durable qualification request",
+    )
+    receipt = _read_object(resolved / "receipts" / f"{node_id}.json", "blocked receipt")
+    if receipt.get("status") != "BLOCKED" or receipt.get("errors") != [
+        "targeted_repair_required"
+    ]:
+        raise RuntimeError("qualify-tests is not blocked on targeted_repair_required")
+    goal = request.get("goal")
+    if not isinstance(goal, dict) or receipt.get("goal_hash") != goal.get("goal_hash"):
+        raise RuntimeError("blocked receipt goal hash does not match the active goal")
+    packet = {
+        "schema": "tau.workflow_repair_packet.v1",
+        "authorized": True,
+        "actor": {"id": "human:tau-operator", "auth_method": "manual"},
+        "node_id": node_id,
+        "goal_hash": goal["goal_hash"],
+        "request_sha256": request["request_sha256"],
+        "reason": "Repair only the blocked test qualification branch.",
+        "evidence": [str(resolved / "receipts" / f"{node_id}.json")],
+    }
+    packet_path = resolved / "input" / "repair-qualify-tests.json"
+    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "schema": "tau.workflow_repair_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "workflow_id": "durable-repository-qualification",
+        "run_dir": str(resolved),
+        "node_id": node_id,
+        "repair_packet_path": str(packet_path),
+        "goal_hash": goal["goal_hash"],
+    }
+
+
+def approve_packaged_workflow(*, run_dir: Path) -> dict[str, object]:
+    resolved = run_dir.expanduser().resolve()
+    if (resolved / "input" / "durable-qualification-request.json").is_file():
+        return _approve_transaction(
+            run_dir=resolved,
+            workflow_id="durable-repository-qualification",
+            transaction_node_id="publish-qualification",
+            reason="Human approved the exact accepted repository qualification.",
+        )
+    return approve_approved_release_bundle(run_dir=resolved)
+
+
+def resume_packaged_workflow(*, run_dir: Path) -> dict[str, object]:
+    resolved = run_dir.expanduser().resolve()
+    request_path = resolved / "input" / "durable-qualification-request.json"
+    if not request_path.is_file():
+        return resume_approved_release_bundle(run_dir=resolved)
+    request = _read_object(request_path, "durable qualification request")
+    goal = request.get("goal")
+    if not isinstance(goal, dict):
+        raise RuntimeError("durable qualification request goal is missing")
+    definition = get_workflow("durable-repository-qualification")
+    materialized = MaterializedWorkflow(
+        definition=definition,
+        request_path=request_path,
+        source_dag_path=resolved / "workflow" / "dag.json",
+        run_dir=resolved,
+        run_id=str(_read_object(resolved / "workflow" / "dag.json", "workflow DAG")["run_id"]),
+        goal=goal,
+    )
+    dag_receipt = _resume_durable_after_fencing(materialized.source_dag_path)
+    return _write_workflow_receipt(
+        materialized,
+        dag_receipt,
+        result_filename="durable-repository-qualification.json",
+        viewer=None,
+    )
+
+
+def _resume_durable_after_fencing(spec_path: Path) -> dict[str, Any]:
+    try:
+        return run_generic_dag(spec_path=spec_path, resume=True)
+    except DagRunStoreError as exc:
+        if exc.code != "dag_run_lease_held":
+            raise
+    time.sleep(15.25)
+    return run_generic_dag(spec_path=spec_path, resume=True)
+
+
+def _approve_transaction(
+    *, run_dir: Path, workflow_id: str, transaction_node_id: str, reason: str
+) -> dict[str, object]:
+    gate_path = run_dir / "transactions" / transaction_node_id / "approval-gate-receipt.json"
+    gate = _read_object(gate_path, "approval gate receipt")
+    target = gate.get("expected_target")
+    if not isinstance(target, dict):
+        raise RuntimeError("approval gate receipt has no exact expected_target")
+    packet = {
+        "schema": "tau.human_approval_packet.v1",
+        "approved": True,
+        "actor": {"id": "human:tau-operator", "auth_method": "manual"},
+        "action": "generic_dag_transaction_continue",
+        "target": target,
+        "reason": reason,
+        "evidence": [str(gate_path)],
+        "nonce": f"{workflow_id}:{target.get('accepted_manifest_sha256')}",
+        "signature": "declared-manual-approval",
+    }
+    packet_path = run_dir / "input" / "approval.json"
+    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "schema": "tau.workflow_approval_receipt.v1",
+        "status": "PASS",
+        "ok": True,
+        "workflow_id": workflow_id,
+        "run_dir": str(run_dir),
+        "approval_packet_path": str(packet_path),
+        "target": target,
+    }
 
 
 def run_approved_release_bundle_workflow(
@@ -56,39 +236,12 @@ def run_approved_release_bundle_workflow(
 
 
 def approve_approved_release_bundle(*, run_dir: Path) -> dict[str, object]:
-    resolved = run_dir.expanduser().resolve()
-    gate_path = (
-        resolved
-        / "transactions"
-        / "publish-approved-release"
-        / "approval-gate-receipt.json"
+    return _approve_transaction(
+        run_dir=run_dir.expanduser().resolve(),
+        workflow_id="approved-release-bundle",
+        transaction_node_id="publish-approved-release",
+        reason="Human approved the exact accepted release bundle for publication.",
     )
-    gate = _read_object(gate_path, "approval gate receipt")
-    target = gate.get("expected_target")
-    if not isinstance(target, dict):
-        raise RuntimeError("approval gate receipt has no exact expected_target")
-    packet = {
-        "schema": "tau.human_approval_packet.v1",
-        "approved": True,
-        "actor": {"id": "human:tau-operator", "auth_method": "manual"},
-        "action": "generic_dag_transaction_continue",
-        "target": target,
-        "reason": "Human approved the exact accepted release bundle for publication.",
-        "evidence": [str(gate_path)],
-        "nonce": f"approved-release:{target.get('accepted_manifest_sha256')}",
-        "signature": "declared-manual-approval",
-    }
-    packet_path = resolved / "input" / "approval.json"
-    packet_path.write_text(json.dumps(packet, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {
-        "schema": "tau.workflow_approval_receipt.v1",
-        "status": "PASS",
-        "ok": True,
-        "workflow_id": "approved-release-bundle",
-        "run_dir": str(resolved),
-        "approval_packet_path": str(packet_path),
-        "target": target,
-    }
 
 
 def resume_approved_release_bundle(*, run_dir: Path) -> dict[str, object]:
@@ -207,9 +360,13 @@ def _run_materialized_workflow(
     open_viewer: bool,
     browser_open: bool,
     viewer_hold_seconds: float | None,
+    fault_injector: Callable[[str, Mapping[str, Any]], None] | None = None,
 ) -> dict[str, object]:
     if not open_viewer:
-        dag_receipt = run_generic_dag(spec_path=materialized.source_dag_path)
+        dag_receipt = run_generic_dag(
+            spec_path=materialized.source_dag_path,
+            diagnostic_fault_injector=fault_injector,
+        )
         return _write_workflow_receipt(
             materialized,
             dag_receipt,
@@ -222,7 +379,12 @@ def _run_materialized_workflow(
 
     def run_workflow() -> None:
         try:
-            outcome.update(run_generic_dag(spec_path=materialized.source_dag_path))
+            outcome.update(
+                run_generic_dag(
+                    spec_path=materialized.source_dag_path,
+                    diagnostic_fault_injector=fault_injector,
+                )
+            )
         except BaseException as exc:  # pragma: no cover - forwarded across thread boundary
             failure.append(exc)
 
