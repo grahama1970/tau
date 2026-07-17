@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from tau_coding.dag_runtime.compiler import compile_generic_dag_plan
+from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.generic_dag import (
     GENERIC_DAG_NODE_RECEIPT_SCHEMA,
     GENERIC_DAG_SPEC_SCHEMA,
@@ -72,6 +73,146 @@ def test_generic_dag_runs_dependency_ordered_subprocess_workers(tmp_path: Path) 
     ]
     assert dispatch_order == ["planner", "coder", "reviewer"]
     assert validated_order == ["planner", "coder", "reviewer"]
+
+
+def test_generic_dag_preserves_accepted_output_for_downstream_context(
+    tmp_path: Path,
+) -> None:
+    first_receipt = tmp_path / "receipts" / "first.json"
+    second_receipt = tmp_path / "receipts" / "second.json"
+    accepted_output = {"schema": "example.output.v1", "summary": "useful result"}
+    first = _node(
+        tmp_path,
+        "first",
+        command=[
+            sys.executable,
+            "-c",
+            _receipt_writer_code(
+                first_receipt,
+                node_id="first",
+                accepted_output=accepted_output,
+            ),
+        ],
+    )
+    second_payload = {
+        "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
+        "node_id": "second",
+        "status": "PASS",
+        "verdict": "PASS",
+        "artifacts": [],
+        "commands_run": ["inspect context"],
+        "handoff_summary": "context accepted",
+        "errors": [],
+        "policy_exceptions": [],
+    }
+    second_code = (
+        "import json, os; from pathlib import Path; "
+        "context=json.loads(Path(os.environ['TAU_GENERIC_DAG_CONTEXT']).read_text()); "
+        f"assert context['accepted_inputs'][0] == {accepted_output!r}; "
+        f"p=Path({str(second_receipt)!r}); p.parent.mkdir(parents=True, exist_ok=True); "
+        f"p.write_text(json.dumps({second_payload!r}))"
+    )
+    spec_path = _write_spec(
+        tmp_path,
+        [
+            first,
+            _node(
+                tmp_path,
+                "second",
+                depends_on=["first"],
+                command=[sys.executable, "-c", second_code],
+            ),
+        ],
+    )
+
+    receipt = run_generic_dag(spec_path=spec_path)
+
+    assert receipt["status"] == "PASS"
+    assert receipt["nodes"][0]["accepted_output"] == accepted_output
+
+    resumed = run_generic_dag(spec_path=spec_path, resume=True)
+    assert resumed["nodes"][0]["resumed"] is True
+    assert resumed["nodes"][0]["accepted_output"] == accepted_output
+
+
+def test_generic_dag_validates_full_goal_and_preserves_legacy_hash(tmp_path: Path) -> None:
+    spec_path = _write_spec(tmp_path, [_node(tmp_path, "only")])
+    payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    goal_without_hash = {
+        "goal_id": "goal:test",
+        "goal_version": 1,
+        "summary": "Test full goal binding.",
+        "completion_criteria": ["The node passes."],
+    }
+    goal_hash = canonical_sha256(goal_without_hash)
+    payload["goal"] = {**goal_without_hash, "goal_hash": goal_hash}
+    payload["goal_hash"] = goal_hash
+    payload["nodes"][0]["command"] = [
+        sys.executable,
+        "-c",
+        _receipt_writer_code(
+            Path(str(payload["nodes"][0]["receipt_path"])),
+            node_id="only",
+            goal_hash=goal_hash,
+        ),
+    ]
+    spec_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert run_generic_dag(spec_path=spec_path)["status"] == "PASS"
+
+    legacy = _write_spec(tmp_path / "legacy", [_node(tmp_path / "legacy", "legacy")])
+    legacy_payload = json.loads(legacy.read_text(encoding="utf-8"))
+    legacy_payload["goal_hash"] = "sha256:legacy"
+    legacy.write_text(json.dumps(legacy_payload), encoding="utf-8")
+    assert compile_generic_dag_plan(legacy_payload, source_path=legacy).goal_binding.to_value() == {
+        "kind": "hash_only",
+        "goal_hash": "sha256:legacy",
+    }
+
+
+def test_generic_dag_rejects_full_goal_hash_mismatch(tmp_path: Path) -> None:
+    spec_path = _write_spec(tmp_path, [_node(tmp_path, "only")])
+    payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    payload["goal"] = {
+        "goal_id": "goal:test",
+        "goal_version": 1,
+        "goal_hash": "sha256:wrong",
+        "summary": "Test full goal binding.",
+        "completion_criteria": ["The node passes."],
+    }
+    payload["goal_hash"] = "sha256:different"
+    spec_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    try:
+        run_generic_dag(spec_path=spec_path)
+    except RuntimeError as exc:
+        assert str(exc) == "generic DAG goal.goal_hash does not match canonical goal"
+    else:
+        raise AssertionError("full goal hash mismatch should fail closed")
+
+
+def test_generic_dag_rejects_full_and_legacy_goal_hash_mismatch(tmp_path: Path) -> None:
+    spec_path = _write_spec(tmp_path, [_node(tmp_path, "only")])
+    payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    goal_without_hash = {
+        "goal_id": "goal:test",
+        "goal_version": 1,
+        "summary": "Test full goal binding.",
+        "completion_criteria": ["The node passes."],
+    }
+    payload["goal"] = {
+        **goal_without_hash,
+        "goal_hash": canonical_sha256(goal_without_hash),
+    }
+    payload["goal_hash"] = "sha256:different"
+    spec_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    try:
+        run_generic_dag(spec_path=spec_path)
+    except RuntimeError as exc:
+        assert str(exc) == "generic DAG goal_hash does not match goal.goal_hash"
+    else:
+        raise AssertionError("full and legacy goal hash mismatch should fail closed")
 
 
 def test_generic_dag_honors_declared_concurrency(tmp_path: Path) -> None:
@@ -680,6 +821,7 @@ def test_generic_dag_rejects_provider_live_receipt_without_binding(
 
 
 def _write_spec(tmp_path: Path, nodes: list[dict[str, object]]) -> Path:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     spec = {
         "schema": GENERIC_DAG_SPEC_SCHEMA,
         "run_id": "run-generic-dag-test",
@@ -725,6 +867,8 @@ def _receipt_writer_code(
     *,
     node_id: str,
     work_order_path: Path | None = None,
+    accepted_output: dict[str, object] | None = None,
+    goal_hash: str | None = None,
 ) -> str:
     payload = {
         "schema": GENERIC_DAG_NODE_RECEIPT_SCHEMA,
@@ -739,6 +883,10 @@ def _receipt_writer_code(
     }
     if work_order_path is not None:
         payload["work_order_sha256"] = _sha256(work_order_path)
+    if accepted_output is not None:
+        payload["accepted_output"] = accepted_output
+    if goal_hash is not None:
+        payload["goal_hash"] = goal_hash
     return (
         "import json; "
         "from pathlib import Path; "

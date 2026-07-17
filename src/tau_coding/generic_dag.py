@@ -104,6 +104,7 @@ def run_generic_dag(
     current_state_path = run_dir / "current-state.json"
     nodes_by_id = nodes
     plan = compile_generic_dag_plan(spec, source_path=resolved_spec_path)
+    goal_hash = _generic_goal_hash(spec)
     run_store_path = run_dir / "dag-run.sqlite3"
     active_lease: DagRunLease | None = None
 
@@ -205,7 +206,7 @@ def run_generic_dag(
             events_path=events_path,
             resume=resume,
             accepted_inputs=list(accepted_inputs),
-            goal_hash=str(spec.get("goal_hash")) if spec.get("goal_hash") else None,
+            goal_hash=goal_hash,
             scheduler_attempt=execution.attempt,
             runtime_identity={
                 "run_id": execution.run_id,
@@ -215,9 +216,7 @@ def run_generic_dag(
                 "attempt_id": execution.attempt_id,
                 "attempt": execution.attempt,
                 "execution_token": execution.idempotency_key,
-                "goal": str(spec.get("goal_hash"))
-                if spec.get("goal_hash")
-                else plan.runtime_goal_hash,
+                "goal": goal_hash or plan.runtime_goal_hash,
             },
             cancel_event=execution.cancel_event,
             progress_sink=lambda node_id, attempt, phase, evidence: (
@@ -1659,6 +1658,7 @@ def _node_record(
     finished_at: str,
     duration_seconds: float,
 ) -> dict[str, Any]:
+    accepted_output = receipt.get("accepted_output")
     return {
         "node_id": node.node_id,
         "role": node.role,
@@ -1686,6 +1686,7 @@ def _node_record(
         "resumed": resumed,
         "command_results": command_results,
         "artifacts": receipt.get("artifacts") if isinstance(receipt.get("artifacts"), list) else [],
+        "accepted_output": accepted_output if isinstance(accepted_output, dict) else None,
         "errors": receipt.get("errors") if isinstance(receipt.get("errors"), list) else [],
     }
 
@@ -1716,6 +1717,8 @@ def _blocked_node_record(
         "work_order_sha256": _work_order_sha256(node),
         "resumed": False,
         "command_results": command_results or [],
+        "artifacts": [],
+        "accepted_output": None,
         "errors": errors,
     }
 
@@ -1730,6 +1733,43 @@ def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNod
         raise RuntimeError("generic DAG spec run_id must be a non-empty string")
     if not isinstance(spec["run_dir"], str) or not spec["run_dir"].strip():
         raise RuntimeError("generic DAG spec run_dir must be a non-empty string")
+    goal = spec.get("goal")
+    legacy_goal_hash = spec.get("goal_hash")
+    if goal is not None:
+        if not isinstance(goal, dict):
+            raise RuntimeError("generic DAG goal must be an object")
+        for key in (
+            "goal_id",
+            "goal_version",
+            "goal_hash",
+            "summary",
+            "completion_criteria",
+        ):
+            if key not in goal:
+                raise RuntimeError(f"generic DAG goal missing {key}")
+        if not isinstance(goal["goal_id"], str) or not goal["goal_id"].strip():
+            raise RuntimeError("generic DAG goal.goal_id must be a non-empty string")
+        if not isinstance(goal["goal_version"], (int, str)) or isinstance(
+            goal["goal_version"], bool
+        ):
+            raise RuntimeError("generic DAG goal.goal_version must be an integer or string")
+        if not isinstance(goal["summary"], str) or not goal["summary"].strip():
+            raise RuntimeError("generic DAG goal.summary must be a non-empty string")
+        criteria = goal["completion_criteria"]
+        if (
+            not isinstance(criteria, list)
+            or not criteria
+            or not all(isinstance(item, str) and item.strip() for item in criteria)
+        ):
+            raise RuntimeError(
+                "generic DAG goal.completion_criteria must be a non-empty string list"
+            )
+        hash_input = {key: value for key, value in goal.items() if key != "goal_hash"}
+        expected = canonical_sha256(hash_input)
+        if goal["goal_hash"] != expected:
+            raise RuntimeError("generic DAG goal.goal_hash does not match canonical goal")
+        if legacy_goal_hash is not None and legacy_goal_hash != goal["goal_hash"]:
+            raise RuntimeError("generic DAG goal_hash does not match goal.goal_hash")
     max_concurrency = spec.get("max_concurrency", 1)
     if type(max_concurrency) is not int or max_concurrency < 1:
         raise RuntimeError("generic DAG spec max_concurrency must be a positive integer")
@@ -1751,6 +1791,14 @@ def _validate_spec(spec: dict[str, Any], *, spec_path: Path) -> dict[str, DagNod
                 raise RuntimeError(f"node {node.node_id} depends on unknown node {dep}")
     _topological_order(nodes)
     return nodes
+
+
+def _generic_goal_hash(spec: dict[str, Any]) -> str | None:
+    goal = spec.get("goal")
+    if isinstance(goal, dict) and isinstance(goal.get("goal_hash"), str):
+        return str(goal["goal_hash"])
+    value = spec.get("goal_hash")
+    return str(value) if isinstance(value, str) and value else None
 
 
 def load_generic_dag_spec(path: Path) -> dict[str, Any]:

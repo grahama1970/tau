@@ -1,0 +1,24 @@
+{
+  "schema": "tau.workflow_definition.v1",
+  "workflow_id": "repository-readiness",
+  "workflow_version": 1,
+  "title": "Repository Readiness",
+  "summary": "Inspect a local Git checkout, validate the requested readiness policy, and publish a hash-bound readiness report.",
+  "topology": "LINEAR",
+  "availability": "AVAILABLE",
+  "input_schema": "tau.repository_readiness_request.v1",
+  "result_schema": "tau.repository_readiness_report.v1",
+  "result_node_id": "publish-readiness",
+  "template": "templates/repository-readiness.json",
+  "runtime": {
+    "local": true,
+    "network_required": false,
+    "provider_required": false,
+    "mutation_allowed": false
+  },
+  "proof_boundary": {
+    "mocked": false,
+    "live": true,
+    "provider_live": false
+  }
+}

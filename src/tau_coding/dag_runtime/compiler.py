@@ -68,7 +68,15 @@ PROJECT_NODE_KEYS = {
     "persistent_subagent",
     "runtime_backend",
 }
-GENERIC_ROOT_KEYS = {"schema", "run_id", "run_dir", "events_jsonl", "goal_hash", "nodes"}
+GENERIC_ROOT_KEYS = {
+    "schema",
+    "run_id",
+    "run_dir",
+    "events_jsonl",
+    "goal",
+    "goal_hash",
+    "nodes",
+}
 GENERIC_NODE_KEYS = {
     "node_id",
     "role",
@@ -324,12 +332,14 @@ def compile_generic_dag_plan(payload: dict[str, Any], *, source_path: Path) -> D
         )
         for node_id in sorted(typed_nodes)
     )
+    goal = payload.get("goal")
     goal_hash = payload.get("goal_hash")
-    goal_binding = (
-        {"kind": "hash_only", "goal_hash": goal_hash}
-        if isinstance(goal_hash, str) and goal_hash
-        else {"kind": "none"}
-    )
+    if isinstance(goal, Mapping):
+        goal_binding = {"kind": "full", **dict(goal)}
+    elif isinstance(goal_hash, str) and goal_hash:
+        goal_binding = {"kind": "hash_only", "goal_hash": goal_hash}
+    else:
+        goal_binding = {"kind": "none"}
     plan = DagPlan(
         schema=DAG_PLAN_SCHEMA,
         plan_id=f"generic:{payload['run_id']}",

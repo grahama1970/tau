@@ -260,6 +260,11 @@ from tau_coding.tui.proof import (
     render_textual_tui_memory_stage_proof,
 )
 from tau_coding.visible_dag_poc import inspect_visible_dag_run, run_visible_dag_poc
+from tau_coding.workflows.catalog import (
+    get_workflow,
+    workflow_catalog_payload,
+)
+from tau_coding.workflows.runner import run_repository_readiness_workflow
 from tau_coding.zero_trust_redteam import run_zero_trust_redteam
 
 app = typer.Typer(
@@ -268,6 +273,81 @@ app = typer.Typer(
     add_completion=False,
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
+workflows_app = typer.Typer(
+    add_completion=False,
+    help="Discover and run packaged canonical Tau workflows.",
+)
+app.add_typer(workflows_app, name="workflows")
+
+
+@workflows_app.command("list")
+def workflows_list_command(
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    payload = workflow_catalog_payload()
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    workflows = payload["workflows"]
+    if not isinstance(workflows, list):
+        raise RuntimeError("workflow catalog workflows must be a list")
+    for workflow in workflows:
+        if isinstance(workflow, dict):
+            typer.echo(
+                f"{workflow['workflow_id']}\t"
+                f"{workflow['topology']}\t"
+                f"{workflow['title']}"
+            )
+
+
+@workflows_app.command("describe")
+def workflows_describe_command(
+    workflow_id: str,
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    try:
+        payload = get_workflow(workflow_id).public_payload()
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    typer.echo(f"{payload['title']} ({payload['workflow_id']})")
+    typer.echo(str(payload["summary"]))
+    typer.echo(f"Topology: {payload['topology']}")
+
+
+@workflows_app.command("run")
+def workflows_run_command(
+    workflow_id: str,
+    repo: Annotated[Path, typer.Option("--repo")],
+    goal: Annotated[str, typer.Option("--goal")],
+    run_dir: Annotated[Path, typer.Option("--run-dir")],
+    require_clean: Annotated[bool, typer.Option("--require-clean")] = False,
+    open_viewer: Annotated[bool, typer.Option("--open-viewer")] = False,
+    no_browser_open: Annotated[bool, typer.Option("--no-browser-open")] = False,
+    viewer_hold_seconds: Annotated[
+        float | None,
+        typer.Option("--viewer-hold-seconds", hidden=True),
+    ] = None,
+) -> None:
+    if workflow_id != "repository-readiness":
+        raise typer.BadParameter(f"unknown workflow_id: {workflow_id}")
+    try:
+        payload = run_repository_readiness_workflow(
+            repo_path=repo,
+            human_goal=goal,
+            require_clean=require_clean,
+            run_dir=run_dir,
+            open_viewer=open_viewer,
+            browser_open=not no_browser_open,
+            viewer_hold_seconds=viewer_hold_seconds,
+        )
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if payload.get("ok") is not True:
+        raise typer.Exit(1)
 
 
 def doctor_command(*, repo_root: Path | None = None) -> dict[str, object]:
@@ -694,6 +774,28 @@ def main(
     positional_args = prompt_args or []
     command = positional_args[0] if positional_args else None
     initial_prompt = " ".join(positional_args) if positional_args else None
+
+    if prompt_option is None and command == "workflows":
+        try:
+            payload, json_output = _dispatch_workflows_cli(positional_args[1:])
+        except RuntimeError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        if json_output or positional_args[1:2] == ["run"]:
+            typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        elif positional_args[1:2] == ["list"]:
+            for workflow in payload["workflows"]:
+                typer.echo(
+                    f"{workflow['workflow_id']}\t"
+                    f"{workflow['topology']}\t"
+                    f"{workflow['title']}"
+                )
+        else:
+            typer.echo(f"{payload['title']} ({payload['workflow_id']})")
+            typer.echo(str(payload["summary"]))
+            typer.echo(f"Topology: {payload['topology']}")
+        if payload.get("ok") is False:
+            raise typer.Exit(1)
+        raise typer.Exit()
 
     if prompt_option is None and command == "sessions" and len(positional_args) == 1:
         render_session_list(SessionManager().list_sessions())
@@ -3413,6 +3515,63 @@ def _run_dag_cli_command(args: list[str], *, command_name: str) -> dict[str, obj
         spec_path=spec_path,
         resume=bool(options["resume"]),
     )
+
+
+def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
+    if not args:
+        raise RuntimeError("Usage: tau workflows <list|describe|run>")
+    subcommand = args[0]
+    remaining = args[1:]
+    if subcommand == "list":
+        if remaining not in ([], ["--json"]):
+            raise RuntimeError("Usage: tau workflows list [--json]")
+        return workflow_catalog_payload(), remaining == ["--json"]
+    if subcommand == "describe":
+        json_output = "--json" in remaining
+        positional = [item for item in remaining if item != "--json"]
+        if len(positional) != 1:
+            raise RuntimeError("Usage: tau workflows describe <workflow-id> [--json]")
+        return get_workflow(positional[0]).public_payload(), json_output
+    if subcommand != "run":
+        raise RuntimeError(f"unknown workflows subcommand: {subcommand}")
+    if not remaining:
+        raise RuntimeError("Usage: tau workflows run repository-readiness [options]")
+    workflow_id = remaining[0]
+    if workflow_id != "repository-readiness":
+        raise RuntimeError(f"unknown workflow_id: {workflow_id}")
+    values: dict[str, str] = {}
+    flags: set[str] = set()
+    index = 1
+    value_options = {"--repo", "--goal", "--run-dir", "--viewer-hold-seconds"}
+    flag_options = {"--require-clean", "--open-viewer", "--no-browser-open"}
+    while index < len(remaining):
+        argument = remaining[index]
+        if argument in flag_options:
+            flags.add(argument)
+            index += 1
+            continue
+        if argument not in value_options or index + 1 >= len(remaining):
+            raise RuntimeError(f"unknown or incomplete workflows run option: {argument}")
+        values[argument] = remaining[index + 1]
+        index += 2
+    missing = [option for option in ("--repo", "--goal", "--run-dir") if option not in values]
+    if missing:
+        raise RuntimeError(f"workflows run missing required option: {missing[0]}")
+    hold = values.get("--viewer-hold-seconds")
+    try:
+        hold_seconds = float(hold) if hold is not None else None
+    except ValueError as exc:
+        raise RuntimeError("--viewer-hold-seconds must be a number") from exc
+    payload = run_repository_readiness_workflow(
+        repo_path=Path(values["--repo"]),
+        human_goal=values["--goal"],
+        require_clean="--require-clean" in flags,
+        run_dir=Path(values["--run-dir"]),
+        open_viewer="--open-viewer" in flags,
+        browser_open="--no-browser-open" not in flags,
+        viewer_hold_seconds=hold_seconds,
+    )
+    return dict(payload), True
 
 
 def _parse_dag_plan_cli_args(args: list[str]) -> tuple[Path, Path]:

@@ -8,6 +8,7 @@ from tau_coding.dag_runtime import (
     compile_project_dag_plan,
     write_dag_plan,
 )
+from tau_coding.dag_runtime.model import canonical_sha256
 
 
 def test_project_contract_compiles_routes_joins_security_and_evidence(tmp_path: Path) -> None:
@@ -169,6 +170,35 @@ def test_generic_spec_compiles_control_and_context_edges(tmp_path: Path) -> None
         assert receipt_binding["anchor"] == "filesystem_root"
         assert receipt_binding["portable"] is False
         assert receipt_binding["declared_path"] == str(tmp_path / f"{node.node_id}.json")
+
+
+def test_generic_full_goal_and_workflow_extension_are_hash_bound(tmp_path: Path) -> None:
+    payload = _generic_payload(tmp_path)
+    goal_without_hash = {
+        "goal_id": "repository-readiness:test",
+        "goal_version": 1,
+        "summary": "Inspect the repository.",
+        "completion_criteria": ["Publish only after validation passes."],
+    }
+    payload["goal"] = {
+        **goal_without_hash,
+        "goal_hash": canonical_sha256(goal_without_hash),
+    }
+    payload["goal_hash"] = payload["goal"]["goal_hash"]
+    payload["workflow"] = {
+        "schema": "tau.workflow_metadata.v1",
+        "workflow_id": "repository-readiness",
+    }
+
+    first = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+    payload["workflow"] = {**payload["workflow"], "title": "Changed"}
+    second = compile_generic_dag_plan(payload, source_path=tmp_path / "dag.json")
+
+    assert first.goal_binding.to_value() == {"kind": "full", **payload["goal"]}
+    assert first.source_extensions.to_value()["workflow"]["workflow_id"] == (
+        "repository-readiness"
+    )
+    assert first.plan_sha256 != second.plan_sha256
 
 
 def test_generic_relative_run_dir_retains_invocation_cwd_anchor(tmp_path: Path) -> None:
