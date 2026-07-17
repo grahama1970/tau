@@ -23,6 +23,7 @@ def test_panel_context_consumes_persona_dream_panel_without_default_fixture(
                 "image_path": str(image),
                 "visual_review_receipt": str(visual_review),
                 "panel_prompt": "Use the active storyboard context.",
+                "visual_review_prompt": "Review the supplied identity grid.",
                 "write_receipts_to_panel_run_root": "true",
             }
         }
@@ -36,6 +37,7 @@ def test_panel_context_consumes_persona_dream_panel_without_default_fixture(
     assert panel["image_path"] == str(image)
     assert panel["visual_review_receipt"] == str(visual_review)
     assert panel["panel_prompt"] == "Use the active storyboard context."
+    assert panel["visual_review_prompt"] == "Review the supplied identity grid."
     assert panel["write_receipts_to_panel_run_root"] == "true"
 
 

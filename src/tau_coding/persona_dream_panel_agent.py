@@ -613,12 +613,13 @@ def _review_panel_image_with_scillm(
     artifact_dir: Path,
 ) -> dict[str, Any]:
     image_path = Path(str(panel["image_path"])).resolve()
-    prompt = (
+    default_prompt = (
         "Review this generated persona-dream panel for basic one-scene eligibility. "
         "Return JSON only with keys status, summary, blocking_findings, passed_entities. "
         "Use status PASS if the image is a coherent single cinematic panel suitable "
         "for a dry-run one-scene Kling request; otherwise use NEEDS_CHANGES."
     )
+    prompt = str(panel.get("visual_review_prompt") or default_prompt).strip()
     payload = {
         "model": str(panel.get("scillm_vlm_model") or "gpt-5.5"),
         "stream": True,
@@ -657,6 +658,7 @@ def _review_panel_image_with_scillm(
         "surface": "scillm.chat_completions.image_url",
         "model": payload["model"],
         "image_path": str(image_path),
+        "review_prompt_sha256": f"sha256:{hashlib.sha256(prompt.encode('utf-8')).hexdigest()}",
         "api_key_source": auth["source"],
         "request": {**payload, "messages": "<redacted-image-url-request>"},
         "status": "BLOCKED",
@@ -1410,6 +1412,7 @@ def _panel_context(start_payload: Mapping[str, Any]) -> dict[str, str]:
         "visual_review_receipt": str(panel.get("visual_review_receipt") or DEFAULT_VISUAL_REVIEW),
         "image_generation_receipt": str(panel.get("image_generation_receipt") or ""),
         "panel_prompt": str(panel.get("panel_prompt") or ""),
+        "visual_review_prompt": str(panel.get("visual_review_prompt") or ""),
         "scillm_live_panel": str(panel.get("scillm_live_panel") or ""),
         "scillm_image_model": str(panel.get("scillm_image_model") or ""),
         "scillm_image_auth": str(panel.get("scillm_image_auth") or ""),
