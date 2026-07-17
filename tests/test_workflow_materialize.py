@@ -7,9 +7,43 @@ import pytest
 from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.workflows.catalog import get_workflow
 from tau_coding.workflows.materialize import (
+    materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
 )
+
+
+def test_evidence_map_materializer_writes_locked_fan_out_fan_in_dag(
+    tmp_path: Path,
+) -> None:
+    repo = _git_repo(tmp_path / "repo")
+    materialized = materialize_repository_evidence_map(
+        definition=get_workflow("repository-evidence-map"),
+        repo_path=repo,
+        human_goal="Map this repository.",
+        require_tests=True,
+        run_dir=tmp_path / "run",
+    )
+
+    request = json.loads(materialized.request_path.read_text(encoding="utf-8"))
+    dag = json.loads(materialized.source_dag_path.read_text(encoding="utf-8"))
+    assert request["goal"]["goal_hash"] == canonical_sha256(
+        {key: value for key, value in request["goal"].items() if key != "goal_hash"}
+    )
+    assert dag["max_concurrency"] == 3
+    assert [node["node_id"] for node in dag["nodes"]] == [
+        "inventory-repository",
+        "analyze-documentation",
+        "analyze-tests",
+        "analyze-package",
+        "publish-evidence-map",
+    ]
+    assert dag["nodes"][-1]["accepted_context_from"] == [
+        "inventory-repository",
+        "analyze-documentation",
+        "analyze-tests",
+        "analyze-package",
+    ]
 
 
 def test_materializer_writes_full_goal_and_three_node_dag(tmp_path: Path) -> None:

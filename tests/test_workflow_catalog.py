@@ -5,15 +5,17 @@ from tau_coding.workflows.catalog import (
 )
 
 
-def test_catalog_contains_exactly_two_locked_workflows() -> None:
+def test_catalog_contains_exactly_three_locked_workflows() -> None:
     workflows = list_workflows()
 
     assert [item.workflow_id for item in workflows] == [
+        "repository-evidence-map",
         "repository-readiness",
         "tau-operator-reference",
     ]
-    assert workflows[0].topology == "LINEAR"
-    assert workflows[1].topology == "MULTI_STEP_SEQUENTIAL"
+    assert workflows[0].topology == "FAN_OUT_FAN_IN"
+    assert workflows[1].topology == "LINEAR"
+    assert workflows[2].topology == "MULTI_STEP_SEQUENTIAL"
     assert all(
         item.runtime
         == {
@@ -24,16 +26,18 @@ def test_catalog_contains_exactly_two_locked_workflows() -> None:
         }
         for item in workflows
     )
-    assert get_workflow("repository-readiness") == workflows[0]
-    assert get_workflow("tau-operator-reference") == workflows[1]
+    assert get_workflow("repository-evidence-map") == workflows[0]
+    assert get_workflow("repository-readiness") == workflows[1]
+    assert get_workflow("tau-operator-reference") == workflows[2]
 
 
 def test_catalog_public_payload_is_stable() -> None:
     payload = workflow_catalog_payload()
 
     assert payload["schema"] == "tau.workflow_catalog.v1"
-    assert len(payload["workflows"]) == 2
+    assert len(payload["workflows"]) == 3
     assert [workflow["workflow_id"] for workflow in payload["workflows"]] == [
+        "repository-evidence-map",
         "repository-readiness",
         "tau-operator-reference",
     ]

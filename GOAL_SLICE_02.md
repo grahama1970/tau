@@ -4,7 +4,7 @@
 **Owner:** Human
 **Goal ID:** tau-canonical-workflow-slice-02
 **Goal Version:** 1
-**Goal Hash:** sha256:98679fa26d7f8f77c2a345d90b28f2771b081c5c83e53be2c1af5682d70b033d
+**Goal Hash:** sha256:177927ed9b7fabe84208d492ca716b64be92a219f045b1e8911addee081eb684
 
 ## Immutable Goal
 
@@ -13,7 +13,7 @@ and versioned public CLI evidence.
 
 ## Completion Criteria
 
-1. Expose exactly two packaged workflows including `tau-operator-reference`.
+1. Expose `tau-operator-reference` through the packaged workflow catalog.
 2. Execute the four locked operator-reference nodes sequentially at concurrency one.
 3. Read only the fixed Tau source set from the requested local repository.
 4. Capture actual local executable output for the fixed versioned public CLI probes.
@@ -24,7 +24,9 @@ and versioned public CLI evidence.
 
 ## Locked Workflow
 
-The catalog contains exactly `repository-readiness` and `tau-operator-reference`.
+At Slice 02 acceptance, the catalog contains `repository-readiness` and
+`tau-operator-reference`; later immutable-goal rungs may add workflows without
+invalidating this workflow's durable catalog-presence criterion.
 The new workflow has topology `MULTI_STEP_SEQUENTIAL`, `max_concurrency: 1`, and
 these nodes:
 

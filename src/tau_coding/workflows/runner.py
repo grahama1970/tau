@@ -16,9 +16,38 @@ from tau_coding.workflows.catalog import get_workflow
 from tau_coding.workflows.contracts import WORKFLOW_RUN_RECEIPT_SCHEMA
 from tau_coding.workflows.materialize import (
     MaterializedWorkflow,
+    materialize_repository_evidence_map,
     materialize_repository_readiness,
     materialize_tau_operator_reference,
 )
+
+
+def run_repository_evidence_map_workflow(
+    *,
+    repo_path: Path,
+    human_goal: str,
+    require_tests: bool,
+    run_dir: Path,
+    open_viewer: bool,
+    browser_open: bool,
+    viewer_hold_seconds: float | None,
+    step_delay_seconds: float = 0.0,
+) -> dict[str, object]:
+    materialized = materialize_repository_evidence_map(
+        definition=get_workflow("repository-evidence-map"),
+        repo_path=repo_path,
+        human_goal=human_goal,
+        require_tests=require_tests,
+        run_dir=run_dir,
+        step_delay_seconds=step_delay_seconds,
+    )
+    return _run_materialized_workflow(
+        materialized=materialized,
+        result_filename="repository-evidence-map.json",
+        open_viewer=open_viewer,
+        browser_open=browser_open,
+        viewer_hold_seconds=viewer_hold_seconds,
+    )
 
 
 def run_repository_readiness_workflow(

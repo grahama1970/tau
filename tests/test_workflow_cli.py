@@ -16,9 +16,14 @@ def test_workflows_list_and_describe() -> None:
     )
 
     assert listed.exit_code == 0, listed.output
-    assert json.loads(listed.stdout)["workflows"][0]["workflow_id"] == (
-        "repository-readiness"
-    )
+    assert [
+        workflow["workflow_id"]
+        for workflow in json.loads(listed.stdout)["workflows"]
+    ] == [
+        "repository-evidence-map",
+        "repository-readiness",
+        "tau-operator-reference",
+    ]
     assert described.exit_code == 0, described.output
     assert json.loads(described.stdout)["topology"] == "LINEAR"
 
@@ -39,6 +44,16 @@ def test_workflows_operator_reference_description_and_run_help() -> None:
     assert json.loads(described.stdout)["topology"] == "MULTI_STEP_SEQUENTIAL"
     assert help_probe.returncode == 0, help_probe.stderr
     assert "--required-workflow" in help_probe.stdout
+    assert "--require-tests" in help_probe.stdout
+
+
+def test_workflows_describes_evidence_map() -> None:
+    result = CliRunner().invoke(
+        app, ["workflows", "describe", "repository-evidence-map", "--json"]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["topology"] == "FAN_OUT_FAN_IN"
 
 
 def test_workflows_run_executes_packaged_definition(tmp_path: Path) -> None:

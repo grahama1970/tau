@@ -27,7 +27,7 @@ OPERATOR_REFERENCE_GOAL_WITHOUT_HASH: dict[str, object] = {
         "sources and versioned public CLI evidence."
     ),
     "completion_criteria": [
-        "Expose exactly two packaged workflows including tau-operator-reference.",
+        "Expose tau-operator-reference through the packaged workflow catalog.",
         "Execute the four locked operator-reference nodes sequentially at concurrency one.",
         "Read only the fixed Tau source set from the requested local repository.",
         "Capture actual local executable output for the fixed versioned public CLI probes.",
@@ -65,6 +65,11 @@ OPERATOR_CLI_PROBE_MANIFEST: dict[str, object] = {
         },
     ],
 }
+EVIDENCE_MAP_COMPLETION_CRITERIA = [
+    "Inventory the exact requested Git repository without mutation.",
+    "Analyze documentation, tests, and package metadata concurrently.",
+    "Publish a repository evidence map only after every required branch is accepted.",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -279,6 +284,98 @@ def materialize_tau_operator_reference(
     materialized = _replace_tokens(template, replacements)
     source_dag_path = resolved_run_dir / "workflow" / "dag.json"
     _write_json(source_dag_path, materialized)
+    return MaterializedWorkflow(
+        definition=definition,
+        request_path=request_path,
+        source_dag_path=source_dag_path,
+        run_dir=resolved_run_dir,
+        run_id=run_id,
+        goal=goal,
+    )
+
+
+def materialize_repository_evidence_map(
+    *,
+    definition: WorkflowDefinition,
+    repo_path: Path,
+    human_goal: str,
+    require_tests: bool,
+    run_dir: Path,
+    step_delay_seconds: float = 0.0,
+) -> MaterializedWorkflow:
+    if definition.workflow_id != "repository-evidence-map":
+        raise RuntimeError("materializer supports only repository-evidence-map")
+    resolved_repo = repo_path.expanduser().resolve()
+    if not resolved_repo.is_dir():
+        raise RuntimeError(f"repository path is not a directory: {resolved_repo}")
+    if not human_goal.strip():
+        raise RuntimeError("workflow goal must be a non-empty string")
+    if step_delay_seconds < 0:
+        raise RuntimeError("step_delay_seconds must be non-negative")
+    resolved_run_dir = run_dir.expanduser().resolve()
+    if (resolved_run_dir / "dag-run.sqlite3").exists():
+        raise RuntimeError(f"workflow run already exists: {resolved_run_dir}")
+
+    request_seed = {
+        "schema": "tau.repository_evidence_map_request.v1",
+        "repo_path": str(resolved_repo),
+        "human_goal": human_goal.strip(),
+        "require_tests": require_tests,
+    }
+    request_sha = canonical_sha256(request_seed)
+    goal_without_hash: dict[str, object] = {
+        "goal_id": f"repository-evidence-map:{request_sha.removeprefix('sha256:')[:12]}",
+        "goal_version": 1,
+        "summary": human_goal.strip(),
+        "completion_criteria": list(EVIDENCE_MAP_COMPLETION_CRITERIA),
+    }
+    goal = {**goal_without_hash, "goal_hash": canonical_sha256(goal_without_hash)}
+    request = {**request_seed, "request_sha256": request_sha, "goal": goal}
+    run_id = f"repository-evidence-map-{request_sha.removeprefix('sha256:')[:12]}"
+    for relative in ("workflow", "input", "receipts", "intermediate"):
+        (resolved_run_dir / relative).mkdir(parents=True, exist_ok=True)
+    request_path = resolved_run_dir / "input" / "repository-evidence-map-request.json"
+    _write_json(request_path, request)
+
+    template_resource = resources.files("tau_coding.workflows").joinpath(definition.template)
+    template = json.loads(template_resource.read_text(encoding="utf-8"))
+    if not isinstance(template, dict):
+        raise RuntimeError("repository-evidence-map template must be an object")
+    workflow_metadata = {
+        "schema": WORKFLOW_METADATA_SCHEMA,
+        "workflow_id": definition.workflow_id,
+        "workflow_version": definition.workflow_version,
+        "title": definition.title,
+        "summary": definition.summary,
+        "topology": definition.topology,
+        "result_node_id": definition.result_node_id,
+        "result_schema": definition.result_schema,
+    }
+    intermediate = resolved_run_dir / "intermediate"
+    receipts = resolved_run_dir / "receipts"
+    replacements: dict[str, object] = {
+        "${RUN_ID}": run_id,
+        "${RUN_DIR}": str(resolved_run_dir),
+        "${GOAL_OBJECT}": goal,
+        "${GOAL_HASH}": goal["goal_hash"],
+        "${WORKFLOW_METADATA}": workflow_metadata,
+        "${PYTHON}": sys.executable,
+        "${REQUEST_PATH}": str(request_path),
+        "${INVENTORY_PATH}": str(intermediate / "repository-inventory.json"),
+        "${DOCUMENTATION_PATH}": str(intermediate / "documentation-analysis.json"),
+        "${TESTS_PATH}": str(intermediate / "test-analysis.json"),
+        "${PACKAGE_PATH}": str(intermediate / "package-analysis.json"),
+        "${RESULT_JSON}": str(resolved_run_dir / "results" / "repository-evidence-map.json"),
+        "${RESULT_MARKDOWN}": str(resolved_run_dir / "results" / "repository-evidence-map.md"),
+        "${INVENTORY_RECEIPT}": str(receipts / "inventory-repository.json"),
+        "${DOCUMENTATION_RECEIPT}": str(receipts / "analyze-documentation.json"),
+        "${TESTS_RECEIPT}": str(receipts / "analyze-tests.json"),
+        "${PACKAGE_RECEIPT}": str(receipts / "analyze-package.json"),
+        "${PUBLISH_RECEIPT}": str(receipts / "publish-evidence-map.json"),
+        "${STEP_DELAY_SECONDS}": str(step_delay_seconds),
+    }
+    source_dag_path = resolved_run_dir / "workflow" / "dag.json"
+    _write_json(source_dag_path, _replace_tokens(template, replacements))
     return MaterializedWorkflow(
         definition=definition,
         request_path=request_path,

@@ -1,0 +1,43 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "${RUN_ID}",
+  "run_dir": "${RUN_DIR}",
+  "goal": "${GOAL_OBJECT}",
+  "goal_hash": "${GOAL_HASH}",
+  "workflow": "${WORKFLOW_METADATA}",
+  "max_concurrency": 3,
+  "nodes": [
+    {
+      "node_id": "inventory-repository",
+      "role": "Inventory tracked repository files",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.repository_evidence_map", "inventory", "--request", "${REQUEST_PATH}", "--output", "${INVENTORY_PATH}", "--receipt", "${INVENTORY_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": [], "accepted_context_from": [], "receipt_path": "${INVENTORY_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "analyze-documentation",
+      "role": "Analyze documentation surface",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.repository_evidence_map", "documentation", "--request", "${REQUEST_PATH}", "--output", "${DOCUMENTATION_PATH}", "--receipt", "${DOCUMENTATION_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["inventory-repository"], "accepted_context_from": ["inventory-repository"], "receipt_path": "${DOCUMENTATION_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "analyze-tests",
+      "role": "Analyze test surface",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.repository_evidence_map", "tests", "--request", "${REQUEST_PATH}", "--output", "${TESTS_PATH}", "--receipt", "${TESTS_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["inventory-repository"], "accepted_context_from": ["inventory-repository"], "receipt_path": "${TESTS_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "analyze-package",
+      "role": "Analyze package metadata",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.repository_evidence_map", "package", "--request", "${REQUEST_PATH}", "--output", "${PACKAGE_PATH}", "--receipt", "${PACKAGE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["inventory-repository"], "accepted_context_from": ["inventory-repository"], "receipt_path": "${PACKAGE_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    },
+    {
+      "node_id": "publish-evidence-map",
+      "role": "Validate branch evidence and publish map",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.repository_evidence_map", "publish", "--request", "${REQUEST_PATH}", "--json-output", "${RESULT_JSON}", "--markdown-output", "${RESULT_MARKDOWN}", "--receipt", "${PUBLISH_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["inventory-repository", "analyze-documentation", "analyze-tests", "analyze-package"],
+      "accepted_context_from": ["inventory-repository", "analyze-documentation", "analyze-tests", "analyze-package"],
+      "receipt_path": "${PUBLISH_RECEIPT}", "timeout_seconds": 30, "max_attempts": 1
+    }
+  ]
+}

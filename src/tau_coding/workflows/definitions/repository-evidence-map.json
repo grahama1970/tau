@@ -1,0 +1,24 @@
+{
+  "schema": "tau.workflow_definition.v1",
+  "workflow_id": "repository-evidence-map",
+  "workflow_version": 1,
+  "title": "Repository Evidence Map",
+  "summary": "Inventory a local Git checkout, analyze documentation, tests, and package metadata concurrently, and publish a validated evidence map.",
+  "topology": "FAN_OUT_FAN_IN",
+  "availability": "AVAILABLE",
+  "input_schema": "tau.repository_evidence_map_request.v1",
+  "result_schema": "tau.repository_evidence_map.v1",
+  "result_node_id": "publish-evidence-map",
+  "template": "templates/repository-evidence-map.json",
+  "runtime": {
+    "local": true,
+    "network_required": false,
+    "provider_required": false,
+    "mutation_allowed": false
+  },
+  "proof_boundary": {
+    "mocked": false,
+    "live": true,
+    "provider_live": false
+  }
+}

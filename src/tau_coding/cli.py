@@ -265,6 +265,7 @@ from tau_coding.workflows.catalog import (
     workflow_catalog_payload,
 )
 from tau_coding.workflows.runner import (
+    run_repository_evidence_map_workflow,
     run_repository_readiness_workflow,
     run_tau_operator_reference_workflow,
 )
@@ -331,6 +332,7 @@ def workflows_run_command(
         typer.Option("--required-workflow"),
     ] = None,
     require_clean: Annotated[bool, typer.Option("--require-clean")] = False,
+    require_tests: Annotated[bool, typer.Option("--require-tests")] = False,
     open_viewer: Annotated[bool, typer.Option("--open-viewer")] = False,
     no_browser_open: Annotated[bool, typer.Option("--no-browser-open")] = False,
     viewer_hold_seconds: Annotated[
@@ -338,7 +340,11 @@ def workflows_run_command(
         typer.Option("--viewer-hold-seconds", hidden=True),
     ] = None,
 ) -> None:
-    if workflow_id not in {"repository-readiness", "tau-operator-reference"}:
+    if workflow_id not in {
+        "repository-readiness",
+        "repository-evidence-map",
+        "tau-operator-reference",
+    }:
         raise typer.BadParameter(f"unknown workflow_id: {workflow_id}")
     try:
         if workflow_id == "repository-readiness":
@@ -353,10 +359,22 @@ def workflows_run_command(
                 browser_open=not no_browser_open,
                 viewer_hold_seconds=viewer_hold_seconds,
             )
-        else:
+        elif workflow_id == "tau-operator-reference":
             payload = run_tau_operator_reference_workflow(
                 repo_path=repo,
                 required_workflow=required_workflow or "tau-operator-reference",
+                run_dir=run_dir,
+                open_viewer=open_viewer,
+                browser_open=not no_browser_open,
+                viewer_hold_seconds=viewer_hold_seconds,
+            )
+        else:
+            if goal is None:
+                raise RuntimeError("repository-evidence-map requires --goal")
+            payload = run_repository_evidence_map_workflow(
+                repo_path=repo,
+                human_goal=goal,
+                require_tests=require_tests,
                 run_dir=run_dir,
                 open_viewer=open_viewer,
                 browser_open=not no_browser_open,
@@ -3564,7 +3582,11 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
     if not remaining:
         raise RuntimeError("Usage: tau workflows run <workflow-id> [options]")
     workflow_id = remaining[0]
-    if workflow_id not in {"repository-readiness", "tau-operator-reference"}:
+    if workflow_id not in {
+        "repository-readiness",
+        "repository-evidence-map",
+        "tau-operator-reference",
+    }:
         raise RuntimeError(f"unknown workflow_id: {workflow_id}")
     values: dict[str, str] = {}
     flags: set[str] = set()
@@ -3576,7 +3598,12 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         "--run-dir",
         "--viewer-hold-seconds",
     }
-    flag_options = {"--require-clean", "--open-viewer", "--no-browser-open"}
+    flag_options = {
+        "--require-clean",
+        "--require-tests",
+        "--open-viewer",
+        "--no-browser-open",
+    }
     while index < len(remaining):
         argument = remaining[index]
         if argument in flag_options:
@@ -3588,7 +3615,7 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         values[argument] = remaining[index + 1]
         index += 2
     required_options = ["--repo", "--run-dir"]
-    if workflow_id == "repository-readiness":
+    if workflow_id in {"repository-readiness", "repository-evidence-map"}:
         required_options.append("--goal")
     missing = [option for option in required_options if option not in values]
     if missing:
@@ -3608,10 +3635,20 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
             browser_open="--no-browser-open" not in flags,
             viewer_hold_seconds=hold_seconds,
         )
-    else:
+    elif workflow_id == "tau-operator-reference":
         payload = run_tau_operator_reference_workflow(
             repo_path=Path(values["--repo"]),
             required_workflow=values.get("--required-workflow", "tau-operator-reference"),
+            run_dir=Path(values["--run-dir"]),
+            open_viewer="--open-viewer" in flags,
+            browser_open="--no-browser-open" not in flags,
+            viewer_hold_seconds=hold_seconds,
+        )
+    else:
+        payload = run_repository_evidence_map_workflow(
+            repo_path=Path(values["--repo"]),
+            human_goal=values["--goal"],
+            require_tests="--require-tests" in flags,
             run_dir=Path(values["--run-dir"]),
             open_viewer="--open-viewer" in flags,
             browser_open="--no-browser-open" not in flags,
