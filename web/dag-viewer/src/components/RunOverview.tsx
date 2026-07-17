@@ -17,6 +17,13 @@ const artifactRows = (value: Record<string, JsonValue> | null) => {
   );
 };
 
+const sourceGoalSummary = (value: JsonValue): string | null => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const goal = value.goal;
+  if (!goal || typeof goal !== "object" || Array.isArray(goal)) return null;
+  return textValue(goal.summary) ?? textValue(goal.statement);
+};
+
 export function RunOverview({ manifest, snapshot }: Props) {
   const workflow = manifest.workflow;
   const blocker = snapshot.run_summary.highest_priority_blocker;
@@ -37,7 +44,7 @@ export function RunOverview({ manifest, snapshot }: Props) {
       </div>
       <div data-qid="dag:overview:goal">
         <span>Human goal</span>
-        <strong>{manifest.goal.summary ?? "Goal summary unavailable"}</strong>
+        <strong>{manifest.goal.summary ?? sourceGoalSummary(manifest.source_dag) ?? "Goal summary unavailable"}</strong>
       </div>
       <div data-qid="dag:overview:current">
         <span>Current</span>

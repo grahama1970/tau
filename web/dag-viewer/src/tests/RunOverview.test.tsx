@@ -52,3 +52,13 @@ test("renders exact blocker codes without a final result", () => {
   expect(screen.getAllByText("No accepted final result").at(-1)).toBeInTheDocument();
   expect(document.querySelector('[data-qid="dag:overview:blocker"]')).toBeInTheDocument();
 });
+
+test("uses the retained source goal when the plan has only a hash binding", () => {
+  render(<RunOverview
+    manifest={{ ...manifest, goal: { kind: "hash_only", goal_hash: "sha256:goal" } }}
+    snapshot={snapshot}
+  />);
+
+  expect(screen.getByText("Keep the human-owned goal immutable.")).toBeInTheDocument();
+  expect(screen.queryByText("Goal summary unavailable")).not.toBeInTheDocument();
+});

@@ -136,6 +136,12 @@ def main() -> int:
         ),
     }
     _write_json(args.output, output)
+    output_artifact = {
+        "kind": args.role,
+        "path": str(args.output),
+        "sha256": _sha256(args.output),
+        "bytes": args.output.stat().st_size,
+    }
     _write_json(
         args.receipt,
         {
@@ -148,12 +154,7 @@ def main() -> int:
             "provider_live": False,
             "goal_hash": goal_sha256,
             "artifacts": [
-                {
-                    "kind": args.role,
-                    "path": str(args.output),
-                    "sha256": _sha256(args.output),
-                    "bytes": args.output.stat().st_size,
-                },
+                output_artifact,
                 *(
                     [
                         {
@@ -167,6 +168,12 @@ def main() -> int:
                     else []
                 ),
             ],
+            "accepted_output": {
+                "schema": "tau.canonical_dag_result.v1",
+                "summary": f"{args.node_id} produced its accepted {args.role} artifact.",
+                "status": "ACCEPTED",
+                "artifacts": [output_artifact],
+            },
             "commands_run": [f"canonical-worker:{args.node_id}"],
             "handoff_summary": f"{args.node_id} produced its bounded artifact.",
             "errors": [],

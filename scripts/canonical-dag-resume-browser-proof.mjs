@@ -34,6 +34,9 @@ const observed = {
   read_only_requests: false,
   desktop_layout_non_overlapping: false,
   mobile_primary_state_visible: false,
+  workflow_identity_visible: false,
+  human_goal_visible: false,
+  accepted_final_result_visible: false,
 };
 const states = new Set();
 const deadline = Date.now() + 60000;
@@ -53,6 +56,9 @@ while (Date.now() < deadline) {
       document: value("document"),
       reconcile: value("reconcile"),
       release: value("release"),
+      workflow: document.querySelector('[data-qid="dag:overview:workflow"]')?.textContent || "",
+      overviewGoal: document.querySelector('[data-qid="dag:overview:goal"]')?.textContent || "",
+      result: document.querySelector('[data-qid="dag:overview:result"]')?.textContent || "",
     };
   });
   observed.goal_visible ||= state.goal.includes("Tau lets a human launch");
@@ -82,7 +88,25 @@ while (Date.now() < deadline) {
   observed.human_release_accepted ||=
     state.release.state === "settled" && state.release.admission === "accepted";
   observed.final_pass_visible ||= state.banner.includes("COMPLETE") && state.banner.includes("PASS");
-  if (Object.values(observed).slice(0, 8).every(Boolean)) break;
+  observed.workflow_identity_visible ||= state.workflow.includes("Durable mixed topology with targeted repair")
+    && !state.workflow.includes("Uncatalogued");
+  observed.human_goal_visible ||= state.overviewGoal.includes("Tau lets a human launch")
+    && !state.overviewGoal.includes("unavailable");
+  observed.accepted_final_result_visible ||= state.result.includes("release produced its accepted human-release artifact")
+    && !state.result.includes("No accepted final result");
+  if ([
+    observed.goal_visible,
+    observed.progressed_without_reload,
+    observed.concurrent_branches_running,
+    observed.targeted_repair_block_visible,
+    observed.unaffected_work_remained_accepted,
+    observed.resumed_to_completion,
+    observed.human_release_accepted,
+    observed.final_pass_visible,
+    observed.workflow_identity_visible,
+    observed.human_goal_visible,
+    observed.accepted_final_result_visible,
+  ].every(Boolean)) break;
   await new Promise((resolve) => setTimeout(resolve, 100));
 }
 

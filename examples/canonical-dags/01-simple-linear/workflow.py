@@ -77,6 +77,12 @@ def _write_node_receipt(
             "provider_live": False,
             "goal_hash": goal_hash,
             "artifacts": [artifact],
+            "accepted_output": {
+                "schema": "tau.canonical_dag_result.v1",
+                "summary": summary,
+                "status": "ACCEPTED",
+                "artifacts": [artifact],
+            },
             "commands_run": [f"canonical-dag-01:{node_id}"],
             "handoff_summary": summary,
             "errors": [],
@@ -163,6 +169,16 @@ def _materialize_spec(*, repo_root: Path, run_root: Path, delay: float) -> Path:
                 "Tau lets a human launch and supervise a small ladder of real, "
                 "goal-locked agent DAGs."
             ),
+        },
+        "workflow": {
+            "schema": "tau.workflow_metadata.v1",
+            "workflow_id": "canonical-01-simple-linear",
+            "workflow_version": 1,
+            "title": "Simple linear DAG",
+            "summary": "Extract and validate the immutable Tau goal.",
+            "topology": "LINEAR",
+            "result_node_id": "validate-goal",
+            "result_schema": "tau.canonical_dag_result.v1",
         },
         "nodes": [
             {

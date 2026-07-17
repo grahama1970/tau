@@ -93,6 +93,13 @@ DAGS = {
     ),
 }
 
+TOPOLOGIES = {
+    2: "MULTI_STEP_SEQUENTIAL",
+    3: "FAN_OUT_FAN_IN",
+    4: "MIXED_RETRY_APPROVAL",
+    5: "DURABLE_MIXED_TOPOLOGY",
+}
+
 
 def _sha256(path: Path) -> str:
     return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
@@ -112,6 +119,7 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 def _materialize_spec(
     definition: DagDefinition,
     *,
+    dag_number: int,
     run_root: Path,
     goal: Path,
     delay: float,
@@ -176,6 +184,16 @@ def _materialize_spec(
                 "sha256": _sha256(goal),
                 "statement": _goal_statement(goal),
             },
+            "workflow": {
+                "schema": "tau.workflow_metadata.v1",
+                "workflow_id": definition.dag_id,
+                "workflow_version": 1,
+                "title": definition.title,
+                "summary": f"Run Tau's {definition.title.lower()} canonical workflow.",
+                "topology": TOPOLOGIES[dag_number],
+                "result_node_id": definition.nodes[-1].node_id,
+                "result_schema": "tau.canonical_dag_result.v1",
+            },
             "max_concurrency": definition.max_concurrency,
             "nodes": nodes,
         },
@@ -214,6 +232,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     spec = _materialize_spec(
         definition,
+        dag_number=args.dag,
         run_root=run_root,
         goal=goal,
         delay=args.step_delay_seconds,
