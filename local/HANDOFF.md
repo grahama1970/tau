@@ -3,6 +3,11 @@
 **Timestamp**: 2026-07-16T20:45:02Z
 **Active Agent**: Codex
 
+**Resolution Update**: 2026-07-17T11:33:19Z - The compliance-package CLI test
+blocker recorded below was fixed by updating stale CLI test fixtures to use the
+current full policy-profile and data-boundary schemas. Current deterministic
+proof: `timeout 240 uv run pytest -q` -> `1834 passed in 86.07s`.
+
 ## 1. Project Overview
 
 - **Ecosystem**: Python package managed with `uv`; source lives under `src/`; tests under `tests/`.
@@ -31,6 +36,8 @@
 ## 4. What is Currently Broken
 
 - **Failed Tests**:
+  - **Resolved 2026-07-17**: the failure below no longer reproduces after
+    updating `tests/test_cli.py`.
   - Command: `timeout 180 uv run pytest -q`
   - Result: `1 failed, 1833 passed in 85.05s`
   - Failing test: `tests/test_cli.py::test_cli_compliance_package_writes_review_bundle`

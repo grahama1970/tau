@@ -48,6 +48,36 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "experiments" / "goal-locked-subagents" / "fixtures"
 
 
+def _valid_public_policy_profile() -> dict[str, object]:
+    return {
+        "schema": "tau.policy_profile.v1",
+        "profile_id": "itar-zero-trust-local-only",
+        "default_decision": "deny",
+        "requires_data_boundary": True,
+        "network": {"default": "deny", "allowed_domains": []},
+        "providers": {"cloud_llm": "deny", "local_model": "allow_with_approval"},
+        "research": {"external_search": "deny", "manual_sanitized_receipt": "allow_with_review"},
+        "memory": {"read": "allow", "write": "approval_required"},
+        "github": {"public_mutation": "deny", "dry_run_projection": "allow"},
+        "filesystem": {"write_allowlist": [], "read_denylist": []},
+    }
+
+
+def _valid_public_data_boundary() -> dict[str, object]:
+    return {
+        "schema": "tau.data_boundary.v1",
+        "classification": "public",
+        "export_controlled": False,
+        "itar": False,
+        "technical_data": False,
+        "foreign_person_access": "allowed",
+        "external_provider_allowed": False,
+        "external_research_allowed": False,
+        "public_repo_allowed": False,
+        "notes": [],
+    }
+
+
 async def _passing_scillm_auth_preflight(
     contract: dict[str, object],
 ) -> dict[str, object]:
@@ -206,18 +236,8 @@ def test_cli_compliance_package_writes_review_bundle(tmp_path: Path) -> None:
                     "goal_id": "cli-package-test",
                     "goal_hash": "sha256:cli-package-test",
                 },
-                "policy_profile": {
-                    "schema": "tau.policy_profile.v1",
-                    "profile_id": "itar-zero-trust-local-only",
-                    "default_decision": "deny",
-                },
-                "data_boundary": {
-                    "schema": "tau.data_boundary.v1",
-                    "classification": "public",
-                    "export_controlled": False,
-                    "itar": False,
-                    "technical_data": False,
-                },
+                "policy_profile": _valid_public_policy_profile(),
+                "data_boundary": _valid_public_data_boundary(),
             }
         ),
         encoding="utf-8",
@@ -374,18 +394,8 @@ def test_cli_report_writes_static_html_report(tmp_path: Path) -> None:
                 },
                 "entry_node": "coder",
                 "terminal_nodes": ["human"],
-                "policy_profile": {
-                    "schema": "tau.policy_profile.v1",
-                    "profile_id": "itar-zero-trust-local-only",
-                    "default_decision": "deny",
-                },
-                "data_boundary": {
-                    "schema": "tau.data_boundary.v1",
-                    "classification": "public",
-                    "export_controlled": False,
-                    "itar": False,
-                    "technical_data": False,
-                },
+                "policy_profile": _valid_public_policy_profile(),
+                "data_boundary": _valid_public_data_boundary(),
             }
         ),
         encoding="utf-8",
