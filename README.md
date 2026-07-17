@@ -422,9 +422,9 @@ included in the Tau wheel. The viewer has no dispatch, retry, approval,
 cancellation, cleanup, or editing controls. It does not prove provider/model
 semantic quality or make runtime observations authoritative.
 
-### Repository readiness workflow
+### Packaged canonical workflows
 
-Discover and run the single packaged canonical workflow without authoring a DAG:
+Discover and run either packaged canonical workflow without authoring a DAG:
 
 ```bash
 uv run tau workflows list --json
@@ -435,6 +435,11 @@ uv run tau workflows run repository-readiness \
   --require-clean \
   --run-dir /tmp/tau-repository-readiness \
   --open-viewer
+
+uv run tau workflows describe tau-operator-reference --json
+uv run tau workflows run tau-operator-reference \
+  --repo /path/to/tau \
+  --run-dir /tmp/tau-operator-reference
 ```
 
 A passing run writes `results/repository-readiness.json` and
@@ -442,6 +447,16 @@ A passing run writes `results/repository-readiness.json` and
 linear graph is driven by the same journal replay as `tau dag-view`; a dirty
 repository blocks at `validate-readiness` with `dirty_repository` and does not
 dispatch `publish-readiness`.
+
+The four-node `tau-operator-reference` workflow reads the fixed local Tau source
+set, captures the version 1 public probes `tau workflows list --json`,
+`tau workflows run --help`, and `tau dag-view-capabilities --json`, then writes
+drafts only under `intermediate/`. Its validator independently repeats source
+collection, CLI capture, and rendering before atomically publishing
+`results/tau-operator-reference.json` and `.md`. Use
+`--required-workflow deliberately-absent` for the required negative gate; it
+blocks at `validate-operator-reference` with `required_workflow_missing` and
+publishes no result.
 
 ## What changed from upstream Tau
 

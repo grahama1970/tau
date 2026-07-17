@@ -1,0 +1,51 @@
+{
+  "schema": "tau.generic_dag_spec.v1",
+  "run_id": "${RUN_ID}",
+  "run_dir": "${RUN_DIR}",
+  "goal": "${GOAL_OBJECT}",
+  "goal_hash": "${GOAL_HASH}",
+  "workflow": "${WORKFLOW_METADATA}",
+  "max_concurrency": 1,
+  "nodes": [
+    {
+      "node_id": "collect-operator-sources",
+      "role": "Collect fixed Tau operator sources",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.operator_reference", "collect", "--request", "${REQUEST_PATH}", "--output", "${SOURCES_PATH}", "--receipt", "${COLLECT_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": [],
+      "accepted_context_from": [],
+      "receipt_path": "${COLLECT_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "capture-operator-cli",
+      "role": "Capture versioned Tau CLI probes",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.operator_reference", "capture", "--request", "${REQUEST_PATH}", "--output", "${PROBES_PATH}", "--receipt", "${CAPTURE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["collect-operator-sources"],
+      "accepted_context_from": ["collect-operator-sources"],
+      "receipt_path": "${CAPTURE_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "compose-operator-reference",
+      "role": "Compose operator reference drafts",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.operator_reference", "compose", "--request", "${REQUEST_PATH}", "--json-output", "${DRAFT_JSON}", "--markdown-output", "${DRAFT_MARKDOWN}", "--receipt", "${COMPOSE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["collect-operator-sources", "capture-operator-cli"],
+      "accepted_context_from": ["collect-operator-sources", "capture-operator-cli"],
+      "receipt_path": "${COMPOSE_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    {
+      "node_id": "validate-operator-reference",
+      "role": "Independently validate and publish operator reference",
+      "command": ["${PYTHON}", "-m", "tau_coding.workflows.nodes.operator_reference", "validate", "--request", "${REQUEST_PATH}", "--json-output", "${RESULT_JSON}", "--markdown-output", "${RESULT_MARKDOWN}", "--receipt", "${VALIDATE_RECEIPT}", "--step-delay-seconds", "${STEP_DELAY_SECONDS}"],
+      "depends_on": ["collect-operator-sources", "capture-operator-cli", "compose-operator-reference"],
+      "accepted_context_from": ["collect-operator-sources", "capture-operator-cli", "compose-operator-reference"],
+      "receipt_path": "${VALIDATE_RECEIPT}",
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    }
+  ]
+}

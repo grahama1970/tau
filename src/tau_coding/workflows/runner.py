@@ -1,4 +1,4 @@
-"""Execution boundary for the repository-readiness workflow."""
+"""Execution boundary for Tau's packaged workflows."""
 
 from __future__ import annotations
 
@@ -14,7 +14,11 @@ from tau_coding.dag_viewer.server import RunningDagViewerServer, create_dag_view
 from tau_coding.generic_dag import run_generic_dag
 from tau_coding.workflows.catalog import get_workflow
 from tau_coding.workflows.contracts import WORKFLOW_RUN_RECEIPT_SCHEMA
-from tau_coding.workflows.materialize import materialize_repository_readiness
+from tau_coding.workflows.materialize import (
+    MaterializedWorkflow,
+    materialize_repository_readiness,
+    materialize_tau_operator_reference,
+)
 
 
 def run_repository_readiness_workflow(
@@ -37,9 +41,58 @@ def run_repository_readiness_workflow(
         run_dir=run_dir,
         step_delay_seconds=step_delay_seconds,
     )
+    return _run_materialized_workflow(
+        materialized=materialized,
+        result_filename="repository-readiness.json",
+        open_viewer=open_viewer,
+        browser_open=browser_open,
+        viewer_hold_seconds=viewer_hold_seconds,
+    )
+
+
+def run_tau_operator_reference_workflow(
+    *,
+    repo_path: Path,
+    required_workflow: str,
+    run_dir: Path,
+    open_viewer: bool,
+    browser_open: bool,
+    viewer_hold_seconds: float | None,
+    step_delay_seconds: float = 0.0,
+) -> dict[str, object]:
+    definition = get_workflow("tau-operator-reference")
+    materialized = materialize_tau_operator_reference(
+        definition=definition,
+        repo_path=repo_path,
+        required_workflow=required_workflow,
+        run_dir=run_dir,
+        step_delay_seconds=step_delay_seconds,
+    )
+    return _run_materialized_workflow(
+        materialized=materialized,
+        result_filename="tau-operator-reference.json",
+        open_viewer=open_viewer,
+        browser_open=browser_open,
+        viewer_hold_seconds=viewer_hold_seconds,
+    )
+
+
+def _run_materialized_workflow(
+    *,
+    materialized: MaterializedWorkflow,
+    result_filename: str,
+    open_viewer: bool,
+    browser_open: bool,
+    viewer_hold_seconds: float | None,
+) -> dict[str, object]:
     if not open_viewer:
         dag_receipt = run_generic_dag(spec_path=materialized.source_dag_path)
-        return _write_workflow_receipt(materialized, dag_receipt, viewer=None)
+        return _write_workflow_receipt(
+            materialized,
+            dag_receipt,
+            result_filename=result_filename,
+            viewer=None,
+        )
 
     outcome: dict[str, Any] = {}
     failure: list[BaseException] = []
@@ -61,8 +114,13 @@ def run_repository_readiness_workflow(
     if failure:
         viewer.shutdown()
         viewer_thread.join(timeout=5)
-        raise RuntimeError(f"repository-readiness workflow failed: {failure[0]}")
-    receipt = _write_workflow_receipt(materialized, outcome, viewer=viewer)
+        raise RuntimeError(f"{materialized.definition.workflow_id} workflow failed: {failure[0]}")
+    receipt = _write_workflow_receipt(
+        materialized,
+        outcome,
+        result_filename=result_filename,
+        viewer=viewer,
+    )
     try:
         if viewer_hold_seconds is not None:
             if viewer_hold_seconds < 0:
@@ -88,22 +146,23 @@ def _wait_for_viewer(
     last_error: Exception | None = None
     while time.monotonic() < deadline:
         if failure:
-            raise RuntimeError(f"repository-readiness workflow failed: {failure[0]}")
+            raise RuntimeError(f"packaged workflow failed: {failure[0]}")
         try:
             return create_dag_viewer_server(run_dir=run_dir, host="127.0.0.1", port=0)
         except (OSError, RuntimeError) as exc:
             last_error = exc
             time.sleep(0.05)
-    raise RuntimeError(f"repository-readiness viewer did not become ready: {last_error}")
+    raise RuntimeError(f"packaged workflow viewer did not become ready: {last_error}")
 
 
 def _write_workflow_receipt(
-    materialized: Any,
+    materialized: MaterializedWorkflow,
     dag_receipt: dict[str, Any],
     *,
+    result_filename: str,
     viewer: RunningDagViewerServer | None,
 ) -> dict[str, object]:
-    result_path = materialized.run_dir / "results" / "repository-readiness.json"
+    result_path = materialized.run_dir / "results" / result_filename
     result: dict[str, Any] | None = None
     if result_path.is_file():
         payload = json.loads(result_path.read_text(encoding="utf-8"))
@@ -129,8 +188,8 @@ def _write_workflow_receipt(
         },
         "proof_scope": {
             "proves": [
-                "Tau executed the packaged repository-readiness workflow with local commands.",
-                "The inspected repository and goal are bound into the materialized DAG.",
+                f"Tau executed the packaged {materialized.definition.workflow_id} workflow.",
+                "The requested repository inputs and goal are bound into the materialized DAG.",
             ],
             "does_not_prove": [
                 "The repository test suite passes.",

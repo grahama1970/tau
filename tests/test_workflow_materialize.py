@@ -6,7 +6,10 @@ import pytest
 
 from tau_coding.dag_runtime.model import canonical_sha256
 from tau_coding.workflows.catalog import get_workflow
-from tau_coding.workflows.materialize import materialize_repository_readiness
+from tau_coding.workflows.materialize import (
+    materialize_repository_readiness,
+    materialize_tau_operator_reference,
+)
 
 
 def test_materializer_writes_full_goal_and_three_node_dag(tmp_path: Path) -> None:
@@ -53,6 +56,48 @@ def test_materializer_rejects_existing_runtime_database(tmp_path: Path) -> None:
             require_clean=False,
             run_dir=run_dir,
         )
+
+
+def test_operator_materializer_writes_locked_sequential_dag(tmp_path: Path) -> None:
+    repo = Path(__file__).resolve().parents[1]
+    run_dir = tmp_path / "operator-run"
+
+    materialized = materialize_tau_operator_reference(
+        definition=get_workflow("tau-operator-reference"),
+        repo_path=repo,
+        required_workflow="tau-operator-reference",
+        run_dir=run_dir,
+    )
+
+    request = json.loads(materialized.request_path.read_text(encoding="utf-8"))
+    dag = json.loads(materialized.source_dag_path.read_text(encoding="utf-8"))
+    assert request["source_paths"] == [
+        "pyproject.toml",
+        "README.md",
+        "docs/getting-started.md",
+        "docs/live-dag-viewer.md",
+        "docs/generic-dag-runner.md",
+    ]
+    assert request["goal"]["goal_id"] == "tau-canonical-workflow-slice-02"
+    assert request["goal"]["goal_version"] == 1
+    assert request["goal"]["goal_hash"] == canonical_sha256(
+        {key: value for key, value in request["goal"].items() if key != "goal_hash"}
+    )
+    assert dag["goal"] == request["goal"]
+    assert dag["workflow"]["topology"] == "MULTI_STEP_SEQUENTIAL"
+    assert dag["max_concurrency"] == 1
+    assert [node["node_id"] for node in dag["nodes"]] == [
+        "collect-operator-sources",
+        "capture-operator-cli",
+        "compose-operator-reference",
+        "validate-operator-reference",
+    ]
+    assert all(node["max_attempts"] == 1 for node in dag["nodes"])
+    assert all(
+        not ({"routes", "joins", "retry", "side_effects"} & set(node))
+        for node in dag["nodes"]
+    )
+    assert not (run_dir / "results").exists()
 
 
 def _git_repo(path: Path) -> Path:

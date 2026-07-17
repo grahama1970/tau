@@ -264,7 +264,10 @@ from tau_coding.workflows.catalog import (
     get_workflow,
     workflow_catalog_payload,
 )
-from tau_coding.workflows.runner import run_repository_readiness_workflow
+from tau_coding.workflows.runner import (
+    run_repository_readiness_workflow,
+    run_tau_operator_reference_workflow,
+)
 from tau_coding.zero_trust_redteam import run_zero_trust_redteam
 
 app = typer.Typer(
@@ -321,8 +324,12 @@ def workflows_describe_command(
 def workflows_run_command(
     workflow_id: str,
     repo: Annotated[Path, typer.Option("--repo")],
-    goal: Annotated[str, typer.Option("--goal")],
     run_dir: Annotated[Path, typer.Option("--run-dir")],
+    goal: Annotated[str | None, typer.Option("--goal")] = None,
+    required_workflow: Annotated[
+        str | None,
+        typer.Option("--required-workflow"),
+    ] = None,
     require_clean: Annotated[bool, typer.Option("--require-clean")] = False,
     open_viewer: Annotated[bool, typer.Option("--open-viewer")] = False,
     no_browser_open: Annotated[bool, typer.Option("--no-browser-open")] = False,
@@ -331,18 +338,30 @@ def workflows_run_command(
         typer.Option("--viewer-hold-seconds", hidden=True),
     ] = None,
 ) -> None:
-    if workflow_id != "repository-readiness":
+    if workflow_id not in {"repository-readiness", "tau-operator-reference"}:
         raise typer.BadParameter(f"unknown workflow_id: {workflow_id}")
     try:
-        payload = run_repository_readiness_workflow(
-            repo_path=repo,
-            human_goal=goal,
-            require_clean=require_clean,
-            run_dir=run_dir,
-            open_viewer=open_viewer,
-            browser_open=not no_browser_open,
-            viewer_hold_seconds=viewer_hold_seconds,
-        )
+        if workflow_id == "repository-readiness":
+            if goal is None:
+                raise RuntimeError("repository-readiness requires --goal")
+            payload = run_repository_readiness_workflow(
+                repo_path=repo,
+                human_goal=goal,
+                require_clean=require_clean,
+                run_dir=run_dir,
+                open_viewer=open_viewer,
+                browser_open=not no_browser_open,
+                viewer_hold_seconds=viewer_hold_seconds,
+            )
+        else:
+            payload = run_tau_operator_reference_workflow(
+                repo_path=repo,
+                required_workflow=required_workflow or "tau-operator-reference",
+                run_dir=run_dir,
+                open_viewer=open_viewer,
+                browser_open=not no_browser_open,
+                viewer_hold_seconds=viewer_hold_seconds,
+            )
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
     typer.echo(json.dumps(payload, indent=2, sort_keys=True))
@@ -776,6 +795,14 @@ def main(
     initial_prompt = " ".join(positional_args) if positional_args else None
 
     if prompt_option is None and command == "workflows":
+        if "--help" in positional_args[1:]:
+            workflows_command = typer.main.get_command(workflows_app)
+            workflows_command.main(
+                args=positional_args[1:],
+                prog_name="tau workflows",
+                standalone_mode=False,
+            )
+            raise typer.Exit()
         try:
             payload, json_output = _dispatch_workflows_cli(positional_args[1:])
         except RuntimeError as exc:
@@ -3535,14 +3562,20 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
     if subcommand != "run":
         raise RuntimeError(f"unknown workflows subcommand: {subcommand}")
     if not remaining:
-        raise RuntimeError("Usage: tau workflows run repository-readiness [options]")
+        raise RuntimeError("Usage: tau workflows run <workflow-id> [options]")
     workflow_id = remaining[0]
-    if workflow_id != "repository-readiness":
+    if workflow_id not in {"repository-readiness", "tau-operator-reference"}:
         raise RuntimeError(f"unknown workflow_id: {workflow_id}")
     values: dict[str, str] = {}
     flags: set[str] = set()
     index = 1
-    value_options = {"--repo", "--goal", "--run-dir", "--viewer-hold-seconds"}
+    value_options = {
+        "--repo",
+        "--goal",
+        "--required-workflow",
+        "--run-dir",
+        "--viewer-hold-seconds",
+    }
     flag_options = {"--require-clean", "--open-viewer", "--no-browser-open"}
     while index < len(remaining):
         argument = remaining[index]
@@ -3554,7 +3587,10 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
             raise RuntimeError(f"unknown or incomplete workflows run option: {argument}")
         values[argument] = remaining[index + 1]
         index += 2
-    missing = [option for option in ("--repo", "--goal", "--run-dir") if option not in values]
+    required_options = ["--repo", "--run-dir"]
+    if workflow_id == "repository-readiness":
+        required_options.append("--goal")
+    missing = [option for option in required_options if option not in values]
     if missing:
         raise RuntimeError(f"workflows run missing required option: {missing[0]}")
     hold = values.get("--viewer-hold-seconds")
@@ -3562,15 +3598,25 @@ def _dispatch_workflows_cli(args: list[str]) -> tuple[dict[str, Any], bool]:
         hold_seconds = float(hold) if hold is not None else None
     except ValueError as exc:
         raise RuntimeError("--viewer-hold-seconds must be a number") from exc
-    payload = run_repository_readiness_workflow(
-        repo_path=Path(values["--repo"]),
-        human_goal=values["--goal"],
-        require_clean="--require-clean" in flags,
-        run_dir=Path(values["--run-dir"]),
-        open_viewer="--open-viewer" in flags,
-        browser_open="--no-browser-open" not in flags,
-        viewer_hold_seconds=hold_seconds,
-    )
+    if workflow_id == "repository-readiness":
+        payload = run_repository_readiness_workflow(
+            repo_path=Path(values["--repo"]),
+            human_goal=values["--goal"],
+            require_clean="--require-clean" in flags,
+            run_dir=Path(values["--run-dir"]),
+            open_viewer="--open-viewer" in flags,
+            browser_open="--no-browser-open" not in flags,
+            viewer_hold_seconds=hold_seconds,
+        )
+    else:
+        payload = run_tau_operator_reference_workflow(
+            repo_path=Path(values["--repo"]),
+            required_workflow=values.get("--required-workflow", "tau-operator-reference"),
+            run_dir=Path(values["--run-dir"]),
+            open_viewer="--open-viewer" in flags,
+            browser_open="--no-browser-open" not in flags,
+            viewer_hold_seconds=hold_seconds,
+        )
     return dict(payload), True
 
 

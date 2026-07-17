@@ -34,8 +34,8 @@ class WorkflowDefinition:
             raise RuntimeError("workflow definition workflow_id is invalid")
         if type(self.workflow_version) is not int or self.workflow_version < 1:
             raise RuntimeError("workflow definition workflow_version must be positive")
-        if self.topology != "LINEAR":
-            raise RuntimeError("workflow definition topology must be LINEAR")
+        if self.topology not in {"LINEAR", "MULTI_STEP_SEQUENTIAL"}:
+            raise RuntimeError("workflow definition topology is unsupported")
         if self.availability != "AVAILABLE":
             raise RuntimeError("workflow definition availability must be AVAILABLE")
         template = Path(self.template)
@@ -82,3 +82,9 @@ class RepositoryReadinessRequest:
     repo_path: Path
     human_goal: str
     require_clean: bool
+
+
+@dataclass(frozen=True, slots=True)
+class OperatorReferenceRequest:
+    repo_path: Path
+    required_workflow: str

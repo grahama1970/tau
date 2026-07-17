@@ -6,11 +6,13 @@ from tau_coding.workflows.catalog import (
     workflow_catalog_payload,
 )
 from tau_coding.workflows.contracts import (
+    OperatorReferenceRequest,
     RepositoryReadinessRequest,
     WorkflowDefinition,
 )
 
 __all__ = [
+    "OperatorReferenceRequest",
     "RepositoryReadinessRequest",
     "WorkflowDefinition",
     "get_workflow",

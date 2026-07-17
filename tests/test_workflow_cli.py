@@ -23,6 +23,24 @@ def test_workflows_list_and_describe() -> None:
     assert json.loads(described.stdout)["topology"] == "LINEAR"
 
 
+def test_workflows_operator_reference_description_and_run_help() -> None:
+    runner = CliRunner()
+    described = runner.invoke(
+        app, ["workflows", "describe", "tau-operator-reference", "--json"]
+    )
+    help_probe = subprocess.run(
+        ["tau", "workflows", "run", "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert described.exit_code == 0, described.output
+    assert json.loads(described.stdout)["topology"] == "MULTI_STEP_SEQUENTIAL"
+    assert help_probe.returncode == 0, help_probe.stderr
+    assert "--required-workflow" in help_probe.stdout
+
+
 def test_workflows_run_executes_packaged_definition(tmp_path: Path) -> None:
     repo = _git_repo(tmp_path / "repo")
     run_dir = tmp_path / "run"
@@ -48,6 +66,30 @@ def test_workflows_run_executes_packaged_definition(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["workflow_id"] == "repository-readiness"
     assert payload["result"]["status"] == "READY"
+
+
+def test_workflows_run_dispatches_operator_reference(tmp_path: Path) -> None:
+    repo = Path(__file__).resolve().parents[1]
+    run_dir = tmp_path / "operator-reference"
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "workflows",
+            "run",
+            "tau-operator-reference",
+            "--repo",
+            str(repo),
+            "--run-dir",
+            str(run_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert payload["workflow_id"] == "tau-operator-reference"
+    assert payload["result"]["status"] == "ACCEPTED"
 
 
 def _git_repo(path: Path) -> Path:
