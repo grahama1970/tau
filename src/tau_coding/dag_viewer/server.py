@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 import socket
+import threading
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -11,6 +12,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
+from tau_coding.dag_runtime.run_store import SqliteDagRunReader
 from tau_coding.dag_viewer.compare import (
     compare_attempts,
     compare_correction,
@@ -41,20 +43,82 @@ from tau_coding.dag_viewer.receipt_index import ReceiptIndex, build_receipt_inde
 from tau_coding.dag_viewer.static_files import read_static_viewer_file
 
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+GENERATION_MARKER = ":generation:"
+
+
+@dataclass(frozen=True, slots=True)
+class LogicalRunIdentity:
+    base_run_id: str
+    generation: int
+    physical_run_id: str
+
+
+def _parse_logical_run_id(run_id: str) -> LogicalRunIdentity:
+    if not run_id or GENERATION_MARKER not in run_id:
+        if not run_id:
+            raise RuntimeError("dag_viewer_run_id_invalid")
+        return LogicalRunIdentity(run_id, 0, run_id)
+    if run_id.count(GENERATION_MARKER) != 1:
+        raise RuntimeError("dag_viewer_run_generation_invalid")
+    base_run_id, suffix = run_id.split(GENERATION_MARKER, 1)
+    if not base_run_id or not suffix.isascii() or not suffix.isdigit():
+        raise RuntimeError("dag_viewer_run_generation_invalid")
+    if suffix.startswith("0") or int(suffix) < 1:
+        raise RuntimeError("dag_viewer_run_generation_invalid")
+    return LogicalRunIdentity(base_run_id, int(suffix), run_id)
+
+
+def _select_default_run(run_dir: Path) -> tuple[LogicalRunIdentity, str]:
+    database = run_dir / "dag-run.sqlite3"
+    lineages: dict[str, list[tuple[LogicalRunIdentity, str]]] = {}
+    with SqliteDagRunReader(database) as reader:
+        for run_id in reader.run_ids():
+            identity = _parse_logical_run_id(run_id)
+            plan_sha256 = reader.load_run_record(run_id).plan_sha256
+            lineages.setdefault(identity.base_run_id, []).append((identity, plan_sha256))
+    if len(lineages) != 1:
+        raise RuntimeError("dag_viewer_run_id_ambiguous")
+    entries = next(iter(lineages.values()), [])
+    if not entries:
+        raise RuntimeError("dag_viewer_run_id_not_found")
+    generations = sorted(identity.generation for identity, _ in entries)
+    if generations != list(range(generations[-1] + 1)):
+        raise RuntimeError("dag_viewer_run_generation_non_contiguous")
+    plan_hashes = {plan_sha256 for _, plan_sha256 in entries}
+    if len(plan_hashes) != 1:
+        raise RuntimeError("dag_viewer_plan_hash_mismatch")
+    latest = max(entries, key=lambda entry: entry[0].generation)[0]
+    return latest, plan_hashes.pop()
 
 
 class DagViewerApplication:
     def __init__(self, *, run_dir: Path, run_id: str | None = None) -> None:
         self.run_dir = run_dir.expanduser().resolve()
-        result = load_dag_replay_result(run_dir=self.run_dir, run_id=run_id)
+        if run_id is None:
+            identity, expected_plan_sha256 = _select_default_run(self.run_dir)
+            selected_run_id = identity.physical_run_id
+        else:
+            identity = _parse_logical_run_id(run_id)
+            selected_run_id = run_id
+            expected_plan_sha256 = ""
+        result = load_dag_replay_result(run_dir=self.run_dir, run_id=selected_run_id)
         self.run_id = result.replay.run_id
+        self._follow_generations = run_id is None
+        self._base_run_id = identity.base_run_id
         self.plan_sha256 = result.replay.plan.plan_sha256
+        if expected_plan_sha256 and self.plan_sha256 != expected_plan_sha256:
+            raise RuntimeError("dag_viewer_plan_hash_mismatch")
         self._cursor_key = secrets.token_bytes(32)
+        self._request_lock = threading.RLock()
         self.receipts: ReceiptIndex = build_receipt_index(
             self.run_dir, result.replay.transition_receipts
         )
 
     def handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
+        with self._request_lock:
+            return self._handle_get(target, if_none_match=if_none_match)
+
+    def _handle_get(self, target: str, *, if_none_match: str | None) -> ViewerHttpResponse:
         parsed = urlsplit(target)
         path = unquote(parsed.path)
         if path == "/" or path.startswith("/assets/"):
@@ -126,7 +190,7 @@ class DagViewerApplication:
             )
             return json_response(
                 query_dag_view(
-                    run_id=self.run_id,
+                    run_id=result.replay.run_id,
                     view_sequence=result.selected_sequence,
                     snapshot=snapshot,
                     events=result.events,
@@ -198,11 +262,21 @@ class DagViewerApplication:
         )
 
     def _replay(self, *, at_sequence: int | None = None) -> Any:
+        selected_run_id = self.run_id
+        if self._follow_generations and at_sequence is None:
+            identity, plan_sha256 = _select_default_run(self.run_dir)
+            if identity.base_run_id != self._base_run_id:
+                raise RuntimeError("dag_viewer_run_lineage_mismatch")
+            if plan_sha256 != self.plan_sha256:
+                raise RuntimeError("dag_viewer_plan_hash_mismatch")
+            selected_run_id = identity.physical_run_id
         result = load_dag_replay_result(
-            run_dir=self.run_dir, run_id=self.run_id, at_sequence=at_sequence
+            run_dir=self.run_dir, run_id=selected_run_id, at_sequence=at_sequence
         )
         if result.replay.plan.plan_sha256 != self.plan_sha256:
             raise RuntimeError("dag_viewer_plan_hash_mismatch")
+        if self._follow_generations and at_sequence is None:
+            self.run_id = result.replay.run_id
         return result
 
     def _refresh_receipts(self, receipt_refs: Any) -> None:

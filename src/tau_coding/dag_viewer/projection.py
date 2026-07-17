@@ -237,6 +237,7 @@ def build_dag_view_state(
     payload = {
         "schema": "tau.dag_view_snapshot.v2",
         "run_id": replay.run_id,
+        "plan_sha256": replay.plan.plan_sha256,
         "journal_sequence": replay.journal_sequence,
         "view": {
             "mode": view_mode,

@@ -50,7 +50,12 @@ class _ReceiptTransitionPolicy(AllSuccessTransitionPolicy):
         )
 
 
-def _durable_run(tmp_path: Path) -> None:
+def _durable_run(
+    tmp_path: Path,
+    *,
+    scheduler_run_id: str = "viewer-run",
+    role: str = "worker",
+) -> None:
     payload = {
         "schema": "tau.generic_dag_spec.v1",
         "run_id": "viewer-run",
@@ -58,7 +63,7 @@ def _durable_run(tmp_path: Path) -> None:
         "nodes": [
             {
                 "node_id": "worker",
-                "role": "worker",
+                "role": role,
                 "command": ["true"],
                 "receipt_path": str(tmp_path / "worker-receipt.json"),
             }
@@ -74,7 +79,7 @@ def _durable_run(tmp_path: Path) -> None:
         run_dag_plan(
             plan,
             run_store=store,
-            run_id="viewer-run",
+            run_id=scheduler_run_id,
             transition_policy=_ReceiptTransitionPolicy(receipt_path),
             execute_node=lambda node, inputs, attempt: {
                 "node_id": node.node_id,
@@ -184,6 +189,89 @@ def test_state_etag_and_concurrent_reads_are_consistent(
         responses = list(pool.map(lambda _: _request(server, "GET", "/api/v1/state"), range(16)))
     assert {headers["ETag"] for _, headers, _ in responses} == {etag}
     assert {body for _, _, body in responses} == {first}
+
+
+def test_default_viewer_follows_new_run_generation(
+    viewer_server: tuple[RunningDagViewerServer, threading.Thread],
+) -> None:
+    server, _ = viewer_server
+    initial_status, initial_headers, initial_body = _request(server, "GET", "/api/v1/state")
+    assert initial_status == 200
+    initial = _json(initial_body)
+    assert initial["run_id"] == "viewer-run"
+
+    _durable_run(
+        server.application.run_dir,
+        scheduler_run_id="viewer-run:generation:1",
+    )
+    advanced_status, advanced_headers, advanced_body = _request(
+        server,
+        "GET",
+        "/api/v1/state",
+        headers={"If-None-Match": initial_headers["ETag"]},
+    )
+    advanced = _json(advanced_body)
+
+    assert advanced_status == 200
+    assert advanced_headers["ETag"] != initial_headers["ETag"]
+    assert advanced["run_id"] == "viewer-run:generation:1"
+    assert advanced["plan_sha256"] == initial["plan_sha256"]
+    assert server.application.run_id == "viewer-run:generation:1"
+    manifest = _json(_request(server, "GET", "/api/v1/manifest")[2])
+    assert manifest["run_id"] == advanced["run_id"]
+    assert manifest["plan_sha256"] == advanced["plan_sha256"]
+
+
+def test_default_viewer_starts_at_latest_generation_of_sole_lineage(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    _durable_run(tmp_path, scheduler_run_id="viewer-run:generation:1")
+
+    server = create_dag_viewer_server(run_dir=tmp_path)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        assert server.application.run_id == "viewer-run:generation:1"
+        assert _json(_request(server, "GET", "/api/v1/state")[2])["run_id"] == (
+            "viewer-run:generation:1"
+        )
+    finally:
+        server.shutdown()
+        thread.join(timeout=2)
+
+
+def test_explicit_run_id_stays_pinned_when_successor_exists(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    server = create_dag_viewer_server(run_dir=tmp_path, run_id="viewer-run")
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        _durable_run(tmp_path, scheduler_run_id="viewer-run:generation:1")
+        assert _json(_request(server, "GET", "/api/v1/state")[2])["run_id"] == "viewer-run"
+    finally:
+        server.shutdown()
+        thread.join(timeout=2)
+
+
+@pytest.mark.parametrize(
+    ("run_id", "role", "error_code"),
+    [
+        ("viewer-run:generation:2", "worker", "dag_viewer_run_generation_non_contiguous"),
+        ("viewer-run:generation:01", "worker", "dag_viewer_run_generation_invalid"),
+        ("other-run", "worker", "dag_viewer_run_id_ambiguous"),
+        ("viewer-run:generation:1", "different-role", "dag_viewer_plan_hash_mismatch"),
+    ],
+)
+def test_default_viewer_rejects_invalid_or_unrelated_lineages(
+    tmp_path: Path,
+    run_id: str,
+    role: str,
+    error_code: str,
+) -> None:
+    _durable_run(tmp_path)
+    _durable_run(tmp_path, scheduler_run_id=run_id, role=role)
+
+    with pytest.raises(RuntimeError, match=error_code):
+        create_dag_viewer_server(run_dir=tmp_path)
 
 
 def test_state_polling_does_not_rebuild_receipt_index(

@@ -27,6 +27,7 @@ export const manifest: DagManifest = {
 export const snapshot: DagSnapshot = {
   schema: "tau.dag_view_snapshot.v2",
   run_id: "run-1",
+  plan_sha256: "sha256:plan",
   journal_sequence: 8,
   view: { mode: "LIVE", sequence: 8, sequence_created_at: "2026-01-01T00:00:00Z" },
   snapshot_sha256: "sha256:snapshot",
