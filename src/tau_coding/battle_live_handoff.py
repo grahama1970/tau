@@ -1190,12 +1190,122 @@ def _red_contract_error(script: str) -> str | None:
 
     if imports & banned_imports:
         return "red_artifact_not_local_stdlib_exploit"
-    if "from app import import_zip" not in script and "import app" not in script:
+    if not _loads_import_zip_from_local_app(tree):
         return "red_artifact_missing_local_app_import"
     if "import_zip(" not in script:
         return "red_artifact_does_not_call_import_zip"
     if "--expect-vulnerable" not in script:
         return "red_artifact_missing_expect_vulnerable_arg"
+    return None
+
+
+def _loads_import_zip_from_local_app(tree: ast.AST) -> bool:
+    direct_import = any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "app"
+        and any(alias.name == "import_zip" for alias in node.names)
+        for node in ast.walk(tree)
+    )
+    app_module_import = any(
+        isinstance(node, ast.Import)
+        and any(alias.name == "app" for alias in node.names)
+        for node in ast.walk(tree)
+    )
+    app_module_call = any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "app"
+        and node.func.attr == "import_zip"
+        for node in ast.walk(tree)
+    )
+    if direct_import or (app_module_import and app_module_call):
+        return True
+
+    imports_importlib_util = any(
+        isinstance(node, ast.Import)
+        and any(alias.name == "importlib.util" for alias in node.names)
+        for node in ast.walk(tree)
+    )
+    if not imports_importlib_util:
+        return False
+
+    assignments = {
+        target.id: node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+    spec_names = {
+        name
+        for name, value in assignments.items()
+        if isinstance(value, ast.Call)
+        and _dotted_name(value.func) == "importlib.util.spec_from_file_location"
+        and len(value.args) >= 2
+        and _is_local_app_path(value.args[1], assignments, set())
+    }
+    module_names = {
+        name
+        for name, value in assignments.items()
+        if isinstance(value, ast.Call)
+        and _dotted_name(value.func) == "importlib.util.module_from_spec"
+        and value.args
+        and isinstance(value.args[0], ast.Name)
+        and value.args[0].id in spec_names
+    }
+    executes_local_module = any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "exec_module"
+        and isinstance(node.func.value, ast.Attribute)
+        and node.func.value.attr == "loader"
+        and isinstance(node.func.value.value, ast.Name)
+        and node.func.value.value.id in spec_names
+        and node.args
+        and isinstance(node.args[0], ast.Name)
+        and node.args[0].id in module_names
+        for node in ast.walk(tree)
+    )
+    retrieves_import_zip = any(
+        isinstance(node, ast.Attribute)
+        and node.attr == "import_zip"
+        and isinstance(node.value, ast.Name)
+        and node.value.id in module_names
+        for node in ast.walk(tree)
+    )
+    return executes_local_module and retrieves_import_zip
+
+
+def _is_local_app_path(
+    node: ast.AST, assignments: dict[str, ast.AST], seen: set[str]
+) -> bool:
+    if isinstance(node, ast.Name) and node.id not in seen and node.id in assignments:
+        return _is_local_app_path(assignments[node.id], assignments, seen | {node.id})
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "str"
+        and len(node.args) == 1
+    ):
+        return _is_local_app_path(node.args[0], assignments, seen)
+    return (
+        isinstance(node, ast.BinOp)
+        and isinstance(node.op, ast.Div)
+        and isinstance(node.right, ast.Constant)
+        and node.right.value == "app.py"
+        and isinstance(node.left, ast.Call)
+        and _dotted_name(node.left.func) == "Path.cwd"
+        and not node.left.args
+    )
+
+
+def _dotted_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        parent = _dotted_name(node.value)
+        return f"{parent}.{node.attr}" if parent else None
     return None
 
 

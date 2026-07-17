@@ -85,6 +85,68 @@ def test_red_materialization_declares_artifact_and_genome_hashes(tmp_path: Path)
     assert receipt["strategy_genome_sha256"] == _json_sha(genome)
 
 
+def test_red_materialization_accepts_exact_local_importlib_loader(tmp_path: Path) -> None:
+    script = (
+        "import importlib.util\n"
+        "from pathlib import Path\n"
+        "app_path = Path.cwd() / 'app.py'\n"
+        "spec = importlib.util.spec_from_file_location('battle_local_app', str(app_path))\n"
+        "module = importlib.util.module_from_spec(spec)\n"
+        "spec.loader.exec_module(module)\n"
+        "import_zip = module.import_zip\n"
+        "import_zip('payload.zip', 'destination')\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "PASS"
+    assert Path(receipt["path"]).read_text(encoding="utf-8") == script
+
+
+def test_red_materialization_rejects_importlib_loader_for_other_path(
+    tmp_path: Path,
+) -> None:
+    script = (
+        "import importlib.util\n"
+        "from pathlib import Path\n"
+        "app_path = Path.cwd() / 'other.py'\n"
+        "spec = importlib.util.spec_from_file_location('other', str(app_path))\n"
+        "module = importlib.util.module_from_spec(spec)\n"
+        "spec.loader.exec_module(module)\n"
+        "import_zip = module.import_zip\n"
+        "import_zip('payload.zip', 'destination')\n"
+        "print('RED_EXPLOIT_CONFIRMED')\n"
+        "# --expect-vulnerable\n"
+    )
+
+    receipt = _materialize_team_artifact(
+        team_dir=tmp_path,
+        team="red",
+        scillm_call={
+            "parsed_json": {
+                "artifact_type": "red_exploit",
+                "exploit_py": script,
+                "strategy_genome": _genome("red"),
+            }
+        },
+    )
+
+    assert receipt["status"] == "BLOCKED"
+    assert receipt["reason"] == "red_artifact_missing_local_app_import"
+
+
 def test_blue_materialization_declares_artifact_and_genome_hashes(tmp_path: Path) -> None:
     genome = _genome("blue")
     receipt = _materialize_team_artifact(
