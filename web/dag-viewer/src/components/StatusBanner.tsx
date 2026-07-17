@@ -5,7 +5,8 @@ function goalStatement(source: JsonValue): string {
   if (!source || typeof source !== "object" || Array.isArray(source)) return "Goal unavailable";
   const goal = source.goal;
   if (!goal || typeof goal !== "object" || Array.isArray(goal)) return "Goal unavailable";
-  return typeof goal.statement === "string" ? goal.statement : "Goal unavailable";
+  if (typeof goal.statement === "string") return goal.statement;
+  return typeof goal.summary === "string" ? goal.summary : "Goal unavailable";
 }
 
 export function StatusBanner({
@@ -19,7 +20,7 @@ export function StatusBanner({
 }) {
   const accepted = snapshot.run_status === "PASS";
   const Icon = !connected ? Unplug : accepted ? CircleCheck : snapshot.run_status === "BLOCKED" ? AlertTriangle : Radio;
-  const goal = goalStatement(manifest.source_dag);
+  const goal = manifest.goal.summary ?? goalStatement(manifest.source_dag);
   return (
     <header className="status-banner" data-qid="dag:status:banner">
       <div className="status-banner__identity">

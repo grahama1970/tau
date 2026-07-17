@@ -78,6 +78,13 @@ def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[st
         "routes": [item.to_value() for item in replay.plan.route_contracts],
         "joins": [item.to_value() for item in replay.plan.join_contracts],
     }
+    goal = replay.plan.goal_binding.to_value()
+    source_extensions = replay.plan.source_extensions.to_value()
+    workflow = (
+        source_extensions.get("workflow")
+        if isinstance(source_extensions, dict)
+        else None
+    )
     payload: dict[str, Any] = {
         "schema": "tau.dag_view_manifest.v1",
         "run_id": replay.run_id,
@@ -90,6 +97,8 @@ def build_dag_view_manifest(*, replay: DagReplayState, run_dir: Path) -> dict[st
         "source_dag": source,
         "source_status": "AVAILABLE" if source_available else "SOURCE_DAG_NOT_RETAINED",
         "dag_plan": replay.plan.to_payload(),
+        "goal": goal,
+        "workflow": workflow,
         "graph": graph,
         "receipt_index": [],
         "proof_scope": PROOF_SCOPE,
@@ -158,7 +167,10 @@ def build_dag_view_state(
         replay_result = next(
             (item for item in reversed(replay.results) if item.node_id == node_id), None
         )
-        endpoint_hash = _find_endpoint_lease_sha256(replay_result.payload if replay_result else {})
+        result_payload = replay_result.payload if replay_result is not None else {}
+        accepted_output = result_payload.get("accepted_output")
+        errors = result_payload.get("errors")
+        endpoint_hash = _find_endpoint_lease_sha256(result_payload)
         runtime = runtime_by_endpoint.get(endpoint_hash or "")
         nodes.append(
             {
@@ -179,6 +191,41 @@ def build_dag_view_state(
                     "state": admission_state,
                     "accepted": accepted,
                     "receipt_refs": [],
+                },
+                "result": {
+                    "summary": (
+                        accepted_output.get("summary")
+                        if accepted and isinstance(accepted_output, dict)
+                        else None
+                    ),
+                    "accepted_output": (
+                        accepted_output
+                        if accepted and isinstance(accepted_output, dict)
+                        else None
+                    ),
+                    "blocker_codes": (
+                        [str(item) for item in errors]
+                        if state in {"blocked", "failed", "timed_out"}
+                        and isinstance(errors, list)
+                        else []
+                    ),
+                    "started_at": (
+                        result_payload.get("started_at")
+                        if isinstance(result_payload.get("started_at"), str)
+                        else None
+                    ),
+                    "finished_at": (
+                        result_payload.get("finished_at")
+                        if isinstance(result_payload.get("finished_at"), str)
+                        else None
+                    ),
+                    "duration_seconds": (
+                        result_payload.get("duration_seconds")
+                        if isinstance(
+                            result_payload.get("duration_seconds"), (int, float)
+                        )
+                        else None
+                    ),
                 },
                 "transaction": _transaction_projection(
                     plan_node=plan_node,
@@ -234,6 +281,40 @@ def build_dag_view_state(
         corrections=correction_payloads,
         projection_state=projection_state,
     )
+    source_extensions = replay.plan.source_extensions.to_value()
+    workflow = (
+        source_extensions.get("workflow")
+        if isinstance(source_extensions, dict)
+        else None
+    )
+    workflow_result_node_id = (
+        workflow.get("result_node_id")
+        if isinstance(workflow, dict)
+        and isinstance(workflow.get("result_node_id"), str)
+        else None
+    )
+    active_states = {
+        "ready",
+        "running",
+        "validating",
+        "committing",
+        "retry_pending",
+        "reconciliation_required",
+    }
+    active_node_ids = [
+        node["node_id"]
+        for node in nodes
+        if node["scheduler"]["state"] in active_states
+    ]
+    blocked_nodes = [
+        node
+        for node in nodes
+        if node["scheduler"]["state"] in {"blocked", "failed", "timed_out"}
+    ]
+    result_node = next(
+        (node for node in nodes if node["node_id"] == workflow_result_node_id),
+        None,
+    )
     payload = {
         "schema": "tau.dag_view_snapshot.v2",
         "run_id": replay.run_id,
@@ -257,6 +338,28 @@ def build_dag_view_state(
         "highest_priority_attention_id": (
             causal.attention_items[0]["attention_id"] if causal.attention_items else None
         ),
+        "run_summary": {
+            "active_node_ids": active_node_ids,
+            "accepted_node_ids": [
+                node["node_id"]
+                for node in nodes
+                if node["admission"]["accepted"] is True
+            ],
+            "highest_priority_blocker": (
+                {
+                    "node_id": blocked_nodes[0]["node_id"],
+                    "codes": blocked_nodes[0]["result"]["blocker_codes"],
+                }
+                if blocked_nodes
+                else None
+            ),
+            "final_result": (
+                result_node["result"]["accepted_output"]
+                if result_node is not None
+                and result_node["admission"]["accepted"] is True
+                else None
+            ),
+        },
         "recent_events": _browser_event_projections(
             recent_events[-200:], receipt_index=receipt_index
         ),

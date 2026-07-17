@@ -27,6 +27,35 @@ export type ReceiptIndexEntry = {
   available: boolean;
 };
 
+export type GoalProjection = {
+  kind: "full" | "hash_only" | "none";
+  goal_id?: string;
+  goal_version?: string | number;
+  goal_hash?: string;
+  summary?: string;
+  completion_criteria?: string[];
+};
+
+export type WorkflowMetadata = {
+  schema: "tau.workflow_metadata.v1";
+  workflow_id: string;
+  workflow_version: number;
+  title: string;
+  summary: string;
+  topology: string;
+  result_node_id: string;
+  result_schema: string;
+};
+
+export type NodeResultProjection = {
+  summary: string | null;
+  accepted_output: Record<string, JsonValue> | null;
+  blocker_codes: string[];
+  started_at: string | null;
+  finished_at: string | null;
+  duration_seconds: number | null;
+};
+
 export type DagManifest = {
   schema: "tau.dag_view_manifest.v1";
   run_id: string;
@@ -36,6 +65,8 @@ export type DagManifest = {
   source_status: string;
   source_dag: JsonValue;
   dag_plan: JsonValue;
+  goal: GoalProjection;
+  workflow: WorkflowMetadata | null;
   graph: {
     nodes: PlanNode[];
     edges: PlanEdge[];
@@ -53,6 +84,7 @@ export type LiveNode = {
   scheduler: { state: string; attempt: number; max_attempts: number };
   runtime: { state: string; liveness: string; confidence: string; last_event_id: string | null };
   admission: { state: string; accepted: boolean; receipt_refs: string[] };
+  result: NodeResultProjection;
   transaction: TransactionProjection | null;
   correction: CorrectionProjection | null;
   causal_explanation_id: string;
@@ -170,6 +202,12 @@ export type DagSnapshot = {
   corrections: CorrectionProjection[];
   attention_items: AttentionItem[];
   highest_priority_attention_id: string | null;
+  run_summary: {
+    active_node_ids: string[];
+    accepted_node_ids: string[];
+    highest_priority_blocker: { node_id: string; codes: string[] } | null;
+    final_result: Record<string, JsonValue> | null;
+  };
   recent_events: JournalEvent[];
   proof_scope: { proves: string[]; does_not_prove: string[] };
 };

@@ -45,6 +45,17 @@ function TauNodeComponent({ data, selected }: NodeProps) {
         <span><CircleCheck aria-hidden="true" size={13} />{admission}</span>
         {live?.correction && <span data-qid={`dag:node:${value.label}:correction`}>correction {live.correction.state.toLowerCase()}</span>}
       </div>
+      {live?.result?.summary && (
+        <div className="tau-node__result">{live.result.summary}</div>
+      )}
+      {live?.result?.blocker_codes[0] && (
+        <div
+          className="tau-node__blocker"
+          data-qid={`dag:node:${value.label}:blocker`}
+        >
+          {live.result.blocker_codes[0]}
+        </div>
+      )}
       <footer>
         <span>attempt {live?.scheduler.attempt ?? 0}/{live?.scheduler.max_attempts ?? 1}</span>
         <span>{live?.runtime.state ?? "UNKNOWN"}</span>

@@ -12,6 +12,24 @@ export const manifest: DagManifest = {
     goal: { statement: "Keep the human-owned goal immutable." },
   },
   dag_plan: { schema: "tau.dag_plan.v1" },
+  goal: {
+    kind: "full",
+    goal_id: "repository-readiness:fixture",
+    goal_version: 1,
+    goal_hash: "sha256:goal",
+    summary: "Determine whether this checkout is ready for focused work.",
+    completion_criteria: ["Publish only after validation passes."],
+  },
+  workflow: {
+    schema: "tau.workflow_metadata.v1",
+    workflow_id: "repository-readiness",
+    workflow_version: 1,
+    title: "Repository Readiness",
+    summary: "Inspect, validate, and publish repository readiness.",
+    topology: "LINEAR",
+    result_node_id: "publish",
+    result_schema: "tau.repository_readiness_report.v1",
+  },
   graph: {
     nodes: [
       { node_id: "creator", role: "producer", adapter: { kind: "command", config: {} }, retry_policy: { max_attempts: 2 } },
@@ -43,6 +61,7 @@ export const snapshot: DagSnapshot = {
       scheduler: { state: "running", attempt: 1, max_attempts: 2 },
       runtime: { state: "ALIVE", liveness: "ALIVE", confidence: "PROCESS", last_event_id: null },
       admission: { state: "awaiting_receipt", accepted: false, receipt_refs: [] },
+      result: { summary: null, accepted_output: null, blocker_codes: [], started_at: null, finished_at: null, duration_seconds: null },
       transaction: {
         transaction_id: "tx-1", current_attempt: 1, max_attempts: 2, state: "AWAITING_RECEIPT",
         attempts: [{ attempt: 1, producer_state: "PASS", validator_status: "PASS", reviewer_verdict: "REVISE" }],
@@ -53,6 +72,7 @@ export const snapshot: DagSnapshot = {
       scheduler: { state: "pending", attempt: 0, max_attempts: 1 },
       runtime: { state: "UNKNOWN", liveness: "UNKNOWN", confidence: "UNKNOWN", last_event_id: null },
       admission: { state: "not_started", accepted: false, receipt_refs: [] }, transaction: null, correction: null,
+      result: { summary: null, accepted_output: null, blocker_codes: [], started_at: null, finished_at: null, duration_seconds: null },
       causal_explanation_id: "explanation-publish", updated_sequence: 8,
     },
   ],
@@ -62,6 +82,7 @@ export const snapshot: DagSnapshot = {
   ],
   terminals: [{ terminal_id: "human", state: "pending", causal_explanation_id: "explanation-human" }],
   routes: [], joins: [], corrections: [], attention_items: [], highest_priority_attention_id: null,
+  run_summary: { active_node_ids: ["creator"], accepted_node_ids: [], highest_priority_blocker: null, final_result: null },
   recent_events: [{ seq: 8, event_type: "dag_diagnostic_event_appended", entity_type: "node", entity_id: "creator", attempt_id: null, payload: { phase: "reviewer" } }],
   proof_scope: { proves: ["journal projection"], does_not_prove: ["semantic correctness"] },
 };

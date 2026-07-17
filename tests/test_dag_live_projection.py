@@ -15,7 +15,8 @@ from tau_coding.dag_runtime.correction import (
     CorrectionIncident,
     run_correction_transaction,
 )
-from tau_coding.dag_runtime.replay import DagReplayAttempt
+from tau_coding.dag_runtime.model import FrozenJson
+from tau_coding.dag_runtime.replay import DagReplayAttempt, DagReplayResult
 from tau_coding.dag_runtime.run_store import DagRunStoreError, SqliteDagRunReader, SqliteDagRunStore
 from tau_coding.dag_runtime.scheduler import run_dag_plan
 from tau_coding.dag_viewer.projection import (
@@ -406,6 +407,143 @@ def test_active_attempt_state_is_visible_without_accepting_node(tmp_path: Path) 
     assert node["scheduler"] == {"state": "validating", "attempt": 2, "max_attempts": 1}
     assert node["admission"]["state"] == "validating"
     assert node["admission"]["accepted"] is False
+
+
+def test_manifest_projects_plan_owned_goal_and_workflow_metadata(tmp_path: Path) -> None:
+    _durable_run(tmp_path)
+    replay, _ = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    goal = {
+        "kind": "full",
+        "goal_id": "repository-readiness:fixture",
+        "goal_version": 1,
+        "goal_hash": "sha256:goal",
+        "summary": "Determine whether this checkout is ready for focused work.",
+        "completion_criteria": ["Publish only after validation passes."],
+    }
+    workflow = {
+        "schema": "tau.workflow_metadata.v1",
+        "workflow_id": "repository-readiness",
+        "workflow_version": 1,
+        "title": "Repository Readiness",
+        "summary": "Inspect, validate, and publish repository readiness.",
+        "topology": "LINEAR",
+        "result_node_id": "node",
+        "result_schema": "tau.repository_readiness_report.v1",
+    }
+    projected = replace(
+        replay,
+        plan=replace(
+            replay.plan,
+            goal_binding=FrozenJson.from_value(goal),
+            source_extensions=FrozenJson.from_value({"workflow": workflow}),
+        ),
+    )
+
+    manifest = build_dag_view_manifest(replay=projected, run_dir=tmp_path)
+
+    assert manifest["goal"] == goal
+    assert manifest["workflow"] == workflow
+
+
+def test_snapshot_projects_only_committed_accepted_result_and_run_summary(
+    tmp_path: Path,
+) -> None:
+    _durable_run(tmp_path)
+    replay, events = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    accepted_output = {
+        "schema": "tau.repository_readiness_report.v1",
+        "summary": "Repository is ready for focused work.",
+        "status": "READY",
+        "artifacts": [
+            {
+                "kind": "readiness_report",
+                "path": "results/repository-readiness.json",
+                "sha256": "sha256:report",
+            }
+        ],
+    }
+    projected = replace(
+        replay,
+        plan=replace(
+            replay.plan,
+            source_extensions=FrozenJson.from_value(
+                {"workflow": {"result_node_id": "node"}}
+            ),
+        ),
+        results=(
+            DagReplayResult(
+                node_id="node",
+                attempt=1,
+                terminal_state="success",
+                payload={
+                    "accepted_output": accepted_output,
+                    "errors": [],
+                    "started_at": "2026-07-17T12:00:00Z",
+                    "finished_at": "2026-07-17T12:00:01Z",
+                    "duration_seconds": 1.0,
+                },
+            ),
+        ),
+    )
+
+    snapshot = build_dag_live_snapshot(replay=projected, recent_events=events)
+
+    assert snapshot["nodes"][0]["result"] == {
+        "summary": "Repository is ready for focused work.",
+        "accepted_output": accepted_output,
+        "blocker_codes": [],
+        "started_at": "2026-07-17T12:00:00Z",
+        "finished_at": "2026-07-17T12:00:01Z",
+        "duration_seconds": 1.0,
+    }
+    assert snapshot["run_summary"] == {
+        "active_node_ids": [],
+        "accepted_node_ids": ["node"],
+        "highest_priority_blocker": None,
+        "final_result": accepted_output,
+    }
+
+
+def test_snapshot_projects_exact_blocker_without_exposing_rejected_output(
+    tmp_path: Path,
+) -> None:
+    _durable_run(tmp_path)
+    replay, events = load_dag_replay(run_dir=tmp_path, run_id="run-1")
+    blocked = replace(
+        replay,
+        run_status="BLOCKED",
+        run_verdict="BLOCKED",
+        node_states=(("node", "blocked"),),
+        plan=replace(
+            replay.plan,
+            source_extensions=FrozenJson.from_value(
+                {"workflow": {"result_node_id": "node"}}
+            ),
+        ),
+        results=(
+            DagReplayResult(
+                node_id="node",
+                attempt=1,
+                terminal_state="blocked",
+                payload={
+                    "accepted_output": {"summary": "Unsupported success claim."},
+                    "errors": ["dirty_repository"],
+                },
+            ),
+        ),
+    )
+
+    snapshot = build_dag_live_snapshot(replay=blocked, recent_events=events)
+
+    assert snapshot["nodes"][0]["result"]["accepted_output"] is None
+    assert snapshot["nodes"][0]["result"]["blocker_codes"] == [
+        "dirty_repository"
+    ]
+    assert snapshot["run_summary"]["highest_priority_blocker"] == {
+        "node_id": "node",
+        "codes": ["dirty_repository"],
+    }
+    assert snapshot["run_summary"]["final_result"] is None
 
 
 def test_manifest_blocks_modified_or_malformed_retained_source(tmp_path: Path) -> None:

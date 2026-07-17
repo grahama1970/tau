@@ -10,6 +10,7 @@ import { EventTimeline } from "./components/EventTimeline";
 import { FilterBar, type FilterState } from "./components/FilterBar";
 import { JsonInspector } from "./components/JsonInspector";
 import { ReceiptInspector } from "./components/ReceiptInspector";
+import { RunOverview } from "./components/RunOverview";
 import { SequenceNavigator } from "./components/SequenceNavigator";
 import { StatusBanner } from "./components/StatusBanner";
 import { TransactionAttempts } from "./components/TransactionAttempts";
@@ -444,6 +445,7 @@ export default function App() {
 
   return <main className="dag-app">
     <StatusBanner manifest={manifest} snapshot={snapshot} connected={connected} />
+    <RunOverview manifest={manifest} snapshot={snapshot} />
     <SequenceNavigator sequences={sequences} selectedSequence={selectedSequence} onSelect={selectSequence} />
     <AttentionRail items={snapshot.attention_items} onSelect={selectAttention} />
     <DecisionRail routes={snapshot.routes} joins={snapshot.joins} onSelect={selectDecision} />
