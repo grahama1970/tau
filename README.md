@@ -458,6 +458,18 @@ uv run tau workflows run approved-release-bundle \
   --open-viewer
 uv run tau workflows approve /tmp/tau-approved-release-bundle
 uv run tau workflows resume /tmp/tau-approved-release-bundle
+
+uv run tau workflows describe durable-repository-qualification --json
+uv run tau workflows run durable-repository-qualification \
+  --repo /path/to/repository \
+  --goal "Qualify this repository through durable recovery." \
+  --publish-path /tmp/tau-durable-qualified \
+  --run-dir /tmp/tau-durable-qualification \
+  --open-viewer
+uv run tau workflows repair /tmp/tau-durable-qualification --node qualify-tests
+uv run tau workflows resume /tmp/tau-durable-qualification
+uv run tau workflows approve /tmp/tau-durable-qualification
+uv run tau workflows resume /tmp/tau-durable-qualification
 ```
 
 A passing run writes `results/repository-readiness.json` and
@@ -491,6 +503,13 @@ writes the exact expected approval packet; `workflows resume` preserves accepted
 work and performs the publication continuation once. Post-write verification
 failure removes the published target and records rollback rather than exposing
 a final result.
+
+The seven-node `durable-repository-qualification` workflow captures repository
+identity, qualifies documentation, tests, and package metadata concurrently,
+reconciles accepted evidence, and stops at an exact publication approval. Its
+targeted repair packet is goal- and request-bound. Resume reuses accepted
+branches, recovers a result already staged before interruption, and uses a
+publication ledger to keep the approved side effect at exactly one.
 
 ## What changed from upstream Tau
 

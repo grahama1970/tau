@@ -16,6 +16,7 @@ from typing import Any
 
 WORKFLOW_IDS = [
     "approved-release-bundle",
+    "durable-repository-qualification",
     "repository-evidence-map",
     "repository-readiness",
     "tau-operator-reference",

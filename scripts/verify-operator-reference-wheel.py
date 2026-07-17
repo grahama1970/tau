@@ -281,7 +281,13 @@ def main() -> int:
             label="installed_operator_reference_catalog",
         )
         workflows = catalog.get("workflows")
-        expected_ids = ["repository-readiness", WORKFLOW_ID]
+        expected_ids = [
+            "approved-release-bundle",
+            "durable-repository-qualification",
+            "repository-evidence-map",
+            "repository-readiness",
+            WORKFLOW_ID,
+        ]
         if (
             not isinstance(workflows, list)
             or [workflow.get("workflow_id") for workflow in workflows] != expected_ids

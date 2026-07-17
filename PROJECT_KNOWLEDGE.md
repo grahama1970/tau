@@ -7080,3 +7080,40 @@
 - This proves the exercised local workflow and viewer path. It does not prove provider/model
   quality, deployment readiness, every filesystem failure mode, or canonical workflow 05's
   crash-safe targeted repair.
+
+# 2026-07-17: Canonical Workflow Slice 05 - Durable Repository Qualification
+
+- The packaged catalog now contains five product workflows in increasing
+  topology complexity: `repository-readiness` (`LINEAR`),
+  `tau-operator-reference` (`MULTI_STEP_SEQUENTIAL`),
+  `repository-evidence-map` (`FAN_OUT_FAN_IN`), `approved-release-bundle`
+  (`MIXED_RETRY_APPROVAL`), and `durable-repository-qualification`
+  (`DURABLE_MIXED_REPAIR_APPROVAL`).
+- The fifth workflow runs seven nodes: repository capture; concurrent
+  documentation, test, and package qualification; reconciliation; exact
+  approval publication; and finalization. A deterministic test-branch blocker
+  requires a goal- and request-bound repair packet. Accepted capture,
+  documentation, and package receipts remain byte-identical across repair.
+- Recovery proof interrupts after `qualify-tests` is durably staged. Journal
+  order is `attempt_result_staged < run_lease_taken_over <
+  attempt_result_validated`; the command is not rerun. Process loss before a
+  result is staged remains effect-uncertain and is intentionally not claimed as
+  automatically rerunnable.
+- Focused backend proof is `/tmp/tau-slice05-focused.log`: `40 passed in
+  47.39s`; scoped Ruff passed. Browser proof
+  `/tmp/tau-durable-qualification-browser-proof.json` reports `PASS`,
+  `mocked:false`, `live:true`, `provider_live:false`, all `15/15` checks,
+  GET-only traffic, no manual reload, recovery ordering, repair, approval, and
+  `publication_effect_count_one`. Screenshots are
+  `/tmp/tau-durable-qualification-desktop.png` and
+  `/tmp/tau-durable-qualification-mobile.png`.
+- Installed-wheel proof `/tmp/tau-durable-qualification-wheel-proof.json`
+  reports all five workflow IDs, initial `targeted_repair_required`, exact
+  repair, approval wait, final and repeated-resume `PASS`, reused accepted
+  branches, matching result/publication artifacts, and `effect_count: 1`.
+- The agent-skills Tau wrapper exposes the catalog, fifth workflow run options,
+  and bounded `workflow-repair`, `workflow-approve`, and `workflow-resume`
+  commands. Its live doctor/catalog/description artifacts are
+  `/tmp/tau-skill-doctor-slice05.json`,
+  `/tmp/tau-skill-workflows-slice05.json`, and
+  `/tmp/tau-skill-describe-slice05.json`.

@@ -1,9 +1,12 @@
-# Canonical Tau DAG Ladder
+# Tau DAG Scheduler Examples
 
-These five runnable workflows are the product proof ladder defined by
-`GOAL.md`. Every run writes real local artifacts through Tau's durable
-receipt-gated scheduler. `--view` opens the same polling React Flow viewer over
-the run's authoritative SQLite journal.
+These five scripts are developer-facing scheduler examples retained for focused
+runtime experiments. The packaged product workflows defined by `GOAL.md` are
+the authoritative operator path: discover them with
+`uv run tau workflows list --json` and launch them with
+`uv run tau workflows run <workflow-id> ...`. Both surfaces use Tau's durable
+receipt-gated scheduler and the same polling React Flow viewer, but these
+examples are not substitutes for installed-wheel or packaged-workflow proof.
 
 | DAG | Topology | Command |
 | --- | --- | --- |
